@@ -1,0 +1,26 @@
+# temp and scratch
+.tmp/
+*.log
+
+# python (generator/)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+generator/cache/
+
+# node (web/)
+node_modules/
+web/dist/
+web/.vite/
+
+# editors / OS
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+# claude worktrees
+.claude/worktrees/
