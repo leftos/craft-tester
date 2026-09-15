@@ -1,0 +1,460 @@
+# Hand transcription of the San Francisco ATCT SOP, section 2-2 (IFR Departures), section 1-7
+# (runway configurations) and section 2-4 (noise abatement). Every rule row carries the SOP text it
+# came from so the game can cite it. Re-transcribe when `craft-gen verify-sop` reports a hash change.
+source:
+  title: San Francisco ATCT Standard Operating Procedure
+  version: "1.11"
+  url: https://oakartcc.org/controllers/file/9a2b1e84-5e65-11e9-8010-2a32edb55910
+  sha256: 1e2b90c75d274b836929963fe353c5ef4a5dc592cd6fa005bf7fa3e77318e008
+  transcribed_at: 2026-09-15
+  sentinels:
+    - "Version 1.11"
+    - "2-2 IFR Departures"
+    - "3,000 or CVS x 3,000"
+    - "SNTNA# shall be used instead of TRUKN# off Runways 28 while in 28/01 configuration"
+    - "expect filed altitude three (3) minutes after departure"
+
+# Secondary source: ZOA training deck "S1 KSFO Clearance Delivery, Ground Control, Gate Hold" (S1-SFO-0
+# CBT, dated 2023-02-26, Google Slides 1yqKhIdUYZlHxmA-mWC_UIX1A1jb7kuMJO3vu_ApTbV8). It is older than the
+# SOP: it describes the OFFSH# departure, which no longer exists (not in the charts API or the SOP); its
+# role is filled by SEGUL ONE. Where the deck and the SOP disagree, the SOP wins. Rows that come from the
+# deck cite "S1-SFO-0 CBT" with the slide title.
+secondary_sources:
+  - id: cbt
+    title: S1 KSFO Clearance Delivery, Ground Control, Gate Hold (S1-SFO-0 CBT)
+    dated: 2023-02-26
+    url: https://docs.google.com/presentation/d/1yqKhIdUYZlHxmA-mWC_UIX1A1jb7kuMJO3vu_ApTbV8
+
+airport:
+  icao: KSFO
+  faa: SFO
+  spoken: San Francisco
+  clearance_delivery: "118.2"
+
+runways: [01L, 01R, 10L, 10R, 19L, 19R, 28L, 28R]
+
+# SOP 1-7. departure_runways lists which runways each aircraft class departs from in that configuration.
+# In 28/01, oceanic, Far East and cargo flights may be given 28L/R for performance (SOP 2-1 e).
+runway_configs:
+  - id: "01/01"
+    name: Landing and departing runways 01
+    plan: SFOW
+    arrival_runways: [01L, 01R]
+    departure_runways:
+      - { runway: 01L, classes: [P, T, J] }
+      - { runway: 01R, classes: [P, T, J] }
+  - id: "28/01"
+    name: Landing runways 28, departing runways 01
+    plan: SFOW
+    arrival_runways: [28L, 28R]
+    departure_runways:
+      - { runway: 01L, classes: [P, T, J] }
+      - { runway: 01R, classes: [P, T, J] }
+      - { runway: 28L, classes: [J], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e)" }
+      - { runway: 28R, classes: [J], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e)" }
+  - id: "28 RT"
+    name: Landing and departing runways 28, right turn (TRUKN DP in use)
+    plan: SFOW
+    arrival_runways: [28L, 28R]
+    departure_runways:
+      - { runway: 28L, classes: [P, T, J] }
+      - { runway: 28R, classes: [P, T, J] }
+  - id: "28 SO"
+    name: Landing and departing runways 28, straight out (TRUKN DP not in use)
+    plan: SFOW
+    arrival_runways: [28L, 28R]
+    departure_runways:
+      - { runway: 28L, classes: [P, T, J] }
+      - { runway: 28R, classes: [P, T, J] }
+  - id: "10/10"
+    name: Landing and departing runways 10
+    plan: SFOE
+    arrival_runways: [10L, 10R]
+    departure_runways:
+      - { runway: 10L, classes: [P, T, J] }
+      - { runway: 10R, classes: [P, T, J] }
+  - id: "19/10"
+    name: Landing runways 19, departing runways 10
+    plan: SFOE
+    arrival_runways: [19L, 19R]
+    departure_runways:
+      - { runway: 10L, classes: [P, T, J] }
+      - { runway: 10R, classes: [P, T, J] }
+  - id: "19/19"
+    name: Landing and departing runways 19
+    plan: SFOE
+    arrival_runways: [19L, 19R]
+    departure_runways:
+      - { runway: 19L, classes: [P, T, J] }
+      - { runway: 19R, classes: [P, T, J] }
+
+# NCT Area D departure sectors. Frequencies from the ZOA positions reference (Area D Richmond, Area D Sutro)
+# and the FAA charts (NORCAL DEP CON 120.9 NW-E / 135.1 SE-W).
+departure_sectors:
+  - { id: richmond, name: NorCal Richmond, frequency: "120.9" }
+  - { id: sutro, name: NorCal Sutro, frequency: "135.1" }
+
+# Staffing fallbacks (S1-SFO-0 CBT, "Departure Frequency"): Area D may be combined on Sutro; with Area D
+# offline departures go to NCT combined 133.95; with NCT offline, Oakland Center combined 132.2. The game
+# assumes both Area D sectors are online unless a scenario says otherwise.
+departure_staffing_fallbacks:
+  - { id: area_d_combined, name: NorCal Sutro (Area D combined), frequency: "135.1" }
+  - { id: nct_combined, name: NorCal Approach (combined), frequency: "133.95" }
+  - { id: center_combined, name: Oakland Center (combined), frequency: "132.2" }
+
+# In 28/01, the departure runway follows the first turn (S1-SFO-0 CBT, "Runway Assignment: 28/01 1L or 1R?"):
+# right turn (northbound SIDs) -> 1R, left turn (southbound SIDs) -> 1L, which is what allows simultaneous
+# parallel departures. Heavies and 28-only SIDs go to 28L when parked south of 28L, 28R when north of 28R.
+direction_runway_preference:
+  SFOW:
+    north: { "01": 01R, "28": 28L }
+    south: { "01": 01L, "28": 28L }
+    oceanic: { "01": 01L, "28": 28L }
+  SFOE:
+    north: { "10": 10L, "19": 19L }
+    south: { "10": 10R, "19": 19R }
+    oceanic: { "10": 10R, "19": 19R }
+
+# Distractor pool for the frequency dropdown.
+frequencies:
+  - { label: San Francisco Clearance, value: "118.2" }
+  - { label: San Francisco Ground, value: "121.8" }
+  - { label: San Francisco Ground 2 / Gate Hold, value: "124.25" }
+  - { label: San Francisco Tower, value: "120.5" }
+  - { label: NorCal Departure (Richmond), value: "120.9" }
+  - { label: NorCal Departure (Sutro), value: "135.1" }
+  - { label: NorCal Approach (Boulder), value: "133.95" }
+  - { label: NorCal Approach (Woodside), value: "135.65" }
+  - { label: NorCal Departure (Diablo), value: "127.0" }
+  - { label: NorCal Departure (Fairfield), value: "124.325" }
+  - { label: NorCal Departure (Quake), value: "127.975" }
+  - { label: Oakland Center (combined), value: "132.2" }
+
+# Exit fix -> SOP direction. Named SID transitions come from CIFP; radar-vector and vector-SID fixes are
+# hand-assigned from the charts and the worksheets. Extend during validation when a filed route exits
+# somewhere new.
+gates:
+  north: [DEDHD, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, GOBBS, TRUKN, SNTNA, NIITE, CIITY, RBL, RDD, SAC, CCR, OAK, SGD, SAU, ENI, LKV, LIN, SUNOL]
+  south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, SAHEY, SSTIK, WESLA, OSI, EUGEN, SNS, CISKO, EBAYE, LOSHN, WAGES, AVE, LHS, BOILE, SJC, GILRO, MCKEY, FLW, GVO, RZS, SXC]
+  oceanic: [ALCOA, AMAKR, BEBOP, CINNY, GNNRR, MOLEN, STINS, ALLBE, BAART, ALANN]
+
+# Departure without a SID is only available from runways 01 and 10 and is phrased as radar vectors to
+# the first filed fix (S1-SFO-0 CBT, "No SID"). Common first fixes: OSI, OAK, SJC, GOBBS, SUNOL, GILRO.
+no_sid:
+  runway_families: ["01", "10"]
+  phrasing: radar_vectors_fix
+
+# SOP 2-4. Local times; `sunday_end` replaces `end` on Sundays.
+noise_windows:
+  - { id: night, start: "22:00", end: "07:00", sunday_end: "08:00" }
+  - { id: late_night, start: "01:00", end: "05:00" }
+
+# SOP 2-2 a (standard DP by destination direction, runway, aircraft class) and 2-4 e (noise abatement).
+# Ordered: the engine takes the first row whose conditions match and whose SID is compatible with the
+# departure runway, the aircraft's RNAV capability and the filed exit fix. Noise rows come first.
+assignment_rules:
+  - id: SFOW-NOISE-N-NIITE
+    source: SFO ATCT SOP 2-4 e
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runways 01/28, P/T/J -> NIITE#"
+    plan: SFOW
+    direction: north
+    runway_families: ["01", "28"]
+    classes: [P, T, J]
+    sid_family: NIITE
+    sector: richmond
+    when: { noise_window: night, rnav: true }
+  - id: SFOW-NOISE-S-NIITE-GOBBS
+    source: SFO ATCT SOP 2-4 e
+    text: "Noise abatement 0100L-0500L: Southbound, runway 01, P/T/J -> NIITE# GOBBS"
+    plan: SFOW
+    direction: south
+    runway_families: ["01"]
+    classes: [P, T, J]
+    sid_family: NIITE
+    sector: sutro
+    when: { noise_window: late_night, rnav: true, forced_transition: GOBBS }
+  - id: SFOW-NOISE-P-RWY
+    source: SFO ATCT SOP 2-4 e
+    text: "Noise abatement: runway 01, non-RNAV props -> runway heading (no DP)"
+    plan: SFOW
+    direction: any
+    runway_families: ["01"]
+    classes: [P]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: richmond
+    when: { noise_window: night, rnav: false }
+
+  - id: SFOW-N-GAPP-PROPS
+    source: "S1-SFO-0 CBT (Destination North table: non-RNAV or props -> GAPP#)"
+    text: "Northbound props -> GAPP#; the CBT routes props and small turboprops via GAPP# regardless of RNAV capability"
+    plan: SFOW
+    direction: north
+    runway_families: ["01", "28"]
+    classes: [P]
+    sid_family: GAPP
+    sector: richmond
+  - id: SFOW-N-TRUKN-01
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R)"
+    text: "Northbound, runways 01/28, P/T/J -> TRUKN# (Richmond); off the 01s TRUKN departs 1R (right turn)"
+    plan: SFOW
+    direction: north
+    runway_families: ["01"]
+    classes: [T, J]
+    sid_family: TRUKN
+    sector: richmond
+    when: { rnav: true }
+  - id: SFOW-N-TRUKN-28
+    source: SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT
+    text: "Northbound, runways 28, P/T/J -> TRUKN# when the TRUKN DP is in use (28 RT)"
+    plan: SFOW
+    direction: north
+    runway_families: ["28"]
+    classes: [T, J]
+    sid_family: TRUKN
+    sector: richmond
+    when: { rnav: true, configs: ["28 RT"] }
+  - id: SFOW-N-SNTNA-28
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO)"
+    text: "Northbound, runways 28 -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request"
+    plan: SFOW
+    direction: north
+    runway_families: ["28"]
+    classes: [T, J]
+    sid_family: SNTNA
+    sector: richmond
+    when: { rnav: true, not_configs: ["28 RT"] }
+  - id: SFOW-N-SFO-01
+    source: SFO ATCT SOP 2-2 a (SFOW Northbound)
+    text: "Northbound, runway 01 -> SFO# (non-RNAV)"
+    plan: SFOW
+    direction: north
+    runway_families: ["01"]
+    classes: [P, T, J]
+    sid_family: SFO
+    sector: richmond
+    when: { rnav: false }
+  - id: SFOW-N-GAPP-28
+    source: SFO ATCT SOP 2-2 a (SFOW Northbound)
+    text: "Northbound, runway 28 -> GAPP# (non-RNAV)"
+    plan: SFOW
+    direction: north
+    runway_families: ["28"]
+    classes: [P, T, J]
+    sid_family: GAPP
+    sector: richmond
+    when: { rnav: false }
+
+  - id: SFOW-S-SEGUL
+    source: "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (Destination South Offshore: offshore route required by the ZLA LOA for SAN, typical for SNA/LGB; the deck's OFFSH# is today's SEGUL#)"
+    text: "Southbound offshore (YYUNG), runways 01/28 -> SEGUL# (Sutro); SSTIK#.YYUNG / WESLA#.YYUNG are the RNAV alternates"
+    plan: SFOW
+    direction: south
+    runway_families: ["01", "28"]
+    classes: [J]
+    sid_family: SEGUL
+    sector: sutro
+    when: { rnav: true, exit_fixes: [YYUNG] }
+  - id: SFOW-S-SSTIK-01
+    source: "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (SSTIK#: RWY 1L only)"
+    text: "Southbound, runway 01, J -> SSTIK# (Sutro); SSTIK departs 1L (left turn), allowing parallel departures with TRUKN# on 1R"
+    plan: SFOW
+    direction: south
+    runway_families: ["01"]
+    classes: [J]
+    sid_family: SSTIK
+    sector: sutro
+    when: { rnav: true }
+  - id: SFOW-S-WESLA-28
+    source: "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (WESLA#: RWY 28L/R only; change to SSTIK# when the aircraft departs the 01s)"
+    text: "Southbound, runway 28, J -> WESLA# (Sutro)"
+    plan: SFOW
+    direction: south
+    runway_families: ["28"]
+    classes: [J]
+    sid_family: WESLA
+    sector: sutro
+    when: { rnav: true }
+  - id: SFOW-S-GAPP
+    source: SFO ATCT SOP 2-2 a (SFOW Southbound)
+    text: "Southbound, runways 01/28, P/T/J -> GAPP# (Sutro)"
+    plan: SFOW
+    direction: south
+    runway_families: ["01", "28"]
+    classes: [P, T, J]
+    sid_family: GAPP
+    sector: sutro
+
+  - id: SFOW-O-GNNRR-28
+    source: SFO ATCT SOP 2-2 a (SFOW Oceanic)
+    text: "Oceanic, runway 28, J -> GNNRR#"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["28"]
+    classes: [J]
+    sid_family: GNNRR
+    sector: sutro
+    when: { rnav: true }
+  - id: SFOW-O-MOLEN-28
+    source: SFO ATCT SOP 2-2 a (SFOW Oceanic)
+    text: "Oceanic, runway 28, J -> MOLEN#"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["28"]
+    classes: [J]
+    sid_family: MOLEN
+    sector: sutro
+  - id: SFOW-O-GAPP
+    source: SFO ATCT SOP 2-2 a (SFOW Oceanic)
+    text: "Oceanic, runways 01/28, P/T/J -> GAPP#"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["01", "28"]
+    classes: [P, T, J]
+    sid_family: GAPP
+    sector: sutro
+
+  - id: SFOE-N-CIITY
+    source: SFO ATCT SOP 2-2 a (SFOE Northbound)
+    text: "Northbound, runways 10/19, P/T/J -> CIITY# (Richmond)"
+    plan: SFOE
+    direction: north
+    runway_families: ["10", "19"]
+    classes: [P, T, J]
+    sid_family: CIITY
+    sector: richmond
+    when: { rnav: true }
+  - id: SFOE-N-GAPP
+    source: SFO ATCT SOP 2-2 a (SFOE Northbound)
+    text: "Northbound, runways 10/19, P/T/J -> GAPP# (Richmond)"
+    plan: SFOE
+    direction: north
+    runway_families: ["10", "19"]
+    classes: [P, T, J]
+    sid_family: GAPP
+    sector: richmond
+  - id: SFOE-S-SAHEY
+    source: SFO ATCT SOP 2-2 a (SFOE Southbound)
+    text: "Southbound, J -> SAHEY# (Sutro)"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "19"]
+    classes: [J]
+    sid_family: SAHEY
+    sector: sutro
+    when: { rnav: true }
+  - id: SFOE-S-GAPP
+    source: SFO ATCT SOP 2-2 a (SFOE Southbound)
+    text: "Southbound, P/T/J -> GAPP# (Sutro)"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "19"]
+    classes: [P, T, J]
+    sid_family: GAPP
+    sector: sutro
+  - id: SFOE-O-MOLEN
+    source: SFO ATCT SOP 2-2 a (SFOE Oceanic)
+    text: "Oceanic, J -> MOLEN#"
+    plan: SFOE
+    direction: oceanic
+    runway_families: ["10", "19"]
+    classes: [J]
+    sid_family: MOLEN
+    sector: sutro
+  - id: SFOE-O-GAPP
+    source: SFO ATCT SOP 2-2 a (SFOE Oceanic)
+    text: "Oceanic, P/T/J -> GAPP#"
+    plan: SFOE
+    direction: oceanic
+    runway_families: ["10", "19"]
+    classes: [P, T, J]
+    sid_family: GAPP
+    sector: sutro
+
+# SOP 2-2 c: "SFO ATCT must issue interim altitudes as specified below when a Top of Climb (TOC) or Top
+# Altitude is not published." So a SID with a published numeric top altitude (TRUKN#, SNTNA#, NIITE#,
+# CIITY#, SAHEY#, SSTIK#, GNNRR#) gets plain "climb via SID" (S1-SFO-0 CBT confirms this per SID), and the
+# rows below apply only to SIDs whose top altitude is ASSIGNED BY ATC / AS ASSIGNED or absent. "CVS x" in
+# the SOP means "climb via SID except maintain"; whether a SID gets "maintain" or "climb via SID except
+# maintain" follows from its published crossing restrictions (see `phraseology_rules`). Ordered; first
+# match wins.
+altitude_rules:
+  - id: SFOW-28-3000
+    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000)"
+    text: "SFOW: GAPP#, MOLEN#, SEGUL#, SFO#, WESLA#, runway 28, P/T/J -> 3,000 or CVS x 3,000"
+    plan: SFOW
+    runway_families: ["28"]
+    classes: [P, T, J]
+    sid_families: [GAPP, MOLEN, SEGUL, SFO, WESLA]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: SFOW-PT-5000
+    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000)"
+    text: "SFOW: all others, runways 01/28, P/T -> 5,000 or CVS x 5,000"
+    plan: SFOW
+    runway_families: ["01", "28"]
+    classes: [P, T]
+    outcome: { kind: interim, feet: 5000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: SFOW-J-10000
+    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000)"
+    text: "SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000"
+    plan: SFOW
+    runway_families: ["01", "28"]
+    classes: [J]
+    outcome: { kind: interim, feet: 10000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: SFOE-PT-5000
+    source: "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000)"
+    text: "SFOE: all, runways 10/19, P/T -> 5,000 or CVS x 5,000"
+    plan: SFOE
+    runway_families: ["10", "19"]
+    classes: [P, T]
+    outcome: { kind: interim, feet: 5000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: SFOE-J-15000
+    source: "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000)"
+    text: "SFOE: all, runways 10/19, J -> 15,000 or CVS x 15,000"
+    plan: SFOE
+    runway_families: ["10", "19"]
+    classes: [J]
+    outcome: { kind: interim, feet: 15000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+
+# Airport-level phraseology toggles. Defaults follow FAA JO 7110.65 4-3-2; the validation loop may flip them.
+phraseology:
+  expect_altitude: always
+  non_standard_interim_expect_minutes: 3
+  vector_hybrid_transitions_spoken: false
+
+# Rule text the engine cites for phrasing decisions that are not SOP rows.
+phraseology_rules:
+  - id: R-TRANSITION
+    source: FAA JO 7110.65 4-3-2 c 5
+    text: "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions"
+  - id: R-AS-FILED
+    source: FAA JO 7110.65 4-3-2 c 5
+    text: "(SID name and number) DEPARTURE, THEN AS FILED — used when the route leaves the SID at its base fix with no transition"
+  - id: R-RV-SID
+    source: FAA JO 7110.65 4-3-2 c 5 / ZOA practice
+    text: "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
+  - id: A-CLIMB-VIA
+    source: FAA JO 7110.65 4-3-2 c 4 (a)
+    text: "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+  - id: A-CLIMB-VIA-EXCEPT
+    source: FAA JO 7110.65 4-3-2 c 4 (b)
+    text: "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions but no top altitude is published or ATC needs an interim altitude"
+  - id: A-MAINTAIN
+    source: FAA JO 7110.65 4-3-2 c 5
+    text: "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
+  - id: A-EXPECT
+    source: FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv
+    text: "EXPECT (filed altitude) ONE ZERO MINUTES AFTER DEPARTURE; three minutes when a non-standard interim altitude is issued"
+  - id: C-DEST
+    source: FAA JO 7110.65 4-3-2 a
+    text: "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"

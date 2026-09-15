@@ -5,8 +5,8 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 ## Current focus
 
 - [x] 1. Scaffold: git, README, CLAUDE.md, ARCHITECTURE skeleton, this index, prek hygiene hooks, dependabot
-- [ ] 2. Web scaffold: pnpm, Vite + TS (strict flags), oxlint/oxfmt, vitest, exact pins
-- [ ] 3. zod schema for `AirportData` + `Fixture`, schema export script, sync test, `data/airports.json`
+- [x] 2. Web scaffold: pnpm, Vite + TS (strict flags), oxlint/oxfmt, vitest, exact pins
+- [x] 3. zod schema for `AirportData` + `Fixture`, schema export script, sync test, `data/airports.json` (schema needs the SOP YAML's newer fields added in step 9: noise window ids, `exitFixes`/`forcedTransition` conditions, no-DP heading rows, staffing fallbacks, runway-by-turn preference, labelled frequencies, fleet suffixes/airlines, per-runway crossing-restriction flag)
 - [ ] 4. Generator scaffold: uv project, ruff/ty, `craft-gen --help`, cached HTTP
 - [ ] 5. CIFP: cycle math, record slicing, SID grouping; 210 KSFO rows as fixture; hypothesis tests
 - [ ] 6. Charts: API list, PDF download, text extraction; 12 chart-text snapshots
@@ -25,6 +25,11 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [ ] 19. Amendment engine
 - [ ] 20. Amendment scenario generator + UI + mode switch
 - [ ] 21. Validation loop, amendment mode
+
+## Inputs to fold into the rules (user steer 2026-09-15)
+
+- [x] Parse the ZOA CBT module `d14ccce0-8840-11e8-a6af-2a32edb55910` (S1-SFO-0 deck, Google Slides `1yqKhIdUYZlHxmA-mWC_UIX1A1jb7kuMJO3vu_ApTbV8`) into rule rows: done in `generator/airports/ksfo/sop.yaml` and `overrides.yaml` (altitude rows now `climb_via` when a top altitude is published; props → GAPP; SSTIK 1L-only, TRUKN 1R/28s; runway-by-turn preference; staffing fallbacks; no-SID rule)
+- [x] Review the S1-SFO-T Major Ground exam results (module `25f8acdc-1afc-11ea-872b-2a32edb55910`): 24/25, the miss was a taxi-route question. Exam questions are not copied into this public repo; the clearance rules they test (28 RT → SSTIK must become WESLA; 28 SO → TRUKN must become SNTNA; SFOE → SSTIK/WESLA become SAHEY, SNTNA/TRUKN become CIITY; heavies may take 28L in 28/01 on request; SAN via the offshore SID) are covered by rule rows and go into synthetic fixtures in step 11
 
 ## Blockers
 

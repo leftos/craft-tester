@@ -1,0 +1,77 @@
+# Per-SID facts that CIFP and the chart text do not carry, and corrections to what they do carry.
+# Keys are the ZOA charts-API chart name. `cifp_id` maps a chart to its ARINC 424 procedure identifier.
+sids:
+  SAN FRANCISCO FIVE:
+    cifp_id: SFO5
+    spoken: San Francisco Five
+    kind: radar_vectors
+    runways: [01L, 01R, 28L, 28R]
+    top_altitude: { kind: assigned_by_atc }
+    has_crossing_restrictions: false
+    crossing_restrictions_by_runway_family: { "01": true, "28": false }
+    route_phrasing: radar_vectors_fix
+    note: "Radar-vector SID; the FAA does not code it in CIFP. Runway 28: SFO R-281 to NORMM then vectors (no restriction -> maintain 3,000). Runway 01: heading 033 or assigned, cross SFO 6 DME at or above 3000 for vectors (a crossing restriction -> climb via SID except maintain; S1-SFO-0 CBT agrees)."
+  GAP SEVEN:
+    cifp_id: GAPP7
+    spoken: Gap Seven
+    kind: vector_hybrid
+    top_altitude: { kind: none }
+    has_crossing_restrictions: false
+    route_phrasing: radar_vectors_fix
+    transitions_spoken_as_transition: false
+    note: "Chart publishes no named transitions; CIFP codes vector transitions ALCOA BEBOP ENI OAK OSI SAU SGD. Expect vector to assigned route/fix after NORMM (28) / OSI (10, 19) / on SFO R-350 (01)."
+  MOLEN NINE:
+    cifp_id: MOLEN9
+    spoken: Molen Nine
+    route_phrasing: transition
+    note: "Conventional pilot-nav SID with crossing restrictions; DME and RADAR required. CBT: climb via SID except maintain (28: 3000; 10: J 15000, P/T 5000)."
+  SSTIK FIVE (RNAV):
+    cifp_id: SSTIK5
+    spoken: Sstik Five
+    runways: [01L]
+    note: "CBT: RWY 1L only, so it can depart in parallel with TRUKN# on 1R."
+  TRUKN TWO (RNAV):
+    cifp_id: TRUKN2
+    spoken: Trukn Two
+    runways: [01R, 28L, 28R]
+    note: "CBT: RWY 28R/L and RWY 1R (right turn); 1R allows simultaneous parallel departures with 1L SSTIK#/SEGUL#."
+  CIITY THREE (RNAV):
+    cifp_id: CIITY3
+    spoken: Ciity Three
+  NIITE FOUR (RNAV):
+    cifp_id: NIITE4
+    spoken: Niite Four
+  SAHEY FOUR (RNAV):
+    cifp_id: SAHEY4
+    spoken: Sahey Four
+  SEGUL ONE (RNAV):
+    cifp_id: SEGUL1
+    spoken: Segul One
+    runways: [01L, 28L, 28R]
+    note: "Successor to the OFFSH# departure described in the 2023 CBT (MCKEY -> YYUNG). Left turn off the 01s, so 1L."
+  GNNRR THREE (RNAV):
+    cifp_id: GNNRR3
+    spoken: Gnnrr Three
+    note: "CBT: BAART leads to BEBOP; pilots sometimes file GNNRR BEBOP. Top altitude 3000 published -> climb via SID."
+  SNTNA TWO (RNAV):
+    cifp_id: SNTNA2
+    spoken: Sntna Two
+  WESLA FIVE (RNAV):
+    cifp_id: WESLA5
+    spoken: Wesla Five
+
+# Spoken names for transition fixes (five-letter pronounceable fixes are read as words; navaids by name).
+fix_spoken:
+  ENI: Mendocino
+  OAK: Oakland
+  OSI: Woodside
+  SAU: Sausalito
+  SGD: Scaggs Island
+  RBL: Red Bluff
+  SAC: Sacramento
+  CCR: Concord
+  LIN: Linden
+  AVE: Avenal
+  LHS: Lake Hughes
+  SNS: Salinas
+  LKV: Lakeview
