@@ -49,10 +49,11 @@ Hand-authored inputs per airport live in `generator/airports/<icao>/`: `sop.yaml
 | `ui/` | strip, ATIS panel, CRAFT form, amendment form, results, solved-scenario store (`solved.ts`, localStorage, best effort) |
 
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
-view shows them. The graded elements are the CRAFT ones (`C`, `R.sid`, `R.route`, `A.phrase`, `A.expect`,
-`F`) plus `RWY`, the departure runway: the scenario fixes the runway and the engine explains it (the
-configuration row plus the `RWY-*` mechanism row), so the ATIS can advertise the runways in normal use and
-the student must pick the parallel. The spoken reveal does not include the runway.
+view shows them. The graded elements are `R.sid`, `R.route`, `A.phrase`, `A.expect`, `F` and `RWY`, the
+departure runway: the scenario fixes the runway and the engine explains it (the configuration row plus the
+`RWY-*` mechanism row), so the ATIS can advertise the runways in normal use and the student must pick the
+parallel. The clearance limit and the squawk are resolved but not graded; both appear only in the spoken
+transmission, which ends "expect runway (designator)".
 
 ## Fixture lifecycle
 
