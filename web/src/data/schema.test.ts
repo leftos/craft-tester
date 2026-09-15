@@ -24,7 +24,14 @@ const minimalAssignmentRule: AssignmentRule = {
 };
 
 const minimalAirportData: AirportData = {
-  airport: { icao: 'KSFO', faa: 'SFO', spoken: 'San Francisco', clearanceDelivery: '118.2' },
+  airport: {
+    icao: 'KSFO',
+    faa: 'SFO',
+    spoken: 'San Francisco',
+    clearanceDelivery: '118.2',
+    lat: 37.618806,
+    lon: -122.375417,
+  },
   provenance: {
     airac: { cycle: '2609', effective: '2026-09-03', cifpSha256: 'a'.repeat(64) },
     chartsApi: 'https://api.aviationapi.com/v1/charts',

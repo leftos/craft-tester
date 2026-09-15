@@ -33,6 +33,8 @@ export const AirportIdentitySchema = z.strictObject({
   faa: z.string(),
   spoken: z.string(),
   clearanceDelivery: z.string(),
+  lat: z.number().min(-90).max(90),
+  lon: z.number().min(-180).max(180),
 });
 
 /**
@@ -157,6 +159,7 @@ export const SidSchema = z.strictObject({
   hasCrossingRestrictions: z.boolean(),
   restrictions: z.array(SidRestrictionSchema),
   climbViaEligible: z.boolean(),
+  baseFix: z.string().optional(),
   routePhrasing: RouteTemplateSchema,
   chartFrequencies: z.array(ChartFrequencySchema),
   chart: z.strictObject({ pdfUrl: z.url() }),
@@ -420,6 +423,7 @@ export const ScenarioSchema = z.strictObject({
   localTime,
   dayOfWeek: DayOfWeekSchema,
   squawk: z.string().regex(/^[0-7]{4}$/),
+  activeNotices: z.array(z.string()).optional(),
 });
 
 /** The clearance a fixture expects, element by element, as clearance mode grades it. */

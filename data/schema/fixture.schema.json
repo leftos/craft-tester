@@ -147,6 +147,12 @@
     "scenario": {
       "additionalProperties": false,
       "properties": {
+        "activeNotices": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "aircraftType": {
           "type": "string"
         },

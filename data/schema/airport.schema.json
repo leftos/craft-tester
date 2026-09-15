@@ -28,6 +28,16 @@
         "icao": {
           "type": "string"
         },
+        "lat": {
+          "maximum": 90,
+          "minimum": -90,
+          "type": "number"
+        },
+        "lon": {
+          "maximum": 180,
+          "minimum": -180,
+          "type": "number"
+        },
         "spoken": {
           "type": "string"
         }
@@ -36,7 +46,9 @@
         "icao",
         "faa",
         "spoken",
-        "clearanceDelivery"
+        "clearanceDelivery",
+        "lat",
+        "lon"
       ],
       "type": "object"
     },
@@ -1014,6 +1026,9 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "baseFix": {
+            "type": "string"
+          },
           "chart": {
             "additionalProperties": false,
             "properties": {

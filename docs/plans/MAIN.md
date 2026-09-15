@@ -12,7 +12,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [x] 6. Charts: API list, PDF download, text extraction; 12 chart-text snapshots (d-TPP text puts a box's value on the line before its label; MOLEN9's transition is named MENDOCINO)
 - [ ] 7. SOP transcription (`sop.yaml`, `overrides.yaml`, `routes.yaml`) + loader + hash/sentinel verify
 - [ ] 8. Aircraft classes from vNAS
-- [ ] 9. Merge + emit + integrity checks; first `data/ksfo.json`
+- [x] 9. Merge + emit + integrity checks; first `data/ksfo.json` (findings: 40 gate fixes have no route yet, incl. GOBBS and the SID base fixes; `climbViaEligible` must also count a published top altitude (SNTNA2); schema gained `airport.lat/lon`, `sids[].baseFix`, `scenario.activeNotices` for the engine — generator must emit the first two)
 - [ ] 10. Rules engine core + table tests + exhaustive enumeration test
 - [ ] 11. Synthetic fixtures + fixture runner
 - [ ] 12. `options`, `grade`, `speak` (`grade` and `speak` done; `options` pending; full-route reading repeats the vector fix for radar-vector routes, fix with `options`)
