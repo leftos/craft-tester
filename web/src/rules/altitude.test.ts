@@ -116,9 +116,30 @@ describe('resolveAltitude', () => {
     expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 5000 });
   });
 
+  it('turns a filed altitude below the published top altitude into climb via SID except maintain filed', () => {
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 11000 }));
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 11000 });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-CLIMB-VIA-EXCEPT',
+      'SFOW-J-10000',
+    ]);
+  });
+
+  it('leaves a filed altitude at the published top altitude a plain climb via SID', () => {
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 19000 }));
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-CLIMB-VIA',
+      'SFOW-J-10000',
+    ]);
+  });
+
   it('honours a row whose outcome is a plain climb via SID', () => {
     const airport: AirportData = {
       ...ksfo,
+      // GAPP7 publishes no top altitude, which `only_when_interim_below_filed` has no altitude to
+      // compare the filed one with; this case is about the phrase, so the expect clause is pinned.
+      phraseology: { ...ksfo.phraseology, expectAltitude: 'always' },
       altitudeRules: [
         {
           id: 'TEST-CVS',
@@ -159,15 +180,33 @@ describe('the expect clause', () => {
     expect(result.expect.value).toBeNull();
   });
 
-  it('follows an interim altitude below the filed one while the toggle is conditional', () => {
+  it('keeps the expect clause on climb via with the filed altitude above the top altitude', () => {
+    const airport = withExpectAltitude('only_when_interim_below_filed');
+    expect(resolve(ctx({}), sid('TRUKN2'), scenario({}), airport).expect.value).toEqual({
+      feet: 34000,
+      minutes: 10,
+    });
+  });
+
+  it('drops the expect clause on climb via with the filed altitude equal to the top altitude', () => {
+    const airport = withExpectAltitude('only_when_interim_below_filed');
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 19000 }), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.expect.value).toBeNull();
+  });
+
+  it('drops the expect clause when the interim altitude equals the filed altitude', () => {
+    const airport = withExpectAltitude('only_when_interim_below_filed');
+    const result = resolve(ctx({}), sid('SEGUL1'), scenario({ filedAltitude: 10000 }), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 10000 });
+    expect(result.expect.value).toBeNull();
+  });
+
+  it('keeps the expect clause when the interim altitude is below the filed altitude', () => {
     const airport = withExpectAltitude('only_when_interim_below_filed');
     expect(resolve(ctx({}), sid('SEGUL1'), scenario({}), airport).expect.value).toEqual({
       feet: 34000,
       minutes: 10,
     });
-    expect(resolve(ctx({}), sid('TRUKN2'), scenario({}), airport).expect.value).toBeNull();
-    expect(
-      resolve(ctx({}), sid('SEGUL1'), scenario({ filedAltitude: 10000 }), airport).expect.value,
-    ).toBeNull();
   });
 });

@@ -115,7 +115,7 @@ def test_altitude_rules_notices_and_phraseology(ksfo_inputs: AirportInputs) -> N
     notice = sop.notices[0]
     assert (notice.id, notice.effect.kind, notice.effect.sid_family, notice.default_active) == ("SFO-SEGUL-OFF", "sid_off", "SEGUL", True)
     assert notice.dated == date(2026, 9, 15)
-    assert sop.phraseology.expect_altitude == "always"
+    assert sop.phraseology.expect_altitude == "only_when_interim_below_filed"
     assert sop.phraseology.non_standard_interim_expect_minutes == 3
     assert sop.phraseology.vector_hybrid_transitions_spoken is False
     assert "R-TRANSITION" in {rule.id for rule in sop.phraseology_rules}

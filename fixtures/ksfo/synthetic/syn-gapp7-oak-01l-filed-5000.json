@@ -3,19 +3,16 @@
   "expected": {
     "altitude": {
       "feet": 5000,
-      "phrase": "maintain"
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KSMF",
-    "expect": {
-      "feet": 5000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "OAK",
       "template": "radar_vectors_fix"
     },
-    "sidFamily": "GAPP"
+    "sidFamily": "SFO"
   },
   "id": "syn-gapp7-oak-01l-filed-5000",
   "scenario": {
@@ -33,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-PT-5000 capped at the filed altitude: the interim altitude and the filed altitude are both 5,000, so the clearance says maintain 5,000 and phraseology.expectAltitude: always still adds expect 5,000 one zero minutes after departure. Whether that expect clause is spoken when it repeats the altitude just issued is an open validation question."
+    "note": "SOP 2-2 a: northbound off the 01s is SFO#. Filed 5,000 equals the interim, so `phraseology.expectAltitude: only_when_interim_below_filed` drops the expect clause (user decision 2026-09-15)."
   },
   "status": "settled"
 }

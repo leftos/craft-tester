@@ -3,7 +3,7 @@
   "expected": {
     "altitude": {
       "feet": 5000,
-      "phrase": "maintain"
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KTRK",
     "expect": {
@@ -15,7 +15,7 @@
       "fix": "OAK",
       "template": "radar_vectors_fix"
     },
-    "sidFamily": "GAPP"
+    "sidFamily": "SFO"
   },
   "id": "syn-gapp7-oak-01l-prop",
   "scenario": {
@@ -33,7 +33,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-N-GAPP-PROPS with SFOW-PT-5000: GAPP7 publishes no crossing restrictions, so the interim altitude is spoken as maintain, and its OAK leg is a CIFP vector transition spoken as radar vectors"
+    "note": "SOP 2-2 a: northbound off the 01s is SFO#, GAPP# is runway 28 only; the CBT's props-via-GAPP# row was dropped on user review 2026-09-15. SFO5 carries crossing restrictions off the 01s, so the SFOW-PT-5000 interim is spoken as climb via SID except maintain 5,000, and the OAK leg is a vector transition spoken as radar vectors. The filed 15,000 is above the interim, so the expect clause stays."
   },
   "status": "settled"
 }

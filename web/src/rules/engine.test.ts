@@ -35,6 +35,8 @@ type Expectation = {
   route: { template: RouteTemplate; fix?: string };
   altitude: { phrase: AltitudePhrase; feet?: number };
   frequency: string;
+  /** The expect clause where it is not the filed altitude ten minutes out, notably `null`. */
+  expectClause?: { feet: number; minutes: number } | null;
 };
 
 const SOUTHBOUND_LAX = {
@@ -128,6 +130,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
       route: { template: 'transition', fix: 'YYUNG' },
       altitude: { phrase: 'climb_via_except', feet: 5000 },
       frequency: '135.1',
+      expectClause: null,
     },
   ],
   [
@@ -179,7 +182,8 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     },
   ],
   [
-    'a prop via OAK off 01L gets GAP with radar vectors and a 5,000 maintain',
+    // SOP 2-2 a: northbound off the 01s is SFO#; GAPP# is runway 28 only.
+    'a prop via OAK off 01L gets SFO with radar vectors and a 5,000 interim',
     {
       aircraftType: 'C172',
       rnavCapable: false,
@@ -190,10 +194,11 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
       filedAltitude: 5000,
     },
     {
-      sidId: 'GAPP7',
+      sidId: 'SFO5',
       route: { template: 'radar_vectors_fix', fix: 'OAK' },
-      altitude: { phrase: 'maintain', feet: 5000 },
+      altitude: { phrase: 'climb_via_except', feet: 5000 },
       frequency: '120.9',
+      expectClause: null,
     },
   ],
   [
@@ -258,7 +263,11 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearance.frequency.value.value).toBe(expected.frequency);
     expect(clearance.clearedTo.value).toBe(flight.destination);
     expect(clearance.departureRunway).toBe(flight.departureRunway);
-    expect(clearance.expect.value).toEqual({ feet: flight.filedAltitude, minutes: 10 });
+    const expectClause =
+      expected.expectClause === undefined
+        ? { feet: flight.filedAltitude, minutes: 10 }
+        : expected.expectClause;
+    expect(clearance.expect.value).toEqual(expectClause);
     for (const element of [
       clearance.clearedTo,
       clearance.sid,
