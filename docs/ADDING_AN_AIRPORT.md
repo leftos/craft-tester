@@ -79,7 +79,11 @@ the hooks rejects the file.
    worksheets and ATIS scenarios name, so use the SOP's own labels (`28/01`, `28 RT`). Where local
    practice sends a class to a runway the SOP tables do not name (KSFO: GA props and turboprops depart
    28R at Echo in 28/01), give that runway row `default_for_classes`; the importer and the scenario
-   generator use it before the turn-direction preference.
+   generator use it before the turn-direction preference. A runway issued only on request (KSFO: 28L/R
+   in 28/01 for oceanic, Far East and cargo flights, SOP 2-1 e) gets `on_request_for: [cargo, heavy,
+   oceanic]`; cargo is decided by `routes.yaml` `cargo_airlines`, heavy by the vNAS wake category, oceanic
+   by the exit fix's gate, and the importer reads a qualifying flight that files a SID published only for
+   that runway as requesting it.
 6. **`departure_sectors`**: id, name, frequency, from the ZOA positions list and the chart's DEP CON boxes.
    **`departure_staffing_fallbacks`**: the combined-sector frequencies from the CBT (not used by the engine
    yet; recorded so the data exists when a staffing scenario is added).
