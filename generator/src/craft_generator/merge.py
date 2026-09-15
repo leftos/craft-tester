@@ -188,7 +188,12 @@ def _provenance(sop: SopData, provenance: Provenance) -> Document:
 
 
 def _departure_runway(runway: DepartureRunway) -> Document:
-    return _with_optional({"runway": runway.runway, "classes": list(runway.classes)}, note=runway.note)
+    entry: Document = {
+        "runway": runway.runway,
+        "classes": list(runway.classes),
+        "defaultForClasses": list(runway.default_for_classes),
+    }
+    return _with_optional(entry, note=runway.note)
 
 
 def _runway_config(config: RunwayConfig) -> Document:

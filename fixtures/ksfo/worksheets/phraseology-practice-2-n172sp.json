@@ -1,11 +1,25 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KMRY",
+    "expect": null,
+    "frequency": "135.1",
+    "route": {
+      "fix": "EUGEN",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
   "id": "ws-phraseology-practice-2-n172sp",
   "scenario": {
     "aircraftType": "C172",
     "callsign": "N172SP",
     "dayOfWeek": "tuesday",
-    "departureRunway": "01L",
+    "departureRunway": "28R",
     "destination": "KMRY",
     "filedAltitude": 7000,
     "filedRoute": "GAPP7 EUGEN",
@@ -16,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation"
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-15: GAPP7 off 28R at Echo, radar vectors EUGEN, maintain 3,000, no expect clause, 135.1"
   },
-  "status": "pending"
+  "status": "settled"
 }

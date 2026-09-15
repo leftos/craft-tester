@@ -2215,6 +2215,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "01L"
         },
         {
@@ -2223,6 +2224,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "01R"
         }
       ],
@@ -2242,6 +2244,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "01L"
         },
         {
@@ -2250,12 +2253,14 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "01R"
         },
         {
           "classes": [
             "J"
           ],
+          "defaultForClasses": [],
           "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e)",
           "runway": "28L"
         },
@@ -2263,7 +2268,20 @@
           "classes": [
             "J"
           ],
+          "defaultForClasses": [],
           "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e)",
+          "runway": "28R"
+        },
+        {
+          "classes": [
+            "P",
+            "T"
+          ],
+          "defaultForClasses": [
+            "P",
+            "T"
+          ],
+          "note": "GA up to light jets depart 28R at intersection Echo, a short taxi from the north ramp with enough runway remaining (user review 2026-09-15, N483KA); jets stay on the 01s until a GA flag exists on the fleet",
           "runway": "28R"
         }
       ],
@@ -2283,6 +2301,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "28L"
         },
         {
@@ -2291,6 +2310,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "28R"
         }
       ],
@@ -2310,6 +2330,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "28L"
         },
         {
@@ -2318,6 +2339,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "28R"
         }
       ],
@@ -2337,6 +2359,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "10L"
         },
         {
@@ -2345,6 +2368,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "10R"
         }
       ],
@@ -2364,6 +2388,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "10L"
         },
         {
@@ -2372,6 +2397,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "10R"
         }
       ],
@@ -2391,6 +2417,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "19L"
         },
         {
@@ -2399,6 +2426,7 @@
             "T",
             "J"
           ],
+          "defaultForClasses": [],
           "runway": "19R"
         }
       ],

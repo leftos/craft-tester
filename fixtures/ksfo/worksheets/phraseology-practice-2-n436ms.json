@@ -1,11 +1,25 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KSMF",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "TRUKN",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
   "id": "ws-phraseology-practice-2-n436ms",
   "scenario": {
     "aircraftType": "TBM9",
     "callsign": "N436MS",
     "dayOfWeek": "tuesday",
-    "departureRunway": "01R",
+    "departureRunway": "28R",
     "destination": "KSMF",
     "filedAltitude": 11000,
     "filedRoute": "TRUKN2 TRUKN CCR CCR2",
@@ -16,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation"
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class T to it (default_for_classes), pending validation; validated by the user 2026-09-15: GAPP7 off 28R at Echo, radar vectors TRUKN, maintain 3,000, no expect clause, 120.9"
   },
-  "status": "pending"
+  "status": "settled"
 }

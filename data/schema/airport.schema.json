@@ -986,6 +986,17 @@
                   },
                   "type": "array"
                 },
+                "defaultForClasses": {
+                  "items": {
+                    "enum": [
+                      "P",
+                      "T",
+                      "J"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "note": {
                   "type": "string"
                 },
@@ -995,7 +1006,8 @@
               },
               "required": [
                 "runway",
-                "classes"
+                "classes",
+                "defaultForClasses"
               ],
               "type": "object"
             },

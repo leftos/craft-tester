@@ -78,6 +78,14 @@ export const ProvenanceSchema = z.strictObject({
 export const RunwayAssignmentSchema = z.strictObject({
   runway: z.string(),
   classes: z.array(AircraftClassSchema),
+  /**
+   * The aircraft classes that depart this runway by default in this configuration, before the
+   * direction-of-turn preference.
+   *
+   * Each class must also be in `classes`, and at most one row per configuration may default a
+   * class. An empty array means the row is no default.
+   */
+  defaultForClasses: z.array(AircraftClassSchema),
   note: z.string().optional(),
 });
 

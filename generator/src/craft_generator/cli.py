@@ -7,6 +7,7 @@ import sys
 import zipfile
 from collections import Counter
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
@@ -42,11 +43,23 @@ from craft_generator.sop.load import (
 )
 from craft_generator.sop.model import SopSource
 from craft_generator.sop.verify import sop_cache_path, verify_sop_source
-from craft_generator.worksheets import Fixture, fetch_worksheet_text, fixture_dir, rnav_suffixes, sheet_fixtures
+from craft_generator.worksheets import (
+    Fixture,
+    SettledFixture,
+    designator_classes,
+    fetch_worksheet_text,
+    fixture_dir,
+    rnav_suffixes,
+    settled_fixture_at,
+    sheet_fixtures,
+)
 
 EXIT_OK = 0
 EXIT_ERROR = 1
 EXIT_NOT_IMPLEMENTED = 2
+
+KEPT_SETTLED = "kept (settled)"
+IMPORT_STATUSES = ("unchanged", "written", KEPT_SETTLED, "differs")
 
 _SUBCOMMANDS: dict[str, str] = {
     "build": "build data/<icao>.json from CIFP, charts and the airport YAML",
@@ -106,6 +119,12 @@ def build_parser() -> argparse.ArgumentParser:
             sub.add_argument("--offline", action="store_true", help="use only the download cache, never the network")
         if name in {"build", "import-worksheets"}:
             sub.add_argument("--check", action="store_true", help="fail instead of writing when the output differs from the committed file")
+        if name == "import-worksheets":
+            sub.add_argument(
+                "--overwrite-settled",
+                action="store_true",
+                help="rewrite a settled fixture whose scenario changed as a fresh pending document, throwing its validation away",
+            )
         if name in {"build", "verify-sop"}:
             sub.add_argument("--allow-sop-drift", action="store_true", help="report a changed sha256 as a warning while every sentinel still matches")
     return parser
@@ -353,46 +372,94 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
     return EXIT_ERROR if result.status == "differs" else EXIT_OK
 
 
-def _fixture_result(path: Path, fixture: Fixture, *, check: bool) -> WriteResult:
+@dataclass(frozen=True, slots=True)
+class _FixtureOutcome:
+    """What the import did with one fixture file, and the settled fixture it refused to overwrite."""
+
+    path: Path
+    status: str
+    diff: str
+    refused: SettledFixture | None
+
+
+def _settled_diff(settled: SettledFixture) -> str:
+    return f"    settled fixture {settled.id} would change scenario field(s) {', '.join(settled.changed_fields)}\n"
+
+
+def _fixture_result(path: Path, fixture: Fixture, *, check: bool, overwrite_settled: bool) -> _FixtureOutcome:
     validate(fixture, fixture_schema_path())
-    return write_or_check(path, dump(fixture), check=check)
+    settled = settled_fixture_at(path, fixture, overwrite_settled=overwrite_settled)
+    if settled is None:
+        result: WriteResult = write_or_check(path, dump(fixture), check=check)
+        return _FixtureOutcome(result.path, result.status, result.diff, None)
+    if not settled.changed_fields:
+        return _FixtureOutcome(path, KEPT_SETTLED, "", None)
+    if check:
+        return _FixtureOutcome(path, "differs", _settled_diff(settled), None)
+    return _FixtureOutcome(path, KEPT_SETTLED, "", settled)
 
 
-def _print_sheet_summary(title: str, results: Sequence[WriteResult]) -> None:
+def _counts_line(counts: Counter[str]) -> str:
+    return ", ".join(f"{counts[status]} {status}" for status in IMPORT_STATUSES if counts[status])
+
+
+def _print_sheet_summary(title: str, results: Sequence[_FixtureOutcome]) -> None:
     counts = Counter(result.status for result in results)
-    print(f"  {title}: {len(results)} plan(s), " + ", ".join(f"{count} {status}" for status, count in sorted(counts.items())))
+    print(f"  {title}: {len(results)} plan(s), " + _counts_line(counts))
     for result in results:
         if result.status == "differs":
             print(f"    {result.path}: differs")
             print(result.diff, end="")
 
 
-def import_worksheets(airport: str, *, check: bool = False, force: bool = False) -> int:
+def _settled_refusal_line(refused: Sequence[SettledFixture]) -> str:
+    listed = ", ".join(f"{settled.id} ({', '.join(settled.changed_fields)})" for settled in refused)
+    return (
+        f"import-worksheets: {len(refused)} settled fixture(s) would change scenario and were left alone: {listed}; "
+        "re-validate them with the user, or pass --overwrite-settled to downgrade them to pending"
+    )
+
+
+def import_worksheets(airport: str, *, check: bool = False, force: bool = False, overwrite_settled: bool = False) -> int:
     """Fetch the trainer worksheets of an airport and write one pending fixture per flight plan.
+
+    A fixture the user has settled is never overwritten: one whose scenario the import would leave
+    as it is counts as ``kept (settled)``, and one whose scenario would change is left on disk and
+    named in the exit status, so no validated clearance is lost to a re-import.
 
     Args:
         airport: Four-letter ICAO identifier, e.g. ``KSFO``.
         check: Compare against the committed fixtures instead of writing them.
-        force: Re-download every worksheet.
+        force: Re-download every worksheet and the aircraft specs.
+        overwrite_settled: Rewrite a settled fixture whose scenario changed as a fresh pending
+            document, throwing its validation away.
 
     Returns:
-        The process exit status: non-zero when ``check`` finds a committed fixture out of date.
+        The process exit status: non-zero when ``check`` finds a committed fixture out of date, or a
+        settled fixture would change and was left alone.
     """
     directory = airport_dir(airport)
     config = load_worksheets(directory / WORKSHEETS_FILE)
     sop = load_sop(directory / SOP_FILE)
     rnav = rnav_suffixes(load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE))
     cache = cache_dir()
+    classes = designator_classes(fetch_aircraft_specs(cache, force=force), config.type_aliases)
     counts: Counter[str] = Counter()
+    refused: list[SettledFixture] = []
     print(f"{airport}: {len(config.worksheets)} worksheet(s) -> {fixture_dir(airport)}")
     for worksheet in config.worksheets:
         text = fetch_worksheet_text(worksheet, cache, force=force)
-        fixtures = sheet_fixtures(worksheet, text, icao=airport, sop=sop, rnav=rnav, type_aliases=config.type_aliases)
-        results = [_fixture_result(path, fixture, check=check) for path, fixture in fixtures.items()]
+        fixtures = sheet_fixtures(worksheet, text, icao=airport, sop=sop, rnav=rnav, type_aliases=config.type_aliases, aircraft_classes=classes)
+        results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in fixtures.items()]
+        for result in results:
+            if result.refused is not None:
+                refused.append(result.refused)
         counts.update(result.status for result in results)
         _print_sheet_summary(worksheet.title, results)
-    print(f"  {counts.total()} plan(s): " + ", ".join(f"{count} {status}" for status, count in sorted(counts.items())))
-    return EXIT_ERROR if counts["differs"] else EXIT_OK
+    print(f"  {counts.total()} plan(s): " + _counts_line(counts))
+    if refused:
+        print(_settled_refusal_line(refused))
+    return EXIT_ERROR if counts["differs"] or refused else EXIT_OK
 
 
 def _run(args: argparse.Namespace) -> int:
@@ -400,7 +467,7 @@ def _run(args: argparse.Namespace) -> int:
         "build": lambda: build(
             args.airport, args.cycle, offline=args.offline, check=args.check, force=args.force, allow_sop_drift=args.allow_sop_drift
         ),
-        "import-worksheets": lambda: import_worksheets(args.airport, check=args.check, force=args.force),
+        "import-worksheets": lambda: import_worksheets(args.airport, check=args.check, force=args.force, overwrite_settled=args.overwrite_settled),
         "fetch-cifp": lambda: fetch_cifp(args.airport, args.cycle, force=args.force),
         "fetch-charts": lambda: fetch_charts(args.airport, force=args.force),
         "verify-sop": lambda: verify_sop(args.airport, allow_drift=args.allow_sop_drift, force=args.force),

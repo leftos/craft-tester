@@ -36,6 +36,7 @@ from craft_generator.sop.model import (
     TOP_ALTITUDE_KINDS,
     WAKE_CATEGORIES,
     WORKSHEET_KINDS,
+    AircraftClass,
     AirportInfo,
     AirportInputs,
     AltitudeOutcome,
@@ -260,6 +261,13 @@ class _Row:
         at = self._at(key)
         return tuple(_as_choice(item, allowed, f"{at}[{index}]") for index, item in enumerate(_as_sequence(self._raw(key), at)))
 
+    def optional_choices[Choice: str](self, key: str, allowed: tuple[Choice, ...]) -> tuple[Choice, ...]:
+        value = self._optional_raw(key)
+        if value is None:
+            return ()
+        at = self._at(key)
+        return tuple(_as_choice(item, allowed, f"{at}[{index}]") for index, item in enumerate(_as_sequence(value, at)))
+
     def child(self, key: str) -> "_Row":
         return _Row(self._at(key), self._raw(key))
 
@@ -331,7 +339,12 @@ def _airport_info(row: _Row) -> AirportInfo:
 
 
 def _departure_runway(row: _Row) -> DepartureRunway:
-    runway = DepartureRunway(runway=row.text("runway"), classes=row.choices("classes", AIRCRAFT_CLASSES), note=row.optional_text("note"))
+    runway = DepartureRunway(
+        runway=row.text("runway"),
+        classes=row.choices("classes", AIRCRAFT_CLASSES),
+        default_for_classes=row.optional_choices("default_for_classes", AIRCRAFT_CLASSES),
+        note=row.optional_text("note"),
+    )
     row.finish()
     return runway
 
@@ -566,8 +579,28 @@ def _check_direction_runway_preference(sop: SopData, where: str, families: Seque
                     raise ValueError(f"{at}.{family}: runway {runway!r} is not in `runways`; use one of {list(sop.runways)}")
 
 
+def _check_runway_config(config: RunwayConfig, where: str) -> None:
+    defaulted: dict[AircraftClass, str] = {}
+    for runway in config.departure_runways:
+        at = f"{where} runway_configs[{config.id}].departure_runways[{runway.runway}].default_for_classes"
+        for aircraft_class in runway.default_for_classes:
+            if aircraft_class not in runway.classes:
+                raise ValueError(
+                    f"{at}: class {aircraft_class!r} is not in the row's `classes` {list(runway.classes)}; "
+                    "a runway cannot be the default for a class that may not use it"
+                )
+            if aircraft_class in defaulted:
+                raise ValueError(
+                    f"{at}: class {aircraft_class!r} already defaults to runway {defaulted[aircraft_class]!r} in this configuration; "
+                    "at most one departure runway per configuration may default a class"
+                )
+            defaulted[aircraft_class] = runway.runway
+
+
 def _check_sop(sop: SopData, where: str) -> None:
     families = _runway_families(sop.runways)
+    for config in sop.runway_configs:
+        _check_runway_config(config, where)
     for rule in sop.assignment_rules:
         _check_assignment_rule(rule, where, sop, families)
     for altitude_rule in sop.altitude_rules:

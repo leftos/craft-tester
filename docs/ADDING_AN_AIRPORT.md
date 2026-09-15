@@ -76,7 +76,10 @@ the hooks rejects the file.
 5. **`runway_configs`**: one per configuration in the SOP, with the plan (`SFOW`/`SFOE`, the SOP's flow
    name), arrival runways, and departure runways with the aircraft classes allowed on each and a `note`
    for conditional ones (KSFO: heavies on 28L/R in 28/01 for performance). The config `id` is what
-   worksheets and ATIS scenarios name, so use the SOP's own labels (`28/01`, `28 RT`).
+   worksheets and ATIS scenarios name, so use the SOP's own labels (`28/01`, `28 RT`). Where local
+   practice sends a class to a runway the SOP tables do not name (KSFO: GA props and turboprops depart
+   28R at Echo in 28/01), give that runway row `default_for_classes`; the importer and the scenario
+   generator use it before the turn-direction preference.
 6. **`departure_sectors`**: id, name, frequency, from the ZOA positions list and the chart's DEP CON boxes.
    **`departure_staffing_fallbacks`**: the combined-sector frequencies from the CBT (not used by the engine
    yet; recorded so the data exists when a staffing scenario is added).
@@ -200,7 +203,10 @@ Then:
    `amendment`), the runway config the sheet declares, and which reading it drills.
 2. `uv run craft-gen import-worksheets --airport <ICAO>` writes `fixtures/<icao>/worksheets/*.json` with
    `status: pending` and no `expected`. Expect stale SID versions (valid distractors), typos, and
-   truncated rows in the source; record them in the plan rather than editing the fixtures.
+   truncated rows in the source; record them in the plan rather than editing the fixtures. A re-import
+   never overwrites a fixture you have settled: one whose scenario is unchanged is counted `kept
+   (settled)`, and one whose scenario would change is left on disk and named in a non-zero exit, so
+   re-validate it with the user or pass `--overwrite-settled` to downgrade it to pending.
 3. Validation loop: `pnpm -C web propose <fixture-id>` prints the engine's clearance with citations. Go
    one fixture at a time with the trainer or trainee who owns the airport. A correction is a YAML edit
    plus a rebuild, never an engine edit; if it cannot be expressed as data, add the rule concept to the

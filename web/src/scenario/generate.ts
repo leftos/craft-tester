@@ -174,9 +174,21 @@ function runwaysByFamily(
   return families;
 }
 
+/** The runway a configuration departs a class from by default, e.g. the GA 28R in 28/01. */
+function classDefaultRunway(
+  config: RunwayConfig,
+  aircraftClass: AircraftClass,
+): string | undefined {
+  return config.departureRunways.find((assignment) =>
+    assignment.defaultForClasses.includes(aircraftClass),
+  )?.runway;
+}
+
 /**
  * Draws the departure runway: a family the class may use, then the runway that direction departs.
  *
+ * A configuration that defaults the class to a runway (`defaultForClasses`) settles it before any
+ * draw, so those aircraft never take the direction-of-turn split. Otherwise
  * `directionRunwayPreference` holds the SOP's split, e.g. SFOW northbound off the 01s departing 1R
  * and southbound 1L; a family the table has no entry for falls back to the first runway of it.
  */
@@ -193,6 +205,8 @@ function pickRunway(
       `configuration ${config.id} has no departure runway for class ${aircraftClass}`,
     );
   }
+  const defaulted = classDefaultRunway(config, aircraftClass);
+  if (defaulted !== undefined) return defaulted;
   const family = rng.pick([...families.keys()]);
   const preferred =
     direction === undefined
