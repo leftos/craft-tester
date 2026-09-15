@@ -1,0 +1,77 @@
+# KOAK as the second airport (v3)
+
+Subplan of [MAIN.md](./MAIN.md). Follows [ADDING_AN_AIRPORT.md](../ADDING_AN_AIRPORT.md); this file records what
+the OAK sources say and which new rule concepts they need before any YAML is written.
+
+## Sources gathered 2026-09-15
+
+| source | where | state |
+|---|---|---|
+| Oakland ATCT SOP v1.7, 18 pp | `https://oakartcc.org/controllers/file/1217f464-6766-11e9-8010-2a32edb55910`, sha256 `21f5fdfb40c879e7418e02339a41e48261975797505fc6b1ea76f0b409ab5935` | in `generator/cache/sop/21f5fdfb40c8.pdf`; text in `.tmp/oak-sop.txt` |
+| DP charts | charts API `apt=OAK`: 17 entries = 11 procedures + 6 `CONT.1` continuation sheets | PDFs cached under `generator/cache/pdfs/2609/00294*.PDF` |
+| CIFP | same FAACIFP18 as KSFO; `PD` records for KOAK not yet inspected | cached |
+| S1-OAK-2 and S1-OAK-5 worksheets | user's training account (oakartcc.org syllabus) | **needs Claude in Chrome; extension was not connected on 2026-09-15** |
+| OAK CBT deck(s) | training modules | not yet located |
+| TEC routes | `reference.oakartcc.org/routes?dep=OAK&dest=…` | not yet transcribed |
+| LOAs | ZOA–ZSE already in `loa.yaml` (shared concept, airport-specific file) | reuse |
+| notices | QUAKE SID off in OAKE (270 HDG RV first fix for 12/10 jets); SUNNE SID off in SFOW noise abatement (120 HDG RV first fix for jet 30 departures) | in MAIN.md |
+
+## Procedures the charts API lists
+
+CNDEL5 (RNAV), COAST9 (+cont), HUSSH2 (RNAV), KATFH3 (RNAV), NIMITZ6, NUEVO8 (+cont), OAKLAND6 (+cont), QUAKE2,
+SALAD5, SILENT3 (+cont), SKYLINE1 (+cont), SUNNE1. SOP shorthand: OAK#, CNDEL#, SKYL#, COAST#, NUEVO#, NIMI#,
+QUAKE#, KATFH#, HUSSH#, SLNT#, SUNNE#, SALAD#.
+
+## What the SOP says (2-2, flattened by pypdf; verify each row against the PDF before transcribing)
+
+Runway configurations (1-6): SFOW = OAK 28s and 30; OAKE = OAK 10s and 12 while SFO uses the 28s; SFOE = OAK 10s
+and 12 while SFO uses 19s/10s.
+
+2-1 b: TEC routes for NCT destinations except RNO and satellites. 2-1 c: initial headings only when a DP cannot be
+used; phraseology "CLEARED TO (airport) AIRPORT, VIA TURN LEFT/RIGHT (heading) / FLY RUNWAY HEADING, RADAR VECTORS
+(first fix/airway)…".
+
+2-2 a SFOW (28L/28R/30): Northbound J & DH8D → OAK#, Richmond, CVS x FL190 (J) / CVS x 10,000 (DH8D). Oceanic and
+Southbound J & DH8D → CNDEL# / SKYL# / COAST#, Sutro, CVS (CNDEL#) / CVS x 10,000 (others). Via BSR, EUGEN, SHOEY
+or SNS, P/T/J → NUEVO#. All other props P/T → NIMI#, Richmond, 3,000.
+2-2 a OAKE (10L/10R/12): Northbound J & DH8D → QUAKE#, Richmond, 5,000; Southbound J & DH8D → QUAKE#, Sutro,
+5,000; all P/T → 090°, Grove, 3,000.
+2-2 a SFOE (10L/10R/12): Northbound J & DH8D → OAK#, Richmond, 3,000; Oceanic → Sutro; Southbound J & DH8D →
+KATFH# / SKYL#, Sutro, CVS x 3,000; all P/T → 090°, Richmond, 3,000.
+2-2 b non-DP headings (expect cruise altitude 10 minutes after departure): SFOW rwy 33 J & DH8D 270° 2,000, P/T
+315° 3,000; SFOW 28/30 northbound P/T 315° Richmond 3,000, southbound J & DH8D runway heading Sutro 10,000; OAKE
+10/12 J & DH8D 270° 5,000; SFOE 10/12 J & DH8D runway heading 3,000. Sector "varies": Richmond northbound, Sutro
+oceanic/southbound.
+Appendix B noise abatement (optional, activatable): SFOW Mon–Sat 2200–0700L, Sun until 0800L; SFOE 2200–0600L;
+SALAD# 2200–0700L daily. SFOW: rwy 30 P/T 270° 10,000; northbound J & DH8D HUSSH# / SLNT# Richmond (CVS /
+CVS x FL190); oceanic/southbound 270° or HUSSH# Sutro 10,000 / CVS; southbound 28/30 J & DH8D 270° or SUNNE#
+(when NCT authorises) 10,000 / 5,000; northbound 28 J & DH8D 270° 10,000; all 28 P and Cat A/B → SALAD# CVS x
+4,000. HUSSH# required for J/DH8D 0100–0500L, oceanic/southbound via GOBBS transition. OAKE: P/T 090° Grove 3,000;
+J & DH8D QUAKE# or 270° 5,000. SFOE: P/T 090° 3,000; J & DH8D 140°.
+
+## New rule concepts OAK needs (add to the schema and engine before transcribing)
+
+- [ ] **Type-specific class**: "J & DH8D" rows treat the Dash 8-400 as a jet for SID assignment but give it its own
+  altitude (CVS x 10,000 vs FL190). Proposal: `aircraft_groups` in the airport YAML mapping a group id to classes
+  and/or types (`jets_and_dh8d: {classes: [J], types: [DH8D]}`), and rows reference groups instead of classes.
+- [ ] **Heading departures as a first-class clearance**: OAK issues 090°/270°/315°/runway heading routinely; the
+  route element becomes "via turn left/right heading (xxx), radar vectors (fix/airway)" with the turn direction
+  derived from runway heading vs assigned heading (data: runway true/magnetic headings from CIFP `PG` records).
+  Altitude "maintain (feet)", expect clause spoken (no chart note).
+- [ ] **Plain "climb via SID"** for CNDEL# and HUSSH# (row outcome `climb_via`): already supported by the engine.
+- [ ] **CVS x FL190**: an interim expressed as a flight level; check `speakAltitude` and the altitude row schema.
+- [ ] **Continuation charts**: the chart parser must merge `NAME, CONT.1` text into `NAME` (6 of 17 OAK charts).
+- [ ] **Approach category** ("P, Cat A/B → SALAD#"): a per-type approach category in the fleet, or treat as props.
+- [ ] **Three departure sectors** (Richmond, Sutro, Grove) and "varies" rows resolved by direction: already
+  expressible (`direction` on the row).
+- [ ] **Optional noise abatement**: appendix rows are "may be activated"; model as a notice-like toggle that turns
+  the noise rows on, default off, rather than as time windows alone.
+
+## Steps
+
+- [ ] Pull S1-OAK-2 and S1-OAK-5 worksheets (Chrome), add to `generator/airports/koak/worksheets.yaml`
+- [ ] Inspect KOAK CIFP SID records; classify the 11 procedures; check for radar-vector SIDs with no CIFP body
+- [ ] Land the new rule concepts above (schema first, KSFO data unchanged, tests)
+- [ ] Transcribe `sop.yaml` (v1.7, sentinels), `overrides.yaml`, `routes.yaml`, `tec.yaml`; `verify-sop`; build
+- [ ] `data/airports.json` gains KOAK; widen the KSFO-only web tests
+- [ ] Validation loop with the user
