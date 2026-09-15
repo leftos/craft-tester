@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "CYVR",
-    "expect": {
-      "feet": 36000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "DEDHD",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-N-SNTNA-28 in the 28/01 configuration, where SOP 2-1 e reserves the 28s for oceanic, Far East and cargo flights: a heavy freighter northbound off 28L"
+    "note": "SFOW-N-SNTNA-28 in the 28/01 configuration, where SOP 2-1 e reserves the 28s for oceanic, Far East and cargo flights: a heavy freighter northbound off 28L; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

@@ -6,10 +6,7 @@
       "phrase": "maintain"
     },
     "clearedTo": "RKSI",
-    "expect": {
-      "feet": 28000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "RBL",
@@ -33,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SOP 2-2 a: northbound off the 28s is GAPP#; SFO# is runway 01 only (user review 2026-09-15). SNTNA# is not an option because RBL is not a SNTNA2 transition. Phraseology Practice 3 files SFO4 here; if the trainer meant SFO#, the SOP row is what changes."
+    "note": "SOP 2-2 a: northbound off the 28s is GAPP#; SFO# is runway 01 only (user review 2026-09-15). SNTNA# is not an option because RBL is not a SNTNA2 transition. Phraseology Practice 3 files SFO4 here; if the trainer meant SFO#, the SOP row is what changes.; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

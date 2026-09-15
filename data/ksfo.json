@@ -987,7 +987,7 @@
     }
   ],
   "phraseology": {
-    "expectAltitude": "only_when_interim_below_filed",
+    "expectAltitude": "unless_chart_publishes_it",
     "nonStandardInterimExpectMinutes": 3,
     "vectorHybridTransitionsSpoken": false
   },
@@ -1025,7 +1025,7 @@
     {
       "id": "A-EXPECT",
       "source": "FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv",
-      "text": "EXPECT (filed altitude) ONE ZERO MINUTES AFTER DEPARTURE; three minutes when a non-standard interim altitude is issued"
+      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note; three minutes when a non-standard interim altitude is issued (SFO ATCT SOP 2-2 c iv)"
     },
     {
       "id": "C-DEST",
@@ -2373,6 +2373,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375CIITY.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9"
@@ -2457,6 +2458,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375GAP.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9",
@@ -2541,6 +2543,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375GNNRR.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -2603,6 +2606,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375MOLEN.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -2655,6 +2659,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375NIITE.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9"
@@ -2736,6 +2741,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SAHEY.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -2813,6 +2819,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SANFRANCISCO.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9"
@@ -2849,6 +2856,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SEGUL.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -2898,6 +2906,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SNTNA.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9"
@@ -2965,6 +2974,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SSTIK.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -3032,6 +3042,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375TRUKN.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9"
@@ -3107,6 +3118,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375WESLA.PDF"
       },
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"

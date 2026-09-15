@@ -10,6 +10,9 @@ Two boxes matter here, and both were surveyed across all 12 KSFO departure chart
 * ``NORCAL DEP CON`` — the departure frequencies are the lines immediately before the label, and the
   tower frequency is the line immediately after it. GAP SEVEN publishes two, tagged ``(NW-E)`` and
   ``(SE-W)``; the rest publish one.
+* ``expect filed altitude N minutes after departure`` — the route description note, whose halves
+  arrive in either order and are therefore matched against the whole page rather than a line; see
+  :func:`_parse_expect_filed_altitude_minutes`.
 
 Because the label always follows its value, a value is never searched for *after* a label: the line
 after ``NORCAL DEP CON`` is the tower, and reading it would silently produce the wrong frequency. The
@@ -37,6 +40,9 @@ _FEET = re.compile(r"^(?P<feet>\d{3,5})$")
 _PROCEDURE = re.compile(r"\((?P<procedure>[A-Z]{3,6}\d)\.\s?(?P<fix>[A-Z0-9]{2,5})\)")
 _TRANSITION = re.compile(r"(?P<name>[A-Z][A-Z0-9]{1,14})\s+TRANSITION\s*\((?P<procedure>[A-Z]{3,6}\d)\.\s?(?P<fix>[A-Z0-9]{2,5})\)")
 _FREQUENCY = re.compile(r"(?P<frequency>1[123]\d\.\d{1,3})\s+\d{3}\.\d{1,3}(?:\s*\((?P<note>[A-Z]{1,2}-[A-Z]{1,2})\))?")
+_MINUTES_AFTER_DEPARTURE = re.compile(r"(?P<minutes>\d+)\s*minutes\s*after\s*departure", re.IGNORECASE)
+_EXPECT = re.compile(r"expect", re.IGNORECASE)
+_FILED_ALTITUDE = re.compile(r"filed\s+altitude|expect\s+filed", re.IGNORECASE)
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,6 +69,7 @@ class ChartFacts:
     procedure_ids: frozenset[str]
     transitions: dict[str, str]
     top_altitude: TopAltitude
+    expect_filed_altitude_minutes: int | None
     dep_frequencies: list[DepFrequency]
     rnav: bool
 
@@ -136,6 +143,40 @@ def _parse_dep_frequencies(lines: Sequence[str], chart_name: str) -> list[DepFre
     return matches
 
 
+def _parse_expect_filed_altitude_minutes(lines: Sequence[str], chart_name: str) -> int | None:
+    """Read the minutes out of the chart's "expect filed altitude N minutes after departure" note.
+
+    The note is matched against the whole page joined with single spaces, never line by line: pypdf
+    splits it in two and emits the halves in either order. On TRUKN TWO the digits arrive on a line
+    *before* the one carrying "Expect filed altitude"; on SSTIK FIVE they arrive first and the word
+    "expect" follows, glued to the chart name as "expectSSTIK". A page-level test is the only one
+    both layouts pass, so every "N minutes after departure" on the page is an anchor, and the note
+    counts as published when the page also holds "expect" and "filed altitude" anywhere on it, in
+    any order and at any distance. GNNRR THREE, NIITE FOUR, SAHEY FOUR and WESLA FIVE are split
+    between "filed" and "altitude" instead, leaving neither word next to the other, so either half
+    of the phrase — "filed altitude" or "expect filed" — counts.
+
+    Args:
+        lines: The chart text as returned by :func:`extract_text`.
+        chart_name: The chart name from the charts API, e.g. ``TRUKN TWO (RNAV)``.
+
+    Returns:
+        The minutes the note publishes, None when the page carries no anchor or neither context
+        phrase. A chart that prints the note twice, as SAN FRANCISCO FIVE does, yields the value
+        both printings agree on.
+
+    Raises:
+        ValueError: The page's anchors disagree on the minutes.
+    """
+    page = " ".join(lines)
+    minutes = {int(match.group("minutes")) for match in _MINUTES_AFTER_DEPARTURE.finditer(page)}
+    if not minutes or _EXPECT.search(page) is None or _FILED_ALTITUDE.search(page) is None:
+        return None
+    if len(minutes) > 1:
+        raise ValueError(f"{chart_name}: the page publishes an expect filed altitude note with disagreeing minutes {sorted(minutes)}")
+    return minutes.pop()
+
+
 def parse_chart_facts(lines: Sequence[str], chart_name: str) -> ChartFacts:
     """Read the generator's facts off the text of one departure chart.
 
@@ -144,11 +185,12 @@ def parse_chart_facts(lines: Sequence[str], chart_name: str) -> ChartFacts:
         chart_name: The chart name from the charts API, e.g. ``TRUKN TWO (RNAV)``.
 
     Returns:
-        The procedure ids, enroute transitions (printed name to fix), top altitude, departure
-        frequencies and RNAV flag the chart publishes.
+        The procedure ids, enroute transitions (printed name to fix), top altitude, expect filed
+        altitude minutes, departure frequencies and RNAV flag the chart publishes.
 
     Raises:
-        ValueError: A box carries its label but no value the parser recognises.
+        ValueError: A box carries its label but no value the parser recognises, or the page's
+            expect filed altitude notes disagree on the minutes.
     """
     procedure_ids = {match.group("procedure") for line in lines for match in _PROCEDURE.finditer(line)}
     transitions = {match.group("name"): match.group("fix") for line in lines for match in _TRANSITION.finditer(line)}
@@ -157,6 +199,7 @@ def parse_chart_facts(lines: Sequence[str], chart_name: str) -> ChartFacts:
         procedure_ids=frozenset(procedure_ids),
         transitions=dict(sorted(transitions.items())),
         top_altitude=_parse_top_altitude(lines, chart_name),
+        expect_filed_altitude_minutes=_parse_expect_filed_altitude_minutes(lines, chart_name),
         dep_frequencies=_parse_dep_frequencies(lines, chart_name),
         rnav=RNAV_MARKER in chart_name,
     )

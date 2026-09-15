@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "KSLC",
-    "expect": {
-      "feet": 39000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "MOGEE",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-NOISE-N-NIITE at 0730 on a Sunday, when the noise window runs to 0800L instead of 0700L"
+    "note": "SFOW-NOISE-N-NIITE at 0730 on a Sunday, when the noise window runs to 0800L instead of 0700L; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

@@ -78,28 +78,27 @@ function altitudeValue(
  *
  * @param altitude The resolved altitude phrase and its feet, where the phrase carries any.
  * @param sid The selected SID.
- * @returns The feet the aircraft may climb to under this clearance.
- * @throws Error When a plain "climb via SID" falls on a SID with no published top altitude, which
- *   leaves no altitude to compare the filed altitude with.
+ * @returns The feet the aircraft may climb to under this clearance, and `undefined` where there is
+ *   no such altitude: a plain "climb via SID" on a SID that publishes no top altitude.
  */
-function clearedToFeet(altitude: AltitudeValue, sid: Sid): number {
+function clearedToFeet(altitude: AltitudeValue, sid: Sid): number | undefined {
   if (altitude.feet !== undefined) return altitude.feet;
-  if (sid.topAltitude.kind !== 'published') {
-    throw new Error(
-      `${sid.id} is cleared "climb via SID" but publishes no top altitude to compare the filed altitude with`,
-    );
-  }
-  return sid.topAltitude.feet;
+  return sid.topAltitude.kind === 'published' ? sid.topAltitude.feet : undefined;
 }
 
 /**
  * The expect clause, per the phraseology toggle the worksheets settle.
  *
- * `always` speaks it on every clearance and `never` on none. `only_when_interim_below_filed`
- * compares the filed altitude with the altitude the aircraft is actually cleared to climb to — the
- * interim altitude under "maintain" and "climb via SID except maintain", the SID's published top
- * altitude under a plain "climb via SID" — and speaks the clause only while the filed altitude is
- * above it. A flight filed at the altitude it was just cleared to hears no expect clause.
+ * `never` speaks it on no clearance. Every other mode compares the filed altitude with the altitude
+ * the aircraft is actually cleared to climb to — the interim altitude under "maintain" and "climb
+ * via SID except maintain", the SID's published top altitude under a plain "climb via SID" — and
+ * drops the clause once the filed altitude is no longer above it, because a clause repeating the
+ * altitude just assigned says nothing. A plain "climb via SID" on a SID that publishes no top
+ * altitude has no altitude to compare with, so the comparison cannot drop the clause there.
+ *
+ * `unless_chart_publishes_it` drops it on top of that wherever the SID's chart carries the "expect
+ * filed altitude N minutes after departure" note itself, which leaves the clause for the charts
+ * that stay silent.
  *
  * @param row The interim-altitude row the flight matched.
  * @param altitude The resolved altitude phrase and its feet.
@@ -116,9 +115,15 @@ function expectClause(
   phraseology: Phraseology,
 ): { feet: number; minutes: number } | null {
   if (phraseology.expectAltitude === 'never') return null;
-  const clause = { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes };
-  if (phraseology.expectAltitude === 'always') return clause;
-  return clearedToFeet(altitude, sid) < scenario.filedAltitude ? clause : null;
+  if (
+    phraseology.expectAltitude === 'unless_chart_publishes_it' &&
+    sid.chartExpectFiledAltitudeMinutes !== null
+  ) {
+    return null;
+  }
+  const clearedTo = clearedToFeet(altitude, sid);
+  if (clearedTo !== undefined && clearedTo >= scenario.filedAltitude) return null;
+  return { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes };
 }
 
 /**

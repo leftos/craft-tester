@@ -677,7 +677,7 @@
         "expectAltitude": {
           "enum": [
             "always",
-            "only_when_interim_below_filed",
+            "unless_chart_publishes_it",
             "never"
           ],
           "type": "string"
@@ -1042,6 +1042,18 @@
             ],
             "type": "object"
           },
+          "chartExpectFiledAltitudeMinutes": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "chartFrequencies": {
             "items": {
               "additionalProperties": false,
@@ -1239,6 +1251,7 @@
           "runways",
           "transitions",
           "topAltitude",
+          "chartExpectFiledAltitudeMinutes",
           "hasCrossingRestrictions",
           "restrictions",
           "climbViaEligible",

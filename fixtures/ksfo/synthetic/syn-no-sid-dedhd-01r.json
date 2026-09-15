@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "KSEA",
-    "expect": {
-      "feet": 32000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "DEDHD",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "A filed route with no procedure at all: the exit fix is the first token and the SOP row still assigns TRUKN#"
+    "note": "A filed route with no procedure at all: the exit fix is the first token and the SOP row still assigns TRUKN#; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

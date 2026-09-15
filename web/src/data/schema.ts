@@ -156,6 +156,11 @@ export const SidSchema = z.strictObject({
   runways: z.array(z.string()),
   transitions: z.array(SidTransitionSchema),
   topAltitude: TopAltitudeSchema,
+  /**
+   * The minutes in the chart's "expect filed altitude N minutes after departure" note, and null
+   * when the chart publishes no such note.
+   */
+  chartExpectFiledAltitudeMinutes: z.number().int().positive().nullable(),
   hasCrossingRestrictions: z.boolean(),
   restrictions: z.array(SidRestrictionSchema),
   climbViaEligible: z.boolean(),
@@ -240,7 +245,15 @@ export const AltitudeRuleSchema = z.strictObject({
 
 /** Phraseology toggles that the worksheets settle, kept as data so no engine edit is needed. */
 export const PhraseologySchema = z.strictObject({
-  expectAltitude: z.enum(['always', 'only_when_interim_below_filed', 'never']),
+  /**
+   * When the controller speaks "expect (filed altitude) (minutes) minutes after departure".
+   *
+   * `always` speaks it on every clearance whose filed altitude is above the altitude cleared to.
+   * `unless_chart_publishes_it` speaks it on those same clearances, except where the SID's
+   * `chartExpectFiledAltitudeMinutes` is not null, because the chart already tells the pilot to
+   * expect the filed altitude. `never` speaks it on no clearance.
+   */
+  expectAltitude: z.enum(['always', 'unless_chart_publishes_it', 'never']),
   nonStandardInterimExpectMinutes: z.number().int().positive(),
   vectorHybridTransitionsSpoken: z.boolean(),
 });

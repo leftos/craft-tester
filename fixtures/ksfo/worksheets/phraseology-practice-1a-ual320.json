@@ -1,5 +1,18 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSEA",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "DEDHD",
+      "template": "transition"
+    },
+    "sidFamily": "TRUKN"
+  },
   "id": "ws-phraseology-practice-1a-ual320",
   "scenario": {
     "aircraftType": "A320",
@@ -16,7 +29,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation"
+    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation; validated by the user 2026-09-15: TRUKN2 DEDHD transition, climb via SID, no expect clause, 120.9"
   },
-  "status": "pending"
+  "status": "settled"
 }

@@ -6,10 +6,7 @@
       "phrase": "climb_via_except"
     },
     "clearedTo": "KBOI",
-    "expect": {
-      "feet": 39000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "SAC",
@@ -33,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-N-SFO-01 for a jet that cannot fly an RNAV SID; SFO5 carries crossing restrictions off the 01s (crossingRestrictionsByRunwayFamily), so SFOW-J-10000 is spoken as climb via SID except maintain 10,000"
+    "note": "SFOW-N-SFO-01 for a jet that cannot fly an RNAV SID; SFO5 carries crossing restrictions off the 01s (crossingRestrictionsByRunwayFamily), so SFOW-J-10000 is spoken as climb via SID except maintain 10,000; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

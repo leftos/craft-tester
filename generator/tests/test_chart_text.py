@@ -1,4 +1,5 @@
 import random
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 
@@ -77,6 +78,46 @@ def test_chart_facts(name: str, sfo_charts_by_name: dict[str, ChartRef], chart_t
     assert frozenset(facts.transitions.values()) == expected.transitions
     assert tuple(facts.dep_frequencies) == expected.dep_frequencies
     assert facts.rnav is expected.rnav
+
+
+@pytest.mark.parametrize("name", CHART_NAMES)
+def test_every_chart_publishes_the_expect_filed_altitude_note(
+    name: str, sfo_charts_by_name: dict[str, ChartRef], chart_text: Callable[[str], list[str]]
+) -> None:
+    assert facts_for(name, sfo_charts_by_name, chart_text).expect_filed_altitude_minutes == 10
+
+
+def test_the_expect_note_survives_shuffled_lines(sfo_charts_by_name: dict[str, ChartRef], chart_text: Callable[[str], list[str]]) -> None:
+    boxes = (TOP_ALTITUDE_LABEL, DEPARTURE_FREQUENCY_LABEL)
+    lines = [line for line in chart_text(sfo_charts_by_name["TRUKN TWO (RNAV)"].pdf_name) if not any(box in line for box in boxes)]
+    shuffled = list(lines)
+    random.Random(0).shuffle(shuffled)
+    assert shuffled != lines
+    assert parse_chart_facts(shuffled, "TRUKN TWO (RNAV)").expect_filed_altitude_minutes == 10
+
+
+def test_a_chart_that_prints_the_expect_note_twice_reads_the_value_both_printings_agree_on(
+    sfo_charts_by_name: dict[str, ChartRef], chart_text: Callable[[str], list[str]]
+) -> None:
+    page = " ".join(chart_text(sfo_charts_by_name["SAN FRANCISCO FIVE"].pdf_name))
+    assert len(re.findall(r"minutes after departure", page, re.IGNORECASE)) == 2
+    assert facts_for("SAN FRANCISCO FIVE", sfo_charts_by_name, chart_text).expect_filed_altitude_minutes == 10
+
+
+def test_minutes_after_departure_without_the_expect_note_is_not_read() -> None:
+    lines = ["10 minutes after departure.", "TAKEOFF RUNWAYS 1L/R:  Climbing right turn heading 033°"]
+    assert parse_chart_facts(lines, "TEST ONE").expect_filed_altitude_minutes is None
+
+
+def test_an_unrelated_expect_sentence_does_not_publish_the_note() -> None:
+    lines = ["SFO VOR/DME 13 DME; expect vector to assigned route/fix after NORMM INT.", "10 minutes after departure."]
+    assert parse_chart_facts(lines, "TEST ONE").expect_filed_altitude_minutes is None
+
+
+def test_disagreeing_expect_note_minutes_fail_loudly() -> None:
+    lines = ["expect filed altitude 10 minutes after departure.", "expect filed altitude 5 minutes after departure."]
+    with pytest.raises(ValueError, match=r"disagreeing minutes \[5, 10\]"):
+        parse_chart_facts(lines, "TEST ONE")
 
 
 def test_a_printed_transition_name_may_differ_from_its_fix(sfo_charts_by_name: dict[str, ChartRef], chart_text: Callable[[str], list[str]]) -> None:
