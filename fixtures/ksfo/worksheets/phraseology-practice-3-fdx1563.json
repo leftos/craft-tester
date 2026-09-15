@@ -1,5 +1,19 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "RKSI",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "RBL",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
   "id": "ws-phraseology-practice-3-fdx1563",
   "scenario": {
     "aircraftType": "B77L",
@@ -16,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation"
+    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation; validated by the user 2026-09-15: GAPP7 off 28L (SOP 2-2 a: northbound off 28 is GAPP#, the filed SFO4 is replaced), radar vectors Red Bluff VOR, maintain 3,000, no expect clause, 120.9"
   },
-  "status": "pending"
+  "status": "settled"
 }
