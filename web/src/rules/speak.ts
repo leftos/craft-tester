@@ -1,3 +1,4 @@
+import { routeFromExitFix } from '@/rules/route.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 
 /** How ATC speaks each digit; `9` is "niner" so it cannot be heard as "five". */
@@ -246,12 +247,18 @@ export function speakRouteToken(
   return speakFix(token, fixSpoken);
 }
 
-/** Everything the spoken clearance needs beyond the resolved clearance itself. */
+/**
+ * Everything the spoken clearance needs beyond the resolved clearance itself.
+ *
+ * `airportFaa` is the departure airport's own navaid identifier, which the full-route reading needs
+ * to find the exit fix the same way the engine does.
+ */
 export type SpeakClearanceInput = {
   callsign: string;
   clearance: ResolvedClearance;
   destinationSpoken: string;
   filedRoute: string;
+  airportFaa: string;
   squawk: string;
   telephony: Readonly<Record<string, string>>;
   fixSpoken: Readonly<Record<string, string>>;
@@ -284,24 +291,16 @@ function radioSentence(input: SpeakClearanceInput): string {
   return `departure frequency ${frequency}, squawk ${speakDigits(input.squawk)}`;
 }
 
-function isSidToken(token: string, sid: ResolvedClearance['sid']['value']): boolean {
-  if (token === sid.id) return true;
-  return /^([A-Z]+)\d*$/.exec(token)?.[1] === sid.family;
-}
-
-/** The filed route after the SID token and, on a transition clearance, the transition fix. */
+/**
+ * The filed route after the exit fix, which the SID phrase has already spoken.
+ *
+ * The exit fix is the transition fix, the fix the vectors go to, or the SID's base fix, and it is
+ * always the first token the route leaves the terminal on, so dropping it needs no case analysis.
+ */
 function fullRouteParts(input: SpeakClearanceInput): string[] {
-  const route = input.clearance.route.value;
-  let rest = input.filedRoute
-    .trim()
-    .split(/\s+/)
-    .filter((token) => token.length > 0);
-  const first = rest[0];
-  if (first !== undefined && isSidToken(first, input.clearance.sid.value)) rest = rest.slice(1);
-  if (route.template === 'transition' && route.fix !== undefined && rest[0] === route.fix) {
-    rest = rest.slice(1);
-  }
-  return rest.map((token) => speakRouteToken(token, input.fixSpoken));
+  return routeFromExitFix(input.filedRoute, input.airportFaa)
+    .slice(1)
+    .map((token) => speakRouteToken(token, input.fixSpoken));
 }
 
 function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[]): string {
@@ -331,8 +330,9 @@ function joinSentences(parts: readonly string[]): string {
 /**
  * Renders a resolved clearance as it is read on frequency.
  *
- * `abbreviated` says "then as filed"; `fullRoute` reads the filed route instead, which is what the
- * reveal shows after grading.
+ * `abbreviated` says "then as filed"; `fullRoute` reads the filed route after the exit fix instead,
+ * which is what the reveal shows after grading. Neither form repeats the filed procedure token or
+ * the exit fix, because the SID phrase has already spoken both.
  *
  * @param input The clearance plus the scenario facts the phraseology needs.
  * @returns Both spoken forms of the clearance.

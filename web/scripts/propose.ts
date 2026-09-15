@@ -273,6 +273,7 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
       clearance,
       destinationSpoken: destinationSpoken(fixture.scenario.destination, airport),
       filedRoute: fixture.scenario.filedRoute,
+      airportFaa: airport.airport.faa,
       squawk: fixture.scenario.squawk,
       telephony: airport.routeLibrary.telephony,
       fixSpoken: airport.fixSpoken,

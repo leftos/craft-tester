@@ -13,7 +13,14 @@ import type { ResolvedClearance } from '@/rules/types.ts';
 
 const telephony = { UAL: 'United', SWA: 'Southwest', DAL: 'Delta', CKK: 'Cargo King' };
 
-const fixSpoken = { ENI: 'Mendocino', RBL: 'Red Bluff', CCR: 'Concord', OSI: 'Woodside' };
+const fixSpoken = {
+  ENI: 'Mendocino',
+  RBL: 'Red Bluff',
+  CCR: 'Concord',
+  OSI: 'Woodside',
+  OAK: 'Oakland',
+  SAC: 'Sacramento',
+};
 
 describe('speakAltitude', () => {
   it.each([
@@ -126,12 +133,16 @@ function input(overrides: Partial<SpeakClearanceInput> = {}): SpeakClearanceInpu
     clearance: clearance(),
     destinationSpoken: 'Seattle',
     filedRoute: 'TRUKN2 DEDHD HAWKZ7 J70',
+    airportFaa: 'SFO',
     squawk: '3342',
     telephony,
     fixSpoken,
     ...overrides,
   };
 }
+
+const closing =
+  'Climb via SID. Departure frequency one two zero point niner, squawk three three four two.';
 
 describe('speakClearance', () => {
   it('reads the abbreviated clearance the way clearance delivery does', () => {
@@ -164,7 +175,7 @@ describe('speakClearance', () => {
       'San Francisco Five departure, radar vectors Red Bluff, then as filed.',
     );
     expect(spoken.fullRoute).toContain(
-      'San Francisco Five departure, radar vectors Red Bluff, Red Bluff, Jay five, oscar echo delta.',
+      'San Francisco Five departure, radar vectors Red Bluff, Jay five, oscar echo delta.',
     );
   });
 
@@ -176,7 +187,7 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.abbreviated).toContain('Trukn Two departure, then as filed.');
-    expect(spoken.fullRoute).toContain('Trukn Two departure, Jay seventy.');
+    expect(spoken.fullRoute).toContain('Trukn Two departure. Climb via SID.');
   });
 
   it('speaks a climb via SID except maintain', () => {
@@ -221,6 +232,62 @@ describe('speakClearance', () => {
   it('drops a stale SID version from the full route', () => {
     const spoken = speakClearance(input({ filedRoute: 'TRUKN1 DEDHD J70' }));
     expect(spoken.fullRoute).toContain('Trukn Two departure, Dedhd transition, Jay seventy.');
+  });
+
+  it('neither spells the filed procedure nor repeats the transition fix', () => {
+    const spoken = speakClearance(input({ filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7' }));
+    expect(spoken.fullRoute).toBe(
+      'United three twenty, cleared to Seattle airport, Trukn Two departure, Dedhd transition, ' +
+        `Red Bluff, lima mike tango, Hawkz Seven arrival. ${closing}`,
+    );
+  });
+
+  it('reads a radar-vector route from after the fix the vectors go to', () => {
+    const spoken = speakClearance(
+      input({
+        callsign: 'N483KA',
+        clearance: clearance({
+          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+        }),
+        filedRoute: 'GAPP7 OAK V244 ALTAM V392 SAC V6 SWR TRUCK',
+      }),
+    );
+    expect(spoken.fullRoute).toBe(
+      'November four eight three kilo alpha, cleared to Seattle airport, ' +
+        'San Francisco Five departure, radar vectors Oakland, Victor two forty-four, Altam, ' +
+        `Victor three ninety-two, Sacramento, Victor six, sierra whiskey romeo, Truck. ${closing}`,
+    );
+  });
+
+  it('does not repeat the base fix of an as-filed clearance', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({ route: { template: 'as_filed' } }),
+        filedRoute: 'TRUKN2 TRUKN CCR CCR2',
+      }),
+    );
+    expect(spoken.fullRoute).toBe(
+      'United three twenty, cleared to Seattle airport, Trukn Two departure, Concord, ' +
+        `Concord Two arrival. ${closing}`,
+    );
+  });
+
+  it('reads the abbreviated clearance when the transition fix ends the filed route', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'WESLA5', family: 'WESLA', spoken: 'Wesla Five' },
+          route: { template: 'transition', fix: 'NTELL' },
+        }),
+        filedRoute: 'WESLA5 NTELL',
+      }),
+    );
+    expect(spoken.fullRoute).toBe(
+      'United three twenty, cleared to Seattle airport, Wesla Five departure, ' +
+        `Ntell transition. ${closing}`,
+    );
+    expect(spoken.fullRoute).toBe(spoken.abbreviated.replace(', then as filed', ''));
   });
 
   it('keeps a registration callsign phonetic', () => {
