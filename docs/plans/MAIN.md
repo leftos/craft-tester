@@ -10,8 +10,8 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [x] 4. Generator scaffold: uv project, ruff/ty, `craft-gen --help`, cached HTTP
 - [x] 5. CIFP: cycle math, record slicing, SID grouping; 210 KSFO rows as fixture; hypothesis tests
 - [x] 6. Charts: API list, PDF download, text extraction; 12 chart-text snapshots (d-TPP text puts a box's value on the line before its label; MOLEN9's transition is named MENDOCINO)
-- [ ] 7. SOP transcription (`sop.yaml`, `overrides.yaml`, `routes.yaml`) + loader + hash/sentinel verify
-- [ ] 8. Aircraft classes from vNAS
+- [x] 7. SOP transcription (`sop.yaml`, `overrides.yaml`, `routes.yaml`) + loader + hash/sentinel verify (`craft-gen verify-sop`)
+- [x] 8. Aircraft classes from vNAS (`aircraft_classes.py`, cached `AircraftSpecs.json`, emitted as `aircraftClasses`)
 - [x] 9. Merge + emit + integrity checks; first `data/ksfo.json` (findings: 40 gate fixes have no route yet, incl. GOBBS and the SID base fixes; `climbViaEligible` must also count a published top altitude (SNTNA2); schema gained `airport.lat/lon`, `sids[].baseFix`, `scenario.activeNotices` for the engine — generator must emit the first two)
 - [x] 10. Rules engine core + table tests + exhaustive enumeration test (5,304 of 5,376 combinations resolve; the 72 left are the non-DP runway-heading noise row, which v1 does not clear — the generator must avoid P non-RNAV off 01 at night). Validation questions raised: the late-night "NIITE# GOBBS" south row is dead data (NIITE4 has no south transition; the engine would have to amend the route, an amendment-mode concept); MOLEN9 is reachable only when MOLEN is filed as the exit fix since ENI is a north gate
 - [x] 11. Synthetic fixtures + fixture runner (27 fixtures in `fixtures/ksfo/synthetic/`, 25 settled; `fixtures.test.ts` prints what the engine makes of every pending plan: 66 of 70 worksheet plans resolve)
@@ -66,7 +66,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
   - [ ] `when.forcedTransition` (NIITE# GOBBS row) is in the schema and data but no engine module reads it; late-night southbound jets fall through to SSTIK#
   - [ ] `fixtures.test.ts` and the exhaustive test import `@data/ksfo.json` directly; loop over `data/airports.json` before the second airport
 - [x] 18. TEC routes, LOA rules, equipment suffixes, destination coordinates, fleet ceilings (`data/ksfo.json` now carries 49 TEC/ADR rows and 4 LOA rules; the build fails when a TEC row's leading DP is not published for the runway family it departs. `routes.yaml` gained KSAC/KOAK/KSJC for the TEC rows and KVNY/KSNA/KLGB because the ZOA–ZSE LA-basin LOA row names them; none of the six has a `routes` entry yet, so they cannot be drawn as scenarios. The build summary line does not count TEC/LOA rows)
-- [ ] 19. Amendment engine
+- [ ] 19. Amendment engine — see [amendment-engine.md](./amendment-engine.md) (user decisions 2026-09-15: required nullable `equipmentSuffix` replaces `rnavCapable`; no-SID plans get the assigned SID prepended; proposed altitude is the highest legal one at or below filed; one route rule: assigned SID + filed tail, or the TEC route)
   - [ ] User rule 2026-09-15: when the controller amends the final altitude from what was filed (parity, RVSM band, TEC cap, ceiling), the expect clause is spoken and marked as amended: "expect amended flight level three two zero", "expect amended one zero thousand". Chart note does not cover an amended altitude, so this overrides the `unless_chart_publishes_it` drop. Needs an `expect.amended: true` flag in `ResolvedClearance`/`ExpectedClearance`, a `speak.ts` rendering, and the A-EXPECT rule text extended (confirm with the user whether the "(minutes) minutes after departure" tail is still spoken on the amended form)
 - [ ] 20. Amendment scenario generator + UI + mode switch
 - [ ] 21. Validation loop, amendment mode
