@@ -116,13 +116,6 @@ export function formatPendingLine(row: PendingRow): string {
   ].join(' ');
 }
 
-/** The route element as it is spoken, e.g. "DEDHD transition" or "radar vectors OAK". */
-function routePhrase(route: ResolvedClearance['route']['value']): string {
-  if (route.template === 'as_filed') return 'then as filed';
-  const fix = route.fix ?? '?';
-  return route.template === 'transition' ? `${fix} transition` : `radar vectors ${fix}`;
-}
-
 /** The altitude element as it is spoken, e.g. "climb via SID except maintain 3000". */
 function altitudePhrase(altitude: ResolvedClearance['altitude']['value']): string {
   if (altitude.phrase === 'climb_via') return 'climb via SID';
@@ -159,7 +152,7 @@ function stripLines(scenario: Scenario, airport: AirportData): (readonly [string
 }
 
 /** The CRAFT elements of a resolved clearance, each with the rows that decided it. */
-function craftElements(clearance: ResolvedClearance): ProposalElement[] {
+function craftElements(clearance: ResolvedClearance, runtime: Runtime): ProposalElement[] {
   const expect = clearance.expect.value;
   return [
     {
@@ -174,7 +167,7 @@ function craftElements(clearance: ResolvedClearance): ProposalElement[] {
     },
     {
       label: 'R route',
-      value: routePhrase(clearance.route.value),
+      value: runtime.routeLabel(clearance.route.value),
       citations: clearance.route.citations,
     },
     {
@@ -210,14 +203,15 @@ function registerAliasHook(): void {
 
 /** The app modules, imported after the alias hook is in place. */
 async function loadRuntime() {
-  const [schema, load, engine, types, speak] = await Promise.all([
+  const [schema, load, engine, types, speak, grade] = await Promise.all([
     import('#src/data/schema.ts'),
     import('#src/data/load.ts'),
     import('#src/rules/engine.ts'),
     import('#src/rules/types.ts'),
     import('#src/rules/speak.ts'),
+    import('#src/rules/grade.ts'),
   ]);
-  return { ...schema, ...load, ...engine, ...types, ...speak };
+  return { ...schema, ...load, ...engine, ...types, ...speak, ...grade };
 }
 
 /** Everything the CLI half needs from the app. */
@@ -267,7 +261,7 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
   const { clearance } = result;
   return {
     kind: 'clearance',
-    elements: craftElements(clearance),
+    elements: craftElements(clearance, runtime),
     spoken: runtime.speakClearance({
       callsign: fixture.scenario.callsign,
       clearance,

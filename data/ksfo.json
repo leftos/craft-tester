@@ -917,7 +917,8 @@
       "FLW",
       "GVO",
       "RZS",
-      "SXC"
+      "SXC",
+      "EHF"
     ]
   },
   "loaRules": [
@@ -1051,6 +1052,16 @@
       "id": "R-RV-AIRWAY",
       "source": "ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+    },
+    {
+      "id": "R-AIRWAY",
+      "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15",
+      "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically"
+    },
+    {
+      "id": "R-NAVAID",
+      "source": "FAA JO 7110.65 2-5-2; ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15",
+      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
     },
     {
       "id": "A-CLIMB-VIA",

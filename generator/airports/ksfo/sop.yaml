@@ -146,7 +146,7 @@ frequencies:
 # somewhere new.
 gates:
   north: [DEDHD, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, GOBBS, TRUKN, SNTNA, NIITE, CIITY, RBL, RDD, SAC, CCR, OAK, SGD, SAU, ENI, LKV, LIN, SUNOL]
-  south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, SAHEY, SSTIK, WESLA, OSI, EUGEN, SNS, CISKO, EBAYE, LOSHN, WAGES, AVE, LHS, BOILE, SJC, GILRO, MCKEY, FLW, GVO, RZS, SXC]
+  south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, SAHEY, SSTIK, WESLA, OSI, EUGEN, SNS, CISKO, EBAYE, LOSHN, WAGES, AVE, LHS, BOILE, SJC, GILRO, MCKEY, FLW, GVO, RZS, SXC, EHF]
   oceanic: [ALCOA, AMAKR, BEBOP, CINNY, GNNRR, MOLEN, STINS, ALLBE, BAART, ALANN]
 
 # Departure without a SID is only available from runways 01 and 10 and is phrased as radar vectors to
@@ -457,6 +457,12 @@ phraseology_rules:
   - id: R-RV-AIRWAY
     source: ZOA CRAFT Phraseology reference
     text: "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+  - id: R-AIRWAY
+    source: "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15"
+    text: "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically"
+  - id: R-NAVAID
+    source: "FAA JO 7110.65 2-5-2; ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15"
+    text: "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
   - id: A-CLIMB-VIA
     source: "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference"
     text: "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO the SOP interim table applies to every SID, so this form does not occur in clearance mode"

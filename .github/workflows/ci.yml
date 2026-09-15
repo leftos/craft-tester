@@ -60,3 +60,8 @@ jobs:
         working-directory: generator
       - run: uv run pytest -q
         working-directory: generator
+      # Network-enabled on purpose: the import fetches the Google Docs worksheets and the vNAS
+      # aircraft specs. It needs no CIFP download, so it runs without a cache.
+      - name: worksheet fixtures are up to date
+        run: uv run craft-gen import-worksheets --airport KSFO --check
+        working-directory: generator
