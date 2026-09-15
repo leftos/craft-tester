@@ -53,7 +53,9 @@ below).
   `state.ts` pick; `session.test.ts`; browser re-check
 - [x] 4. Docs: `ADDING_AN_AIRPORT.md` (config `source`, `RWY-*` rows), `ARCHITECTURE.md` (2026-09-15)
 
-## Open question for the user
+## Spoken form
 
-- Should the reveal speak the runway at all (e.g. "…, expect runway one right" before the departure
-  frequency), or stay silent as the 7110.65 CRAFT form does? Default: silent.
+- [ ] User decision 2026-09-15: the printed transmission ("On frequency" and "With the route read in
+  full") includes the runway. Placement: a final sentence after the squawk, "Expect runway one right."
+  Digits individually per 7110.65 2-4-17, leading zero dropped ("one right", "two eight left")
+  (dispatched)
