@@ -36,6 +36,36 @@ the OAK sources say and which new rule concepts they need before any YAML is wri
 - Common ZOA-SID to ZLA-STAR fix pairings for SoCal (route validation data): SUSEY EBAYE → BURGL; KTINA CISKO → RDHOT;
   KAYEX LOSHN → CLASN; MCKEY/YYUNG → TILLT.
 - Tools trainees use to build routes: SkyVector, FlightAware, the ZOA Info Tool, SOP, LOAs.
+- S1-OAK-1 "Clearances Introduction" (module `4191b45b-7f98-11e8-a6af-2a32edb55910`) scripts: "cleared to Los Angeles
+  International Airport, Candle Five (CNDEL5) departure, Susie (SUSEY) transition, then as filed. Climb via SID,
+  departure frequency one three five point one, squawk …" (CNDEL# = plain climb via, matching SOP "CVS (CNDEL#)");
+  "cleared to Seattle Tacoma Airport, Oakland Six departure, radar vectors Deadhead (DEDHD), then as filed. Climb via
+  SID except maintain flight level one niner zero, departure frequency one two zero point niner". **OAK6 is a
+  vector-hybrid SID that is still climb-via eligible** (it has published restrictions), so `climbViaEligible` must not
+  exclude vector hybrids by kind alone; make it an override or derive it from the CIFP restrictions. The module also
+  teaches three departure types: radar vectored, pilot nav (RNAV and conventional), hybrid. Spoken names: "Candle" for
+  CNDEL, "Susie" for SUSEY, "Deadhead" for DEDHD: five-letter fixes have conventional pronunciations that the speaker
+  should carry as `fix_spoken` rows where a trainer states them.
+
+## User's own study notes (Google Doc `1rJm0csgkxlLMctyXmiPh-THOHpc4jxQDs9PYbGHO1Hs`, "Common Fixes", as of 2025-01-20)
+
+- Common fix groupings for KOAK SFOW: N/NE with OAK# (AMAKR/ENI oceanic NW; GRTFL for PDX/EUG; DEDHD via RBL for SEA/CYVR;
+  ORRCA/SAC to Q120; MOGEE to Q122/Q124; TIPRE to Q126; SYRAH to Q128/Q130; LIN to J84). S/SW: CNDEL#.YYUNG / COAST#.MCKEY
+  to TILLT/LAX; CNDEL#.KTINA → CISKO → RDHOT; CNDEL#.SUSEY → EBAYE → BURGL/AVE; CNDEL#.KAYEX → LOSHN → BOILE/CLASN/EHF;
+  CNDEL#.NTELL → Q174; SKYL#.AVE. W oceanic with OAK#: ALCOA → R463, BEBOP → R464, CINNY → A220. Oceanic airways may be
+  unidirectional, in which case odd/even parity does not apply (amendment-mode exemption to encode).
+- Common routes (seed for `koak/routes.yaml`): LAX `CNDEL5 SUSEY EBAYE BURGL IRNMN2`; LAS `CNDEL5 NTELL Q174 FLCHR COKTL4`
+  (at or below FL310); SAN `CNDEL5 YYUNG LAX COMIX2` / `COAST9 MCKEY LAX COMIX2` / `COAST9 RZS LAX HUBRD1`; BUR `CNDEL5 KTINA
+  CISKO RDHOT ROKKR3` (aob FL310); SNA `CNDEL5 YYUNG TILLT RUKKI1`; SEA `OAK6 OAK DEDHD RBL LMT HAWKZ8`; PDX `OAK6 OAK GRTFL
+  MACHU TMBRS3`; SLC `OAK6 OAK MOGEE Q124 BVL YUTES1`; PHX `CNDEL5 KAYEX LOSHN BOILE BLH HYDRR1` / `SKYL1 AVE BOILE BLH`; LGB
+  `CNDEL5 YYUNG TILLT RUKKI1`; DEN `OAK6 OAK SYRAH Q128 JSICA ILC EYPUZ IBSKI BUMMP SSKII3`; props to LAX `NUEVO8 SNS AVE LAX`.
+- LOAs to encode for amendment mode: ZOA–ZLA (and SBA/FAT/BFL) at-or-below restrictions to some ZLA destinations, e.g.
+  KLAS; ZOA–ZLC "north of KRAZY" (JSICA is north of KRAZY) and KSLC routes needing BVL or MLF for RNAV, REO for
+  conventional; ZOA–ZSE parity shifted by 20° (already in `loa.yaml`).
+- Heuristics the user teaches: TEC routes have an assigned altitude, AAR/ADR routes do not (consistent with `kind` in
+  `tec.yaml`); LOA instructions outrank AAR/ADR routes; work left to right, equipment code → altitude → route; always
+  assign a DP when none is filed; no STAR needed for destinations outside ZOA unless an LOA requires one; a stale DP
+  revision (OAK9 for OAK6) is a common typo/AIRAC problem; make the minimum change that yields a legal route.
 | TEC routes | `reference.oakartcc.org/routes?dep=OAK&dest=…` | not yet transcribed |
 | LOAs | ZOA–ZSE already in `loa.yaml` (shared concept, airport-specific file) | reuse |
 | notices | QUAKE SID off in OAKE (270 HDG RV first fix for 12/10 jets); SUNNE SID off in SFOW noise abatement (120 HDG RV first fix for jet 30 departures) | in MAIN.md |
