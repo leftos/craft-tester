@@ -13,6 +13,8 @@ import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
+import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
+import { matchesConfig } from '@/scenario/filter.ts';
 import type { Rng, Weighted } from '@/scenario/rng.ts';
 
 /**
@@ -44,8 +46,14 @@ type MinuteRange = { from: number; to: number };
  * Also a training choice rather than data: it keeps most scenarios in the ordinary day while still
  * drilling the noise abatement rows, which only fire between 2200L and 0700L (0800L on Sunday).
  */
-const TIME_BUCKETS: readonly Weighted<readonly MinuteRange[]>[] = [
-  { item: [{ from: 8 * 60, to: 22 * 60 }], weight: 70 },
+const DAY_RANGES: readonly MinuteRange[] = [{ from: 8 * 60, to: 22 * 60 }];
+
+/**
+ * The buckets outside the day, which the night filter draws among by the same weights.
+ *
+ * The two together span 2200L to 0800L, so every scenario is in one bucket or the other.
+ */
+const NIGHT_BUCKETS: readonly Weighted<readonly MinuteRange[]>[] = [
   {
     item: [
       { from: 22 * 60, to: 24 * 60 },
@@ -55,6 +63,11 @@ const TIME_BUCKETS: readonly Weighted<readonly MinuteRange[]>[] = [
     weight: 20,
   },
   { item: [{ from: 60, to: 5 * 60 }], weight: 10 },
+];
+
+const TIME_BUCKETS: readonly Weighted<readonly MinuteRange[]>[] = [
+  { item: DAY_RANGES, weight: 70 },
+  ...NIGHT_BUCKETS,
 ];
 
 /** How the filed route presents the procedure: the assigned one, none at all, or a wrong one. */
@@ -111,10 +124,32 @@ export type GeneratedScenario = {
   correctSidId: string;
 };
 
-/** Draws a runway configuration by the training mix. */
-function pickConfig(rng: Rng, airport: AirportData): RunwayConfig {
+/** Names a configuration filter the way the error that nothing matches it reads. */
+function describeConfigFilter(filter: ConfigFilter): string {
+  if (filter.kind === 'plan') return `plan ${filter.plan}`;
+  return filter.kind === 'id' ? `id ${filter.id}` : 'any configuration';
+}
+
+/**
+ * Draws a runway configuration the filter admits, by the training mix.
+ *
+ * @param rng The seeded generator; the weighted draw advances it.
+ * @param airport The airport data, for its configurations.
+ * @param filter Which configurations the draw may pick from.
+ * @returns The drawn configuration.
+ * @throws Error When the airport has no configuration the filter admits, naming the ones it has.
+ */
+function pickConfig(rng: Rng, airport: AirportData, filter: ConfigFilter): RunwayConfig {
+  const candidates = airport.runwayConfigs.filter((config) => matchesConfig(filter, config));
+  if (candidates.length === 0) {
+    const known = airport.runwayConfigs.map((config) => `${config.id} (${config.plan})`).join(', ');
+    throw new Error(
+      `no runway configuration matches the filter ${describeConfigFilter(filter)}; ` +
+        `${airport.airport.icao} has ${known}`,
+    );
+  }
   return rng.weighted(
-    airport.runwayConfigs.map((config) => ({
+    candidates.map((config) => ({
       item: config,
       weight: CONFIG_WEIGHTS[config.id] ?? UNKNOWN_CONFIG_WEIGHT,
     })),
@@ -162,9 +197,20 @@ function pickMinute(rng: Rng, ranges: readonly MinuteRange[]): number {
   return ranges[0]?.from ?? 0;
 }
 
-/** Draws the local time and day of the week the scenario is set at. */
-function pickTime(rng: Rng): { localTime: string; dayOfWeek: DayOfWeek } {
-  const minute = pickMinute(rng, rng.weighted(TIME_BUCKETS));
+/**
+ * The spans the time of day is drawn from: the whole mix, the day alone, or the night buckets.
+ *
+ * The day filter takes its span outright rather than through a one-candidate weighted draw, so it
+ * leaves the generator where it found it.
+ */
+function timeRanges(rng: Rng, filter: TimeFilter): readonly MinuteRange[] {
+  if (filter === 'day') return DAY_RANGES;
+  return rng.weighted(filter === 'night' ? NIGHT_BUCKETS : TIME_BUCKETS);
+}
+
+/** Draws the local time and day of the week the scenario is set at, within the filtered spans. */
+function pickTime(rng: Rng, filter: TimeFilter): { localTime: string; dayOfWeek: DayOfWeek } {
+  const minute = pickMinute(rng, timeRanges(rng, filter));
   const hours = String(Math.floor(minute / 60) % 24).padStart(2, '0');
   const minutes = String(minute % 60).padStart(2, '0');
   return { localTime: `${hours}${minutes}`, dayOfWeek: rng.pick(DAYS_OF_WEEK) };
@@ -327,16 +373,21 @@ function pickSidToken(rng: Rng, airport: AirportData, correctSidId: string): str
  *
  * @param rng The seeded generator; every draw advances it.
  * @param airport The airport data the scenario is drawn from.
+ * @param filter The time of day and the runway configurations the draw is narrowed to.
  * @returns The scenario with its suffix and assigned procedure, or the reason the engine could not
  *   clear it, which is the caller's cue to draw again.
  */
-export function drawScenario(rng: Rng, airport: AirportData): GeneratedScenario | Unresolved {
-  const config = pickConfig(rng, airport);
+export function drawScenario(
+  rng: Rng,
+  airport: AirportData,
+  filter: ScenarioFilter,
+): GeneratedScenario | Unresolved {
+  const config = pickConfig(rng, airport, filter.config);
   const route = rng.pick(airport.routeLibrary.routes);
   const fleet = pickFleet(rng, airport, route);
   const suffix = rng.pick(fleet.suffixes);
   const picked = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
-  const time = pickTime(rng);
+  const time = pickTime(rng, filter.time);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const filed: Scenario = {
     callsign: pickCallsign(rng, fleet),
@@ -370,15 +421,20 @@ export function drawScenario(rng: Rng, airport: AirportData): GeneratedScenario 
  * off the 01s inside the noise window that the SOP sends off on runway heading; those draws are
  * discarded rather than presented, because clearance mode has no way to issue them.
  *
- * @param rng The seeded generator; the same seed always yields the same scenario.
+ * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the scenario is drawn from.
+ * @param filter The time of day and the runway configurations the draw is narrowed to.
  * @returns The scenario with its equipment suffix and the procedure the SOP assigns it.
  * @throws Error When `MAX_ATTEMPTS` draws in a row were all unclearable, naming the last reason.
  */
-export function generateScenario(rng: Rng, airport: AirportData): GeneratedScenario {
+export function generateScenario(
+  rng: Rng,
+  airport: AirportData,
+  filter: ScenarioFilter,
+): GeneratedScenario {
   let last: Unresolved | undefined;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-    const drawn = drawScenario(rng, airport);
+    const drawn = drawScenario(rng, airport, filter);
     if (!isUnresolved(drawn)) return drawn;
     last = drawn;
   }

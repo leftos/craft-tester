@@ -1,6 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { AirportData } from '@/data/schema.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
+import type { ScenarioFilter } from '@/scenario/filter.ts';
+import { ANY_SCENARIO, filterFromHash } from '@/scenario/filter.ts';
 import { seedFromHash } from '@/scenario/rng.ts';
 import { loadAirportData } from '@/ui/session.ts';
 import type { DraftPicks } from '@/ui/state.ts';
@@ -10,6 +12,7 @@ import {
   newSession,
   shareLink,
   toPlayerPicks,
+  withFilter,
   withRetry,
 } from '@/ui/state.ts';
 
@@ -108,18 +111,19 @@ describe('revisiting a solved scenario', () => {
   });
 
   it('starts an already solved seed with the earlier answer and an untouched form', () => {
-    const state = newSession(airport, SEED, previous);
+    const state = newSession(airport, SEED, previous, ANY_SCENARIO);
     expect(state.revisit).toStrictEqual(previous);
     expect(state.picks).toStrictEqual(EMPTY_PICKS);
     expect(state.submitted).toBe(false);
+    expect(state.filter).toStrictEqual(ANY_SCENARIO);
   });
 
   it('remembers no earlier answer for a seed nobody has solved', () => {
-    expect(newSession(airport, SEED, undefined).revisit).toBeUndefined();
+    expect(newSession(airport, SEED, undefined, ANY_SCENARIO).revisit).toBeUndefined();
   });
 
   it('hides the earlier answer and empties the form on a retry', () => {
-    const state = withRetry(newSession(airport, SEED, previous));
+    const state = withRetry(newSession(airport, SEED, previous, ANY_SCENARIO));
     expect(state.revisit).toBeUndefined();
     expect(state.picks).toStrictEqual(EMPTY_PICKS);
     expect(state.submitted).toBe(false);
@@ -127,7 +131,11 @@ describe('revisiting a solved scenario', () => {
   });
 
   it('empties a form that was just submitted', () => {
-    const submitted = { ...newSession(airport, SEED, undefined), picks: full, submitted: true };
+    const submitted = {
+      ...newSession(airport, SEED, undefined, ANY_SCENARIO),
+      picks: full,
+      submitted: true,
+    };
     const state = withRetry(submitted);
     expect(state.picks).toStrictEqual(EMPTY_PICKS);
     expect(state.submitted).toBe(false);
@@ -135,16 +143,61 @@ describe('revisiting a solved scenario', () => {
   });
 });
 
+describe('withFilter', () => {
+  const SEED = 1;
+  const FRESH_SEED = 7;
+  const night: ScenarioFilter = { time: 'night', config: { kind: 'plan', plan: 'SFOE' } };
+  let airport: AirportData;
+
+  beforeAll(async () => {
+    airport = await loadAirportData('KSFO');
+  });
+
+  it('draws a fresh scenario on the same airport under the new filter', () => {
+    const started = newSession(airport, SEED, undefined, ANY_SCENARIO);
+    const state = withFilter(started, night, FRESH_SEED, undefined);
+    expect(state.filter).toStrictEqual(night);
+    expect(state.seed).toBe(FRESH_SEED);
+    expect(state.airport).toBe(airport);
+    expect(state.picks).toStrictEqual(EMPTY_PICKS);
+    expect(state.submitted).toBe(false);
+    expect(state.revisit).toBeUndefined();
+  });
+
+  it('draws the filtered scenario the fresh seed stands for', () => {
+    const state = withFilter(
+      newSession(airport, SEED, undefined, ANY_SCENARIO),
+      night,
+      FRESH_SEED,
+      undefined,
+    );
+    expect(state.view).toStrictEqual(newSession(airport, FRESH_SEED, undefined, night).view);
+  });
+
+  it('carries over the earlier answer the caller looked up for the fresh seed', () => {
+    const solved = toPlayerPicks(full);
+    const started = newSession(airport, SEED, undefined, ANY_SCENARIO);
+    expect(withFilter(started, night, FRESH_SEED, solved).revisit).toStrictEqual(solved);
+  });
+});
+
 describe('shareLink', () => {
   it('replaces whatever seed the URL carried', () => {
-    expect(shareLink('https://leftos.dev/craft-tester/#s=zzzz', 1)).toBe(
+    expect(shareLink('https://leftos.dev/craft-tester/#s=zzzz', 1, ANY_SCENARIO)).toBe(
       'https://leftos.dev/craft-tester/#s=1',
     );
   });
 
   it('round-trips a seed through the hash', () => {
     const seed = 3_735_928_559;
-    const link = shareLink('https://leftos.dev/craft-tester/', seed);
+    const link = shareLink('https://leftos.dev/craft-tester/', seed, ANY_SCENARIO);
     expect(seedFromHash(new URL(link).hash)).toBe(seed);
+  });
+
+  it('carries the filter the scenario was drawn under', () => {
+    const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
+    const link = shareLink('https://leftos.dev/craft-tester/', 1, filter);
+    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&t=night&c=id:28%2F01');
+    expect(filterFromHash(new URL(link).hash)).toStrictEqual(filter);
   });
 });

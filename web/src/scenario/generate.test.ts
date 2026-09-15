@@ -6,6 +6,8 @@ import { isNoiseWindowActive } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf, isSidToken } from '@/rules/route.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
+import type { ScenarioFilter } from '@/scenario/filter.ts';
+import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import type { GeneratedScenario } from '@/scenario/generate.ts';
 import { drawScenario, generateScenario } from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
@@ -15,7 +17,21 @@ const ksfo = ksfoJson as unknown as AirportData;
 /** The seeds the mix assertions are measured over; the plan requires 0..999 to all generate. */
 const SEEDS = Array.from({ length: 1000 }, (_value, index) => index);
 
-const generated = SEEDS.map((seed) => generateScenario(createRng(seed), ksfo));
+/** The seeds the filtered draws are measured over. */
+const FILTERED_SEEDS = Array.from({ length: 200 }, (_value, index) => index);
+
+const generated = SEEDS.map((seed) => generateScenario(createRng(seed), ksfo, ANY_SCENARIO));
+
+/** Every scenario the filter draws over `FILTERED_SEEDS`. */
+function drawnUnder(filter: ScenarioFilter): GeneratedScenario[] {
+  return FILTERED_SEEDS.map((seed) => generateScenario(createRng(seed), ksfo, filter));
+}
+
+/** The local time as minutes past midnight, which the bucket assertions compare. */
+function minuteOf(entry: GeneratedScenario): number {
+  const { localTime } = entry.scenario;
+  return Number(localTime.slice(0, 2)) * 60 + Number(localTime.slice(2));
+}
 
 /** Which of the three filed-route shapes the scenario drew. */
 function tokenKind(entry: GeneratedScenario): 'correct' | 'none' | 'wrong' {
@@ -120,8 +136,8 @@ describe('generateScenario', () => {
 
   it('draws the same scenario from the same seed', () => {
     for (const seed of [0, 7, 42, 999]) {
-      expect(generateScenario(createRng(seed), ksfo)).toEqual(
-        generateScenario(createRng(seed), ksfo),
+      expect(generateScenario(createRng(seed), ksfo, ANY_SCENARIO)).toEqual(
+        generateScenario(createRng(seed), ksfo, ANY_SCENARIO),
       );
     }
   });
@@ -257,8 +273,8 @@ describe('generateScenario', () => {
   });
 
   it('redraws rather than presenting a flight the SOP clears without a procedure', () => {
-    const redrawn = SEEDS.map((seed) => drawScenario(createRng(seed), ksfo)).filter((drawn) =>
-      isUnresolved(drawn),
+    const redrawn = SEEDS.map((seed) => drawScenario(createRng(seed), ksfo, ANY_SCENARIO)).filter(
+      (drawn) => isUnresolved(drawn),
     );
     expect(redrawn.length).toBeLessThan(100);
     const night = ksfo.noiseWindows.find((window) => window.id === 'night');
@@ -277,5 +293,55 @@ describe('generateScenario', () => {
       })
       .map(label);
     expect(stranded).toEqual([]);
+  });
+});
+
+describe('the scenario filter', () => {
+  it('draws the scenario the unfiltered seed always drew', () => {
+    const first = generateScenario(createRng(1), ksfo, ANY_SCENARIO);
+    expect(first.scenario.callsign).toBe('QXE4553');
+    expect(first.scenario.runwayConfigId).toBe('28 RT');
+  });
+
+  it('sets every day scenario between 0800 and 2159 local', () => {
+    const day = drawnUnder({ time: 'day', config: { kind: 'any' } });
+    expect(day).toHaveLength(FILTERED_SEEDS.length);
+    expect(day.filter((entry) => minuteOf(entry) < 8 * 60).map(label)).toEqual([]);
+    expect(day.filter((entry) => minuteOf(entry) >= 22 * 60).map(label)).toEqual([]);
+  });
+
+  it('sets every night scenario between 2200 and 0759 local', () => {
+    const night = drawnUnder({ time: 'night', config: { kind: 'any' } });
+    expect(night).toHaveLength(FILTERED_SEEDS.length);
+    const daylight = night.filter(
+      (entry) => minuteOf(entry) >= 8 * 60 && minuteOf(entry) < 22 * 60,
+    );
+    expect(daylight.map(label)).toEqual([]);
+    expect(new Set(night.map((entry) => timeBucket(entry.scenario.localTime)))).toStrictEqual(
+      new Set(['late night', 'night']),
+    );
+  });
+
+  it('draws only the configurations of the plan it is narrowed to', () => {
+    const east = drawnUnder({ time: 'either', config: { kind: 'plan', plan: 'SFOE' } });
+    expect(east).toHaveLength(FILTERED_SEEDS.length);
+    const planOf = (entry: GeneratedScenario): string | undefined =>
+      ksfo.runwayConfigs.find((row) => row.id === entry.scenario.runwayConfigId)?.plan;
+    expect(east.filter((entry) => planOf(entry) !== 'SFOE').map(label)).toEqual([]);
+    expect(new Set(east.map((entry) => entry.scenario.runwayConfigId)).size).toBeGreaterThan(1);
+  });
+
+  it('draws only the configuration whose id it is narrowed to', () => {
+    const straightOut = drawnUnder({ time: 'either', config: { kind: 'id', id: '28 SO' } });
+    expect(straightOut).toHaveLength(FILTERED_SEEDS.length);
+    expect(
+      straightOut.filter((entry) => entry.scenario.runwayConfigId !== '28 SO').map(label),
+    ).toEqual([]);
+  });
+
+  it('refuses a configuration the airport does not have', () => {
+    expect(() =>
+      generateScenario(createRng(1), ksfo, { time: 'either', config: { kind: 'id', id: '07/07' } }),
+    ).toThrow('07/07');
   });
 });

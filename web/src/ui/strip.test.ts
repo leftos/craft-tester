@@ -3,11 +3,12 @@ import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
 import type { GeneratedScenario } from '@/scenario/generate.ts';
 import { generateScenario } from '@/scenario/generate.ts';
+import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import { createRng } from '@/scenario/rng.ts';
 import { stripRows } from '@/ui/strip.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
-const drawn = generateScenario(createRng(3), ksfo);
+const drawn = generateScenario(createRng(3), ksfo, ANY_SCENARIO);
 
 /** The drawn scenario with the given remarks filed, or with the remarks box left empty. */
 function withRemarks(remarks: string | undefined): GeneratedScenario {
