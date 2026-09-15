@@ -4,10 +4,19 @@ import { randomSeed, seedFromHash, seedToHash } from '@/scenario/rng.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
-import { renderResults } from '@/ui/results.ts';
+import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
+import type { SolvedStore } from '@/ui/solved.ts';
+import { browserSolvedStore } from '@/ui/solved.ts';
 import type { AppState, PickKey } from '@/ui/state.ts';
-import { newSession, shareLink, toPlayerPicks, withPick, withSubmitted } from '@/ui/state.ts';
+import {
+  newSession,
+  shareLink,
+  toPlayerPicks,
+  withPick,
+  withRetry,
+  withSubmitted,
+} from '@/ui/state.ts';
 import { renderStrip } from '@/ui/strip.ts';
 
 /** What the page's controls call back into. */
@@ -15,6 +24,7 @@ type Actions = {
   onAirport: (icao: string) => void;
   onNewScenario: () => void;
   onPick: (key: PickKey, raw: string) => void;
+  onRetry: () => void;
   onSubmit: () => void;
 };
 
@@ -73,6 +83,17 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
   }
   const { generated, clearance } = state.view;
   const panels = [renderStrip(generated), renderAtis(generated.scenario, state.airport)];
+  if (state.revisit !== undefined && !state.submitted) {
+    panels.push(
+      renderRevisit({
+        grades: grade(state.revisit, clearance, state.airport.sids),
+        spoken: spokenFor(generated.scenario, clearance, state.airport),
+        onNext: actions.onNewScenario,
+        onRetry: actions.onRetry,
+      }),
+    );
+    return panels;
+  }
   const picks = toPlayerPicks(state.picks);
   if (state.submitted && picks !== undefined) {
     panels.push(
@@ -80,6 +101,7 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
         grades: grade(picks, clearance, state.airport.sids),
         spoken: spokenFor(generated.scenario, clearance, state.airport),
         onNext: actions.onNewScenario,
+        onRetry: actions.onRetry,
       }),
     );
     return panels;
@@ -106,7 +128,7 @@ function renderApp(state: AppState, index: AirportsIndex, actions: Actions): HTM
 }
 
 /** Holds the state, rewrites the hash, and renders the page after every change. */
-function mount(root: Element, index: AirportsIndex, initial: AppState): void {
+function mount(root: Element, index: AirportsIndex, initial: AppState, store: SolvedStore): void {
   let state = initial;
   let actions: Actions;
 
@@ -119,16 +141,23 @@ function mount(root: Element, index: AirportsIndex, initial: AppState): void {
   actions = {
     onAirport: (icao) => {
       void loadAirportData(icao).then((airport) => {
-        update(newSession(airport, state.seed));
+        update(newSession(airport, state.seed, store.load(icao, state.seed)));
       });
     },
     onNewScenario: () => {
-      update(newSession(state.airport, randomSeed()));
+      const seed = randomSeed();
+      const { icao } = state.airport.airport;
+      update(newSession(state.airport, seed, store.load(icao, seed)));
     },
     onPick: (key, raw) => {
       update(withPick(state, key, raw));
     },
+    onRetry: () => {
+      update(withRetry(state));
+    },
     onSubmit: () => {
+      const picks = toPlayerPicks(state.picks);
+      if (picks !== undefined) store.save(state.airport.airport.icao, state.seed, picks);
       update(withSubmitted(state));
     },
   };
@@ -150,5 +179,6 @@ export async function startApp(root: Element): Promise<void> {
   if (first === undefined) throw new Error('airports.json lists no airports');
   const airport = await loadAirportData(first.icao);
   const seed = seedFromHash(globalThis.location.hash) ?? randomSeed();
-  mount(root, index, newSession(airport, seed));
+  const store = browserSolvedStore();
+  mount(root, index, newSession(airport, seed, store.load(first.icao, seed)), store);
 }

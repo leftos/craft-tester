@@ -8,6 +8,7 @@ export type ResultsProps = {
   grades: readonly Grade[];
   spoken: SpokenClearance;
   onNext: () => void;
+  onRetry: () => void;
 };
 
 /**
@@ -72,16 +73,52 @@ function revealPanel(spoken: SpokenClearance): HTMLElement {
   return panel;
 }
 
+/** The score, a verdict per element with its citations, and the spoken reveal. */
+function resultsBody(props: ResultsProps): HTMLElement[] {
+  return [
+    el('p', 'score', scoreLine(props.grades)),
+    ...props.grades.map((verdict) => gradeRow(verdict)),
+    revealPanel(props.spoken),
+  ];
+}
+
+/** The two ways on from a graded clearance: answer this scenario again, or take another. */
+function actionRow(props: ResultsProps): HTMLElement {
+  const row = el('div', 'actions');
+  row.append(
+    button('Retry', 'primary', props.onRetry),
+    button('Next scenario', 'primary', props.onNext),
+  );
+  return row;
+}
+
 /**
  * Renders the results: a verdict per element with its citations, then the spoken reveal.
  *
- * @param props The verdicts, the spoken clearance, and the handler for the next scenario.
+ * @param props The verdicts, the spoken clearance, and the handlers for retry and next scenario.
  * @returns The results panel.
  */
 export function renderResults(props: ResultsProps): HTMLElement {
   const panel = el('section', 'panel results');
-  panel.append(el('h2', '', 'Results'), el('p', 'score', scoreLine(props.grades)));
-  for (const verdict of props.grades) panel.append(gradeRow(verdict));
-  panel.append(revealPanel(props.spoken), button('Next scenario', 'primary', props.onNext));
+  panel.append(el('h2', '', 'Results'), ...resultsBody(props), actionRow(props));
+  return panel;
+}
+
+/**
+ * Renders a scenario this browser has already answered, with the earlier result behind a spoiler.
+ *
+ * @param props The verdicts of the earlier answer, the spoken clearance, and the two handlers.
+ * @returns The revisit panel.
+ */
+export function renderRevisit(props: ResultsProps): HTMLElement {
+  const panel = el('section', 'panel results revisit');
+  const spoiler = el('details', 'spoiler');
+  spoiler.append(el('summary', '', 'Show your result and the solution'), ...resultsBody(props));
+  panel.append(
+    el('h2', '', 'Already solved'),
+    el('p', 'muted', 'You submitted a clearance for this scenario before.'),
+    spoiler,
+    actionRow(props),
+  );
   return panel;
 }
