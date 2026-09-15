@@ -85,10 +85,15 @@ class AirportInfo:
 
 @dataclass(frozen=True, slots=True)
 class DepartureRunway:
-    """One runway of a configuration and the aircraft classes that depart from it."""
+    """One runway of a configuration and the aircraft classes that depart from it.
+
+    ``default_for_classes`` names the classes this runway is the default for in the configuration,
+    ahead of the direction-of-turn preference; it is empty on a row that is no default.
+    """
 
     runway: str
     classes: tuple[AircraftClass, ...]
+    default_for_classes: tuple[AircraftClass, ...]
     note: str | None
 
 
