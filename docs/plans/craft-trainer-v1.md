@@ -208,7 +208,7 @@ X:\dev\craft-tester\
 - `assignmentRules[]` ordered, first compatible match wins: `{id, source, text, plan, direction, runwayFamilies, classes, sidFamily, sector, when? {configs, notConfigs, noiseWindow, rnav}}`
 - `noiseWindows[] {id, start, end, sundayEnd?}`
 - `altitudeRules[]` ordered: `{id, source, text, plan, runwayFamilies, classes, sidFamilies?, outcome {kind: interim|climb_via, feet?}, whenTopAltitudePublished: interim|climb_via, expectAfterMinutes}`
-- `phraseology {expectAltitude: always|only_when_interim_below_filed|never, nonStandardInterimExpectMinutes: 3, vectorHybridTransitionsSpoken: false}` plus a small `phraseologyRules[]` table quoting 7110.65 4-3-2 for citations
+- `phraseology {expectAltitude: always|unless_chart_publishes_it|never, nonStandardInterimExpectMinutes: 3, vectorHybridTransitionsSpoken: false}` (the clause is never spoken when the filed altitude is the altitude cleared to; `unless_chart_publishes_it` also drops it when `sids[].chartExpectFiledAltitudeMinutes` is set) plus a small `phraseologyRules[]` table quoting 7110.65 4-3-2 for citations
 - `aircraftClasses {type: P|T|J}`, `routeLibrary {destinations[], fleet[], routes[{exitFix, tail, destination, classes, altitudes}]}`
 
 ### Fixture schema (`fixtures/**/*.json`)
