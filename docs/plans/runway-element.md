@@ -42,7 +42,7 @@ below).
 - [x] 1. Data + schema + generator (landed 2026-09-15): `sop.yaml` `runway_configs[].source`, four `RWY-*`
   rows; `schema.ts` `RunwayConfigSchema.source`, `ScenarioSchema.remarks` optional; `sop/model.py`,
   `sop/load.py`, `merge.py`, tests; `pnpm -C web schema:export`; `craft-gen build`; `data/ksfo.json`
-- [ ] 2. Engine + grading (web worktree): `rules/runway.ts` `explainRunway`; `ResolvedClearance.runway:
+- [x] 2. Engine + grading (landed 2026-09-15; `labels.test.ts` still hand-lists the elements without `RWY`, fold into step 3): `rules/runway.ts` `explainRunway`; `ResolvedClearance.runway:
   Cited<string>` replaces the bare `departureRunway`; `ClearanceElement` gains `RWY`; `PlayerPicks.runway`;
   `options.ts` `runways`; `grade.ts` `gradeRunway`; `toExpectedClearance` unchanged; `propose.ts` prints
   the runway line with citations; tests. Also: `PlayerPicks` gains a field, so `ui/solved.ts` must
