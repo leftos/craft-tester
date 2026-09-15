@@ -5,6 +5,7 @@ import { resolveClearance } from '@/rules/engine.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
+import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import type { GeneratedScenario } from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
@@ -67,12 +68,17 @@ function reasonOf(error: unknown): string {
  *
  * @param airport The airport data the scenario is drawn from.
  * @param seed The scenario seed, which the URL hash carries.
+ * @param filter The time of day and runway configurations the draw is narrowed to.
  * @returns The scenario with its clearance, or the reasons no clearance could be issued.
  */
-export function buildScenario(airport: AirportData, seed: number): ScenarioView {
+export function buildScenario(
+  airport: AirportData,
+  seed: number,
+  filter: ScenarioFilter,
+): ScenarioView {
   let generated: GeneratedScenario;
   try {
-    generated = generateScenario(createRng(seed), airport);
+    generated = generateScenario(createRng(seed), airport, filter);
   } catch (error) {
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }

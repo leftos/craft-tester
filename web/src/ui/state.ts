@@ -1,7 +1,8 @@
 import type { AirportData, AltitudePhrase, RouteTemplate } from '@/data/schema.ts';
 import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
-import { seedToHash } from '@/scenario/rng.ts';
+import type { ScenarioFilter } from '@/scenario/filter.ts';
+import { hashFor } from '@/scenario/filter.ts';
 import { buildScenario } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 
@@ -50,6 +51,8 @@ export const EMPTY_PICKS: DraftPicks = {
 export type AppState = {
   airport: AirportData;
   seed: number;
+  /** What the player has narrowed the draw to; the URL hash carries it beside the seed. */
+  filter: ScenarioFilter;
   view: ScenarioView;
   picks: DraftPicks;
   submitted: boolean;
@@ -176,21 +179,45 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
  * @param airport The airport data.
  * @param seed The scenario seed.
  * @param previous The clearance an earlier attempt at this seed submitted, or `undefined`.
+ * @param filter The time of day and runway configurations the draw is narrowed to.
  * @returns The state the page renders from.
  */
 export function newSession(
   airport: AirportData,
   seed: number,
   previous: PlayerPicks | undefined,
+  filter: ScenarioFilter,
 ): AppState {
   return {
     airport,
     seed,
-    view: buildScenario(airport, seed),
+    filter,
+    view: buildScenario(airport, seed, filter),
     picks: EMPTY_PICKS,
     submitted: false,
     revisit: previous,
   };
+}
+
+/**
+ * Draws a fresh scenario on the same airport under a filter the player just changed.
+ *
+ * The filter narrows which scenarios exist, so the seed on screen means something else under it;
+ * the caller draws a new one rather than showing the same seed under two filters.
+ *
+ * @param state The state before the change.
+ * @param filter The filter the player now asks for.
+ * @param seed The seed of the fresh scenario, which the caller draws.
+ * @param previous The clearance an earlier attempt at that seed submitted, or `undefined`.
+ * @returns A new session on the same airport, with an untouched form.
+ */
+export function withFilter(
+  state: AppState,
+  filter: ScenarioFilter,
+  seed: number,
+  previous: PlayerPicks | undefined,
+): AppState {
+  return newSession(state.airport, seed, previous, filter);
 }
 
 /**
@@ -232,10 +259,11 @@ export function withSubmitted(state: AppState): AppState {
  *
  * @param href The page's current URL.
  * @param seed The seed the link restores.
- * @returns The same URL with the seed in its hash.
+ * @param filter The filter the link restores with it, so the seed draws the same scenario.
+ * @returns The same URL with the seed and the filter in its hash.
  */
-export function shareLink(href: string, seed: number): string {
+export function shareLink(href: string, seed: number, filter: ScenarioFilter): string {
   const url = new URL(href);
-  url.hash = seedToHash(seed);
+  url.hash = hashFor(seed, filter);
   return url.toString();
 }
