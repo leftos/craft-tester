@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "RKSI",
+    "expect": {
+      "feet": 28000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "RBL",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "SFO"
+  },
+  "id": "syn-sfo5-rbl-28l-28so-heavy",
+  "scenario": {
+    "aircraftType": "B77L",
+    "callsign": "KAL214",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "RKSI",
+    "filedAltitude": 28000,
+    "filedRoute": "SFO4 RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO J179 SMA B932 KIVAK G349 MARCC",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "2431"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "Phraseology Practice 3: a heavy filed to a conventional fix (RBL) off 28L in 28 SO. The worksheet files SFO4, and SFOW-N-SFO-01 names exactly this case (the worksheets clear a B77L/L via SFO# RBL), but that row is runway 01 only, so the engine issues GAPP# instead; every other element agrees. Pending until the user settles whether SFO# is the northbound fallback off the 28s as well."
+  },
+  "status": "pending"
+}

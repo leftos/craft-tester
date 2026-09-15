@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSLC",
+    "expect": {
+      "feet": 37000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "MOGEE",
+      "template": "transition"
+    },
+    "sidFamily": "TRUKN"
+  },
+  "id": "syn-trukn2-mogee-01r-weekday-morning",
+  "scenario": {
+    "aircraftType": "A319",
+    "callsign": "UAL1652",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01R",
+    "destination": "KSLC",
+    "filedAltitude": 37000,
+    "filedRoute": "TRUKN2 MOGEE Q124 BVL WAATS5",
+    "localTime": "0730",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "5172"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "The same 0730 departure on a Tuesday, when the noise window has closed and SFOW-N-TRUKN-01 applies again"
+  },
+  "status": "settled"
+}

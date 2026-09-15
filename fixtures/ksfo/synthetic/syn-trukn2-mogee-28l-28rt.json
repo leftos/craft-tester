@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSLC",
+    "expect": {
+      "feet": 37000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "MOGEE",
+      "template": "transition"
+    },
+    "sidFamily": "TRUKN"
+  },
+  "id": "syn-trukn2-mogee-28l-28rt",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA1421",
+    "dayOfWeek": "wednesday",
+    "departureRunway": "28L",
+    "destination": "KSLC",
+    "filedAltitude": 37000,
+    "filedRoute": "TRUKN2 MOGEE Q124 BVL WAATS5",
+    "localTime": "1530",
+    "rnavCapable": true,
+    "runwayConfigId": "28 RT",
+    "squawk": "4532"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-N-TRUKN-28: northbound off the 28s while the TRUKN DP is in use (configs: 28 RT)"
+  },
+  "status": "settled"
+}

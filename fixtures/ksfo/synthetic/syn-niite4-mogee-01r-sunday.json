@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSLC",
+    "expect": {
+      "feet": 39000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "MOGEE",
+      "template": "transition"
+    },
+    "sidFamily": "NIITE"
+  },
+  "id": "syn-niite4-mogee-01r-sunday",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "ASA612",
+    "dayOfWeek": "sunday",
+    "departureRunway": "01R",
+    "destination": "KSLC",
+    "filedAltitude": 39000,
+    "filedRoute": "NIITE4 MOGEE Q124 BVL WAATS5",
+    "localTime": "0730",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "5170"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-NOISE-N-NIITE at 0730 on a Sunday, when the noise window runs to 0800L instead of 0700L"
+  },
+  "status": "settled"
+}

@@ -15,7 +15,8 @@
     "fmt:check": "oxfmt --check",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "schema:export": "node scripts/export-schema.ts"
+    "schema:export": "node scripts/export-schema.ts",
+    "propose": "node scripts/propose.ts"
   },
   "dependencies": {
     "zod": "4.6.5"

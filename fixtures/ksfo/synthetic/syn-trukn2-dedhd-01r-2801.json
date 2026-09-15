@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSEA",
+    "expect": {
+      "feet": 34000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "DEDHD",
+      "template": "transition"
+    },
+    "sidFamily": "TRUKN"
+  },
+  "id": "syn-trukn2-dedhd-01r-2801",
+  "scenario": {
+    "aircraftType": "A320",
+    "callsign": "UAL418",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01R",
+    "destination": "KSEA",
+    "filedAltitude": 34000,
+    "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
+    "localTime": "1430",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4271"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-N-TRUKN-01: northbound off the 01s; TRUKN2 publishes FL190, so SFOW-J-10000 defers to the SID (whenTopAltitudePublished: climb_via)"
+  },
+  "status": "settled"
+}

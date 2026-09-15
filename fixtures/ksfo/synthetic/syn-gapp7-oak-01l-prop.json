@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 5000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KTRK",
+    "expect": {
+      "feet": 15000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "OAK",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
+  "id": "syn-gapp7-oak-01l-prop",
+  "scenario": {
+    "aircraftType": "M20T",
+    "callsign": "N724RM",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KTRK",
+    "filedAltitude": 15000,
+    "filedRoute": "GAPP7 OAK V244 ALTAM V392 SAC V6 SWR TRUCK",
+    "localTime": "1105",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4223"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-N-GAPP-PROPS with SFOW-PT-5000: GAPP7 publishes no crossing restrictions, so the interim altitude is spoken as maintain, and its OAK leg is a CIFP vector transition spoken as radar vectors"
+  },
+  "status": "settled"
+}

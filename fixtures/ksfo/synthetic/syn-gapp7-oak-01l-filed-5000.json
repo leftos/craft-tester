@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 5000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KSMF",
+    "expect": {
+      "feet": 5000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "OAK",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
+  "id": "syn-gapp7-oak-01l-filed-5000",
+  "scenario": {
+    "aircraftType": "C172",
+    "callsign": "N9184C",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KSMF",
+    "filedAltitude": 5000,
+    "filedRoute": "GAPP7 OAK V6 SAC",
+    "localTime": "1415",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4225"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-PT-5000 capped at the filed altitude: the interim altitude and the filed altitude are both 5,000, so the clearance says maintain 5,000 and phraseology.expectAltitude: always still adds expect 5,000 one zero minutes after departure. Whether that expect clause is spoken when it repeats the altitude just issued is an open validation question."
+  },
+  "status": "settled"
+}

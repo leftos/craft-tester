@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSEA",
+    "expect": {
+      "feet": 32000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "DEDHD",
+      "template": "transition"
+    },
+    "sidFamily": "TRUKN"
+  },
+  "id": "syn-no-sid-dedhd-01r",
+  "scenario": {
+    "aircraftType": "A320",
+    "callsign": "UAL1878",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01R",
+    "destination": "KSEA",
+    "filedAltitude": 32000,
+    "filedRoute": "DEDHD RBL LMT HAWKZ7",
+    "localTime": "1510",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4262"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "A filed route with no procedure at all: the exit fix is the first token and the SOP row still assigns TRUKN#"
+  },
+  "status": "settled"
+}

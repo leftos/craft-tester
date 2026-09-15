@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 5000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KACV",
+    "expect": {
+      "feet": 16000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "SGD",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
+  "id": "syn-gapp7-sgd-01l-turboprop",
+  "scenario": {
+    "aircraftType": "B350",
+    "callsign": "N480KB",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KACV",
+    "filedAltitude": 16000,
+    "filedRoute": "GAPP7 SGD YAGER",
+    "localTime": "1340",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4231"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "The CBT routes props and small turboprops via GAPP# regardless of RNAV capability, and Phraseology Practice 2 files GAPP7 SGD YAGER off the 01s. SFOW-N-GAPP-PROPS is class P only, so the engine falls through to SFOW-N-SFO-01 and issues SFO5 with climb via SID except maintain 5,000 instead. Pending until the user settles whether the GAPP# props row covers turboprops."
+  },
+  "status": "pending"
+}

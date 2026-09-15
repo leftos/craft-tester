@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KBOI",
+    "expect": {
+      "feet": 39000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "SAC",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
+  "id": "syn-gapp7-sac-28l-nonrnav-jet",
+  "scenario": {
+    "aircraftType": "B752",
+    "callsign": "FDX1420",
+    "dayOfWeek": "monday",
+    "departureRunway": "28L",
+    "destination": "KBOI",
+    "filedAltitude": 39000,
+    "filedRoute": "GAPP7 SAC ANAHO",
+    "localTime": "1520",
+    "rnavCapable": false,
+    "runwayConfigId": "28 SO",
+    "squawk": "5044"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-N-GAPP-28: the northbound fallback off the 28s for a jet that cannot fly an RNAV SID, with SFOW-28-3000 spoken as maintain"
+  },
+  "status": "settled"
+}

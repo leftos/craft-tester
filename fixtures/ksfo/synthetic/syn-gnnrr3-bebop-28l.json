@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "PHNL",
+    "expect": {
+      "feet": 35000,
+      "minutes": 10
+    },
+    "frequency": "135.1",
+    "route": {
+      "fix": "BEBOP",
+      "template": "transition"
+    },
+    "sidFamily": "GNNRR"
+  },
+  "id": "syn-gnnrr3-bebop-28l",
+  "scenario": {
+    "aircraftType": "B788",
+    "callsign": "UAL867",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "PHNL",
+    "filedAltitude": 35000,
+    "filedRoute": "GNNRR3 BEBOP R464 BILLO R464 BITTA MAGGI3",
+    "localTime": "1340",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "2617"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-O-GNNRR-28: oceanic off the 28s in 28/01, the configuration exception SOP 2-1 e allows; GNNRR3 publishes 3,000 so the interim row defers to the SID"
+  },
+  "status": "settled"
+}

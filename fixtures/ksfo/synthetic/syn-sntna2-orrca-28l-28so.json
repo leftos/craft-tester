@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KBOI",
+    "expect": {
+      "feet": 41000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "ORRCA",
+      "template": "transition"
+    },
+    "sidFamily": "SNTNA"
+  },
+  "id": "syn-sntna2-orrca-28l-28so",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA2210",
+    "dayOfWeek": "thursday",
+    "departureRunway": "28L",
+    "destination": "KBOI",
+    "filedAltitude": 41000,
+    "filedRoute": "SNTNA2 ORRCA ANAHO PRNCS SADYL3",
+    "localTime": "1145",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "5123"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-N-SNTNA-28: SNTNA# replaces TRUKN# off the 28s when the TRUKN DP is not in use (notConfigs: 28 RT)"
+  },
+  "status": "settled"
+}

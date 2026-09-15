@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KPDX",
+    "expect": {
+      "feet": 34000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "GRTFL",
+      "template": "transition"
+    },
+    "sidFamily": "TRUKN"
+  },
+  "id": "syn-stale-trukn1-grtfl-01r",
+  "scenario": {
+    "aircraftType": "A320",
+    "callsign": "UAL1877",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01R",
+    "destination": "KPDX",
+    "filedAltitude": 34000,
+    "filedRoute": "TRUKN1 GRTFL MACHU TMBRS2",
+    "localTime": "1500",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4261"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "A stale procedure version in the filed route: TRUKN1 is stripped like any other procedure token and the flight is cleared on the current TRUKN family"
+  },
+  "status": "settled"
+}

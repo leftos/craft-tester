@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSAN",
+    "expect": {
+      "feet": 41000,
+      "minutes": 10
+    },
+    "frequency": "135.1",
+    "route": {
+      "fix": "YYUNG",
+      "template": "transition"
+    },
+    "sidFamily": "SSTIK"
+  },
+  "id": "syn-sstik5-yyung-01l-segul-off",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA1188",
+    "dayOfWeek": "monday",
+    "departureRunway": "01L",
+    "destination": "KSAN",
+    "filedAltitude": 41000,
+    "filedRoute": "SEGUL1 YYUNG LAX COMIX2",
+    "localTime": "1020",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "3345"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFO-SEGUL-OFF is active by default, so the SFOW-S-SEGUL row drops out and SSTIK#.YYUNG is issued instead"
+  },
+  "status": "settled"
+}

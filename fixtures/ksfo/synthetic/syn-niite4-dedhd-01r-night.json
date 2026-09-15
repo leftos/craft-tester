@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSEA",
+    "expect": {
+      "feet": 34000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "DEDHD",
+      "template": "transition"
+    },
+    "sidFamily": "NIITE"
+  },
+  "id": "syn-niite4-dedhd-01r-night",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "DAL1930",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01R",
+    "destination": "KSEA",
+    "filedAltitude": 34000,
+    "filedRoute": "NIITE4 DEDHD RBL LMT HAWKZ7",
+    "localTime": "2300",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "6231"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-NOISE-N-NIITE: northbound inside the 2200L-0700L noise window"
+  },
+  "status": "settled"
+}

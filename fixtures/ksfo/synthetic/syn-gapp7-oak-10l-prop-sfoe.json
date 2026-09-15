@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 5000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KSMF",
+    "expect": {
+      "feet": 6000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "fix": "OAK",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
+  "id": "syn-gapp7-oak-10l-prop-sfoe",
+  "scenario": {
+    "aircraftType": "C172",
+    "callsign": "N578JC",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "10L",
+    "destination": "KSMF",
+    "filedAltitude": 6000,
+    "filedRoute": "GAPP7 OAK V6 SAC",
+    "localTime": "1210",
+    "rnavCapable": true,
+    "runwayConfigId": "10/10",
+    "squawk": "6421"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOE-N-GAPP: CIITY3 does not serve the conventional fix OAK, so the northbound fallback applies and hands off to Richmond 120.9 with SFOE-PT-5000"
+  },
+  "status": "settled"
+}

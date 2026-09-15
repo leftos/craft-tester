@@ -1,0 +1,38 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KLAX",
+    "expect": {
+      "feet": 35000,
+      "minutes": 10
+    },
+    "frequency": "135.1",
+    "route": {
+      "fix": "SUSEY",
+      "template": "transition"
+    },
+    "sidFamily": "SSTIK"
+  },
+  "id": "syn-sstik5-susey-01l",
+  "scenario": {
+    "aircraftType": "A320",
+    "callsign": "NKS642",
+    "dayOfWeek": "friday",
+    "departureRunway": "01L",
+    "destination": "KLAX",
+    "filedAltitude": 35000,
+    "filedRoute": "SSTIK5 SUSEY EBAYE BURGL IRNMN2",
+    "localTime": "1615",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4406"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-S-SSTIK-01: southbound jets off 1L, which allows parallel departures with TRUKN# off 1R"
+  },
+  "status": "settled"
+}

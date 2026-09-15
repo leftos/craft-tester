@@ -1,0 +1,39 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KLAX",
+    "expect": {
+      "feet": 35000,
+      "minutes": 10
+    },
+    "frequency": "135.1",
+    "route": {
+      "fix": "SUSEY",
+      "template": "transition"
+    },
+    "sidFamily": "WESLA"
+  },
+  "id": "syn-wesla5-susey-28l",
+  "scenario": {
+    "aircraftType": "A320",
+    "callsign": "JBU918",
+    "dayOfWeek": "saturday",
+    "departureRunway": "28L",
+    "destination": "KLAX",
+    "filedAltitude": 35000,
+    "filedRoute": "WESLA5 SUSEY EBAYE BURGL IRNMN2",
+    "localTime": "1305",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4411"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "SFOW-S-WESLA-28 with SFOW-28-3000: WESLA# publishes no top altitude, so the interim altitude is spoken as climb via SID except maintain 3,000"
+  },
+  "status": "settled"
+}

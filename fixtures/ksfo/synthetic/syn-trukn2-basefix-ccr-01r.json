@@ -1,0 +1,37 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSMF",
+    "expect": {
+      "feet": 11000,
+      "minutes": 10
+    },
+    "frequency": "120.9",
+    "route": {
+      "template": "as_filed"
+    },
+    "sidFamily": "TRUKN"
+  },
+  "id": "syn-trukn2-basefix-ccr-01r",
+  "scenario": {
+    "aircraftType": "TBM9",
+    "callsign": "N221TB",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01R",
+    "destination": "KSMF",
+    "filedAltitude": 11000,
+    "filedRoute": "TRUKN2 TRUKN CCR CCR2",
+    "localTime": "1230",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4117"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "The flight leaves TRUKN2 at its base fix, so the route is spoken \"then as filed\"; TRUKN2 publishes FL190, so SFOW-PT-5000 defers to the SID and the expect clause carries the filed 11,000"
+  },
+  "status": "settled"
+}
