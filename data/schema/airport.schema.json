@@ -1041,10 +1041,14 @@
           },
           "plan": {
             "type": "string"
+          },
+          "source": {
+            "type": "string"
           }
         },
         "required": [
           "id",
+          "source",
           "name",
           "plan",
           "arrivalRunways",

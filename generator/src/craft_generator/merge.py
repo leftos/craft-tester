@@ -200,6 +200,7 @@ def _departure_runway(runway: DepartureRunway) -> Document:
 def _runway_config(config: RunwayConfig) -> Document:
     return {
         "id": config.id,
+        "source": config.source,
         "name": config.name,
         "plan": config.plan,
         "arrivalRunways": list(config.arrival_runways),

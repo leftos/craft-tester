@@ -1064,6 +1064,26 @@
       "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
     },
     {
+      "id": "RWY-CLASS-DEFAULT",
+      "source": "SFO ATCT SOP 1-7; user review 2026-09-15 (N483KA)",
+      "text": "The configuration departs this aircraft class from this runway by default, before the direction-of-turn split: in 28/01, props and turboprops depart 28R at intersection Echo, a short taxi from the north ramp"
+    },
+    {
+      "id": "RWY-ON-REQUEST",
+      "source": "SFO ATCT SOP 2-1 e; user review 2026-09-15 (FDX1563, UPS2896)",
+      "text": "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honoured"
+    },
+    {
+      "id": "RWY-DIRECTION",
+      "source": "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?",
+      "text": "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the 28s and the SFOE families"
+    },
+    {
+      "id": "RWY-FIRST",
+      "source": "SFO ATCT SOP 1-7",
+      "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
+    },
+    {
       "id": "A-CLIMB-VIA",
       "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
       "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO the SOP interim table applies to every SID, so this form does not occur in clearance mode"
@@ -2270,7 +2290,8 @@
       ],
       "id": "01/01",
       "name": "Landing and departing runways 01",
-      "plan": "SFOW"
+      "plan": "SFOW",
+      "source": "SFO ATCT SOP 1-7"
     },
     {
       "arrivalRunways": [
@@ -2340,7 +2361,8 @@
       ],
       "id": "28/01",
       "name": "Landing runways 28, departing runways 01",
-      "plan": "SFOW"
+      "plan": "SFOW",
+      "source": "SFO ATCT SOP 1-7"
     },
     {
       "arrivalRunways": [
@@ -2371,7 +2393,8 @@
       ],
       "id": "28 RT",
       "name": "Landing and departing runways 28, right turn (TRUKN DP in use)",
-      "plan": "SFOW"
+      "plan": "SFOW",
+      "source": "SFO ATCT SOP 1-7"
     },
     {
       "arrivalRunways": [
@@ -2402,7 +2425,8 @@
       ],
       "id": "28 SO",
       "name": "Landing and departing runways 28, straight out (TRUKN DP not in use)",
-      "plan": "SFOW"
+      "plan": "SFOW",
+      "source": "SFO ATCT SOP 1-7"
     },
     {
       "arrivalRunways": [
@@ -2433,7 +2457,8 @@
       ],
       "id": "10/10",
       "name": "Landing and departing runways 10",
-      "plan": "SFOE"
+      "plan": "SFOE",
+      "source": "SFO ATCT SOP 1-7"
     },
     {
       "arrivalRunways": [
@@ -2464,7 +2489,8 @@
       ],
       "id": "19/10",
       "name": "Landing runways 19, departing runways 10",
-      "plan": "SFOE"
+      "plan": "SFOE",
+      "source": "SFO ATCT SOP 1-7"
     },
     {
       "arrivalRunways": [
@@ -2495,7 +2521,8 @@
       ],
       "id": "19/19",
       "name": "Landing and departing runways 19",
-      "plan": "SFOE"
+      "plan": "SFOE",
+      "source": "SFO ATCT SOP 1-7"
     }
   ],
   "sids": [

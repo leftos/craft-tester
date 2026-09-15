@@ -60,6 +60,7 @@ def test_runway_configs_and_sectors(ksfo_inputs: AirportInputs) -> None:
     sop = ksfo_inputs.sop
     configs = {config.id: config for config in sop.runway_configs}
     assert set(configs) == {"01/01", "28/01", "28 RT", "28 SO", "10/10", "19/10", "19/19"}
+    assert all(config.source == "SFO ATCT SOP 1-7" for config in sop.runway_configs)
     assert configs["28/01"].plan == "SFOW"
     twenty_eight_left = next(runway for runway in configs["28/01"].departure_runways if runway.runway == "28L")
     assert twenty_eight_left.classes == ("J",)
@@ -119,7 +120,15 @@ def test_altitude_rules_notices_and_phraseology(ksfo_inputs: AirportInputs) -> N
     assert sop.phraseology.expect_altitude == "unless_chart_publishes_it"
     assert sop.phraseology.non_standard_interim_expect_minutes == 3
     assert sop.phraseology.vector_hybrid_transitions_spoken is False
-    assert {"R-TRANSITION", "R-AIRWAY", "R-NAVAID"} <= {rule.id for rule in sop.phraseology_rules}
+    assert {
+        "R-TRANSITION",
+        "R-AIRWAY",
+        "R-NAVAID",
+        "RWY-CLASS-DEFAULT",
+        "RWY-ON-REQUEST",
+        "RWY-DIRECTION",
+        "RWY-FIRST",
+    } <= {rule.id for rule in sop.phraseology_rules}
 
 
 def test_overrides_carry_per_runway_facts(ksfo_inputs: AirportInputs) -> None:

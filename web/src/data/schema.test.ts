@@ -45,6 +45,7 @@ const minimalAirportData: AirportData = {
   runwayConfigs: [
     {
       id: '28/01',
+      source: 'SFO ATCT SOP 1-7',
       name: 'Landing runways 28, departing runways 01',
       plan: 'SFOW',
       arrivalRunways: ['28L', '28R'],
