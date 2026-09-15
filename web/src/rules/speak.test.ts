@@ -7,6 +7,7 @@ import {
   speakFix,
   speakFrequency,
   speakRouteToken,
+  speakRunway,
 } from '@/rules/speak.ts';
 import type { SpeakClearanceInput } from '@/rules/speak.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
@@ -50,6 +51,21 @@ describe('speakDigits', () => {
     ['7', 'seven'],
   ])('speaks %s as "%s"', (digits, spoken) => {
     expect(speakDigits(digits)).toBe(spoken);
+  });
+});
+
+describe('speakRunway', () => {
+  it.each([
+    ['01R', 'one right'],
+    ['01L', 'one left'],
+    ['28L', 'two eight left'],
+    ['10R', 'one zero right'],
+    ['19L', 'one niner left'],
+    ['10C', 'one zero center'],
+    ['28', 'two eight'],
+    ['XYZ', 'XYZ'],
+  ])('speaks %s as "%s"', (runway, spoken) => {
+    expect(speakRunway(runway)).toBe(spoken);
   });
 });
 
@@ -149,14 +165,15 @@ function input(overrides: Partial<SpeakClearanceInput> = {}): SpeakClearanceInpu
 }
 
 const closing =
-  'Climb via SID. Departure frequency one two zero point niner, squawk three three four two.';
+  'Climb via SID. Departure frequency one two zero point niner, squawk three three four two. ' +
+  'Expect runway one right.';
 
 describe('speakClearance', () => {
   it('reads the abbreviated clearance the way clearance delivery does', () => {
     expect(speakClearance(input()).abbreviated).toBe(
       'United three twenty, cleared to Seattle airport, Trukn Two departure, Dedhd transition, ' +
         'then as filed. Climb via SID. Departure frequency one two zero point niner, ' +
-        'squawk three three four two.',
+        'squawk three three four two. Expect runway one right.',
     );
   });
 
@@ -164,8 +181,15 @@ describe('speakClearance', () => {
     expect(speakClearance(input()).fullRoute).toBe(
       'United three twenty, cleared to Seattle airport, Trukn Two departure, Dedhd transition, ' +
         'direct Red Bluff VOR, Hawkz Seven arrival. Climb via SID. ' +
-        'Departure frequency one two zero point niner, squawk three three four two.',
+        'Departure frequency one two zero point niner, squawk three three four two. ' +
+        'Expect runway one right.',
     );
+  });
+
+  it('ends both forms with the departure runway', () => {
+    const spoken = speakClearance(input());
+    expect(spoken.abbreviated).toMatch(/squawk three three four two\. Expect runway one right\.$/);
+    expect(spoken.fullRoute).toMatch(/squawk three three four two\. Expect runway one right\.$/);
   });
 
   it('speaks a transition by its published name and a vectored navaid by its facility', () => {
