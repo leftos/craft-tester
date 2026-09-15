@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-phraseology-practice-3-aca452",
+  "scenario": {
+    "aircraftType": "A320",
+    "callsign": "ACA452",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "CYVR",
+    "filedAltitude": 36000,
+    "filedRoute": "SNTNA2 DEDHD LMT BTG HAWKZ7",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "3371"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

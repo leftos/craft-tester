@@ -1,0 +1,714 @@
+﻿San Francisco IFR Clearance Phraseology Practice 2 (SFOW)
+Instructions: for each of the following flight plans, practice the full phraseology you would use when giving a voice clearance to the aircraft. Use full route clearance phraseology. All of the routing is correct, nothing needs to be amended.
+
+
+Flight Plan - N436MS
+
+
+Callsign:
+
+
+N436MS
+
+
+	A/C Type:
+
+
+TBM9/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KSMF
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+11000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3342
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+TRUKN2 TRUKN CCR CCR2
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - UPS2896
+
+
+Callsign:
+
+
+UPS2896
+
+
+	A/C Type:
+
+
+H/A306/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KRNO
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+21000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3357
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+SNTNA2 ORRCA TARVR SPOON
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - CMD70
+
+
+Callsign:
+
+
+CMD70
+
+
+	A/C Type:
+
+
+BE20/G
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KACV
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+18000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3371
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+GAPP7 SGD YAGER
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - FDX1563
+
+
+Callsign:
+
+
+FDX1563
+
+
+	A/C Type:
+
+
+B752/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KFAT
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+19000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3332
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+WESLA5 NTELL
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - N903JP
+
+
+Callsign:
+
+
+N903JP
+
+
+	A/C Type:
+
+
+C510/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KSBA
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+33000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3355
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+SEGUL1 YYUNG GVO HABUT
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - N172SP
+
+
+Callsign:
+
+
+N172SP
+
+
+	A/C Type:
+
+
+C172/G
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KMRY
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+7000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3331
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+GAPP7 EUGEN
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/

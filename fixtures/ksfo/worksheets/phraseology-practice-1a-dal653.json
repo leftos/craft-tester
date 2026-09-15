@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-phraseology-practice-1a-dal653",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "DAL653",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KSLC",
+    "filedAltitude": 39000,
+    "filedRoute": "TRUKN2 MOGEE Q124 BVL WAATS5",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "3332"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01L, the first runway configuration 28/01 departs, pending validation"
+  },
+  "status": "pending"
+}

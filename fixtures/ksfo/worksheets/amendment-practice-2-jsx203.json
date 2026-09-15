@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-2-jsx203",
+  "scenario": {
+    "aircraftType": "E135",
+    "callsign": "JSX203",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KLAS",
+    "filedAltitude": 35000,
+    "filedRoute": "WESLA4 NTELL Q158 JEDNA",
+    "localTime": "1400",
+    "rnavCapable": false,
+    "runwayConfigId": "28 RT",
+    "squawk": "4605"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+  },
+  "status": "pending"
+}

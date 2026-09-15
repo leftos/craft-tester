@@ -4,6 +4,7 @@ import argparse
 import io
 import sys
 import zipfile
+from collections import Counter
 from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
@@ -23,12 +24,23 @@ from craft_generator.cifp.airports import parse_airport_coordinates
 from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effective_date_for, effective_date_for_cycle
 from craft_generator.cifp.records import parse_records
 from craft_generator.cifp.sid import group_sids
-from craft_generator.emit import WriteResult, data_path, dump, schema_path, validate, write_or_check
+from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_path, schema_path, validate, write_or_check
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
-from craft_generator.sop.load import EQUIPMENT_SUFFIXES_FILE, SOP_FILE, airport_dir, load_airport, load_equipment_suffixes, load_sop, shared_dir
+from craft_generator.sop.load import (
+    EQUIPMENT_SUFFIXES_FILE,
+    SOP_FILE,
+    WORKSHEETS_FILE,
+    airport_dir,
+    load_airport,
+    load_equipment_suffixes,
+    load_sop,
+    load_worksheets,
+    shared_dir,
+)
 from craft_generator.sop.model import SopSource
 from craft_generator.sop.verify import sop_cache_path, verify_sop_source
+from craft_generator.worksheets import Fixture, fetch_worksheet_text, fixture_dir, rnav_suffixes, sheet_fixtures
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -90,6 +102,7 @@ def build_parser() -> argparse.ArgumentParser:
             sub.add_argument("--cycle", metavar="YYNN", help="AIRAC cycle id, e.g. 2609; defaults to the cycle effective today")
         if name == "build":
             sub.add_argument("--offline", action="store_true", help="use only the download cache, never the network")
+        if name in {"build", "import-worksheets"}:
             sub.add_argument("--check", action="store_true", help="fail instead of writing when the output differs from the committed file")
         if name in {"build", "verify-sop"}:
             sub.add_argument("--allow-sop-drift", action="store_true", help="report a changed sha256 as a warning while every sentinel still matches")
@@ -320,11 +333,54 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
     return EXIT_ERROR if result.status == "differs" else EXIT_OK
 
 
+def _fixture_result(path: Path, fixture: Fixture, *, check: bool) -> WriteResult:
+    validate(fixture, fixture_schema_path())
+    return write_or_check(path, dump(fixture), check=check)
+
+
+def _print_sheet_summary(title: str, results: Sequence[WriteResult]) -> None:
+    counts = Counter(result.status for result in results)
+    print(f"  {title}: {len(results)} plan(s), " + ", ".join(f"{count} {status}" for status, count in sorted(counts.items())))
+    for result in results:
+        if result.status == "differs":
+            print(f"    {result.path}: differs")
+            print(result.diff, end="")
+
+
+def import_worksheets(airport: str, *, check: bool = False, force: bool = False) -> int:
+    """Fetch the trainer worksheets of an airport and write one pending fixture per flight plan.
+
+    Args:
+        airport: Four-letter ICAO identifier, e.g. ``KSFO``.
+        check: Compare against the committed fixtures instead of writing them.
+        force: Re-download every worksheet.
+
+    Returns:
+        The process exit status: non-zero when ``check`` finds a committed fixture out of date.
+    """
+    directory = airport_dir(airport)
+    worksheets = load_worksheets(directory / WORKSHEETS_FILE)
+    configs = load_sop(directory / SOP_FILE).runway_configs
+    rnav = rnav_suffixes(load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE))
+    cache = cache_dir()
+    counts: Counter[str] = Counter()
+    print(f"{airport}: {len(worksheets)} worksheet(s) -> {fixture_dir(airport)}")
+    for worksheet in worksheets:
+        text = fetch_worksheet_text(worksheet, cache, force=force)
+        fixtures = sheet_fixtures(worksheet, text, icao=airport, configs=configs, rnav=rnav)
+        results = [_fixture_result(path, fixture, check=check) for path, fixture in fixtures.items()]
+        counts.update(result.status for result in results)
+        _print_sheet_summary(worksheet.title, results)
+    print(f"  {counts.total()} plan(s): " + ", ".join(f"{count} {status}" for status, count in sorted(counts.items())))
+    return EXIT_ERROR if counts["differs"] else EXIT_OK
+
+
 def _run(args: argparse.Namespace) -> int:
     handlers: dict[str, Callable[[], int]] = {
         "build": lambda: build(
             args.airport, args.cycle, offline=args.offline, check=args.check, force=args.force, allow_sop_drift=args.allow_sop_drift
         ),
+        "import-worksheets": lambda: import_worksheets(args.airport, check=args.check, force=args.force),
         "fetch-cifp": lambda: fetch_cifp(args.airport, args.cycle, force=args.force),
         "fetch-charts": lambda: fetch_charts(args.airport, force=args.force),
         "verify-sop": lambda: verify_sop(args.airport, allow_drift=args.allow_sop_drift, force=args.force),

@@ -1,0 +1,42 @@
+# Trainer worksheets from the S1-SFO-1 module on oakartcc.org, pulled 2026-09-15. Each row is a public
+# Google Doc exported as text from `https://docs.google.com/document/d/<id>/export?format=txt`.
+# `kind` picks the parser: `phraseology` sheets are flight-plan forms, `amendment` sheets are a
+# Callsign/Type/Dest./Altitude/Route table. `config` is the runway configuration the sheet declares in
+# its instructions, and is the `runway_configs` id the emitted fixtures carry. `phraseology` records
+# which reading the sheet drills; it is null on the amendment sheets, which drill no phraseology.
+worksheets:
+  - id: 15xXEKZHDHvb5YmRurVv5rXdgiHdO_RiMrfrRVFt6E8w
+    title: Phraseology Practice 1A
+    kind: phraseology
+    config: "28/01"
+    phraseology: abbreviated
+  - id: 1ipC_K-axKq8eaPFADa8dPKHsgHU-wsNh5Z1jgJHyfVw
+    title: Phraseology Practice 2
+    kind: phraseology
+    config: "28/01"
+    phraseology: full_route
+  - id: 1ocBGUKoB23NLV2hYK-P9rRfpXWy5Z19TsyprG4uKP5I
+    title: Phraseology Practice 3
+    kind: phraseology
+    config: "28 SO"
+    phraseology: abbreviated
+  - id: 1yLZA87NLY-9ZfGOGR2K7FJ0gx3-GjkQGaslnZ6nmesw
+    title: Amendment Practice 1A
+    kind: amendment
+    config: "28/01"
+    phraseology: null
+  - id: 1RrXqB6PTJi3xbXdwH9VXtcO70ea9-HWorv2JidRej78
+    title: Amendment Practice 1C
+    kind: amendment
+    config: "28 SO"
+    phraseology: null
+  - id: 1fld9dcjg9Kzo-apbjMVCvWKtNJUFOtMKayxCOHrWrH8
+    title: Amendment Practice 2
+    kind: amendment
+    config: "28 RT"
+    phraseology: null
+  - id: 1UgC3pa45psuYKSne-bJW5jrVU6L0A2vxOYZrTlZAuvM
+    title: Amendment Practice 3
+    kind: amendment
+    config: "28/01"
+    phraseology: null

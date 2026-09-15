@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-2-fdx3875",
+  "scenario": {
+    "aircraftType": "MD11",
+    "callsign": "FDX3875",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "PHNL",
+    "filedAltitude": 31000,
+    "filedRoute": "BEBOP R464 BILLO R464 BITTA MAGGI3",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 RT",
+    "squawk": "4613"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+  },
+  "status": "pending"
+}

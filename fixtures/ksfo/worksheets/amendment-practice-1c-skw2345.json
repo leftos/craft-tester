@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1c-skw2345",
+  "scenario": {
+    "aircraftType": "E75L",
+    "callsign": "SKW2345",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KSMF",
+    "filedAltitude": 19000,
+    "filedRoute": "SFO4 CCR CCR2",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4615"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

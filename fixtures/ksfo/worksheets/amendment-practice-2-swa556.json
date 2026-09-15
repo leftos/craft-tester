@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-2-swa556",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA556",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KSAN",
+    "filedAltitude": 37000,
+    "filedRoute": "SSTIK5 YYUNG LAX COMIX2",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 RT",
+    "squawk": "4606"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+  },
+  "status": "pending"
+}

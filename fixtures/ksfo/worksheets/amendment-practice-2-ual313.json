@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-2-ual313",
+  "scenario": {
+    "aircraftType": "B752",
+    "callsign": "UAL313",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KSLC",
+    "filedAltitude": 33000,
+    "filedRoute": "TRUKN2 MOGEE BVLQ124 BVL WAATS5",
+    "localTime": "1400",
+    "rnavCapable": false,
+    "runwayConfigId": "28 RT",
+    "squawk": "4614"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+  },
+  "status": "pending"
+}

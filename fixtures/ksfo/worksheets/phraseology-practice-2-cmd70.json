@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-phraseology-practice-2-cmd70",
+  "scenario": {
+    "aircraftType": "BE20",
+    "callsign": "CMD70",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KACV",
+    "filedAltitude": 18000,
+    "filedRoute": "GAPP7 SGD YAGER",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "3371"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 01L, the first runway configuration 28/01 departs, pending validation"
+  },
+  "status": "pending"
+}

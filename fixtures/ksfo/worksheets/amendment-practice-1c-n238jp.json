@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1c-n238jp",
+  "scenario": {
+    "aircraftType": "C55B",
+    "callsign": "N238JP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KJAC",
+    "filedAltitude": 32000,
+    "filedRoute": "TRUKN2 ORRCA Q120 GALLI PARZZ TUVOC LEIDY DNW",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4601"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

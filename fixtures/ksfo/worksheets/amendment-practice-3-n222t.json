@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-3-n222t",
+  "scenario": {
+    "aircraftType": "M20T",
+    "callsign": "N222T",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KWVI",
+    "filedAltitude": 7000,
+    "filedRoute": "OAK V107 CATHE V111 SNS",
+    "localTime": "1400",
+    "rnavCapable": false,
+    "runwayConfigId": "28/01",
+    "squawk": "4613"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 01L, the first runway configuration 28/01 departs, pending validation"
+  },
+  "status": "pending"
+}

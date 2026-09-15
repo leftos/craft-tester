@@ -27,9 +27,11 @@ from craft_generator.sop.model import (
     EXPECT_ALTITUDE_POLICIES,
     GATE_DIRECTIONS,
     NOTICE_EFFECT_KINDS,
+    PHRASEOLOGY_READINGS,
     ROUTE_PHRASINGS,
     TOP_ALTITUDE_KINDS,
     WAKE_CATEGORIES,
+    WORKSHEET_KINDS,
     AirportInfo,
     AirportInputs,
     AltitudeOutcome,
@@ -59,11 +61,13 @@ from craft_generator.sop.model import (
     SidTopAltitude,
     SopData,
     SopSource,
+    Worksheet,
 )
 
 SOP_FILE = "sop.yaml"
 OVERRIDES_FILE = "overrides.yaml"
 ROUTES_FILE = "routes.yaml"
+WORKSHEETS_FILE = "worksheets.yaml"
 EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
@@ -759,6 +763,49 @@ def load_equipment_suffixes(path: Path) -> tuple[EquipmentSuffix, ...]:
     suffixes = tuple(_equipment_suffix(child) for child in root.children("suffixes"))
     root.finish()
     return suffixes
+
+
+def _worksheet(row: _Row) -> Worksheet:
+    worksheet = Worksheet(
+        id=row.text("id"),
+        title=row.text("title"),
+        kind=row.choice("kind", WORKSHEET_KINDS),
+        config=row.optional_text("config"),
+        phraseology=row.optional_choice("phraseology", PHRASEOLOGY_READINGS),
+    )
+    row.finish()
+    return worksheet
+
+
+def _check_worksheets(worksheets: Sequence[Worksheet], where: str) -> None:
+    for key, values in (("id", [sheet.id for sheet in worksheets]), ("title", [sheet.title for sheet in worksheets])):
+        seen: set[str] = set()
+        for value in values:
+            if value in seen:
+                raise ValueError(f"{where}: two worksheets share the {key} {value!r}; each sheet is fetched and named by it, so both must be unique")
+            seen.add(value)
+
+
+def load_worksheets(path: Path) -> tuple[Worksheet, ...]:
+    """Load one airport's ``worksheets.yaml``.
+
+    Args:
+        path: Path to the file.
+
+    Returns:
+        One row per trainer worksheet, in file order.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, names a sheet kind or a
+            phraseology reading that does not exist, or repeats a document id or title.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    worksheets = tuple(_worksheet(child) for child in root.children("worksheets"))
+    root.finish()
+    _check_worksheets(worksheets, where)
+    return worksheets
 
 
 def _check_sid_families(sop: SopData, overrides: Overrides, where: str, overrides_where: str) -> None:

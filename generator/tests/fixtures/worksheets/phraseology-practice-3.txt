@@ -1,0 +1,710 @@
+﻿San Francisco IFR Clearance Phraseology Practice 3 (SFOW/28 SO Configuration)
+Instructions: for each of the following flight plans, practice the full phraseology you would use when giving a voice clearance to the aircraft. Use abbreviated clearance phraseology. All of the routing is correct, nothing needs to be amended.
+
+
+Flight Plan - FFT425
+
+
+Callsign:
+
+
+FFT425
+
+
+	A/C Type:
+
+
+A320/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KLAS
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+33000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3342
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+WESLA5 NTELL Q174 FLCHR COKTL2
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - SWA2096
+
+
+Callsign:
+
+
+SWA2096
+
+
+	A/C Type:
+
+
+B737/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KBUR
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+31000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3357
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+WESLA5 KTINA CISKO RDHOT ROKKR2
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - ACA452
+
+
+Callsign:
+
+
+ACA452
+
+
+	A/C Type:
+
+
+A320/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+CYVR
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+36000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3371
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+SNTNA2 DEDHD LMT BTG HAWKZ7
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - FDX1563
+
+
+Callsign:
+
+
+FDX1563
+
+
+	A/C Type:
+
+
+B77L/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+RKSI
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+28000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3332
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+SFO4 RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO J179 SMA B932 KIVAK G349 MARCC G583 BALUB P160 SEGUN P176 BENOK T575 DITOR L771 NULAR B467 KANSU Y233 BUSKO Y437 NOMEX B467 KAE G597 BIKSI
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - SWA436
+
+
+Callsign:
+
+
+SWA436
+
+
+	A/C Type:
+
+
+B737/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KSAN
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+37000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3355
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+SEGUL1 YYUNG LAX COMIX2
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Flight Plan - SWA1699
+
+
+Callsign:
+
+
+SWA1699
+
+
+	A/C Type:
+
+
+B737/L
+
+
+	Flight Rules:
+
+
+IFR
+
+
+
+
+
+
+Amend Plan
+
+
+
+
+	Depart:
+
+
+KSFO
+
+
+	Arrive:
+
+
+KBOI
+
+
+	Alternate:
+
+
+
+
+
+
+
+
+
+
+Refresh Plan
+
+
+
+
+	Cruise Alt:
+
+
+41000
+
+
+	Scratchpad:
+
+
+
+
+
+
+	Squawk:
+
+
+3331
+
+
+
+
+
+
+Assign Squawk
+
+
+
+
+	Route:
+
+
+Plot
+
+
+
+
+SNTNA2 ORRCA ANAHO PRNCS SADYL3
+
+
+
+
+
+
+
+
+	Remarks:
+
+
+/V/

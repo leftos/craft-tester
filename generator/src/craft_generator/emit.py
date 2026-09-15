@@ -24,6 +24,7 @@ from jsonschema import Draft202012Validator
 WriteStatus = Literal["written", "unchanged", "differs"]
 
 SCHEMA_FILE = "airport.schema.json"
+FIXTURE_SCHEMA_FILE = "fixture.schema.json"
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +44,11 @@ def repo_root() -> Path:
 def schema_path() -> Path:
     """Return the checked-in JSON Schema an emitted airport document is validated against."""
     return repo_root() / "data" / "schema" / SCHEMA_FILE
+
+
+def fixture_schema_path() -> Path:
+    """Return the checked-in JSON Schema every emitted fixture is validated against."""
+    return repo_root() / "data" / "schema" / FIXTURE_SCHEMA_FILE
 
 
 def data_path(icao: str) -> Path:

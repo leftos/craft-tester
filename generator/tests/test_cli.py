@@ -2,7 +2,7 @@ import argparse
 
 import pytest
 
-from craft_generator.cli import EXIT_NOT_IMPLEMENTED, build_parser, faa_code, main, normalize_icao
+from craft_generator.cli import build_parser, faa_code, main, normalize_icao
 
 
 def test_help_exits_zero() -> None:
@@ -24,8 +24,9 @@ def test_missing_command_exits_two() -> None:
     assert excinfo.value.code == 2
 
 
-def test_unimplemented_subcommand_returns_two() -> None:
-    assert main(["import-worksheets", "--airport", "KSFO"]) == EXIT_NOT_IMPLEMENTED
+def test_import_worksheets_accepts_the_check_flag() -> None:
+    args = build_parser().parse_args(["import-worksheets", "--airport", "ksfo", "--check"])
+    assert (args.airport, args.check, args.force) == ("KSFO", True, False)
 
 
 def test_verify_sop_accepts_the_drift_flag() -> None:

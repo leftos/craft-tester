@@ -12,6 +12,17 @@ a different set of transition fixes than the CIFP codes stops the build, as does
 family no procedure has, an exit fix in no gate, a runway no runway record lists, or a fleet type the
 vNAS specs cannot class. Two conditions only warn, because both are ordinary while the data is being
 built up: a SID no assignment rule ever issues, and a gate fix no route in the library uses.
+
+Two SID facts are computed here rather than transcribed. ``climbViaEligible`` follows FAA JO 7110.65
+4-3-2 c as ZOA applies it: a procedure may be cleared "climb via SID" when it publishes crossing
+restrictions **or** a top altitude, and when it has no vector segment - so the radar-vector and
+vector-hybrid kinds are never eligible, while SNTNA2, which publishes 3,000 as its top altitude and
+no crossing restriction, is (the ZOA S1-SFO-0 CBT clears it with "climb via SID, top altitude
+3000"). ``baseFix`` is the fix the enroute transitions of a SID all begin at - TRUKN2 starts each of
+its six transitions at TRUKN - which is the fix a route may exit the procedure at without naming a
+transition. It is omitted when the transitions do not agree on one fix, when the procedure codes no
+transition at all, and when the fix they agree on is the airport itself, as the vector transitions
+of GAPP7 are coded from KSFO.
 """
 
 import re
@@ -53,7 +64,8 @@ Document = dict[str, Any]
 
 PILOT_NAV_KINDS = frozenset({"rnav_pilot_nav", "conventional_pilot_nav"})
 RNAV_KIND = "rnav_pilot_nav"
-RADAR_VECTOR_KIND = "radar_vectors"
+VECTOR_SEGMENT_KINDS = frozenset({"radar_vectors", "vector_hybrid"})
+PUBLISHED_TOP_ALTITUDE = "published"
 
 _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
 
@@ -117,8 +129,22 @@ def _clock(value: str, where: str) -> str:
     return f"{match.group('hours')}{match.group('minutes')}"
 
 
-def _airport(info: AirportInfo) -> Document:
-    return {"icao": info.icao, "faa": info.faa, "spoken": info.spoken, "clearanceDelivery": info.clearance_delivery}
+def _airport(info: AirportInfo, coordinates: Mapping[str, tuple[float, float]]) -> Document:
+    found = coordinates.get(info.icao)
+    if found is None:
+        raise ValueError(
+            f"sop.yaml airport.icao {info.icao!r}: the CIFP carries no airport record for it, so the document has no reference point; "
+            "correct the identifier, as the direction-of-flight rules measure the course from it"
+        )
+    latitude, longitude = found
+    return {
+        "icao": info.icao,
+        "faa": info.faa,
+        "spoken": info.spoken,
+        "clearanceDelivery": info.clearance_delivery,
+        "lat": latitude,
+        "lon": longitude,
+    }
 
 
 def _provenance(sop: SopData, provenance: Provenance) -> Document:
@@ -348,7 +374,23 @@ def _check_chart_transitions(sid_id: str, chart: ChartInput, transitions: Sequen
     )
 
 
-def _sid(chart_name: str, chart: ChartInput, override: SidOverride, cifp: CifpSid | None, fix_spoken: Mapping[str, str]) -> Document:
+def _base_fix(cifp: CifpSid | None, icao: str) -> str | None:
+    if cifp is None:
+        return None
+    first_fixes = {transition.fixes[0] for transition in cifp.transitions if transition.fixes}
+    if len(first_fixes) != 1:
+        return None
+    fix = first_fixes.pop()
+    return None if fix == icao else fix
+
+
+def _climb_via_eligible(kind: str, top_altitude: Document, *, has_restrictions: bool) -> bool:
+    if kind in VECTOR_SEGMENT_KINDS:
+        return False
+    return has_restrictions or top_altitude["kind"] == PUBLISHED_TOP_ALTITUDE
+
+
+def _sid(chart_name: str, chart: ChartInput, override: SidOverride, cifp: CifpSid | None, fix_spoken: Mapping[str, str], *, icao: str) -> Document:
     where = f"overrides.yaml sids[{chart_name}]"
     kind = override.kind if override.kind is not None else _required(None if cifp is None else cifp.kind, where, "kind")
     runways = override.runways if override.runways is not None else _required(None if cifp is None else cifp.runways, where, "runways")
@@ -357,6 +399,7 @@ def _sid(chart_name: str, chart: ChartInput, override: SidOverride, cifp: CifpSi
         has_restrictions = cifp is not None and cifp.has_crossing_restrictions
     transitions = _transitions(cifp, override, fix_spoken)
     _check_chart_transitions(override.cifp_id, chart, transitions)
+    top_altitude = _top_altitude(override.top_altitude, chart.facts.top_altitude, where)
     entry: Document = {
         "id": override.cifp_id,
         "family": sid_family_of(override.cifp_id, where),
@@ -366,16 +409,17 @@ def _sid(chart_name: str, chart: ChartInput, override: SidOverride, cifp: CifpSi
         "rnavRequired": kind == RNAV_KIND,
         "runways": list(runways),
         "transitions": transitions,
-        "topAltitude": _top_altitude(override.top_altitude, chart.facts.top_altitude, where),
+        "topAltitude": top_altitude,
         "hasCrossingRestrictions": has_restrictions,
         "restrictions": [] if cifp is None else [_restriction(restriction) for restriction in cifp.restrictions],
-        "climbViaEligible": has_restrictions and kind != RADAR_VECTOR_KIND,
+        "climbViaEligible": _climb_via_eligible(kind, top_altitude, has_restrictions=has_restrictions),
         "routePhrasing": override.route_phrasing if override.route_phrasing is not None else _route_phrasing(kind),
         "chartFrequencies": [_with_optional({"frequency": frequency.frequency}, note=frequency.note) for frequency in chart.facts.dep_frequencies],
         "chart": {"pdfUrl": chart.pdf_url},
     }
     return _with_optional(
         entry,
+        baseFix=_base_fix(cifp, icao),
         crossingRestrictionsByRunwayFamily=None
         if override.crossing_restrictions_by_runway_family is None
         else dict(override.crossing_restrictions_by_runway_family),
@@ -395,7 +439,7 @@ def _sids(inputs: BuildInputs) -> list[Document]:
         if override is None:
             known = sorted(overrides.sids)
             raise ValueError(f"overrides.yaml has no `sids` entry for chart {chart_name!r}, which the charts API publishes; it carries {known}")
-        documents.append(_sid(chart_name, chart, override, inputs.sids.get(override.cifp_id), overrides.fix_spoken))
+        documents.append(_sid(chart_name, chart, override, inputs.sids.get(override.cifp_id), overrides.fix_spoken, icao=inputs.airport.icao))
     return documents
 
 
@@ -561,7 +605,7 @@ def build_airport(inputs: BuildInputs) -> Document:
     """
     sop = inputs.airport.sop
     document: Document = {
-        "airport": _airport(sop.airport),
+        "airport": _airport(sop.airport, inputs.coordinates),
         "provenance": _provenance(sop, inputs.provenance),
         "runwayConfigs": [_runway_config(config) for config in sop.runway_configs],
         "departureSectors": [_sector(sector) for sector in sop.departure_sectors],

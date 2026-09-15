@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-2-swa2021",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "SWA2021",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KPDX",
+    "filedAltitude": 35000,
+    "filedRoute": "TRUKN2 DEDHD LMT OCITY7",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 RT",
+    "squawk": "4604"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+  },
+  "status": "pending"
+}

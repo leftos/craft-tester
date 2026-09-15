@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1c-xoj715",
+  "scenario": {
+    "aircraftType": "C750",
+    "callsign": "XOJ715",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KDEN",
+    "filedAltitude": 43000,
+    "filedRoute": "OAK5 SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4606"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

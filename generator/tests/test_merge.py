@@ -9,7 +9,23 @@ from craft_generator.merge import BuildInputs, Document, build_airport
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
 TRUKN_TOP_ALTITUDE_FEET = 19000
+SNTNA_TOP_ALTITUDE_FEET = 3000
 TRUKN_TRANSITION_FIXES = ["DEDHD", "GRTFL", "MOGEE", "ORRCA", "SYRAH", "TIPRE"]
+KSFO_LATITUDE = 37.618806
+KSFO_LONGITUDE = -122.375417
+BASE_FIXES = {
+    "CIITY3": "CIITY",
+    "GNNRR3": "GNNRR",
+    "MOLEN9": "MOLEN",
+    "NIITE4": "NIITE",
+    "SAHEY4": "SAHEY",
+    "SEGUL1": "SEGUL",
+    "SNTNA2": "SNTNA",
+    "SSTIK5": "PORTE",
+    "TRUKN2": "TRUKN",
+    "WESLA5": "PORTE",
+}
+NO_BASE_FIX = ["GAPP7", "SFO5"]
 
 
 def _sids(document: Document) -> dict[str, Document]:
@@ -57,6 +73,48 @@ def test_a_published_top_altitude_makes_a_sid_climb_via_eligible(ksfo_document: 
     assert [transition["fix"] for transition in trukn2["transitions"]] == TRUKN_TRANSITION_FIXES
     assert trukn2["transitions"][0]["spoken"] == "Dedhd"
     assert trukn2["transitions"][0]["spokenAsTransition"] is True
+
+
+def test_a_published_top_altitude_alone_makes_a_sid_climb_via_eligible(ksfo_document: Document) -> None:
+    sntna2 = _sids(ksfo_document)["SNTNA2"]
+    assert sntna2["hasCrossingRestrictions"] is False
+    assert sntna2["topAltitude"] == {"kind": "published", "feet": SNTNA_TOP_ALTITUDE_FEET}
+    assert sntna2["climbViaEligible"] is True
+
+
+def test_a_sid_with_a_vector_segment_is_never_climb_via_eligible(ksfo_document: Document) -> None:
+    sids = _sids(ksfo_document)
+    assert sids["GAPP7"]["climbViaEligible"] is False
+    assert sids["SFO5"]["climbViaEligible"] is False
+
+
+def test_the_airport_carries_its_cifp_reference_point(ksfo_document: Document) -> None:
+    assert (ksfo_document["airport"]["lat"], ksfo_document["airport"]["lon"]) == (KSFO_LATITUDE, KSFO_LONGITUDE)
+
+
+def test_an_airport_the_cifp_does_not_carry_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    coordinates = {key: value for key, value in ksfo_build_inputs.coordinates.items() if key != "KSFO"}
+    with pytest.raises(ValueError, match=r"airport.icao 'KSFO': the CIFP carries no airport record"):
+        build_airport(replace(ksfo_build_inputs, coordinates=coordinates))
+
+
+def test_the_base_fix_is_where_the_transitions_begin(ksfo_document: Document) -> None:
+    sids = _sids(ksfo_document)
+    assert {sid_id: sid["baseFix"] for sid_id, sid in sids.items() if "baseFix" in sid} == BASE_FIXES
+
+
+def test_a_sid_whose_transitions_start_at_the_airport_has_no_base_fix(ksfo_document: Document) -> None:
+    sids = _sids(ksfo_document)
+    assert [sid_id for sid_id in NO_BASE_FIX if "baseFix" not in sids[sid_id]] == NO_BASE_FIX
+
+
+def test_transitions_that_disagree_leave_the_base_fix_out(ksfo_build_inputs: BuildInputs) -> None:
+    trukn2 = ksfo_build_inputs.sids["TRUKN2"]
+    first, *rest = trukn2.transitions
+    moved = replace(first, fixes=("ZZZZZ", *first.fixes))
+    sids = {**ksfo_build_inputs.sids, "TRUKN2": replace(trukn2, transitions=(moved, *rest))}
+    document = build_airport(replace(ksfo_build_inputs, sids=sids))
+    assert "baseFix" not in _sids(document)["TRUKN2"]
 
 
 def test_a_navaid_transition_is_spoken_by_name(ksfo_document: Document) -> None:

@@ -1,0 +1,146 @@
+﻿San Francisco Clearance Amendment Practice 2
+Instructions: Most of the following flight plans will have at least one box incorrect (some may be fully correct). Correct anything that needs to be changed. For the purposes of this exercise, the SFOW (28/28 RT) configuration is active.
+
+
+Callsign
+	Type
+	Dest.
+	Altitude
+	Route
+	SWA888
+	B737/L
+	KBUR
+	FL230
+	CISKO LHS LYNXX8
+
+
+
+
+
+
+	FDX3859
+	J/B752/A
+	KDEN
+	FL340
+	NIITE3 MOGEE Q124 BVL TCH KAMPR LONGZ1
+
+
+
+
+
+
+	AAY1002
+	A319/L
+	KBLI
+	FL360
+	SNTNA2 GRTFL OED J1 SEA PAE MADEE4
+
+
+
+
+
+
+	SWA2021
+	B738/G
+	KPDX
+	FL350
+	TRUKN2 DEDHD LMT OCITY7
+
+
+
+
+
+
+	JSX203
+	E135
+	KLAS
+	FL350
+	WESLA4 NTELL Q158 JEDNA
+
+
+
+
+
+
+	SWA556
+	B737/L
+	KSAN
+	FL370
+	SSTIK5 YYUNG LAX COMIX2
+
+
+
+
+
+
+	QXE2415
+	E75L/L
+	KSEA
+	FL340
+	TRUKN2 DEDHD LMT HAWKZ7
+
+
+
+
+
+
+	N858EE
+	E55P/Z
+	KCRQ
+	FL370
+	SEGUL1 YYUNG LEGOZ LEGOZ1
+
+
+
+
+
+
+	NAX7068
+	H/B788/L
+	ESSA
+	FL390
+	SFO4 DEDHD LKV J3 GEG J517 YXC ADVOX… (continued)
+
+
+
+
+
+
+	FFT2015
+	A32N/L
+	KLAX
+	FL290
+	PORTE8 PORTE SUSEY EBAYE BURGL
+
+
+
+
+
+
+	FDX3875
+	MD11/L
+	PHNL
+	FL310
+	BEBOP R464 BILLO R464 BITTA MAGGI3
+
+
+
+
+
+
+	UAL313
+	B752/Q
+	KSLC
+	FL330
+	TRUKN2 MOGEE BVLQ124 BVL WAATS5
+
+
+
+
+
+
+	SWA1922
+	B737
+	KONT
+	FL280
+	GAPP7 AVE J6 PMD

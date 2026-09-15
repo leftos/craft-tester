@@ -1,8 +1,11 @@
-"""Typed model of the three hand-authored YAML files of an airport.
+"""Typed model of the hand-authored YAML files of an airport.
 
 ``generator/airports/<icao>/`` holds ``sop.yaml`` (:class:`SopData`), ``overrides.yaml``
 (:class:`Overrides`) and ``routes.yaml`` (:class:`RouteLibrary`); :class:`AirportInputs` is the three
-of them loaded together. Every closed set is a :data:`typing.Literal` with a companion tuple of its
+of them loaded together. ``worksheets.yaml`` (:class:`Worksheet`) is read on its own, by
+``craft-gen import-worksheets`` only, because no part of the airport document depends on it.
+
+Every closed set is a :data:`typing.Literal` with a companion tuple of its
 members, so :mod:`craft_generator.sop.load` rejects a transcription typo by name instead of carrying
 it into the airport JSON, and every repeated field is a tuple so a loaded airport cannot be mutated
 by a later pipeline stage.
@@ -26,6 +29,8 @@ DepartureSidKind = Literal["rnav_pilot_nav", "conventional_pilot_nav", "vector_h
 AltitudeOutcomeKind = Literal["interim", "climb_via"]
 NoticeEffectKind = Literal["sid_off"]
 ExpectAltitudePolicy = Literal["always", "only_when_interim_below_filed", "never"]
+WorksheetKind = Literal["phraseology", "amendment"]
+PhraseologyReading = Literal["abbreviated", "full_route"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
 DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
@@ -37,6 +42,8 @@ ALTITUDE_OUTCOME_KINDS: tuple[AltitudeOutcomeKind, ...] = ("interim", "climb_via
 NOTICE_EFFECT_KINDS: tuple[NoticeEffectKind, ...] = ("sid_off",)
 EXPECT_ALTITUDE_POLICIES: tuple[ExpectAltitudePolicy, ...] = ("always", "only_when_interim_below_filed", "never")
 TOP_ALTITUDE_KINDS: tuple[TopAltitudeKind, ...] = ("published", "assigned_by_atc", "none")
+WORKSHEET_KINDS: tuple[WorksheetKind, ...] = ("phraseology", "amendment")
+PHRASEOLOGY_READINGS: tuple[PhraseologyReading, ...] = ("abbreviated", "full_route")
 
 
 @dataclass(frozen=True, slots=True)
@@ -342,6 +349,17 @@ class EquipmentSuffix:
     rvsm: bool
     transponder_mode_c: bool
     text: str
+
+
+@dataclass(frozen=True, slots=True)
+class Worksheet:
+    """One trainer worksheet: a public Google Doc of flight plans and the configuration it declares."""
+
+    id: str
+    title: str
+    kind: WorksheetKind
+    config: str | None
+    phraseology: PhraseologyReading | None
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-2-fft2015",
+  "scenario": {
+    "aircraftType": "A32N",
+    "callsign": "FFT2015",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KLAX",
+    "filedAltitude": 29000,
+    "filedRoute": "PORTE8 PORTE SUSEY EBAYE BURGL",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 RT",
+    "squawk": "4612"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+  },
+  "status": "pending"
+}

@@ -30,6 +30,8 @@
     "clearanceDelivery": "118.2",
     "faa": "SFO",
     "icao": "KSFO",
+    "lat": 37.618806,
+    "lon": -122.375417,
     "spoken": "San Francisco"
   },
   "altitudeRules": [
@@ -2267,6 +2269,7 @@
   ],
   "sids": [
     {
+      "baseFix": "CIITY",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375CIITY.PDF"
       },
@@ -2434,6 +2437,7 @@
       ]
     },
     {
+      "baseFix": "GNNRR",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375GNNRR.PDF"
       },
@@ -2495,6 +2499,7 @@
       ]
     },
     {
+      "baseFix": "MOLEN",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375MOLEN.PDF"
       },
@@ -2546,6 +2551,7 @@
       ]
     },
     {
+      "baseFix": "NIITE",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375NIITE.PDF"
       },
@@ -2626,6 +2632,7 @@
       ]
     },
     {
+      "baseFix": "SAHEY",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SAHEY.PDF"
       },
@@ -2738,6 +2745,7 @@
       "transitions": []
     },
     {
+      "baseFix": "SEGUL",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SEGUL.PDF"
       },
@@ -2786,6 +2794,7 @@
       ]
     },
     {
+      "baseFix": "SNTNA",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SNTNA.PDF"
       },
@@ -2795,7 +2804,7 @@
         }
       ],
       "chartName": "SNTNA TWO (RNAV)",
-      "climbViaEligible": false,
+      "climbViaEligible": true,
       "family": "SNTNA",
       "hasCrossingRestrictions": false,
       "id": "SNTNA2",
@@ -2852,6 +2861,7 @@
       ]
     },
     {
+      "baseFix": "PORTE",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SSTIK.PDF"
       },
@@ -2918,6 +2928,7 @@
       ]
     },
     {
+      "baseFix": "TRUKN",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375TRUKN.PDF"
       },
@@ -2992,6 +3003,7 @@
       ]
     },
     {
+      "baseFix": "PORTE",
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375WESLA.PDF"
       },

@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1c-n172sp",
+  "scenario": {
+    "aircraftType": "C172",
+    "callsign": "N172SP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KMYV",
+    "filedAltitude": 5000,
+    "filedRoute": "SGD SAC",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4614"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

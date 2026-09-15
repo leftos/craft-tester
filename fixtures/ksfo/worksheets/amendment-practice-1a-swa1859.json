@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1a-swa1859",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA1859",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KMCI",
+    "filedAltitude": 41000,
+    "filedRoute": "NIITE3 TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "4607"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the first runway configuration 28/01 departs, pending validation"
+  },
+  "status": "pending"
+}

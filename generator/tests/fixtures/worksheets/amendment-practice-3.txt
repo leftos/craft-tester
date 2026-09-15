@@ -1,0 +1,146 @@
+﻿San Francisco Clearance Amendment Practice 3
+Instructions: The following flight plans will have at least one box incorrect (some may be fully correct). Correct anything that needs to be changed. For the purposes of this exercise, the SFOW (28/01) configuration is active.
+
+
+Callsign
+	Type
+	Dest.
+	Altitude
+	Route
+	N346G
+	C172/A
+	O88
+	10000
+	CCR CCR2
+
+
+
+
+
+
+	VOI5909
+	A32N/L
+	MMMX
+	FL350
+	KAYEX LOSHN BOILE J50 PDZ J93 PPE… (continued)
+
+
+
+
+
+
+	EJA115
+	GL5T/G
+	KBFI
+	FL450
+	 RBL J1 BTG OLM2
+
+
+
+
+
+
+	N436MS
+	TBM9/L
+	KLVK
+	7000
+	OAK V244 ECA
+
+
+
+
+
+
+	PXT415
+	C25B/A
+	KUDD
+	FL320
+	NIITE3 LOSHN PMD V137 PSP
+
+
+
+
+
+
+	N918AR
+	SR22/G
+	KSMO
+	9000
+	AVE
+
+
+
+
+
+
+	N471RY
+	SR22/G
+	KAPC
+	4000
+	SGD
+
+
+
+
+
+
+	SWA1254
+	B737/L
+	KBOI
+	FL430
+	SFO4 SAC ANAHO
+
+
+
+
+
+
+	NKS510
+	A320/A
+	KLAX
+	FL350
+	SSTIK5 EBAYE BURGL IRNMN2
+
+
+
+
+
+
+	SWA1585
+	B738/L
+	KSAN
+	FL350
+	SSTIK5 YYUNG LAX COMIX2
+
+
+
+
+
+
+	N222T
+	M20T/A
+	KWVI
+	7000
+	OAK V107 CATHE V111 SNS
+
+
+
+
+
+
+	TWY313
+	CL30/L
+	KSLC
+	FL410
+	SNTNA2 TIPRE Q126 KREYK BVL WAATS5
+
+
+
+
+
+
+	N739ML
+	B350/G
+	KOVE
+	FL190
+	OAK V6 SAC V23 YUBBA

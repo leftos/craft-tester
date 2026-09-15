@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1c-kal65",
+  "scenario": {
+    "aircraftType": "B77L",
+    "callsign": "KAL65",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "RKSI",
+    "filedAltitude": 30000,
+    "filedRoute": "RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4610"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

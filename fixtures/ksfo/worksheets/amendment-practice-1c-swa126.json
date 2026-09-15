@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-amendment-practice-1c-swa126",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA126",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28L",
+    "destination": "KSEA",
+    "filedAltitude": 33000,
+    "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28 SO",
+    "squawk": "4613"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+  },
+  "status": "pending"
+}

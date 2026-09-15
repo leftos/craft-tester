@@ -1,0 +1,22 @@
+{
+  "airport": "KSFO",
+  "id": "ws-phraseology-practice-2-n903jp",
+  "scenario": {
+    "aircraftType": "C510",
+    "callsign": "N903JP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KSBA",
+    "filedAltitude": 33000,
+    "filedRoute": "SEGUL1 YYUNG GVO HABUT",
+    "localTime": "1400",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "3355"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 01L, the first runway configuration 28/01 departs, pending validation"
+  },
+  "status": "pending"
+}
