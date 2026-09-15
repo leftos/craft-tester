@@ -1,0 +1,100 @@
+13000
+HOPII
+NTELL
+094°
+121°
+9000
+(73) 126°9000
+(72)
+131°9000
+(71)
+N
+520
+520 URRSA
+104°104°
+SAHEY
+101°(5)
+5000
+124°6000
+(7)
+(16)
+097°
+126°9000
+(10)
+DEPARTURE ROUTE DESCRIPTION
+KTINA
+SUSEY
+KAYEX
+9000
+MCOVY
+NOTE: Chart not to scale.
+5000
+CIITY
+6000
+MAAYS
+9000
+9000
+(99)
+SAN FRANCISCO, CALIFORNIA
+(SFO)SAN FRANCISCO INTL
+(SAHEY4.SAHEY)
+(RNAV)
+SAN FRANCISCO, CALIFORNIA
+(SFO)
+(SAHEY4.SAHEY)
+(RNAV)
+101°
+FL190
+TOP ALTITUDE:
+SAN FRANCISCO INTL
+SUSEY TRANSITION (SAHEY4.SUSEY)
+NTELL TRANSITION (SAHEY4.NTELL)
+KTINA TRANSITION (SAHEY4.KTINA)
+KAYEX TRANSITION (SAHEY4.KAYEX)
+21224
+T
+(5)
+102°
+ORYAN
+520  250K
+altitude 10 minutes after departure.
+. . . . on (transition).  Maintain FL190, expect filed
+(5)
+12AUG21
+135.1  307.2
+NORCAL DEP CON
+120.5  269.1
+SAN FRANCISCO TOWER
+121.8
+GND CON
+CPDLC
+118.2
+CLNC DEL
+113.7  115.8  118.85
+D-ATIS
+AL-375 (FAA)
+established direct SAHEY.
+NOTE:  Rwy 19L/R do not exceed 250K until
+NOTE:  RADAR required.
+NOTE:  DME/DME/IRU or GPS required.
+NOTE:  RNAV 1.
+Rwys 19L/R: Standard with minimum climb of 575' per NM to 2000.
+Rwys 10L/R: Standard with minimum climb of 500' per NM to 520.
+Rwy 1L/R, 28L/R: NA - ATC
+TAKEOFF MINIMUMS
+LOSHN
+EBAYE
+CISKO
+SAHEY FOUR DEPARTURE
+SAHEY FOUR DEPARTURE
+520, then climbing left turn direct to SAHEY, thence . . . .
+TAKEOFF RUNWAYS 19L/R:  Climb on heading 194° to
+thence . . . .
+then climb direct URRSA, then on track 101° to SAHEY,
+TAKEOFF RUNWAY 10R:  Climb on heading 104° to 520,
+thence . . . .
+then climb direct ORYAN, then on track 102° to SAHEY,
+TAKEOFF RUNWAY 10L:  Climb on heading 104° to 520,
+194°
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026

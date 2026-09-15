@@ -1,0 +1,98 @@
+SAN FRANCISCO, CALIFORNIA
+SAN FRANCISCO, CALIFORNIA
+(SFO)
+(SFO)
+SAN FRANCISCO INTL
+SAN FRANCISCO INTL
+DEPARTURE ROUTE DESCRIPTION
+T
+NOTE:  Chart not to scale.
+208°
+350°
+281°
+(13)
+R-028
+BARTN
+NORMM
+R-191
+ALCOA
+BEBOP OSI
+SFO
+OAK
+ENI
+SGD
+SAU
+14
+R-090
+090°
+13
+. . . .expect further clearance to filed altitude 10 minutes after departure.
+Chan 109
+SAU
+SAUSALITO
+116.2
+Chan 115
+OAK
+OAKLAND
+116.8
+Chan 105
+SFO
+SAN FRANCISCO
+115.8
+(GAPP7.GAP)
+(GAPP7.GAP)
+Thence . . . .
+SFO VOR/DME 13 DME; expect vector to assigned route/fix after NORMM INT.
+TAKEOFF RUNWAYS 28L/R:  Climb on the SFO VOR/DME R-281 to NORMM INT/
+23334
+Rwy 28R:
+Rwy 28L:
+Rwy 19L/R:
+TAKEOFF MINIMUMS
+235°
+234°R-463
+R-464
+immediately south of airport.
+to steeply rising terrain to 2000'
+NOTE:  Rwys 19L/R departures turn left due
+NOTE:  RADAR required.
+to assigned route/fix.  Thence . . . .
+TAKEOFF RUNWAYS 1L/R:  Climb on SFO R-350 (or as assigned) for vectors
+R-281
+15SEP16
+of 351' per NM to 1300.
+Standard with minimum climb
+of 351' per NM to 1300.
+Standard with minimum climb
+of 575' per NM to 2000.
+Standard with minimum climb
+GAP SEVEN DEPARTURE
+GAP SEVEN DEPARTURE
+Thence . . . .
+OSI R-028 to OSI VOR/DME; expect vector to assigned route/fix after OSI VOR/DME.
+TAKEOFF RUNWAYS 10L/R and 19L/R:  Turn left and climb on the SFO R-090 and
+135.1  307.2 (SE-W)
+120.9  323.2 (NW-E)
+NORCAL DEP CON
+120.5  269.1
+SAN FRANCISCO TOWER
+121.8
+GND CON
+CPDLC
+113.7  115.8  118.85
+D-ATIS
+AL-375 (FAA)
+Chan 70
+ENI
+MENDOCINO
+112.3
+Chan 58
+SGD
+SCAGGS ISLAND
+112.1
+Chan 86
+OSI
+WOODSIDE
+113.9
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026

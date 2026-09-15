@@ -1,0 +1,99 @@
+SAN FRANCISCO, CALIFORNIA
+SAN FRANCISCO, CALIFORNIA
+(SFO)
+(SFO)
+SAN FRANCISCO INTL
+SAN FRANCISCO INTL
+NOTE:  Chart not to scale.
+2500
+WESLA
+1800
+336°
+R-228
+R-156
+MOLEN
+R-243
+R-144
+287°(19)
+41
+22STINS
+287°
+R-153
+281°
+R-287
+324°
+115.8  SFO
+Chan 105
+SAN FRANCISCO
+113.7  PYE
+Chan 84
+ENI
+POINT REYES
+PYE
+SAU
+SFO
+6
+7
+R-090 090°
+SIPLY
+V199
+V
+199
+V27
+053°
+233°
+(MOLEN9.MOLEN)
+(MOLEN9.MOLEN)
+immediately south of airport.
+NOTE:  Rapidly rising terrain to 2000'
+NOTE:  DME required.
+NOTE:  RADAR required.
+23334
+4600 (64)
+6000
+*
+MOLEN NINE DEPARTURE
+MOLEN NINE DEPARTURE
+ASSIGNED BY ATC
+TOP ALTITUDE:
+V25-150-199
+27JAN22
+AL-375 (FAA)
+T DEPARTURE ROUTE DESCRIPTION
+MENDOCINO TRANSITION (MOLEN9.ENI):  From over MOLEN INT on ENI R-156 to ENI VORTAC.
+. . . . (transition).  Expect clearance to filed altitude 10 minutes after departure.
+Thence . . . .
+6 DME at or above 1800 then climbing right turn to intercept SFO R-287 to MOLEN INT/SFO 41 DME.
+TAKEOFF RUNWAYS 28 L/R:  Climb on SFO VOR/DME R-281 to cross WESLA INT/SFO VOR/DME
+41 DME.  Thence . . . .
+R-144 to STINS INT/SFO VOR/DME 22 DME, then on SFO VOR/DME R-287 to MOLEN INT/SFO
+7 DME FIX at or above 2500, then climbing right turn heading 233° to intercept and proceed on PYE
+TAKEOFF RUNWAYS 19L/R:  Climbing left turn to heading 053° to intercept SFO R-090 to cross SIPLY
+STINS INT/SFO 22 DME, then on SFO VOR/DME R-287 to MOLEN INT/SFO 41 DME. Thence . . . .
+above 2500, then climbing right turn heading 233° to intercept and proceed on PYE R-144 to
+TAKEOFF RUNWAYS 10L/R:  Climbing left turn to intercept SFO R-090 to cross SIPLY 7 DME FIX at or
+PYE
+R-144
+135.1  307.2
+NORCAL DEP CON
+120.5  269.1
+SAN FRANCISCO TOWER
+121.8
+GND CON
+CPDLC
+113.7  115.8  118.85
+D-ATIS
+116.2  SAU
+Chan 109
+SAUSALITO
+112.3  ENI
+Chan 70
+MENDOCINO
+351' per NM to 1300.
+Rwys 28L/R:  Standard with minimum climb of
+575' per NM to 2000.
+Rwys 19L/R:  Standard with minimum climb of
+Rwys 10L/R:  Standard.
+TAKEOFF MINIMUMS
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026

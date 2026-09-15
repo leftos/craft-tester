@@ -1,0 +1,83 @@
+SAN FRANCISCO, CALIFORNIA
+SAN FRANCISCO, CALIFORNIA
+(SFO)
+(SFO)
+SAN FRANCISCO INTL
+SAN FRANCISCO INTL
+NOTE:  Chart not to scale.
+3000
+6
+NORMM
+R-191
+281°
+13 SFO
+A
+rc
+LOST COMMUNICATIONS:
+DEPARTURE ROUTE DESCRIPTIONT
+(SFO5.SFO)
+(SFO5.SFO)
+033°
+further clearance to filed altitude 10 minutes after departure.
+to cross SFO 6 DME at or above 3000 for RADAR vectors to assigned route/fix.  Expect
+TAKEOFF RUNWAYS 1L/R:  Climbing right turn heading 033° or ATC assigned heading
+10 minutes after departure.
+then expect RADAR vectors to assigned route/fix.  Expect further clearance to filed altitude
+TAKEOFF RUNWAYS 28L/R:  Climb on SFO VOR/DME R-281 to NORMM INT/SFO 13 DME;
+and proceed direct to assigned route/fix.
+If not in contact with departure control after reaching 3000, continue climb to filed altitude
+26134
+TAKEOFF MINIMUMS
+R-281
+Chan 109
+SAU
+SAUSALITO
+116.2
+Chan 95
+LIN
+LINDEN
+114.8
+Chan 115
+OAK
+OAKLAND
+116.8
+Chan 105
+SFO
+SAN FRANCISCO
+115.8
+115.2
+Chan 99
+SAC
+SACRAMENTO
+ASSIGNED BY ATC
+TOP ALTITUDE:
+14MAY26
+Rwys 28L/R: Standard with minimum climb of 351'/NM to 1300.
+Rwys 1L/R: Standard.
+SAN FRANCISCO FIVE DEPARTURE
+SAN FRANCISCO FIVE DEPARTURE
+120.5  269.1
+SAN FRANCISCO TOWER
+121.8
+GND CON
+CPDLC
+113.7  115.8  118.85
+D-ATIS
+120.9  323.2
+NORCAL DEP CON
+AL-375 (FAA)
+5100
+MN 52 OFS ASM
+230°
+360°
+120°
+3500
+4500
+Rwys 1L/R: DME required.
+RADAR required.
+Chan 104
+RBL
+RED BLUFF
+115.7
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026
