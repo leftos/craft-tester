@@ -14,7 +14,6 @@ import {
 } from '@/ui/state.ts';
 
 const full: DraftPicks = {
-  clearedTo: 'KLAX',
   sidId: 'TRUKN2',
   routeTemplate: 'transition',
   routeFix: 'DEDHD',
@@ -47,7 +46,7 @@ describe('applyPick', () => {
   });
 
   it('reads the blank option as no pick at all', () => {
-    expect(applyPick(full, 'clearedTo', '').clearedTo).toBeUndefined();
+    expect(applyPick(full, 'routeFix', '').routeFix).toBeUndefined();
     expect(applyPick(full, 'altitudeFeet', '').altitudeFeet).toBeUndefined();
   });
 
@@ -78,7 +77,6 @@ describe('toPlayerPicks', () => {
 
   it('carries every pick through to grading', () => {
     expect(toPlayerPicks(full)).toStrictEqual({
-      clearedTo: 'KLAX',
       sidId: 'TRUKN2',
       routeTemplate: 'transition',
       routeFix: 'DEDHD',
@@ -94,7 +92,6 @@ describe('toPlayerPicks', () => {
 describe('revisiting a solved scenario', () => {
   const SEED = 1;
   const previous: PlayerPicks = {
-    clearedTo: 'KLAX',
     sidId: 'TRUKN2',
     routeTemplate: 'transition',
     routeFix: 'DEDHD',

@@ -9,7 +9,6 @@ import type { PlayerPicks } from '@/rules/types.ts';
  * gained since, so it is rejected rather than replayed with holes in it.
  */
 export const PlayerPicksSchema = z.strictObject({
-  clearedTo: z.string(),
   sidId: z.string(),
   routeTemplate: RouteTemplateSchema,
   routeFix: z.string().optional(),

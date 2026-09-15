@@ -21,7 +21,6 @@ const FILED_FIXES_OFFERED = 3;
 
 /** The deterministic dropdown lists the CRAFT form is built from. */
 export type ClearanceOptions = {
-  clearedTo: string[];
   sids: { id: string; label: string }[];
   routeTemplates: RouteTemplate[];
   routeFixes: string[];
@@ -87,10 +86,6 @@ export function buildOptions(
 ): ClearanceOptions {
   const picked = airport.sids.find((sid) => sid.id === sidId);
   return {
-    clearedTo: unique([
-      ...airport.routeLibrary.destinations.map((destination) => destination.icao),
-      airport.airport.icao,
-    ]),
     sids: airport.sids.map((sid) => ({ id: sid.id, label: sid.chartName })),
     routeTemplates: [...ROUTE_TEMPLATES],
     routeFixes: unique([

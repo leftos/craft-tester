@@ -4,17 +4,8 @@ import { aircraftLabel, dayLabel, elementLabel, timeLabel } from '@/ui/labels.ts
 
 describe('elementLabel', () => {
   it('names every graded element', () => {
-    const elements: ClearanceElement[] = [
-      'C',
-      'R.sid',
-      'R.route',
-      'A.phrase',
-      'A.expect',
-      'F',
-      'RWY',
-    ];
+    const elements: ClearanceElement[] = ['R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'RWY'];
     expect(elements.map((element) => elementLabel(element))).toStrictEqual([
-      'C — clearance limit',
       'R — procedure',
       'R — route',
       'A — altitude',

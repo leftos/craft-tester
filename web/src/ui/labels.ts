@@ -3,7 +3,6 @@ import type { ClearanceElement } from '@/rules/types.ts';
 
 /** How the form and the results view name each graded element of the clearance. */
 const ELEMENT_LABELS: Record<ClearanceElement, string> = {
-  C: 'C — clearance limit',
   'R.sid': 'R — procedure',
   'R.route': 'R — route',
   'A.phrase': 'A — altitude',

@@ -24,14 +24,6 @@ function scenario(overrides: Partial<Scenario>): Scenario {
 }
 
 describe('buildOptions', () => {
-  it('offers every destination in the library plus the airport itself, without duplicates', () => {
-    const { clearedTo } = buildOptions(scenario({}), ksfo);
-    expect(clearedTo).toContain('KSEA');
-    expect(clearedTo).toContain('PHNL');
-    expect(clearedTo).toContain('KSFO');
-    expect(new Set(clearedTo).size).toBe(clearedTo.length);
-  });
-
   it('offers every published SID by its chart name', () => {
     const { sids } = buildOptions(scenario({}), ksfo);
     expect(sids).toHaveLength(ksfo.sids.length);
