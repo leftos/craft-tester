@@ -341,6 +341,7 @@ export const RouteLibraryEntrySchema = z.strictObject({
 /** The curated pool the runtime scenario generator draws from. */
 export const RouteLibrarySchema = z.strictObject({
   destinations: z.array(DestinationSchema),
+  telephony: z.record(z.string(), z.string()),
   fleet: z.array(FleetEntrySchema),
   routes: z.array(RouteLibraryEntrySchema),
 });

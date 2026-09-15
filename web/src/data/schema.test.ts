@@ -104,7 +104,7 @@ const minimalAirportData: AirportData = {
   loaRules: [],
   notices: [],
   aircraftClasses: { B738: 'J' },
-  routeLibrary: { destinations: [], fleet: [], routes: [] },
+  routeLibrary: { destinations: [], telephony: {}, fleet: [], routes: [] },
 };
 
 const minimalFixture: Fixture = {

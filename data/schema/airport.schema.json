@@ -930,10 +930,20 @@
             "type": "object"
           },
           "type": "array"
+        },
+        "telephony": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "type": "string"
+          },
+          "type": "object"
         }
       },
       "required": [
         "destinations",
+        "telephony",
         "fleet",
         "routes"
       ],
