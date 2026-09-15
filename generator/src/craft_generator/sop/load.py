@@ -39,6 +39,7 @@ from craft_generator.sop.model import (
     DepartureRunway,
     DepartureSector,
     Destination,
+    EquipmentSuffix,
     FleetEntry,
     FrequencyOption,
     GateDirection,
@@ -63,6 +64,7 @@ from craft_generator.sop.model import (
 SOP_FILE = "sop.yaml"
 OVERRIDES_FILE = "overrides.yaml"
 ROUTES_FILE = "routes.yaml"
+EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
 
@@ -73,6 +75,11 @@ _CIFP_ID_PATTERN = re.compile(r"^(?P<family>[A-Z]+)\d+$")
 def airports_dir() -> Path:
     """Return the directory holding one subdirectory of hand-authored YAML per airport."""
     return Path(__file__).resolve().parents[3] / "airports"
+
+
+def shared_dir() -> Path:
+    """Return the directory holding the hand-authored YAML every airport shares."""
+    return Path(__file__).resolve().parents[3] / "shared"
 
 
 def airport_dir(icao: str) -> Path:
@@ -700,7 +707,7 @@ def load_routes(path: Path) -> RouteLibrary:
         path: Path to the file.
 
     Returns:
-        The destinations, fleet and filed routes.
+        The destinations, airline telephony, fleet and filed routes.
 
     Raises:
         ValueError: The file carries an unknown key, a malformed equipment suffix, an aircraft class
@@ -710,12 +717,48 @@ def load_routes(path: Path) -> RouteLibrary:
     root = _Row(where, _load_yaml_mapping(path, where))
     routes = RouteLibrary(
         destinations=tuple(_destination(child) for child in root.children("destinations")),
+        telephony=_text_table(root.table("telephony"), f"{where}.telephony"),
         fleet=tuple(_fleet_entry(child) for child in root.children("fleet")),
         routes=tuple(_route_entry(child) for child in root.children("routes")),
     )
     root.finish()
     _check_routes(routes, where)
     return routes
+
+
+def _equipment_suffix(row: _Row) -> EquipmentSuffix:
+    suffix = EquipmentSuffix(
+        suffix=row.text("suffix"),
+        rnav=row.flag("rnav"),
+        gnss=row.flag("gnss"),
+        rvsm=row.flag("rvsm"),
+        transponder_mode_c=row.flag("transponder_mode_c"),
+        text=row.text("text"),
+    )
+    row.finish()
+    if _SUFFIX_PATTERN.fullmatch(suffix.suffix) is None:
+        raise ValueError(f"{row.where}: suffix {suffix.suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 table 5-4-1")
+    return suffix
+
+
+def load_equipment_suffixes(path: Path) -> tuple[EquipmentSuffix, ...]:
+    """Load the shared equipment suffix table.
+
+    Args:
+        path: Path to ``generator/shared/equipment_suffixes.yaml``.
+
+    Returns:
+        One row per suffix, in file order.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, or carries an unknown key or a malformed suffix.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    suffixes = tuple(_equipment_suffix(child) for child in root.children("suffixes"))
+    root.finish()
+    return suffixes
 
 
 def _check_sid_families(sop: SopData, overrides: Overrides, where: str, overrides_where: str) -> None:

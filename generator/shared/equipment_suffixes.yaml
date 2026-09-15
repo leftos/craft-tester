@@ -1,0 +1,23 @@
+# FAA JO 7110.65 table 5-4-1, aircraft equipment suffixes. Shared by every airport: the table is
+# national, so it lives here rather than in `airports/<icao>/`. `rnav` says the aircraft may fly an
+# RNAV departure, `gnss` that its area navigation is satellite based, `rvsm` that it may be cleared
+# FL290-FL410, and `transponder_mode_c` that it reports altitude.
+suffixes:
+  - { suffix: /X, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "No DME, no transponder" }
+  - { suffix: /T, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "No DME, transponder with no Mode C" }
+  - { suffix: /U, rnav: false, gnss: false, rvsm: false, transponder_mode_c: true, text: "No DME, transponder with Mode C" }
+  - { suffix: /D, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "DME, no transponder" }
+  - { suffix: /B, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "DME, transponder with no Mode C" }
+  - { suffix: /A, rnav: false, gnss: false, rvsm: false, transponder_mode_c: true, text: "DME, transponder with Mode C" }
+  - { suffix: /M, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "TACAN only, no transponder" }
+  - { suffix: /N, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "TACAN only, transponder with no Mode C" }
+  - { suffix: /P, rnav: false, gnss: false, rvsm: false, transponder_mode_c: true, text: "TACAN only, transponder with Mode C" }
+  - { suffix: /Y, rnav: true, gnss: false, rvsm: false, transponder_mode_c: false, text: "RNAV without GNSS, no transponder" }
+  - { suffix: /C, rnav: true, gnss: false, rvsm: false, transponder_mode_c: false, text: "RNAV without GNSS, transponder with no Mode C" }
+  - { suffix: /I, rnav: true, gnss: false, rvsm: false, transponder_mode_c: true, text: "RNAV without GNSS, transponder with Mode C" }
+  - { suffix: /V, rnav: true, gnss: true, rvsm: false, transponder_mode_c: false, text: "GNSS, no transponder" }
+  - { suffix: /S, rnav: true, gnss: true, rvsm: false, transponder_mode_c: false, text: "GNSS, transponder with no Mode C" }
+  - { suffix: /G, rnav: true, gnss: true, rvsm: false, transponder_mode_c: true, text: "GNSS, transponder with Mode C" }
+  - { suffix: /W, rnav: false, gnss: false, rvsm: true, transponder_mode_c: true, text: "RVSM, no RNAV" }
+  - { suffix: /Z, rnav: true, gnss: false, rvsm: true, transponder_mode_c: true, text: "RVSM with RNAV, no GNSS" }
+  - { suffix: /L, rnav: true, gnss: true, rvsm: true, transponder_mode_c: true, text: "RVSM with GNSS" }

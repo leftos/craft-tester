@@ -324,11 +324,24 @@ class RouteEntry:
 
 @dataclass(frozen=True, slots=True)
 class RouteLibrary:
-    """``routes.yaml``: the destinations, fleet and filed routes scenarios are built from."""
+    """``routes.yaml``: the destinations, fleet, telephony and filed routes scenarios are built from."""
 
     destinations: tuple[Destination, ...]
+    telephony: dict[str, str]
     fleet: tuple[FleetEntry, ...]
     routes: tuple[RouteEntry, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class EquipmentSuffix:
+    """One row of FAA JO 7110.65 table 5-4-1: what an equipment suffix says about an aircraft."""
+
+    suffix: str
+    rnav: bool
+    gnss: bool
+    rvsm: bool
+    transponder_mode_c: bool
+    text: str
 
 
 @dataclass(frozen=True, slots=True)
