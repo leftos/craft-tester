@@ -6,12 +6,29 @@ import sys
 import zipfile
 from collections.abc import Callable, Sequence
 from datetime import date
+from pathlib import Path
 
-from craft_generator.charts_api import cycle_id_from_url, fetch_chart_pdf, fetch_departure_charts, pdf_cache_path
+from craft_generator.aircraft_classes import classes_for_fleet, fetch_aircraft_specs, specs_cache_path
+from craft_generator.chart_text import extract_text, parse_chart_facts
+from craft_generator.charts_api import (
+    charts_api_url,
+    charts_cache_path,
+    cycle_id_from_url,
+    fetch_chart_pdf,
+    fetch_departure_charts,
+    parse_departure_charts,
+    pdf_cache_path,
+)
+from craft_generator.cifp.airports import parse_airport_coordinates
 from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effective_date_for, effective_date_for_cycle
+from craft_generator.cifp.records import parse_records
+from craft_generator.cifp.sid import group_sids
+from craft_generator.emit import WriteResult, data_path, dump, schema_path, validate, write_or_check
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
-from craft_generator.sop.load import SOP_FILE, airport_dir, load_sop
-from craft_generator.sop.verify import verify_sop_source
+from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
+from craft_generator.sop.load import EQUIPMENT_SUFFIXES_FILE, SOP_FILE, airport_dir, load_airport, load_equipment_suffixes, load_sop, shared_dir
+from craft_generator.sop.model import SopSource
+from craft_generator.sop.verify import sop_cache_path, verify_sop_source
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -74,7 +91,7 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "build":
             sub.add_argument("--offline", action="store_true", help="use only the download cache, never the network")
             sub.add_argument("--check", action="store_true", help="fail instead of writing when the output differs from the committed file")
-        if name == "verify-sop":
+        if name in {"build", "verify-sop"}:
             sub.add_argument("--allow-sop-drift", action="store_true", help="report a changed sha256 as a warning while every sentinel still matches")
     return parser
 
@@ -165,8 +182,149 @@ def verify_sop(airport: str, *, allow_drift: bool = False, force: bool = False) 
     return EXIT_ERROR if failed else EXIT_OK
 
 
+def _chart_inputs(airport_faa: str, cache: Path, *, force: bool = False) -> dict[str, ChartInput]:
+    """Fetch every departure chart of an airport and read the facts off its text layer.
+
+    Args:
+        airport_faa: FAA airport identifier, e.g. ``SFO``.
+        cache: Download cache directory.
+        force: Re-download even when the cache holds the response and the PDFs.
+
+    Returns:
+        One entry per departure procedure, keyed by chart name, in charts API order.
+    """
+    charts = fetch_departure_charts(airport_faa, cache, force=force)
+    inputs: dict[str, ChartInput] = {}
+    for chart in charts:
+        pdf = fetch_chart_pdf(chart, cache, cycle_id_from_url(chart.pdf_url), force=force)
+        inputs[chart.chart_name] = ChartInput(facts=parse_chart_facts(extract_text(pdf), chart.chart_name), pdf_url=chart.pdf_url)
+    return inputs
+
+
+def _cifp_member(cache: Path, effective: date, cycle_id: str, *, force: bool = False) -> bytes:
+    member = cache / "cifp" / cycle_id / CIFP_MEMBER
+    if member.exists() and not force:
+        return member.read_bytes()
+    archive = fetch_bytes(cifp_url(effective), cache / "cifp" / f"CIFP_{effective:%y%m%d}.zip", force=force)
+    member.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(archive)) as zip_file:
+        member.write_bytes(zip_file.read(CIFP_MEMBER))
+    return member.read_bytes()
+
+
+def _missing_cache_files(cache: Path, airport_faa: str, cycle_id: str, source: SopSource) -> list[Path]:
+    charts_json = charts_cache_path(cache, airport_faa)
+    missing = [
+        path
+        for path in (charts_json, cache / "cifp" / cycle_id / CIFP_MEMBER, specs_cache_path(cache), sop_cache_path(cache, source))
+        if not path.exists()
+    ]
+    if charts_json.exists():
+        for chart in parse_departure_charts(charts_json.read_bytes(), airport_faa):
+            pdf = pdf_cache_path(cache, cycle_id_from_url(chart.pdf_url), chart)
+            if not pdf.exists():
+                missing.append(pdf)
+    return sorted(missing)
+
+
+def _require_cached(cache: Path, airport_faa: str, cycle_id: str, source: SopSource) -> None:
+    missing = _missing_cache_files(cache, airport_faa, cycle_id, source)
+    if missing:
+        listed = "\n".join(f"  {path}" for path in missing)
+        raise RuntimeError(
+            f"--offline needs {len(missing)} file(s) the download cache does not hold:\n{listed}\n"
+            "run the build once without --offline to download them"
+        )
+
+
+def _verify_sop_for_build(source: SopSource, cache: Path, *, force: bool = False, allow_drift: bool = False) -> None:
+    result = verify_sop_source(source, cache, force=force)
+    if result.missing_sentinels:
+        raise ValueError(
+            f"the SOP at {source.url} no longer carries {list(result.missing_sentinels)}; "
+            "re-transcribe the sections they came from, then update sop.yaml"
+        )
+    if result.hash_matches:
+        return
+    if not allow_drift:
+        raise ValueError(
+            f"the SOP at {source.url} has sha256 {result.actual_sha256}, sop.yaml pins {result.expected_sha256}; "
+            "re-read the document, then update sha256 and transcribed_at, or pass --allow-sop-drift"
+        )
+    print(
+        f"warning: the SOP has sha256 {result.actual_sha256}, sop.yaml pins {result.expected_sha256}; every sentinel still matches", file=sys.stderr
+    )
+
+
+def _print_build_summary(airport: str, cycle_id: str, effective: date, document: Document, result: WriteResult) -> None:
+    counts = (
+        f"{len(document['sids'])} SIDs, {len(document['assignmentRules'])} assignment rules, {len(document['altitudeRules'])} altitude rules, "
+        f"{len(document['notices'])} notices, {len(document['equipmentSuffixes'])} equipment suffixes, "
+        f"{len(document['routeLibrary']['routes'])} routes"
+    )
+    print(f"{airport}: AIRAC {cycle_id} effective {effective.isoformat()}, {counts}")
+    print(f"  {result.path}: {result.status}")
+    if result.diff:
+        print(result.diff, end="")
+
+
+def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool = False, force: bool = False, allow_sop_drift: bool = False) -> int:
+    """Join every source into ``data/<icao>.json``, validated against the schema.
+
+    Args:
+        airport: Four-letter ICAO identifier, e.g. ``KSFO``.
+        cycle: AIRAC cycle id such as ``2609``, or ``None`` for the cycle effective today.
+        offline: Use only files the download cache already holds.
+        check: Compare against the committed file instead of writing it.
+        force: Re-download every source.
+        allow_sop_drift: Accept a changed SOP sha256 as long as every sentinel still matches.
+
+    Returns:
+        The process exit status: non-zero when ``check`` finds the committed file out of date.
+    """
+    if offline and force:
+        raise ValueError("--offline and --force contradict each other: --force re-downloads every source, --offline forbids the network")
+    effective = effective_date_for_cycle(cycle) if cycle else effective_date_for(date.today())
+    cycle_id = cycle_id_for(effective)
+    cache = cache_dir()
+    airport_faa = faa_code(airport)
+    inputs = load_airport(airport_dir(airport))
+    if offline:
+        _require_cached(cache, airport_faa, cycle_id, inputs.sop.source)
+    charts = _chart_inputs(airport_faa, cache, force=force)
+    member = _cifp_member(cache, effective, cycle_id, force=force)
+    lines = member.decode("ascii").splitlines()
+    legs, runway_records = parse_records(lines, airport)
+    runways = tuple(record.designator for record in runway_records)
+    _verify_sop_for_build(inputs.sop.source, cache, force=force, allow_drift=allow_sop_drift)
+    document = build_airport(
+        BuildInputs(
+            airport=inputs,
+            sids=group_sids(legs, runways),
+            runways=runways,
+            charts=charts,
+            aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),
+            coordinates=parse_airport_coordinates(lines),
+            equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
+            provenance=Provenance(
+                cycle=cycle_id,
+                effective=effective,
+                cifp_sha256=sha256_hex(member),
+                charts_api_url=charts_api_url(airport_faa),
+            ),
+        )
+    )
+    validate(document, schema_path())
+    result = write_or_check(data_path(airport), dump(document), check=check)
+    _print_build_summary(airport, cycle_id, effective, document, result)
+    return EXIT_ERROR if result.status == "differs" else EXIT_OK
+
+
 def _run(args: argparse.Namespace) -> int:
     handlers: dict[str, Callable[[], int]] = {
+        "build": lambda: build(
+            args.airport, args.cycle, offline=args.offline, check=args.check, force=args.force, allow_sop_drift=args.allow_sop_drift
+        ),
         "fetch-cifp": lambda: fetch_cifp(args.airport, args.cycle, force=args.force),
         "fetch-charts": lambda: fetch_charts(args.airport, force=args.force),
         "verify-sop": lambda: verify_sop(args.airport, allow_drift=args.allow_sop_drift, force=args.force),

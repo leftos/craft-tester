@@ -1,0 +1,3061 @@
+{
+  "aircraftClasses": {
+    "A20N": "J",
+    "A306": "J",
+    "A319": "J",
+    "A320": "J",
+    "B350": "T",
+    "B737": "J",
+    "B738": "J",
+    "B752": "J",
+    "B77L": "J",
+    "B788": "J",
+    "BE20": "T",
+    "C172": "P",
+    "C25B": "J",
+    "C510": "J",
+    "C55B": "J",
+    "C750": "J",
+    "CL30": "J",
+    "E135": "J",
+    "E55P": "J",
+    "E75L": "J",
+    "GL5T": "J",
+    "M20T": "P",
+    "MD11": "J",
+    "SR22": "P",
+    "TBM9": "T"
+  },
+  "airport": {
+    "clearanceDelivery": "118.2",
+    "faa": "SFO",
+    "icao": "KSFO",
+    "spoken": "San Francisco"
+  },
+  "altitudeRules": [
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "SFOW-28-3000",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sidFamilies": [
+        "GAPP",
+        "MOLEN",
+        "SEGUL",
+        "SFO",
+        "WESLA"
+      ],
+      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000)",
+      "text": "SFOW: GAPP#, MOLEN#, SEGUL#, SFO#, WESLA#, runway 28, P/T/J -> 3,000 or CVS x 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "SFOW-PT-5000",
+      "outcome": {
+        "feet": 5000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000)",
+      "text": "SFOW: all others, runways 01/28, P/T -> 5,000 or CVS x 5,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "SFOW-J-10000",
+      "outcome": {
+        "feet": 10000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000)",
+      "text": "SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "SFOE-PT-5000",
+      "outcome": {
+        "feet": 5000,
+        "kind": "interim"
+      },
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "source": "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000)",
+      "text": "SFOE: all, runways 10/19, P/T -> 5,000 or CVS x 5,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "SFOE-J-15000",
+      "outcome": {
+        "feet": 15000,
+        "kind": "interim"
+      },
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "source": "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000)",
+      "text": "SFOE: all, runways 10/19, J -> 15,000 or CVS x 15,000",
+      "whenTopAltitudePublished": "climb_via"
+    }
+  ],
+  "assignmentRules": [
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOW-NOISE-N-NIITE",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": "NIITE",
+      "source": "SFO ATCT SOP 2-4 e",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runways 01/28, P/T/J -> NIITE#",
+      "when": {
+        "noiseWindow": "night",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOW-NOISE-S-NIITE-GOBBS",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01"
+      ],
+      "sector": "sutro",
+      "sidFamily": "NIITE",
+      "source": "SFO ATCT SOP 2-4 e",
+      "text": "Noise abatement 0100L-0500L: Southbound, runway 01, P/T/J -> NIITE# GOBBS",
+      "when": {
+        "forcedTransition": "GOBBS",
+        "noiseWindow": "late_night",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "P"
+      ],
+      "direction": "any",
+      "id": "SFOW-NOISE-P-RWY",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "SFO ATCT SOP 2-4 e",
+      "text": "Noise abatement: runway 01, non-RNAV props -> runway heading (no DP)",
+      "when": {
+        "noiseWindow": "night",
+        "rnav": false
+      }
+    },
+    {
+      "classes": [
+        "P"
+      ],
+      "direction": "north",
+      "id": "SFOW-N-GAPP-PROPS",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": "GAPP",
+      "source": "S1-SFO-0 CBT (Destination North table: non-RNAV or props -> GAPP#)",
+      "text": "Northbound props -> GAPP#; the CBT routes props and small turboprops via GAPP# regardless of RNAV capability"
+    },
+    {
+      "classes": [
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOW-N-TRUKN-01",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01"
+      ],
+      "sector": "richmond",
+      "sidFamily": "TRUKN",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R)",
+      "text": "Northbound, runways 01/28, P/T/J -> TRUKN# (Richmond); off the 01s TRUKN departs 1R (right turn)",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOW-N-TRUKN-28",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": "TRUKN",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT",
+      "text": "Northbound, runways 28, P/T/J -> TRUKN# when the TRUKN DP is in use (28 RT)",
+      "when": {
+        "configs": [
+          "28 RT"
+        ],
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOW-N-SNTNA-28",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": "SNTNA",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO)",
+      "text": "Northbound, runways 28 -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request",
+      "when": {
+        "notConfigs": [
+          "28 RT"
+        ],
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOW-N-SFO-01",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01"
+      ],
+      "sector": "richmond",
+      "sidFamily": "SFO",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound)",
+      "text": "Northbound, runway 01 -> SFO# (non-RNAV)",
+      "when": {
+        "rnav": false
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOW-N-GAPP-28",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": "GAPP",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound)",
+      "text": "Northbound, runway 28 -> GAPP# (non-RNAV)",
+      "when": {
+        "rnav": false
+      }
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOW-S-SEGUL",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SEGUL",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (Destination South Offshore: offshore route required by the ZLA LOA for SAN, typical for SNA/LGB; the deck's OFFSH# is today's SEGUL#)",
+      "text": "Southbound offshore (YYUNG), runways 01/28 -> SEGUL# (Sutro); SSTIK#.YYUNG / WESLA#.YYUNG are the RNAV alternates",
+      "when": {
+        "exitFixes": [
+          "YYUNG"
+        ],
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOW-S-SSTIK-01",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SSTIK",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (SSTIK#: RWY 1L only)",
+      "text": "Southbound, runway 01, J -> SSTIK# (Sutro); SSTIK departs 1L (left turn), allowing parallel departures with TRUKN# on 1R",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOW-S-WESLA-28",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "sutro",
+      "sidFamily": "WESLA",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (WESLA#: RWY 28L/R only; change to SSTIK# when the aircraft departs the 01s)",
+      "text": "Southbound, runway 28, J -> WESLA# (Sutro)",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOW-S-GAPP",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "sector": "sutro",
+      "sidFamily": "GAPP",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Southbound)",
+      "text": "Southbound, runways 01/28, P/T/J -> GAPP# (Sutro)"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "oceanic",
+      "id": "SFOW-O-GNNRR-28",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "sutro",
+      "sidFamily": "GNNRR",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Oceanic)",
+      "text": "Oceanic, runway 28, J -> GNNRR#",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "oceanic",
+      "id": "SFOW-O-MOLEN-28",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "sutro",
+      "sidFamily": "MOLEN",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Oceanic)",
+      "text": "Oceanic, runway 28, J -> MOLEN#"
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "oceanic",
+      "id": "SFOW-O-GAPP",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "sector": "sutro",
+      "sidFamily": "GAPP",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Oceanic)",
+      "text": "Oceanic, runways 01/28, P/T/J -> GAPP#"
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOE-N-CIITY",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "sector": "richmond",
+      "sidFamily": "CIITY",
+      "source": "SFO ATCT SOP 2-2 a (SFOE Northbound)",
+      "text": "Northbound, runways 10/19, P/T/J -> CIITY# (Richmond)",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "north",
+      "id": "SFOE-N-GAPP",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "sector": "richmond",
+      "sidFamily": "GAPP",
+      "source": "SFO ATCT SOP 2-2 a (SFOE Northbound)",
+      "text": "Northbound, runways 10/19, P/T/J -> GAPP# (Richmond)"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOE-S-SAHEY",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SAHEY",
+      "source": "SFO ATCT SOP 2-2 a (SFOE Southbound)",
+      "text": "Southbound, J -> SAHEY# (Sutro)",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "south",
+      "id": "SFOE-S-GAPP",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "sector": "sutro",
+      "sidFamily": "GAPP",
+      "source": "SFO ATCT SOP 2-2 a (SFOE Southbound)",
+      "text": "Southbound, P/T/J -> GAPP# (Sutro)"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "direction": "oceanic",
+      "id": "SFOE-O-MOLEN",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "sector": "sutro",
+      "sidFamily": "MOLEN",
+      "source": "SFO ATCT SOP 2-2 a (SFOE Oceanic)",
+      "text": "Oceanic, J -> MOLEN#"
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "oceanic",
+      "id": "SFOE-O-GAPP",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "19"
+      ],
+      "sector": "sutro",
+      "sidFamily": "GAPP",
+      "source": "SFO ATCT SOP 2-2 a (SFOE Oceanic)",
+      "text": "Oceanic, P/T/J -> GAPP#"
+    }
+  ],
+  "departureSectors": [
+    {
+      "frequency": "120.9",
+      "id": "richmond",
+      "name": "NorCal Richmond"
+    },
+    {
+      "frequency": "135.1",
+      "id": "sutro",
+      "name": "NorCal Sutro"
+    }
+  ],
+  "departureStaffingFallbacks": [
+    {
+      "frequency": "135.1",
+      "id": "area_d_combined",
+      "name": "NorCal Sutro (Area D combined)"
+    },
+    {
+      "frequency": "133.95",
+      "id": "nct_combined",
+      "name": "NorCal Approach (combined)"
+    },
+    {
+      "frequency": "132.2",
+      "id": "center_combined",
+      "name": "Oakland Center (combined)"
+    }
+  ],
+  "directionRunwayPreference": {
+    "SFOE": {
+      "north": {
+        "10": "10L",
+        "19": "19L"
+      },
+      "oceanic": {
+        "10": "10R",
+        "19": "19R"
+      },
+      "south": {
+        "10": "10R",
+        "19": "19R"
+      }
+    },
+    "SFOW": {
+      "north": {
+        "01": "01R",
+        "28": "28L"
+      },
+      "oceanic": {
+        "01": "01L",
+        "28": "28L"
+      },
+      "south": {
+        "01": "01L",
+        "28": "28L"
+      }
+    }
+  },
+  "equipmentSuffixes": [
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/X",
+      "text": "No DME, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/T",
+      "text": "No DME, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/U",
+      "text": "No DME, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/D",
+      "text": "DME, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/B",
+      "text": "DME, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/A",
+      "text": "DME, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/M",
+      "text": "TACAN only, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/N",
+      "text": "TACAN only, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/P",
+      "text": "TACAN only, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/Y",
+      "text": "RNAV without GNSS, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/C",
+      "text": "RNAV without GNSS, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/I",
+      "text": "RNAV without GNSS, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/V",
+      "text": "GNSS, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/S",
+      "text": "GNSS, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/G",
+      "text": "GNSS, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": true,
+      "suffix": "/W",
+      "text": "RVSM, no RNAV",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": true,
+      "suffix": "/Z",
+      "text": "RVSM with RNAV, no GNSS",
+      "transponderModeC": true
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": true,
+      "suffix": "/L",
+      "text": "RVSM with GNSS",
+      "transponderModeC": true
+    }
+  ],
+  "fixSpoken": {
+    "AVE": "Avenal",
+    "CCR": "Concord",
+    "ENI": "Mendocino",
+    "LHS": "Lake Hughes",
+    "LIN": "Linden",
+    "LKV": "Lakeview",
+    "OAK": "Oakland",
+    "OSI": "Woodside",
+    "RBL": "Red Bluff",
+    "SAC": "Sacramento",
+    "SAU": "Sausalito",
+    "SGD": "Scaggs Island",
+    "SNS": "Salinas"
+  },
+  "frequencies": [
+    {
+      "label": "San Francisco Clearance",
+      "value": "118.2"
+    },
+    {
+      "label": "San Francisco Ground",
+      "value": "121.8"
+    },
+    {
+      "label": "San Francisco Ground 2 / Gate Hold",
+      "value": "124.25"
+    },
+    {
+      "label": "San Francisco Tower",
+      "value": "120.5"
+    },
+    {
+      "label": "NorCal Departure (Richmond)",
+      "value": "120.9"
+    },
+    {
+      "label": "NorCal Departure (Sutro)",
+      "value": "135.1"
+    },
+    {
+      "label": "NorCal Approach (Boulder)",
+      "value": "133.95"
+    },
+    {
+      "label": "NorCal Approach (Woodside)",
+      "value": "135.65"
+    },
+    {
+      "label": "NorCal Departure (Diablo)",
+      "value": "127.0"
+    },
+    {
+      "label": "NorCal Departure (Fairfield)",
+      "value": "124.325"
+    },
+    {
+      "label": "NorCal Departure (Quake)",
+      "value": "127.975"
+    },
+    {
+      "label": "Oakland Center (combined)",
+      "value": "132.2"
+    }
+  ],
+  "gates": {
+    "north": [
+      "DEDHD",
+      "GRTFL",
+      "MOGEE",
+      "ORRCA",
+      "SYRAH",
+      "TIPRE",
+      "GOBBS",
+      "TRUKN",
+      "SNTNA",
+      "NIITE",
+      "CIITY",
+      "RBL",
+      "RDD",
+      "SAC",
+      "CCR",
+      "OAK",
+      "SGD",
+      "SAU",
+      "ENI",
+      "LKV",
+      "LIN",
+      "SUNOL"
+    ],
+    "oceanic": [
+      "ALCOA",
+      "AMAKR",
+      "BEBOP",
+      "CINNY",
+      "GNNRR",
+      "MOLEN",
+      "STINS",
+      "ALLBE",
+      "BAART",
+      "ALANN"
+    ],
+    "south": [
+      "KAYEX",
+      "KTINA",
+      "NTELL",
+      "SUSEY",
+      "YYUNG",
+      "PORTE",
+      "SAHEY",
+      "SSTIK",
+      "WESLA",
+      "OSI",
+      "EUGEN",
+      "SNS",
+      "CISKO",
+      "EBAYE",
+      "LOSHN",
+      "WAGES",
+      "AVE",
+      "LHS",
+      "BOILE",
+      "SJC",
+      "GILRO",
+      "MCKEY",
+      "FLW",
+      "GVO",
+      "RZS",
+      "SXC"
+    ]
+  },
+  "loaRules": [],
+  "noSid": {
+    "phrasing": "radar_vectors_fix",
+    "runwayFamilies": [
+      "01",
+      "10"
+    ]
+  },
+  "noiseWindows": [
+    {
+      "end": "0700",
+      "id": "night",
+      "start": "2200",
+      "sundayEnd": "0800"
+    },
+    {
+      "end": "0500",
+      "id": "late_night",
+      "start": "0100"
+    }
+  ],
+  "notices": [
+    {
+      "dated": "2026-09-15",
+      "defaultActive": true,
+      "effect": {
+        "kind": "sid_off",
+        "sidFamily": "SEGUL"
+      },
+      "id": "SFO-SEGUL-OFF",
+      "plan": "SFOW",
+      "source": "ZOA operational notice relayed by the user, 2026-09-15",
+      "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
+    }
+  ],
+  "phraseology": {
+    "expectAltitude": "always",
+    "nonStandardInterimExpectMinutes": 3,
+    "vectorHybridTransitionsSpoken": false
+  },
+  "phraseologyRules": [
+    {
+      "id": "R-TRANSITION",
+      "source": "FAA JO 7110.65 4-3-2 c 5",
+      "text": "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions"
+    },
+    {
+      "id": "R-AS-FILED",
+      "source": "FAA JO 7110.65 4-3-2 c 5",
+      "text": "(SID name and number) DEPARTURE, THEN AS FILED — used when the route leaves the SID at its base fix with no transition"
+    },
+    {
+      "id": "R-RV-SID",
+      "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice",
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
+    },
+    {
+      "id": "A-CLIMB-VIA",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a)",
+      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+    },
+    {
+      "id": "A-CLIMB-VIA-EXCEPT",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (b)",
+      "text": "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions but no top altitude is published or ATC needs an interim altitude"
+    },
+    {
+      "id": "A-MAINTAIN",
+      "source": "FAA JO 7110.65 4-3-2 c 5",
+      "text": "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
+    },
+    {
+      "id": "A-EXPECT",
+      "source": "FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv",
+      "text": "EXPECT (filed altitude) ONE ZERO MINUTES AFTER DEPARTURE; three minutes when a non-standard interim altitude is issued"
+    },
+    {
+      "id": "C-DEST",
+      "source": "FAA JO 7110.65 4-3-2 a",
+      "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
+    }
+  ],
+  "provenance": {
+    "airac": {
+      "cifpSha256": "fbea2179a990e1d371d77439961d137e83252582b3c67b6ec85b8d9d11c76cad",
+      "cycle": "2609",
+      "effective": "2026-09-03"
+    },
+    "chartsApi": "https://charts-api.oakartcc.org/v1/charts?apt=SFO",
+    "secondarySources": [
+      {
+        "dated": "2023-02-26",
+        "id": "cbt",
+        "title": "S1 KSFO Clearance Delivery, Ground Control, Gate Hold (S1-SFO-0 CBT)",
+        "url": "https://docs.google.com/presentation/d/1yqKhIdUYZlHxmA-mWC_UIX1A1jb7kuMJO3vu_ApTbV8"
+      }
+    ],
+    "sop": {
+      "sha256": "1e2b90c75d274b836929963fe353c5ef4a5dc592cd6fa005bf7fa3e77318e008",
+      "transcribedAt": "2026-09-15",
+      "url": "https://oakartcc.org/controllers/file/9a2b1e84-5e65-11e9-8010-2a32edb55910",
+      "version": "1.11"
+    }
+  },
+  "routeLibrary": {
+    "destinations": [
+      {
+        "artcc": "ZSE",
+        "icao": "KSEA",
+        "lat": 47.449889,
+        "lon": -122.311778,
+        "nct": false,
+        "spoken": "Seattle"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "KPDX",
+        "lat": 45.588708,
+        "lon": -122.596869,
+        "nct": false,
+        "spoken": "Portland"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "KBFI",
+        "lat": 47.529972,
+        "lon": -122.301944,
+        "nct": false,
+        "spoken": "Boeing Field"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "KBLI",
+        "lat": 48.792694,
+        "lon": -122.537528,
+        "nct": false,
+        "spoken": "Bellingham"
+      },
+      {
+        "artcc": "ZLC",
+        "icao": "KBOI",
+        "lat": 43.564361,
+        "lon": -116.222861,
+        "nct": false,
+        "spoken": "Boise"
+      },
+      {
+        "artcc": "ZLC",
+        "icao": "KSLC",
+        "lat": 40.788394,
+        "lon": -111.977772,
+        "nct": false,
+        "spoken": "Salt Lake City"
+      },
+      {
+        "artcc": "ZLC",
+        "icao": "KJAC",
+        "lat": 43.607336,
+        "lon": -110.73775,
+        "nct": false,
+        "spoken": "Jackson Hole"
+      },
+      {
+        "artcc": "ZDV",
+        "icao": "KDEN",
+        "lat": 39.861667,
+        "lon": -104.673167,
+        "nct": false,
+        "spoken": "Denver"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KLAS",
+        "lat": 36.080342,
+        "lon": -115.15245,
+        "nct": false,
+        "spoken": "Las Vegas"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KLAX",
+        "lat": 33.942497,
+        "lon": -118.40805,
+        "nct": false,
+        "spoken": "Los Angeles"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSAN",
+        "lat": 32.733564,
+        "lon": -117.189664,
+        "nct": false,
+        "spoken": "San Diego"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KBUR",
+        "lat": 34.200694,
+        "lon": -118.358667,
+        "nct": false,
+        "spoken": "Burbank"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KONT",
+        "lat": 34.056014,
+        "lon": -117.601189,
+        "nct": false,
+        "spoken": "Ontario"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KCRQ",
+        "lat": 33.12825,
+        "lon": -117.280083,
+        "nct": false,
+        "spoken": "Carlsbad"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSMO",
+        "lat": 34.015822,
+        "lon": -118.451306,
+        "nct": false,
+        "spoken": "Santa Monica"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KUDD",
+        "lat": 33.748439,
+        "lon": -116.274814,
+        "nct": false,
+        "spoken": "Bermuda Dunes"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSBA",
+        "lat": 34.426192,
+        "lon": -119.841492,
+        "nct": false,
+        "spoken": "Santa Barbara"
+      },
+      {
+        "artcc": "ZKC",
+        "icao": "KMCI",
+        "lat": 39.297603,
+        "lon": -94.713906,
+        "nct": false,
+        "spoken": "Kansas City"
+      },
+      {
+        "artcc": "ZMP",
+        "icao": "KGPZ",
+        "lat": 47.209283,
+        "lon": -93.509944,
+        "nct": false,
+        "spoken": "Grand Rapids Minnesota"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KRNO",
+        "lat": 39.499111,
+        "lon": -119.768111,
+        "nct": false,
+        "spoken": "Reno"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KTRK",
+        "lat": 39.320056,
+        "lon": -120.139583,
+        "nct": false,
+        "spoken": "Truckee"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSMF",
+        "lat": 38.695444,
+        "lon": -121.590778,
+        "nct": true,
+        "spoken": "Sacramento"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KFAT",
+        "lat": 36.776556,
+        "lon": -119.718833,
+        "nct": false,
+        "spoken": "Fresno"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KACV",
+        "lat": 40.977828,
+        "lon": -124.108469,
+        "nct": false,
+        "spoken": "Arcata"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMRY",
+        "lat": 36.586953,
+        "lon": -121.842783,
+        "nct": true,
+        "spoken": "Monterey"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KLVK",
+        "lat": 37.693389,
+        "lon": -121.820361,
+        "nct": true,
+        "spoken": "Livermore"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KAPC",
+        "lat": 38.213189,
+        "lon": -122.280686,
+        "nct": true,
+        "spoken": "Napa"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KWVI",
+        "lat": 36.935733,
+        "lon": -121.789639,
+        "nct": true,
+        "spoken": "Watsonville"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMYV",
+        "lat": 39.097778,
+        "lon": -121.569833,
+        "nct": true,
+        "spoken": "Marysville"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KOVE",
+        "lat": 39.487819,
+        "lon": -121.621989,
+        "nct": true,
+        "spoken": "Oroville"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "O88",
+        "lat": 38.193383,
+        "lon": -121.703633,
+        "nct": true,
+        "spoken": "Rio Vista"
+      },
+      {
+        "artcc": "ZAK",
+        "icao": "PHNL",
+        "lat": 21.317825,
+        "lon": -157.92025,
+        "nct": false,
+        "spoken": "Honolulu"
+      },
+      {
+        "artcc": "ZAK",
+        "icao": "RKSI",
+        "lat": 37.469,
+        "lon": 126.451,
+        "nct": false,
+        "spoken": "Seoul Incheon"
+      },
+      {
+        "artcc": "ZAK",
+        "icao": "ESSA",
+        "lat": 59.652,
+        "lon": 17.919,
+        "nct": false,
+        "spoken": "Stockholm Arlanda"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "MMMX",
+        "lat": 19.436,
+        "lon": -99.072,
+        "nct": false,
+        "spoken": "Mexico City"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "CYVR",
+        "lat": 49.195,
+        "lon": -123.184,
+        "nct": false,
+        "spoken": "Vancouver"
+      }
+    ],
+    "fleet": [
+      {
+        "airlines": [
+          "UAL",
+          "FFT",
+          "NKS",
+          "ACA",
+          "AAY",
+          "VOI",
+          "JBU"
+        ],
+        "ceilingFeet": 39800,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A320",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "FFT",
+          "VOI",
+          "JBU"
+        ],
+        "ceilingFeet": 39800,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A20N",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "AAY",
+          "UAL"
+        ],
+        "ceilingFeet": 39800,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A319",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "SWA",
+          "ASA"
+        ],
+        "ceilingFeet": 41000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B737",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "DAL",
+          "SWA",
+          "UAL",
+          "ASA"
+        ],
+        "ceilingFeet": 41000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B738",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "FDX",
+          "UPS",
+          "DAL",
+          "UAL"
+        ],
+        "ceilingFeet": 42000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B752",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "FDX",
+          "KAL"
+        ],
+        "ceilingFeet": 43100,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B77L",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "NAX",
+          "UAL"
+        ],
+        "ceilingFeet": 43100,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B788",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "UPS",
+          "FDX"
+        ],
+        "ceilingFeet": 40000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A306",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "FDX",
+          "UPS"
+        ],
+        "ceilingFeet": 43000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "MD11",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "SKW",
+          "QXE"
+        ],
+        "ceilingFeet": 41000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E75L",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "JSX"
+        ],
+        "ceilingFeet": 37000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E135",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "TWY",
+          "EJA"
+        ],
+        "ceilingFeet": 45000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "CL30",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "EJA"
+        ],
+        "ceilingFeet": 51000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "GL5T",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "XOJ"
+        ],
+        "ceilingFeet": 51000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C750",
+        "wtc": "M"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 45000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C55B",
+        "wtc": "M"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 45000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C25B",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 41000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C510",
+        "wtc": "L"
+      },
+      {
+        "airlines": [
+          "LXJ"
+        ],
+        "ceilingFeet": 45000,
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E55P",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 35000,
+        "class": "T",
+        "suffixes": [
+          "/G",
+          "/L"
+        ],
+        "type": "B350",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 35000,
+        "class": "T",
+        "suffixes": [
+          "/G",
+          "/A"
+        ],
+        "type": "BE20",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 31000,
+        "class": "T",
+        "suffixes": [
+          "/L",
+          "/G"
+        ],
+        "type": "TBM9",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 14000,
+        "class": "P",
+        "suffixes": [
+          "/G",
+          "/A",
+          "/U"
+        ],
+        "type": "C172",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 17500,
+        "class": "P",
+        "suffixes": [
+          "/G"
+        ],
+        "type": "SR22",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "ceilingFeet": 25000,
+        "class": "P",
+        "suffixes": [
+          "/G",
+          "/A"
+        ],
+        "type": "M20T",
+        "wtc": "L"
+      }
+    ],
+    "routes": [
+      {
+        "altitudes": [
+          32000,
+          34000,
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSEA",
+        "exitFix": "DEDHD",
+        "tail": "DEDHD RBL LMT HAWKZ7"
+      },
+      {
+        "altitudes": [
+          34000,
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KPDX",
+        "exitFix": "DEDHD",
+        "tail": "DEDHD LMT OCITY7"
+      },
+      {
+        "altitudes": [
+          36000,
+          38000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "CYVR",
+        "exitFix": "DEDHD",
+        "tail": "DEDHD LMT BTG HAWKZ7"
+      },
+      {
+        "altitudes": [
+          34000,
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KPDX",
+        "exitFix": "GRTFL",
+        "tail": "GRTFL MACHU TMBRS2"
+      },
+      {
+        "altitudes": [
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KBLI",
+        "exitFix": "GRTFL",
+        "tail": "GRTFL OED J1 SEA PAE MADEE4"
+      },
+      {
+        "altitudes": [
+          37000,
+          39000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSLC",
+        "exitFix": "MOGEE",
+        "tail": "MOGEE Q124 BVL WAATS5"
+      },
+      {
+        "altitudes": [
+          34000,
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KDEN",
+        "exitFix": "MOGEE",
+        "tail": "MOGEE Q124 BVL TCH KAMPR LONGZ1"
+      },
+      {
+        "altitudes": [
+          37000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KJAC",
+        "exitFix": "ORRCA",
+        "tail": "ORRCA Q120 GALLI PARZZ TUVOC LEIDY DNW"
+      },
+      {
+        "altitudes": [
+          37000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KGPZ",
+        "exitFix": "ORRCA",
+        "tail": "ORRCA Q120 GALLI BAM J32 ABR FAR"
+      },
+      {
+        "altitudes": [
+          21000,
+          23000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KRNO",
+        "exitFix": "ORRCA",
+        "tail": "ORRCA TARVR SPOON"
+      },
+      {
+        "altitudes": [
+          37000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KBOI",
+        "exitFix": "ORRCA",
+        "tail": "ORRCA ANAHO PRNCS SADYL3"
+      },
+      {
+        "altitudes": [
+          37000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KMCI",
+        "exitFix": "TIPRE",
+        "tail": "TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4"
+      },
+      {
+        "altitudes": [
+          39000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSLC",
+        "exitFix": "TIPRE",
+        "tail": "TIPRE Q126 KREYK BVL WAATS5"
+      },
+      {
+        "altitudes": [
+          37000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KDEN",
+        "exitFix": "SYRAH",
+        "tail": "SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1"
+      },
+      {
+        "altitudes": [
+          9000,
+          11000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "TRUKN",
+        "tail": "TRUKN CCR CCR2"
+      },
+      {
+        "altitudes": [
+          9000,
+          10000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "TRUKN",
+        "tail": "TRUKN FEVTA FEVTA1"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLAX",
+        "exitFix": "SUSEY",
+        "tail": "SUSEY EBAYE BURGL IRNMN2"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLAS",
+        "exitFix": "NTELL",
+        "tail": "NTELL Q174 FLCHR COKTL3"
+      },
+      {
+        "altitudes": [
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLAS",
+        "exitFix": "NTELL",
+        "tail": "NTELL Q162 ESSAA BTY SUNST4"
+      },
+      {
+        "altitudes": [
+          17000,
+          19000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KFAT",
+        "exitFix": "NTELL",
+        "tail": "NTELL"
+      },
+      {
+        "altitudes": [
+          31000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KBUR",
+        "exitFix": "KTINA",
+        "tail": "KTINA CISKO RDHOT ROKKR2"
+      },
+      {
+        "altitudes": [
+          37000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSAN",
+        "exitFix": "YYUNG",
+        "tail": "YYUNG LAX COMIX2"
+      },
+      {
+        "altitudes": [
+          29000,
+          33000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSBA",
+        "exitFix": "YYUNG",
+        "tail": "YYUNG GVO HABUT"
+      },
+      {
+        "altitudes": [
+          37000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KCRQ",
+        "exitFix": "YYUNG",
+        "tail": "YYUNG LEGOZ LEGOZ1"
+      },
+      {
+        "altitudes": [
+          15000,
+          17000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KTRK",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V392 SAC V6 SWR TRUCK"
+      },
+      {
+        "altitudes": [
+          5000,
+          6000
+        ],
+        "classes": [
+          "P"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          5000,
+          7000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KLVK",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ECA"
+      },
+      {
+        "altitudes": [
+          7000
+        ],
+        "classes": [
+          "P"
+        ],
+        "destination": "KWVI",
+        "exitFix": "OAK",
+        "tail": "OAK V107 CATHE V111 SNS"
+      },
+      {
+        "altitudes": [
+          17000,
+          19000
+        ],
+        "classes": [
+          "T"
+        ],
+        "destination": "KOVE",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC V23 YUBBA"
+      },
+      {
+        "altitudes": [
+          16000,
+          18000
+        ],
+        "classes": [
+          "T"
+        ],
+        "destination": "KACV",
+        "exitFix": "SGD",
+        "tail": "SGD YAGER"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P"
+        ],
+        "destination": "KAPC",
+        "exitFix": "SGD",
+        "tail": "SGD"
+      },
+      {
+        "altitudes": [
+          7000
+        ],
+        "classes": [
+          "P"
+        ],
+        "destination": "KMRY",
+        "exitFix": "EUGEN",
+        "tail": "EUGEN"
+      },
+      {
+        "altitudes": [
+          28000,
+          30000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "RKSI",
+        "exitFix": "RBL",
+        "tail": "RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO J179 SMA B932 KIVAK G349 MARCC"
+      },
+      {
+        "altitudes": [
+          39000,
+          41000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KBOI",
+        "exitFix": "SAC",
+        "tail": "SAC ANAHO"
+      },
+      {
+        "altitudes": [
+          9000,
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "CCR",
+        "tail": "CCR CCR2"
+      },
+      {
+        "altitudes": [
+          31000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "PHNL",
+        "exitFix": "BEBOP",
+        "tail": "BEBOP R464 BILLO R464 BITTA MAGGI3"
+      }
+    ],
+    "telephony": {
+      "AAL": "American",
+      "AAY": "Allegiant",
+      "ACA": "Air Canada",
+      "ASA": "Alaska",
+      "DAL": "Delta",
+      "EJA": "ExecJet",
+      "FDX": "FedEx",
+      "FFT": "Frontier Flight",
+      "JBU": "JetBlue",
+      "JSX": "BigStripe",
+      "KAL": "Korean Air",
+      "LXJ": "Flexjet",
+      "NAX": "Nor Shuttle",
+      "NKS": "Spirit Wings",
+      "QXE": "Horizon",
+      "SKW": "SkyWest",
+      "SWA": "Southwest",
+      "TWY": "Twilight",
+      "UAL": "United",
+      "UPS": "UPS",
+      "VOI": "Volaris",
+      "XOJ": "XOJet"
+    }
+  },
+  "runwayConfigs": [
+    {
+      "arrivalRunways": [
+        "01L",
+        "01R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "01L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "01R"
+        }
+      ],
+      "id": "01/01",
+      "name": "Landing and departing runways 01",
+      "plan": "SFOW"
+    },
+    {
+      "arrivalRunways": [
+        "28L",
+        "28R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "01L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "01R"
+        },
+        {
+          "classes": [
+            "J"
+          ],
+          "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e)",
+          "runway": "28L"
+        },
+        {
+          "classes": [
+            "J"
+          ],
+          "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e)",
+          "runway": "28R"
+        }
+      ],
+      "id": "28/01",
+      "name": "Landing runways 28, departing runways 01",
+      "plan": "SFOW"
+    },
+    {
+      "arrivalRunways": [
+        "28L",
+        "28R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "28L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "28R"
+        }
+      ],
+      "id": "28 RT",
+      "name": "Landing and departing runways 28, right turn (TRUKN DP in use)",
+      "plan": "SFOW"
+    },
+    {
+      "arrivalRunways": [
+        "28L",
+        "28R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "28L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "28R"
+        }
+      ],
+      "id": "28 SO",
+      "name": "Landing and departing runways 28, straight out (TRUKN DP not in use)",
+      "plan": "SFOW"
+    },
+    {
+      "arrivalRunways": [
+        "10L",
+        "10R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "10L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "10R"
+        }
+      ],
+      "id": "10/10",
+      "name": "Landing and departing runways 10",
+      "plan": "SFOE"
+    },
+    {
+      "arrivalRunways": [
+        "19L",
+        "19R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "10L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "10R"
+        }
+      ],
+      "id": "19/10",
+      "name": "Landing runways 19, departing runways 10",
+      "plan": "SFOE"
+    },
+    {
+      "arrivalRunways": [
+        "19L",
+        "19R"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "19L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "runway": "19R"
+        }
+      ],
+      "id": "19/19",
+      "name": "Landing and departing runways 19",
+      "plan": "SFOE"
+    }
+  ],
+  "sids": [
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375CIITY.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "CIITY THREE (RNAV)",
+      "climbViaEligible": true,
+      "family": "CIITY",
+      "hasCrossingRestrictions": true,
+      "id": "CIITY3",
+      "kind": "rnav_pilot_nav",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 5000,
+          "fix": "CIITY"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 11000,
+          "fix": "BCEEE"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 12000,
+          "fix": "LLVII"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "10L",
+        "10R",
+        "19L",
+        "19R"
+      ],
+      "spoken": "Ciity Three",
+      "topAltitude": {
+        "feet": 19000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "DEDHD",
+          "kind": "enroute",
+          "spoken": "Dedhd",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GRTFL",
+          "kind": "enroute",
+          "spoken": "Grtfl",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "MOGEE",
+          "kind": "enroute",
+          "spoken": "Mogee",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "ORRCA",
+          "kind": "enroute",
+          "spoken": "Orrca",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SYRAH",
+          "kind": "enroute",
+          "spoken": "Syrah",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "TIPRE",
+          "kind": "enroute",
+          "spoken": "Tipre",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375GAP.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "120.9",
+          "note": "NW-E"
+        },
+        {
+          "frequency": "135.1",
+          "note": "SE-W"
+        }
+      ],
+      "chartName": "GAP SEVEN",
+      "climbViaEligible": false,
+      "family": "GAPP",
+      "hasCrossingRestrictions": false,
+      "id": "GAPP7",
+      "kind": "vector_hybrid",
+      "note": "Chart publishes no named transitions; CIFP codes vector transitions ALCOA BEBOP ENI OAK OSI SAU SGD. Expect vector to assigned route/fix after NORMM (28) / OSI (10, 19) / on SFO R-350 (01).",
+      "restrictions": [],
+      "rnavRequired": false,
+      "routePhrasing": "radar_vectors_fix",
+      "runways": [
+        "01L",
+        "01R",
+        "10L",
+        "10R",
+        "19L",
+        "19R",
+        "28L",
+        "28R"
+      ],
+      "spoken": "Gap Seven",
+      "topAltitude": {
+        "kind": "none"
+      },
+      "transitions": [
+        {
+          "fix": "ALCOA",
+          "kind": "vector",
+          "spoken": "Alcoa",
+          "spokenAsTransition": false
+        },
+        {
+          "fix": "BEBOP",
+          "kind": "vector",
+          "spoken": "Bebop",
+          "spokenAsTransition": false
+        },
+        {
+          "fix": "ENI",
+          "kind": "vector",
+          "spoken": "Mendocino",
+          "spokenAsTransition": false
+        },
+        {
+          "fix": "OAK",
+          "kind": "vector",
+          "spoken": "Oakland",
+          "spokenAsTransition": false
+        },
+        {
+          "fix": "OSI",
+          "kind": "vector",
+          "spoken": "Woodside",
+          "spokenAsTransition": false
+        },
+        {
+          "fix": "SAU",
+          "kind": "vector",
+          "spoken": "Sausalito",
+          "spokenAsTransition": false
+        },
+        {
+          "fix": "SGD",
+          "kind": "vector",
+          "spoken": "Scaggs Island",
+          "spokenAsTransition": false
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375GNNRR.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "GNNRR THREE (RNAV)",
+      "climbViaEligible": true,
+      "family": "GNNRR",
+      "hasCrossingRestrictions": true,
+      "id": "GNNRR3",
+      "kind": "rnav_pilot_nav",
+      "note": "CBT: BAART leads to BEBOP; pilots sometimes file GNNRR BEBOP. Top altitude 3000 published -> climb via SID.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 2500,
+          "fix": "GNNRR"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R"
+      ],
+      "spoken": "Gnnrr Three",
+      "topAltitude": {
+        "feet": 3000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "ALCOA",
+          "kind": "enroute",
+          "spoken": "Alcoa",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "AMAKR",
+          "kind": "enroute",
+          "spoken": "Amakr",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "BEBOP",
+          "kind": "enroute",
+          "spoken": "Bebop",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "CINNY",
+          "kind": "enroute",
+          "spoken": "Cinny",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375MOLEN.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "MOLEN NINE",
+      "climbViaEligible": true,
+      "family": "MOLEN",
+      "hasCrossingRestrictions": true,
+      "id": "MOLEN9",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional pilot-nav SID with crossing restrictions; DME and RADAR required. CBT: climb via SID except maintain (28: 3000; 10: J 15000, P/T 5000).",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 2500,
+          "fix": "SIPLY"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 1800,
+          "fix": "WESLA"
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "10L",
+        "10R",
+        "19L",
+        "19R",
+        "28L",
+        "28R"
+      ],
+      "spoken": "Molen Nine",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "ENI",
+          "kind": "enroute",
+          "spoken": "Mendocino",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375NIITE.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "NIITE FOUR (RNAV)",
+      "climbViaEligible": true,
+      "family": "NIITE",
+      "hasCrossingRestrictions": true,
+      "id": "NIITE4",
+      "kind": "rnav_pilot_nav",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 8000,
+          "fix": "REBAS"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "01L",
+        "01R",
+        "28L",
+        "28R"
+      ],
+      "spoken": "Niite Four",
+      "topAltitude": {
+        "feet": 19000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "DEDHD",
+          "kind": "enroute",
+          "spoken": "Dedhd",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GOBBS",
+          "kind": "enroute",
+          "spoken": "Gobbs",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GRTFL",
+          "kind": "enroute",
+          "spoken": "Grtfl",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "MOGEE",
+          "kind": "enroute",
+          "spoken": "Mogee",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "ORRCA",
+          "kind": "enroute",
+          "spoken": "Orrca",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SYRAH",
+          "kind": "enroute",
+          "spoken": "Syrah",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "TIPRE",
+          "kind": "enroute",
+          "spoken": "Tipre",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SAHEY.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "SAHEY FOUR (RNAV)",
+      "climbViaEligible": true,
+      "family": "SAHEY",
+      "hasCrossingRestrictions": true,
+      "id": "SAHEY4",
+      "kind": "rnav_pilot_nav",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 6000,
+          "fix": "MAAYS"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 9000,
+          "fix": "MCOVY"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 5000,
+          "fix": "CIITY"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 13000,
+          "fix": "HOPII"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "10L",
+        "10R",
+        "19L",
+        "19R"
+      ],
+      "spoken": "Sahey Four",
+      "topAltitude": {
+        "feet": 19000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "KAYEX",
+          "kind": "enroute",
+          "spoken": "Kayex",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "KTINA",
+          "kind": "enroute",
+          "spoken": "Ktina",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "NTELL",
+          "kind": "enroute",
+          "spoken": "Ntell",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SUSEY",
+          "kind": "enroute",
+          "spoken": "Susey",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SANFRANCISCO.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "SAN FRANCISCO FIVE",
+      "climbViaEligible": false,
+      "crossingRestrictionsByRunwayFamily": {
+        "01": true,
+        "28": false
+      },
+      "family": "SFO",
+      "hasCrossingRestrictions": false,
+      "id": "SFO5",
+      "kind": "radar_vectors",
+      "note": "Radar-vector SID; the FAA does not code it in CIFP. Runway 28: SFO R-281 to NORMM then vectors (no restriction -> maintain 3,000). Runway 01: heading 033 or assigned, cross SFO 6 DME at or above 3000 for vectors (a crossing restriction -> climb via SID except maintain; S1-SFO-0 CBT agrees).",
+      "restrictions": [],
+      "rnavRequired": false,
+      "routePhrasing": "radar_vectors_fix",
+      "runways": [
+        "01L",
+        "01R",
+        "28L",
+        "28R"
+      ],
+      "spoken": "San Francisco Five",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": []
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SEGUL.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "SEGUL ONE (RNAV)",
+      "climbViaEligible": true,
+      "family": "SEGUL",
+      "hasCrossingRestrictions": true,
+      "id": "SEGUL1",
+      "kind": "rnav_pilot_nav",
+      "note": "Successor to the OFFSH# departure described in the 2023 CBT (MCKEY -> YYUNG). Left turn off the 01s, so 1L.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 16000,
+          "fix": "SEGUL"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 22000,
+          "fix": "CYPRS"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "01L",
+        "28L",
+        "28R"
+      ],
+      "spoken": "Segul One",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "YYUNG",
+          "kind": "enroute",
+          "spoken": "Yyung",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SNTNA.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "SNTNA TWO (RNAV)",
+      "climbViaEligible": false,
+      "family": "SNTNA",
+      "hasCrossingRestrictions": false,
+      "id": "SNTNA2",
+      "kind": "rnav_pilot_nav",
+      "restrictions": [],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R"
+      ],
+      "spoken": "Sntna Two",
+      "topAltitude": {
+        "feet": 3000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "DEDHD",
+          "kind": "enroute",
+          "spoken": "Dedhd",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GRTFL",
+          "kind": "enroute",
+          "spoken": "Grtfl",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "MOGEE",
+          "kind": "enroute",
+          "spoken": "Mogee",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "ORRCA",
+          "kind": "enroute",
+          "spoken": "Orrca",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SYRAH",
+          "kind": "enroute",
+          "spoken": "Syrah",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "TIPRE",
+          "kind": "enroute",
+          "spoken": "Tipre",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375SSTIK.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "SSTIK FIVE (RNAV)",
+      "climbViaEligible": true,
+      "family": "SSTIK",
+      "hasCrossingRestrictions": true,
+      "id": "SSTIK5",
+      "kind": "rnav_pilot_nav",
+      "note": "CBT: RWY 1L only, so it can depart in parallel with TRUKN# on 1R.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_below",
+          "altitudeTwoFeet": 10000,
+          "fix": "PORTE"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "01L"
+      ],
+      "spoken": "Sstik Five",
+      "topAltitude": {
+        "feet": 19000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "KAYEX",
+          "kind": "enroute",
+          "spoken": "Kayex",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "KTINA",
+          "kind": "enroute",
+          "spoken": "Ktina",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "NTELL",
+          "kind": "enroute",
+          "spoken": "Ntell",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SUSEY",
+          "kind": "enroute",
+          "spoken": "Susey",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "YYUNG",
+          "kind": "enroute",
+          "spoken": "Yyung",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375TRUKN.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "TRUKN TWO (RNAV)",
+      "climbViaEligible": true,
+      "family": "TRUKN",
+      "hasCrossingRestrictions": true,
+      "id": "TRUKN2",
+      "kind": "rnav_pilot_nav",
+      "note": "CBT: RWY 28R/L and RWY 1R (right turn); 1R allows simultaneous parallel departures with 1L SSTIK#/SEGUL#.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 3000,
+          "fix": "TYDYE"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "01R",
+        "28L",
+        "28R"
+      ],
+      "spoken": "Trukn Two",
+      "topAltitude": {
+        "feet": 19000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "DEDHD",
+          "kind": "enroute",
+          "spoken": "Dedhd",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GRTFL",
+          "kind": "enroute",
+          "spoken": "Grtfl",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "MOGEE",
+          "kind": "enroute",
+          "spoken": "Mogee",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "ORRCA",
+          "kind": "enroute",
+          "spoken": "Orrca",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SYRAH",
+          "kind": "enroute",
+          "spoken": "Syrah",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "TIPRE",
+          "kind": "enroute",
+          "spoken": "Tipre",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00375WESLA.PDF"
+      },
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "WESLA FIVE (RNAV)",
+      "climbViaEligible": true,
+      "family": "WESLA",
+      "hasCrossingRestrictions": true,
+      "id": "WESLA5",
+      "kind": "rnav_pilot_nav",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 2000,
+          "fix": "WESLA"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R"
+      ],
+      "spoken": "Wesla Five",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "KAYEX",
+          "kind": "enroute",
+          "spoken": "Kayex",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "KTINA",
+          "kind": "enroute",
+          "spoken": "Ktina",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "NTELL",
+          "kind": "enroute",
+          "spoken": "Ntell",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SUSEY",
+          "kind": "enroute",
+          "spoken": "Susey",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "YYUNG",
+          "kind": "enroute",
+          "spoken": "Yyung",
+          "spokenAsTransition": true
+        }
+      ]
+    }
+  ],
+  "tecRoutes": []
+}

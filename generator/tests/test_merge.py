@@ -1,0 +1,174 @@
+from dataclasses import replace
+from typing import Any
+
+import pytest
+
+from craft_generator.emit import data_path, dump, schema_path, validate
+from craft_generator.merge import BuildInputs, Document, build_airport
+
+SID_COUNT = 12
+GAPP_TRANSITION_COUNT = 7
+TRUKN_TOP_ALTITUDE_FEET = 19000
+TRUKN_TRANSITION_FIXES = ["DEDHD", "GRTFL", "MOGEE", "ORRCA", "SYRAH", "TIPRE"]
+
+
+def _sids(document: Document) -> dict[str, Document]:
+    return {sid["id"]: sid for sid in document["sids"]}
+
+
+def _destinations(document: Document) -> dict[str, Document]:
+    return {destination["icao"]: destination for destination in document["routeLibrary"]["destinations"]}
+
+
+def _with_sop(inputs: BuildInputs, **changes: Any) -> BuildInputs:
+    return replace(inputs, airport=replace(inputs.airport, sop=replace(inputs.airport.sop, **changes)))
+
+
+def test_the_document_matches_the_schema(ksfo_document: Document) -> None:
+    validate(ksfo_document, schema_path())
+
+
+def test_every_published_departure_becomes_a_sid(ksfo_document: Document) -> None:
+    assert len(ksfo_document["sids"]) == SID_COUNT
+    assert len(_sids(ksfo_document)) == SID_COUNT
+
+
+def test_the_radar_vector_sid_comes_from_the_override(ksfo_document: Document) -> None:
+    sfo5 = _sids(ksfo_document)["SFO5"]
+    assert sfo5["kind"] == "radar_vectors"
+    assert sfo5["runways"] == ["01L", "01R", "28L", "28R"]
+    assert sfo5["transitions"] == []
+    assert sfo5["climbViaEligible"] is False
+    assert sfo5["routePhrasing"] == "radar_vectors_fix"
+
+
+def test_the_vector_sid_keeps_its_cifp_transitions_unspoken(ksfo_document: Document) -> None:
+    gapp7 = _sids(ksfo_document)["GAPP7"]
+    assert gapp7["kind"] == "vector_hybrid"
+    assert len(gapp7["transitions"]) == GAPP_TRANSITION_COUNT
+    assert {transition["kind"] for transition in gapp7["transitions"]} == {"vector"}
+    assert [transition["fix"] for transition in gapp7["transitions"] if transition["spokenAsTransition"]] == []
+
+
+def test_a_published_top_altitude_makes_a_sid_climb_via_eligible(ksfo_document: Document) -> None:
+    trukn2 = _sids(ksfo_document)["TRUKN2"]
+    assert trukn2["topAltitude"] == {"kind": "published", "feet": TRUKN_TOP_ALTITUDE_FEET}
+    assert trukn2["climbViaEligible"] is True
+    assert [transition["fix"] for transition in trukn2["transitions"]] == TRUKN_TRANSITION_FIXES
+    assert trukn2["transitions"][0]["spoken"] == "Dedhd"
+    assert trukn2["transitions"][0]["spokenAsTransition"] is True
+
+
+def test_a_navaid_transition_is_spoken_by_name(ksfo_document: Document) -> None:
+    molen9 = _sids(ksfo_document)["MOLEN9"]
+    assert [(transition["fix"], transition["spoken"]) for transition in molen9["transitions"]] == [("ENI", "Mendocino")]
+
+
+def test_an_override_narrows_the_runways_the_cifp_codes(ksfo_document: Document) -> None:
+    assert _sids(ksfo_document)["SSTIK5"]["runways"] == ["01L"]
+
+
+def test_noise_window_times_are_normalised_to_hhmm(ksfo_document: Document) -> None:
+    night = next(window for window in ksfo_document["noiseWindows"] if window["id"] == "night")
+    assert (night["start"], night["end"], night["sundayEnd"]) == ("2200", "0700", "0800")
+
+
+def test_the_frequency_pool_keeps_its_labels(ksfo_document: Document) -> None:
+    assert ksfo_document["frequencies"][0] == {"label": "San Francisco Clearance", "value": "118.2"}
+
+
+def test_the_fleet_is_classed_from_the_vnas_specs(ksfo_document: Document) -> None:
+    assert ksfo_document["aircraftClasses"]["A320"] == "J"
+
+
+def test_destination_coordinates_come_from_the_cifp_unless_the_yaml_gives_them(ksfo_document: Document) -> None:
+    destinations = _destinations(ksfo_document)
+    assert isinstance(destinations["KSEA"]["lat"], float)
+    assert isinstance(destinations["KSEA"]["lon"], float)
+    assert (destinations["RKSI"]["lat"], destinations["RKSI"]["lon"]) == (37.469, 126.451)
+
+
+def test_the_later_rule_tables_are_empty_until_their_step(ksfo_document: Document) -> None:
+    assert ksfo_document["tecRoutes"] == []
+    assert ksfo_document["loaRules"] == []
+
+
+def test_a_rule_naming_an_unknown_dp_family_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    rules[0] = replace(rules[0], sid_family="NOPE")
+    with pytest.raises(ValueError, match=r"DP family 'NOPE' resolves to 0 procedures"):
+        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+
+
+def test_an_exit_fix_in_no_gate_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    gates = ksfo_build_inputs.airport.sop.gates
+    narrowed = replace(gates, north=tuple(fix for fix in gates.north if fix != "DEDHD"))
+    with pytest.raises(ValueError, match="DEDHD"):
+        build_airport(_with_sop(ksfo_build_inputs, gates=narrowed))
+
+
+def test_a_forced_transition_the_sid_does_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    index, rule = next((index, rule) for index, rule in enumerate(rules) if rule.when is not None and rule.when.forced_transition)
+    when = rule.when
+    assert when is not None
+    rules[index] = replace(rule, when=replace(when, forced_transition="ZZZZZ"))
+    with pytest.raises(ValueError, match=r"forcedTransition 'ZZZZZ' is not a transition of NIITE#"):
+        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+
+
+def test_a_chart_and_cifp_transition_mismatch_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    chart = ksfo_build_inputs.charts["TRUKN TWO (RNAV)"]
+    stale = replace(chart, facts=replace(chart.facts, transitions={"DEDHD": "DEDHD"}))
+    charts = {**ksfo_build_inputs.charts, "TRUKN TWO (RNAV)": stale}
+    with pytest.raises(ValueError, match=r"TRUKN2 \(TRUKN TWO \(RNAV\)\): the chart publishes transitions"):
+        build_airport(replace(ksfo_build_inputs, charts=charts))
+
+
+def test_a_fleet_type_without_a_class_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    classes = {key: value for key, value in ksfo_build_inputs.aircraft_classes.items() if key != "A320"}
+    with pytest.raises(ValueError, match=r"fleet\[A320\]"):
+        build_airport(replace(ksfo_build_inputs, aircraft_classes=classes))
+
+
+def test_a_destination_without_coordinates_names_the_airport(ksfo_build_inputs: BuildInputs) -> None:
+    coordinates = {key: value for key, value in ksfo_build_inputs.coordinates.items() if key != "KSEA"}
+    with pytest.raises(ValueError, match=r"destinations\[KSEA\]: the CIFP has no airport record"):
+        build_airport(replace(ksfo_build_inputs, coordinates=coordinates))
+
+
+def test_a_runway_no_runway_record_lists_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    runways = tuple(runway for runway in ksfo_build_inputs.runways if runway != "19L")
+    with pytest.raises(ValueError, match=r"runway '19L' has no CIFP runway record"):
+        build_airport(replace(ksfo_build_inputs, runways=runways))
+
+
+def test_an_exit_fix_condition_naming_nothing_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    index, rule = next((index, rule) for index, rule in enumerate(rules) if rule.when is not None and rule.when.exit_fixes)
+    when = rule.when
+    assert when is not None
+    rules[index] = replace(rule, when=replace(when, exit_fixes=("ZZZZZ",)))
+    with pytest.raises(ValueError, match=r"exitFixes names 'ZZZZZ'"):
+        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+
+
+def test_a_rule_naming_an_unknown_sector_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    rules[0] = replace(rules[0], sector="tower")
+    with pytest.raises(ValueError, match=r"sector 'tower' is not a departureSectors id"):
+        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+
+
+def test_a_route_to_an_unlisted_destination_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    routes = ksfo_build_inputs.airport.routes
+    without_seattle = replace(routes, destinations=tuple(entry for entry in routes.destinations if entry.icao != "KSEA"))
+    mutated = replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, routes=without_seattle))
+    with pytest.raises(ValueError, match=r"destination is not in routeLibrary.destinations"):
+        build_airport(mutated)
+
+
+def test_build_matches_committed_data(ksfo_document: Document) -> None:
+    committed = data_path("KSFO")
+    assert committed.exists(), f"{committed} is missing; run `uv run craft-gen build --airport KSFO`"
+    assert dump(ksfo_document) == committed.read_text(encoding="utf-8", newline="")
