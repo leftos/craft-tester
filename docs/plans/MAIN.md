@@ -18,7 +18,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [ ] 12. `options`, `grade`, `speak` (`grade` and `speak` done; `options` pending; full-route reading repeats the vector fix for radar-vector routes, fix with `options`)
 - [ ] 13. Scenario generator (seeded) (`rng` done; `generate` pending)
 - [ ] 14. UI: strip, ATIS, CRAFT form, results, seed in URL hash
-- [ ] 15. CI + GitHub Pages; finalize README, ARCHITECTURE, CLAUDE.md
+- [ ] 15. CI + GitHub Pages (workflows landed, pinned SHAs, actionlint + zizmor clean); finalize README, ARCHITECTURE, CLAUDE.md at the end
 - [ ] 16. `import-worksheets`: seven Google Docs → pending fixtures
 - [ ] 17. Validation loop, clearance mode (one at a time with the user, then batch)
 - [ ] 18. TEC routes, LOA rules, equipment suffixes, destination coordinates, fleet ceilings
