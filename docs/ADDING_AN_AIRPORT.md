@@ -83,7 +83,11 @@ the hooks rejects the file.
    in 28/01 for oceanic, Far East and cargo flights, SOP 2-1 e) gets `on_request_for: [cargo, heavy,
    oceanic]`; cargo is decided by `routes.yaml` `cargo_airlines`, heavy by the vNAS wake category, oceanic
    by the exit fix's gate, and the importer reads a qualifying flight that files a SID published only for
-   that runway as requesting it.
+   that runway as requesting it. Every config row carries `source` (the SOP section, KSFO `SFO ATCT SOP
+   1-7`) because the graded "expect runway" element cites the configuration itself. The ATIS panel
+   advertises only the rows with neither `default_for_classes` nor `on_request_for` ("departing 01L, 01R"
+   in 28/01); the student picks the runway and the engine explains it with one of the `RWY-*` rows (see
+   step 15).
 6. **`departure_sectors`**: id, name, frequency, from the ZOA positions list and the chart's DEP CON boxes.
    **`departure_staffing_fallbacks`**: the combined-sector frequencies from the CBT (not used by the engine
    yet; recorded so the data exists when a staffing scenario is added).
@@ -117,7 +121,10 @@ the hooks rejects the file.
     `default_active`. The engine skips assignment rows for an off SID; scenarios drill both states.
 15. **`phraseology`** toggles and **`phraseology_rules`**: copy the KSFO block verbatim. These are FAA JO
     7110.65 4-3-2 citations and are national; change the toggles only when the airport's trainers
-    disagree with a default, during validation.
+    disagree with a default, during validation. The four `RWY-*` rows (`RWY-CLASS-DEFAULT`,
+    `RWY-ON-REQUEST`, `RWY-DIRECTION`, `RWY-FIRST`) are the exception: the engine cites them by id to
+    explain the departure runway, so keep the ids and rewrite the `source` and `text` for the airport's
+    own runway-assignment practice (or make the text say the mechanism does not apply).
 
 Prove it: `uv run craft-gen verify-sop --airport <ICAO>` passes and the loader accepts the file (the build
 in step 6 reports loader errors by field).

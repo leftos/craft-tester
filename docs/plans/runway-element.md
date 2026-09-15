@@ -51,7 +51,7 @@ below).
 - [ ] 3. Generator remark + UI (web worktree): `generate.ts` sets `remarks` on the on-request draw;
   `strip.ts` remarks row; `atis.ts` advertised runways; `craftForm.ts` runway group; `labels.ts` `RWY`;
   `state.ts` pick; `session.test.ts`; browser re-check
-- [ ] 4. Docs: `ADDING_AN_AIRPORT.md` (config `source`, `RWY-*` rows), `ARCHITECTURE.md`
+- [x] 4. Docs: `ADDING_AN_AIRPORT.md` (config `source`, `RWY-*` rows), `ARCHITECTURE.md` (2026-09-15)
 
 ## Open question for the user
 
