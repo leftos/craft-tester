@@ -1,0 +1,76 @@
+import type { AirportData, Direction, Gates } from '@/data/schema.ts';
+import type { Unresolved } from '@/rules/types.ts';
+import { unresolved } from '@/rules/unresolved.ts';
+
+/** A departure procedure token: three to five letters and a version digit, e.g. `TRUKN2`. */
+const SID_TOKEN = /^[A-Z]{3,5}\d$/;
+
+/** An airway token, e.g. `J501` or `Q158`, which is never a departure procedure. */
+const AIRWAY_TOKEN = /^[JVQT]\d+$/;
+
+/** The directions a gate fix can belong to, in the order `gates` lists them. */
+const DIRECTIONS: readonly Direction[] = ['north', 'south', 'oceanic'];
+
+/** The filed route split into the procedure the pilot filed and the route that follows it. */
+export type ParsedRoute = {
+  filedSidToken?: string;
+  exitFix: string;
+  tokens: string[];
+};
+
+/**
+ * Whether a route token names a departure procedure rather than a fix or an airway.
+ *
+ * @param token One token of a filed route.
+ * @returns True for `TRUKN2`, false for `TRUKN`, `J501`, and `V244`.
+ */
+export function isSidToken(token: string): boolean {
+  return SID_TOKEN.test(token) && !AIRWAY_TOKEN.test(token);
+}
+
+/**
+ * Splits a filed route into its procedure token and the fix the flight leaves the terminal on.
+ *
+ * A leading procedure token is stripped whether or not it is the procedure the flight will get, so
+ * a stale or wrong SID does not change the exit fix. The airport's own navaid is skipped where it
+ * is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`.
+ *
+ * @param filedRoute The route string as filed.
+ * @param airport The airport data, for the airport's own navaid identifier.
+ * @returns The parsed route, or `Unresolved` when nothing usable follows the procedure token.
+ */
+export function parseFiledRoute(
+  filedRoute: string,
+  airport: AirportData,
+): ParsedRoute | Unresolved {
+  const filed = filedRoute
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token.length > 0);
+  const first = filed[0];
+  const filedSidToken = first !== undefined && isSidToken(first) ? first : undefined;
+  const afterSid = filedSidToken === undefined ? filed : filed.slice(1);
+  const tokens = afterSid[0] === airport.airport.faa ? afterSid.slice(1) : afterSid;
+  const exitFix = tokens[0];
+  if (exitFix === undefined) {
+    return unresolved('R.route', `filed route "${filedRoute}" has no fix after the procedure`);
+  }
+  if (AIRWAY_TOKEN.test(exitFix)) {
+    return unresolved(
+      'R.route',
+      `filed route "${filedRoute}" joins airway ${exitFix} with no fix to leave the terminal on`,
+    );
+  }
+  return filedSidToken === undefined ? { exitFix, tokens } : { filedSidToken, exitFix, tokens };
+}
+
+/**
+ * Looks up the departure direction a gate fix belongs to.
+ *
+ * @param fix The exit fix.
+ * @param gates The airport's gate fixes grouped by direction.
+ * @returns The direction, or undefined when the fix is not a gate.
+ */
+export function directionOf(fix: string, gates: Gates): Direction | undefined {
+  return DIRECTIONS.find((direction) => gates[direction].includes(fix));
+}

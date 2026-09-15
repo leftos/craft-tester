@@ -1,0 +1,343 @@
+import { describe, expect, it } from 'vitest';
+import ksfoJson from '@data/ksfo.json';
+import type { AirportData, AltitudePhrase, RouteTemplate, Scenario } from '@/data/schema.ts';
+import { resolveClearance } from '@/rules/engine.ts';
+import type { ResolvedClearance } from '@/rules/types.ts';
+
+const ksfo = ksfoJson as unknown as AirportData;
+
+const BASE: Scenario = {
+  callsign: 'UAL1',
+  aircraftType: 'B738',
+  rnavCapable: true,
+  destination: 'KSEA',
+  filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7',
+  filedAltitude: 34000,
+  runwayConfigId: '28/01',
+  departureRunway: '01R',
+  localTime: '1400',
+  dayOfWeek: 'tuesday',
+  squawk: '1234',
+};
+
+function scenario(overrides: Partial<Scenario>): Scenario {
+  return Object.assign({ ...BASE }, overrides);
+}
+
+function clearanceFor(flight: Scenario, airport: AirportData = ksfo): ResolvedClearance {
+  const result = resolveClearance(flight, airport);
+  if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+  return result.clearance;
+}
+
+type Expectation = {
+  sidId: string;
+  route: { template: RouteTemplate; fix?: string };
+  altitude: { phrase: AltitudePhrase; feet?: number };
+  frequency: string;
+};
+
+const SOUTHBOUND_LAX = {
+  filedRoute: 'SSTIK5 SUSEY EBAYE BURGL IRNMN2',
+  destination: 'KLAX',
+  filedAltitude: 33000,
+};
+
+const SOUTHBOUND_SAN = {
+  filedRoute: 'SEGUL1 YYUNG LAX COMIX2',
+  destination: 'KSAN',
+  filedAltitude: 37000,
+};
+
+const CASES: [string, Partial<Scenario>, Expectation][] = [
+  [
+    'a jet north via DEDHD off 01R in 28/01 gets TRUKN and the DEDHD transition',
+    {},
+    {
+      sidId: 'TRUKN2',
+      route: { template: 'transition', fix: 'DEDHD' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'the same jet off 28L in 28 RT keeps TRUKN',
+    { runwayConfigId: '28 RT', departureRunway: '28L' },
+    {
+      sidId: 'TRUKN2',
+      route: { template: 'transition', fix: 'DEDHD' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'off 28L in 28 SO it gets SNTNA instead',
+    { runwayConfigId: '28 SO', departureRunway: '28L' },
+    {
+      sidId: 'SNTNA2',
+      route: { template: 'transition', fix: 'DEDHD' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a north jet inside the noise window gets NIITE',
+    { localTime: '2300' },
+    {
+      sidId: 'NIITE4',
+      route: { template: 'transition', fix: 'DEDHD' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a south jet via SUSEY off 01L gets SSTIK',
+    { ...SOUTHBOUND_LAX, departureRunway: '01L' },
+    {
+      sidId: 'SSTIK5',
+      route: { template: 'transition', fix: 'SUSEY' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '135.1',
+    },
+  ],
+  [
+    'a south jet via YYUNG gets SSTIK while the SEGUL notice is in force',
+    { ...SOUTHBOUND_SAN, departureRunway: '01L' },
+    {
+      sidId: 'SSTIK5',
+      route: { template: 'transition', fix: 'YYUNG' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '135.1',
+    },
+  ],
+  [
+    'the same flight gets SEGUL once the notice is lifted',
+    { ...SOUTHBOUND_SAN, departureRunway: '01L', activeNotices: [] },
+    {
+      sidId: 'SEGUL1',
+      route: { template: 'transition', fix: 'YYUNG' },
+      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      frequency: '135.1',
+    },
+  ],
+  [
+    'a filed altitude below the interim altitude caps the clearance',
+    { ...SOUTHBOUND_SAN, departureRunway: '01L', activeNotices: [], filedAltitude: 5000 },
+    {
+      sidId: 'SEGUL1',
+      route: { template: 'transition', fix: 'YYUNG' },
+      altitude: { phrase: 'climb_via_except', feet: 5000 },
+      frequency: '135.1',
+    },
+  ],
+  [
+    'a south jet via SUSEY off 28L gets WESLA and the 3,000 interim',
+    {
+      ...SOUTHBOUND_LAX,
+      filedRoute: 'WESLA5 SUSEY EBAYE BURGL IRNMN2',
+      runwayConfigId: '28 SO',
+      departureRunway: '28L',
+    },
+    {
+      sidId: 'WESLA5',
+      route: { template: 'transition', fix: 'SUSEY' },
+      altitude: { phrase: 'climb_via_except', feet: 3000 },
+      frequency: '135.1',
+    },
+  ],
+  [
+    'an oceanic jet via BEBOP off 28L gets GNNRR',
+    {
+      filedRoute: 'GNNRR3 BEBOP R464 BILLO R464 BITTA MAGGI3',
+      destination: 'PHNL',
+      filedAltitude: 31000,
+      runwayConfigId: '28 SO',
+      departureRunway: '28L',
+    },
+    {
+      sidId: 'GNNRR3',
+      route: { template: 'transition', fix: 'BEBOP' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '135.1',
+    },
+  ],
+  [
+    'a non-RNAV jet off 28L via ENI takes the north GAP row, because ENI is a north gate fix',
+    {
+      filedRoute: 'MOLEN9 ENI',
+      destination: 'CYVR',
+      filedAltitude: 33000,
+      rnavCapable: false,
+      runwayConfigId: '28 SO',
+      departureRunway: '28L',
+    },
+    {
+      sidId: 'GAPP7',
+      route: { template: 'radar_vectors_fix', fix: 'ENI' },
+      altitude: { phrase: 'maintain', feet: 3000 },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a prop via OAK off 01L gets GAP with radar vectors and a 5,000 maintain',
+    {
+      aircraftType: 'C172',
+      rnavCapable: false,
+      runwayConfigId: '01/01',
+      departureRunway: '01L',
+      filedRoute: 'OAK V6 SAC',
+      destination: 'KSMF',
+      filedAltitude: 5000,
+    },
+    {
+      sidId: 'GAPP7',
+      route: { template: 'radar_vectors_fix', fix: 'OAK' },
+      altitude: { phrase: 'maintain', feet: 5000 },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a non-RNAV jet north via RBL off 01R gets the San Francisco departure',
+    {
+      rnavCapable: false,
+      filedRoute: 'SFO5 RBL J1 OED',
+      destination: 'RKSI',
+      filedAltitude: 30000,
+    },
+    {
+      sidId: 'SFO5',
+      route: { template: 'radar_vectors_fix', fix: 'RBL' },
+      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a non-RNAV jet north off 28L gets GAP and a 3,000 maintain',
+    { rnavCapable: false, runwayConfigId: '28 SO', departureRunway: '28L' },
+    {
+      sidId: 'GAPP7',
+      route: { template: 'radar_vectors_fix', fix: 'DEDHD' },
+      altitude: { phrase: 'maintain', feet: 3000 },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a jet north via DEDHD off 10L in 19/10 gets CIITY',
+    { runwayConfigId: '19/10', departureRunway: '10L', filedRoute: 'CIITY3 DEDHD RBL LMT HAWKZ7' },
+    {
+      sidId: 'CIITY3',
+      route: { template: 'transition', fix: 'DEDHD' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '120.9',
+    },
+  ],
+  [
+    'a jet south via SUSEY off 10R gets SAHEY',
+    {
+      ...SOUTHBOUND_LAX,
+      filedRoute: 'SAHEY4 SUSEY EBAYE BURGL IRNMN2',
+      runwayConfigId: '19/10',
+      departureRunway: '10R',
+    },
+    {
+      sidId: 'SAHEY4',
+      route: { template: 'transition', fix: 'SUSEY' },
+      altitude: { phrase: 'climb_via' },
+      frequency: '135.1',
+    },
+  ],
+];
+
+describe('resolveClearance on the generated KSFO data', () => {
+  it.each(CASES)('%s', (_name, overrides, expected) => {
+    const flight = scenario(overrides);
+    const clearance = clearanceFor(flight);
+    expect(clearance.sid.value.id).toBe(expected.sidId);
+    expect(clearance.route.value).toEqual(expected.route);
+    expect(clearance.altitude.value).toEqual(expected.altitude);
+    expect(clearance.frequency.value.value).toBe(expected.frequency);
+    expect(clearance.clearedTo.value).toBe(flight.destination);
+    expect(clearance.departureRunway).toBe(flight.departureRunway);
+    expect(clearance.expect.value).toEqual({ feet: flight.filedAltitude, minutes: 10 });
+    for (const element of [
+      clearance.clearedTo,
+      clearance.sid,
+      clearance.route,
+      clearance.altitude,
+      clearance.expect,
+      clearance.frequency,
+    ]) {
+      expect(element.citations.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('cites the assignment row, and the notice that changed the outcome', () => {
+    const clearance = clearanceFor(scenario({ ...SOUTHBOUND_SAN, departureRunway: '01L' }));
+    expect(clearance.sid.citations.map((citation) => citation.id)).toEqual([
+      'SFOW-S-SSTIK-01',
+      'SFO-SEGUL-OFF',
+    ]);
+  });
+
+  it('cites only the assignment row when no notice changed the outcome', () => {
+    const clearance = clearanceFor(scenario({}));
+    expect(clearance.sid.citations.map((citation) => citation.id)).toEqual(['SFOW-N-TRUKN-01']);
+  });
+
+  const truknBaseFix = ksfo.sids.find((sid) => sid.id === 'TRUKN2')?.baseFix;
+
+  it.skipIf(truknBaseFix === undefined)(
+    'says "then as filed" when the flight leaves on the SID base fix',
+    () => {
+      const clearance = clearanceFor(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }));
+      expect(clearance.sid.value.id).toBe('TRUKN2');
+      expect(clearance.route.value).toEqual({ template: 'as_filed' });
+    },
+  );
+
+  it.skipIf(truknBaseFix !== undefined)(
+    'cannot place a flight on a SID base fix while the data has no base fix',
+    () => {
+      const result = resolveClearance(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }), ksfo);
+      expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
+    },
+  );
+
+  it('speaks no expect clause once the phraseology toggle says never', () => {
+    const airport: AirportData = {
+      ...ksfo,
+      phraseology: { ...ksfo.phraseology, expectAltitude: 'never' },
+    };
+    expect(clearanceFor(scenario({}), airport).expect.value).toBeNull();
+  });
+
+  it('blocks the route element when the filed route joins an airway straight away', () => {
+    const result = resolveClearance(scenario({ filedRoute: 'TRUKN2 J501 OED' }), ksfo);
+    expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.route' }] });
+  });
+
+  it('blocks the SID element for an aircraft type the data does not class', () => {
+    const result = resolveClearance(scenario({ aircraftType: 'ZZZZ' }), ksfo);
+    expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
+  });
+
+  it('blocks the SID element for a non-RNAV prop sent off runway heading at night', () => {
+    const result = resolveClearance(
+      scenario({
+        aircraftType: 'C172',
+        rnavCapable: false,
+        runwayConfigId: '01/01',
+        departureRunway: '01L',
+        filedRoute: 'OAK V6 SAC',
+        destination: 'KSMF',
+        filedAltitude: 5000,
+        localTime: '2300',
+      }),
+      ksfo,
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      unresolved: [{ element: 'R.sid', reason: expect.stringContaining('runway heading') }],
+    });
+  });
+});

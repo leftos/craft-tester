@@ -1,0 +1,92 @@
+import { describe, expect, it } from 'vitest';
+import ksfoJson from '@data/ksfo.json';
+import type { AirportData, Scenario } from '@/data/schema.ts';
+import { buildOptions } from '@/rules/options.ts';
+
+const ksfo = ksfoJson as unknown as AirportData;
+
+const BASE: Scenario = {
+  callsign: 'UAL1',
+  aircraftType: 'B738',
+  rnavCapable: true,
+  destination: 'KSEA',
+  filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7',
+  filedAltitude: 34000,
+  runwayConfigId: '28/01',
+  departureRunway: '01R',
+  localTime: '1400',
+  dayOfWeek: 'tuesday',
+  squawk: '1234',
+};
+
+function scenario(overrides: Partial<Scenario>): Scenario {
+  return Object.assign({ ...BASE }, overrides);
+}
+
+describe('buildOptions', () => {
+  it('offers every destination in the library plus the airport itself, without duplicates', () => {
+    const { clearedTo } = buildOptions(scenario({}), ksfo);
+    expect(clearedTo).toContain('KSEA');
+    expect(clearedTo).toContain('PHNL');
+    expect(clearedTo).toContain('KSFO');
+    expect(new Set(clearedTo).size).toBe(clearedTo.length);
+  });
+
+  it('offers every published SID by its chart name', () => {
+    const { sids } = buildOptions(scenario({}), ksfo);
+    expect(sids).toHaveLength(ksfo.sids.length);
+    expect(sids).toContainEqual({ id: 'TRUKN2', label: 'TRUKN TWO (RNAV)' });
+  });
+
+  it('offers every route shape, altitude phrase, and expect clause', () => {
+    const options = buildOptions(scenario({}), ksfo);
+    expect(options.routeTemplates).toEqual(['transition', 'radar_vectors_fix', 'as_filed']);
+    expect(options.altitudePhrases).toEqual(['climb_via', 'climb_via_except', 'maintain']);
+    expect(options.expect).toEqual(['ten_minutes', 'three_minutes', 'none']);
+  });
+
+  it('offers the picked SID transitions and the head of the filed route as route fixes', () => {
+    const { routeFixes } = buildOptions(scenario({}), ksfo, 'TRUKN2');
+    expect(routeFixes).toEqual([
+      'DEDHD',
+      'GRTFL',
+      'MOGEE',
+      'ORRCA',
+      'SYRAH',
+      'TIPRE',
+      'RBL',
+      'LMT',
+    ]);
+  });
+
+  it('offers only the filed fixes when no SID is picked yet', () => {
+    expect(buildOptions(scenario({}), ksfo).routeFixes).toEqual(['DEDHD', 'RBL', 'LMT']);
+  });
+
+  it('keeps a filed route that has no procedure token', () => {
+    const filedRoute = 'OAK V244 ALTAM V392 SAC';
+    expect(buildOptions(scenario({ filedRoute }), ksfo).routeFixes).toEqual([
+      'OAK',
+      'V244',
+      'ALTAM',
+    ]);
+  });
+
+  it('offers the interim altitudes, the published top altitudes, and the filed altitude, sorted', () => {
+    const { altitudeFeet } = buildOptions(scenario({ filedAltitude: 11000 }), ksfo);
+    expect(altitudeFeet).toEqual([3000, 5000, 10000, 11000, 15000, 19000]);
+  });
+
+  it('offers the labelled frequency pool', () => {
+    const { frequencies } = buildOptions(scenario({}), ksfo);
+    expect(frequencies).toContain('120.9');
+    expect(frequencies).toContain('135.1');
+    expect(frequencies).toEqual(ksfo.frequencies.map((frequency) => frequency.value));
+  });
+
+  it('is deterministic', () => {
+    expect(buildOptions(scenario({}), ksfo, 'TRUKN2')).toEqual(
+      buildOptions(scenario({}), ksfo, 'TRUKN2'),
+    );
+  });
+});
