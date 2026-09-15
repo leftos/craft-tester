@@ -15,8 +15,8 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [ ] 9. Merge + emit + integrity checks; first `data/ksfo.json`
 - [ ] 10. Rules engine core + table tests + exhaustive enumeration test
 - [ ] 11. Synthetic fixtures + fixture runner
-- [ ] 12. `options`, `grade`, `speak`
-- [ ] 13. Scenario generator (seeded)
+- [ ] 12. `options`, `grade`, `speak` (`grade` and `speak` done; `options` pending; full-route reading repeats the vector fix for radar-vector routes, fix with `options`)
+- [ ] 13. Scenario generator (seeded) (`rng` done; `generate` pending)
 - [ ] 14. UI: strip, ATIS, CRAFT form, results, seed in URL hash
 - [ ] 15. CI + GitHub Pages; finalize README, ARCHITECTURE, CLAUDE.md
 - [ ] 16. `import-worksheets`: seven Google Docs → pending fixtures
@@ -41,7 +41,7 @@ None. Worksheets are public Google Docs (ids in the subplan); no browser needed 
 ## Backlog
 
 - [ ] Second airport (OAK or SJC) as a data-only addition to prove the boundary
-- [ ] Callsign telephony table for the spoken reveal ("United twelve thirty-four")
+- [x] Callsign telephony table for the spoken reveal (`routes.yaml` `telephony`; schema field `routeLibrary.telephony` added in step 9)
 - [ ] Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR
 
 ## Open questions (settled by the validation loops, recorded as data toggles)
