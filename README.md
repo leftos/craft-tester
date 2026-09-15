@@ -2,8 +2,8 @@
 
 A small browser game for VATSIM Oakland ARTCC (ZOA) trainees practicing IFR departure clearances at
 KSFO. Each scenario shows a flight strip and the active runway configuration; you build the spoken CRAFT
-clearance from dropdowns (or, in amendment mode, spot and fix the wrong box on the strip), submit once, and
-see each element graded with the SOP or 7110.65 rule that decided it.
+clearance from dropdowns, submit once, and see each element graded with the SOP or 7110.65 rule that
+decided it.
 
 For simulation use only. Not for real-world navigation or ATC.
 
