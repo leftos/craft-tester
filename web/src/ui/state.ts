@@ -50,6 +50,8 @@ export type AppState = {
   view: ScenarioView;
   picks: DraftPicks;
   submitted: boolean;
+  /** The clearance an earlier attempt at this seed submitted, where this browser remembers one. */
+  revisit: PlayerPicks | undefined;
 };
 
 /** The empty option of a dropdown reads back as the empty string, which is no pick at all. */
@@ -167,16 +169,32 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
  *
  * @param airport The airport data.
  * @param seed The scenario seed.
+ * @param previous The clearance an earlier attempt at this seed submitted, or `undefined`.
  * @returns The state the page renders from.
  */
-export function newSession(airport: AirportData, seed: number): AppState {
+export function newSession(
+  airport: AirportData,
+  seed: number,
+  previous: PlayerPicks | undefined,
+): AppState {
   return {
     airport,
     seed,
     view: buildScenario(airport, seed),
     picks: EMPTY_PICKS,
     submitted: false,
+    revisit: previous,
   };
+}
+
+/**
+ * Answers this scenario again, from a revisit or from the results of the attempt just submitted.
+ *
+ * @param state The state before the retry.
+ * @returns The same scenario with an untouched form and nothing revealed.
+ */
+export function withRetry(state: AppState): AppState {
+  return { ...state, revisit: undefined, picks: EMPTY_PICKS, submitted: false };
 }
 
 /**

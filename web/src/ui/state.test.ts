@@ -1,7 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import type { AirportData } from '@/data/schema.ts';
+import type { PlayerPicks } from '@/rules/types.ts';
 import { seedFromHash } from '@/scenario/rng.ts';
+import { loadAirportData } from '@/ui/session.ts';
 import type { DraftPicks } from '@/ui/state.ts';
-import { applyPick, EMPTY_PICKS, shareLink, toPlayerPicks } from '@/ui/state.ts';
+import {
+  applyPick,
+  EMPTY_PICKS,
+  newSession,
+  shareLink,
+  toPlayerPicks,
+  withRetry,
+} from '@/ui/state.ts';
 
 const full: DraftPicks = {
   clearedTo: 'KLAX',
@@ -76,6 +86,52 @@ describe('toPlayerPicks', () => {
       expect: 'ten_minutes',
       frequency: '120.9',
     });
+  });
+});
+
+describe('revisiting a solved scenario', () => {
+  const SEED = 1;
+  const previous: PlayerPicks = {
+    clearedTo: 'KLAX',
+    sidId: 'TRUKN2',
+    routeTemplate: 'transition',
+    routeFix: 'DEDHD',
+    altitudePhrase: 'maintain',
+    altitudeFeet: 10_000,
+    expect: 'ten_minutes',
+    frequency: '120.9',
+  };
+  let airport: AirportData;
+
+  beforeAll(async () => {
+    airport = await loadAirportData('KSFO');
+  });
+
+  it('starts an already solved seed with the earlier answer and an untouched form', () => {
+    const state = newSession(airport, SEED, previous);
+    expect(state.revisit).toStrictEqual(previous);
+    expect(state.picks).toStrictEqual(EMPTY_PICKS);
+    expect(state.submitted).toBe(false);
+  });
+
+  it('remembers no earlier answer for a seed nobody has solved', () => {
+    expect(newSession(airport, SEED, undefined).revisit).toBeUndefined();
+  });
+
+  it('hides the earlier answer and empties the form on a retry', () => {
+    const state = withRetry(newSession(airport, SEED, previous));
+    expect(state.revisit).toBeUndefined();
+    expect(state.picks).toStrictEqual(EMPTY_PICKS);
+    expect(state.submitted).toBe(false);
+    expect(state.seed).toBe(SEED);
+  });
+
+  it('empties a form that was just submitted', () => {
+    const submitted = { ...newSession(airport, SEED, undefined), picks: full, submitted: true };
+    const state = withRetry(submitted);
+    expect(state.picks).toStrictEqual(EMPTY_PICKS);
+    expect(state.submitted).toBe(false);
+    expect(state.revisit).toBeUndefined();
   });
 });
 

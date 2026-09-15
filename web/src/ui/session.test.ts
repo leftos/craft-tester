@@ -105,7 +105,9 @@ describe(`the scenario of seed ${SEED}`, () => {
 
 describe('the CRAFT form', () => {
   it('keeps the dependent dropdowns disabled until the pick they depend on is made', () => {
-    const fields = new Map(fieldsOf(newSession(airport, SEED)).map((field) => [field.key, field]));
+    const fields = new Map(
+      fieldsOf(newSession(airport, SEED, undefined)).map((field) => [field.key, field]),
+    );
     expect(fields.get('routeFix')?.disabled).toBe(true);
     expect(fields.get('altitudeFeet')?.disabled).toBe(true);
     expect(fields.get('clearedTo')?.disabled).toBe(false);
@@ -113,7 +115,7 @@ describe('the CRAFT form', () => {
 
   it('offers the clearance the engine resolved, and grades it green', () => {
     const clearance = clearanceOf(view);
-    let state = newSession(airport, SEED);
+    let state = newSession(airport, SEED, undefined);
     for (const [key, raw] of answerFor(clearance)) state = withPick(state, key, raw);
     const picks = toPlayerPicks(state.picks);
     if (picks === undefined) throw new Error("the engine's own clearance did not fill the form");
@@ -130,7 +132,7 @@ describe('the CRAFT form', () => {
   });
 
   it('refuses to submit a form with a dropdown still blank', () => {
-    const state = newSession(airport, SEED);
+    const state = newSession(airport, SEED, undefined);
     expect(withSubmitted(state).submitted).toBe(false);
   });
 });
