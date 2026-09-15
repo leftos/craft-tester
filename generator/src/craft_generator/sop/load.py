@@ -6,13 +6,15 @@ row makes to another - a sector, a runway configuration, a noise window, a DP fa
 gate fix, a destination - is resolved while loading, so a broken reference fails the build instead
 of the clearance. Every message names the file, the row id and the key it came from.
 
-The three files are loaded separately (:func:`load_sop`, :func:`load_overrides`, :func:`load_routes`),
-each checking what it can see on its own; :func:`load_airport` loads all three and adds the checks
-that span files.
+Each file is loaded separately (:func:`load_sop`, :func:`load_overrides`, :func:`load_routes`,
+:func:`load_tec`, :func:`load_loa`), checking what it can see on its own; :func:`load_airport` loads
+them all and adds the checks that span files. ``tec.yaml`` and ``loa.yaml`` are optional - an airport
+without them has no TEC route and no letter-of-agreement rule - and are checked when present.
 """
 
 import re
 from collections.abc import Iterator, Mapping, Sequence
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -26,9 +28,11 @@ from craft_generator.sop.model import (
     DIRECTIONS,
     EXPECT_ALTITUDE_POLICIES,
     GATE_DIRECTIONS,
+    LOA_RULE_KIND_NAMES,
     NOTICE_EFFECT_KINDS,
     PHRASEOLOGY_READINGS,
     ROUTE_PHRASINGS,
+    TEC_ROUTE_KINDS,
     TOP_ALTITUDE_KINDS,
     WAKE_CATEGORIES,
     WORKSHEET_KINDS,
@@ -42,35 +46,52 @@ from craft_generator.sop.model import (
     DepartureSector,
     Destination,
     EquipmentSuffix,
+    EvenAltitudeRule,
     FleetEntry,
     FrequencyOption,
     GateDirection,
     Gates,
+    LoaData,
+    LoaRule,
+    LoaRuleKind,
+    LoaRuleKindName,
+    LoaSource,
+    MaxAltitudeRule,
     NoiseWindow,
     NoSid,
     Notice,
     NoticeEffect,
+    OddAltitudeRule,
     Overrides,
+    ParityRotatedRule,
     Phraseology,
     PhraseologyRule,
     RouteEntry,
     RouteLibrary,
+    RouteTokenRule,
     RunwayConfig,
     SecondarySource,
     SidOverride,
     SidTopAltitude,
     SopData,
     SopSource,
+    TecData,
+    TecRoute,
+    TecSource,
     Worksheet,
 )
 
 SOP_FILE = "sop.yaml"
 OVERRIDES_FILE = "overrides.yaml"
 ROUTES_FILE = "routes.yaml"
+TEC_FILE = "tec.yaml"
+LOA_FILE = "loa.yaml"
 WORKSHEETS_FILE = "worksheets.yaml"
 EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
+SID_PLACEHOLDER = "#"
+COURSE_DEGREES_MAX = 359
 
 _SUFFIX_PATTERN = re.compile(r"^/[A-Z]$")
 _CIFP_ID_PATTERN = re.compile(r"^(?P<family>[A-Z]+)\d+$")
@@ -765,6 +786,117 @@ def load_equipment_suffixes(path: Path) -> tuple[EquipmentSuffix, ...]:
     return suffixes
 
 
+def _tec_source(row: _Row) -> TecSource:
+    source = TecSource(title=row.text("title"), url=row.text("url"), transcribed_at=row.day("transcribed_at"))
+    row.finish()
+    return source
+
+
+def _tec_route(row: _Row) -> TecRoute:
+    kind = row.optional_choice("kind", TEC_ROUTE_KINDS)
+    route = TecRoute(
+        id=row.text("id"),
+        kind=kind if kind is not None else "tec",
+        destination=row.text("destination"),
+        plan=row.text("plan"),
+        runway_families=row.texts("runway_families"),
+        classes=row.choices("classes", AIRCRAFT_CLASSES),
+        route=row.text("route"),
+        altitude_cap_feet=row.optional_number("altitude_cap_feet"),
+    )
+    row.finish()
+    return route
+
+
+def load_tec(path: Path) -> TecData:
+    """Load and check one airport's ``tec.yaml``.
+
+    Args:
+        path: Path to the file.
+
+    Returns:
+        The transcribed TEC and ADR rows.
+
+    Raises:
+        ValueError: The file carries an unknown key, a route kind other than ``tec`` or ``adr``, or
+            an aircraft class outside P/T/J.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    data = TecData(source=_tec_source(root.child("source")), routes=tuple(_tec_route(child) for child in root.children("routes")))
+    root.finish()
+    return data
+
+
+def _loa_source(row: _Row) -> LoaSource:
+    source = LoaSource(id=row.text("id"), title=row.text("title"), effective=row.day("effective"), url=row.text("url"))
+    row.finish()
+    return source
+
+
+def _check_course(degrees: int, where: str) -> int:
+    if not 0 <= degrees <= COURSE_DEGREES_MAX:
+        raise ValueError(f"{where}: course {degrees} is not a magnetic course between 0 and {COURSE_DEGREES_MAX} degrees")
+    return degrees
+
+
+def _loa_rule_kind(kind: LoaRuleKindName, row: _Row) -> LoaRuleKind:
+    if kind == "parity_rotated":
+        return ParityRotatedRule(
+            odd_course_from=_check_course(row.number("odd_course_from"), f"{row.where}.odd_course_from"),
+            odd_course_to=_check_course(row.number("odd_course_to"), f"{row.where}.odd_course_to"),
+        )
+    if kind == "max":
+        return MaxAltitudeRule(feet=row.number("feet"))
+    if kind == "route":
+        return RouteTokenRule(tokens=row.texts("tokens"))
+    return EvenAltitudeRule() if kind == "even" else OddAltitudeRule()
+
+
+def _loa_effect(row: _Row) -> LoaRuleKind:
+    effect = _loa_rule_kind(row.choice("kind", LOA_RULE_KIND_NAMES), row)
+    row.finish()
+    return effect
+
+
+def _loa_rule(row: _Row) -> LoaRule:
+    rule = LoaRule(
+        id=row.text("id"),
+        source=row.text("source"),
+        text=row.text("text"),
+        artcc=row.optional_text("artcc"),
+        destinations=row.optional_texts("destinations"),
+        rule=_loa_effect(row.child("rule")),
+    )
+    row.finish()
+    return rule
+
+
+def load_loa(path: Path) -> LoaData:
+    """Load and check one airport's ``loa.yaml``.
+
+    Args:
+        path: Path to the file.
+
+    Returns:
+        The letters of agreement and the rule rows transcribed from them.
+
+    Raises:
+        ValueError: The file carries an unknown key, a rule kind the schema does not define, or a
+            rotated-parity course outside 0-359 degrees.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    data = LoaData(
+        sources=tuple(_loa_source(child) for child in root.children("sources")),
+        rules=tuple(_loa_rule(child) for child in root.children("rules")),
+    )
+    root.finish()
+    return data
+
+
 def _worksheet(row: _Row) -> Worksheet:
     worksheet = Worksheet(
         id=row.text("id"),
@@ -831,8 +963,80 @@ def _check_route_exit_fixes(sop: SopData, routes: RouteLibrary, where: str, rout
             )
 
 
+@dataclass(frozen=True, slots=True)
+class _Known:
+    """The names ``sop.yaml``, ``overrides.yaml`` and ``routes.yaml`` define, as the TEC and LOA rows cite them."""
+
+    destinations: frozenset[str]
+    plans: frozenset[str]
+    runway_families: tuple[str, ...]
+    sid_families: frozenset[str]
+
+
+def _known_names(sop: SopData, overrides: Overrides, routes: RouteLibrary, overrides_where: str) -> _Known:
+    return _Known(
+        destinations=frozenset(destination.icao for destination in routes.destinations),
+        plans=frozenset(config.plan for config in sop.runway_configs),
+        runway_families=_runway_families(sop.runways),
+        sid_families=frozenset(sid_family_of(override.cifp_id, overrides_where) for override in overrides.sids.values()),
+    )
+
+
+def _check_destination(destination: str, known: _Known, at: str) -> None:
+    if destination not in known.destinations:
+        raise ValueError(f"{at}: destination {destination!r} is in no `destinations` row of {ROUTES_FILE}; add it there first")
+
+
+def _check_tec_route_families(route: TecRoute, known: _Known, at: str) -> None:
+    for token in route.route.split():
+        if not token.endswith(SID_PLACEHOLDER):
+            continue
+        family = token.removesuffix(SID_PLACEHOLDER)
+        if family not in known.sid_families:
+            raise ValueError(
+                f"{at}: route names DP family {family!r}, which has no procedure in {OVERRIDES_FILE}; "
+                f"add a chart there whose cifp_id is that family plus a version, or fix the family. "
+                f"Known families: {sorted(known.sid_families)}"
+            )
+
+
+def _check_tec(tec: TecData, known: _Known, where: str) -> None:
+    for route in tec.routes:
+        at = f"{where} routes[{route.id}]"
+        _check_destination(route.destination, known, at)
+        if route.plan not in known.plans:
+            raise ValueError(f"{at}: plan {route.plan!r} is no `runway_configs` plan of {SOP_FILE}; use one of {sorted(known.plans)}")
+        _check_runway_families(route.runway_families, known.runway_families, at)
+        _check_tec_route_families(route, known, at)
+
+
+def _check_loa(loa: LoaData, known: _Known, where: str) -> None:
+    for rule in loa.rules:
+        for destination in rule.destinations or ():
+            _check_destination(destination, known, f"{where} rules[{rule.id}]")
+
+
+def _optional_tec(path: Path, known: _Known) -> TecData | None:
+    if not path.is_file():
+        return None
+    tec = load_tec(path)
+    _check_tec(tec, known, _where(path))
+    return tec
+
+
+def _optional_loa(path: Path, known: _Known) -> LoaData | None:
+    if not path.is_file():
+        return None
+    loa = load_loa(path)
+    _check_loa(loa, known, _where(path))
+    return loa
+
+
 def load_airport(directory: Path) -> AirportInputs:
-    """Load the three YAML files of one airport and check them against each other.
+    """Load the YAML files of one airport and check them against each other.
+
+    ``sop.yaml``, ``overrides.yaml`` and ``routes.yaml`` are required; ``tec.yaml`` and ``loa.yaml``
+    are loaded when the directory holds them.
 
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
@@ -841,9 +1045,10 @@ def load_airport(directory: Path) -> AirportInputs:
         The loaded and cross-checked inputs.
 
     Raises:
-        ValueError: Any file fails its own checks, a rule names a DP family no override declares, or
-            a route leaves the DP at a fix that belongs to no gate.
-        OSError: One of the three files is missing.
+        ValueError: Any file fails its own checks, a rule names a DP family no override declares, a
+            route leaves the DP at a fix that belongs to no gate, or a TEC or LOA row names a
+            destination, a plan, a runway family or a DP family the other files do not define.
+        OSError: One of the three required files is missing.
     """
     sop_path = directory / SOP_FILE
     overrides_path = directory / OVERRIDES_FILE
@@ -853,4 +1058,12 @@ def load_airport(directory: Path) -> AirportInputs:
     routes = load_routes(routes_path)
     _check_sid_families(sop, overrides, _where(sop_path), _where(overrides_path))
     _check_route_exit_fixes(sop, routes, _where(sop_path), _where(routes_path))
-    return AirportInputs(icao=sop.airport.icao, sop=sop, overrides=overrides, routes=routes)
+    known = _known_names(sop, overrides, routes, _where(overrides_path))
+    return AirportInputs(
+        icao=sop.airport.icao,
+        sop=sop,
+        overrides=overrides,
+        routes=routes,
+        tec=_optional_tec(directory / TEC_FILE, known),
+        loa=_optional_loa(directory / LOA_FILE, known),
+    )

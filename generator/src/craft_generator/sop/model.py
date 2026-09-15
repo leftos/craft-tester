@@ -1,8 +1,9 @@
 """Typed model of the hand-authored YAML files of an airport.
 
 ``generator/airports/<icao>/`` holds ``sop.yaml`` (:class:`SopData`), ``overrides.yaml``
-(:class:`Overrides`) and ``routes.yaml`` (:class:`RouteLibrary`); :class:`AirportInputs` is the three
-of them loaded together. ``worksheets.yaml`` (:class:`Worksheet`) is read on its own, by
+(:class:`Overrides`), ``routes.yaml`` (:class:`RouteLibrary`) and the two optional files ``tec.yaml``
+(:class:`TecData`) and ``loa.yaml`` (:class:`LoaData`); :class:`AirportInputs` is all of them loaded
+together. ``worksheets.yaml`` (:class:`Worksheet`) is read on its own, by
 ``craft-gen import-worksheets`` only, because no part of the airport document depends on it.
 
 Every closed set is a :data:`typing.Literal` with a companion tuple of its
@@ -16,11 +17,13 @@ Field names follow the YAML keys, except ``class``, which is a Python keyword an
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal
+from typing import ClassVar, Literal
 
 from craft_generator.chart_text import TopAltitudeKind
 
 AircraftClass = Literal["P", "T", "J"]
+TecRouteKind = Literal["tec", "adr"]
+LoaRuleKindName = Literal["parity_rotated", "even", "odd", "max", "route"]
 Direction = Literal["north", "south", "oceanic", "any"]
 GateDirection = Literal["north", "south", "oceanic"]
 WakeCategory = Literal["L", "M", "H", "J"]
@@ -33,6 +36,8 @@ WorksheetKind = Literal["phraseology", "amendment"]
 PhraseologyReading = Literal["abbreviated", "full_route"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
+TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr")
+LOA_RULE_KIND_NAMES: tuple[LoaRuleKindName, ...] = ("parity_rotated", "even", "odd", "max", "route")
 DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
 GATE_DIRECTIONS: tuple[GateDirection, ...] = ("north", "south", "oceanic")
 WAKE_CATEGORIES: tuple[WakeCategory, ...] = ("L", "M", "H", "J")
@@ -340,6 +345,117 @@ class RouteLibrary:
 
 
 @dataclass(frozen=True, slots=True)
+class TecSource:
+    """The route tool a ``tec.yaml`` transcription came from."""
+
+    title: str
+    url: str
+    transcribed_at: date
+
+
+@dataclass(frozen=True, slots=True)
+class TecRoute:
+    """One row of the route tool: the route a departure to one NCT or ADR destination is cleared on.
+
+    ``route`` keeps the ``FAMILY#`` placeholder the transcription uses in place of a versioned DP
+    id, so an AIRAC bump cannot stale the row; the engine substitutes the current procedure.
+    """
+
+    id: str
+    kind: TecRouteKind
+    destination: str
+    plan: str
+    runway_families: tuple[str, ...]
+    classes: tuple[AircraftClass, ...]
+    route: str
+    altitude_cap_feet: int | None
+
+
+@dataclass(frozen=True, slots=True)
+class TecData:
+    """``tec.yaml``: the transcribed TEC and ADR rows and the tool they were read from."""
+
+    source: TecSource
+    routes: tuple[TecRoute, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class LoaSource:
+    """One letter of agreement a ``loa.yaml`` rule row cites."""
+
+    id: str
+    title: str
+    effective: date
+    url: str
+
+
+@dataclass(frozen=True, slots=True)
+class ParityRotatedRule:
+    """Altitude parity assigned by a course window rotated off the FAA JO 7110.65 hemispheres."""
+
+    kind: ClassVar[LoaRuleKindName] = "parity_rotated"
+    odd_course_from: int
+    odd_course_to: int
+
+
+@dataclass(frozen=True, slots=True)
+class EvenAltitudeRule:
+    """Every altitude to the destinations the rule covers is even."""
+
+    kind: ClassVar[LoaRuleKindName] = "even"
+
+
+@dataclass(frozen=True, slots=True)
+class OddAltitudeRule:
+    """Every altitude to the destinations the rule covers is odd."""
+
+    kind: ClassVar[LoaRuleKindName] = "odd"
+
+
+@dataclass(frozen=True, slots=True)
+class MaxAltitudeRule:
+    """The altitudes the rule covers are capped at ``feet``."""
+
+    kind: ClassVar[LoaRuleKindName] = "max"
+    feet: int
+
+
+@dataclass(frozen=True, slots=True)
+class RouteTokenRule:
+    """The route to the destinations the rule covers is built from one of ``tokens``."""
+
+    kind: ClassVar[LoaRuleKindName] = "route"
+    tokens: tuple[str, ...]
+
+
+LoaRuleKind = ParityRotatedRule | EvenAltitudeRule | OddAltitudeRule | MaxAltitudeRule | RouteTokenRule
+
+
+@dataclass(frozen=True, slots=True)
+class LoaRule:
+    """One letter-of-agreement row: which departures it covers and what it does to their clearance.
+
+    ``artcc`` covers every destination whose centre matches, ``destinations`` names airports; a row
+    may carry either, both or neither, and neither means the rule covers every departure.
+    """
+
+    id: str
+    source: str
+    text: str
+    artcc: str | None
+    destinations: tuple[str, ...] | None
+    rule: LoaRuleKind
+
+
+@dataclass(frozen=True, slots=True)
+class LoaData:
+    """``loa.yaml``: the letters of agreement and the rule rows transcribed from them."""
+
+    sources: tuple[LoaSource, ...]
+    rules: tuple[LoaRule, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class EquipmentSuffix:
     """One row of FAA JO 7110.65 table 5-4-1: what an equipment suffix says about an aircraft."""
 
@@ -364,9 +480,15 @@ class Worksheet:
 
 @dataclass(frozen=True, slots=True)
 class AirportInputs:
-    """The three YAML files of one airport, loaded and cross-checked against each other."""
+    """The YAML files of one airport, loaded and cross-checked against each other.
+
+    ``tec`` and ``loa`` are ``None`` when the airport directory carries no ``tec.yaml`` or
+    ``loa.yaml``; the airport document then emits an empty table for them.
+    """
 
     icao: str
     sop: SopData
     overrides: Overrides
     routes: RouteLibrary
+    tec: TecData | None
+    loa: LoaData | None

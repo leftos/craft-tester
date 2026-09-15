@@ -26,6 +26,13 @@ BASE_FIXES = {
     "WESLA5": "PORTE",
 }
 NO_BASE_FIX = ["GAPP7", "SFO5"]
+TEC_ROUTE_COUNT = 49
+LOA_RULE_COUNT = 4
+TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
+KSMF_PROP_CAP_FEET = 6000
+PARITY_ODD_COURSE_FROM = 20
+PARITY_ODD_COURSE_TO = 199
 
 
 def _sids(document: Document) -> dict[str, Document]:
@@ -146,9 +153,45 @@ def test_destination_coordinates_come_from_the_cifp_unless_the_yaml_gives_them(k
     assert (destinations["RKSI"]["lat"], destinations["RKSI"]["lon"]) == (37.469, 126.451)
 
 
-def test_the_later_rule_tables_are_empty_until_their_step(ksfo_document: Document) -> None:
-    assert ksfo_document["tecRoutes"] == []
-    assert ksfo_document["loaRules"] == []
+def test_the_tec_rows_carry_their_source_cap_and_kind(ksfo_document: Document) -> None:
+    rows = {row["id"]: row for row in ksfo_document["tecRoutes"]}
+    assert len(rows) == TEC_ROUTE_COUNT
+    capped = rows["TEC-KSMF-SFOW-P-01"]
+    assert capped["source"] == TEC_SOURCE
+    assert capped["kind"] == "tec"
+    assert capped["runwayFamilies"] == ["01"]
+    assert capped["classes"] == ["P"]
+    assert capped["route"] == "SFO# OAK V6 SAC"
+    assert capped["altitudeCapFeet"] == KSMF_PROP_CAP_FEET
+    assert "altitudeCapFeet" not in rows["TEC-KSMF-SFOE-J"]
+    assert [row["id"] for row in ksfo_document["tecRoutes"] if row["kind"] == "adr"] == ADR_ROUTE_IDS
+
+
+def test_the_loa_rules_keep_their_discriminated_kinds(ksfo_document: Document) -> None:
+    rules = {rule["id"]: rule for rule in ksfo_document["loaRules"]}
+    assert len(rules) == LOA_RULE_COUNT
+    parity = rules["LOA-ZSE-PARITY"]
+    assert parity["rule"] == {"kind": "parity_rotated", "oddCourseFrom": PARITY_ODD_COURSE_FROM, "oddCourseTo": PARITY_ODD_COURSE_TO}
+    assert parity["artcc"] == "ZSE"
+    assert "destinations" not in parity
+    portland = rules["LOA-ZSE-PDX-ROUTE"]
+    assert portland["rule"] == {"kind": "route", "tokens": ["MACHU", "MOXEE", "OED"]}
+    assert portland["destinations"] == ["KPDX"]
+    assert "artcc" not in portland
+
+
+def test_a_tec_row_on_a_dp_its_runways_do_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    tec = ksfo_build_inputs.airport.tec
+    assert tec is not None
+    index, row = next((index, row) for index, row in enumerate(tec.routes) if row.id == "TEC-KSMF-SFOW-P-28")
+    routes = list(tec.routes)
+    routes[index] = replace(row, route="SSTIK# OAK V6 SAC")
+    mutated = replace(tec, routes=tuple(routes))
+    inputs = replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, tec=mutated))
+    with pytest.raises(
+        ValueError, match=r"tecRoutes\[TEC-KSMF-SFOW-P-28\]: the row departs runway family \['28'\].*SSTIK5 is published for \['01'\]"
+    ):
+        build_airport(inputs)
 
 
 def test_a_rule_naming_an_unknown_dp_family_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:

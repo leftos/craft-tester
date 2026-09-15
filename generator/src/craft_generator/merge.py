@@ -10,7 +10,8 @@ radar-vector SID, so its kind, runways and top altitude come entirely from the o
 What the sources disagree about is a build failure, not a silent choice: a SID whose chart publishes
 a different set of transition fixes than the CIFP codes stops the build, as does a rule naming a DP
 family no procedure has, an exit fix in no gate, a runway no runway record lists, or a fleet type the
-vNAS specs cannot class. Two conditions only warn, because both are ordinary while the data is being
+vNAS specs cannot class. A TEC row is checked the same way: the DP its route begins on must be
+published for at least one runway family the row departs from. Two conditions only warn, because both are ordinary while the data is being
 built up: a SID no assignment rule ever issues, and a gate fix no route in the library uses.
 
 Two SID facts are computed here rather than transcribed. ``climbViaEligible`` follows FAA JO 7110.65
@@ -35,7 +36,7 @@ from typing import Any
 
 from craft_generator.chart_text import ChartFacts, TopAltitude
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
-from craft_generator.sop.load import sid_family_of
+from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
 from craft_generator.sop.model import (
     AircraftClass,
     AirportInfo,
@@ -51,13 +52,19 @@ from craft_generator.sop.model import (
     FleetEntry,
     GateDirection,
     Gates,
+    LoaRule,
+    LoaRuleKind,
+    MaxAltitudeRule,
     NoiseWindow,
     Notice,
+    ParityRotatedRule,
     RouteEntry,
+    RouteTokenRule,
     RunwayConfig,
     SidOverride,
     SidTopAltitude,
     SopData,
+    TecRoute,
 )
 
 Document = dict[str, Any]
@@ -302,6 +309,48 @@ def _route_entry(route: RouteEntry) -> Document:
         "classes": list(route.classes),
         "altitudes": list(route.altitudes),
     }
+
+
+def _tec_route(route: TecRoute, source: str) -> Document:
+    entry: Document = {
+        "id": route.id,
+        "source": source,
+        "kind": route.kind,
+        "destination": route.destination,
+        "plan": route.plan,
+        "runwayFamilies": list(route.runway_families),
+        "classes": list(route.classes),
+        "route": route.route,
+    }
+    return _with_optional(entry, altitudeCapFeet=route.altitude_cap_feet)
+
+
+def _tec_routes(inputs: BuildInputs) -> list[Document]:
+    tec = inputs.airport.tec
+    if tec is None:
+        return []
+    source = f"{tec.source.title}, {tec.source.url}"
+    return [_tec_route(route, source) for route in tec.routes]
+
+
+def _loa_effect(rule: LoaRuleKind) -> Document:
+    if isinstance(rule, ParityRotatedRule):
+        return {"kind": rule.kind, "oddCourseFrom": rule.odd_course_from, "oddCourseTo": rule.odd_course_to}
+    if isinstance(rule, MaxAltitudeRule):
+        return {"kind": rule.kind, "feet": rule.feet}
+    if isinstance(rule, RouteTokenRule):
+        return {"kind": rule.kind, "tokens": list(rule.tokens)}
+    return {"kind": rule.kind}
+
+
+def _loa_rule(rule: LoaRule) -> Document:
+    entry: Document = {"id": rule.id, "source": rule.source, "text": rule.text, "rule": _loa_effect(rule.rule)}
+    return _with_optional(entry, artcc=rule.artcc, destinations=_texts(rule.destinations))
+
+
+def _loa_rules(inputs: BuildInputs) -> list[Document]:
+    loa = inputs.airport.loa
+    return [] if loa is None else [_loa_rule(rule) for rule in loa.rules]
 
 
 def _route_library(inputs: BuildInputs) -> Document:
@@ -568,6 +617,47 @@ def _check_destinations(document: Document) -> None:
             raise ValueError(f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}]: destination is not in routeLibrary.destinations")
 
 
+def _runway_families(runways: Sequence[str]) -> set[str]:
+    return {runway[:RUNWAY_FAMILY_LENGTH] for runway in runways}
+
+
+def _plan_runway_families(document: Document) -> dict[str, set[str]]:
+    families: dict[str, set[str]] = {}
+    for config in document["runwayConfigs"]:
+        families.setdefault(config["plan"], set()).update(_runway_families([runway["runway"] for runway in config["departureRunways"]]))
+    return families
+
+
+def _leading_sid_family(route: str) -> str | None:
+    tokens = route.split()
+    if not tokens or not tokens[0].endswith(SID_PLACEHOLDER):
+        return None
+    return tokens[0].removesuffix(SID_PLACEHOLDER)
+
+
+def _check_tec_route_runways(row: Document, sids: Mapping[str, Document], plans: Mapping[str, set[str]]) -> None:
+    family = _leading_sid_family(str(row["route"]))
+    if family is None:
+        return
+    sid = sids.get(family)
+    if sid is None:
+        raise ValueError(f"tecRoutes[{row['id']}]: route begins on DP family {family!r}, which resolves to no procedure; known: {sorted(sids)}")
+    wanted = set(row["runwayFamilies"]) or plans.get(row["plan"], set())
+    published = _runway_families(sid["runways"])
+    if not wanted & published:
+        raise ValueError(
+            f"tecRoutes[{row['id']}]: the row departs runway family {sorted(wanted)} of plan {row['plan']}, but {sid['id']} is published for "
+            f"{sorted(published)}; correct `runway_families` in tec.yaml, or the DP the route begins on"
+        )
+
+
+def _check_tec_routes(document: Document) -> None:
+    sids = {sid["family"]: sid for sid in document["sids"]}
+    plans = _plan_runway_families(document)
+    for row in document["tecRoutes"]:
+        _check_tec_route_runways(row, sids, plans)
+
+
 def _check(document: Document, inputs: BuildInputs) -> None:
     _check_sid_families(document)
     _check_gate_fixes(document)
@@ -576,6 +666,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_runways(document, inputs.runways)
     _check_fleet(document)
     _check_destinations(document)
+    _check_tec_routes(document)
 
 
 def _warn(document: Document) -> None:
@@ -630,8 +721,8 @@ def build_airport(inputs: BuildInputs) -> Document:
         },
         "phraseologyRules": [{"id": rule.id, "source": rule.source, "text": rule.text} for rule in sop.phraseology_rules],
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
-        "tecRoutes": [],
-        "loaRules": [],
+        "tecRoutes": _tec_routes(inputs),
+        "loaRules": _loa_rules(inputs),
         "aircraftClasses": dict(inputs.aircraft_classes),
         "routeLibrary": _route_library(inputs),
     }
