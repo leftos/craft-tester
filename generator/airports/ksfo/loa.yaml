@@ -1,0 +1,30 @@
+# Letter-of-agreement rules that override the default altitude and route checks for departures bound
+# for another center. Each rule cites the LOA and section it came from. `destinations` names airports;
+# `artcc` applies the rule to every destination whose `artcc` in routes.yaml matches.
+sources:
+  - id: zoa-zse
+    title: Seattle ARTCC and Oakland ARTCC Letter of Agreement
+    effective: 2025-09-04
+    url: https://oakartcc.org/controllers/file/84f7be5c-ae45-11ea-aa39-2a32edb55910
+
+rules:
+  - id: LOA-ZSE-PARITY
+    source: "ZOA-ZSE LOA 4 c (1)-(2), effective 2025-09-04"
+    text: "Aircraft tracking a course of 020 through 199 degrees are assigned altitudes as 7110.65 specifies for 0 through 179 degrees (odd); 200 through 019 degrees as for 180 through 359 (even)"
+    artcc: ZSE
+    rule: { kind: parity_rotated, odd_course_from: 20, odd_course_to: 199 }
+  - id: LOA-ZSE-SEA-ROUTE
+    source: "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)"
+    text: "SEA arrivals from the Bay: ..RBL..LMT then the HAWKZ STAR, or ..BTG then the OLM STAR; non-RNAV ..KNGDM or ..BTG"
+    destinations: [KSEA, KBFI]
+    rule: { kind: route, tokens: [RBL, LMT, BTG, KNGDM, HAWKZ, OLM] }
+  - id: LOA-ZSE-PDX-ROUTE
+    source: "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)"
+    text: "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
+    destinations: [KPDX]
+    rule: { kind: route, tokens: [MACHU, MOXEE, OED] }
+  - id: LOA-ZSE-LA-BASIN-DIRECT
+    source: "ZOA-ZSE LOA 4 b (2)"
+    text: "Aircraft landing Los Angeles Basin airports (LAX, BUR, VNY, SMO, SNA, LGB) may be routed no further direct than ENI, LIN, FRA, REBRG or JAGWA"
+    destinations: [KLAX, KBUR, KVNY, KSMO, KSNA, KLGB]
+    rule: { kind: route, tokens: [ENI, LIN, FRA, REBRG, JAGWA] }
