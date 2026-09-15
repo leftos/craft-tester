@@ -39,13 +39,15 @@ below).
 
 ## Steps
 
-- [ ] 1. Data + schema + generator (gen worktree): `sop.yaml` `runway_configs[].source`, four `RWY-*`
+- [x] 1. Data + schema + generator (landed 2026-09-15): `sop.yaml` `runway_configs[].source`, four `RWY-*`
   rows; `schema.ts` `RunwayConfigSchema.source`, `ScenarioSchema.remarks` optional; `sop/model.py`,
   `sop/load.py`, `merge.py`, tests; `pnpm -C web schema:export`; `craft-gen build`; `data/ksfo.json`
 - [ ] 2. Engine + grading (web worktree): `rules/runway.ts` `explainRunway`; `ResolvedClearance.runway:
   Cited<string>` replaces the bare `departureRunway`; `ClearanceElement` gains `RWY`; `PlayerPicks.runway`;
   `options.ts` `runways`; `grade.ts` `gradeRunway`; `toExpectedClearance` unchanged; `propose.ts` prints
-  the runway line with citations; tests
+  the runway line with citations; tests. Also: `PlayerPicks` gains a field, so `ui/solved.ts` must
+  validate a stored value with a zod `PlayerPicksSchema` on load and treat a mismatch (an older build's
+  picks without `runway`) as nothing remembered
 - [ ] 3. Generator remark + UI (web worktree): `generate.ts` sets `remarks` on the on-request draw;
   `strip.ts` remarks row; `atis.ts` advertised runways; `craftForm.ts` runway group; `labels.ts` `RWY`;
   `state.ts` pick; `session.test.ts`; browser re-check
