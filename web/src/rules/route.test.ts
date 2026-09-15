@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
-import { directionOf, isSidToken, parseFiledRoute } from '@/rules/route.ts';
+import { directionOf, isSidToken, parseFiledRoute, routeFromExitFix } from '@/rules/route.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -17,6 +17,19 @@ describe('isSidToken', () => {
     ['T257', false],
   ])('classifies %s', (token, expected) => {
     expect(isSidToken(token)).toBe(expected);
+  });
+});
+
+describe('routeFromExitFix', () => {
+  it.each([
+    ['TRUKN2 DEDHD RBL LMT HAWKZ7', ['DEDHD', 'RBL', 'LMT', 'HAWKZ7']],
+    ['WESLA5 SFO SUSEY EBAYE', ['SUSEY', 'EBAYE']],
+    ['DEDHD RBL LMT', ['DEDHD', 'RBL', 'LMT']],
+    ['  TRUKN2   DEDHD  ', ['DEDHD']],
+    ['TRUKN2', []],
+    ['   ', []],
+  ])('takes %s from its exit fix', (filedRoute, expected) => {
+    expect(routeFromExitFix(filedRoute, 'SFO')).toEqual(expected);
   });
 });
 

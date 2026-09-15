@@ -28,12 +28,35 @@ export function isSidToken(token: string): boolean {
   return SID_TOKEN.test(token) && !AIRWAY_TOKEN.test(token);
 }
 
+/** Splits a route string on whitespace, dropping the empty strings a blank route produces. */
+function splitRoute(filedRoute: string): string[] {
+  return filedRoute
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token.length > 0);
+}
+
 /**
- * Splits a filed route into its procedure token and the fix the flight leaves the terminal on.
+ * Takes the filed route from its exit fix onwards.
  *
  * A leading procedure token is stripped whether or not it is the procedure the flight will get, so
  * a stale or wrong SID does not change the exit fix. The airport's own navaid is skipped where it
- * is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`.
+ * is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`. The first token of the result is the exit fix.
+ *
+ * @param filedRoute The route string as filed.
+ * @param airportFaa The departure airport's own navaid identifier, e.g. `SFO`.
+ * @returns The tokens from the exit fix onwards; empty when the route has nothing after the
+ *   procedure.
+ */
+export function routeFromExitFix(filedRoute: string, airportFaa: string): string[] {
+  const filed = splitRoute(filedRoute);
+  const first = filed[0];
+  const afterSid = first !== undefined && isSidToken(first) ? filed.slice(1) : filed;
+  return afterSid[0] === airportFaa ? afterSid.slice(1) : afterSid;
+}
+
+/**
+ * Splits a filed route into its procedure token and the fix the flight leaves the terminal on.
  *
  * @param filedRoute The route string as filed.
  * @param airport The airport data, for the airport's own navaid identifier.
@@ -43,14 +66,9 @@ export function parseFiledRoute(
   filedRoute: string,
   airport: AirportData,
 ): ParsedRoute | Unresolved {
-  const filed = filedRoute
-    .trim()
-    .split(/\s+/)
-    .filter((token) => token.length > 0);
-  const first = filed[0];
+  const first = splitRoute(filedRoute)[0];
   const filedSidToken = first !== undefined && isSidToken(first) ? first : undefined;
-  const afterSid = filedSidToken === undefined ? filed : filed.slice(1);
-  const tokens = afterSid[0] === airport.airport.faa ? afterSid.slice(1) : afterSid;
+  const tokens = routeFromExitFix(filedRoute, airport.airport.faa);
   const exitFix = tokens[0];
   if (exitFix === undefined) {
     return unresolved('R.route', `filed route "${filedRoute}" has no fix after the procedure`);
