@@ -81,7 +81,7 @@ None. Worksheets are public Google Docs (ids in the subplan); no browser needed 
 ## Backlog
 
 - [ ] **v2, user steer 2026-09-15: free-text clearance entry** so students practise without dropdown hints. The student types (or dictates) the full spoken clearance; the grader normalises both sides (digits ↔ number words, "flight level three two zero" ↔ "FL320", punctuation, optional words such as "airport") and aligns the text against the CRAFT elements of `speakClearance` so each element is still graded green/red with its citation, plus a per-element diff showing what was said versus expected. Needs a tolerant matcher (per-element regex or token alignment), a decision on how strict wording is (accept "climb via the SID"? "then as filed" vs "direct"?), and the same seed/URL sharing as v1. Plan as a subplan before starting
-- [ ] Second airport (OAK or SJC) as a data-only addition to prove the boundary
+- [ ] **v3, user steer 2026-09-15: KOAK as the second airport**, following `docs/ADDING_AN_AIRPORT.md`. Prep (in progress): pull the S1-OAK-2 and S1-OAK-5 worksheets and the OAK ATCT SOP from the user's training account via Claude in Chrome, pin the SOP hash, list the OAK DP charts, and record the OAK notices already in this file (QUAKE off in OAKE, SUNNE off in SFOW). Then `generator/airports/koak/` YAML, `data/koak.json`, `data/airports.json`, fixtures under `fixtures/koak/`
 - [x] Callsign telephony table for the spoken reveal (`routes.yaml` `telephony`; schema field `routeLibrary.telephony` added in step 9)
 - [ ] Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR
 
