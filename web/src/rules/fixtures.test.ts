@@ -111,10 +111,16 @@ describe('fixtures', () => {
   });
 });
 
-describe('settled fixtures', () => {
-  for (const fixture of fixtures.filter(
-    (entry) => expectsClearance(entry) && entry.status === 'settled',
-  )) {
+const settledFixtures = fixtures.filter(
+  (entry) => expectsClearance(entry) && entry.status === 'settled',
+);
+const pendingFixtures = fixtures.filter(
+  (entry) => expectsClearance(entry) && entry.status === 'pending',
+);
+
+// A suite with no fixtures of its status is skipped, not failed.
+describe.skipIf(settledFixtures.length === 0)('settled fixtures', () => {
+  for (const fixture of settledFixtures) {
     if (!expectsClearance(fixture)) continue;
     it(`${fixture.id} is the clearance the engine resolves`, () => {
       expect(engineResult(fixture)).toEqual(comparable(fixture.expected));
@@ -122,10 +128,9 @@ describe('settled fixtures', () => {
   }
 });
 
-describe('pending fixtures', () => {
-  for (const fixture of fixtures.filter(
-    (entry) => expectsClearance(entry) && entry.status === 'pending',
-  )) {
+// A suite with no fixtures of its status is skipped, not failed.
+describe.skipIf(pendingFixtures.length === 0)('pending fixtures', () => {
+  for (const fixture of pendingFixtures) {
     if (!expectsClearance(fixture)) continue;
     it(`${fixture.id} still disagrees with the engine`, () => {
       const actual = engineResult(fixture);

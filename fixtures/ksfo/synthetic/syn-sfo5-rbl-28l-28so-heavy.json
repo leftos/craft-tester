@@ -15,7 +15,7 @@
       "fix": "RBL",
       "template": "radar_vectors_fix"
     },
-    "sidFamily": "SFO"
+    "sidFamily": "GAPP"
   },
   "id": "syn-sfo5-rbl-28l-28so-heavy",
   "scenario": {
@@ -33,7 +33,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "Phraseology Practice 3: a heavy filed to a conventional fix (RBL) off 28L in 28 SO. The worksheet files SFO4, and SFOW-N-SFO-01 names exactly this case (the worksheets clear a B77L/L via SFO# RBL), but that row is runway 01 only, so the engine issues GAPP# instead; every other element agrees. Pending until the user settles whether SFO# is the northbound fallback off the 28s as well."
+    "note": "SOP 2-2 a: northbound off the 28s is GAPP#; SFO# is runway 01 only (user review 2026-09-15). SNTNA# is not an option because RBL is not a SNTNA2 transition. Phraseology Practice 3 files SFO4 here; if the trainer meant SFO#, the SOP row is what changes."
   },
-  "status": "pending"
+  "status": "settled"
 }

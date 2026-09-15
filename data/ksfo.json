@@ -208,22 +208,7 @@
     },
     {
       "classes": [
-        "P"
-      ],
-      "direction": "north",
-      "id": "SFOW-N-GAPP-PROPS",
-      "plan": "SFOW",
-      "runwayFamilies": [
-        "01",
-        "28"
-      ],
-      "sector": "richmond",
-      "sidFamily": "GAPP",
-      "source": "S1-SFO-0 CBT (Destination North table: non-RNAV or props -> GAPP#)",
-      "text": "Northbound props -> GAPP#; the CBT routes props and small turboprops via GAPP# regardless of RNAV capability"
-    },
-    {
-      "classes": [
+        "P",
         "T",
         "J"
       ],
@@ -235,7 +220,7 @@
       ],
       "sector": "richmond",
       "sidFamily": "TRUKN",
-      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R)",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R); user review 2026-09-15: SOP table wins over the CBT",
       "text": "Northbound, runways 01/28, P/T/J -> TRUKN# (Richmond); off the 01s TRUKN departs 1R (right turn)",
       "when": {
         "rnav": true
@@ -243,6 +228,7 @@
     },
     {
       "classes": [
+        "P",
         "T",
         "J"
       ],
@@ -254,7 +240,7 @@
       ],
       "sector": "richmond",
       "sidFamily": "TRUKN",
-      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT; user review 2026-09-15: SOP table wins over the CBT",
       "text": "Northbound, runways 28, P/T/J -> TRUKN# when the TRUKN DP is in use (28 RT)",
       "when": {
         "configs": [
@@ -265,6 +251,7 @@
     },
     {
       "classes": [
+        "P",
         "T",
         "J"
       ],
@@ -276,8 +263,8 @@
       ],
       "sector": "richmond",
       "sidFamily": "SNTNA",
-      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO)",
-      "text": "Northbound, runways 28 -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request",
+      "source": "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO); user review 2026-09-15: SOP table wins over the CBT",
+      "text": "Northbound, runways 28, P/T/J -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request",
       "when": {
         "notConfigs": [
           "28 RT"
@@ -1000,7 +987,7 @@
     }
   ],
   "phraseology": {
-    "expectAltitude": "always",
+    "expectAltitude": "only_when_interim_below_filed",
     "nonStandardInterimExpectMinutes": 3,
     "vectorHybridTransitionsSpoken": false
   },

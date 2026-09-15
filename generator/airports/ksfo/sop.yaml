@@ -185,42 +185,33 @@ assignment_rules:
     sector: richmond
     when: { noise_window: night, rnav: false }
 
-  - id: SFOW-N-GAPP-PROPS
-    source: "S1-SFO-0 CBT (Destination North table: non-RNAV or props -> GAPP#)"
-    text: "Northbound props -> GAPP#; the CBT routes props and small turboprops via GAPP# regardless of RNAV capability"
-    plan: SFOW
-    direction: north
-    runway_families: ["01", "28"]
-    classes: [P]
-    sid_family: GAPP
-    sector: richmond
   - id: SFOW-N-TRUKN-01
-    source: "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R)"
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R); user review 2026-09-15: SOP table wins over the CBT"
     text: "Northbound, runways 01/28, P/T/J -> TRUKN# (Richmond); off the 01s TRUKN departs 1R (right turn)"
     plan: SFOW
     direction: north
     runway_families: ["01"]
-    classes: [T, J]
+    classes: [P, T, J]
     sid_family: TRUKN
     sector: richmond
     when: { rnav: true }
   - id: SFOW-N-TRUKN-28
-    source: SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT; user review 2026-09-15: SOP table wins over the CBT"
     text: "Northbound, runways 28, P/T/J -> TRUKN# when the TRUKN DP is in use (28 RT)"
     plan: SFOW
     direction: north
     runway_families: ["28"]
-    classes: [T, J]
+    classes: [P, T, J]
     sid_family: TRUKN
     sector: richmond
     when: { rnav: true, configs: ["28 RT"] }
   - id: SFOW-N-SNTNA-28
-    source: "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO)"
-    text: "Northbound, runways 28 -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request"
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO); user review 2026-09-15: SOP table wins over the CBT"
+    text: "Northbound, runways 28, P/T/J -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request"
     plan: SFOW
     direction: north
     runway_families: ["28"]
-    classes: [T, J]
+    classes: [P, T, J]
     sid_family: SNTNA
     sector: richmond
     when: { rnav: true, not_configs: ["28 RT"] }
@@ -438,7 +429,8 @@ notices:
 
 # Airport-level phraseology toggles. Defaults follow FAA JO 7110.65 4-3-2; the validation loop may flip them.
 phraseology:
-  expect_altitude: always
+  # User decision 2026-09-15: the expect clause is dropped when the filed altitude is the altitude just assigned.
+  expect_altitude: only_when_interim_below_filed
   non_standard_interim_expect_minutes: 3
   vector_hybrid_transitions_spoken: false
 

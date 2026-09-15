@@ -3,7 +3,7 @@
   "expected": {
     "altitude": {
       "feet": 5000,
-      "phrase": "maintain"
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KACV",
     "expect": {
@@ -15,7 +15,7 @@
       "fix": "SGD",
       "template": "radar_vectors_fix"
     },
-    "sidFamily": "GAPP"
+    "sidFamily": "SFO"
   },
   "id": "syn-gapp7-sgd-01l-turboprop",
   "scenario": {
@@ -33,7 +33,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "The CBT routes props and small turboprops via GAPP# regardless of RNAV capability, and Phraseology Practice 2 files GAPP7 SGD YAGER off the 01s. SFOW-N-GAPP-PROPS is class P only, so the engine falls through to SFOW-N-SFO-01 and issues SFO5 with climb via SID except maintain 5,000 instead. Pending until the user settles whether the GAPP# props row covers turboprops."
+    "note": "SOP 2-2 a: northbound off the 01s is SFO#, GAPP# is runway 28 only; the CBT's props-via-GAPP# reading was dropped on user review 2026-09-15. The sheet files GAPP7 SGD YAGER, which is a filed SID the clearance replaces."
   },
-  "status": "pending"
+  "status": "settled"
 }
