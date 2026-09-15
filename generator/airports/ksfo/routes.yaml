@@ -69,7 +69,7 @@ telephony:
 # used by the amendment-mode altitude check. `suffixes` are the equipment suffixes this type normally files.
 fleet:
   - { type: A320, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [UAL, FFT, NKS, ACA, AAY, VOI, JBU] }
-  - { type: A32N, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [FFT, VOI, JBU] }
+  - { type: A20N, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [FFT, VOI, JBU] }
   - { type: A319, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [AAY, UAL] }
   - { type: B737, class: J, wtc: M, ceiling_feet: 41000, suffixes: [/L], airlines: [SWA, ASA] }
   - { type: B738, class: J, wtc: M, ceiling_feet: 41000, suffixes: [/L], airlines: [DAL, SWA, UAL, ASA] }

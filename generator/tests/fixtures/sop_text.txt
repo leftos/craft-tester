@@ -1,0 +1,123 @@
+oakartcc.org For Simulation Use Only 1
+San Francisco ATCT
+Standard Operating Procedure
+Version 1.11
+oakartcc.org For Simulation Use Only 8
+Section 2. Flight Data/Clearance Delivery
+2-1 General Procedures
+a. Issue departure clearance in accordance with current directives, Letters of Agreement and this
+section.
+b. Issue TEC routes for aircraft with destinations within NCT (except RNO and satellites). If a pilot
+is unable to accept a TEC route, issue vectors direct destination and coordinate with NCT.
+c. Issue Pre-Departure Clearances (PDC) for those aircraft so equipped.
+d. When an aircraft requesting clearance requires route or traffic management coordination,
+advise the TMU/CIC so that they can complete the coordination prior to issuing the clearance.
+e. Oceanic, Far East, and Cargo flights usually require runway 28L/R for departure for
+performance reasons. When runway 01 is the advertised departure runway, these aircraft may
+be issued runways 28L/R and assigned the appropriate SID.
+f. Instruct aircraft that will push onto taxiway A, or onto the non-movement areas between
+boarding areas C and D, boarding areas D and E, and taxilane Y (depicted in Attachment 4), to
+contact Ground Control prior to pushback. All other aircraft will be instructed to report ready to
+taxi unless gate hold procedures are in effect.
+g. When an arrival runway is closed at night, advertise the ILS to the parallel runway in the D-ATIS.
+Do not advertise visual approaches to the parallel. If there is no operable ILS approach to that
+runway, advertise the approach to that runway that has the most precision guidance laterally
+and vertically.
+h. When gate hold procedures are initiated, complete a new D-ATIS advising that gate hold
+procedures are in effect.
+i. If dual ground control frequencies are in use, assign aircraft to each ground control frequency
+as follows:
+i. GC1: Gates D9-G14, Signature Aviation, UAL Maintenance Operations Center, the
+superway, and all cargo aircraft not within an uncontrolled non-movement area
+ii. GC2: Gates A1-D8
+j. When gate hold procedures are in effect, advise each aircraft to request push and start on the
+appropriate frequency.
+PHRASEOLOGY-
+READBACK CORRECT, CONTACT GROUND ON (frequency) WHEN READY FOR PUSHBACK
+READBACK CORRECT, ADVISE READY FOR PUSHBACK THIS FREQUENCY
+oakartcc.org For Simulation Use Only 9
+2-2 IFR Departures
+a. Standard DP/Route and Departure Sector
+i. SFOW
+DEST/ROUTE RUNWAY AIRCRAFT DP DEP SECTOR
+Northbound
+01 / 28*
+P, T, J
+TRUKN#
+Richmond 28 SNTNA#
+01 SFO#
+28 GAPP#
+Southbound
+01
+J
+SSTIK#
+Sutro
+28 WESLA#
+01 / 28 SEGUL#
+P, T, J GAPP#
+Oceanic 28 J GNNRR#
+MOLEN#
+01 / 28 P, T, J GAPP#
+* SNTNA# shall be used instead of TRUKN# off Runways 28 while in 28/01 configuration
+ii. SFOE
+DEST/ROUTE RUNWAY AIRCRAFT DP DEP SECTOR
+Northbound
+10 / 19
+P, T, J CIITY#
+GAPP# Richmond
+Southbound J SAHEY#
+Sutro P, T, J GAPP#
+Oceanic J MOLEN#
+P, T, J GAPP#
+b. Additional Non-DP Heading
+i. Runways 01: 050°, 350°, and runway heading may be assigned after coordination with
+NCT
+ii. Runways 10: 085° and runway heading may be assigned after coordination with NCT
+oakartcc.org For Simulation Use Only 10
+c. Altitude Assignment
+i. SFO ATCT must issue interim altitudes as specified below when a Top of Climb (TOC)
+or Top Altitude is not published
+ii. SFOW
+ROUTE RUNWAY AIRCRAFT ALTITUDE
+GAPP#, MOLEN#, SEGUL#,
+SFO#, WESLA# 28 P, T, J 3,000 or CVS x 3,000
+All others 01 / 28 P, T 5,000 or CVS x 5,000
+J 10,000 or CVS x 10,000
+iii. SFOE
+ROUTE RUNWAY AIRCRAFT ALTITUDE
+All 10 / 19 P, T 5,000 or CVS x 5,000
+J 15,000 or CVS x 15,000
+iv. When instructed by NCT to issue a non-standard interim altitude, advise the aircraft to
+expect filed altitude three (3) minutes after departure.
+2-3 VFR Departures
+a. Ensure VFR departures have their aircraft type, origin, and destination filled out in their flight
+plan.
+b. Clear VFR departures out of the Bravo airspace. Do not clear the aircraft to a specific
+destination or fix.
+c. Assign VFR Prop departures an interim altitude of (at or below) 2,000
+PHRASEOLOGY-
+CLEARED OUT OF SAN FRANCISCO BRAVO AIRSPACE, MAINTAIN VFR AT OR BELOW 2,000
+WHILE IN BRAVO AIRSPACE. SQUAWK (code)
+d. Assign VFR Jet departures an interim altitude of (at or below) 3,000
+i. When departing runway 28s, assign heading 280
+PHRASEOLOGY-
+CLEARED OUT OF SAN FRANCISCO CLASS BRAVO AIRSPACE, MAINTAIN VFR AT OR BELOW
+3,000, DEPARTURE FREQUENCY (frequency), SQUAWK (code)
+CLEARED OUT OF SAN FRANCISCO CLASS BRAVO AIRSPACE, FLY RUNWAY HEADING,
+MAINTAIN VFR AT OR BELOW 3,000, DEPARTURE FREQUENCY 135.100, SQUAWK (code)
+oakartcc.org For Simulation Use Only 11
+2-4 Noise Abatement
+a. Departure noise abatement hours are daily from 2200L until 0700L Monday – Saturday and
+until 0800L on Sundays.
+b. There are no preferred noise abatement procedures during SFOE.
+c. SFO ATCT is in CFR status for all departures.
+d. NCT may authorize a 050° heading for departures off runways 01 in lieu of the procedures
+outlined in the table below.
+e. Noise Abatement DP/Route/Heading Assignments
+DEST/ROUTE RUNWAY AIRCRAFT DP/HDG DEP SECTOR
+Northbound 01 / 28 P, T, J NIITE#
+Richmond Southbound (0100L-
+0500L) 01 P, T, J NIITE# GOBBS
+All 01 P (non-RNAV) RWY
+NOTE- The procedures in this section do not cover all destinations for the entirety of noise abatement
+hours; standard procedures shall be utilized where not covered by this section
