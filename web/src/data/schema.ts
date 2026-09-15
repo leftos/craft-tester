@@ -110,6 +110,11 @@ export const RunwayAssignmentSchema = z.strictObject({
 /** An ATIS runway configuration, e.g. `28/01` on the SFOW plan, with the SOP's name for it. */
 export const RunwayConfigSchema = z.strictObject({
   id: z.string(),
+  /**
+   * The SOP section the configuration and its departure runways come from, cited when the runway
+   * element is graded.
+   */
+  source: z.string(),
   name: z.string(),
   plan: z.string(),
   arrivalRunways: z.array(z.string()),
@@ -465,6 +470,11 @@ export const ScenarioSchema = z.strictObject({
   localTime,
   dayOfWeek: DayOfWeekSchema,
   squawk: z.string().regex(/^[0-7]{4}$/),
+  /**
+   * Strip remarks the pilot filed, e.g. `REQ RWY 28` when the flight asks for the on-request
+   * runways. Absent on most plans.
+   */
+  remarks: z.string().optional(),
   activeNotices: z.array(z.string()).optional(),
 });
 

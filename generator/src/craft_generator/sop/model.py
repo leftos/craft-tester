@@ -108,6 +108,7 @@ class RunwayConfig:
     """One runway configuration, e.g. ``28/01``."""
 
     id: str
+    source: str
     name: str
     plan: str
     arrival_runways: tuple[str, ...]

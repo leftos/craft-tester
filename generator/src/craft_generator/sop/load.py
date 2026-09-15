@@ -360,6 +360,7 @@ def _departure_runway(row: _Row) -> DepartureRunway:
 def _runway_config(row: _Row) -> RunwayConfig:
     config = RunwayConfig(
         id=row.text("id"),
+        source=row.text("source"),
         name=row.text("name"),
         plan=row.text("plan"),
         arrival_runways=row.texts("arrival_runways"),
