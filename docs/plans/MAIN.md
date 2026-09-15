@@ -14,13 +14,21 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [ ] 8. Aircraft classes from vNAS
 - [x] 9. Merge + emit + integrity checks; first `data/ksfo.json` (findings: 40 gate fixes have no route yet, incl. GOBBS and the SID base fixes; `climbViaEligible` must also count a published top altitude (SNTNA2); schema gained `airport.lat/lon`, `sids[].baseFix`, `scenario.activeNotices` for the engine — generator must emit the first two)
 - [x] 10. Rules engine core + table tests + exhaustive enumeration test (5,304 of 5,376 combinations resolve; the 72 left are the non-DP runway-heading noise row, which v1 does not clear — the generator must avoid P non-RNAV off 01 at night). Validation questions raised: the late-night "NIITE# GOBBS" south row is dead data (NIITE4 has no south transition; the engine would have to amend the route, an amendment-mode concept); MOLEN9 is reachable only when MOLEN is filed as the exit fix since ENI is a north gate
-- [ ] 11. Synthetic fixtures + fixture runner
-- [ ] 12. `options`, `grade`, `speak` (`grade` and `speak` done; `options` pending; full-route reading repeats the vector fix for radar-vector routes, fix with `options`)
-- [ ] 13. Scenario generator (seeded) (`rng` done; `generate` pending)
+- [x] 11. Synthetic fixtures + fixture runner (27 fixtures in `fixtures/ksfo/synthetic/`, 25 settled; `fixtures.test.ts` prints what the engine makes of every pending plan: 66 of 70 worksheet plans resolve)
+- [x] 12. `options`, `grade`, `speak` (full-route reading repeats the vector fix for radar-vector routes; the expect clause runs straight into the altitude, "flight level three five zero one zero minutes": polish in step 14)
+- [x] 13. Scenario generator (seeded): `generateScenario` / `drawScenario`; 7 redraws in 1,000 seeds, all the non-RNAV-prop noise row. Follow-up: `CONFIG_WEIGHTS` in `generate.ts` names KSFO config ids; move the training weight to `runwayConfigs[].trainingWeight` in `sop.yaml` so no code is keyed on KSFO
 - [ ] 14. UI: strip, ATIS, CRAFT form, results, seed in URL hash
 - [ ] 15. CI + GitHub Pages (workflows landed, pinned SHAs, actionlint + zizmor clean); finalize README, ARCHITECTURE, CLAUDE.md at the end
 - [x] 16. `import-worksheets`: seven Google Docs → 70 pending fixtures (18 phraseology + 52 amendment) in `fixtures/ksfo/worksheets/`. Departure runway defaults to the config's first runway pending validation. Findings for the validation loop: UAL313 files `/Q` (not in FAA table 5-4-1, so treated as non-RNAV; likely a deliberate wrong box) and `BVLQ124` (sheet typo); four rows are truncated in the source (KAL65 ×2, NAX7068, VOI5909)
-- [ ] 17. Validation loop, clearance mode (one at a time with the user, then batch)
+- [ ] 17. Validation loop, clearance mode (one at a time with the user, then batch). `pnpm -C web propose <id>` and `--pending` landed. Questions for the user, from the synthetic fixtures and the worksheet table:
+  - [ ] A. Turboprops northbound off the 01s filed to a conventional fix (B350/G "GAPP7 SGD YAGER", BE20 via SGD, B350 via OAK): CBT says GAPP#; the engine gives SFO5 because `SFOW-N-GAPP-PROPS` is `classes: [P]`. Add T to that row, or gate `SFOW-N-SFO-01` on `rnav: false`?
+  - [ ] B. Heavy RNAV northbound off the 28s in 28 SO filed "SFO4 RBL" (B77L/L to RKSI, FDX1563): `SFOW-N-SFO-01` is 01-only, so the engine gives GAPP7. Does SFO# apply off the 28s too?
+  - [ ] C. Filed altitude equal to the interim (5,000 filed, 5,000 interim): the engine still says "expect 5,000 one zero minutes after departure". Keep or drop?
+  - [ ] Worksheet import defaults the departure runway to the config's first runway (01L), so every northbound 28/01 plan resolves to SFO5 instead of TRUKN2/SNTNA2 (TRUKN2 departs 1R). Fix in the importer: pick the runway from `direction_runway_preference` by the filed exit fix's gate (dispatched 2026-09-15)
+  - [ ] Two amendment plans file `A32N`; add `type_aliases: {A32N: A20N}` to `worksheets.yaml` and apply on import (dispatched 2026-09-15)
+  - [ ] `ws-amendment-practice-1a-lxj351` / `-1c-lxj351` are unresolved: exit fix in no gate, or a route starting with an airway (open question 5)
+  - [ ] `when.forcedTransition` (NIITE# GOBBS row) is in the schema and data but no engine module reads it; late-night southbound jets fall through to SSTIK#
+  - [ ] `fixtures.test.ts` and the exhaustive test import `@data/ksfo.json` directly; loop over `data/airports.json` before the second airport
 - [x] 18. TEC routes, LOA rules, equipment suffixes, destination coordinates, fleet ceilings (`data/ksfo.json` now carries 49 TEC/ADR rows and 4 LOA rules; the build fails when a TEC row's leading DP is not published for the runway family it departs. `routes.yaml` gained KSAC/KOAK/KSJC for the TEC rows and KVNY/KSNA/KLGB because the ZOA–ZSE LA-basin LOA row names them; none of the six has a `routes` entry yet, so they cannot be drawn as scenarios. The build summary line does not count TEC/LOA rows)
 - [ ] 19. Amendment engine
 - [ ] 20. Amendment scenario generator + UI + mode switch
