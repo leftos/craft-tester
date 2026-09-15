@@ -44,9 +44,8 @@ Hand-authored inputs per airport live in `generator/airports/<icao>/`: `sop.yaml
 |---|---|
 | `data/` | zod schema, loader |
 | `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak` |
-| `rules/amend/` | amendment engine: route, altitude, type checks producing `Amendment[]` |
-| `scenario/` | seeded PRNG, clearance-scenario generator, fault-injecting amendment generator |
-| `ui/` | strip, ATIS panel, CRAFT form, amendment form, results, solved-scenario store (`solved.ts`, localStorage, best effort) |
+| `scenario/` | seeded PRNG, clearance-scenario generator, time-of-day and runway-configuration filters |
+| `ui/` | strip, ATIS panel, CRAFT form, results, solved-scenario store (`solved.ts`, localStorage, best effort) |
 
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
 view shows them. The graded elements are `R.sid`, `R.route`, `A.phrase`, `A.expect`, `F` and `RWY`, the
