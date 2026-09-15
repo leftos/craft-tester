@@ -300,10 +300,7 @@
       "sector": "richmond",
       "sidFamily": "SFO",
       "source": "SFO ATCT SOP 2-2 a (SFOW Northbound)",
-      "text": "Northbound, runway 01 -> SFO# (non-RNAV)",
-      "when": {
-        "rnav": false
-      }
+      "text": "Northbound, runway 01 -> SFO#; the fallback when the route does not fit an RNAV SID transition (non-RNAV aircraft, or an RNAV aircraft filed to a conventional fix such as RBL, SAC or CCR — the worksheets clear a B77L/L via SFO# RBL)"
     },
     {
       "classes": [
@@ -320,10 +317,7 @@
       "sector": "richmond",
       "sidFamily": "GAPP",
       "source": "SFO ATCT SOP 2-2 a (SFOW Northbound)",
-      "text": "Northbound, runway 28 -> GAPP# (non-RNAV)",
-      "when": {
-        "rnav": false
-      }
+      "text": "Northbound, runway 28 -> GAPP#; the fallback when the route does not fit an RNAV SID transition (non-RNAV aircraft, or an RNAV aircraft filed to a conventional fix such as OAK, SGD or RBL)"
     },
     {
       "classes": [

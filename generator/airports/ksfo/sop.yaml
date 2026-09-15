@@ -226,24 +226,22 @@ assignment_rules:
     when: { rnav: true, not_configs: ["28 RT"] }
   - id: SFOW-N-SFO-01
     source: SFO ATCT SOP 2-2 a (SFOW Northbound)
-    text: "Northbound, runway 01 -> SFO# (non-RNAV)"
+    text: "Northbound, runway 01 -> SFO#; the fallback when the route does not fit an RNAV SID transition (non-RNAV aircraft, or an RNAV aircraft filed to a conventional fix such as RBL, SAC or CCR — the worksheets clear a B77L/L via SFO# RBL)"
     plan: SFOW
     direction: north
     runway_families: ["01"]
     classes: [P, T, J]
     sid_family: SFO
     sector: richmond
-    when: { rnav: false }
   - id: SFOW-N-GAPP-28
     source: SFO ATCT SOP 2-2 a (SFOW Northbound)
-    text: "Northbound, runway 28 -> GAPP# (non-RNAV)"
+    text: "Northbound, runway 28 -> GAPP#; the fallback when the route does not fit an RNAV SID transition (non-RNAV aircraft, or an RNAV aircraft filed to a conventional fix such as OAK, SGD or RBL)"
     plan: SFOW
     direction: north
     runway_families: ["28"]
     classes: [P, T, J]
     sid_family: GAPP
     sector: richmond
-    when: { rnav: false }
 
   - id: SFOW-S-SEGUL
     source: "SFO ATCT SOP 2-2 a (SFOW Southbound); S1-SFO-0 CBT (Destination South Offshore: offshore route required by the ZLA LOA for SAN, typical for SNA/LGB; the deck's OFFSH# is today's SEGUL#)"

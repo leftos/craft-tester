@@ -13,7 +13,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [ ] 7. SOP transcription (`sop.yaml`, `overrides.yaml`, `routes.yaml`) + loader + hash/sentinel verify
 - [ ] 8. Aircraft classes from vNAS
 - [x] 9. Merge + emit + integrity checks; first `data/ksfo.json` (findings: 40 gate fixes have no route yet, incl. GOBBS and the SID base fixes; `climbViaEligible` must also count a published top altitude (SNTNA2); schema gained `airport.lat/lon`, `sids[].baseFix`, `scenario.activeNotices` for the engine — generator must emit the first two)
-- [ ] 10. Rules engine core + table tests + exhaustive enumeration test
+- [x] 10. Rules engine core + table tests + exhaustive enumeration test (5,304 of 5,376 combinations resolve; the 72 left are the non-DP runway-heading noise row, which v1 does not clear — the generator must avoid P non-RNAV off 01 at night). Validation questions raised: the late-night "NIITE# GOBBS" south row is dead data (NIITE4 has no south transition; the engine would have to amend the route, an amendment-mode concept); MOLEN9 is reachable only when MOLEN is filed as the exit fix since ENI is a north gate
 - [ ] 11. Synthetic fixtures + fixture runner
 - [ ] 12. `options`, `grade`, `speak` (`grade` and `speak` done; `options` pending; full-route reading repeats the vector fix for radar-vector routes, fix with `options`)
 - [ ] 13. Scenario generator (seeded) (`rng` done; `generate` pending)
