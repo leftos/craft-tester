@@ -22,7 +22,7 @@ const ROUTE_PHRASES: Record<RouteTemplate, string> = {
 };
 
 /** Renders a route element the way the results view names it, e.g. `DEDHD transition`. */
-function routeLabel(route: ResolvedClearance['route']['value']): string {
+export function routeLabel(route: ResolvedClearance['route']['value']): string {
   const { template, fix } = route;
   if (fix === undefined) return ROUTE_PHRASES[template];
   if (template === 'transition') return `${fix} transition`;

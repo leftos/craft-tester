@@ -283,12 +283,11 @@ def test_southbound_plan_departs_the_left_turn_runway(by_title: dict[str, Worksh
     assert fixture["source"]["note"].endswith("the runway configuration 28/01 departs south per direction_runway_preference, pending validation")
 
 
-def test_plan_with_unknown_exit_fix_keeps_the_first_runway(by_title: dict[str, Worksheet], importer: Importer) -> None:
-    fixtures = sheet_of(by_title["Amendment Practice 1A"], importer, {})
-    fixture = fixture_of(fixtures, "LXJ351")
-    assert fixture["scenario"]["filedRoute"].startswith("GAPP7 EHF ")
-    assert fixture["scenario"]["departureRunway"] == "01L"
-    assert fixture["source"]["note"].endswith("so this is 01L, the first runway configuration 28/01 departs, pending validation")
+def test_plan_with_exit_fix_in_no_gate_keeps_the_first_runway(importer: Importer) -> None:
+    gates = importer.inputs.sop.gates
+    assert "PYE" not in gates.north + gates.south + gates.oceanic
+    choice = runway_of(importer, "28/01", plan_row("UAL1563", "A320", "SFO5 PYE"))
+    assert (choice.runway, choice.direction, choice.default_for_class, choice.on_request) == ("01L", None, None, None)
 
 
 def test_turboprop_in_28_01_defaults_to_28r_at_echo(

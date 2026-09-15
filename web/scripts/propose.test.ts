@@ -77,6 +77,19 @@ describe('formatPendingLine', () => {
     expect(line.endsWith('120.9 (richmond)')).toBe(true);
   });
 
+  it('keeps the columns apart when the engine route label overflows its column', () => {
+    const line = formatPendingLine({
+      id: 'syn-sfo5-v6-01r-airway',
+      sid: 'SFO5',
+      route: 'radar vectors to join V6',
+      altitude: 'maintain 5,000',
+      frequency: '135.1 (sutro)',
+      blocked: undefined,
+    });
+    expect(line).toContain('radar vectors to join V6 maintain 5,000');
+    expect(line.endsWith('135.1 (sutro)')).toBe(true);
+  });
+
   it('prints the reason instead when the engine could not clear the plan', () => {
     const line = formatPendingLine({
       id: 'syn-example',

@@ -119,7 +119,7 @@ def test_altitude_rules_notices_and_phraseology(ksfo_inputs: AirportInputs) -> N
     assert sop.phraseology.expect_altitude == "unless_chart_publishes_it"
     assert sop.phraseology.non_standard_interim_expect_minutes == 3
     assert sop.phraseology.vector_hybrid_transitions_spoken is False
-    assert "R-TRANSITION" in {rule.id for rule in sop.phraseology_rules}
+    assert {"R-TRANSITION", "R-AIRWAY", "R-NAVAID"} <= {rule.id for rule in sop.phraseology_rules}
 
 
 def test_overrides_carry_per_runway_facts(ksfo_inputs: AirportInputs) -> None:
