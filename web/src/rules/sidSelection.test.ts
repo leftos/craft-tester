@@ -25,7 +25,7 @@ const config: RunwayConfig = {
   name: 'Landing runways 28, departing runways 01',
   plan: 'SFOW',
   arrivalRunways: ['28L', '28R'],
-  departureRunways: [{ runway: '01R', classes: ['P', 'T', 'J'] }],
+  departureRunways: [{ runway: '01R', classes: ['P', 'T', 'J'], defaultForClasses: [] }],
 };
 
 const BASE_CTX: Classification = {

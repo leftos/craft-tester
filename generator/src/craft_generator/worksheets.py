@@ -13,9 +13,10 @@ The sheets carry flight plans only - no answer keys - so every fixture is writte
 without ``expected``: the clearance half comes from the rules engine and is confirmed by the user in
 the validation loop (see ``docs/ARCHITECTURE.md``, fixture lifecycle). Two scenario fields the
 worksheets do not state are filled here and recorded in ``source.note``: the departure runway, which
-follows the direction the filed route leaves on (``direction_runway_preference`` in ``sop.yaml``) and
-falls back to the first runway the configuration publishes, and - on the amendment sheets, which
-print no squawk - a code counted up from 4601 in octal.
+is the one the configuration defaults the plan's aircraft class to (``default_for_classes`` in
+``sop.yaml``), else the one the direction the filed route leaves on prefers
+(``direction_runway_preference``), and falls back to the first runway the configuration publishes;
+and - on the amendment sheets, which print no squawk - a code counted up from 4601 in octal.
 """
 
 import re
@@ -24,10 +25,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from craft_generator.aircraft_classes import DESIGNATOR_FIELD, ENGINE_TYPE_FIELD, classify_engine_type
 from craft_generator.emit import repo_root
 from craft_generator.http import fetch_bytes
 from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH
-from craft_generator.sop.model import EquipmentSuffix, GateDirection, Gates, RunwayConfig, SopData, Worksheet
+from craft_generator.sop.model import AircraftClass, EquipmentSuffix, GateDirection, Gates, RunwayConfig, SopData, Worksheet
 
 Fixture = dict[str, Any]
 
@@ -360,13 +362,53 @@ def rnav_suffixes(suffixes: Sequence[EquipmentSuffix]) -> frozenset[str]:
     return frozenset(entry.suffix for entry in suffixes if entry.rnav)
 
 
+def designator_classes(specs: Sequence[Mapping[str, Any]], type_aliases: Mapping[str, str]) -> dict[str, AircraftClass]:
+    """Map every designator a sheet may file to the SOP aircraft class of its vNAS record.
+
+    The map is keyed by the designator as a sheet files it, so a type the sheets spell their own way
+    carries the class of the designator ``type_aliases`` reads it as. A record whose ``EngineType``
+    the SOP has no class for - the electric and rocket types of the file - is left out, because the
+    importer has nothing to do with one and treats it as a type the specs do not cover.
+
+    Args:
+        specs: The records from :func:`craft_generator.aircraft_classes.fetch_aircraft_specs`.
+        type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
+
+    Returns:
+        The aircraft class of each designator, keyed by ICAO designator.
+    """
+    classes: dict[str, AircraftClass] = {}
+    for record in specs:
+        designator = record.get(DESIGNATOR_FIELD)
+        engine_type = record.get(ENGINE_TYPE_FIELD)
+        if not isinstance(designator, str) or not isinstance(engine_type, str) or designator in classes:
+            continue
+        try:
+            classes[designator] = classify_engine_type(engine_type)
+        except ValueError:
+            continue
+    for filed, read_as in type_aliases.items():
+        aircraft_class = classes.get(read_as)
+        if aircraft_class is not None:
+            classes[filed] = aircraft_class
+    return classes
+
+
 @dataclass(frozen=True, slots=True)
 class RunwayChoice:
-    """The departure runway one plan's fixture carries and the gate direction that chose it."""
+    """The departure runway one plan's fixture carries and what chose it.
+
+    Exactly one of ``direction`` and ``default_for_class`` is set when the configuration states the
+    runway; both are ``None`` on the fallback to the configuration's first departure runway.
+    ``unclassified_designator`` names the filed type when the vNAS specs do not cover it, so the
+    class step was skipped.
+    """
 
     config_id: str
     runway: str
     direction: GateDirection | None
+    default_for_class: AircraftClass | None = None
+    unclassified_designator: str | None = None
 
 
 def sheet_runway_config(config_id: str | None, configs: Sequence[RunwayConfig], where: str) -> RunwayConfig:
@@ -426,40 +468,68 @@ def _gate_direction(fix: str | None, gates: Gates) -> GateDirection | None:
     return None
 
 
-def departure_runway(row: PlanRow, config: RunwayConfig, sop: SopData) -> RunwayChoice:
+def _class_default(aircraft_class: AircraftClass, config: RunwayConfig) -> str | None:
+    for runway in config.departure_runways:
+        if aircraft_class in runway.default_for_classes:
+            return runway.runway
+    return None
+
+
+def departure_runway(row: PlanRow, config: RunwayConfig, sop: SopData, *, aircraft_classes: Mapping[str, AircraftClass]) -> RunwayChoice:
     """Return the departure runway one filed plan gets in the sheet's runway configuration.
 
-    The worksheets state the configuration but not the runway, so the runway follows the direction
-    the filed route leaves on: ``direction_runway_preference`` splits the parallel runways of the
-    configuration's plan by gate direction, which is what puts a northbound plan on the right-turn
-    runway. A route whose exit fix belongs to no gate, and a direction the preference table says
-    nothing about, fall back to the first departure runway the configuration publishes.
+    The worksheets state the configuration but not the runway, so the runway comes from the plan.
+    A configuration that defaults the plan's aircraft class to a runway (``default_for_classes`` in
+    ``sop.yaml``) settles it first, e.g. the GA departures off 28R in 28/01. Otherwise the runway
+    follows the direction the filed route leaves on: ``direction_runway_preference`` splits the
+    parallel runways of the configuration's plan by gate direction, which is what puts a northbound
+    plan on the right-turn runway. A route whose exit fix belongs to no gate, and a direction the
+    preference table says nothing about, fall back to the first departure runway the configuration
+    publishes; so does a plan whose designator the vNAS specs do not cover, which has no class.
 
     Args:
         row: The filed plan.
         config: The sheet's runway configuration from :func:`sheet_runway_config`.
         sop: The transcribed SOP, for the gates, the preference table and the airport's navaid.
+        aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
 
     Returns:
-        The runway and the direction that chose it, or ``None`` for the direction on the fallback.
+        The runway and what chose it: the defaulted class, the gate direction, or neither on the
+        fallback.
     """
     first = config.departure_runways[0].runway
+    aircraft_class = aircraft_classes.get(row.designator)
+    if aircraft_class is not None:
+        default = _class_default(aircraft_class, config)
+        if default is not None:
+            return RunwayChoice(config.id, default, None, default_for_class=aircraft_class)
+    unclassified = row.designator if aircraft_class is None else None
     direction = _gate_direction(exit_fix(row.route, sop.airport.faa), sop.gates)
-    if direction is None:
-        return RunwayChoice(config.id, first, None)
-    preferred = sop.direction_runway_preference.get(config.plan, {}).get(direction, {}).get(first[:RUNWAY_FAMILY_LENGTH])
-    return RunwayChoice(config.id, first, None) if preferred is None else RunwayChoice(config.id, preferred, direction)
+    preferred = (
+        None if direction is None else sop.direction_runway_preference.get(config.plan, {}).get(direction, {}).get(first[:RUNWAY_FAMILY_LENGTH])
+    )
+    if preferred is None:
+        return RunwayChoice(config.id, first, None, unclassified_designator=unclassified)
+    return RunwayChoice(config.id, preferred, direction, unclassified_designator=unclassified)
 
 
 def _squawk_for(row: PlanRow, index: int) -> str:
     return row.squawk if row.squawk is not None else format(FIRST_SQUAWK + index, "04o")
 
 
-def _note(worksheet: Worksheet, choice: RunwayChoice) -> str:
-    opening = f"{worksheet.title}; the sheet states no departure runway, so this is {choice.runway}, "
+def _chose_the_runway(choice: RunwayChoice) -> str:
+    if choice.default_for_class is not None:
+        return f"the runway configuration {choice.config_id} defaults class {choice.default_for_class} to it (default_for_classes)"
     if choice.direction is None:
-        return opening + f"the first runway configuration {choice.config_id} departs, pending validation"
-    return opening + f"the runway configuration {choice.config_id} departs {choice.direction} per direction_runway_preference, pending validation"
+        return f"the first runway configuration {choice.config_id} departs"
+    return f"the runway configuration {choice.config_id} departs {choice.direction} per direction_runway_preference"
+
+
+def _note(worksheet: Worksheet, choice: RunwayChoice) -> str:
+    note = f"{worksheet.title}; the sheet states no departure runway, so this is {choice.runway}, {_chose_the_runway(choice)}, pending validation"
+    if choice.unclassified_designator is not None:
+        note += f"; type {choice.unclassified_designator} is not in the vNAS specs, so the class default was not applied"
+    return note
 
 
 def fixture_for(
@@ -519,7 +589,14 @@ def fixture_dir(icao: str) -> Path:
 
 
 def sheet_fixtures(
-    worksheet: Worksheet, text: str, *, icao: str, sop: SopData, rnav: frozenset[str], type_aliases: Mapping[str, str]
+    worksheet: Worksheet,
+    text: str,
+    *,
+    icao: str,
+    sop: SopData,
+    rnav: frozenset[str],
+    type_aliases: Mapping[str, str],
+    aircraft_classes: Mapping[str, AircraftClass],
 ) -> dict[Path, Fixture]:
     """Parse one worksheet and build the fixture of every flight plan on it.
 
@@ -530,6 +607,7 @@ def sheet_fixtures(
         sop: The transcribed SOP, for the runway configurations, the gates and the preference table.
         rnav: The equipment suffixes that make an aircraft RNAV capable.
         type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
+        aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
 
     Returns:
         One fixture per flight plan, keyed by the file it is written to, in sheet order.
@@ -548,7 +626,6 @@ def sheet_fixtures(
             raise ValueError(
                 f"{worksheet.title}: two flight plans are filed as {row.callsign!r}, so they name one fixture file; the sheet is ambiguous"
             )
-        fixtures[path] = fixture_for(
-            worksheet, row, index, icao=icao, runway=departure_runway(row, config, sop), rnav=rnav, type_aliases=type_aliases
-        )
+        runway = departure_runway(row, config, sop, aircraft_classes=aircraft_classes)
+        fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, rnav=rnav, type_aliases=type_aliases)
     return fixtures

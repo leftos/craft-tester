@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData } from '@/data/schema.ts';
+import type { AircraftClass, AirportData, RunwayConfig } from '@/data/schema.ts';
 import { ScenarioSchema } from '@/data/schema.ts';
 import { isNoiseWindowActive } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
@@ -40,6 +40,31 @@ function timeBucket(localTime: string): 'day' | 'late night' | 'night' {
 /** The share of the scenarios, in percentage points, whose filed route has this shape. */
 function shareOf(kind: 'correct' | 'none' | 'wrong'): number {
   return (generated.filter((entry) => tokenKind(entry) === kind).length * 100) / generated.length;
+}
+
+/** The aircraft class of the scenario's type, as `aircraftClasses` in the airport data keys it. */
+function classOf(entry: GeneratedScenario): AircraftClass {
+  const aircraftClass = ksfo.aircraftClasses[entry.scenario.aircraftType];
+  if (aircraftClass === undefined) {
+    throw new Error(
+      `type ${entry.scenario.aircraftType} has no aircraft class in the airport data`,
+    );
+  }
+  return aircraftClass;
+}
+
+/** The runway the configuration defaults a class to, or undefined when it defaults none. */
+function defaultRunwayFor(config: RunwayConfig, aircraftClass: AircraftClass): string | undefined {
+  return config.departureRunways.find((assignment) =>
+    assignment.defaultForClasses.includes(aircraftClass),
+  )?.runway;
+}
+
+/** The scenarios drawn in one runway configuration whose aircraft is of one of the classes. */
+function drawnIn(configId: string, classes: readonly AircraftClass[]): GeneratedScenario[] {
+  return generated.filter(
+    (entry) => entry.scenario.runwayConfigId === configId && classes.includes(classOf(entry)),
+  );
 }
 
 /** One line naming the scenario, for a failing assertion to point at. */
@@ -110,6 +135,7 @@ describe('generateScenario', () => {
         const config = ksfo.runwayConfigs.find((row) => row.id === entry.scenario.runwayConfigId);
         const direction = directionOf(exitFixOf(entry), ksfo.gates);
         if (config === undefined || direction === undefined) return false;
+        if (defaultRunwayFor(config, classOf(entry)) !== undefined) return false;
         const family = entry.scenario.departureRunway.slice(0, 2);
         const preferred = ksfo.directionRunwayPreference[config.plan]?.[direction]?.[family];
         return preferred !== undefined && preferred !== entry.scenario.departureRunway;
@@ -134,6 +160,26 @@ describe('generateScenario', () => {
     expect(south.filter((entry) => entry.scenario.departureRunway !== '01L').map(label)).toEqual(
       [],
     );
+  });
+
+  it('a turboprop in 28/01 departs 28R by default', () => {
+    const propsAndTurboprops = drawnIn('28/01', ['P', 'T']);
+    expect(propsAndTurboprops.length).toBeGreaterThan(0);
+    expect(
+      propsAndTurboprops.filter((entry) => entry.scenario.departureRunway !== '28R').map(label),
+    ).toEqual([]);
+  });
+
+  it('a jet in 28/01 departs the 01s', () => {
+    const jetDefaults = ksfo.runwayConfigs
+      .filter((config) => config.id === '28/01')
+      .map((config) => defaultRunwayFor(config, 'J'));
+    expect(jetDefaults).toEqual([undefined]);
+    const jets = drawnIn('28/01', ['J']);
+    expect(
+      jets.filter((entry) => entry.scenario.departureRunway.startsWith('01')).length,
+    ).toBeGreaterThan(0);
+    expect(jets.filter((entry) => entry.scenario.departureRunway === '28R').map(label)).toEqual([]);
   });
 
   it('redraws rather than presenting a flight the SOP clears without a procedure', () => {

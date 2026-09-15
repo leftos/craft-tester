@@ -224,6 +224,35 @@ def test_unknown_runway_config_is_named(tmp_path: Path, ksfo_dir: Path, key: str
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
+def test_default_for_classes_round_trips(ksfo_inputs: AirportInputs) -> None:
+    configs = {config.id: config for config in ksfo_inputs.sop.runway_configs}
+    defaults = [runway for runway in configs["28/01"].departure_runways if runway.default_for_classes]
+    assert [(runway.runway, runway.default_for_classes) for runway in defaults] == [("28R", ("P", "T"))]
+    assert defaults[0].classes == ("P", "T")
+    assert configs["28/01"].departure_runways[0].default_for_classes == ()
+
+
+def test_default_for_a_class_the_row_excludes_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_classes"] = ["J", "P"]
+        config["departure_runways"][0]["classes"] = ["P", "T"]
+
+    match = r"runway_configs\[28/01\]\.departure_runways\[01L\]\.default_for_classes: class 'J' is not in the row's `classes`"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_two_rows_defaulting_the_same_class_are_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_classes"] = ["T"]
+
+    match = r"departure_runways\[28R\]\.default_for_classes: class 'T' already defaults to runway '01L' in this configuration"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
 def test_unknown_runway_family_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
         data["altitude_rules"][0]["runway_families"] = ["27"]

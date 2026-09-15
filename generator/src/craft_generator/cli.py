@@ -40,7 +40,7 @@ from craft_generator.sop.load import (
 )
 from craft_generator.sop.model import SopSource
 from craft_generator.sop.verify import sop_cache_path, verify_sop_source
-from craft_generator.worksheets import Fixture, fetch_worksheet_text, fixture_dir, rnav_suffixes, sheet_fixtures
+from craft_generator.worksheets import Fixture, designator_classes, fetch_worksheet_text, fixture_dir, rnav_suffixes, sheet_fixtures
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -363,11 +363,12 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False)
     sop = load_sop(directory / SOP_FILE)
     rnav = rnav_suffixes(load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE))
     cache = cache_dir()
+    classes = designator_classes(fetch_aircraft_specs(cache, force=force), config.type_aliases)
     counts: Counter[str] = Counter()
     print(f"{airport}: {len(config.worksheets)} worksheet(s) -> {fixture_dir(airport)}")
     for worksheet in config.worksheets:
         text = fetch_worksheet_text(worksheet, cache, force=force)
-        fixtures = sheet_fixtures(worksheet, text, icao=airport, sop=sop, rnav=rnav, type_aliases=config.type_aliases)
+        fixtures = sheet_fixtures(worksheet, text, icao=airport, sop=sop, rnav=rnav, type_aliases=config.type_aliases, aircraft_classes=classes)
         results = [_fixture_result(path, fixture, check=check) for path, fixture in fixtures.items()]
         counts.update(result.status for result in results)
         _print_sheet_summary(worksheet.title, results)
