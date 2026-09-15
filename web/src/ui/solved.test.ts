@@ -3,7 +3,6 @@ import type { PlayerPicks } from '@/rules/types.ts';
 import { createSolvedStore } from '@/ui/solved.ts';
 
 const picks: PlayerPicks = {
-  clearedTo: 'KLAX',
   sidId: 'TRUKN2',
   routeTemplate: 'transition',
   routeFix: 'DEDHD',
@@ -69,6 +68,13 @@ describe('createSolvedStore', () => {
     const { runway: _runway, ...withoutRunway } = picks;
     const entries = new Map<string, string>([
       ['craft-tester:solved:KSFO:42', JSON.stringify(withoutRunway)],
+    ]);
+    expect(createSolvedStore(mapStorage(entries)).load('KSFO', 42)).toBeUndefined();
+  });
+
+  it('ignores an attempt an older form stored with a clearance limit', () => {
+    const entries = new Map<string, string>([
+      ['craft-tester:solved:KSFO:42', JSON.stringify({ ...picks, clearedTo: 'KLAX' })],
     ]);
     expect(createSolvedStore(mapStorage(entries)).load('KSFO', 42)).toBeUndefined();
   });

@@ -31,7 +31,7 @@ export type ResolvedClearance = {
 };
 
 /** The graded elements of a clearance, in the order CRAFT speaks them, with the runway last. */
-export type ClearanceElement = 'C' | 'R.sid' | 'R.route' | 'A.phrase' | 'A.expect' | 'F' | 'RWY';
+export type ClearanceElement = 'R.sid' | 'R.route' | 'A.phrase' | 'A.expect' | 'F' | 'RWY';
 
 /** An element the engine could not resolve, with the reason to show the player. */
 export type Unresolved = {
@@ -49,7 +49,6 @@ export const NO_SID = 'no-sid';
 
 /** What the player entered in the CRAFT form, before grading. */
 export type PlayerPicks = {
-  clearedTo: string;
   sidId: string;
   routeTemplate: RouteTemplate;
   routeFix?: string;

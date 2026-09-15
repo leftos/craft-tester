@@ -30,7 +30,6 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
   const expectValue = clearance.expect.value;
   const feet = clearance.altitude.value.feet;
   const answers: [PickKey, string][] = [
-    ['clearedTo', clearance.clearedTo.value],
     ['sidId', clearance.sid.value.id],
     ['routeTemplate', clearance.route.value.template],
     ['routeFix', clearance.route.value.fix ?? ''],
@@ -111,7 +110,7 @@ describe('the CRAFT form', () => {
     );
     expect(fields.get('routeFix')?.disabled).toBe(true);
     expect(fields.get('altitudeFeet')?.disabled).toBe(true);
-    expect(fields.get('clearedTo')?.disabled).toBe(false);
+    expect(fields.get('sidId')?.disabled).toBe(false);
   });
 
   it('offers the clearance the engine resolved, and grades it green', () => {

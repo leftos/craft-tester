@@ -33,23 +33,6 @@ function plainOptions(values: readonly string[]): SelectOption[] {
   return values.map((value) => ({ value, label: value }));
 }
 
-/** The clearance limit: every destination the route library flies to, plus the field itself. */
-function limitGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
-  return {
-    element: 'C',
-    fields: [
-      {
-        key: 'clearedTo',
-        label: 'cleared to',
-        options: plainOptions(options.clearedTo),
-        value: picks.clearedTo,
-        disabled: false,
-        placeholder: PLACEHOLDER,
-      },
-    ],
-  };
-}
-
 /** The procedure: every published SID of the field, and the choice to issue none. */
 function procedureGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
   const sids = options.sids.map((sid) => ({ value: sid.id, label: sid.label }));
@@ -194,7 +177,7 @@ function runwayGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
 }
 
 /**
- * Builds the seven groups of dropdowns the player answers the clearance with.
+ * Builds the six groups of dropdowns the player answers the clearance with.
  *
  * @param scenario The scenario being cleared, which contributes the filed route and altitude.
  * @param airport The airport data.
@@ -208,7 +191,6 @@ export function craftGroups(
 ): readonly CraftGroup[] {
   const options = buildOptions(scenario, airport, picks.sidId);
   return [
-    limitGroup(options, picks),
     procedureGroup(options, picks),
     routeGroup(options, picks),
     altitudeGroup(options, picks),

@@ -32,7 +32,7 @@ describe('scoreLine', () => {
   it('counts the correct elements of the whole clearance', () => {
     const grades: Grade[] = [
       rightSid,
-      { ...rightSid, element: 'C' },
+      { ...rightSid, element: 'R.route' },
       { ...wrongSid, element: 'F' },
     ];
     expect(scoreLine(grades)).toBe('2 of 3 elements correct');

@@ -10,7 +10,6 @@ const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = ['ten_minutes', 'three_
 
 /** One dropdown of the CRAFT form, named by the pick it sets. */
 export type PickKey =
-  | 'clearedTo'
   | 'sidId'
   | 'routeTemplate'
   | 'routeFix'
@@ -22,7 +21,6 @@ export type PickKey =
 
 /** What the player has picked so far; a dropdown nobody has touched is `undefined`. */
 export type DraftPicks = {
-  clearedTo: string | undefined;
   sidId: string | undefined;
   routeTemplate: RouteTemplate | undefined;
   routeFix: string | undefined;
@@ -35,7 +33,6 @@ export type DraftPicks = {
 
 /** A form nobody has touched yet. */
 export const EMPTY_PICKS: DraftPicks = {
-  clearedTo: undefined,
   sidId: undefined,
   routeTemplate: undefined,
   routeFix: undefined,
@@ -92,7 +89,6 @@ function expect(raw: string): PlayerPicks['expect'] | undefined {
  * procedure's transitions; picking "climb via SID" clears the feet, because that phrase speaks none.
  */
 const SETTERS: Record<PickKey, (picks: DraftPicks, raw: string) => DraftPicks> = {
-  clearedTo: (picks, raw) => ({ ...picks, clearedTo: text(raw) }),
   sidId: (picks, raw) => ({ ...picks, sidId: text(raw), routeFix: undefined }),
   routeTemplate: (picks, raw) => ({ ...picks, routeTemplate: routeTemplate(raw) }),
   routeFix: (picks, raw) => ({ ...picks, routeFix: text(raw) }),
@@ -124,7 +120,6 @@ export function applyPick(picks: DraftPicks, key: PickKey, raw: string): DraftPi
 
 /** The dropdowns every clearance needs, whatever the route shape and the altitude phrase. */
 const ALWAYS_REQUIRED = [
-  'clearedTo',
   'sidId',
   'routeTemplate',
   'routeFix',
@@ -158,7 +153,6 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
   const altitudeFeet = picks.altitudePhrase === 'climb_via' ? undefined : picks.altitudeFeet;
   if (picks.altitudePhrase !== 'climb_via' && altitudeFeet === undefined) return undefined;
   return {
-    clearedTo: picks.clearedTo,
     sidId: picks.sidId,
     routeTemplate: picks.routeTemplate,
     routeFix: picks.routeFix,

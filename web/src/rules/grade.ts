@@ -131,7 +131,7 @@ function gradeRunway(picks: PlayerPicks, expected: ResolvedClearance): Grade {
  * @param picks What the player entered in the form.
  * @param expected The clearance the engine resolved for the same scenario.
  * @param sids Every published SID of the airport, used to map a picked id to its family and chart name.
- * @returns Exactly seven verdicts, in the order C, R.sid, R.route, A.phrase, A.expect, F, RWY.
+ * @returns Exactly six verdicts, in the order R.sid, R.route, A.phrase, A.expect, F, RWY.
  */
 export function grade(
   picks: PlayerPicks,
@@ -149,13 +149,6 @@ export function grade(
       ? { phrase: picks.altitudePhrase }
       : { phrase: picks.altitudePhrase, feet: picks.altitudeFeet };
   return [
-    {
-      element: 'C',
-      ok: picks.clearedTo === expected.clearedTo.value,
-      expectedLabel: expected.clearedTo.value,
-      actualLabel: picks.clearedTo,
-      citations: expected.clearedTo.citations,
-    },
     gradeSid(picks, expected, sids),
     {
       element: 'R.route',
