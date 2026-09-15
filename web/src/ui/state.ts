@@ -17,7 +17,8 @@ export type PickKey =
   | 'altitudePhrase'
   | 'altitudeFeet'
   | 'expect'
-  | 'frequency';
+  | 'frequency'
+  | 'runway';
 
 /** What the player has picked so far; a dropdown nobody has touched is `undefined`. */
 export type DraftPicks = {
@@ -29,6 +30,7 @@ export type DraftPicks = {
   altitudeFeet: number | undefined;
   expect: PlayerPicks['expect'] | undefined;
   frequency: string | undefined;
+  runway: string | undefined;
 };
 
 /** A form nobody has touched yet. */
@@ -41,6 +43,7 @@ export const EMPTY_PICKS: DraftPicks = {
   altitudeFeet: undefined,
   expect: undefined,
   frequency: undefined,
+  runway: undefined,
 };
 
 /** Everything the page holds between renders. */
@@ -104,6 +107,7 @@ const SETTERS: Record<PickKey, (picks: DraftPicks, raw: string) => DraftPicks> =
   altitudeFeet: (picks, raw) => ({ ...picks, altitudeFeet: feet(raw) }),
   expect: (picks, raw) => ({ ...picks, expect: expect(raw) }),
   frequency: (picks, raw) => ({ ...picks, frequency: text(raw) }),
+  runway: (picks, raw) => ({ ...picks, runway: text(raw) }),
 };
 
 /**
@@ -127,6 +131,7 @@ const ALWAYS_REQUIRED = [
   'altitudePhrase',
   'expect',
   'frequency',
+  'runway',
 ] as const;
 
 /** The picks once every dropdown but the feet has a value. */
@@ -160,6 +165,7 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
     altitudePhrase: picks.altitudePhrase,
     expect: picks.expect,
     frequency: picks.frequency,
+    runway: picks.runway,
     ...(altitudeFeet === undefined ? {} : { altitudeFeet }),
   };
 }

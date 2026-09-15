@@ -265,7 +265,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearance.altitude.value).toEqual(expected.altitude);
     expect(clearance.frequency.value.value).toBe(expected.frequency);
     expect(clearance.clearedTo.value).toBe(flight.destination);
-    expect(clearance.departureRunway).toBe(flight.departureRunway);
+    expect(clearance.runway.value).toBe(flight.departureRunway);
     const expectClause = expected.expectClause === undefined ? null : expected.expectClause;
     expect(clearance.expect.value).toEqual(expectClause);
     for (const element of [
@@ -275,6 +275,7 @@ describe('resolveClearance on the generated KSFO data', () => {
       clearance.altitude,
       clearance.expect,
       clearance.frequency,
+      clearance.runway,
     ]) {
       expect(element.citations.length).toBeGreaterThan(0);
     }

@@ -94,6 +94,18 @@ describe('buildOptions', () => {
     expect(frequencies).toEqual(ksfo.frequencies.map((frequency) => frequency.value));
   });
 
+  it("lists the configuration's runways, in the order the data rows them", () => {
+    expect(buildOptions(scenario({}), ksfo).runways).toEqual(['01L', '01R', '28L', '28R']);
+    expect(buildOptions(scenario({ runwayConfigId: '19/19' }), ksfo).runways).toEqual([
+      '19L',
+      '19R',
+    ]);
+  });
+
+  it('offers no runway at all for a configuration the data does not carry', () => {
+    expect(buildOptions(scenario({ runwayConfigId: '14/14' }), ksfo).runways).toEqual([]);
+  });
+
   it('is deterministic', () => {
     expect(buildOptions(scenario({}), ksfo, 'TRUKN2')).toEqual(
       buildOptions(scenario({}), ksfo, 'TRUKN2'),

@@ -9,6 +9,7 @@ const ELEMENT_LABELS: Record<ClearanceElement, string> = {
   'A.phrase': 'A — altitude',
   'A.expect': 'A — expect',
   F: 'F — frequency',
+  RWY: 'expect runway',
 };
 
 /**

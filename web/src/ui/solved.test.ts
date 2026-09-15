@@ -11,6 +11,7 @@ const picks: PlayerPicks = {
   altitudeFeet: 10_000,
   expect: 'ten_minutes',
   frequency: '120.9',
+  runway: '01R',
 };
 
 /** A storage backed by a Map, which is how the browser's behaves when nothing goes wrong. */
@@ -62,6 +63,14 @@ describe('createSolvedStore', () => {
     expect(store.load('KSFO', 42)).toBeUndefined();
     expect(store.load('KSFO', 43)).toBeUndefined();
     expect(store.load('KSFO', 44)).toBeUndefined();
+  });
+
+  it('ignores an attempt an older form stored without the runway pick', () => {
+    const { runway: _runway, ...withoutRunway } = picks;
+    const entries = new Map<string, string>([
+      ['craft-tester:solved:KSFO:42', JSON.stringify(withoutRunway)],
+    ]);
+    expect(createSolvedStore(mapStorage(entries)).load('KSFO', 42)).toBeUndefined();
   });
 
   it('remembers nothing at all without a storage', () => {

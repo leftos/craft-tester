@@ -16,13 +16,13 @@ export type Cited<T> = {
 /**
  * The clearance the engine resolved for a scenario, element by element.
  *
- * `departureRunway` carries no citation because it comes from the scenario, not from a rule row.
- * `sid.value.spoken` is the chart's spoken name ("Trukn Two"); `sid.value.family` is what grading
- * compares, because AIRAC cycles bump the version in `id`.
+ * `runway` is the scenario's departure runway together with the configuration row and the mechanism
+ * row that settled it. `sid.value.spoken` is the chart's spoken name ("Trukn Two");
+ * `sid.value.family` is what grading compares, because AIRAC cycles bump the version in `id`.
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
-  departureRunway: string;
+  runway: Cited<string>;
   sid: Cited<{ id: string; family: string; spoken: string }>;
   route: Cited<{ template: RouteTemplate; fix?: string }>;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
@@ -30,8 +30,8 @@ export type ResolvedClearance = {
   frequency: Cited<{ value: string; sectorId: string }>;
 };
 
-/** The graded elements of a clearance, in the order CRAFT speaks them. */
-export type ClearanceElement = 'C' | 'R.sid' | 'R.route' | 'A.phrase' | 'A.expect' | 'F';
+/** The graded elements of a clearance, in the order CRAFT speaks them, with the runway last. */
+export type ClearanceElement = 'C' | 'R.sid' | 'R.route' | 'A.phrase' | 'A.expect' | 'F' | 'RWY';
 
 /** An element the engine could not resolve, with the reason to show the player. */
 export type Unresolved = {
@@ -57,6 +57,7 @@ export type PlayerPicks = {
   altitudeFeet?: number;
   expect: 'ten_minutes' | 'three_minutes' | 'none';
   frequency: string;
+  runway: string;
 };
 
 /** The verdict for one element: whether it matched, both labels, and the rows that decided it. */

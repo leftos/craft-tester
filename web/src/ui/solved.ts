@@ -1,4 +1,39 @@
+import { z } from 'zod';
+import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
+
+/**
+ * The shape a remembered attempt has to have to be loaded back.
+ *
+ * A value this browser stored under an older version of the form is missing the picks the form has
+ * gained since, so it is rejected rather than replayed with holes in it.
+ */
+export const PlayerPicksSchema = z.strictObject({
+  clearedTo: z.string(),
+  sidId: z.string(),
+  routeTemplate: RouteTemplateSchema,
+  routeFix: z.string().optional(),
+  altitudePhrase: AltitudePhraseSchema,
+  altitudeFeet: z.number().optional(),
+  expect: z.enum(['ten_minutes', 'three_minutes', 'none']),
+  frequency: z.string(),
+  runway: z.string(),
+});
+
+/**
+ * Rebuilds the picks from a parsed value, leaving out the optional picks the attempt spoke none of.
+ *
+ * @param parsed The stored value, once the schema has accepted it.
+ * @returns The same picks with no key holding an explicit `undefined`.
+ */
+function toPicks(parsed: z.infer<typeof PlayerPicksSchema>): PlayerPicks {
+  const { routeFix, altitudeFeet, ...rest } = parsed;
+  return {
+    ...rest,
+    ...(routeFix === undefined ? {} : { routeFix }),
+    ...(altitudeFeet === undefined ? {} : { altitudeFeet }),
+  };
+}
 
 /** Remembers the clearance a viewer already submitted for a scenario, in this browser only. */
 export type SolvedStore = {
@@ -37,8 +72,8 @@ export function createSolvedStore(storage: PicksStorage | undefined): SolvedStor
       try {
         const raw = storage.getItem(keyFor(icao, seed));
         if (raw === null) return undefined;
-        const parsed: unknown = JSON.parse(raw);
-        return typeof parsed === 'object' && parsed !== null ? (parsed as PlayerPicks) : undefined;
+        const parsed = PlayerPicksSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? toPicks(parsed.data) : undefined;
       } catch {
         return undefined;
       }

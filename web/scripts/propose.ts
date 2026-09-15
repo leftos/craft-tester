@@ -188,6 +188,11 @@ function craftElements(clearance: ResolvedClearance, runtime: Runtime): Proposal
       value: `${clearance.frequency.value.value} (${clearance.frequency.value.sectorId})`,
       citations: clearance.frequency.citations,
     },
+    {
+      label: 'RWY runway',
+      value: clearance.runway.value,
+      citations: clearance.runway.citations,
+    },
   ];
 }
 

@@ -16,6 +16,12 @@ const altitudeCitation: RuleCitation = {
   text: 'SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000',
 };
 
+const runwayCitation: RuleCitation = {
+  id: 'RWY-DIRECTION',
+  source: 'S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?',
+  text: 'The departure runway follows the first turn: right turn (northbound SIDs) 1R',
+};
+
 const trukn2: Sid = {
   id: 'TRUKN2',
   family: 'TRUKN',
@@ -58,7 +64,7 @@ const sids: readonly Sid[] = [trukn2, sfo5];
 
 const expected: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [] },
-  departureRunway: '01R',
+  runway: { value: '01R', citations: [runwayCitation] },
   sid: {
     value: { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
     citations: [assignmentCitation],
@@ -81,66 +87,72 @@ const correct: PlayerPicks = {
   altitudeFeet: 10000,
   expect: 'ten_minutes',
   frequency: '120.9',
+  runway: '01R',
 };
 
-const allOk = [true, true, true, true, true, true];
+const allOk = [true, true, true, true, true, true, true];
 
 const cases: { name: string; picks: PlayerPicks; ok: boolean[] }[] = [
   { name: 'a fully correct entry', picks: correct, ok: allOk },
   {
     name: 'the wrong destination',
     picks: { ...correct, clearedTo: 'KPDX' },
-    ok: [false, true, true, true, true, true],
+    ok: [false, true, true, true, true, true, true],
   },
   {
     name: 'a SID from another family',
     picks: { ...correct, sidId: 'SFO5' },
-    ok: [true, false, true, true, true, true],
+    ok: [true, false, true, true, true, true, true],
   },
   {
     name: 'a SID id that is not published',
     picks: { ...correct, sidId: 'TRUKN9' },
-    ok: [true, false, true, true, true, true],
+    ok: [true, false, true, true, true, true, true],
   },
   {
     name: 'the wrong route template',
     picks: { ...correct, routeTemplate: 'as_filed' },
-    ok: [true, true, false, true, true, true],
+    ok: [true, true, false, true, true, true, true],
   },
   {
     name: 'the right template with the wrong transition fix',
     picks: { ...correct, routeFix: 'SSTIK' },
-    ok: [true, true, false, true, true, true],
+    ok: [true, true, false, true, true, true, true],
   },
   {
     name: 'the wrong altitude phrase',
     picks: { ...correct, altitudePhrase: 'maintain' },
-    ok: [true, true, true, false, true, true],
+    ok: [true, true, true, false, true, true, true],
   },
   {
     name: 'the right phrase with the wrong feet',
     picks: { ...correct, altitudeFeet: 5000 },
-    ok: [true, true, true, false, true, true],
+    ok: [true, true, true, false, true, true, true],
   },
   {
     name: 'the wrong expect delay',
     picks: { ...correct, expect: 'three_minutes' },
-    ok: [true, true, true, true, false, true],
+    ok: [true, true, true, true, false, true, true],
   },
   {
     name: 'no expect clause where one is due',
     picks: { ...correct, expect: 'none' },
-    ok: [true, true, true, true, false, true],
+    ok: [true, true, true, true, false, true, true],
   },
   {
     name: 'the wrong frequency',
     picks: { ...correct, frequency: '135.65' },
-    ok: [true, true, true, true, true, false],
+    ok: [true, true, true, true, true, false, true],
+  },
+  {
+    name: 'the other runway of the pair',
+    picks: { ...correct, runway: '01L' },
+    ok: [true, true, true, true, true, true, false],
   },
 ];
 
 describe('grade', () => {
-  it('returns the six CRAFT elements in order', () => {
+  it('returns the six CRAFT elements in order, with the runway last', () => {
     expect(grade(correct, expected, sids).map((entry) => entry.element)).toEqual([
       'C',
       'R.sid',
@@ -148,7 +160,20 @@ describe('grade', () => {
       'A.phrase',
       'A.expect',
       'F',
+      'RWY',
     ]);
+  });
+
+  it('grades the runway pick against the runway the engine explained', () => {
+    const [runway] = grade(correct, expected, sids).slice(-1);
+    expect(runway?.ok).toBe(true);
+    expect(runway?.expectedLabel).toBe('01R');
+    expect(runway?.actualLabel).toBe('01R');
+    expect(runway?.citations).toEqual([runwayCitation]);
+    const [wrong] = grade({ ...correct, runway: '28L' }, expected, sids).slice(-1);
+    expect(wrong?.ok).toBe(false);
+    expect(wrong?.expectedLabel).toBe('01R');
+    expect(wrong?.actualLabel).toBe('28L');
   });
 
   it.each(cases)('marks $name', ({ picks, ok }) => {
@@ -245,6 +270,7 @@ describe('grade', () => {
       altitudeFeet: 3000,
       expect: 'three_minutes',
       frequency: '135.65',
+      runway: '28L',
     };
     expect(
       grade(wrong, expected, sids).map((entry) => [entry.expectedLabel, entry.actualLabel]),
@@ -258,6 +284,7 @@ describe('grade', () => {
         'expect filed altitude 3 minutes after departure',
       ],
       ['120.9', '135.65'],
+      ['01R', '28L'],
     ]);
   });
 
@@ -269,6 +296,7 @@ describe('grade', () => {
       [altitudeCitation],
       [altitudeCitation],
       [assignmentCitation],
+      [runwayCitation],
     ]);
   });
 });

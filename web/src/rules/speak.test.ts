@@ -121,7 +121,7 @@ type ClearanceParts = {
 function clearance(parts: ClearanceParts = {}): ResolvedClearance {
   return {
     clearedTo: { value: 'KSEA', citations: [] },
-    departureRunway: '01R',
+    runway: { value: '01R', citations: [] },
     sid: {
       value: parts.sid ?? { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
       citations: [],

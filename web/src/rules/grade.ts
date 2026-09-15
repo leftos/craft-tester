@@ -114,13 +114,24 @@ function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   };
 }
 
+/** Grades the runway on the bare runway the player expected, e.g. `01R`. */
+function gradeRunway(picks: PlayerPicks, expected: ResolvedClearance): Grade {
+  return {
+    element: 'RWY',
+    ok: picks.runway === expected.runway.value,
+    expectedLabel: expected.runway.value,
+    actualLabel: picks.runway,
+    citations: expected.runway.citations,
+  };
+}
+
 /**
  * Grades a player's CRAFT entry element by element against the engine's clearance.
  *
  * @param picks What the player entered in the form.
  * @param expected The clearance the engine resolved for the same scenario.
  * @param sids Every published SID of the airport, used to map a picked id to its family and chart name.
- * @returns Exactly six verdicts, in the order C, R.sid, R.route, A.phrase, A.expect, F.
+ * @returns Exactly seven verdicts, in the order C, R.sid, R.route, A.phrase, A.expect, F, RWY.
  */
 export function grade(
   picks: PlayerPicks,
@@ -168,5 +179,6 @@ export function grade(
       actualLabel: picks.frequency,
       citations: expected.frequency.citations,
     },
+    gradeRunway(picks, expected),
   ];
 }

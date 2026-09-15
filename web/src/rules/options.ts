@@ -29,6 +29,7 @@ export type ClearanceOptions = {
   altitudeFeet: number[];
   expect: PlayerPicks['expect'][];
   frequencies: string[];
+  runways: string[];
 };
 
 /** Keeps the first occurrence of every value, so the lists stay stable and free of duplicates. */
@@ -65,6 +66,12 @@ function altitudeFeet(scenario: Scenario, airport: AirportData): number[] {
   );
 }
 
+/** Every runway the scenario's configuration departs, in the order the data lists its rows. */
+function configuredRunways(scenario: Scenario, airport: AirportData): string[] {
+  const config = airport.runwayConfigs.find((entry) => entry.id === scenario.runwayConfigId);
+  return unique((config?.departureRunways ?? []).map((assignment) => assignment.runway));
+}
+
 /**
  * Builds the dropdown lists for one scenario, from the data alone and with no randomness.
  *
@@ -94,5 +101,6 @@ export function buildOptions(
     altitudeFeet: altitudeFeet(scenario, airport),
     expect: [...EXPECT_CHOICES],
     frequencies: unique(airport.frequencies.map((frequency) => frequency.value)),
+    runways: configuredRunways(scenario, airport),
   };
 }
