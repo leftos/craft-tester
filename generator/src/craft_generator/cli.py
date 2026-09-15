@@ -41,12 +41,13 @@ from craft_generator.sop.load import (
     load_worksheets,
     shared_dir,
 )
-from craft_generator.sop.model import SopSource
+from craft_generator.sop.model import Overrides, SopSource
 from craft_generator.sop.verify import sop_cache_path, verify_sop_source
 from craft_generator.worksheets import (
     Fixture,
     SettledFixture,
     designator_classes,
+    designator_wtcs,
     fetch_worksheet_text,
     fixture_dir,
     rnav_suffixes,
@@ -372,6 +373,36 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
     return EXIT_ERROR if result.status == "differs" else EXIT_OK
 
 
+def published_sid_runways(airport: str, overrides: Overrides) -> dict[str, tuple[str, ...]]:
+    """Return the runways every procedure of an airport is published for, keyed by CIFP id.
+
+    ``overrides.yaml`` states the runways of the procedures whose chart the generator cannot read,
+    and wins where it states them; the rest come from the built airport document, which is where the
+    CIFP runway records land. A document that has not been built yet leaves the overrides to answer
+    alone, with a warning, because a procedure whose runways nothing states asks for no runway.
+
+    Args:
+        airport: Four-letter ICAO identifier, e.g. ``KSFO``.
+        overrides: The ``overrides.yaml`` of that airport.
+
+    Returns:
+        The published runways of each procedure, e.g. ``WESLA5`` to ``("28L", "28R")``.
+    """
+    published = {override.cifp_id: override.runways for override in overrides.sids.values() if override.runways}
+    path = data_path(airport)
+    if not path.exists():
+        print(
+            f"warning: {path} has not been built, so only overrides.yaml says which runways a procedure is published for; "
+            "run craft-gen build first if a plan should be read as requesting a runway",
+            file=sys.stderr,
+        )
+        return published
+    document = json.loads(path.read_text(encoding="utf-8"))
+    for sid in document["sids"]:
+        published.setdefault(sid["id"], tuple(sid["runways"]))
+    return published
+
+
 @dataclass(frozen=True, slots=True)
 class _FixtureOutcome:
     """What the import did with one fixture file, and the settled fixture it refused to overwrite."""
@@ -440,16 +471,30 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
     """
     directory = airport_dir(airport)
     config = load_worksheets(directory / WORKSHEETS_FILE)
-    sop = load_sop(directory / SOP_FILE)
+    inputs = load_airport(directory)
     rnav = rnav_suffixes(load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE))
     cache = cache_dir()
-    classes = designator_classes(fetch_aircraft_specs(cache, force=force), config.type_aliases)
+    specs = fetch_aircraft_specs(cache, force=force)
+    classes = designator_classes(specs, config.type_aliases)
+    wake_categories = designator_wtcs(specs, config.type_aliases)
+    sid_runways = published_sid_runways(airport, inputs.overrides)
     counts: Counter[str] = Counter()
     refused: list[SettledFixture] = []
     print(f"{airport}: {len(config.worksheets)} worksheet(s) -> {fixture_dir(airport)}")
     for worksheet in config.worksheets:
         text = fetch_worksheet_text(worksheet, cache, force=force)
-        fixtures = sheet_fixtures(worksheet, text, icao=airport, sop=sop, rnav=rnav, type_aliases=config.type_aliases, aircraft_classes=classes)
+        fixtures = sheet_fixtures(
+            worksheet,
+            text,
+            icao=airport,
+            sop=inputs.sop,
+            rnav=rnav,
+            type_aliases=config.type_aliases,
+            aircraft_classes=classes,
+            wake_categories=wake_categories,
+            cargo_airlines=inputs.routes.cargo_airlines,
+            sid_runways=sid_runways,
+        )
         results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in fixtures.items()]
         for result in results:
             if result.refused is not None:

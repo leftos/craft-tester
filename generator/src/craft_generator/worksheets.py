@@ -15,9 +15,15 @@ the validation loop (see ``docs/ARCHITECTURE.md``, fixture lifecycle). A fixture
 settled is never overwritten by a later import; :func:`settled_fixture_at` is the guard. Two scenario fields the
 worksheets do not state are filled here and recorded in ``source.note``: the departure runway, which
 is the one the configuration defaults the plan's aircraft class to (``default_for_classes`` in
-``sop.yaml``), else the one the direction the filed route leaves on prefers
-(``direction_runway_preference``), and falls back to the first runway the configuration publishes;
-and - on the amendment sheets, which print no squawk - a code counted up from 4601 in octal.
+``sop.yaml``), else the one the plan is taken to have requested (``on_request_for``), else the one
+the direction the filed route leaves on prefers (``direction_runway_preference``), and falls back to
+the first runway the configuration publishes; and - on the amendment sheets, which print no squawk -
+a code counted up from 4601 in octal.
+
+The request step is SOP 2-1 e: oceanic, Far East and cargo flights need the 28s for performance and
+may be given them while runway 01 is the advertised departure runway. A sheet prints no request, so
+the importer reads one off the flight plan - a cargo, heavy or oceanic flight that filed a procedure
+published for that runway family alone is asking for it.
 """
 
 import json
@@ -31,7 +37,17 @@ from craft_generator.aircraft_classes import DESIGNATOR_FIELD, ENGINE_TYPE_FIELD
 from craft_generator.emit import repo_root
 from craft_generator.http import fetch_bytes
 from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH
-from craft_generator.sop.model import AircraftClass, EquipmentSuffix, GateDirection, Gates, RunwayConfig, SopData, Worksheet
+from craft_generator.sop.model import (
+    AircraftClass,
+    DepartureRunway,
+    EquipmentSuffix,
+    GateDirection,
+    Gates,
+    OnRequestKind,
+    RunwayConfig,
+    SopData,
+    Worksheet,
+)
 
 Fixture = dict[str, Any]
 
@@ -71,7 +87,11 @@ PLAN_LABELS = (
 REQUIRED_LABELS = (CALLSIGN_LABEL, TYPE_LABEL, DEPART_LABEL, ARRIVE_LABEL, CRUISE_LABEL, SQUAWK_LABEL, ROUTE_LABEL)
 FORM_BUTTONS = frozenset({"Amend Plan", "Refresh Plan", "Assign Squawk", "Plot"})
 
+WTC_FIELD = "WTC"
+HEAVY_WAKE_CATEGORY = "H"
+
 _TYPE_PATTERN = re.compile(r"^(?:(?P<weight>[HJ])/)?(?P<designator>[A-Z0-9]{2,4})(?:/(?P<suffix>[A-Z]))?$")
+_AIRLINE_CALLSIGN = re.compile(r"^(?P<code>[A-Z]{3})\d")
 _SID_TOKEN = re.compile(r"^[A-Z]{3,5}\d$")
 _AIRWAY_TOKEN = re.compile(r"^[JVQT]\d+$")
 _SQUAWK_PATTERN = re.compile(r"^[0-7]{4}$")
@@ -397,14 +417,54 @@ def designator_classes(specs: Sequence[Mapping[str, Any]], type_aliases: Mapping
     return classes
 
 
+def designator_wtcs(specs: Sequence[Mapping[str, Any]], type_aliases: Mapping[str, str]) -> dict[str, str]:
+    """Map every designator a sheet may file to the wake turbulence category of its vNAS record.
+
+    The map is keyed the way :func:`designator_classes` keys its own, so a type the sheets spell
+    their own way carries the category of the designator ``type_aliases`` reads it as. The category
+    is what makes a plan a heavy: the sheets print the ``H/`` prefix, but the fixture records the
+    bare designator, so the weight of a plan is read from the specs rather than from the sheet.
+
+    Args:
+        specs: The records from :func:`craft_generator.aircraft_classes.fetch_aircraft_specs`.
+        type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
+
+    Returns:
+        The wake turbulence category of each designator, e.g. ``H`` for ``A306``, keyed by ICAO
+        designator.
+    """
+    categories: dict[str, str] = {}
+    for record in specs:
+        designator = record.get(DESIGNATOR_FIELD)
+        category = record.get(WTC_FIELD)
+        if isinstance(designator, str) and isinstance(category, str) and designator not in categories:
+            categories[designator] = category
+    for filed, read_as in type_aliases.items():
+        category = categories.get(read_as)
+        if category is not None:
+            categories[filed] = category
+    return categories
+
+
+@dataclass(frozen=True, slots=True)
+class OnRequestRequest:
+    """The request a plan is read as making: the kind of flight it is and the procedure it filed."""
+
+    kind: OnRequestKind
+    sid: str
+    family: str
+
+
 @dataclass(frozen=True, slots=True)
 class RunwayChoice:
     """The departure runway one plan's fixture carries and what chose it.
 
-    Exactly one of ``direction`` and ``default_for_class`` is set when the configuration states the
-    runway; both are ``None`` on the fallback to the configuration's first departure runway.
+    ``default_for_class`` is set when the class default chose the runway, ``on_request`` when the
+    plan asked for it, and ``direction`` when the direction preference chose it - which the request
+    leaves in place, because the preference is what splits the requested family into one runway. All
+    three are ``None`` on the fallback to the configuration's first departure runway.
     ``unclassified_designator`` names the filed type when the vNAS specs do not cover it, so the
-    class step was skipped.
+    class and request steps were skipped.
     """
 
     config_id: str
@@ -412,6 +472,7 @@ class RunwayChoice:
     direction: GateDirection | None
     default_for_class: AircraftClass | None = None
     unclassified_designator: str | None = None
+    on_request: OnRequestRequest | None = None
 
 
 def sheet_runway_config(config_id: str | None, configs: Sequence[RunwayConfig], where: str) -> RunwayConfig:
@@ -440,6 +501,21 @@ def sheet_runway_config(config_id: str | None, configs: Sequence[RunwayConfig], 
     return config
 
 
+def filed_sid_token(route: str) -> str | None:
+    """Return the procedure a filed route names first, whether or not it is the assigned one.
+
+    Args:
+        route: The route as the sheet files it, e.g. ``WESLA5 NTELL``.
+
+    Returns:
+        The leading procedure token, or ``None`` when the route opens with a fix or an airway.
+    """
+    tokens = route.split()
+    if not tokens or _SID_TOKEN.fullmatch(tokens[0]) is None or _AIRWAY_TOKEN.fullmatch(tokens[0]) is not None:
+        return None
+    return tokens[0]
+
+
 def exit_fix(route: str, faa: str) -> str | None:
     """Return the fix a filed route leaves the terminal on, as ``web/src/rules/route.ts`` reads it.
 
@@ -455,7 +531,7 @@ def exit_fix(route: str, faa: str) -> str | None:
         route holds no such token.
     """
     tokens = route.split()
-    if tokens and _SID_TOKEN.fullmatch(tokens[0]) is not None and _AIRWAY_TOKEN.fullmatch(tokens[0]) is None:
+    if filed_sid_token(route) is not None:
         tokens = tokens[1:]
     if tokens and tokens[0] == faa:
         tokens = tokens[1:]
@@ -478,39 +554,123 @@ def _class_default(aircraft_class: AircraftClass, config: RunwayConfig) -> str |
     return None
 
 
-def departure_runway(row: PlanRow, config: RunwayConfig, sop: SopData, *, aircraft_classes: Mapping[str, AircraftClass]) -> RunwayChoice:
+def _preferred_runway(sop: SopData, config: RunwayConfig, family: str, direction: GateDirection | None) -> str | None:
+    if direction is None:
+        return None
+    return sop.direction_runway_preference.get(config.plan, {}).get(direction, {}).get(family)
+
+
+def flight_kinds(
+    row: PlanRow, direction: GateDirection | None, *, cargo_airlines: Sequence[str], wake_categories: Mapping[str, str]
+) -> tuple[OnRequestKind, ...]:
+    """Return the kinds of flight one filed plan is, as ``on_request_for`` in ``sop.yaml`` names them.
+
+    Args:
+        row: The filed plan.
+        direction: The gate direction the filed route leaves on, or ``None`` when its exit fix
+            belongs to no gate.
+        cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
+        wake_categories: The wake turbulence category of each designator, from
+            :func:`designator_wtcs`.
+
+    Returns:
+        ``cargo`` when the callsign is an airline code of ``cargo_airlines``, ``heavy`` when the
+        vNAS specs put the type in wake category H, and ``oceanic`` when the route leaves on the
+        oceanic gate; empty when the plan is none of the three.
+    """
+    callsign = _AIRLINE_CALLSIGN.match(row.callsign)
+    kinds: list[OnRequestKind] = []
+    if callsign is not None and callsign.group("code") in cargo_airlines:
+        kinds.append("cargo")
+    if wake_categories.get(row.designator) == HEAVY_WAKE_CATEGORY:
+        kinds.append("heavy")
+    if direction == "oceanic":
+        kinds.append("oceanic")
+    return tuple(kinds)
+
+
+def _on_request_kind(runway: DepartureRunway, family: str, kinds: Sequence[OnRequestKind], aircraft_class: AircraftClass) -> OnRequestKind | None:
+    if runway.runway[:RUNWAY_FAMILY_LENGTH] != family or aircraft_class not in runway.classes:
+        return None
+    return next((kind for kind in runway.on_request_for if kind in kinds), None)
+
+
+def _requested_runway(
+    row: PlanRow,
+    config: RunwayConfig,
+    sop: SopData,
+    *,
+    kinds: Sequence[OnRequestKind],
+    aircraft_class: AircraftClass,
+    sid_runways: Mapping[str, Sequence[str]],
+    direction: GateDirection | None,
+) -> RunwayChoice | None:
+    sid = filed_sid_token(row.route)
+    families = {runway[:RUNWAY_FAMILY_LENGTH] for runway in sid_runways.get(sid, ())} if sid is not None else set()
+    if not kinds or sid is None or len(families) != 1:
+        return None
+    family = families.pop()
+    for runway in config.departure_runways:
+        kind = _on_request_kind(runway, family, kinds, aircraft_class)
+        if kind is None:
+            continue
+        requested = _preferred_runway(sop, config, family, direction) or runway.runway
+        return RunwayChoice(config.id, requested, direction, on_request=OnRequestRequest(kind, sid, family))
+    return None
+
+
+def departure_runway(
+    row: PlanRow,
+    config: RunwayConfig,
+    sop: SopData,
+    *,
+    aircraft_classes: Mapping[str, AircraftClass],
+    wake_categories: Mapping[str, str],
+    cargo_airlines: Sequence[str],
+    sid_runways: Mapping[str, Sequence[str]],
+) -> RunwayChoice:
     """Return the departure runway one filed plan gets in the sheet's runway configuration.
 
     The worksheets state the configuration but not the runway, so the runway comes from the plan.
     A configuration that defaults the plan's aircraft class to a runway (``default_for_classes`` in
-    ``sop.yaml``) settles it first, e.g. the GA departures off 28R in 28/01. Otherwise the runway
-    follows the direction the filed route leaves on: ``direction_runway_preference`` splits the
-    parallel runways of the configuration's plan by gate direction, which is what puts a northbound
-    plan on the right-turn runway. A route whose exit fix belongs to no gate, and a direction the
-    preference table says nothing about, fall back to the first departure runway the configuration
-    publishes; so does a plan whose designator the vNAS specs do not cover, which has no class.
+    ``sop.yaml``) settles it first, e.g. the GA departures off 28R in 28/01. Next comes the request
+    SOP 2-1 e allows: a cargo, heavy or oceanic plan that filed a procedure published for one runway
+    family alone is read as asking for the configuration's ``on_request_for`` runway of that family,
+    e.g. a freighter filing WESLA# in 28/01, where WESLA# is a 28-only procedure. Otherwise the
+    runway follows the direction the filed route leaves on: ``direction_runway_preference`` splits
+    the parallel runways of the configuration's plan by gate direction, which is what puts a
+    northbound plan on the right-turn runway, and it splits the requested family the same way. A
+    route whose exit fix belongs to no gate, and a direction the preference table says nothing
+    about, fall back to the first departure runway the configuration publishes; so does a plan whose
+    designator the vNAS specs do not cover, which has neither class nor wake category.
 
     Args:
         row: The filed plan.
         config: The sheet's runway configuration from :func:`sheet_runway_config`.
         sop: The transcribed SOP, for the gates, the preference table and the airport's navaid.
         aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
+        wake_categories: The wake turbulence category of each designator, from
+            :func:`designator_wtcs`.
+        cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
+        sid_runways: The runways each procedure is published for, keyed by CIFP id.
 
     Returns:
-        The runway and what chose it: the defaulted class, the gate direction, or neither on the
-        fallback.
+        The runway and what chose it: the defaulted class, the request, the gate direction, or none
+        of the three on the fallback.
     """
     first = config.departure_runways[0].runway
     aircraft_class = aircraft_classes.get(row.designator)
+    direction = _gate_direction(exit_fix(row.route, sop.airport.faa), sop.gates)
     if aircraft_class is not None:
         default = _class_default(aircraft_class, config)
         if default is not None:
             return RunwayChoice(config.id, default, None, default_for_class=aircraft_class)
+        kinds = flight_kinds(row, direction, cargo_airlines=cargo_airlines, wake_categories=wake_categories)
+        requested = _requested_runway(row, config, sop, kinds=kinds, aircraft_class=aircraft_class, sid_runways=sid_runways, direction=direction)
+        if requested is not None:
+            return requested
     unclassified = row.designator if aircraft_class is None else None
-    direction = _gate_direction(exit_fix(row.route, sop.airport.faa), sop.gates)
-    preferred = (
-        None if direction is None else sop.direction_runway_preference.get(config.plan, {}).get(direction, {}).get(first[:RUNWAY_FAMILY_LENGTH])
-    )
+    preferred = _preferred_runway(sop, config, first[:RUNWAY_FAMILY_LENGTH], direction)
     if preferred is None:
         return RunwayChoice(config.id, first, None, unclassified_designator=unclassified)
     return RunwayChoice(config.id, preferred, direction, unclassified_designator=unclassified)
@@ -521,15 +681,22 @@ def _squawk_for(row: PlanRow, index: int) -> str:
 
 
 def _chose_the_runway(choice: RunwayChoice) -> str:
+    """Return the reason clause of the note, opened by the punctuation that introduces it."""
+    if choice.on_request is not None:
+        request = choice.on_request
+        return (
+            f": a {request.kind} flight filing {request.sid}, published for the {request.family}s only, "
+            "is treated as requesting them (SOP 2-1 e, on_request_for)"
+        )
     if choice.default_for_class is not None:
-        return f"the runway configuration {choice.config_id} defaults class {choice.default_for_class} to it (default_for_classes)"
+        return f", the runway configuration {choice.config_id} defaults class {choice.default_for_class} to it (default_for_classes)"
     if choice.direction is None:
-        return f"the first runway configuration {choice.config_id} departs"
-    return f"the runway configuration {choice.config_id} departs {choice.direction} per direction_runway_preference"
+        return f", the first runway configuration {choice.config_id} departs"
+    return f", the runway configuration {choice.config_id} departs {choice.direction} per direction_runway_preference"
 
 
 def _note(worksheet: Worksheet, choice: RunwayChoice) -> str:
-    note = f"{worksheet.title}; the sheet states no departure runway, so this is {choice.runway}, {_chose_the_runway(choice)}, pending validation"
+    note = f"{worksheet.title}; the sheet states no departure runway, so this is {choice.runway}{_chose_the_runway(choice)}, pending validation"
     if choice.unclassified_designator is not None:
         note += f"; type {choice.unclassified_designator} is not in the vNAS specs, so the class default was not applied"
     return note
@@ -661,6 +828,9 @@ def sheet_fixtures(
     rnav: frozenset[str],
     type_aliases: Mapping[str, str],
     aircraft_classes: Mapping[str, AircraftClass],
+    wake_categories: Mapping[str, str],
+    cargo_airlines: Sequence[str],
+    sid_runways: Mapping[str, Sequence[str]],
 ) -> dict[Path, Fixture]:
     """Parse one worksheet and build the fixture of every flight plan on it.
 
@@ -672,6 +842,10 @@ def sheet_fixtures(
         rnav: The equipment suffixes that make an aircraft RNAV capable.
         type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
         aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
+        wake_categories: The wake turbulence category of each designator, from
+            :func:`designator_wtcs`.
+        cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
+        sid_runways: The runways each procedure is published for, keyed by CIFP id.
 
     Returns:
         One fixture per flight plan, keyed by the file it is written to, in sheet order.
@@ -690,6 +864,14 @@ def sheet_fixtures(
             raise ValueError(
                 f"{worksheet.title}: two flight plans are filed as {row.callsign!r}, so they name one fixture file; the sheet is ambiguous"
             )
-        runway = departure_runway(row, config, sop, aircraft_classes=aircraft_classes)
+        runway = departure_runway(
+            row,
+            config,
+            sop,
+            aircraft_classes=aircraft_classes,
+            wake_categories=wake_categories,
+            cargo_airlines=cargo_airlines,
+            sid_runways=sid_runways,
+        )
         fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, rnav=rnav, type_aliases=type_aliases)
     return fixtures

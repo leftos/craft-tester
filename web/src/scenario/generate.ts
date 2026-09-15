@@ -5,6 +5,7 @@ import type {
   Direction,
   FleetEntry,
   RouteLibraryEntry,
+  RunwayAssignment,
   RunwayConfig,
   Scenario,
 } from '@/data/schema.ts';
@@ -85,6 +86,15 @@ const REGISTRATION_LETTERS = [...'ABCDEFGHJKLMNPQRSTUVWXYZ'];
 /** How often a scenario presents every operational notice as cancelled. */
 const NOTICES_OFF_CHANCE = 0.2;
 
+/**
+ * How often a flight that may ask for an on-request runway is drawn as having asked for it.
+ *
+ * SOP 2-1 e lets oceanic, Far East and cargo flights have the 28s while the 01s are the advertised
+ * departure runway, but the request is the pilot's to make, so half the drilling is the flight that
+ * takes the advertised runway like everyone else.
+ */
+const ON_REQUEST_CHANCE = 0.5;
+
 /** How many scenarios may be drawn before the generator gives up on the airport data. */
 const MAX_ATTEMPTS = 50;
 
@@ -160,18 +170,66 @@ function pickTime(rng: Rng): { localTime: string; dayOfWeek: DayOfWeek } {
   return { localTime: `${hours}${minutes}`, dayOfWeek: rng.pick(DAYS_OF_WEEK) };
 }
 
-/** The departure runways of a configuration the class may use, grouped by runway family. */
+/**
+ * The departure runways of a configuration the class may use unasked, grouped by runway family.
+ *
+ * A row with an `onRequestFor` list is left out: that runway is the exception the SOP issues to a
+ * flight that asks for it, which `onRequestRunway` draws, not one of the runways in normal use.
+ */
 function runwaysByFamily(
   config: RunwayConfig,
   aircraftClass: AircraftClass,
 ): Map<string, string[]> {
   const families = new Map<string, string[]>();
   for (const assignment of config.departureRunways) {
-    if (!assignment.classes.includes(aircraftClass)) continue;
+    if (!assignment.classes.includes(aircraftClass) || assignment.onRequestFor.length > 0) continue;
     const family = assignment.runway.slice(0, 2);
     families.set(family, [...(families.get(family) ?? []), assignment.runway]);
   }
   return families;
+}
+
+/** The kinds of flight an `onRequestFor` list names. */
+type OnRequestKind = RunwayAssignment['onRequestFor'][number];
+
+/** Which of those kinds this flight is: a cargo airline, a heavy, or bound out the oceanic gate. */
+function flightKinds(
+  fleet: FleetEntry,
+  cargoAirlines: readonly string[],
+  direction: Direction | undefined,
+): OnRequestKind[] {
+  const kinds: OnRequestKind[] = [];
+  if (fleet.airlines.some((airline) => cargoAirlines.includes(airline))) kinds.push('cargo');
+  if (fleet.wtc === 'H') kinds.push('heavy');
+  if (direction === 'oceanic') kinds.push('oceanic');
+  return kinds;
+}
+
+/**
+ * The runway this flight could ask for in the configuration, e.g. the 28s of 28/01 for a freighter.
+ *
+ * The direction preference splits the requested family the way it splits any other, so the request
+ * settles the family and the direction of the first turn settles the runway within it.
+ */
+function onRequestRunway(
+  airport: AirportData,
+  config: RunwayConfig,
+  fleet: FleetEntry,
+  direction: Direction | undefined,
+): string | undefined {
+  const kinds = flightKinds(fleet, airport.routeLibrary.cargoAirlines, direction);
+  if (kinds.length === 0) return undefined;
+  const assignment = config.departureRunways.find(
+    (row) =>
+      row.classes.includes(fleet.class) && row.onRequestFor.some((kind) => kinds.includes(kind)),
+  );
+  if (assignment === undefined) return undefined;
+  const family = assignment.runway.slice(0, 2);
+  const preferred =
+    direction === undefined
+      ? undefined
+      : airport.directionRunwayPreference[config.plan]?.[direction]?.[family];
+  return preferred ?? assignment.runway;
 }
 
 /** The runway a configuration departs a class from by default, e.g. the GA 28R in 28/01. */
@@ -188,25 +246,28 @@ function classDefaultRunway(
  * Draws the departure runway: a family the class may use, then the runway that direction departs.
  *
  * A configuration that defaults the class to a runway (`defaultForClasses`) settles it before any
- * draw, so those aircraft never take the direction-of-turn split. Otherwise
- * `directionRunwayPreference` holds the SOP's split, e.g. SFOW northbound off the 01s departing 1R
- * and southbound 1L; a family the table has no entry for falls back to the first runway of it.
+ * draw, so those aircraft never take the direction-of-turn split. A flight that may ask for an
+ * `onRequestFor` runway is drawn as asking for it `ON_REQUEST_CHANCE` of the time, and takes the
+ * runways in normal use the rest. Otherwise `directionRunwayPreference` holds the SOP's split, e.g.
+ * SFOW northbound off the 01s departing 1R and southbound 1L; a family the table has no entry for
+ * falls back to the first runway of it.
  */
 function pickRunway(
   rng: Rng,
   airport: AirportData,
   config: RunwayConfig,
-  aircraftClass: AircraftClass,
+  fleet: FleetEntry,
   direction: Direction | undefined,
 ): string {
-  const families = runwaysByFamily(config, aircraftClass);
-  if (families.size === 0) {
-    throw new Error(
-      `configuration ${config.id} has no departure runway for class ${aircraftClass}`,
-    );
-  }
-  const defaulted = classDefaultRunway(config, aircraftClass);
+  const defaulted = classDefaultRunway(config, fleet.class);
   if (defaulted !== undefined) return defaulted;
+  const requested = onRequestRunway(airport, config, fleet, direction);
+  if (requested !== undefined && rng.next() < ON_REQUEST_CHANCE) return requested;
+  const families = runwaysByFamily(config, fleet.class);
+  if (families.size === 0) {
+    if (requested !== undefined) return requested;
+    throw new Error(`configuration ${config.id} has no departure runway for class ${fleet.class}`);
+  }
   const family = rng.pick([...families.keys()]);
   const preferred =
     direction === undefined
@@ -265,13 +326,7 @@ export function drawScenario(rng: Rng, airport: AirportData): GeneratedScenario 
   const route = rng.pick(airport.routeLibrary.routes);
   const fleet = pickFleet(rng, airport, route);
   const suffix = rng.pick(fleet.suffixes);
-  const runway = pickRunway(
-    rng,
-    airport,
-    config,
-    fleet.class,
-    directionOf(route.exitFix, airport.gates),
-  );
+  const runway = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
   const time = pickTime(rng);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const filed: Scenario = {

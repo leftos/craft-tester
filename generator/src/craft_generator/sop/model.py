@@ -34,6 +34,7 @@ NoticeEffectKind = Literal["sid_off"]
 ExpectAltitudePolicy = Literal["always", "unless_chart_publishes_it", "never"]
 WorksheetKind = Literal["phraseology", "amendment"]
 PhraseologyReading = Literal["abbreviated", "full_route"]
+OnRequestKind = Literal["cargo", "heavy", "oceanic"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
 TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr")
@@ -49,6 +50,7 @@ EXPECT_ALTITUDE_POLICIES: tuple[ExpectAltitudePolicy, ...] = ("always", "unless_
 TOP_ALTITUDE_KINDS: tuple[TopAltitudeKind, ...] = ("published", "assigned_by_atc", "none")
 WORKSHEET_KINDS: tuple[WorksheetKind, ...] = ("phraseology", "amendment")
 PHRASEOLOGY_READINGS: tuple[PhraseologyReading, ...] = ("abbreviated", "full_route")
+ON_REQUEST_KINDS: tuple[OnRequestKind, ...] = ("cargo", "heavy", "oceanic")
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,11 +91,15 @@ class DepartureRunway:
 
     ``default_for_classes`` names the classes this runway is the default for in the configuration,
     ahead of the direction-of-turn preference; it is empty on a row that is no default.
+    ``on_request_for`` names the kinds of flight the runway is issued to only on request, after the
+    class default and ahead of the direction preference; it is empty on a row that is a normal
+    choice, and a row that is a class default may not carry it.
     """
 
     runway: str
     classes: tuple[AircraftClass, ...]
     default_for_classes: tuple[AircraftClass, ...]
+    on_request_for: tuple[OnRequestKind, ...]
     note: str | None
 
 
@@ -341,10 +347,15 @@ class RouteEntry:
 
 @dataclass(frozen=True, slots=True)
 class RouteLibrary:
-    """``routes.yaml``: the destinations, fleet, telephony and filed routes scenarios are built from."""
+    """``routes.yaml``: the destinations, fleet, telephony and filed routes scenarios are built from.
+
+    ``cargo_airlines`` are the ICAO codes of ``telephony`` that fly all-cargo, which is what makes a
+    flight of theirs a cargo flight for the runway rules.
+    """
 
     destinations: tuple[Destination, ...]
     telephony: dict[str, str]
+    cargo_airlines: tuple[str, ...]
     fleet: tuple[FleetEntry, ...]
     routes: tuple[RouteEntry, ...]
 

@@ -50,17 +50,23 @@ destinations:
 telephony:
   AAL: American
   AAY: Allegiant
+  ABX: Abex
   ACA: Air Canada
   ASA: Alaska
+  ATN: Air Transport
+  CKS: Connie
+  CLX: Cargolux
   DAL: Delta
   EJA: ExecJet
   FDX: FedEx
   FFT: Frontier Flight
+  GTI: Giant
   JBU: JetBlue
   JSX: BigStripe
   KAL: Korean Air
   LXJ: Flexjet
   NAX: Nor Shuttle
+  NCA: Nippon Cargo
   NKS: Spirit Wings
   QXE: Horizon
   SKW: SkyWest
@@ -70,6 +76,12 @@ telephony:
   UPS: UPS
   VOI: Volaris
   XOJ: XOJet
+
+# ICAO codes of the all-cargo carriers among the telephony entries: a flight of one of these is a cargo
+# flight, which is what SOP 2-1 e sends off the 28s for performance when runway 01 is the advertised
+# departure runway. Callsigns from FAA JO 7340.2 chapter 3: Giant, Abex, Air Transport, Cargolux,
+# Connie, Nippon Cargo.
+cargo_airlines: [FDX, UPS, GTI, ABX, ATN, CLX, CKS, NCA]
 
 # `class` is asserted against vNAS EngineType at build time. `ceiling_feet` is the certified service ceiling
 # used by the amendment-mode altitude check. `suffixes` are the equipment suffixes this type normally files.

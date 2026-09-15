@@ -813,6 +813,12 @@
     "routeLibrary": {
       "additionalProperties": false,
       "properties": {
+        "cargoAirlines": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "destinations": {
           "items": {
             "additionalProperties": false,
@@ -957,6 +963,7 @@
       "required": [
         "destinations",
         "telephony",
+        "cargoAirlines",
         "fleet",
         "routes"
       ],
@@ -1001,6 +1008,17 @@
                 "note": {
                   "type": "string"
                 },
+                "onRequestFor": {
+                  "items": {
+                    "enum": [
+                      "cargo",
+                      "heavy",
+                      "oceanic"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "runway": {
                   "type": "string"
                 }
@@ -1008,7 +1026,8 @@
               "required": [
                 "runway",
                 "classes",
-                "defaultForClasses"
+                "defaultForClasses",
+                "onRequestFor"
               ],
               "type": "object"
             },

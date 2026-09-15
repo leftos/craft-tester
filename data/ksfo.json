@@ -1107,6 +1107,16 @@
     }
   },
   "routeLibrary": {
+    "cargoAirlines": [
+      "FDX",
+      "UPS",
+      "GTI",
+      "ABX",
+      "ATN",
+      "CLX",
+      "CKS",
+      "NCA"
+    ],
     "destinations": [
       {
         "artcc": "ZSE",
@@ -2191,17 +2201,23 @@
     "telephony": {
       "AAL": "American",
       "AAY": "Allegiant",
+      "ABX": "Abex",
       "ACA": "Air Canada",
       "ASA": "Alaska",
+      "ATN": "Air Transport",
+      "CKS": "Connie",
+      "CLX": "Cargolux",
       "DAL": "Delta",
       "EJA": "ExecJet",
       "FDX": "FedEx",
       "FFT": "Frontier Flight",
+      "GTI": "Giant",
       "JBU": "JetBlue",
       "JSX": "BigStripe",
       "KAL": "Korean Air",
       "LXJ": "Flexjet",
       "NAX": "Nor Shuttle",
+      "NCA": "Nippon Cargo",
       "NKS": "Spirit Wings",
       "QXE": "Horizon",
       "SKW": "SkyWest",
@@ -2227,6 +2243,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "01L"
         },
         {
@@ -2236,6 +2253,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "01R"
         }
       ],
@@ -2256,6 +2274,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "01L"
         },
         {
@@ -2265,6 +2284,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "01R"
         },
         {
@@ -2272,7 +2292,12 @@
             "J"
           ],
           "defaultForClasses": [],
-          "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e)",
+          "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)",
+          "onRequestFor": [
+            "cargo",
+            "heavy",
+            "oceanic"
+          ],
           "runway": "28L"
         },
         {
@@ -2280,7 +2305,12 @@
             "J"
           ],
           "defaultForClasses": [],
-          "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e)",
+          "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)",
+          "onRequestFor": [
+            "cargo",
+            "heavy",
+            "oceanic"
+          ],
           "runway": "28R"
         },
         {
@@ -2293,6 +2323,7 @@
             "T"
           ],
           "note": "GA up to light jets depart 28R at intersection Echo, a short taxi from the north ramp with enough runway remaining (user review 2026-09-15, N483KA); jets stay on the 01s until a GA flag exists on the fleet",
+          "onRequestFor": [],
           "runway": "28R"
         }
       ],
@@ -2313,6 +2344,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "28L"
         },
         {
@@ -2322,6 +2354,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "28R"
         }
       ],
@@ -2342,6 +2375,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "28L"
         },
         {
@@ -2351,6 +2385,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "28R"
         }
       ],
@@ -2371,6 +2406,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "10L"
         },
         {
@@ -2380,6 +2416,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "10R"
         }
       ],
@@ -2400,6 +2437,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "10L"
         },
         {
@@ -2409,6 +2447,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "10R"
         }
       ],
@@ -2429,6 +2468,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "19L"
         },
         {
@@ -2438,6 +2478,7 @@
             "J"
           ],
           "defaultForClasses": [],
+          "onRequestFor": [],
           "runway": "19R"
         }
       ],

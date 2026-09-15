@@ -48,7 +48,9 @@ const minimalAirportData: AirportData = {
       name: 'Landing runways 28, departing runways 01',
       plan: 'SFOW',
       arrivalRunways: ['28L', '28R'],
-      departureRunways: [{ runway: '01R', classes: ['P', 'T', 'J'], defaultForClasses: [] }],
+      departureRunways: [
+        { runway: '01R', classes: ['P', 'T', 'J'], defaultForClasses: [], onRequestFor: [] },
+      ],
     },
   ],
   departureSectors: [{ id: 'richmond', name: 'NorCal Richmond', frequency: '120.9' }],
@@ -112,7 +114,7 @@ const minimalAirportData: AirportData = {
   loaRules: [],
   notices: [],
   aircraftClasses: { B738: 'J' },
-  routeLibrary: { destinations: [], telephony: {}, fleet: [], routes: [] },
+  routeLibrary: { destinations: [], telephony: {}, cargoAirlines: [], fleet: [], routes: [] },
 };
 
 const minimalFixture: Fixture = {

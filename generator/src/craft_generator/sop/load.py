@@ -30,6 +30,7 @@ from craft_generator.sop.model import (
     GATE_DIRECTIONS,
     LOA_RULE_KIND_NAMES,
     NOTICE_EFFECT_KINDS,
+    ON_REQUEST_KINDS,
     PHRASEOLOGY_READINGS,
     ROUTE_PHRASINGS,
     TEC_ROUTE_KINDS,
@@ -343,9 +344,16 @@ def _departure_runway(row: _Row) -> DepartureRunway:
         runway=row.text("runway"),
         classes=row.choices("classes", AIRCRAFT_CLASSES),
         default_for_classes=row.optional_choices("default_for_classes", AIRCRAFT_CLASSES),
+        on_request_for=row.optional_choices("on_request_for", ON_REQUEST_KINDS),
         note=row.optional_text("note"),
     )
     row.finish()
+    if runway.on_request_for and runway.default_for_classes:
+        raise ValueError(
+            f"{row.where}: runway {runway.runway!r} is the default for class(es) {list(runway.default_for_classes)} and also "
+            f"on request for {list(runway.on_request_for)}; a runway is either the normal choice of a class or an exception it is "
+            "asked for, so split the two into separate rows"
+        )
     return runway
 
 
@@ -620,8 +628,9 @@ def load_sop(path: Path) -> SopData:
         The transcribed SOP.
 
     Raises:
-        ValueError: The file is not a YAML mapping, carries an unknown or mistyped key, or holds a
-            rule whose sector, runway configuration, noise window or runway family does not exist.
+        ValueError: The file is not a YAML mapping, carries an unknown or mistyped key, holds a rule
+            whose sector, runway configuration, noise window or runway family does not exist, or
+            holds a departure runway that is both a class default and on request.
     """
     where = _where(path)
     sop = _sop_data(_Row(where, _load_yaml_mapping(path, where)))
@@ -758,6 +767,12 @@ def _check_routes(routes: RouteLibrary, where: str) -> None:
         if route.destination not in known:
             at = f"{where} routes[{route.exit_fix} -> {route.destination}]"
             raise ValueError(f"{at}: destination {route.destination!r} is not in `destinations`; add it there first")
+    for code in routes.cargo_airlines:
+        if code not in routes.telephony:
+            raise ValueError(
+                f"{where} cargo_airlines: airline {code!r} is not in `telephony`, so nothing can read its callsign; "
+                f"add it there with its spoken name, or drop it here (telephony holds {sorted(routes.telephony)})"
+            )
 
 
 def load_routes(path: Path) -> RouteLibrary:
@@ -771,13 +786,15 @@ def load_routes(path: Path) -> RouteLibrary:
 
     Raises:
         ValueError: The file carries an unknown key, a malformed equipment suffix, an aircraft class
-            outside P/T/J, or a route filed to a destination the file does not list.
+            outside P/T/J, a route filed to a destination the file does not list, or a cargo airline
+            code `telephony` has no entry for.
     """
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))
     routes = RouteLibrary(
         destinations=tuple(_destination(child) for child in root.children("destinations")),
         telephony=_text_table(root.table("telephony"), f"{where}.telephony"),
+        cargo_airlines=root.optional_texts("cargo_airlines") or (),
         fleet=tuple(_fleet_entry(child) for child in root.children("fleet")),
         routes=tuple(_route_entry(child) for child in root.children("routes")),
     )

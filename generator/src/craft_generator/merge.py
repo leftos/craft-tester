@@ -192,6 +192,7 @@ def _departure_runway(runway: DepartureRunway) -> Document:
         "runway": runway.runway,
         "classes": list(runway.classes),
         "defaultForClasses": list(runway.default_for_classes),
+        "onRequestFor": list(runway.on_request_for),
     }
     return _with_optional(entry, note=runway.note)
 
@@ -379,6 +380,7 @@ def _route_library(inputs: BuildInputs) -> Document:
     return {
         "destinations": [_destination(destination, inputs.coordinates) for destination in routes.destinations],
         "telephony": dict(routes.telephony),
+        "cargoAirlines": list(routes.cargo_airlines),
         "fleet": [_fleet_entry(entry) for entry in routes.fleet],
         "routes": [_route_entry(route) for route in routes.routes],
     }
