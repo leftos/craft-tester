@@ -10,8 +10,32 @@ the OAK sources say and which new rule concepts they need before any YAML is wri
 | Oakland ATCT SOP v1.7, 18 pp | `https://oakartcc.org/controllers/file/1217f464-6766-11e9-8010-2a32edb55910`, sha256 `21f5fdfb40c879e7418e02339a41e48261975797505fc6b1ea76f0b409ab5935` | in `generator/cache/sop/21f5fdfb40c8.pdf`; text in `.tmp/oak-sop.txt` |
 | DP charts | charts API `apt=OAK`: 17 entries = 11 procedures + 6 `CONT.1` continuation sheets | PDFs cached under `generator/cache/pdfs/2609/00294*.PDF` |
 | CIFP | same FAACIFP18 as KSFO; `PD` records for KOAK not yet inspected | cached |
-| S1-OAK-2 and S1-OAK-5 worksheets | user's training account (oakartcc.org syllabus) | **needs Claude in Chrome; extension was not connected on 2026-09-15** |
-| OAK CBT deck(s) | training modules | not yet located |
+| S1-OAK-2 "Clean Clearances" (module `25b6cfd3-dba7-11ea-844f-2a32edb55910`) | worksheets: Phraseology Practice 1A (SFOW, abbreviated) `1mQd9jyb0jT18V4-zcT11sgQFqU-rqxpvYi7nLoEGnq4`, Phraseology Practice 2 (SFOW, full route) `1H-UOCLNPRNu6YyOlkyOOmMsxwjkT6KvxPZooum3ymd4` | text exports in `.tmp/oak-ws-*.txt`; same form shape as the SFO sheets |
+| S1-OAK-5 "Unclean Clearances" (module `fcec63e0-249a-11ed-8c3d-2a32edb55910`) | Amendment Practice 1A `1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU`, 2 `1sYysW7ZB6tge1fpAWgVEMGbGSMdGtO3fGb0Tgf8RMws`, 3 `1hxT2tZxNMJ8wsd2IaP1ui1zzercsL2gEBEGs8bvUSkg` | text exports fetched 2026-09-15 |
+| OAK CBT deck(s) | S1-OAK-1 (or -0) module, not yet opened | pending |
+
+## Training-module text worth encoding (S1-OAK-2 and S1-OAK-5, read 2026-09-15)
+
+- "If our fix is a VOR we should state it as such: RADAR VECTORS LINDEN VOR" (confirms the facility-word rule).
+- "Know when you can use CVS / CVS except maintain and when you can't."
+- Full routes: "a three letter identifier is a VOR, five letters is a fix, five letters and a number is an arrival; airways
+  are Q###, J###, V###, T### and act like freeways: we specify the onramp and the offramp; fix to fix we say direct".
+- Worked example: `NIMI5 OAK V244 ALTAM MOD NTELL` → "Nimitz Five departure, radar vectors to join Victor Two Fower
+  Fower, ALTAM, direct Modesto VOR, direct Intel (NTELL), direct". Notes: the airport's own navaid `OAK` is skipped and
+  the airway is the exit element (matches `radar_vectors_airway`); the offramp fix after the airway is spoken bare;
+  the airway digits are spoken digit by digit there ("two fower fower"), but the user pointed to FAA JO 7110.65 2-5-1,
+  which prescribes group form ("Victor Twelve", "J Five Thirty-Three", "Q One Forty-five", "Tango Two Ten"): the
+  module example is informal and the trainer keeps group form. 2-5-1 also fixes the letters: "Victor" as a word, "J"
+  and "Q" as letters, "Tango" phonetic; 2-5-2 lets a NAVAID in a routing be its name, ZOA practice adds the type.
+- Amended altitude: "Climb via SID except maintain FL190, expect amended flight level tree tree zero one zero minutes
+  after departure" (confirms the amended form with the minutes tail).
+- Amendment-mode scripts for the UI: "(callsign) filed altitude flight level three five zero inappropriate for direction
+  of flight, flight level three six zero available"; "(callsign) full route clearance available, advise when ready to
+  copy"; "(callsign) amend your clearance, climb and maintain seven thousand"; "(callsign) can you accept routing
+  Skyline One departure Avenal transition SADDE8 arrival?".
+- Common ZOA-SID to ZLA-STAR fix pairings for SoCal (route validation data): SUSEY EBAYE → BURGL; KTINA CISKO → RDHOT;
+  KAYEX LOSHN → CLASN; MCKEY/YYUNG → TILLT.
+- Tools trainees use to build routes: SkyVector, FlightAware, the ZOA Info Tool, SOP, LOAs.
 | TEC routes | `reference.oakartcc.org/routes?dep=OAK&dest=…` | not yet transcribed |
 | LOAs | ZOA–ZSE already in `loa.yaml` (shared concept, airport-specific file) | reuse |
 | notices | QUAKE SID off in OAKE (270 HDG RV first fix for 12/10 jets); SUNNE SID off in SFOW noise abatement (120 HDG RV first fix for jet 30 departures) | in MAIN.md |
