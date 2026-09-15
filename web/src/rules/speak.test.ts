@@ -14,12 +14,15 @@ import type { ResolvedClearance } from '@/rules/types.ts';
 const telephony = { UAL: 'United', SWA: 'Southwest', DAL: 'Delta', CKK: 'Cargo King' };
 
 const fixSpoken = {
-  ENI: 'Mendocino',
-  RBL: 'Red Bluff',
-  CCR: 'Concord',
-  OSI: 'Woodside',
-  OAK: 'Oakland',
-  SAC: 'Sacramento',
+  ENI: 'Mendocino VOR',
+  RBL: 'Red Bluff VOR',
+  CCR: 'Concord VOR',
+  OSI: 'Woodside VOR',
+  OAK: 'Oakland VOR',
+  SAC: 'Sacramento VOR',
+  SWR: 'Palisades VOR',
+  LMT: 'Klamath Falls VOR',
+  OED: 'Rogue Valley VOR',
 };
 
 describe('speakAltitude', () => {
@@ -79,8 +82,8 @@ describe('speakCallsign', () => {
 
 describe('speakFix', () => {
   it.each([
-    ['ENI', 'Mendocino'],
-    ['RBL', 'Red Bluff'],
+    ['ENI', 'Mendocino VOR'],
+    ['RBL', 'Red Bluff VOR'],
     ['DEDHD', 'Dedhd'],
     ['SSTIK', 'Sstik'],
     ['ILA', 'india lima alpha'],
@@ -99,7 +102,7 @@ describe('speakRouteToken', () => {
     ['HAWKZ7', 'Hawkz Seven arrival'],
     ['CCR2', 'Concord Two arrival'],
     ['DEDHD', 'Dedhd'],
-    ['ENI', 'Mendocino'],
+    ['ENI', 'Mendocino VOR'],
   ])('speaks %s as "%s"', (token, spoken) => {
     expect(speakRouteToken(token, fixSpoken)).toBe(spoken);
   });
@@ -132,11 +135,12 @@ function input(overrides: Partial<SpeakClearanceInput> = {}): SpeakClearanceInpu
     callsign: 'UAL320',
     clearance: clearance(),
     destinationSpoken: 'Seattle',
-    filedRoute: 'TRUKN2 DEDHD HAWKZ7 J70',
+    filedRoute: 'TRUKN2 DEDHD RBL HAWKZ7',
     airportFaa: 'SFO',
     squawk: '3342',
     telephony,
     fixSpoken,
+    sidTransitions: [{ fix: 'DEDHD', spoken: 'Dedhd' }],
     ...overrides,
   };
 }
@@ -156,9 +160,36 @@ describe('speakClearance', () => {
   it('reads the filed route in place of "then as filed"', () => {
     expect(speakClearance(input()).fullRoute).toBe(
       'United three twenty, cleared to Seattle airport, Trukn Two departure, Dedhd transition, ' +
-        'Hawkz Seven arrival, Jay seventy. Climb via SID. ' +
+        'direct Red Bluff VOR, Hawkz Seven arrival. Climb via SID. ' +
         'Departure frequency one two zero point niner, squawk three three four two.',
     );
+  });
+
+  it('speaks a transition by its published name and a vectored navaid by its facility', () => {
+    const vectored = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
+          route: { template: 'radar_vectors_fix', fix: 'ENI' },
+        }),
+        filedRoute: 'MOLEN9 ENI',
+        sidTransitions: [{ fix: 'ENI', spoken: 'Mendocino' }],
+      }),
+    );
+    const transitioned = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
+          route: { template: 'transition', fix: 'ENI' },
+        }),
+        filedRoute: 'MOLEN9 ENI',
+        sidTransitions: [{ fix: 'ENI', spoken: 'Mendocino' }],
+      }),
+    );
+    expect(vectored.fullRoute).toContain(
+      'Molen Nine departure, radar vectors Mendocino VOR, direct.',
+    );
+    expect(transitioned.fullRoute).toContain('Molen Nine departure, Mendocino transition, direct.');
   });
 
   it('speaks radar vectors to the fix for a radar-vector SID', () => {
@@ -172,10 +203,10 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.abbreviated).toContain(
-      'San Francisco Five departure, radar vectors Red Bluff, then as filed.',
+      'San Francisco Five departure, radar vectors Red Bluff VOR, then as filed.',
     );
     expect(spoken.fullRoute).toContain(
-      'San Francisco Five departure, radar vectors Red Bluff, Jay five, oscar echo delta.',
+      'San Francisco Five departure, radar vectors Red Bluff VOR, Jay five Rogue Valley VOR, direct.',
     );
   });
 
@@ -186,8 +217,8 @@ describe('speakClearance', () => {
         filedRoute: 'TRUKN2 J70',
       }),
     );
-    expect(spoken.abbreviated).toContain('Trukn Two departure, then as filed.');
-    expect(spoken.fullRoute).toContain('Trukn Two departure. Climb via SID.');
+    expect(spoken.abbreviated).toContain('Trukn Two departure, direct.');
+    expect(spoken.fullRoute).toContain('Trukn Two departure, direct. Climb via SID.');
   });
 
   it('speaks a climb via SID except maintain', () => {
@@ -231,14 +262,16 @@ describe('speakClearance', () => {
 
   it('drops a stale SID version from the full route', () => {
     const spoken = speakClearance(input({ filedRoute: 'TRUKN1 DEDHD J70' }));
-    expect(spoken.fullRoute).toContain('Trukn Two departure, Dedhd transition, Jay seventy.');
+    expect(spoken.fullRoute).toContain(
+      'Trukn Two departure, Dedhd transition, Jay seventy, direct.',
+    );
   });
 
   it('neither spells the filed procedure nor repeats the transition fix', () => {
     const spoken = speakClearance(input({ filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7' }));
     expect(spoken.fullRoute).toBe(
       'United three twenty, cleared to Seattle airport, Trukn Two departure, Dedhd transition, ' +
-        `Red Bluff, lima mike tango, Hawkz Seven arrival. ${closing}`,
+        `direct Red Bluff VOR, direct Klamath Falls VOR, Hawkz Seven arrival. ${closing}`,
     );
   });
 
@@ -255,8 +288,8 @@ describe('speakClearance', () => {
     );
     expect(spoken.fullRoute).toBe(
       'November four eight three kilo alpha, cleared to Seattle airport, ' +
-        'San Francisco Five departure, radar vectors Oakland, Victor two forty-four, Altam, ' +
-        `Victor three ninety-two, Sacramento, Victor six, sierra whiskey romeo, Truck. ${closing}`,
+        'San Francisco Five departure, radar vectors Oakland VOR, Victor two forty-four Altam, ' +
+        `Victor three ninety-two Sacramento VOR, Victor six Palisades VOR, direct Truck, direct. ${closing}`,
     );
   });
 
@@ -268,9 +301,56 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.fullRoute).toBe(
-      'United three twenty, cleared to Seattle airport, Trukn Two departure, Concord, ' +
+      'United three twenty, cleared to Seattle airport, Trukn Two departure, direct Concord VOR, ' +
         `Concord Two arrival. ${closing}`,
     );
+  });
+
+  it('reads a vectored fix, a direct fix and a final arrival as one unit each', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'OAK6', family: 'OAK', spoken: 'Oak Six' },
+          route: { template: 'radar_vectors_fix', fix: 'SAC' },
+        }),
+        filedRoute: 'OAK6 SAC DEDHD FILMR2',
+      }),
+    );
+    expect(spoken.fullRoute).toBe(
+      'United three twenty, cleared to Seattle airport, Oak Six departure, ' +
+        `radar vectors Sacramento VOR, direct Dedhd, Filmr Two arrival. ${closing}`,
+    );
+  });
+
+  it('ends a route that does not finish on an arrival with a bare direct', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'OAK6', family: 'OAK', spoken: 'Oak Six' },
+          route: { template: 'radar_vectors_fix', fix: 'SAC' },
+        }),
+        filedRoute: 'OAK6 SAC DEDHD',
+      }),
+    );
+    expect(spoken.fullRoute).toBe(
+      'United three twenty, cleared to Seattle airport, Oak Six departure, ' +
+        `radar vectors Sacramento VOR, direct Dedhd, direct. ${closing}`,
+    );
+  });
+
+  it('abbreviates a route with nothing after the exit fix as direct', () => {
+    const spoken = speakClearance(
+      input({
+        callsign: 'N172SP',
+        clearance: clearance({
+          sid: { id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          route: { template: 'radar_vectors_fix', fix: 'EUGEN' },
+        }),
+        filedRoute: 'GAPP7 EUGEN',
+      }),
+    );
+    expect(spoken.abbreviated).toContain('Gap Seven departure, radar vectors Eugen, direct.');
+    expect(spoken.fullRoute).toBe(spoken.abbreviated);
   });
 
   it('reads the abbreviated clearance when the transition fix ends the filed route', () => {
@@ -285,9 +365,9 @@ describe('speakClearance', () => {
     );
     expect(spoken.fullRoute).toBe(
       'United three twenty, cleared to Seattle airport, Wesla Five departure, ' +
-        `Ntell transition. ${closing}`,
+        `Ntell transition, direct. ${closing}`,
     );
-    expect(spoken.fullRoute).toBe(spoken.abbreviated.replace(', then as filed', ''));
+    expect(spoken.fullRoute).toBe(spoken.abbreviated);
   });
 
   it('keeps a registration callsign phonetic', () => {

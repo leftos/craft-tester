@@ -130,7 +130,12 @@ One entry per chart name the charts API returns; the build lists the names it is
 - `route_phrasing` and `transitions_spoken_as_transition` for vector SIDs.
 - `note` with the reasoning and the source, every time.
 
-`fix_spoken` maps navaid identifiers to their spoken names; pronounceable five-letter fixes need no entry.
+`fix_spoken` is for corrections only. The build reads every navaid the routes, TEC rows, gates, SID
+transitions and fixtures name out of the CIFP navaid records and speaks it as its name plus its facility
+word ("Red Bluff VOR"), and pronounceable five-letter fixes are read as words, so an entry is needed only
+where the CIFP spells a name badly (`MCK: McCook VOR`, because the file writes `MC COOK`). A row is
+emitted exactly as written and wins over the CIFP. A navaid the airport data names that neither the CIFP
+nor this table names fails the build; one only a worksheet fixture names is a warning.
 
 ## 4. `routes.yaml`: the scenario library
 

@@ -132,13 +132,15 @@ routes:
   # vector SID and radar-vector routes (GAPP7 / SFO5), props and turboprops
   - { exit_fix: OAK, destination: KTRK, tail: OAK V244 ALTAM V392 SAC V6 SWR TRUCK, classes: [P, T], altitudes: [15000, 17000] }
   - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P], altitudes: [5000, 6000] }
-  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ECA, classes: [P, T], altitudes: [5000, 7000] }
+  # ECA, the Manteca VORTAC this tail used to end at, is decommissioned and gone from the CIFP, so the tail ends at ALTAM on V244.
+  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM, classes: [P, T], altitudes: [5000, 7000] }
   - { exit_fix: OAK, destination: KWVI, tail: OAK V107 CATHE V111 SNS, classes: [P], altitudes: [7000] }
   - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC V23 YUBBA, classes: [T], altitudes: [17000, 19000] }
   - { exit_fix: SGD, destination: KACV, tail: SGD YAGER, classes: [T], altitudes: [16000, 18000] }
   - { exit_fix: SGD, destination: KAPC, tail: SGD, classes: [P], altitudes: [4000] }
   - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P], altitudes: [7000] }
-  - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO J179 SMA B932 KIVAK G349 MARCC, classes: [J], altitudes: [28000, 30000] }
+  # The tail stops at Middleton Island: SMA and the oceanic fixes beyond it are outside the FAA CIFP, so nothing can name them on frequency.
+  - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO, classes: [J], altitudes: [28000, 30000] }
   - { exit_fix: SAC, destination: KBOI, tail: SAC ANAHO, classes: [J], altitudes: [39000, 41000] }
   - { exit_fix: CCR, destination: KSMF, tail: CCR CCR2, classes: [J], altitudes: [9000, 11000] }
   # oceanic

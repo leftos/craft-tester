@@ -269,6 +269,36 @@ def test_a_route_to_an_unlisted_destination_fails_the_build(ksfo_build_inputs: B
         build_airport(mutated)
 
 
+def test_a_navaid_is_spoken_as_its_name_and_facility_word(ksfo_document: Document) -> None:
+    spoken = ksfo_document["fixSpoken"]
+    assert spoken["RBL"] == "Red Bluff VOR"
+    assert spoken["LMT"] == "Klamath Falls VOR"
+    assert spoken["SWR"] == "Palisades VOR"
+    assert spoken["PWE"] == "Pawnee City DME"
+
+
+def test_a_navaid_only_a_worksheet_route_names_is_spoken_too(ksfo_document: Document) -> None:
+    assert ksfo_document["fixSpoken"]["PSP"] == "Palm Springs VOR"
+
+
+def test_a_hand_row_wins_over_the_cifp_name(ksfo_build_inputs: BuildInputs) -> None:
+    overrides = replace(ksfo_build_inputs.airport.overrides, fix_spoken={"RBL": "Big Red"})
+    document = build_airport(replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, overrides=overrides)))
+    assert document["fixSpoken"]["RBL"] == "Big Red"
+    assert document["fixSpoken"]["SAC"] == "Sacramento VOR"
+
+
+def test_a_navaid_the_cifp_does_not_name_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    navaids = {ident: navaid for ident, navaid in ksfo_build_inputs.navaids.items() if ident != "OAK"}
+    with pytest.raises(ValueError, match=r"fixSpoken: navaid OAK \(from routeLibrary\.routes\[.*\) has no name in the CIFP"):
+        build_airport(replace(ksfo_build_inputs, navaids=navaids))
+
+
+def test_a_navaid_only_a_fixture_names_warns_instead_of_failing(ksfo_build_inputs: BuildInputs, capsys: pytest.CaptureFixture[str]) -> None:
+    build_airport(replace(ksfo_build_inputs, fixture_routes=("TRUKN2 DEDHD RBL ZZQ HAWKZ7",)))
+    assert "navaid(s) on worksheet routes have no spoken name: ZZQ" in capsys.readouterr().err
+
+
 def test_build_matches_committed_data(ksfo_document: Document) -> None:
     committed = data_path("KSFO")
     assert committed.exists(), f"{committed} is missing; run `uv run craft-gen build --airport KSFO`"

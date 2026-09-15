@@ -10,8 +10,10 @@ from craft_generator.aircraft_classes import classes_for_fleet
 from craft_generator.chart_text import parse_chart_facts
 from craft_generator.charts_api import ChartRef, charts_api_url, parse_departure_charts
 from craft_generator.cifp.airports import parse_airport_coordinates
+from craft_generator.cifp.navaids import Navaid, parse_navaids
 from craft_generator.cifp.records import RunwayRecord, SidRecord, parse_records
 from craft_generator.cifp.sid import CifpSid, group_sids
+from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.sop.load import EQUIPMENT_SUFFIXES_FILE, airport_dir, load_airport, load_equipment_suffixes, shared_dir
 from craft_generator.sop.model import AirportInputs, EquipmentSuffix
@@ -19,6 +21,7 @@ from craft_generator.sop.model import AirportInputs, EquipmentSuffix
 FIXTURES = Path(__file__).parent / "fixtures"
 KSFO_RECORDS = FIXTURES / "cifp" / "ksfo_records.txt"
 AIRPORT_RECORDS = FIXTURES / "cifp" / "airport_records.txt"
+NAVAID_RECORDS = FIXTURES / "cifp" / "navaid_records.txt"
 SFO_CHARTS_JSON = FIXTURES / "charts_api" / "SFO.json"
 CHART_TEXT = FIXTURES / "chart_text"
 SOP_TEXT = FIXTURES / "sop_text.txt"
@@ -107,6 +110,17 @@ def ksfo_coordinates(airport_record_lines: list[str]) -> dict[str, tuple[float, 
 
 
 @pytest.fixture(scope="session")
+def navaid_lines() -> list[str]:
+    """Return the checked-in CIFP navaid rows of every navaid the KSFO document names."""
+    return NAVAID_RECORDS.read_text(encoding="ascii").splitlines()
+
+
+@pytest.fixture(scope="session")
+def ksfo_navaids(navaid_lines: list[str]) -> dict[str, Navaid]:
+    return parse_navaids(navaid_lines)
+
+
+@pytest.fixture(scope="session")
 def equipment_suffixes() -> tuple[EquipmentSuffix, ...]:
     return load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE)
 
@@ -126,6 +140,7 @@ def ksfo_build_inputs(
     ksfo_records: tuple[tuple[SidRecord, ...], tuple[RunwayRecord, ...]],
     ksfo_chart_inputs: dict[str, ChartInput],
     aircraft_specs_subset: list[dict[str, Any]],
+    ksfo_navaids: dict[str, Navaid],
 ) -> BuildInputs:
     """Return every build input of KSFO, read from the checked-in fixtures only."""
     legs, runway_records = ksfo_records
@@ -134,10 +149,12 @@ def ksfo_build_inputs(
         airport=ksfo_inputs,
         sids=group_sids(legs, runways),
         runways=runways,
+        navaids=ksfo_navaids,
         charts=ksfo_chart_inputs,
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),
         coordinates=parse_airport_coordinates(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
+        fixture_routes=fixture_filed_routes("KSFO"),
         provenance=Provenance(
             cycle=FIXTURE_CYCLE,
             effective=FIXTURE_EFFECTIVE,

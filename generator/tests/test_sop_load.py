@@ -132,7 +132,7 @@ def test_overrides_carry_per_runway_facts(ksfo_inputs: AirportInputs) -> None:
     assert sfo5.crossing_restrictions_by_runway_family == {"01": True, "28": False}
     assert overrides.sids["GAP SEVEN"].transitions_spoken_as_transition is False
     assert overrides.sids["CIITY THREE (RNAV)"].note is None
-    assert overrides.fix_spoken["ENI"] == "Mendocino"
+    assert overrides.fix_spoken["MCK"] == "McCook VOR"
 
 
 def test_routes_destinations_and_fleet(ksfo_inputs: AirportInputs) -> None:

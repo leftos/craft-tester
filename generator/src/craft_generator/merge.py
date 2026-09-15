@@ -14,6 +14,16 @@ vNAS specs cannot class. A TEC row is checked the same way: the DP its route beg
 published for at least one runway family the row departs from. Two conditions only warn, because both are ordinary while the data is being
 built up: a SID no assignment rule ever issues, and a gate fix no route in the library uses.
 
+``fixSpoken`` is derived, not transcribed: every two- or three-letter token the route library, the
+TEC rows, the gates, the SID transitions and the checked-in fixtures name is looked up in the CIFP
+navaid table and emitted as the name and its facility word, "Red Bluff VOR". A hand ``fix_spoken``
+row still wins, for the names the CIFP spells badly. A navaid the airport data names and neither
+source names is a build failure, because the speaker would otherwise spell it out letter by letter;
+one only a worksheet fixture names is a warning, as those routes are transcribed from the sheets
+rather than curated. Transitions are the exception that keeps their published name: ``spoken`` on a
+transition is the bare navaid name, "Mendocino", because a controller says "Mendocino transition"
+but "radar vectors Mendocino VOR".
+
 Two SID facts are computed here rather than transcribed. ``climbViaEligible`` follows FAA JO 7110.65
 4-3-2 c as ZOA applies it: a procedure may be cleared "climb via SID" when it publishes crossing
 restrictions **or** a top altitude, and when it has no vector segment - so the radar-vector and
@@ -35,6 +45,7 @@ from datetime import date
 from typing import Any
 
 from craft_generator.chart_text import ChartFacts, TopAltitude
+from craft_generator.cifp.navaids import Navaid
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
 from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
 from craft_generator.sop.model import (
@@ -75,6 +86,7 @@ VECTOR_SEGMENT_KINDS = frozenset({"radar_vectors", "vector_hybrid"})
 PUBLISHED_TOP_ALTITUDE = "published"
 
 _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
+_NAVAID_TOKEN = re.compile(r"[A-Z]{2,3}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -99,18 +111,22 @@ class Provenance:
 class BuildInputs:
     """Every source :func:`build_airport` joins, already parsed.
 
-    ``sids`` and ``runways`` come from the CIFP, ``charts`` from the charts API and the chart PDFs
-    (keyed by chart name, in the order the API lists them), ``aircraft_classes`` from the vNAS specs
-    and ``coordinates`` from the CIFP airport records, keyed by ICAO identifier.
+    ``sids``, ``runways``, ``navaids`` and ``coordinates`` come from the CIFP - the navaids keyed by
+    identifier, the coordinates by ICAO identifier - ``charts`` from the charts API and the chart
+    PDFs (keyed by chart name, in the order the API lists them), ``aircraft_classes`` from the vNAS
+    specs, and ``fixture_routes`` from the filed route of every checked-in fixture of the airport,
+    which name navaids the airport data itself never mentions.
     """
 
     airport: AirportInputs
     sids: dict[str, CifpSid]
     runways: tuple[str, ...]
+    navaids: dict[str, Navaid]
     charts: dict[str, ChartInput]
     aircraft_classes: dict[str, AircraftClass]
     coordinates: dict[str, tuple[float, float]]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
+    fixture_routes: tuple[str, ...]
     provenance: Provenance
 
 
@@ -363,12 +379,15 @@ def _route_library(inputs: BuildInputs) -> Document:
     }
 
 
-def _transition_spoken(fix: str, fix_spoken: Mapping[str, str]) -> str:
+def _transition_spoken(fix: str, navaids: Mapping[str, Navaid], fix_spoken: Mapping[str, str]) -> str:
+    navaid = navaids.get(fix)
+    if navaid is not None:
+        return navaid.name
     spoken = fix_spoken.get(fix)
     return spoken if spoken else fix.capitalize()
 
 
-def _transition(transition: Transition, override: SidOverride, fix_spoken: Mapping[str, str], where: str) -> Document:
+def _transition(transition: Transition, override: SidOverride, navaids: Mapping[str, Navaid], fix_spoken: Mapping[str, str], where: str) -> Document:
     if not transition.fixes:
         raise ValueError(f"{where}: transition {transition.name!r} sequences no fix, so it has no terminal fix to speak")
     fix = transition.fixes[-1]
@@ -377,17 +396,17 @@ def _transition(transition: Transition, override: SidOverride, fix_spoken: Mappi
         spoken_as_transition = transition.kind == "enroute"
     return {
         "fix": fix,
-        "spoken": _transition_spoken(fix, fix_spoken),
+        "spoken": _transition_spoken(fix, navaids, fix_spoken),
         "kind": transition.kind,
         "spokenAsTransition": spoken_as_transition,
     }
 
 
-def _transitions(cifp: CifpSid | None, override: SidOverride, fix_spoken: Mapping[str, str]) -> list[Document]:
+def _transitions(cifp: CifpSid | None, override: SidOverride, navaids: Mapping[str, Navaid], fix_spoken: Mapping[str, str]) -> list[Document]:
     if cifp is None:
         return []
     where = f"CIFP {cifp.id}"
-    transitions = [_transition(transition, override, fix_spoken, where) for transition in cifp.transitions]
+    transitions = [_transition(transition, override, navaids, fix_spoken, where) for transition in cifp.transitions]
     return sorted(transitions, key=lambda entry: str(entry["fix"]))
 
 
@@ -439,14 +458,23 @@ def _climb_via_eligible(kind: str, top_altitude: Document, *, has_restrictions: 
     return has_restrictions or top_altitude["kind"] == PUBLISHED_TOP_ALTITUDE
 
 
-def _sid(chart_name: str, chart: ChartInput, override: SidOverride, cifp: CifpSid | None, fix_spoken: Mapping[str, str], *, icao: str) -> Document:
+def _sid(
+    chart_name: str,
+    chart: ChartInput,
+    override: SidOverride,
+    cifp: CifpSid | None,
+    fix_spoken: Mapping[str, str],
+    *,
+    navaids: Mapping[str, Navaid],
+    icao: str,
+) -> Document:
     where = f"overrides.yaml sids[{chart_name}]"
     kind = override.kind if override.kind is not None else _required(None if cifp is None else cifp.kind, where, "kind")
     runways = override.runways if override.runways is not None else _required(None if cifp is None else cifp.runways, where, "runways")
     has_restrictions = override.has_crossing_restrictions
     if has_restrictions is None:
         has_restrictions = cifp is not None and cifp.has_crossing_restrictions
-    transitions = _transitions(cifp, override, fix_spoken)
+    transitions = _transitions(cifp, override, navaids, fix_spoken)
     _check_chart_transitions(override.cifp_id, chart, transitions)
     top_altitude = _top_altitude(override.top_altitude, chart.facts.top_altitude, where)
     entry: Document = {
@@ -489,7 +517,17 @@ def _sids(inputs: BuildInputs) -> list[Document]:
         if override is None:
             known = sorted(overrides.sids)
             raise ValueError(f"overrides.yaml has no `sids` entry for chart {chart_name!r}, which the charts API publishes; it carries {known}")
-        documents.append(_sid(chart_name, chart, override, inputs.sids.get(override.cifp_id), overrides.fix_spoken, icao=inputs.airport.icao))
+        documents.append(
+            _sid(
+                chart_name,
+                chart,
+                override,
+                inputs.sids.get(override.cifp_id),
+                overrides.fix_spoken,
+                navaids=inputs.navaids,
+                icao=inputs.airport.icao,
+            )
+        )
     return documents
 
 
@@ -659,6 +697,49 @@ def _check_tec_routes(document: Document) -> None:
         _check_tec_route_runways(row, sids, plans)
 
 
+def _route_navaid_tokens(document: Document) -> list[tuple[str, str]]:
+    wanted: list[tuple[str, str]] = []
+    for route in _routes(document):
+        wanted += [(token, f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}].tail") for token in str(route["tail"]).split()]
+    for row in document["tecRoutes"]:
+        wanted += [(token, f"tecRoutes[{row['id']}].route") for token in str(row["route"]).split()]
+    for direction, fixes in document["gates"].items():
+        wanted += [(fix, f"gates.{direction}") for fix in fixes]
+    for sid in document["sids"]:
+        wanted += [(transition["fix"], f"sids[{sid['id']}].transitions") for transition in sid["transitions"]]
+    return wanted
+
+
+def _document_navaid_tokens(document: Document) -> dict[str, str]:
+    """Return every navaid the airport data itself names, mapped to the first row that names it."""
+    found: dict[str, str] = {}
+    for token, where in _route_navaid_tokens(document):
+        if _NAVAID_TOKEN.fullmatch(token):
+            found.setdefault(token, where)
+    found.pop(document["airport"]["faa"], None)
+    return found
+
+
+def _fixture_navaid_tokens(document: Document, inputs: BuildInputs) -> set[str]:
+    """Return every navaid the checked-in fixtures file that the airport data itself does not name."""
+    tokens = {token for route in inputs.fixture_routes for token in route.split() if _NAVAID_TOKEN.fullmatch(token)}
+    return tokens - {document["airport"]["faa"]}
+
+
+def _fix_spoken(document: Document, inputs: BuildInputs) -> dict[str, str]:
+    tokens = set(_document_navaid_tokens(document)) | _fixture_navaid_tokens(document, inputs)
+    named = {token: inputs.navaids[token].spoken for token in sorted(tokens) if token in inputs.navaids}
+    return {**named, **inputs.airport.overrides.fix_spoken}
+
+
+def _check_fix_spoken(document: Document) -> None:
+    spoken = document["fixSpoken"]
+    missing = sorted((token, where) for token, where in _document_navaid_tokens(document).items() if token not in spoken)
+    if missing:
+        listed = "; ".join(f"{token} (from {where})" for token, where in missing)
+        raise ValueError(f"fixSpoken: navaid {listed} has no name in the CIFP and no fix_spoken override; add one to overrides.yaml")
+
+
 def _check(document: Document, inputs: BuildInputs) -> None:
     _check_sid_families(document)
     _check_gate_fixes(document)
@@ -668,9 +749,10 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_fleet(document)
     _check_destinations(document)
     _check_tec_routes(document)
+    _check_fix_spoken(document)
 
 
-def _warn(document: Document) -> None:
+def _warn(document: Document, inputs: BuildInputs) -> None:
     assigned = {rule["sidFamily"] for rule in document["assignmentRules"]}
     unassigned = sorted(sid["id"] for sid in document["sids"] if sid["family"] not in assigned)
     for sid_id in unassigned:
@@ -679,6 +761,9 @@ def _warn(document: Document) -> None:
     unused = sorted(fix for fix in _gate_directions(document) if fix not in used)
     if unused:
         print(f"warning: {len(unused)} gate fix(es) no route in routeLibrary leaves the DP at: {unused}", file=sys.stderr)
+    unnamed = sorted(token for token in _fixture_navaid_tokens(document, inputs) if token not in document["fixSpoken"])
+    if unnamed:
+        print(f"warning: {len(unnamed)} navaid(s) on worksheet routes have no spoken name: {', '.join(unnamed)}", file=sys.stderr)
 
 
 def build_airport(inputs: BuildInputs) -> Document:
@@ -692,8 +777,8 @@ def build_airport(inputs: BuildInputs) -> Document:
         that only warn are printed to stderr.
 
     Raises:
-        ValueError: Two sources disagree, or a rule, runway, fix, fleet type or destination does not
-            resolve. Every message names the row it came from.
+        ValueError: Two sources disagree, or a rule, runway, fix, navaid name, fleet type or
+            destination does not resolve. Every message names the row it came from.
     """
     sop = inputs.airport.sop
     document: Document = {
@@ -710,7 +795,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "gates": {direction: list(fixes) for direction, fixes in _gate_items(sop.gates)},
         "noSid": {"runwayFamilies": list(sop.no_sid.runway_families), "phrasing": sop.no_sid.phrasing},
         "sids": _sids(inputs),
-        "fixSpoken": dict(inputs.airport.overrides.fix_spoken),
+        "fixSpoken": {},
         "assignmentRules": [_assignment_rule(rule) for rule in sop.assignment_rules],
         "noiseWindows": [_noise_window(window) for window in sop.noise_windows],
         "altitudeRules": [_altitude_rule(rule) for rule in sop.altitude_rules],
@@ -727,6 +812,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "aircraftClasses": dict(inputs.aircraft_classes),
         "routeLibrary": _route_library(inputs),
     }
+    document["fixSpoken"] = _fix_spoken(document, inputs)
     _check(document, inputs)
-    _warn(document)
+    _warn(document, inputs)
     return document

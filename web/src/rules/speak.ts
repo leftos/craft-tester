@@ -48,6 +48,15 @@ const PHONETIC_LETTERS: Readonly<Record<string, string>> = {
 /** Airway letters that are not spoken phonetically. */
 const AIRWAY_LETTERS: Readonly<Record<string, string>> = { J: 'Jay', V: 'Victor', Q: 'Q' };
 
+/** An airway as filed: one letter and up to three digits, e.g. `V244`. */
+const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
+
+/** A published procedure as filed: a name and one version digit, e.g. `HAWKZ7`. */
+const STAR_TOKEN = /^[A-Z]{3,5}\d$/;
+
+/** The facility word a navaid's spoken name ends in, which a procedure named after it drops. */
+const FACILITY_WORD = / (?:VOR|NDB|TACAN|DME)$/;
+
 const UNIT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 
 const TEEN_WORDS = [
@@ -242,16 +251,31 @@ export function speakRouteToken(
   const starName = star?.[1];
   const starNumber = star?.[2];
   if (starName !== undefined && starNumber !== undefined) {
-    return `${speakFix(starName, fixSpoken)} ${capitalizeFirst(speakNumberGroups(starNumber))} arrival`;
+    return `${speakProcedureName(starName, fixSpoken)} ${capitalizeFirst(speakNumberGroups(starNumber))} arrival`;
   }
   return speakFix(token, fixSpoken);
+}
+
+/**
+ * Speaks the name of a published procedure.
+ *
+ * A procedure named after a navaid drops the navaid's facility word: the CCR2 arrival is "Concord
+ * Two arrival", although the navaid it is named after is spoken "Concord VOR".
+ *
+ * @param name The procedure name without its version digit, e.g. `CCR`.
+ * @param fixSpoken Identifier to spoken name, from the airport data.
+ * @returns The spoken procedure name.
+ */
+function speakProcedureName(name: string, fixSpoken: Readonly<Record<string, string>>): string {
+  return speakFix(name, fixSpoken).replace(FACILITY_WORD, '');
 }
 
 /**
  * Everything the spoken clearance needs beyond the resolved clearance itself.
  *
  * `airportFaa` is the departure airport's own navaid identifier, which the full-route reading needs
- * to find the exit fix the same way the engine does.
+ * to find the exit fix the same way the engine does. `sidTransitions` are the transitions of the
+ * issued procedure, which name their fix the way the chart publishes it.
  */
 export type SpeakClearanceInput = {
   callsign: string;
@@ -262,6 +286,7 @@ export type SpeakClearanceInput = {
   squawk: string;
   telephony: Readonly<Record<string, string>>;
   fixSpoken: Readonly<Record<string, string>>;
+  sidTransitions: readonly { fix: string; spoken: string }[];
 };
 
 /** The clearance as read on frequency, and the same clearance with the filed route spelled out. */
@@ -297,10 +322,61 @@ function radioSentence(input: SpeakClearanceInput): string {
  * The exit fix is the transition fix, the fix the vectors go to, or the SID's base fix, and it is
  * always the first token the route leaves the terminal on, so dropping it needs no case analysis.
  */
-function fullRouteParts(input: SpeakClearanceInput): string[] {
-  return routeFromExitFix(input.filedRoute, input.airportFaa)
-    .slice(1)
-    .map((token) => speakRouteToken(token, input.fixSpoken));
+function routeAfterExitFix(input: SpeakClearanceInput): string[] {
+  return routeFromExitFix(input.filedRoute, input.airportFaa).slice(1);
+}
+
+/**
+ * One unit of the route reading, and how many tokens it consumed.
+ *
+ * An airway takes the fix that follows it along ("Victor two forty-four Altam"), a final procedure
+ * is read as an arrival, and a fix no airway precedes is flown direct.
+ */
+function routeUnit(
+  tokens: readonly string[],
+  index: number,
+  fixSpoken: Readonly<Record<string, string>>,
+): { unit: string; consumed: number } {
+  const token = tokens[index] ?? '';
+  const next = tokens[index + 1];
+  if (AIRWAY_TOKEN.test(token)) {
+    const airway = speakRouteToken(token, fixSpoken);
+    return next === undefined
+      ? { unit: airway, consumed: 1 }
+      : { unit: `${airway} ${speakFix(next, fixSpoken)}`, consumed: 2 };
+  }
+  if (index === tokens.length - 1 && STAR_TOKEN.test(token)) {
+    return { unit: speakRouteToken(token, fixSpoken), consumed: 1 };
+  }
+  return { unit: `direct ${speakFix(token, fixSpoken)}`, consumed: 1 };
+}
+
+/**
+ * The route after the exit fix as it is read on frequency.
+ *
+ * A route that does not end on a published arrival ends "direct", which is the clearance to the
+ * destination airport, so a route with nothing after the exit fix reads "direct" alone.
+ */
+function routeUnits(
+  tokens: readonly string[],
+  fixSpoken: Readonly<Record<string, string>>,
+): string[] {
+  const units: string[] = [];
+  let index = 0;
+  while (index < tokens.length) {
+    const { unit, consumed } = routeUnit(tokens, index, fixSpoken);
+    units.push(unit);
+    index += consumed;
+  }
+  const last = tokens[tokens.length - 1];
+  if (last === undefined || !STAR_TOKEN.test(last)) units.push('direct');
+  return units;
+}
+
+/** The transition fix as the issued procedure publishes it, which carries no facility word. */
+function speakTransition(input: SpeakClearanceInput, fix: string): string {
+  const published = input.sidTransitions.find((transition) => transition.fix === fix);
+  return published?.spoken ?? speakFix(fix, input.fixSpoken);
 }
 
 function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[]): string {
@@ -312,7 +388,7 @@ function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[
   ];
   const fix = route.fix;
   if (fix !== undefined && route.template === 'transition') {
-    parts.push(`${speakFix(fix, input.fixSpoken)} transition`);
+    parts.push(`${speakTransition(input, fix)} transition`);
   }
   if (fix !== undefined && route.template === 'radar_vectors_fix') {
     parts.push(`radar vectors ${speakFix(fix, input.fixSpoken)}`);
@@ -332,7 +408,8 @@ function joinSentences(parts: readonly string[]): string {
  *
  * `abbreviated` says "then as filed"; `fullRoute` reads the filed route after the exit fix instead,
  * which is what the reveal shows after grading. Neither form repeats the filed procedure token or
- * the exit fix, because the SID phrase has already spoken both.
+ * the exit fix, because the SID phrase has already spoken both. A route with nothing after the exit
+ * fix has nothing to file, so both forms end "direct" instead.
  *
  * @param input The clearance plus the scenario facts the phraseology needs.
  * @returns Both spoken forms of the clearance.
@@ -343,8 +420,13 @@ export function speakClearance(input: SpeakClearanceInput): SpokenClearance {
     expectSentence(input.clearance),
     radioSentence(input),
   ];
+  const tokens = routeAfterExitFix(input);
+  const abbreviatedTail = tokens.length === 0 ? ['direct'] : ['then as filed'];
   return {
-    abbreviated: joinSentences([clearedSentence(input, ['then as filed']), ...tail]),
-    fullRoute: joinSentences([clearedSentence(input, fullRouteParts(input)), ...tail]),
+    abbreviated: joinSentences([clearedSentence(input, abbreviatedTail), ...tail]),
+    fullRoute: joinSentences([
+      clearedSentence(input, routeUnits(tokens, input.fixSpoken)),
+      ...tail,
+    ]),
   };
 }

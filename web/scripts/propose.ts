@@ -277,6 +277,8 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
       squawk: fixture.scenario.squawk,
       telephony: airport.routeLibrary.telephony,
       fixSpoken: airport.fixSpoken,
+      sidTransitions:
+        airport.sids.find((sid) => sid.id === clearance.sid.value.id)?.transitions ?? [],
     }),
     expected: runtime.toExpectedClearance(clearance),
   };

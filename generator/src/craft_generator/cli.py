@@ -2,6 +2,7 @@
 
 import argparse
 import io
+import json
 import sys
 import zipfile
 from collections import Counter
@@ -22,6 +23,7 @@ from craft_generator.charts_api import (
 )
 from craft_generator.cifp.airports import parse_airport_coordinates
 from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effective_date_for, effective_date_for_cycle
+from craft_generator.cifp.navaids import parse_navaids
 from craft_generator.cifp.records import parse_records
 from craft_generator.cifp.sid import group_sids
 from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_path, schema_path, validate, write_or_check
@@ -214,6 +216,22 @@ def _chart_inputs(airport_faa: str, cache: Path, *, force: bool = False) -> dict
     return inputs
 
 
+def fixture_filed_routes(airport: str) -> tuple[str, ...]:
+    """Return the filed route of every checked-in fixture of an airport.
+
+    Worksheet and synthetic fixtures alike sit under ``fixtures/<icao>/``, and their routes name
+    navaids the airport data itself never mentions, which the spoken clearance still has to read.
+
+    Args:
+        airport: Four-letter ICAO identifier, e.g. ``KSFO``.
+
+    Returns:
+        One filed route per fixture, in path order.
+    """
+    directory = fixture_dir(airport).parent
+    return tuple(json.loads(path.read_text(encoding="utf-8"))["scenario"]["filedRoute"] for path in sorted(directory.rglob("*.json")))
+
+
 def _cifp_member(cache: Path, effective: date, cycle_id: str, *, force: bool = False) -> bytes:
     member = cache / "cifp" / cycle_id / CIFP_MEMBER
     if member.exists() and not force:
@@ -273,7 +291,7 @@ def _print_build_summary(airport: str, cycle_id: str, effective: date, document:
     counts = (
         f"{len(document['sids'])} SIDs, {len(document['assignmentRules'])} assignment rules, {len(document['altitudeRules'])} altitude rules, "
         f"{len(document['notices'])} notices, {len(document['equipmentSuffixes'])} equipment suffixes, "
-        f"{len(document['routeLibrary']['routes'])} routes"
+        f"{len(document['routeLibrary']['routes'])} routes, {len(document['fixSpoken'])} navaid names"
     )
     print(f"{airport}: AIRAC {cycle_id} effective {effective.isoformat()}, {counts}")
     print(f"  {result.path}: {result.status}")
@@ -315,10 +333,12 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             airport=inputs,
             sids=group_sids(legs, runways),
             runways=runways,
+            navaids=parse_navaids(lines),
             charts=charts,
             aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),
             coordinates=parse_airport_coordinates(lines),
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
+            fixture_routes=fixture_filed_routes(airport),
             provenance=Provenance(
                 cycle=cycle_id,
                 effective=effective,

@@ -60,18 +60,11 @@ sids:
     cifp_id: WESLA5
     spoken: Wesla Five
 
-# Spoken names for transition fixes (five-letter pronounceable fixes are read as words; navaids by name).
+# Corrections to the spoken names the build reads out of the CIFP navaid records. Every navaid a
+# route, TEC row, gate or transition names is spoken as its CIFP name plus its facility word
+# ("Red Bluff VOR"), and five-letter pronounceable fixes are read as words, so a row belongs here
+# only where the CIFP spells the name badly. A row is emitted exactly as written and wins over the
+# CIFP; a navaid neither source names fails the build.
 fix_spoken:
-  ENI: Mendocino
-  OAK: Oakland
-  OSI: Woodside
-  SAU: Sausalito
-  SGD: Scaggs Island
-  RBL: Red Bluff
-  SAC: Sacramento
-  CCR: Concord
-  LIN: Linden
-  AVE: Avenal
-  LHS: Lake Hughes
-  SNS: Salinas
-  LKV: Lakeview
+  # The CIFP writes MC COOK, which title-cases to "Mc Cook"; the chart supplement writes McCook.
+  MCK: McCook VOR
