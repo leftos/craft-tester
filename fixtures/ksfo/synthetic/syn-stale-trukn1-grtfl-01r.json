@@ -2,7 +2,8 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "phrase": "climb_via"
+      "feet": 10000,
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KPDX",
     "expect": null,
@@ -29,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "A stale procedure version in the filed route: TRUKN1 is stripped like any other procedure token and the flight is cleared on the current TRUKN family; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
+    "note": "A stale procedure version in the filed route: TRUKN1 is stripped like any other procedure token and the flight is cleared on the current TRUKN family; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); SOP 2-2 c interim table applies despite the published top altitude (user review 2026-09-15): climb via SID except maintain 10,000"
   },
   "status": "settled"
 }

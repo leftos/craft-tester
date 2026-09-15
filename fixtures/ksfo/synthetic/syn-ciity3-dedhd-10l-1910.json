@@ -2,7 +2,8 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "phrase": "climb_via"
+      "feet": 15000,
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KSEA",
     "expect": null,
@@ -29,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOE-N-CIITY: the east plan northbound off the 10s while landing the 19s; CIITY3 publishes FL190 so SFOE-J-15000 defers to the SID; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
+    "note": "SFOE-N-CIITY: the east plan northbound off the 10s while landing the 19s. CIITY3 publishes FL190, but the SOP 2-2 c interim table applies despite a published top altitude (user review 2026-09-15), so SFOE-J-15000 gives climb via SID except maintain 15,000. Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."
   },
   "status": "settled"
 }

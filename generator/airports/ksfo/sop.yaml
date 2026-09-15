@@ -360,59 +360,57 @@ assignment_rules:
     sid_family: GAPP
     sector: sutro
 
-# SOP 2-2 c: "SFO ATCT must issue interim altitudes as specified below when a Top of Climb (TOC) or Top
-# Altitude is not published." So a SID with a published numeric top altitude (TRUKN#, SNTNA#, NIITE#,
-# CIITY#, SAHEY#, SSTIK#, GNNRR#) gets plain "climb via SID" (S1-SFO-0 CBT confirms this per SID), and the
-# rows below apply only to SIDs whose top altitude is ASSIGNED BY ATC / AS ASSIGNED or absent. "CVS x" in
-# the SOP means "climb via SID except maintain"; whether a SID gets "maintain" or "climb via SID except
-# maintain" follows from its published crossing restrictions (see `phraseology_rules`). Ordered; first
-# match wins.
+# SOP 2-2 c: the interim-altitude table below applies to every SFO departure, regardless of whether the SID
+# publishes a top altitude (user review 2026-09-15, DAL653 on a TRUKN2 with a published FL190 top). A SID
+# with published crossing restrictions is phrased "climb via SID except maintain (interim)"; one without
+# them is phrased "maintain (interim)" (see `phraseology_rules`). "CVS x" in the SOP means "climb via SID
+# except maintain". Ordered; first match wins.
 altitude_rules:
   - id: SFOW-28-3000
-    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000)"
+    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published"
     text: "SFOW: GAPP#, MOLEN#, SEGUL#, SFO#, WESLA#, runway 28, P/T/J -> 3,000 or CVS x 3,000"
     plan: SFOW
     runway_families: ["28"]
     classes: [P, T, J]
     sid_families: [GAPP, MOLEN, SEGUL, SFO, WESLA]
     outcome: { kind: interim, feet: 3000 }
-    when_top_altitude_published: climb_via
+    when_top_altitude_published: interim
     expect_after_minutes: 10
   - id: SFOW-PT-5000
-    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000)"
+    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published"
     text: "SFOW: all others, runways 01/28, P/T -> 5,000 or CVS x 5,000"
     plan: SFOW
     runway_families: ["01", "28"]
     classes: [P, T]
     outcome: { kind: interim, feet: 5000 }
-    when_top_altitude_published: climb_via
+    when_top_altitude_published: interim
     expect_after_minutes: 10
   - id: SFOW-J-10000
-    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000)"
+    source: "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published"
     text: "SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000"
     plan: SFOW
     runway_families: ["01", "28"]
     classes: [J]
     outcome: { kind: interim, feet: 10000 }
-    when_top_altitude_published: climb_via
+    when_top_altitude_published: interim
     expect_after_minutes: 10
   - id: SFOE-PT-5000
-    source: "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000)"
+    source: "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published"
     text: "SFOE: all, runways 10/19, P/T -> 5,000 or CVS x 5,000"
     plan: SFOE
     runway_families: ["10", "19"]
     classes: [P, T]
     outcome: { kind: interim, feet: 5000 }
-    when_top_altitude_published: climb_via
+    when_top_altitude_published: interim
     expect_after_minutes: 10
   - id: SFOE-J-15000
-    source: "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000)"
+    source: "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published"
     text: "SFOE: all, runways 10/19, J -> 15,000 or CVS x 15,000"
     plan: SFOE
     runway_families: ["10", "19"]
     classes: [J]
     outcome: { kind: interim, feet: 15000 }
-    when_top_altitude_published: climb_via
+    when_top_altitude_published: interim
     expect_after_minutes: 10
 
 # Operational notices that change which SIDs are available. `sid_off` removes every assignment row for
@@ -447,7 +445,7 @@ phraseology_rules:
     text: "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
   - id: A-CLIMB-VIA
     source: FAA JO 7110.65 4-3-2 c 4 (a)
-    text: "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+    text: "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO the SOP interim table applies to every SID, so this form does not occur in clearance mode"
   - id: A-CLIMB-VIA-EXCEPT
     source: FAA JO 7110.65 4-3-2 c 4 (b)
     text: "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions but no top altitude is published or ATC needs an interim altitude"

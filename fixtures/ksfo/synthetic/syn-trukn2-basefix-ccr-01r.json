@@ -2,7 +2,7 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "feet": 11000,
+      "feet": 5000,
       "phrase": "climb_via_except"
     },
     "clearedTo": "KSMF",
@@ -29,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "The flight leaves TRUKN2 at its base fix, so the route is spoken \"then as filed\". TRUKN2 publishes FL190 and the filed 11,000 is below it, so FAA JO 7110.65 4-3-2 c 4 makes this \"climb via SID except maintain 11,000\" rather than a plain climb via SID (user decision 2026-09-15). The aircraft is then assigned the altitude it filed, so the expect clause is dropped because the filed altitude is the altitude cleared to (phraseology.expectAltitude)."
+    "note": "The flight leaves TRUKN2 at its base fix, so the route is spoken \"then as filed\". The TBM9 is class T, so SFOW-PT-5000 gives climb via SID except maintain 5,000 — the SOP 2-2 c interim table applies despite TRUKN2's published FL190 (user review 2026-09-15). Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."
   },
   "status": "settled"
 }
