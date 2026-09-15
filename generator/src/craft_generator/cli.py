@@ -10,6 +10,8 @@ from datetime import date
 from craft_generator.charts_api import cycle_id_from_url, fetch_chart_pdf, fetch_departure_charts, pdf_cache_path
 from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effective_date_for, effective_date_for_cycle
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
+from craft_generator.sop.load import SOP_FILE, airport_dir, load_sop
+from craft_generator.sop.verify import verify_sop_source
 
 EXIT_OK = 0
 EXIT_ERROR = 1
@@ -72,6 +74,8 @@ def build_parser() -> argparse.ArgumentParser:
         if name == "build":
             sub.add_argument("--offline", action="store_true", help="use only the download cache, never the network")
             sub.add_argument("--check", action="store_true", help="fail instead of writing when the output differs from the committed file")
+        if name == "verify-sop":
+            sub.add_argument("--allow-sop-drift", action="store_true", help="report a changed sha256 as a warning while every sentinel still matches")
     return parser
 
 
@@ -127,10 +131,45 @@ def fetch_charts(airport: str, *, force: bool = False) -> int:
     return EXIT_OK
 
 
+def verify_sop(airport: str, *, allow_drift: bool = False, force: bool = False) -> int:
+    """Check the SOP PDF an airport's transcription is pinned to, printing one verdict per check.
+
+    Args:
+        airport: Four-letter ICAO identifier, e.g. ``KSFO``.
+        allow_drift: Report a changed sha256 as a warning instead of a failure, as long as every
+            sentinel is still present.
+        force: Re-download even when the cache already holds the PDF.
+
+    Returns:
+        The process exit status: non-zero when the document changed or a sentinel went missing.
+    """
+    source = load_sop(airport_dir(airport) / SOP_FILE).source
+    result = verify_sop_source(source, cache_dir(), force=force)
+    print(f"{airport}: {source.title} version {source.version}, transcribed {source.transcribed_at.isoformat()}")
+    print(f"  {source.url}")
+    failed = False
+    actual, expected = result.actual_sha256, result.expected_sha256
+    if result.hash_matches:
+        print(f"  ok    sha256 {actual}")
+    elif allow_drift and not result.missing_sentinels:
+        print(f"  warn  sha256 is {actual}, sop.yaml pins {expected}; allowed by --allow-sop-drift, every sentinel still matches")
+    else:
+        print(f"  FAIL  sha256 is {actual}, sop.yaml pins {expected}; re-read the SOP, then update sha256 and transcribed_at")
+        failed = True
+    for sentinel in source.sentinels:
+        if sentinel in result.missing_sentinels:
+            print(f'  FAIL  sentinel is gone: "{sentinel}"; re-transcribe the section it came from, then update the sentinel')
+            failed = True
+        else:
+            print(f'  ok    sentinel "{sentinel}"')
+    return EXIT_ERROR if failed else EXIT_OK
+
+
 def _run(args: argparse.Namespace) -> int:
     handlers: dict[str, Callable[[], int]] = {
         "fetch-cifp": lambda: fetch_cifp(args.airport, args.cycle, force=args.force),
         "fetch-charts": lambda: fetch_charts(args.airport, force=args.force),
+        "verify-sop": lambda: verify_sop(args.airport, allow_drift=args.allow_sop_drift, force=args.force),
     }
     handler = handlers.get(args.command)
     return handler() if handler is not None else _not_implemented(str(args.command))

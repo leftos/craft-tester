@@ -25,7 +25,12 @@ def test_missing_command_exits_two() -> None:
 
 
 def test_unimplemented_subcommand_returns_two() -> None:
-    assert main(["verify-sop", "--airport", "KSFO"]) == EXIT_NOT_IMPLEMENTED
+    assert main(["import-worksheets", "--airport", "KSFO"]) == EXIT_NOT_IMPLEMENTED
+
+
+def test_verify_sop_accepts_the_drift_flag() -> None:
+    args = build_parser().parse_args(["verify-sop", "--airport", "ksfo", "--allow-sop-drift"])
+    assert (args.airport, args.allow_sop_drift) == ("KSFO", True)
 
 
 def test_build_accepts_its_own_flags() -> None:
