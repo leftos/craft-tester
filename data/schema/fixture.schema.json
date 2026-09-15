@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "airport": {
+      "type": "string"
+    },
+    "expected": {
+      "anyOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "altitude": {
+              "additionalProperties": false,
+              "properties": {
+                "feet": {
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "phrase": {
+                  "enum": [
+                    "climb_via",
+                    "climb_via_except",
+                    "maintain"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "phrase"
+              ],
+              "type": "object"
+            },
+            "clearedTo": {
+              "type": "string"
+            },
+            "expect": {
+              "anyOf": [
+                {
+                  "additionalProperties": false,
+                  "properties": {
+                    "feet": {
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991,
+                      "type": "integer"
+                    },
+                    "minutes": {
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "feet",
+                    "minutes"
+                  ],
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "frequency": {
+              "type": "string"
+            },
+            "route": {
+              "additionalProperties": false,
+              "properties": {
+                "fix": {
+                  "type": "string"
+                },
+                "template": {
+                  "enum": [
+                    "transition",
+                    "radar_vectors_fix",
+                    "as_filed"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "template"
+              ],
+              "type": "object"
+            },
+            "sidFamily": {
+              "type": "string"
+            },
+            "spoken": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "clearedTo",
+            "sidFamily",
+            "route",
+            "altitude",
+            "expect",
+            "frequency"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "amendments": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "box": {
+                    "enum": [
+                      "type",
+                      "altitude",
+                      "route"
+                    ],
+                    "type": "string"
+                  },
+                  "proposed": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "box",
+                  "proposed",
+                  "reason"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "amendments"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "scenario": {
+      "additionalProperties": false,
+      "properties": {
+        "aircraftType": {
+          "type": "string"
+        },
+        "callsign": {
+          "type": "string"
+        },
+        "dayOfWeek": {
+          "enum": [
+            "sunday",
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday"
+          ],
+          "type": "string"
+        },
+        "departureRunway": {
+          "type": "string"
+        },
+        "destination": {
+          "type": "string"
+        },
+        "filedAltitude": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "filedRoute": {
+          "type": "string"
+        },
+        "localTime": {
+          "pattern": "^([01]\\d|2[0-3])[0-5]\\d$",
+          "type": "string"
+        },
+        "rnavCapable": {
+          "type": "boolean"
+        },
+        "runwayConfigId": {
+          "type": "string"
+        },
+        "squawk": {
+          "pattern": "^[0-7]{4}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "callsign",
+        "aircraftType",
+        "rnavCapable",
+        "destination",
+        "filedRoute",
+        "filedAltitude",
+        "runwayConfigId",
+        "departureRunway",
+        "localTime",
+        "dayOfWeek",
+        "squawk"
+      ],
+      "type": "object"
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "worksheet",
+            "synthetic"
+          ],
+          "type": "string"
+        },
+        "note": {
+          "type": "string"
+        },
+        "trainer": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "settled",
+        "pending"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "source",
+    "status",
+    "airport",
+    "scenario"
+  ],
+  "type": "object"
+}

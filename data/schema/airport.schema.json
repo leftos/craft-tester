@@ -1,0 +1,1052 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "aircraftClasses": {
+      "additionalProperties": {
+        "enum": [
+          "P",
+          "T",
+          "J"
+        ],
+        "type": "string"
+      },
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "airport": {
+      "additionalProperties": false,
+      "properties": {
+        "clearanceDelivery": {
+          "type": "string"
+        },
+        "faa": {
+          "type": "string"
+        },
+        "icao": {
+          "type": "string"
+        },
+        "spoken": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "icao",
+        "faa",
+        "spoken",
+        "clearanceDelivery"
+      ],
+      "type": "object"
+    },
+    "altitudeRules": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "classes": {
+            "items": {
+              "enum": [
+                "P",
+                "T",
+                "J"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "expectAfterMinutes": {
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "outcome": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "feet": {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "kind": {
+                    "const": "interim",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "feet"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "climb_via",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "plan": {
+            "type": "string"
+          },
+          "runwayFamilies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sidFamilies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "whenTopAltitudePublished": {
+            "enum": [
+              "interim",
+              "climb_via"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "text",
+          "plan",
+          "runwayFamilies",
+          "classes",
+          "outcome",
+          "whenTopAltitudePublished",
+          "expectAfterMinutes"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "assignmentRules": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "classes": {
+            "items": {
+              "enum": [
+                "P",
+                "T",
+                "J"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "direction": {
+            "enum": [
+              "north",
+              "south",
+              "oceanic"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "runwayFamilies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sector": {
+            "type": "string"
+          },
+          "sidFamily": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "when": {
+            "additionalProperties": false,
+            "properties": {
+              "configs": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "noiseWindow": {
+                "type": "boolean"
+              },
+              "notConfigs": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "rnav": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "text",
+          "plan",
+          "direction",
+          "runwayFamilies",
+          "classes",
+          "sidFamily",
+          "sector"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "departureSectors": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "frequency": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "frequency"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "equipmentSuffixes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "gnss": {
+            "type": "boolean"
+          },
+          "rnav": {
+            "type": "boolean"
+          },
+          "rvsm": {
+            "type": "boolean"
+          },
+          "suffix": {
+            "pattern": "^\\/[A-Z]$",
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "transponderModeC": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "suffix",
+          "rnav",
+          "gnss",
+          "rvsm",
+          "transponderModeC",
+          "text"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "frequencies": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "gates": {
+      "additionalProperties": false,
+      "properties": {
+        "north": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "oceanic": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "south": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "north",
+        "south",
+        "oceanic"
+      ],
+      "type": "object"
+    },
+    "loaRules": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artcc": {
+            "type": "string"
+          },
+          "destinations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "rule": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "parity_rotated",
+                    "type": "string"
+                  },
+                  "oddCourseFrom": {
+                    "maximum": 359,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "oddCourseTo": {
+                    "maximum": 359,
+                    "minimum": 0,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "oddCourseFrom",
+                  "oddCourseTo"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "even",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "odd",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "feet": {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "kind": {
+                    "const": "max",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "feet"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "route",
+                    "type": "string"
+                  },
+                  "tokens": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "tokens"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "text",
+          "rule"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "noiseWindows": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "end": {
+            "pattern": "^([01]\\d|2[0-3])[0-5]\\d$",
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "start": {
+            "pattern": "^([01]\\d|2[0-3])[0-5]\\d$",
+            "type": "string"
+          },
+          "sundayEnd": {
+            "pattern": "^([01]\\d|2[0-3])[0-5]\\d$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "start",
+          "end"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "phraseology": {
+      "additionalProperties": false,
+      "properties": {
+        "expectAltitude": {
+          "enum": [
+            "always",
+            "only_when_interim_below_filed",
+            "never"
+          ],
+          "type": "string"
+        },
+        "nonStandardInterimExpectMinutes": {
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991,
+          "type": "integer"
+        },
+        "vectorHybridTransitionsSpoken": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "expectAltitude",
+        "nonStandardInterimExpectMinutes",
+        "vectorHybridTransitionsSpoken"
+      ],
+      "type": "object"
+    },
+    "phraseologyRules": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "text"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "airac": {
+          "additionalProperties": false,
+          "properties": {
+            "cifpSha256": {
+              "type": "string"
+            },
+            "cycle": {
+              "type": "string"
+            },
+            "effective": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "cycle",
+            "effective",
+            "cifpSha256"
+          ],
+          "type": "object"
+        },
+        "chartsApi": {
+          "format": "uri",
+          "type": "string"
+        },
+        "sop": {
+          "additionalProperties": false,
+          "properties": {
+            "sha256": {
+              "type": "string"
+            },
+            "transcribedAt": {
+              "type": "string"
+            },
+            "url": {
+              "format": "uri",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "sha256",
+            "transcribedAt"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "airac",
+        "chartsApi",
+        "sop"
+      ],
+      "type": "object"
+    },
+    "routeLibrary": {
+      "additionalProperties": false,
+      "properties": {
+        "destinations": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "artcc": {
+                "type": "string"
+              },
+              "icao": {
+                "type": "string"
+              },
+              "lat": {
+                "maximum": 90,
+                "minimum": -90,
+                "type": "number"
+              },
+              "lon": {
+                "maximum": 180,
+                "minimum": -180,
+                "type": "number"
+              },
+              "spoken": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "icao",
+              "spoken",
+              "lat",
+              "lon",
+              "artcc"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "fleet": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "ceilingFeet": {
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991,
+                "type": "integer"
+              },
+              "class": {
+                "enum": [
+                  "P",
+                  "T",
+                  "J"
+                ],
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "class",
+              "ceilingFeet"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "routes": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "altitudes": {
+                "items": {
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              "classes": {
+                "items": {
+                  "enum": [
+                    "P",
+                    "T",
+                    "J"
+                  ],
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "destination": {
+                "type": "string"
+              },
+              "exitFix": {
+                "type": "string"
+              },
+              "tail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "exitFix",
+              "tail",
+              "destination",
+              "classes",
+              "altitudes"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "destinations",
+        "fleet",
+        "routes"
+      ],
+      "type": "object"
+    },
+    "runwayConfigs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "arrivalRunways": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "departureRunways": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "classes": {
+                  "items": {
+                    "enum": [
+                      "P",
+                      "T",
+                      "J"
+                    ],
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "runway": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "runway",
+                "classes"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "plan",
+          "arrivalRunways",
+          "departureRunways"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "sids": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "chart": {
+            "additionalProperties": false,
+            "properties": {
+              "pdfUrl": {
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "pdfUrl"
+            ],
+            "type": "object"
+          },
+          "chartFrequencies": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "frequency": {
+                  "type": "string"
+                },
+                "note": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "frequency"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "chartName": {
+            "type": "string"
+          },
+          "climbViaEligible": {
+            "type": "boolean"
+          },
+          "family": {
+            "type": "string"
+          },
+          "hasCrossingRestrictions": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "rnav_pilot_nav",
+              "conventional_pilot_nav",
+              "vector_hybrid",
+              "radar_vectors"
+            ],
+            "type": "string"
+          },
+          "restrictions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "altitudeDescription": {
+                  "type": "string"
+                },
+                "altitudeOneFeet": {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "altitudeTwoFeet": {
+                  "maximum": 9007199254740991,
+                  "minimum": -9007199254740991,
+                  "type": "integer"
+                },
+                "fix": {
+                  "type": "string"
+                },
+                "transition": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fix",
+                "altitudeDescription"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "rnavRequired": {
+            "type": "boolean"
+          },
+          "routePhrasing": {
+            "enum": [
+              "transition",
+              "radar_vectors_fix",
+              "as_filed"
+            ],
+            "type": "string"
+          },
+          "runways": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "spoken": {
+            "type": "string"
+          },
+          "topAltitude": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "feet": {
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "type": "integer"
+                  },
+                  "kind": {
+                    "const": "published",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "feet"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "assigned_by_atc",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "none",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "transitions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "fix": {
+                  "type": "string"
+                },
+                "kind": {
+                  "enum": [
+                    "enroute",
+                    "vector"
+                  ],
+                  "type": "string"
+                },
+                "spoken": {
+                  "type": "string"
+                },
+                "spokenAsTransition": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "fix",
+                "spoken",
+                "kind",
+                "spokenAsTransition"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "family",
+          "chartName",
+          "spoken",
+          "kind",
+          "rnavRequired",
+          "runways",
+          "transitions",
+          "topAltitude",
+          "hasCrossingRestrictions",
+          "restrictions",
+          "climbViaEligible",
+          "routePhrasing",
+          "chartFrequencies",
+          "chart"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "tecRoutes": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "altitudeCapFeet": {
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          },
+          "classes": {
+            "items": {
+              "enum": [
+                "P",
+                "T",
+                "J"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "route": {
+            "type": "string"
+          },
+          "runwayFamilies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "source": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "destination",
+          "plan",
+          "runwayFamilies",
+          "classes",
+          "route"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "airport",
+    "provenance",
+    "runwayConfigs",
+    "departureSectors",
+    "frequencies",
+    "gates",
+    "sids",
+    "assignmentRules",
+    "noiseWindows",
+    "altitudeRules",
+    "phraseology",
+    "phraseologyRules",
+    "equipmentSuffixes",
+    "tecRoutes",
+    "loaRules",
+    "aircraftClasses",
+    "routeLibrary"
+  ],
+  "type": "object"
+}
