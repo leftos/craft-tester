@@ -58,9 +58,9 @@
         "SFO",
         "WESLA"
       ],
-      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000)",
+      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published",
       "text": "SFOW: GAPP#, MOLEN#, SEGUL#, SFO#, WESLA#, runway 28, P/T/J -> 3,000 or CVS x 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "interim"
     },
     {
       "classes": [
@@ -78,9 +78,9 @@
         "01",
         "28"
       ],
-      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000)",
+      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published",
       "text": "SFOW: all others, runways 01/28, P/T -> 5,000 or CVS x 5,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "interim"
     },
     {
       "classes": [
@@ -97,9 +97,9 @@
         "01",
         "28"
       ],
-      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000)",
+      "source": "SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published",
       "text": "SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "interim"
     },
     {
       "classes": [
@@ -117,9 +117,9 @@
         "10",
         "19"
       ],
-      "source": "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000)",
+      "source": "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published",
       "text": "SFOE: all, runways 10/19, P/T -> 5,000 or CVS x 5,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "interim"
     },
     {
       "classes": [
@@ -136,9 +136,9 @@
         "10",
         "19"
       ],
-      "source": "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000)",
+      "source": "SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000); user review 2026-09-15 (DAL653): the table applies even when a top altitude is published",
       "text": "SFOE: all, runways 10/19, J -> 15,000 or CVS x 15,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "interim"
     }
   ],
   "assignmentRules": [
@@ -1010,7 +1010,7 @@
     {
       "id": "A-CLIMB-VIA",
       "source": "FAA JO 7110.65 4-3-2 c 4 (a)",
-      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO the SOP interim table applies to every SID, so this form does not occur in clearance mode"
     },
     {
       "id": "A-CLIMB-VIA-EXCEPT",

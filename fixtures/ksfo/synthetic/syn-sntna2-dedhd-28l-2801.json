@@ -2,7 +2,8 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "phrase": "climb_via"
+      "feet": 10000,
+      "phrase": "climb_via_except"
     },
     "clearedTo": "CYVR",
     "expect": null,
@@ -29,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-N-SNTNA-28 in the 28/01 configuration, where SOP 2-1 e reserves the 28s for oceanic, Far East and cargo flights: a heavy freighter northbound off 28L; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
+    "note": "SFOW-N-SNTNA-28 in the 28/01 configuration, where SOP 2-1 e reserves the 28s for oceanic, Far East and cargo flights: a heavy freighter northbound off 28L; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); SOP 2-2 c interim table applies despite the published top altitude (user review 2026-09-15): climb via SID except maintain 10,000"
   },
   "status": "settled"
 }

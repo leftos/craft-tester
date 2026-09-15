@@ -110,7 +110,7 @@ def test_altitude_rules_notices_and_phraseology(ksfo_inputs: AirportInputs) -> N
     assert first.id == "SFOW-28-3000"
     assert first.sid_families == ("GAPP", "MOLEN", "SEGUL", "SFO", "WESLA")
     assert (first.outcome.kind, first.outcome.feet) == ("interim", 3000)
-    assert (first.when_top_altitude_published, first.expect_after_minutes) == ("climb_via", 10)
+    assert (first.when_top_altitude_published, first.expect_after_minutes) == ("interim", 10)
     assert sop.altitude_rules[1].sid_families is None
     notice = sop.notices[0]
     assert (notice.id, notice.effect.kind, notice.effect.sid_family, notice.default_active) == ("SFO-SEGUL-OFF", "sid_off", "SEGUL", True)

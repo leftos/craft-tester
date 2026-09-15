@@ -2,7 +2,8 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "phrase": "climb_via"
+      "feet": 10000,
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KSEA",
     "expect": null,
@@ -29,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation; validated by the user 2026-09-15: TRUKN2 DEDHD transition, climb via SID, no expect clause, 120.9"
+    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation; validated by the user 2026-09-15: TRUKN2 DEDHD transition, climb via SID, no expect clause, 120.9; re-settled 2026-09-15 after the user's DAL653 ruling: climb via SID except maintain 10,000"
   },
   "status": "settled"
 }

@@ -57,6 +57,19 @@ const CLIMB_VIA_ROW: AltitudeRule = {
   expectAfterMinutes: 10,
 };
 
+/**
+ * KSFO's own rows apply the interim table regardless of the top altitude since the user's 2026-09-15
+ * review, so the cases below that defer to a published top altitude use a deferring row as test data.
+ */
+function withDeferringRow(airport: AirportData): AirportData {
+  return {
+    ...airport,
+    altitudeRules: airport.altitudeRules.map((rule) =>
+      rule.id === 'SFOW-J-10000' ? { ...rule, whenTopAltitudePublished: 'climb_via' } : rule,
+    ),
+  };
+}
+
 function ctx(overrides: Partial<Classification>): Classification {
   return Object.assign({ ...BASE_CTX }, overrides);
 }
@@ -78,7 +91,7 @@ function resolve(
 
 describe('resolveAltitude', () => {
   it('clears a SID with a published top altitude to climb via the SID', () => {
-    const result = resolve(ctx({}), sid('TRUKN2'), scenario({}));
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), withDeferringRow(ksfo));
     expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
     expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
       'A-CLIMB-VIA',
@@ -130,7 +143,12 @@ describe('resolveAltitude', () => {
   });
 
   it('turns a filed altitude below the published top altitude into climb via SID except maintain filed', () => {
-    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 11000 }));
+    const result = resolve(
+      ctx({}),
+      sid('TRUKN2'),
+      scenario({ filedAltitude: 11000 }),
+      withDeferringRow(ksfo),
+    );
     expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 11000 });
     expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
       'A-CLIMB-VIA-EXCEPT',
@@ -139,7 +157,12 @@ describe('resolveAltitude', () => {
   });
 
   it('leaves a filed altitude at the published top altitude a plain climb via SID', () => {
-    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 19000 }));
+    const result = resolve(
+      ctx({}),
+      sid('TRUKN2'),
+      scenario({ filedAltitude: 19000 }),
+      withDeferringRow(ksfo),
+    );
     expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
     expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
       'A-CLIMB-VIA',
@@ -187,7 +210,7 @@ describe('the expect clause', () => {
   });
 
   it('always still drops the clause when filed equals the altitude cleared to', () => {
-    const airport = withExpectAltitude('always');
+    const airport = withDeferringRow(withExpectAltitude('always'));
     const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 19000 }), airport);
     expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
     expect(result.expect.value).toBeNull();

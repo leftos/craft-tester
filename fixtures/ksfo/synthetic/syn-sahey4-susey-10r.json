@@ -2,7 +2,8 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "phrase": "climb_via"
+      "feet": 15000,
+      "phrase": "climb_via_except"
     },
     "clearedTo": "KLAX",
     "expect": null,
@@ -29,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOE-S-SAHEY: the east plan southbound off 10R, the runway the south gate departs; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
+    "note": "SFOE-S-SAHEY: the east plan southbound off 10R, the runway the south gate departs; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); SOP 2-2 c interim table applies despite the published top altitude (user review 2026-09-15): climb via SID except maintain 15,000"
   },
   "status": "settled"
 }
