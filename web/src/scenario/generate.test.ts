@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AircraftClass, AirportData, RunwayConfig } from '@/data/schema.ts';
+import type { AircraftClass, AirportData, FleetEntry, RunwayConfig } from '@/data/schema.ts';
 import { ScenarioSchema } from '@/data/schema.ts';
 import { isNoiseWindowActive } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
@@ -51,6 +51,25 @@ function classOf(entry: GeneratedScenario): AircraftClass {
     );
   }
   return aircraftClass;
+}
+
+/** The fleet row of the type a scenario drew. */
+function fleetOf(entry: GeneratedScenario): FleetEntry {
+  const fleet = ksfo.routeLibrary.fleet.find((row) => row.type === entry.scenario.aircraftType);
+  if (fleet === undefined) {
+    throw new Error(`type ${entry.scenario.aircraftType} is not in the route library fleet`);
+  }
+  return fleet;
+}
+
+/** Whether the flight is one of the kinds the 28s of 28/01 are held for on request. */
+function mayRequestThe28s(entry: GeneratedScenario): boolean {
+  const fleet = fleetOf(entry);
+  return (
+    fleet.wtc === 'H' ||
+    fleet.airlines.some((airline) => ksfo.routeLibrary.cargoAirlines.includes(airline)) ||
+    directionOf(exitFixOf(entry), ksfo.gates) === 'oceanic'
+  );
 }
 
 /** The runway the configuration defaults a class to, or undefined when it defaults none. */
@@ -180,6 +199,32 @@ describe('generateScenario', () => {
       jets.filter((entry) => entry.scenario.departureRunway.startsWith('01')).length,
     ).toBeGreaterThan(0);
     expect(jets.filter((entry) => entry.scenario.departureRunway === '28R').map(label)).toEqual([]);
+  });
+
+  it('draws a heavy in 28/01 both off the 28s it may ask for and off the advertised 01s', () => {
+    const heavies = generated.filter(
+      (entry) => entry.scenario.runwayConfigId === '28/01' && fleetOf(entry).wtc === 'H',
+    );
+    expect(heavies.length).toBeGreaterThan(0);
+    const requested = heavies.filter((entry) => entry.scenario.departureRunway === '28L');
+    const advertised = heavies.filter((entry) => entry.scenario.departureRunway.startsWith('01'));
+    expect(requested.length).toBeGreaterThan(0);
+    expect(advertised.length).toBeGreaterThan(0);
+    expect(heavies.length).toBe(requested.length + advertised.length);
+  });
+
+  it('never gives the 28s of 28/01 to a light jet that cannot ask for them', () => {
+    const lightJets = generated.filter(
+      (entry) =>
+        entry.scenario.runwayConfigId === '28/01' &&
+        fleetOf(entry).class === 'J' &&
+        fleetOf(entry).wtc === 'L' &&
+        !mayRequestThe28s(entry),
+    );
+    expect(lightJets.length).toBeGreaterThan(0);
+    expect(
+      lightJets.filter((entry) => entry.scenario.departureRunway.startsWith('28')).map(label),
+    ).toEqual([]);
   });
 
   it('redraws rather than presenting a flight the SOP clears without a procedure', () => {

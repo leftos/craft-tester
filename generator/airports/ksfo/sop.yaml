@@ -60,8 +60,8 @@ runway_configs:
     departure_runways:
       - { runway: 01L, classes: [P, T, J] }
       - { runway: 01R, classes: [P, T, J] }
-      - { runway: 28L, classes: [J], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e)" }
-      - { runway: 28R, classes: [J], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e)" }
+      - { runway: 28L, classes: [J], on_request_for: [cargo, heavy, oceanic], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)" }
+      - { runway: 28R, classes: [J], on_request_for: [cargo, heavy, oceanic], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)" }
       - { runway: 28R, classes: [P, T], default_for_classes: [P, T], note: "GA up to light jets depart 28R at intersection Echo, a short taxi from the north ramp with enough runway remaining (user review 2026-09-15, N483KA); jets stay on the 01s until a GA flag exists on the fleet" }
   - id: "28 RT"
     name: Landing and departing runways 28, right turn (TRUKN DP in use)

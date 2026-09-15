@@ -96,6 +96,14 @@ export const RunwayAssignmentSchema = z.strictObject({
    * class. An empty array means the row is no default.
    */
   defaultForClasses: z.array(AircraftClassSchema),
+  /**
+   * The kinds of flight this runway is issued to only on request, rather than as a normal choice.
+   *
+   * A non-empty array means the runway is the exception the SOP holds for those flights: a cargo
+   * airline, a heavy wake category, or a flight bound oceanic by the gate direction of its exit fix,
+   * e.g. the 28s of the 28/01 configuration. An empty array means the runway is a normal choice.
+   */
+  onRequestFor: z.array(z.enum(['cargo', 'heavy', 'oceanic'])),
   note: z.string().optional(),
 });
 
@@ -377,6 +385,8 @@ export const RouteLibraryEntrySchema = z.strictObject({
 export const RouteLibrarySchema = z.strictObject({
   destinations: z.array(DestinationSchema),
   telephony: z.record(z.string(), z.string()),
+  /** The ICAO codes of the all-cargo airlines of `telephony`, which fly the cargo flights. */
+  cargoAirlines: z.array(z.string()),
   fleet: z.array(FleetEntrySchema),
   routes: z.array(RouteLibraryEntrySchema),
 });
