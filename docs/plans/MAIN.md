@@ -7,9 +7,9 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [x] 1. Scaffold: git, README, CLAUDE.md, ARCHITECTURE skeleton, this index, prek hygiene hooks, dependabot
 - [x] 2. Web scaffold: pnpm, Vite + TS (strict flags), oxlint/oxfmt, vitest, exact pins
 - [x] 3. zod schema for `AirportData` + `Fixture`, schema export script, sync test, `data/airports.json` (schema needs the SOP YAML's newer fields added in step 9: noise window ids, `exitFixes`/`forcedTransition` conditions, no-DP heading rows, staffing fallbacks, runway-by-turn preference, labelled frequencies, fleet suffixes/airlines, per-runway crossing-restriction flag)
-- [ ] 4. Generator scaffold: uv project, ruff/ty, `craft-gen --help`, cached HTTP
-- [ ] 5. CIFP: cycle math, record slicing, SID grouping; 210 KSFO rows as fixture; hypothesis tests
-- [ ] 6. Charts: API list, PDF download, text extraction; 12 chart-text snapshots
+- [x] 4. Generator scaffold: uv project, ruff/ty, `craft-gen --help`, cached HTTP
+- [x] 5. CIFP: cycle math, record slicing, SID grouping; 210 KSFO rows as fixture; hypothesis tests
+- [x] 6. Charts: API list, PDF download, text extraction; 12 chart-text snapshots (d-TPP text puts a box's value on the line before its label; MOLEN9's transition is named MENDOCINO)
 - [ ] 7. SOP transcription (`sop.yaml`, `overrides.yaml`, `routes.yaml`) + loader + hash/sentinel verify
 - [ ] 8. Aircraft classes from vNAS
 - [ ] 9. Merge + emit + integrity checks; first `data/ksfo.json`

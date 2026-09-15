@@ -39,3 +39,27 @@ repos:
         language: system
         files: ^(web/|data/|fixtures/)
         pass_filenames: false
+      - id: gen-ruff-check
+        name: generator ruff check
+        entry: uv run --directory generator ruff check .
+        language: system
+        files: ^generator/
+        pass_filenames: false
+      - id: gen-ruff-format
+        name: generator ruff format --check
+        entry: uv run --directory generator ruff format --check .
+        language: system
+        files: ^generator/
+        pass_filenames: false
+      - id: gen-ty
+        name: generator ty check
+        entry: uv run --directory generator ty check
+        language: system
+        files: ^generator/
+        pass_filenames: false
+      - id: gen-pytest
+        name: generator pytest
+        entry: uv run --directory generator pytest -q
+        language: system
+        files: ^generator/
+        pass_filenames: false
