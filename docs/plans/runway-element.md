@@ -48,7 +48,7 @@ below).
   the runway line with citations; tests. Also: `PlayerPicks` gains a field, so `ui/solved.ts` must
   validate a stored value with a zod `PlayerPicksSchema` on load and treat a mismatch (an older build's
   picks without `runway`) as nothing remembered
-- [ ] 3. Generator remark + UI (web worktree): `generate.ts` sets `remarks` on the on-request draw;
+- [x] 3. Generator remark + UI (landed 2026-09-15; 73 of seeds 0..999 file `REQ RWY 28`): `generate.ts` sets `remarks` on the on-request draw;
   `strip.ts` remarks row; `atis.ts` advertised runways; `craftForm.ts` runway group; `labels.ts` `RWY`;
   `state.ts` pick; `session.test.ts`; browser re-check
 - [x] 4. Docs: `ADDING_AN_AIRPORT.md` (config `source`, `RWY-*` rows), `ARCHITECTURE.md` (2026-09-15)
