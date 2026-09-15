@@ -35,6 +35,8 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [x] User steer 2026-09-15: only TEC routes are obligatory, and only for destinations inside contiguous NCT. Area E CA (the Sacramento sectors: SMF, SAC, MYV, OVE) is contiguous; Area E NV, also called Area R (Reno and satellites), is separated from the rest of NCT by Oakland Center airspace and gets no TEC route. AAR/ADR routes are advisory. Encoded as `tecRoutes[].kind: tec | adr`; amendment mode must flag a missing TEC route only for `kind: tec` rows and only when the destination is `nct: true` (KRNO and the Area R satellites stay `nct: false`)
 - [ ] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement"
 
+- [x] User steer 2026-09-15: write `docs/ADDING_AN_AIRPORT.md`, a runbook of every step taken to build the KSFO data so a dev or agent can repeat it for another airport (update it whenever a loader gains a field or a step changes)
+
 ## Blockers
 
 None. Worksheets are public Google Docs (ids in the subplan); no browser needed to fetch them.

@@ -36,7 +36,7 @@ Sections of `AirportData` (see the schema for fields): `airport`, `provenance`, 
 
 Hand-authored inputs per airport live in `generator/airports/<icao>/`: `sop.yaml`, `overrides.yaml`,
 `routes.yaml`, `tec.yaml`, `loa.yaml`. Adding an airport is adding that directory and a line in
-`data/airports.json`.
+`data/airports.json`; the step-by-step runbook is [ADDING_AN_AIRPORT.md](./ADDING_AN_AIRPORT.md).
 
 ## Web (`web/src/`)
 
