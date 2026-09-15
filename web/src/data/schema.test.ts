@@ -154,6 +154,16 @@ describe('AssignmentRuleSchema', () => {
     const both = { ...minimalAssignmentRule, nonDpHeading: 'runway heading' };
     expect(AssignmentRuleSchema.safeParse(both).success).toBe(false);
   });
+
+  it('rejects a rule that sets neither sidFamily nor nonDpHeading', () => {
+    const neither = { ...minimalAssignmentRule, sidFamily: null };
+    expect(AssignmentRuleSchema.safeParse(neither).success).toBe(false);
+  });
+
+  it('accepts a rule that clears the flight without a DP', () => {
+    const nonDp = { ...minimalAssignmentRule, sidFamily: null, nonDpHeading: 'runway heading' };
+    expect(AssignmentRuleSchema.parse(nonDp)).toEqual(nonDp);
+  });
 });
 
 describe('FixtureSchema', () => {
