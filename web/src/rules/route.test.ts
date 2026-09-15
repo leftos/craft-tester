@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
-import { directionOf, isSidToken, parseFiledRoute, routeFromExitFix } from '@/rules/route.ts';
+import {
+  directionOf,
+  isAirwayToken,
+  isSidToken,
+  parseFiledRoute,
+  routeFromExitFix,
+} from '@/rules/route.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -17,6 +23,20 @@ describe('isSidToken', () => {
     ['T257', false],
   ])('classifies %s', (token, expected) => {
     expect(isSidToken(token)).toBe(expected);
+  });
+});
+
+describe('isAirwayToken', () => {
+  it.each([
+    ['V6', true],
+    ['J501', true],
+    ['Q158', true],
+    ['T257', true],
+    ['SAC', false],
+    ['DEDHD', false],
+    ['TRUKN2', false],
+  ])('classifies %s', (token, expected) => {
+    expect(isAirwayToken(token)).toBe(expected);
   });
 });
 
@@ -37,6 +57,7 @@ describe('parseFiledRoute', () => {
   it('strips the filed procedure and takes the next fix as the exit fix', () => {
     expect(parseFiledRoute('TRUKN2 DEDHD RBL LMT HAWKZ7', ksfo)).toEqual({
       filedSidToken: 'TRUKN2',
+      exitElement: 'DEDHD',
       exitFix: 'DEDHD',
       tokens: ['DEDHD', 'RBL', 'LMT', 'HAWKZ7'],
     });
@@ -44,8 +65,25 @@ describe('parseFiledRoute', () => {
 
   it('keeps a route that was filed without a procedure', () => {
     expect(parseFiledRoute('DEDHD RBL LMT', ksfo)).toEqual({
+      exitElement: 'DEDHD',
       exitFix: 'DEDHD',
       tokens: ['DEDHD', 'RBL', 'LMT'],
+    });
+  });
+
+  it('leaves on the airway a route joins straight off the procedure', () => {
+    expect(parseFiledRoute('SFO4 V6 SAC DEDHD', ksfo)).toEqual({
+      filedSidToken: 'SFO4',
+      exitElement: 'V6',
+      exitFix: 'SAC',
+      tokens: ['V6', 'SAC', 'DEDHD'],
+    });
+  });
+
+  it('takes the gate fix from after the airports own navaid and the airway alike', () => {
+    expect(parseFiledRoute('GAPP7 SFO V6 SAC', ksfo)).toMatchObject({
+      exitElement: 'V6',
+      exitFix: 'SAC',
     });
   });
 
@@ -57,6 +95,7 @@ describe('parseFiledRoute', () => {
   it('skips the airport navaid filed between the procedure and the exit fix', () => {
     expect(parseFiledRoute('WESLA5 SFO SUSEY EBAYE', ksfo)).toEqual({
       filedSidToken: 'WESLA5',
+      exitElement: 'SUSEY',
       exitFix: 'SUSEY',
       tokens: ['SUSEY', 'EBAYE'],
     });
@@ -77,8 +116,8 @@ describe('parseFiledRoute', () => {
     expect(parseFiledRoute('   ', ksfo)).toMatchObject({ element: 'R.route' });
   });
 
-  it('blocks the route element when an airway follows the procedure', () => {
-    expect(parseFiledRoute('TRUKN2 J501 OED', ksfo)).toEqual({
+  it('blocks the route element when an airway is filed with no fix after it', () => {
+    expect(parseFiledRoute('TRUKN2 J501', ksfo)).toEqual({
       element: 'R.route',
       reason: expect.stringContaining('J501'),
     });

@@ -210,15 +210,30 @@ describe('speakClearance', () => {
     );
   });
 
-  it('speaks an as-filed route with no transition', () => {
+  it('speaks an as-filed route with nothing after the fix it hands over on', () => {
     const spoken = speakClearance(
       input({
-        clearance: clearance({ route: { template: 'as_filed' } }),
-        filedRoute: 'TRUKN2 J70',
+        clearance: clearance({ route: { template: 'as_filed', fix: 'TRUKN' } }),
+        filedRoute: 'TRUKN2 TRUKN',
       }),
     );
-    expect(spoken.abbreviated).toContain('Trukn Two departure, direct.');
-    expect(spoken.fullRoute).toContain('Trukn Two departure, direct. Climb via SID.');
+    expect(spoken.abbreviated).toContain('Trukn Two departure, Trukn, direct.');
+    expect(spoken.fullRoute).toContain('Trukn Two departure, Trukn, direct. Climb via SID.');
+  });
+
+  it('drops the facility word from a navaid an as-filed route hands over on', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
+          route: { template: 'as_filed', fix: 'CCR' },
+        }),
+        filedRoute: 'MOLEN9 CCR RBL',
+        sidTransitions: [],
+      }),
+    );
+    expect(spoken.abbreviated).toContain('Molen Nine departure, Concord, then as filed.');
+    expect(spoken.fullRoute).toContain('Molen Nine departure, Concord, direct Red Bluff VOR,');
   });
 
   it('speaks a climb via SID except maintain', () => {
@@ -293,16 +308,51 @@ describe('speakClearance', () => {
     );
   });
 
-  it('does not repeat the base fix of an as-filed clearance', () => {
+  it('names the base fix of an as-filed clearance once, and not again in the route', () => {
     const spoken = speakClearance(
       input({
-        clearance: clearance({ route: { template: 'as_filed' } }),
+        clearance: clearance({ route: { template: 'as_filed', fix: 'TRUKN' } }),
         filedRoute: 'TRUKN2 TRUKN CCR CCR2',
       }),
     );
+    expect(spoken.abbreviated).toContain('Trukn Two departure, Trukn, then as filed.');
     expect(spoken.fullRoute).toBe(
-      'United three twenty, cleared to Seattle airport, Trukn Two departure, direct Concord VOR, ' +
-        `Concord Two arrival. ${closing}`,
+      'United three twenty, cleared to Seattle airport, Trukn Two departure, Trukn, ' +
+        `direct Concord VOR, Concord Two arrival. ${closing}`,
+    );
+  });
+
+  it('speaks radar vectors to join an airway and reads the fix it leads to bare', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          route: { template: 'radar_vectors_airway', fix: 'V6' },
+        }),
+        filedRoute: 'SFO4 V6 SAC DEDHD',
+      }),
+    );
+    expect(spoken.abbreviated).toContain(
+      'San Francisco Five departure, radar vectors to join Victor six, then as filed.',
+    );
+    expect(spoken.fullRoute).toBe(
+      'United three twenty, cleared to Seattle airport, San Francisco Five departure, ' +
+        `radar vectors to join Victor six, Sacramento VOR, direct Dedhd, direct. ${closing}`,
+    );
+  });
+
+  it('ends an airway clearance with a bare direct when the airway leads to the last fix', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          route: { template: 'radar_vectors_airway', fix: 'V6' },
+        }),
+        filedRoute: 'SFO4 V6 SAC',
+      }),
+    );
+    expect(spoken.fullRoute).toContain(
+      'San Francisco Five departure, radar vectors to join Victor six, Sacramento VOR, direct.',
     );
   });
 

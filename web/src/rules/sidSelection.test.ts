@@ -127,6 +127,33 @@ describe('selectSid', () => {
     expect(result.row.id).toBe('FALLBACK');
   });
 
+  it('passes over a pilot-nav SID when the flight leaves on an airway', () => {
+    const result = selectSid(
+      ctx({}),
+      'V6',
+      'north',
+      scenario({ filedRoute: 'SFO4 V6 SAC' }),
+      airportWith([
+        rule({ id: 'PILOT-NAV' }),
+        rule({ id: 'VECTORS', sidFamily: 'SFO', classes: ['P', 'T', 'J'] }),
+      ]),
+    );
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.row.id).toBe('VECTORS');
+    expect(result.sid.kind).toBe('radar_vectors');
+  });
+
+  it('has no SID at all when only pilot-nav rows apply to an airway', () => {
+    const result = selectSid(
+      ctx({}),
+      'V6',
+      'north',
+      scenario({ filedRoute: 'SFO4 V6 SAC' }),
+      airportWith([rule({ id: 'PILOT-NAV' })]),
+    );
+    expect(isUnresolved(result)).toBe(true);
+  });
+
   it('applies a row whose conditions all hold', () => {
     const result = selectSid(
       ctx({ activeNoiseWindows: ['night'] }),

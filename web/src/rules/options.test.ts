@@ -40,7 +40,12 @@ describe('buildOptions', () => {
 
   it('offers every route shape, altitude phrase, and expect clause', () => {
     const options = buildOptions(scenario({}), ksfo);
-    expect(options.routeTemplates).toEqual(['transition', 'radar_vectors_fix', 'as_filed']);
+    expect(options.routeTemplates).toEqual([
+      'transition',
+      'radar_vectors_fix',
+      'radar_vectors_airway',
+      'as_filed',
+    ]);
     expect(options.altitudePhrases).toEqual(['climb_via', 'climb_via_except', 'maintain']);
     expect(options.expect).toEqual(['ten_minutes', 'three_minutes', 'none']);
   });
@@ -70,6 +75,11 @@ describe('buildOptions', () => {
       'V244',
       'ALTAM',
     ]);
+  });
+
+  it('offers the airway a route joins straight off the SID as a route element', () => {
+    const { routeFixes } = buildOptions(scenario({ filedRoute: 'SFO4 V6 SAC' }), ksfo);
+    expect(routeFixes).toEqual(['V6', 'SAC']);
   });
 
   it('offers the interim altitudes, the published top altitudes, and the filed altitude, sorted', () => {

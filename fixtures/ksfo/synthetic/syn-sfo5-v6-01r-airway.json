@@ -1,0 +1,36 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 10000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KSMF",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "V6",
+      "template": "radar_vectors_airway"
+    },
+    "sidFamily": "SFO"
+  },
+  "id": "syn-sfo5-v6-01r-airway",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "SKW5412",
+    "dayOfWeek": "wednesday",
+    "departureRunway": "01R",
+    "destination": "KSMF",
+    "filedAltitude": 11000,
+    "filedRoute": "SFO4 V6 SAC",
+    "localTime": "1315",
+    "rnavCapable": true,
+    "runwayConfigId": "28/01",
+    "squawk": "3145"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "The filed route joins Victor 6 straight off the SID, so the route element is the airway: ZOA CRAFT Phraseology reference, \"RADAR VECTORS TO JOIN (airway)\" (R-RV-AIRWAY). A pilot-nav SID cannot hand a flight to an airway, so the RNAV TRUKN row is passed over and the northbound 01 radar-vector row issues SFO#."
+  },
+  "status": "settled"
+}

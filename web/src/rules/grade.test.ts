@@ -174,15 +174,36 @@ describe('grade', () => {
     expect(sid?.expectedLabel).toBe('TRUKN TWO (RNAV)');
   });
 
-  it('ignores the fix on an as-filed route', () => {
+  it('grades an as-filed route on the fix it hands over on', () => {
     const asFiled: ResolvedClearance = {
       ...expected,
-      route: { value: { template: 'as_filed' }, citations: [] },
+      route: { value: { template: 'as_filed', fix: 'TRUKN' }, citations: [] },
     };
-    const [, , route] = grade({ ...correct, routeTemplate: 'as_filed' }, asFiled, sids);
+    const picks: PlayerPicks = { ...correct, routeTemplate: 'as_filed', routeFix: 'TRUKN' };
+    const [, , route] = grade(picks, asFiled, sids);
     expect(route?.ok).toBe(true);
-    expect(route?.expectedLabel).toBe('then as filed');
-    expect(route?.actualLabel).toBe('then as filed');
+    expect(route?.expectedLabel).toBe('TRUKN, then as filed');
+    const [, , wrongFix] = grade({ ...picks, routeFix: 'DEDHD' }, asFiled, sids);
+    expect(wrongFix?.ok).toBe(false);
+    expect(wrongFix?.actualLabel).toBe('DEDHD, then as filed');
+  });
+
+  it('grades an airway route on the airway the vectors join', () => {
+    const airway: ResolvedClearance = {
+      ...expected,
+      route: { value: { template: 'radar_vectors_airway', fix: 'V6' }, citations: [] },
+    };
+    const picks: PlayerPicks = {
+      ...correct,
+      routeTemplate: 'radar_vectors_airway',
+      routeFix: 'V6',
+    };
+    const [, , route] = grade(picks, airway, sids);
+    expect(route?.ok).toBe(true);
+    expect(route?.expectedLabel).toBe('radar vectors to join V6');
+    const [, , wrongAirway] = grade({ ...picks, routeFix: 'V244' }, airway, sids);
+    expect(wrongAirway?.ok).toBe(false);
+    expect(wrongAirway?.actualLabel).toBe('radar vectors to join V244');
   });
 
   it('ignores the feet on a plain climb via SID', () => {

@@ -46,9 +46,9 @@ describe('phraseRoute', () => {
     expect(result.value).toEqual({ template: 'radar_vectors_fix', fix: 'DEDHD' });
   });
 
-  it('says "as filed" for a pilot-nav SID whose exit fix is not a transition', () => {
+  it('names the fix a pilot-nav SID hands over on before "as filed"', () => {
     const result = phraseRoute({ ...sid('TRUKN2'), baseFix: 'TRUKN' }, 'TRUKN', ksfo);
-    expect(result.value).toEqual({ template: 'as_filed' });
+    expect(result.value).toEqual({ template: 'as_filed', fix: 'TRUKN' });
     expect(result.citations.map((citation) => citation.id)).toEqual(['R-AS-FILED']);
   });
 
@@ -60,6 +60,26 @@ describe('phraseRoute', () => {
         spokenAsTransition: false,
       })),
     };
-    expect(phraseRoute(quiet, 'DEDHD', ksfo).value).toEqual({ template: 'as_filed' });
+    expect(phraseRoute(quiet, 'DEDHD', ksfo).value).toEqual({
+      template: 'as_filed',
+      fix: 'DEDHD',
+    });
+  });
+
+  it('joins an airway off a radar-vector SID', () => {
+    const result = phraseRoute(sid('SFO5'), 'V6', ksfo);
+    expect(result.value).toEqual({ template: 'radar_vectors_airway', fix: 'V6' });
+    expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
+  });
+
+  it('joins an airway off a vector-hybrid SID', () => {
+    const result = phraseRoute(sid('GAPP7'), 'J501', ksfo);
+    expect(result.value).toEqual({ template: 'radar_vectors_airway', fix: 'J501' });
+    expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
+  });
+
+  it('leaves a pilot-nav SID on "as filed" for an airway it cannot be vectored to', () => {
+    const result = phraseRoute(sid('TRUKN2'), 'V6', ksfo);
+    expect(result.value).toEqual({ template: 'as_filed', fix: 'V6' });
   });
 });

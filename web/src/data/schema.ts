@@ -6,8 +6,18 @@ export const AircraftClassSchema = z.enum(['P', 'T', 'J']);
 /** SOP departure direction that a gate fix belongs to. */
 export const DirectionSchema = z.enum(['north', 'south', 'oceanic']);
 
-/** Shape of the route element of a clearance, and of the phrase used to speak it. */
-export const RouteTemplateSchema = z.enum(['transition', 'radar_vectors_fix', 'as_filed']);
+/**
+ * Shape of the route element of a clearance, and of the phrase used to speak it.
+ *
+ * `radar_vectors_airway` is the form a route that joins an airway straight off the SID takes, and
+ * its `fix` carries the airway token rather than a fix.
+ */
+export const RouteTemplateSchema = z.enum([
+  'transition',
+  'radar_vectors_fix',
+  'radar_vectors_airway',
+  'as_filed',
+]);
 
 /** Shape of the altitude element of a clearance. */
 export const AltitudePhraseSchema = z.enum(['climb_via', 'climb_via_except', 'maintain']);

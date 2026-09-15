@@ -11,9 +11,16 @@ const AIRWAY_TOKEN = /^[JVQT]\d+$/;
 /** The directions a gate fix can belong to, in the order `gates` lists them. */
 const DIRECTIONS: readonly Direction[] = ['north', 'south', 'oceanic'];
 
-/** The filed route split into the procedure the pilot filed and the route that follows it. */
+/**
+ * The filed route split into the procedure the pilot filed and the route that follows it.
+ *
+ * `exitElement` is what the flight leaves the terminal on and what the route phrase names: the
+ * first fix after the procedure, or the airway when the route joins one straight off the SID.
+ * `exitFix` is the first fix of the route either way, which is what the gate lookup reads.
+ */
 export type ParsedRoute = {
   filedSidToken?: string;
+  exitElement: string;
   exitFix: string;
   tokens: string[];
 };
@@ -26,6 +33,16 @@ export type ParsedRoute = {
  */
 export function isSidToken(token: string): boolean {
   return SID_TOKEN.test(token) && !AIRWAY_TOKEN.test(token);
+}
+
+/**
+ * Whether a route token names an airway.
+ *
+ * @param token One token of a filed route.
+ * @returns True for `V6`, `J501`, `Q158`, and `T257`, false for a fix or a procedure.
+ */
+export function isAirwayToken(token: string): boolean {
+  return AIRWAY_TOKEN.test(token);
 }
 
 /** Splits a route string on whitespace, dropping the empty strings a blank route produces. */
@@ -41,11 +58,12 @@ function splitRoute(filedRoute: string): string[] {
  *
  * A leading procedure token is stripped whether or not it is the procedure the flight will get, so
  * a stale or wrong SID does not change the exit fix. The airport's own navaid is skipped where it
- * is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`. The first token of the result is the exit fix.
+ * is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`. The first token of the result is the element the
+ * flight leaves the terminal on: a fix, or an airway when the route joins one straight off the SID.
  *
  * @param filedRoute The route string as filed.
  * @param airportFaa The departure airport's own navaid identifier, e.g. `SFO`.
- * @returns The tokens from the exit fix onwards; empty when the route has nothing after the
+ * @returns The tokens from the exit element onwards; empty when the route has nothing after the
  *   procedure.
  */
 export function routeFromExitFix(filedRoute: string, airportFaa: string): string[] {
@@ -56,7 +74,12 @@ export function routeFromExitFix(filedRoute: string, airportFaa: string): string
 }
 
 /**
- * Splits a filed route into its procedure token and the fix the flight leaves the terminal on.
+ * Splits a filed route into its procedure token, the element the flight leaves the terminal on, and
+ * the first fix of the route.
+ *
+ * A route that joins an airway straight off the SID leaves on that airway, and the fix the airway
+ * leads to is what places the flight in a departure gate. A route with no fix at all after the
+ * procedure blocks the route element: there is nothing to pick a gate, and so a SID, from.
  *
  * @param filedRoute The route string as filed.
  * @param airport The airport data, for the airport's own navaid identifier.
@@ -69,17 +92,19 @@ export function parseFiledRoute(
   const first = splitRoute(filedRoute)[0];
   const filedSidToken = first !== undefined && isSidToken(first) ? first : undefined;
   const tokens = routeFromExitFix(filedRoute, airport.airport.faa);
-  const exitFix = tokens[0];
-  if (exitFix === undefined) {
+  const exitElement = tokens[0];
+  if (exitElement === undefined) {
     return unresolved('R.route', `filed route "${filedRoute}" has no fix after the procedure`);
   }
-  if (AIRWAY_TOKEN.test(exitFix)) {
+  const exitFix = tokens.find((token) => !isAirwayToken(token));
+  if (exitFix === undefined) {
     return unresolved(
       'R.route',
-      `filed route "${filedRoute}" joins airway ${exitFix} with no fix to leave the terminal on`,
+      `filed route "${filedRoute}" joins airway ${exitElement} with no fix to leave the terminal on`,
     );
   }
-  return filedSidToken === undefined ? { exitFix, tokens } : { filedSidToken, exitFix, tokens };
+  const parsed = { exitElement, exitFix, tokens };
+  return filedSidToken === undefined ? parsed : { filedSidToken, ...parsed };
 }
 
 /**

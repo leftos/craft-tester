@@ -296,11 +296,11 @@ describe('resolveClearance on the generated KSFO data', () => {
   const truknBaseFix = ksfo.sids.find((sid) => sid.id === 'TRUKN2')?.baseFix;
 
   it.skipIf(truknBaseFix === undefined)(
-    'says "then as filed" when the flight leaves on the SID base fix',
+    'names the base fix and says "then as filed" when the flight leaves on it',
     () => {
       const clearance = clearanceFor(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }));
       expect(clearance.sid.value.id).toBe('TRUKN2');
-      expect(clearance.route.value).toEqual({ template: 'as_filed' });
+      expect(clearance.route.value).toEqual({ template: 'as_filed', fix: 'TRUKN' });
     },
   );
 
@@ -311,6 +311,20 @@ describe('resolveClearance on the generated KSFO data', () => {
       expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
     },
   );
+
+  it('vectors a flight that joins an airway onto a radar-vector SID', () => {
+    const clearance = clearanceFor(
+      scenario({ filedRoute: 'SFO4 V6 SAC', destination: 'KSMF', filedAltitude: 11000 }),
+    );
+    expect(clearance.sid.value.family).toBe('SFO');
+    expect(clearance.route.value).toEqual({ template: 'radar_vectors_airway', fix: 'V6' });
+    expect(clearance.route.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
+  });
+
+  it('blocks a route that joins an airway with no fix to place it in a gate', () => {
+    const result = resolveClearance(scenario({ filedRoute: 'SFO4 V6' }), ksfo);
+    expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.route' }] });
+  });
 
   it('speaks the expect clause when the SID chart publishes no expect note', () => {
     const airport: AirportData = {
@@ -331,9 +345,12 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearanceFor(scenario({}), airport).expect.value).toBeNull();
   });
 
-  it('blocks the route element when the filed route joins an airway straight away', () => {
+  it('blocks the SID element when the airway leads to a fix in no departure gate', () => {
     const result = resolveClearance(scenario({ filedRoute: 'TRUKN2 J501 OED' }), ksfo);
-    expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.route' }] });
+    expect(result).toMatchObject({
+      ok: false,
+      unresolved: [{ element: 'R.sid', reason: expect.stringContaining('no-gate') }],
+    });
   });
 
   it('blocks the SID element for an aircraft type the data does not class', () => {

@@ -256,6 +256,11 @@ export function speakRouteToken(
   return speakFix(token, fixSpoken);
 }
 
+/** Drops the facility word a navaid's spoken name ends in: "Concord VOR" becomes "Concord". */
+function stripFacilityWord(name: string): string {
+  return name.replace(FACILITY_WORD, '');
+}
+
 /**
  * Speaks the name of a published procedure.
  *
@@ -267,7 +272,7 @@ export function speakRouteToken(
  * @returns The spoken procedure name.
  */
 function speakProcedureName(name: string, fixSpoken: Readonly<Record<string, string>>): string {
-  return speakFix(name, fixSpoken).replace(FACILITY_WORD, '');
+  return stripFacilityWord(speakFix(name, fixSpoken));
 }
 
 /**
@@ -317,10 +322,11 @@ function radioSentence(input: SpeakClearanceInput): string {
 }
 
 /**
- * The filed route after the exit fix, which the SID phrase has already spoken.
+ * The filed route after the element the SID phrase has already spoken.
  *
- * The exit fix is the transition fix, the fix the vectors go to, or the SID's base fix, and it is
- * always the first token the route leaves the terminal on, so dropping it needs no case analysis.
+ * That element is the transition fix, the fix the vectors go to, the SID's base fix, or the airway
+ * the vectors join, and it is always the first token the route leaves the terminal on, so dropping
+ * it needs no case analysis.
  */
 function routeAfterExitFix(input: SpeakClearanceInput): string[] {
   return routeFromExitFix(input.filedRoute, input.airportFaa).slice(1);
@@ -379,20 +385,36 @@ function speakTransition(input: SpeakClearanceInput, fix: string): string {
   return published?.spoken ?? speakFix(fix, input.fixSpoken);
 }
 
+/**
+ * A fix spoken bare, the way an "as filed" clearance names the fix the SID hands over on.
+ *
+ * The chart's own name wins where the SID publishes the fix as a transition; otherwise the navaid
+ * name is spoken without its facility word, so the base fix of the TRUKN TWO is "Trukn" and a
+ * navaid left on is "Concord", not "Concord VOR".
+ */
+function speakBareFix(input: SpeakClearanceInput, fix: string): string {
+  return stripFacilityWord(speakTransition(input, fix));
+}
+
+/** The phrase that names what the flight leaves the terminal on, one per route shape. */
+function routeElementPhrase(input: SpeakClearanceInput, fix: string): string {
+  const { template } = input.clearance.route.value;
+  if (template === 'transition') return `${speakTransition(input, fix)} transition`;
+  if (template === 'radar_vectors_fix') return `radar vectors ${speakFix(fix, input.fixSpoken)}`;
+  if (template === 'radar_vectors_airway') {
+    return `radar vectors to join ${speakRouteToken(fix, input.fixSpoken)}`;
+  }
+  return speakBareFix(input, fix);
+}
+
 function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[]): string {
-  const route = input.clearance.route.value;
   const callsign = speakCallsign(input.callsign, input.telephony);
   const parts = [
     `${callsign}, cleared to ${input.destinationSpoken} airport`,
     `${input.clearance.sid.value.spoken} departure`,
   ];
-  const fix = route.fix;
-  if (fix !== undefined && route.template === 'transition') {
-    parts.push(`${speakTransition(input, fix)} transition`);
-  }
-  if (fix !== undefined && route.template === 'radar_vectors_fix') {
-    parts.push(`radar vectors ${speakFix(fix, input.fixSpoken)}`);
-  }
+  const fix = input.clearance.route.value.fix;
+  if (fix !== undefined) parts.push(routeElementPhrase(input, fix));
   return [...parts, ...routeTail].join(', ');
 }
 
@@ -401,6 +423,20 @@ function joinSentences(parts: readonly string[]): string {
     .filter((part) => part.length > 0)
     .map((part) => `${capitalizeFirst(part)}.`)
     .join(' ');
+}
+
+/**
+ * The full-route reading of everything after the element the SID phrase already spoke.
+ *
+ * A clearance that joined an airway has spoken the airway but not the fix it leads to, and that fix
+ * is not flown direct, so it is read bare; the ordinary grammar takes over from the next token.
+ */
+function fullRouteUnits(input: SpeakClearanceInput, tokens: readonly string[]): string[] {
+  const [first, ...rest] = tokens;
+  if (input.clearance.route.value.template !== 'radar_vectors_airway' || first === undefined) {
+    return routeUnits(tokens, input.fixSpoken);
+  }
+  return [speakFix(first, input.fixSpoken), ...routeUnits(rest, input.fixSpoken)];
 }
 
 /**
@@ -424,9 +460,6 @@ export function speakClearance(input: SpeakClearanceInput): SpokenClearance {
   const abbreviatedTail = tokens.length === 0 ? ['direct'] : ['then as filed'];
   return {
     abbreviated: joinSentences([clearedSentence(input, abbreviatedTail), ...tail]),
-    fullRoute: joinSentences([
-      clearedSentence(input, routeUnits(tokens, input.fixSpoken)),
-      ...tail,
-    ]),
+    fullRoute: joinSentences([clearedSentence(input, fullRouteUnits(input, tokens)), ...tail]),
   };
 }

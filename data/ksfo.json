@@ -1034,42 +1034,47 @@
   "phraseologyRules": [
     {
       "id": "R-TRANSITION",
-      "source": "FAA JO 7110.65 4-3-2 c 5",
+      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions"
     },
     {
       "id": "R-AS-FILED",
-      "source": "FAA JO 7110.65 4-3-2 c 5",
-      "text": "(SID name and number) DEPARTURE, THEN AS FILED — used when the route leaves the SID at its base fix with no transition"
+      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "text": "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word"
     },
     {
       "id": "R-RV-SID",
-      "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice",
+      "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice; ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
     },
     {
+      "id": "R-RV-AIRWAY",
+      "source": "ZOA CRAFT Phraseology reference",
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+    },
+    {
       "id": "A-CLIMB-VIA",
-      "source": "FAA JO 7110.65 4-3-2 c 4 (a)",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
       "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO the SOP interim table applies to every SID, so this form does not occur in clearance mode"
     },
     {
       "id": "A-CLIMB-VIA-EXCEPT",
-      "source": "FAA JO 7110.65 4-3-2 c 4 (b)",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (b); ZOA CRAFT Phraseology reference",
       "text": "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions but no top altitude is published or ATC needs an interim altitude"
     },
     {
       "id": "A-MAINTAIN",
-      "source": "FAA JO 7110.65 4-3-2 c 5",
+      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
       "text": "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
     },
     {
       "id": "A-EXPECT",
-      "source": "FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv",
+      "source": "FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv; ZOA CRAFT Phraseology reference",
       "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note; three minutes when a non-standard interim altitude is issued (SFO ATCT SOP 2-2 c iv)"
     },
     {
       "id": "C-DEST",
-      "source": "FAA JO 7110.65 4-3-2 a",
+      "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
       "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
     }
   ],
@@ -1086,6 +1091,12 @@
         "id": "cbt",
         "title": "S1 KSFO Clearance Delivery, Ground Control, Gate Hold (S1-SFO-0 CBT)",
         "url": "https://docs.google.com/presentation/d/1yqKhIdUYZlHxmA-mWC_UIX1A1jb7kuMJO3vu_ApTbV8"
+      },
+      {
+        "dated": "2026-09-15",
+        "id": "craft_phraseology",
+        "title": "ZOA CRAFT Phraseology reference",
+        "url": "https://docs.google.com/document/d/1Jq0uqpuhIZRSfKvYbyJvAplT1h6zf-wMhcAN6MAQC6k"
       }
     ],
     "sop": {

@@ -19,11 +19,16 @@ export type SidSelection = {
   notices: Notice[];
 };
 
-/** Whether every extra condition of a row holds for this flight. */
+/**
+ * Whether every extra condition of a row holds for this flight.
+ *
+ * `exitFixes` is matched against the element the flight leaves on, so a row that lists fixes never
+ * applies to a route that joins an airway straight off the SID.
+ */
 function conditionsHold(
   when: AssignmentCondition,
   ctx: Classification,
-  exitFix: string,
+  exitElement: string,
   scenario: Scenario,
 ): boolean {
   return [
@@ -31,7 +36,7 @@ function conditionsHold(
     when.notConfigs === undefined || !when.notConfigs.includes(ctx.config.id),
     when.noiseWindow === undefined || ctx.activeNoiseWindows.includes(when.noiseWindow),
     when.rnav === undefined || when.rnav === scenario.rnavCapable,
-    when.exitFixes === undefined || when.exitFixes.includes(exitFix),
+    when.exitFixes === undefined || when.exitFixes.includes(exitElement),
   ].every(Boolean);
 }
 
@@ -39,7 +44,7 @@ function conditionsHold(
 function rowApplies(
   row: AssignmentRule,
   ctx: Classification,
-  exitFix: string,
+  exitElement: string,
   direction: Direction | undefined,
   scenario: Scenario,
 ): boolean {
@@ -47,7 +52,7 @@ function rowApplies(
   if (row.direction !== 'any' && row.direction !== direction) return false;
   if (!row.runwayFamilies.includes(ctx.runwayFamily)) return false;
   if (!row.classes.includes(ctx.aircraftClass)) return false;
-  return row.when === undefined || conditionsHold(row.when, ctx, exitFix, scenario);
+  return row.when === undefined || conditionsHold(row.when, ctx, exitElement, scenario);
 }
 
 /** The active notice, if any, that takes a row's SID family out of use. */
@@ -66,19 +71,24 @@ function sidOffNotice(
   );
 }
 
-/** Whether the SID reaches the exit fix: by transition, by its base fix, or by radar vectors. */
-function servesExitFix(sid: Sid, exitFix: string): boolean {
+/**
+ * Whether the SID reaches the exit element: by transition, by its base fix, or by radar vectors.
+ *
+ * A route that joins an airway leaves on the airway, which no chart publishes as a transition or a
+ * base fix, so only a SID that ends in vectors can serve it.
+ */
+function servesExitElement(sid: Sid, exitElement: string): boolean {
   if (sid.kind === 'radar_vectors' || sid.kind === 'vector_hybrid') return true;
-  if (sid.transitions.some((transition) => transition.fix === exitFix)) return true;
-  return sid.baseFix === exitFix;
+  if (sid.transitions.some((transition) => transition.fix === exitElement)) return true;
+  return sid.baseFix === exitElement;
 }
 
-/** Whether the flight can fly the SID from its runway with its equipment to its exit fix. */
-function isCompatible(sid: Sid, exitFix: string, scenario: Scenario): boolean {
+/** Whether the flight can fly the SID from its runway with its equipment to its exit element. */
+function isCompatible(sid: Sid, exitElement: string, scenario: Scenario): boolean {
   return (
     sid.runways.includes(scenario.departureRunway) &&
     (!sid.rnavRequired || scenario.rnavCapable) &&
-    servesExitFix(sid, exitFix)
+    servesExitElement(sid, exitElement)
   );
 }
 
@@ -102,15 +112,15 @@ function noSidReason(
  * procedure blocks the clearance: v1 does not issue non-DP headings.
  *
  * @param ctx The classified flight.
- * @param exitFix The fix the flight leaves the terminal on.
- * @param direction The gate direction of the exit fix, undefined when it is not a gate.
+ * @param exitElement The fix, or the airway, the flight leaves the terminal on.
+ * @param direction The gate direction of the route's first fix, undefined when it is not a gate.
  * @param scenario The filed flight plan.
  * @param airport The airport data.
  * @returns The selected SID with its row and sector, or `Unresolved` naming the gap.
  */
 export function selectSid(
   ctx: Classification,
-  exitFix: string,
+  exitElement: string,
   direction: Direction | undefined,
   scenario: Scenario,
   airport: AirportData,
@@ -118,7 +128,7 @@ export function selectSid(
   const incompatible: string[] = [];
   const notices: Notice[] = [];
   for (const row of airport.assignmentRules) {
-    if (!rowApplies(row, ctx, exitFix, direction, scenario)) continue;
+    if (!rowApplies(row, ctx, exitElement, direction, scenario)) continue;
     const notice = sidOffNotice(row.sidFamily, ctx, airport);
     if (notice !== undefined) {
       notices.push(notice);
@@ -126,7 +136,7 @@ export function selectSid(
     }
     if (row.sidFamily === null) return unresolved('R.sid', row.text);
     const sid = airport.sids.find(
-      (entry) => entry.family === row.sidFamily && isCompatible(entry, exitFix, scenario),
+      (entry) => entry.family === row.sidFamily && isCompatible(entry, exitElement, scenario),
     );
     if (sid === undefined) {
       incompatible.push(row.id);

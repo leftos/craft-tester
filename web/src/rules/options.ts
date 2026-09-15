@@ -3,7 +3,12 @@ import { isSidToken } from '@/rules/route.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
 
 /** Every route shape the form offers, in the order the results view names them. */
-const ROUTE_TEMPLATES: readonly RouteTemplate[] = ['transition', 'radar_vectors_fix', 'as_filed'];
+const ROUTE_TEMPLATES: readonly RouteTemplate[] = [
+  'transition',
+  'radar_vectors_fix',
+  'radar_vectors_airway',
+  'as_filed',
+];
 
 /** Every altitude phrase the form offers. */
 const ALTITUDE_PHRASES: readonly AltitudePhrase[] = ['climb_via', 'climb_via_except', 'maintain'];
@@ -31,7 +36,12 @@ function unique<T>(values: readonly T[]): T[] {
   return [...new Set(values)];
 }
 
-/** The first few fixes of the filed route after the procedure token, as route-fix distractors. */
+/**
+ * The first few elements of the filed route after the procedure token, as route-fix distractors.
+ *
+ * An airway is kept, because a route that joins one straight off the SID is cleared on the airway
+ * and the form has to offer it as the element to pick.
+ */
 function filedFixes(scenario: Scenario): string[] {
   const tokens = scenario.filedRoute
     .trim()

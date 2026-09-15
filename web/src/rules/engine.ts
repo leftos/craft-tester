@@ -32,7 +32,7 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
   if (isUnresolved(route)) return blocked(route);
   const selection = selectSid(
     ctx,
-    route.exitFix,
+    route.exitElement,
     directionOf(route.exitFix, airport.gates),
     scenario,
     airport,
@@ -55,7 +55,7 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
         value: { id: sid.id, family: sid.family, spoken: sid.spoken },
         citations: [toCitation(selection.row), ...selection.notices.map(toCitation)],
       },
-      route: phraseRoute(sid, route.exitFix, airport),
+      route: phraseRoute(sid, route.exitElement, airport),
       altitude: altitude.altitude,
       expect: altitude.expect,
       frequency,

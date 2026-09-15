@@ -1,4 +1,4 @@
-import type { Sid } from '@/data/schema.ts';
+import type { RouteTemplate, Sid } from '@/data/schema.ts';
 import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 
 /** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
@@ -13,12 +13,21 @@ function formatFeet(feet: number): string {
   return String(feet).replace(/\B(?=(?:\d{3})+$)/g, ',');
 }
 
+/** How the results view names each route shape on its own, when the pick names no element. */
+const ROUTE_PHRASES: Record<RouteTemplate, string> = {
+  transition: 'transition',
+  radar_vectors_fix: 'radar vectors',
+  radar_vectors_airway: 'radar vectors to join',
+  as_filed: 'then as filed',
+};
+
 /** Renders a route element the way the results view names it, e.g. `DEDHD transition`. */
 function routeLabel(route: ResolvedClearance['route']['value']): string {
   const { template, fix } = route;
-  if (template === 'as_filed') return 'then as filed';
-  if (fix === undefined) return template === 'transition' ? 'transition' : 'radar vectors';
-  return template === 'transition' ? `${fix} transition` : `radar vectors ${fix}`;
+  if (fix === undefined) return ROUTE_PHRASES[template];
+  if (template === 'transition') return `${fix} transition`;
+  if (template === 'as_filed') return `${fix}, then as filed`;
+  return `${ROUTE_PHRASES[template]} ${fix}`;
 }
 
 /** Renders an altitude element, e.g. `climb via SID except maintain 10,000`. */
@@ -36,11 +45,13 @@ function expectLabel(minutes: number | null): string {
     : `expect filed altitude ${minutes} minutes after departure`;
 }
 
-/** The route element matches when the template matches and, where one is spoken, the fix too. */
+/**
+ * The route element matches when the template matches and, where one is spoken, the element too.
+ *
+ * Every shape names an element now, "as filed" included, so the fix is always compared.
+ */
 function routeOk(picks: PlayerPicks, route: ResolvedClearance['route']['value']): boolean {
-  if (picks.routeTemplate !== route.template) return false;
-  if (route.template === 'as_filed') return true;
-  return picks.routeFix === route.fix;
+  return picks.routeTemplate === route.template && picks.routeFix === route.fix;
 }
 
 /** The altitude element matches when the phrase matches and, where one is spoken, the feet too. */

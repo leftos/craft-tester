@@ -9,6 +9,7 @@
     "expect": null,
     "frequency": "120.9",
     "route": {
+      "fix": "TRUKN",
       "template": "as_filed"
     },
     "sidFamily": "TRUKN"

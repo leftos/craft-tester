@@ -51,8 +51,9 @@ def test_ksfo_loads(ksfo_inputs: AirportInputs) -> None:
     assert len(sop.source.sha256) == 64
     assert len(sop.source.sentinels) == 5
     assert sop.source.transcribed_at == date(2026, 9, 15)
-    assert [source.id for source in sop.secondary_sources] == ["cbt"]
+    assert [source.id for source in sop.secondary_sources] == ["cbt", "craft_phraseology"]
     assert sop.secondary_sources[0].dated == date(2023, 2, 26)
+    assert sop.secondary_sources[1].dated == date(2026, 9, 15)
 
 
 def test_runway_configs_and_sectors(ksfo_inputs: AirportInputs) -> None:
