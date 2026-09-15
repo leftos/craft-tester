@@ -313,4 +313,4 @@ Step 16 can run any time after step 3 (it only needs the fixture schema). Steps 
 - End to end: `pnpm -C web preview`, open the app via Claude in Chrome, play several seeded scenarios (a TRUKN2 jet off 01R in 28/01, a MOLEN9 oceanic jet off 28L, an SFO5 prop off 01L, a NIITE4 night departure), confirm the grading colors, citations, and spoken clearance match the expected fixtures.
 - Amendment mode: `pnpm -C web test -- amend` covers every check with a positive and a negative case; fault-injection generator seeds 0..999 each produce exactly the injected amendment.
 - Validation loop: for each worksheet plan, `pnpm -C web propose <id>` output is shown to the user one at a time; a corrected rule must make the fixture pass without editing engine code (YAML + regenerate only), otherwise the plan gets a new rule concept and a subplan.
-- After worksheets are ingested: all 30 phraseology and 52 amendment fixtures `settled` and passing.
+- After worksheets are ingested: all 18 phraseology and 52 amendment fixtures `settled` and passing.
