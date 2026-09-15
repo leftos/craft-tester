@@ -21,7 +21,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [ ] 15. CI + GitHub Pages (workflows landed, pinned SHAs, actionlint + zizmor clean); finalize README, ARCHITECTURE, CLAUDE.md at the end
 - [x] 16. `import-worksheets`: seven Google Docs → 70 pending fixtures (18 phraseology + 52 amendment) in `fixtures/ksfo/worksheets/`. Departure runway defaults to the config's first runway pending validation. Findings for the validation loop: UAL313 files `/Q` (not in FAA table 5-4-1, so treated as non-RNAV; likely a deliberate wrong box) and `BVLQ124` (sheet typo); four rows are truncated in the source (KAL65 ×2, NAX7068, VOI5909)
 - [ ] 17. Validation loop, clearance mode (one at a time with the user, then batch)
-- [ ] 18. TEC routes, LOA rules, equipment suffixes, destination coordinates, fleet ceilings
+- [x] 18. TEC routes, LOA rules, equipment suffixes, destination coordinates, fleet ceilings (`data/ksfo.json` now carries 49 TEC/ADR rows and 4 LOA rules; the build fails when a TEC row's leading DP is not published for the runway family it departs. `routes.yaml` gained KSAC/KOAK/KSJC for the TEC rows and KVNY/KSNA/KLGB because the ZOA–ZSE LA-basin LOA row names them; none of the six has a `routes` entry yet, so they cannot be drawn as scenarios. The build summary line does not count TEC/LOA rows)
 - [ ] 19. Amendment engine
 - [ ] 20. Amendment scenario generator + UI + mode switch
 - [ ] 21. Validation loop, amendment mode
