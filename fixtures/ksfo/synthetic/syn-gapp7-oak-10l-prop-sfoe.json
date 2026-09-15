@@ -6,10 +6,7 @@
       "phrase": "maintain"
     },
     "clearedTo": "KSMF",
-    "expect": {
-      "feet": 6000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "OAK",
@@ -33,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOE-N-GAPP: CIITY3 does not serve the conventional fix OAK, so the northbound fallback applies and hands off to Richmond 120.9 with SFOE-PT-5000"
+    "note": "SFOE-N-GAPP: CIITY3 does not serve the conventional fix OAK, so the northbound fallback applies and hands off to Richmond 120.9 with SFOE-PT-5000; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

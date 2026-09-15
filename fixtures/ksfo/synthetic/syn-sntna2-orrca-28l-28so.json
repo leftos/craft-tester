@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "KBOI",
-    "expect": {
-      "feet": 41000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "ORRCA",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-N-SNTNA-28: SNTNA# replaces TRUKN# off the 28s when the TRUKN DP is not in use (notConfigs: 28 RT)"
+    "note": "SFOW-N-SNTNA-28: SNTNA# replaces TRUKN# off the 28s when the TRUKN DP is not in use (notConfigs: 28 RT); expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

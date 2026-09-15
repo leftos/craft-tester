@@ -429,8 +429,8 @@ notices:
 
 # Airport-level phraseology toggles. Defaults follow FAA JO 7110.65 4-3-2; the validation loop may flip them.
 phraseology:
-  # User decision 2026-09-15: the expect clause is dropped when the filed altitude is the altitude just assigned.
-  expect_altitude: only_when_interim_below_filed
+  # User rule 2026-09-15: the expect clause is redundant when the final altitude is as filed and the SID chart already publishes "expect filed altitude N minutes after departure"; the SOP's non-standard-interim three-minute clause is the override.
+  expect_altitude: unless_chart_publishes_it
   non_standard_interim_expect_minutes: 3
   vector_hybrid_transitions_spoken: false
 
@@ -456,7 +456,7 @@ phraseology_rules:
     text: "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
   - id: A-EXPECT
     source: FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv
-    text: "EXPECT (filed altitude) ONE ZERO MINUTES AFTER DEPARTURE; three minutes when a non-standard interim altitude is issued"
+    text: "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note; three minutes when a non-standard interim altitude is issued (SFO ATCT SOP 2-2 c iv)"
   - id: C-DEST
     source: FAA JO 7110.65 4-3-2 a
     text: "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"

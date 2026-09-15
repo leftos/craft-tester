@@ -459,6 +459,7 @@ def _sid(chart_name: str, chart: ChartInput, override: SidOverride, cifp: CifpSi
         "runways": list(runways),
         "transitions": transitions,
         "topAltitude": top_altitude,
+        "chartExpectFiledAltitudeMinutes": chart.facts.expect_filed_altitude_minutes,
         "hasCrossingRestrictions": has_restrictions,
         "restrictions": [] if cifp is None else [_restriction(restriction) for restriction in cifp.restrictions],
         "climbViaEligible": _climb_via_eligible(kind, top_altitude, has_restrictions=has_restrictions),

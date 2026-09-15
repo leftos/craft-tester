@@ -35,7 +35,10 @@ type Expectation = {
   route: { template: RouteTemplate; fix?: string };
   altitude: { phrase: AltitudePhrase; feet?: number };
   frequency: string;
-  /** The expect clause where it is not the filed altitude ten minutes out, notably `null`. */
+  /**
+   * The expect clause where one is spoken. Every KSFO chart publishes the expect note itself, so
+   * under `unless_chart_publishes_it` the clause is `null` on every case that leaves this out.
+   */
   expectClause?: { feet: number; minutes: number } | null;
 };
 
@@ -263,10 +266,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearance.frequency.value.value).toBe(expected.frequency);
     expect(clearance.clearedTo.value).toBe(flight.destination);
     expect(clearance.departureRunway).toBe(flight.departureRunway);
-    const expectClause =
-      expected.expectClause === undefined
-        ? { feet: flight.filedAltitude, minutes: 10 }
-        : expected.expectClause;
+    const expectClause = expected.expectClause === undefined ? null : expected.expectClause;
     expect(clearance.expect.value).toEqual(expectClause);
     for (const element of [
       clearance.clearedTo,
@@ -311,6 +311,17 @@ describe('resolveClearance on the generated KSFO data', () => {
       expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
     },
   );
+
+  it('speaks the expect clause when the SID chart publishes no expect note', () => {
+    const airport: AirportData = {
+      ...ksfo,
+      sids: ksfo.sids.map((sid) => ({ ...sid, chartExpectFiledAltitudeMinutes: null })),
+    };
+    expect(clearanceFor(scenario({}), airport).expect.value).toEqual({
+      feet: scenario({}).filedAltitude,
+      minutes: 10,
+    });
+  });
 
   it('speaks no expect clause once the phraseology toggle says never', () => {
     const airport: AirportData = {

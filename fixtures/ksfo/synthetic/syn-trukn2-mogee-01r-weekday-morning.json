@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "KSLC",
-    "expect": {
-      "feet": 37000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "MOGEE",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "The same 0730 departure on a Tuesday, when the noise window has closed and SFOW-N-TRUKN-01 applies again"
+    "note": "The same 0730 departure on a Tuesday, when the noise window has closed and SFOW-N-TRUKN-01 applies again; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "KSAN",
-    "expect": {
-      "feet": 41000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "135.1",
     "route": {
       "fix": "YYUNG",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFO-SEGUL-OFF is active by default, so the SFOW-S-SEGUL row drops out and SSTIK#.YYUNG is issued instead"
+    "note": "SFO-SEGUL-OFF is active by default, so the SFOW-S-SEGUL row drops out and SSTIK#.YYUNG is issued instead; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }

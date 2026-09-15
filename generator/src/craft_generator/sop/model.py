@@ -31,7 +31,7 @@ RoutePhrasing = Literal["transition", "radar_vectors_fix", "as_filed"]
 DepartureSidKind = Literal["rnav_pilot_nav", "conventional_pilot_nav", "vector_hybrid", "radar_vectors"]
 AltitudeOutcomeKind = Literal["interim", "climb_via"]
 NoticeEffectKind = Literal["sid_off"]
-ExpectAltitudePolicy = Literal["always", "only_when_interim_below_filed", "never"]
+ExpectAltitudePolicy = Literal["always", "unless_chart_publishes_it", "never"]
 WorksheetKind = Literal["phraseology", "amendment"]
 PhraseologyReading = Literal["abbreviated", "full_route"]
 
@@ -45,7 +45,7 @@ ROUTE_PHRASINGS: tuple[RoutePhrasing, ...] = ("transition", "radar_vectors_fix",
 DEPARTURE_SID_KINDS: tuple[DepartureSidKind, ...] = ("rnav_pilot_nav", "conventional_pilot_nav", "vector_hybrid", "radar_vectors")
 ALTITUDE_OUTCOME_KINDS: tuple[AltitudeOutcomeKind, ...] = ("interim", "climb_via")
 NOTICE_EFFECT_KINDS: tuple[NoticeEffectKind, ...] = ("sid_off",)
-EXPECT_ALTITUDE_POLICIES: tuple[ExpectAltitudePolicy, ...] = ("always", "only_when_interim_below_filed", "never")
+EXPECT_ALTITUDE_POLICIES: tuple[ExpectAltitudePolicy, ...] = ("always", "unless_chart_publishes_it", "never")
 TOP_ALTITUDE_KINDS: tuple[TopAltitudeKind, ...] = ("published", "assigned_by_atc", "none")
 WORKSHEET_KINDS: tuple[WorksheetKind, ...] = ("phraseology", "amendment")
 PHRASEOLOGY_READINGS: tuple[PhraseologyReading, ...] = ("abbreviated", "full_route")

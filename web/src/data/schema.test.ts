@@ -76,6 +76,7 @@ const minimalAirportData: AirportData = {
       runways: ['01R', '28L', '28R'],
       transitions: [{ fix: 'DEDHD', spoken: 'Dedhd', kind: 'enroute', spokenAsTransition: true }],
       topAltitude: { kind: 'published', feet: 10000 },
+      chartExpectFiledAltitudeMinutes: null,
       hasCrossingRestrictions: true,
       restrictions: [{ fix: 'TRUKN', altitudeDescription: '+' }],
       climbViaEligible: true,

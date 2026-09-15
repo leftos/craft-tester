@@ -30,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SOP 2-2 a: northbound off the 01s is SFO#. Filed 5,000 equals the interim, so `phraseology.expectAltitude: only_when_interim_below_filed` drops the expect clause (user decision 2026-09-15)."
+    "note": "SOP 2-2 a: northbound off the 01s is SFO#. Filed 5,000 equals the interim, so the expect clause is dropped because the filed altitude is the altitude cleared to (phraseology.expectAltitude) (user decision 2026-09-15)."
   },
   "status": "settled"
 }

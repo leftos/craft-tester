@@ -5,10 +5,7 @@
       "phrase": "climb_via"
     },
     "clearedTo": "KSLC",
-    "expect": {
-      "feet": 37000,
-      "minutes": 10
-    },
+    "expect": null,
     "frequency": "120.9",
     "route": {
       "fix": "MOGEE",
@@ -32,7 +29,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-N-TRUKN-28: northbound off the 28s while the TRUKN DP is in use (configs: 28 RT)"
+    "note": "SFOW-N-TRUKN-28: northbound off the 28s while the TRUKN DP is in use (configs: 28 RT); expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"
   },
   "status": "settled"
 }
