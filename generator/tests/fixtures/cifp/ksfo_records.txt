@@ -1,0 +1,218 @@
+SUSAP KSFOK2DCIITY34RW10L 010         0        VA                     1038        + 00520     18000                        143041509
+SUSAP KSFOK2DCIITY34RW10L 020ORYANK2PC0E       DF                                                                          143051509
+SUSAP KSFOK2DCIITY34RW10L 030SAHEYK2PC0E       TF                                                                          143061509
+SUSAP KSFOK2DCIITY34RW10L 040CIITYK2PC0EE      TF                                 + 05000                                  143071509
+SUSAP KSFOK2DCIITY34RW10R 010         0        VA                     1038        + 00520     18000                        143081509
+SUSAP KSFOK2DCIITY34RW10R 020URRSAK2PC0E       DF                                                                          143091509
+SUSAP KSFOK2DCIITY34RW10R 030SAHEYK2PC0E       TF                                                                          143101509
+SUSAP KSFOK2DCIITY34RW10R 040CIITYK2PC0EE      TF                                 + 05000                                  143111509
+SUSAP KSFOK2DCIITY34RW19B 010         0        VA                     1938        + 00520     18000                        143121509
+SUSAP KSFOK2DCIITY34RW19B 020CIITYK2PC0EE  L   DF                                 + 05000                                  143131509
+SUSAP KSFOK2DCIITY36DEDHD 010CIITYK2PC0E       IF                                             18000                        143141509
+SUSAP KSFOK2DCIITY36DEDHD 020BCEEEK2PC0E       TF                                 + 11000                                  143151509
+SUSAP KSFOK2DCIITY36DEDHD 030DEDHDK2EA0EE      TF                                                                          143161509
+SUSAP KSFOK2DCIITY36GRTFL 010CIITYK2PC0E       IF                                             18000                        143171509
+SUSAP KSFOK2DCIITY36GRTFL 020BCEEEK2PC0E       TF                                 + 11000                                  143181509
+SUSAP KSFOK2DCIITY36GRTFL 030GRTFLK2EA0EE      TF                                                                          143191509
+SUSAP KSFOK2DCIITY36MOGEE 010CIITYK2PC0E       IF                                             18000                        143201509
+SUSAP KSFOK2DCIITY36MOGEE 020BCEEEK2PC0E       TF                                 + 11000                                  143211509
+SUSAP KSFOK2DCIITY36MOGEE 030MOGEEK2EA0EE      TF                                                                          143221509
+SUSAP KSFOK2DCIITY36ORRCA 010CIITYK2PC0E       IF                                             18000                        143231509
+SUSAP KSFOK2DCIITY36ORRCA 020BCEEEK2PC0E       TF                                 + 11000                                  143241509
+SUSAP KSFOK2DCIITY36ORRCA 030ORRCAK2EA0EE      TF                                                                          143251509
+SUSAP KSFOK2DCIITY36SYRAH 010CIITYK2PC0E       IF                                             18000                        143261509
+SUSAP KSFOK2DCIITY36SYRAH 020LLVIIK2PC0E       TF                                 + 12000                                  143271509
+SUSAP KSFOK2DCIITY36SYRAH 030SYRAHK2EA0EE      TF                                                                          143281509
+SUSAP KSFOK2DCIITY36TIPRE 010CIITYK2PC0E       IF                                             18000                        143291509
+SUSAP KSFOK2DCIITY36TIPRE 020BCEEEK2PC0E       TF                                 + 11000                                  143301509
+SUSAP KSFOK2DCIITY36TIPRE 030TIPREK2EA0EE      TF                                                                          143311509
+SUSAP KSFOK2DGAPP7 TRW01B 010         0        CA                     0138        + 00413     18000                        143321610
+SUSAP KSFOK2DGAPP7 TRW01B 020SFO  K2D 0VE      FM SFO K2      000000003500    D                                            143331610
+SUSAP KSFOK2DGAPP7 TRW10B 010BARTNK2PC0E       CF SFO K2      0900014509000140D               18000                        143341610
+SUSAP KSFOK2DGAPP7 TRW10B 020OSI  K2D 0VY  R   TFY                                                                         143351610
+SUSAP KSFOK2DGAPP7 TRW10B 030OSI  K2D 0VE      FM OSI K2      000000002080    D                                            143361610
+SUSAP KSFOK2DGAPP7 TRW19B 010         0        CA                     1938        + 00413     18000                        143371610
+SUSAP KSFOK2DGAPP7 TRW19B 020BARTNK2PC0E   L   CFYSFO K2      0900014509000150D                                            143381610
+SUSAP KSFOK2DGAPP7 TRW19B 030OSI  K2D 0VY  R   TFY                                                                         143391610
+SUSAP KSFOK2DGAPP7 TRW19B 040OSI  K2D 0VE      FM OSI K2      000000002080    D                                            143401610
+SUSAP KSFOK2DGAPP7 TRW28B 010NORMMK2PC0EY      CF SFO K2      2810012928100120D               18000                        143411610
+SUSAP KSFOK2DGAPP7 TRW28B 020NORMMK2PC0EE      FM SFO K2      281001292810    D                                            143421610
+SUSAP KSFOK2DGAPP7 VALCOA 010KSFO K2PA0A       IF                                             18000                        143431610
+SUSAP KSFOK2DGAPP7 VALCOA 020ALCOAP EA0EE      DF                                                                          143441612
+SUSAP KSFOK2DGAPP7 VBEBOP 010KSFO K2PA0A       IF                                             18000                        143451610
+SUSAP KSFOK2DGAPP7 VBEBOP 020BEBOPP EA0EE      DF                                                                          143461612
+SUSAP KSFOK2DGAPP7 VENI   010KSFO K2PA0A       IF                                             18000                        143471610
+SUSAP KSFOK2DGAPP7 VENI   020ENI  K2D 0VE      DF                                                                          143481610
+SUSAP KSFOK2DGAPP7 VOAK   010KSFO K2PA0A       IF                                             18000                        143491610
+SUSAP KSFOK2DGAPP7 VOAK   020OAK  K2D 0VE      DF                                                                          143501610
+SUSAP KSFOK2DGAPP7 VOSI   010KSFO K2PA0A       IF                                             18000                        143511610
+SUSAP KSFOK2DGAPP7 VOSI   020OSI  K2D 0VE      DF                                                                          143521610
+SUSAP KSFOK2DGAPP7 VSAU   010KSFO K2PA0A       IF                                             18000                        143531610
+SUSAP KSFOK2DGAPP7 VSAU   020SAU  K2D 0VE      DF                                                                          143541610
+SUSAP KSFOK2DGAPP7 VSGD   010KSFO K2PA0A       IF                                             18000                        143551610
+SUSAP KSFOK2DGAPP7 VSGD   020SGD  K2D 0VE      DF                                                                          143561610
+SUSAP KSFOK2DGNNRR34RW28B 010         0        VA                     2838        + 00513     18000                        143572213
+SUSAP KSFOK2DGNNRR34RW28B 020GNNRRK2PC0EE      DF                                 + 02500                                  143582213
+SUSAP KSFOK2DGNNRR36ALCOA 010GNNRRK2PC0E       IF                                             18000                        143592213
+SUSAP KSFOK2DGNNRR36ALCOA 020ALCOAP EA0EE      TF                                                                          143602213
+SUSAP KSFOK2DGNNRR36AMAKR 010GNNRRK2PC0E       IF                                             18000                        143612213
+SUSAP KSFOK2DGNNRR36AMAKR 020STINSK2EA0E       TF                                                                          143622213
+SUSAP KSFOK2DGNNRR36AMAKR 030AMAKRK2EA0EE      TF                                                                          143632213
+SUSAP KSFOK2DGNNRR36BEBOP 010GNNRRK2PC0E       IF                                             18000                        143642213
+SUSAP KSFOK2DGNNRR36BEBOP 020BEBOPP EA0EE      TF                                                                          143652213
+SUSAP KSFOK2DGNNRR36CINNY 010GNNRRK2PC0E       IF                                             18000                        143662213
+SUSAP KSFOK2DGNNRR36CINNY 020CINNYP EA0EE      TF                                                                          143672213
+SUSAP KSFOK2DMOLEN91RW10B 010SIPLYK2PC0E       CF SFO K2      0900007009000060D   + 02500     18000                        143682201
+SUSAP KSFOK2DMOLEN91RW10B 020         0    R   VIY                    2330                                                 143692201
+SUSAP KSFOK2DMOLEN91RW10B 030STINSK2EA0E   R   CFYPYE K2      1440016232400260D                                            143702201
+SUSAP KSFOK2DMOLEN91RW10B 040MOLENK2EA0EE      TF                                                                          143712201
+SUSAP KSFOK2DMOLEN91RW19B 010         0        CA                     1938        + 00413     18000                        143722201
+SUSAP KSFOK2DMOLEN91RW19B 020         0    L   VIY                    0530                                                 143732201
+SUSAP KSFOK2DMOLEN91RW19B 030SIPLYK2PC0E       CF SFO K2      0900007009000040D   + 02500                                  143742201
+SUSAP KSFOK2DMOLEN91RW19B 040         0    R   VIY                    2330                                                 143752201
+SUSAP KSFOK2DMOLEN91RW19B 050STINSK2EA0E   R   CFYPYE K2      1440016232400260D                                            143762201
+SUSAP KSFOK2DMOLEN91RW19B 060MOLENK2EA0EE      TF                                                                          143772201
+SUSAP KSFOK2DMOLEN91RW28B 010WESLAK2PC0E       CF SFO K2      2810005728100050D   + 01800     18000                        143782201
+SUSAP KSFOK2DMOLEN91RW28B 020MOLENK2EA0EE      CF SFO K2      2870040828700350D                                            143792201
+SUSAP KSFOK2DMOLEN93ENI   010MOLENK2EA0E       IF                                             18000                        143802201
+SUSAP KSFOK2DMOLEN93ENI   020ENI  K2D 0VE      TF                                                                          143812201
+SUSAP KSFOK2DNIITE44RW01B 010         0        VA                     0138        + 00520     18000       KSFO  K2PA       143822407
+SUSAP KSFOK2DNIITE44RW01B 020MDBAYK2PC0E   R   DF                                                                          143832407
+SUSAP KSFOK2DNIITE44RW01B 030HUSSHK2EA0E       TF                                                                          143842407
+SUSAP KSFOK2DNIITE44RW01B 040NIITEK2EA0EE      TF                                                                          143852407
+SUSAP KSFOK2DNIITE44RW28B 010         0        VA                     2838        + 00520     18000220               -     143862407
+SUSAP KSFOK2DNIITE44RW28B 020GALOOK2PC0E   R   DF                                                                          143872407
+SUSAP KSFOK2DNIITE44RW28B 030NIITEK2EA0EE      TF                                                                          143882407
+SUSAP KSFOK2DNIITE46DEDHD 010NIITEK2EA0E       IF                                             18000                        143892407
+SUSAP KSFOK2DNIITE46DEDHD 020REBASK2EA0E       TF                                 + 08000                                  143902407
+SUSAP KSFOK2DNIITE46DEDHD 030DEDHDK2EA0EE      TF                                                                          143912407
+SUSAP KSFOK2DNIITE46GOBBS 010NIITEK2EA0E       IF                                             18000                        143922407
+SUSAP KSFOK2DNIITE46GOBBS 020GOBBSK2EA0EE      TF                                                                          143932407
+SUSAP KSFOK2DNIITE46GRTFL 010NIITEK2EA0E       IF                                             18000                        143942407
+SUSAP KSFOK2DNIITE46GRTFL 020REBASK2EA0E       TF                                 + 08000                                  143952407
+SUSAP KSFOK2DNIITE46GRTFL 030GRTFLK2EA0EE      TF                                                                          143962407
+SUSAP KSFOK2DNIITE46MOGEE 010NIITEK2EA0E       IF                                             18000                        143972407
+SUSAP KSFOK2DNIITE46MOGEE 020REBASK2EA0E       TF                                 + 08000                                  143982407
+SUSAP KSFOK2DNIITE46MOGEE 030MOGEEK2EA0EE      TF                                                                          143992407
+SUSAP KSFOK2DNIITE46ORRCA 010NIITEK2EA0E       IF                                             18000                        144002407
+SUSAP KSFOK2DNIITE46ORRCA 020REBASK2EA0E       TF                                 + 08000                                  144012407
+SUSAP KSFOK2DNIITE46ORRCA 030ORRCAK2EA0EE      TF                                                                          144022407
+SUSAP KSFOK2DNIITE46SYRAH 010NIITEK2EA0E       IF                                             18000                        144032407
+SUSAP KSFOK2DNIITE46SYRAH 020REBASK2EA0E       TF                                 + 08000                                  144042407
+SUSAP KSFOK2DNIITE46SYRAH 030TAMMMK2EA0E       TF                                                                          144052407
+SUSAP KSFOK2DNIITE46SYRAH 040SYRAHK2EA0EE      TF                                                                          144062407
+SUSAP KSFOK2DNIITE46TIPRE 010NIITEK2EA0E       IF                                             18000                        144072407
+SUSAP KSFOK2DNIITE46TIPRE 020REBASK2EA0E       TF                                 + 08000                                  144082407
+SUSAP KSFOK2DNIITE46TIPRE 030TIPREK2EA0EE      TF                                                                          144092407
+SUSAP KSFOK2DSAHEY44RW10L 010         0        VA                     1038        + 00520     18000                        144102108
+SUSAP KSFOK2DSAHEY44RW10L 020ORYANK2PC0E       DF                                                                          144112108
+SUSAP KSFOK2DSAHEY44RW10L 030SAHEYK2PC0EE      TF                                                                          144122108
+SUSAP KSFOK2DSAHEY44RW10R 010         0        VA                     1038        + 00520     18000                        144132108
+SUSAP KSFOK2DSAHEY44RW10R 020URRSAK2PC0E       DF                                                                          144142108
+SUSAP KSFOK2DSAHEY44RW10R 030SAHEYK2PC0EE      TF                                                                          144152108
+SUSAP KSFOK2DSAHEY44RW19B 010         0        VA                     1938        + 00520     18000250               -     144162108
+SUSAP KSFOK2DSAHEY44RW19B 020SAHEYK2PC0EE  L   DF                                                                          144172108
+SUSAP KSFOK2DSAHEY46KAYEX 010SAHEYK2PC0E       IF                                             18000                        144182108
+SUSAP KSFOK2DSAHEY46KAYEX 020MAAYSK2PC0E       TF                                 + 06000                                  144192108
+SUSAP KSFOK2DSAHEY46KAYEX 030MCOVYK2EA0E       TF                                 + 09000                                  144202108
+SUSAP KSFOK2DSAHEY46KAYEX 040KAYEXK2EA0EE      TF                                                                          144212108
+SUSAP KSFOK2DSAHEY46KTINA 010SAHEYK2PC0E       IF                                             18000                        144222108
+SUSAP KSFOK2DSAHEY46KTINA 020MAAYSK2PC0E       TF                                 + 06000                                  144232108
+SUSAP KSFOK2DSAHEY46KTINA 030MCOVYK2EA0E       TF                                 + 09000                                  144242108
+SUSAP KSFOK2DSAHEY46KTINA 040KTINAK2EA0EE      TF                                                                          144252108
+SUSAP KSFOK2DSAHEY46NTELL 010SAHEYK2PC0E       IF                                             18000                        144262108
+SUSAP KSFOK2DSAHEY46NTELL 020CIITYK2PC0E       TF                                 + 05000                                  144272108
+SUSAP KSFOK2DSAHEY46NTELL 030HOPIIK2PC0E       TF                                 + 13000                                  144282108
+SUSAP KSFOK2DSAHEY46NTELL 040NTELLK2EA0EE      TF                                                                          144292108
+SUSAP KSFOK2DSAHEY46SUSEY 010SAHEYK2PC0E       IF                                             18000                        144302108
+SUSAP KSFOK2DSAHEY46SUSEY 020MAAYSK2PC0E       TF                                 + 06000                                  144312108
+SUSAP KSFOK2DSAHEY46SUSEY 030MCOVYK2EA0E       TF                                 + 09000                                  144322108
+SUSAP KSFOK2DSAHEY46SUSEY 040SUSEYK2EA0EE      TF                                                                          144332108
+SUSAP KSFOK2DSEGUL14RW01B 010         0        VA                     0138        + 00513     18000       KSFO  K2PA       144342407
+SUSAP KSFOK2DSEGUL14RW01B 020SEPDYK2PC0EY  L   DF                                                                          144352407
+SUSAP KSFOK2DSEGUL14RW01B 030WAMMYK2PC0E   L   DF                                                                          144362407
+SUSAP KSFOK2DSEGUL14RW01B 040SEGULK2EA0EE      TF                                 + 16000                                  144372407
+SUSAP KSFOK2DSEGUL14RW28B 010         0        VA                     2838        + 00513     18000                        144382407
+SUSAP KSFOK2DSEGUL14RW28B 020SENZYK2PC0EY      DF                                                                          144392407
+SUSAP KSFOK2DSEGUL14RW28B 030WAMMYK2PC0E   L   DF                                                                          144402407
+SUSAP KSFOK2DSEGUL14RW28B 040SEGULK2EA0EE      TF                                 + 16000                                  144412407
+SUSAP KSFOK2DSEGUL16YYUNG 010SEGULK2EA0E       IF                                             18000                        144422407
+SUSAP KSFOK2DSEGUL16YYUNG 020CYPRSK2EA0E       TF                                 + FL220                                  144432407
+SUSAP KSFOK2DSEGUL16YYUNG 030YYUNGK2EA0EE      TF                                                                          144442407
+SUSAP KSFOK2DSNTNA24RW28B 010         0        VA                     2838        + 00520     18000                        144451507
+SUSAP KSFOK2DSNTNA24RW28B 020KYNNGK2PC0E       DF                                                                          144461507
+SUSAP KSFOK2DSNTNA24RW28B 030KRLOSK2PC0E       TF                                                                          144471507
+SUSAP KSFOK2DSNTNA24RW28B 040SNTNAK2PC0EE      TF                                                                          144481507
+SUSAP KSFOK2DSNTNA26DEDHD 010SNTNAK2PC0E       IF                                             18000                        144491507
+SUSAP KSFOK2DSNTNA26DEDHD 020DEDHDK2EA0EE      TF                                                                          144501507
+SUSAP KSFOK2DSNTNA26GRTFL 010SNTNAK2PC0E       IF                                             18000                        144511507
+SUSAP KSFOK2DSNTNA26GRTFL 020GRTFLK2EA0EE      TF                                                                          144521507
+SUSAP KSFOK2DSNTNA26MOGEE 010SNTNAK2PC0E       IF                                             18000                        144531507
+SUSAP KSFOK2DSNTNA26MOGEE 020MOGEEK2EA0EE      TF                                                                          144541507
+SUSAP KSFOK2DSNTNA26ORRCA 010SNTNAK2PC0E       IF                                             18000                        144551507
+SUSAP KSFOK2DSNTNA26ORRCA 020ORRCAK2EA0EE      TF                                                                          144561507
+SUSAP KSFOK2DSNTNA26SYRAH 010SNTNAK2PC0E       IF                                             18000                        144571507
+SUSAP KSFOK2DSNTNA26SYRAH 020SYRAHK2EA0EE      TF                                                                          144581507
+SUSAP KSFOK2DSNTNA26TIPRE 010SNTNAK2PC0E       IF                                             18000                        144591507
+SUSAP KSFOK2DSNTNA26TIPRE 020TIPREK2EA0EE      TF                                                                          144601507
+SUSAP KSFOK2DSSTIK54RW01B 010         0        VA                     0138        + 00520     18000210               -     144612108
+SUSAP KSFOK2DSSTIK54RW01B 020SSTIKK2PC0EY      DF                                                                          144622108
+SUSAP KSFOK2DSSTIK54RW01B 030PORTEK2EA0EE  L   DF                                 - 10000                                  144632108
+SUSAP KSFOK2DSSTIK56KAYEX 010PORTEK2EA0E       IF                                 - 10000     18000                        144642108
+SUSAP KSFOK2DSSTIK56KAYEX 020KAYEXK2EA0EE      TF                                                                          144652108
+SUSAP KSFOK2DSSTIK56KTINA 010PORTEK2EA0E       IF                                 - 10000     18000                        144662108
+SUSAP KSFOK2DSSTIK56KTINA 020KTINAK2EA0EE      TF                                                                          144672108
+SUSAP KSFOK2DSSTIK56NTELL 010PORTEK2EA0E       IF                                 - 10000     18000                        144682108
+SUSAP KSFOK2DSSTIK56NTELL 020UTOOBK2EA0E       TF                                                                          144692108
+SUSAP KSFOK2DSSTIK56NTELL 030NTELLK2EA0EE      TF                                                                          144702108
+SUSAP KSFOK2DSSTIK56SUSEY 010PORTEK2EA0E       IF                                 - 10000     18000                        144712108
+SUSAP KSFOK2DSSTIK56SUSEY 020SUSEYK2EA0EE      TF                                                                          144722108
+SUSAP KSFOK2DSSTIK56YYUNG 010PORTEK2EA0E       IF                                 - 10000     18000                        144732108
+SUSAP KSFOK2DSSTIK56YYUNG 020FFOILK2EA0E       TF                                                                          144742108
+SUSAP KSFOK2DSSTIK56YYUNG 030LIBBOP EA0E       TF                                                                          144752108
+SUSAP KSFOK2DSSTIK56YYUNG 040YYUNGK2EA0EE      TF                                                                          144762108
+SUSAP KSFOK2DTRUKN24RW01B 010         0        VA                     0138        + 00520     18000                        144771507
+SUSAP KSFOK2DTRUKN24RW01B 020TYDYEK2PC0E       DF                                 + 03000                                  144781507
+SUSAP KSFOK2DTRUKN24RW01B 030TRUKNK2PC0EE      TF                                                                          144791507
+SUSAP KSFOK2DTRUKN24RW28B 010         0        VA                     2838        + 00520     18000210               -     144801507
+SUSAP KSFOK2DTRUKN24RW28B 020TRUKNK2PC0EE  R   DF                                                                          144811507
+SUSAP KSFOK2DTRUKN26DEDHD 010TRUKNK2PC0E       IF                                             18000                        144821507
+SUSAP KSFOK2DTRUKN26DEDHD 020DEDHDK2EA0EE      TF                                                                          144831507
+SUSAP KSFOK2DTRUKN26GRTFL 010TRUKNK2PC0E       IF                                             18000                        144841507
+SUSAP KSFOK2DTRUKN26GRTFL 020GRTFLK2EA0EE      TF                                                                          144851507
+SUSAP KSFOK2DTRUKN26MOGEE 010TRUKNK2PC0E       IF                                             18000                        144861507
+SUSAP KSFOK2DTRUKN26MOGEE 020HYPEEK2PC0E       TF                                                                          144871507
+SUSAP KSFOK2DTRUKN26MOGEE 030MOGEEK2EA0EE      TF                                                                          144881507
+SUSAP KSFOK2DTRUKN26ORRCA 010TRUKNK2PC0E       IF                                             18000                        144891507
+SUSAP KSFOK2DTRUKN26ORRCA 020HYPEEK2PC0E       TF                                                                          144901507
+SUSAP KSFOK2DTRUKN26ORRCA 030ORRCAK2EA0EE      TF                                                                          144911507
+SUSAP KSFOK2DTRUKN26SYRAH 010TRUKNK2PC0E       IF                                             18000                        144921507
+SUSAP KSFOK2DTRUKN26SYRAH 020COSMCK2PC0E       TF                                                                          144931507
+SUSAP KSFOK2DTRUKN26SYRAH 030SYRAHK2EA0EE      TF                                                                          144941507
+SUSAP KSFOK2DTRUKN26TIPRE 010TRUKNK2PC0E       IF                                             18000                        144951507
+SUSAP KSFOK2DTRUKN26TIPRE 020COSMCK2PC0E       TF                                                                          144961507
+SUSAP KSFOK2DTRUKN26TIPRE 030TIPREK2EA0EE      TF                                                                          144971507
+SUSAP KSFOK2DWESLA54RW28B 010         0        VA                     2838        + 00520     18000210               -     144982108
+SUSAP KSFOK2DWESLA54RW28B 020WESLAK2PC0EY      DF                                 + 02000          230               -     144992108
+SUSAP KSFOK2DWESLA54RW28B 030PORTEK2EA0EE  L   DF                                                                          145002108
+SUSAP KSFOK2DWESLA56KAYEX 010PORTEK2EA0E       IF                                             18000                        145012108
+SUSAP KSFOK2DWESLA56KAYEX 020KAYEXK2EA0EE      TF                                                                          145022108
+SUSAP KSFOK2DWESLA56KTINA 010PORTEK2EA0E       IF                                             18000                        145032108
+SUSAP KSFOK2DWESLA56KTINA 020KTINAK2EA0EE      TF                                                                          145042108
+SUSAP KSFOK2DWESLA56NTELL 010PORTEK2EA0E       IF                                             18000                        145052108
+SUSAP KSFOK2DWESLA56NTELL 020UTOOBK2EA0E       TF                                                                          145062108
+SUSAP KSFOK2DWESLA56NTELL 030NTELLK2EA0EE      TF                                                                          145072108
+SUSAP KSFOK2DWESLA56SUSEY 010PORTEK2EA0E       IF                                             18000                        145082108
+SUSAP KSFOK2DWESLA56SUSEY 020SUSEYK2EA0EE      TF                                                                          145092108
+SUSAP KSFOK2DWESLA56YYUNG 010PORTEK2EA0E       IF                                             18000                        145102108
+SUSAP KSFOK2DWESLA56YYUNG 020FFOILK2EA0E       TF                                                                          145112108
+SUSAP KSFOK2DWESLA56YYUNG 030LIBBOP EA0E       TF                                                                          145122108
+SUSAP KSFOK2DWESLA56YYUNG 040YYUNGK2EA0EE      TF                                                                          145132108
+SUSAP KSFOK2GRW01L   0076500140 N37363403W122225483         -0029400010064050200D                                          149261707
+SUSAP KSFOK2GRW01R   0086500140 N37362769W122224850         -0029200011056050200D                                          149271707
+SUSAP KSFOK2GRW10L   0118701040 N37374346W122233621         -0030900006000055200R                                          149281707
+SUSAP KSFOK2GRW10R   0113811040 N37373465W122233518         -0030500007000060200R                                          149291707
+SUSAP KSFOK2GRW19L   0086501940 N37373843W122220160         -0029400011000055200IISIA1                                     149301707
+SUSAP KSFOK2GRW19R   0076501940 N37373533W122221419         -0029800009000058200V                                          149312605
+SUSAP KSFOK2GRW28L   0113812840 N37364355W122213335         -0028800013030053200IISFO2                                     149321707
+SUSAP KSFOK2GRW28R   0118702840 N37365011W122212901         -0028700013030055200IIGWQ3                                     149332104

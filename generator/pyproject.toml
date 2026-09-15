@@ -1,0 +1,63 @@
+[project]
+name = "craft-generator"
+version = "0.1.0"
+description = "Builds data/<icao>.json for the CRAFT clearance trainer from FAA CIFP, FAA chart PDFs and hand-transcribed SOP YAML."
+readme = "README.md"
+requires-python = "==3.13.*"
+dependencies = [
+    "jsonschema==4.26.0",
+    "pypdf==6.18.1",
+    "pyyaml==6.0.3",
+]
+
+[project.scripts]
+craft-gen = "craft_generator.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "hypothesis==6.168.0",
+    "pytest==9.1.1",
+    "ruff==0.16.7",
+    "ty==0.0.81",
+]
+
+[tool.uv.build-backend]
+module-name = "craft_generator"
+module-root = "src"
+
+[tool.ruff]
+line-length = 150
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["craft_generator"]
+
+[tool.ty.environment]
+python-version = "3.13"
+root = ["src", "tests"]
+
+[tool.ty.rules]
+possibly-unresolved-reference = "error"
+unused-ignore-comment = "error"
+division-by-zero = "error"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not network'"
+markers = [
+    "network: test reaches the public internet; deselected by default",
+]

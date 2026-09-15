@@ -1,0 +1,74 @@
+SEPDY
+284°
+DEPARTURE ROUTE DESCRIPTION
+WAMMY
+NOTE: Chart not to scale.
+SAN FRANCISCO, CALIFORNIA
+(SFO)SAN FRANCISCO INTL
+(SEGUL1.SEGUL)
+(RNAV)
+SAN FRANCISCO, CALIFORNIA
+(SFO)
+(SEGUL1.SEGUL)
+(RNAV)
+ASSIGNED BY ATC
+TOP ALTITUDE:
+SAN FRANCISCO INTL
+YYUNG TRANSITION (SEGUL1.YYUNG)
+24193
+T
+expect filed altitude 10 minutes after departure.
+. . . . on YYUNG Transition.  Maintain ATC assigned altitude,
+11JUL24
+120.5  269.1
+SAN FRANCISCO TOWER
+121.8
+GND CON
+CPDLC
+118.2
+CLNC DEL
+113.7  115.8  118.85
+D-ATIS
+135.1  307.2
+NORCAL DEP CON
+AL-375 (FAA)
+NOTE: Turbojet aircraft only.
+Rwy 28R: Standard with minimum climb of 361'/NM to 1100.
+Rwy 28L: Standard with minimum climb of 353'/NM to 1200.
+then 353'/NM to 2100.
+Rwys 1L/R: Standard with minimum climb of 500'/NM to 513
+Rwy 10L/R, 19L/R: NA - ATC
+TAKEOFF MINIMUMS
+SENZY
+YYUNG
+SEGUL ONE DEPARTURE
+SEGUL ONE DEPARTURE
+154° to cross SEGUL at or above 16000, thence . . . .
+then direct SENZY, then left turn direct WAMMY, then on track
+TAKEOFF RUNWAYS 28L/R: Climb on heading 284° to 513,
+on track 154° to cross SEGUL at or above 16000, thence . . . .
+then left turn direct SEPDY, then left turn direct WAMMY, then
+TAKEOFF RUNWAYS 1L/R: Climb on heading 014° to 513,
+MSA SFO 25 NM
+5100
+RNAV 1 - DME/DME/IRU or GPS.
+RADAR required for non-GPS equipped aircraft.
+014°
+513
+513
+154°
+(35)
+154°
+(33)
+2300
+16000
+*
+115°(86)
+4700
+FL220*
+SEGUL
+16000
+CYPRS
+FL220
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026
