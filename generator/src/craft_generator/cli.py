@@ -359,15 +359,15 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False)
         The process exit status: non-zero when ``check`` finds a committed fixture out of date.
     """
     directory = airport_dir(airport)
-    worksheets = load_worksheets(directory / WORKSHEETS_FILE)
-    configs = load_sop(directory / SOP_FILE).runway_configs
+    config = load_worksheets(directory / WORKSHEETS_FILE)
+    sop = load_sop(directory / SOP_FILE)
     rnav = rnav_suffixes(load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE))
     cache = cache_dir()
     counts: Counter[str] = Counter()
-    print(f"{airport}: {len(worksheets)} worksheet(s) -> {fixture_dir(airport)}")
-    for worksheet in worksheets:
+    print(f"{airport}: {len(config.worksheets)} worksheet(s) -> {fixture_dir(airport)}")
+    for worksheet in config.worksheets:
         text = fetch_worksheet_text(worksheet, cache, force=force)
-        fixtures = sheet_fixtures(worksheet, text, icao=airport, configs=configs, rnav=rnav)
+        fixtures = sheet_fixtures(worksheet, text, icao=airport, sop=sop, rnav=rnav, type_aliases=config.type_aliases)
         results = [_fixture_result(path, fixture, check=check) for path, fixture in fixtures.items()]
         counts.update(result.status for result in results)
         _print_sheet_summary(worksheet.title, results)

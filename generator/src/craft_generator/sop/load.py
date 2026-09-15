@@ -79,6 +79,7 @@ from craft_generator.sop.model import (
     TecRoute,
     TecSource,
     Worksheet,
+    WorksheetConfig,
 )
 
 SOP_FILE = "sop.yaml"
@@ -95,6 +96,7 @@ COURSE_DEGREES_MAX = 359
 
 _SUFFIX_PATTERN = re.compile(r"^/[A-Z]$")
 _CIFP_ID_PATTERN = re.compile(r"^(?P<family>[A-Z]+)\d+$")
+_DESIGNATOR_PATTERN = re.compile(r"^[A-Z0-9]{2,4}$")
 
 
 def airports_dir() -> Path:
@@ -918,26 +920,42 @@ def _check_worksheets(worksheets: Sequence[Worksheet], where: str) -> None:
             seen.add(value)
 
 
-def load_worksheets(path: Path) -> tuple[Worksheet, ...]:
+def _check_type_aliases(aliases: Mapping[str, str], where: str) -> None:
+    for filed, read_as in aliases.items():
+        at = f"{where} type_aliases[{filed}]"
+        for label, designator in (("key", filed), ("value", read_as)):
+            if _DESIGNATOR_PATTERN.fullmatch(designator) is None:
+                raise ValueError(f"{at}: the {label} {designator!r} is not two to four upper-case letters or digits, e.g. A20N")
+        if filed == read_as:
+            raise ValueError(f"{at}: the alias reads {filed!r} as itself; list only the types the sheets file under a non-ICAO designator")
+
+
+def load_worksheets(path: Path) -> WorksheetConfig:
     """Load one airport's ``worksheets.yaml``.
 
     Args:
         path: Path to the file.
 
     Returns:
-        One row per trainer worksheet, in file order.
+        The trainer worksheets in file order and the aircraft type aliases the sheets file under.
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown key, names a sheet kind or a
-            phraseology reading that does not exist, or repeats a document id or title.
+            phraseology reading that does not exist, repeats a document id or title, or holds a type
+            alias that is not a designator or that reads a type as itself.
         OSError: The file is missing.
     """
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))
-    worksheets = tuple(_worksheet(child) for child in root.children("worksheets"))
+    aliases = root.optional_table("type_aliases")
+    config = WorksheetConfig(
+        worksheets=tuple(_worksheet(child) for child in root.children("worksheets")),
+        type_aliases={} if aliases is None else _text_table(aliases, f"{where}.type_aliases"),
+    )
     root.finish()
-    _check_worksheets(worksheets, where)
-    return worksheets
+    _check_worksheets(config.worksheets, where)
+    _check_type_aliases(config.type_aliases, where)
+    return config
 
 
 def _check_sid_families(sop: SopData, overrides: Overrides, where: str, overrides_where: str) -> None:

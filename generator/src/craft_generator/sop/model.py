@@ -3,7 +3,7 @@
 ``generator/airports/<icao>/`` holds ``sop.yaml`` (:class:`SopData`), ``overrides.yaml``
 (:class:`Overrides`), ``routes.yaml`` (:class:`RouteLibrary`) and the two optional files ``tec.yaml``
 (:class:`TecData`) and ``loa.yaml`` (:class:`LoaData`); :class:`AirportInputs` is all of them loaded
-together. ``worksheets.yaml`` (:class:`Worksheet`) is read on its own, by
+together. ``worksheets.yaml`` (:class:`WorksheetConfig`) is read on its own, by
 ``craft-gen import-worksheets`` only, because no part of the airport document depends on it.
 
 Every closed set is a :data:`typing.Literal` with a companion tuple of its
@@ -476,6 +476,18 @@ class Worksheet:
     kind: WorksheetKind
     config: str | None
     phraseology: PhraseologyReading | None
+
+
+@dataclass(frozen=True, slots=True)
+class WorksheetConfig:
+    """``worksheets.yaml``: the trainer worksheets of one airport and the type aliases they file under.
+
+    ``type_aliases`` maps a designator a sheet files to the designator vNAS and the fleet use, e.g.
+    ``A32N`` to ``A20N``; a type the sheets spell correctly is not listed.
+    """
+
+    worksheets: tuple[Worksheet, ...]
+    type_aliases: dict[str, str]
 
 
 @dataclass(frozen=True, slots=True)

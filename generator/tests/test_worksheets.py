@@ -1,10 +1,11 @@
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
 
 from craft_generator.emit import fixture_schema_path, validate
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
-from craft_generator.sop.model import AirportInputs, EquipmentSuffix, Worksheet
+from craft_generator.sop.model import AirportInputs, EquipmentSuffix, Worksheet, WorksheetConfig
 from craft_generator.worksheets import (
     Fixture,
     PlanRow,
@@ -46,8 +47,8 @@ FIRST_FIXTURE = {
     "id": "ws-phraseology-practice-1a-ual320",
     "source": {
         "kind": "worksheet",
-        "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01L, "
-        "the first runway configuration 28/01 departs, pending validation",
+        "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01R, "
+        "the runway configuration 28/01 departs north per direction_runway_preference, pending validation",
     },
     "status": "pending",
     "airport": "KSFO",
@@ -59,7 +60,7 @@ FIRST_FIXTURE = {
         "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
         "filedAltitude": 32000,
         "runwayConfigId": "28/01",
-        "departureRunway": "01L",
+        "departureRunway": "01R",
         "localTime": "1400",
         "dayOfWeek": "tuesday",
         "squawk": "3342",
@@ -69,8 +70,13 @@ AMENDMENT_SQUAWKS = ["4601", "4602", "4603", "4604", "4605", "4606", "4607", "46
 
 
 @pytest.fixture(scope="module")
-def worksheets() -> tuple[Worksheet, ...]:
+def worksheet_config() -> WorksheetConfig:
     return load_worksheets(airport_dir("KSFO") / WORKSHEETS_FILE)
+
+
+@pytest.fixture(scope="module")
+def worksheets(worksheet_config: WorksheetConfig) -> tuple[Worksheet, ...]:
+    return worksheet_config.worksheets
 
 
 @pytest.fixture(scope="module")
@@ -94,19 +100,21 @@ def row_of(by_title: dict[str, Worksheet], title: str, callsign: str) -> PlanRow
     return next(row for row in rows_of(by_title, title) if row.callsign == callsign)
 
 
-def all_fixtures(worksheets: tuple[Worksheet, ...], inputs: AirportInputs, suffixes: tuple[EquipmentSuffix, ...]) -> dict[Path, Fixture]:
+def sheet_of(worksheet: Worksheet, inputs: AirportInputs, suffixes: tuple[EquipmentSuffix, ...], aliases: Mapping[str, str]) -> dict[Path, Fixture]:
+    """Return the fixtures of one worksheet, built from its checked-in text."""
+    return sheet_fixtures(worksheet, sheet_text(worksheet), icao=inputs.icao, sop=inputs.sop, rnav=rnav_suffixes(suffixes), type_aliases=aliases)
+
+
+def fixture_of(fixtures: dict[Path, Fixture], callsign: str) -> Fixture:
+    """Return the fixture of one plan of a sheet by callsign."""
+    return next(fixture for fixture in fixtures.values() if fixture["scenario"]["callsign"] == callsign)
+
+
+def all_fixtures(config: WorksheetConfig, inputs: AirportInputs, suffixes: tuple[EquipmentSuffix, ...]) -> dict[Path, Fixture]:
     """Return the fixture of every plan on every worksheet, keyed by the file it is written to."""
     fixtures: dict[Path, Fixture] = {}
-    for worksheet in worksheets:
-        fixtures.update(
-            sheet_fixtures(
-                worksheet,
-                sheet_text(worksheet),
-                icao=inputs.icao,
-                configs=inputs.sop.runway_configs,
-                rnav=rnav_suffixes(suffixes),
-            )
-        )
+    for worksheet in config.worksheets:
+        fixtures.update(sheet_of(worksheet, inputs, suffixes, config.type_aliases))
     return fixtures
 
 
@@ -150,11 +158,7 @@ def test_a_plan_keeps_its_suffix_and_its_altitude_in_feet(by_title: dict[str, Wo
 def test_a_plan_filed_without_a_suffix_is_not_rnav_capable(
     by_title: dict[str, Worksheet], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
 ) -> None:
-    worksheet = by_title["Amendment Practice 2"]
-    fixtures = sheet_fixtures(
-        worksheet, sheet_text(worksheet), icao=ksfo_inputs.icao, configs=ksfo_inputs.sop.runway_configs, rnav=rnav_suffixes(equipment_suffixes)
-    )
-    scenario = next(fixture["scenario"] for fixture in fixtures.values() if fixture["scenario"]["callsign"] == "JSX203")
+    scenario = fixture_of(sheet_of(by_title["Amendment Practice 2"], ksfo_inputs, equipment_suffixes, {}), "JSX203")["scenario"]
     assert (scenario["aircraftType"], scenario["rnavCapable"]) == ("E135", False)
     assert row_of(by_title, "Amendment Practice 2", "JSX203").suffix is None
 
@@ -162,29 +166,75 @@ def test_a_plan_filed_without_a_suffix_is_not_rnav_capable(
 def test_a_sheet_that_prints_no_squawk_numbers_them_in_octal(
     by_title: dict[str, Worksheet], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
 ) -> None:
-    worksheet = by_title["Amendment Practice 1A"]
-    fixtures = sheet_fixtures(
-        worksheet, sheet_text(worksheet), icao=ksfo_inputs.icao, configs=ksfo_inputs.sop.runway_configs, rnav=rnav_suffixes(equipment_suffixes)
-    )
+    fixtures = sheet_of(by_title["Amendment Practice 1A"], ksfo_inputs, equipment_suffixes, {})
     assert [fixture["scenario"]["squawk"] for fixture in fixtures.values()] == AMENDMENT_SQUAWKS
 
 
-def test_a_worksheet_plan_becomes_a_pending_fixture(
-    worksheets: tuple[Worksheet, ...], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
+def test_northbound_plan_departs_the_right_turn_runway(
+    by_title: dict[str, Worksheet], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
 ) -> None:
-    fixtures = all_fixtures(worksheets, ksfo_inputs, equipment_suffixes)
+    scenario = fixture_of(sheet_of(by_title["Phraseology Practice 1A"], ksfo_inputs, equipment_suffixes, {}), "UAL320")["scenario"]
+    assert scenario["filedRoute"].startswith("TRUKN2 DEDHD ")
+    assert (scenario["runwayConfigId"], scenario["departureRunway"]) == ("28/01", "01R")
+
+
+def test_southbound_plan_departs_the_left_turn_runway(
+    by_title: dict[str, Worksheet], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
+) -> None:
+    fixture = fixture_of(sheet_of(by_title["Phraseology Practice 1A"], ksfo_inputs, equipment_suffixes, {}), "NKS188")
+    assert fixture["scenario"]["filedRoute"].startswith("SSTIK5 NTELL ")
+    assert (fixture["scenario"]["runwayConfigId"], fixture["scenario"]["departureRunway"]) == ("28/01", "01L")
+    assert fixture["source"]["note"].endswith("the runway configuration 28/01 departs south per direction_runway_preference, pending validation")
+
+
+def test_plan_with_unknown_exit_fix_keeps_the_first_runway(
+    by_title: dict[str, Worksheet], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
+) -> None:
+    fixture = fixture_of(sheet_of(by_title["Amendment Practice 1A"], ksfo_inputs, equipment_suffixes, {}), "LXJ351")
+    assert fixture["scenario"]["filedRoute"].startswith("GAPP7 EHF ")
+    assert fixture["scenario"]["departureRunway"] == "01L"
+    assert fixture["source"]["note"].endswith("so this is 01L, the first runway configuration 28/01 departs, pending validation")
+
+
+def test_a_worksheet_plan_becomes_a_pending_fixture(
+    worksheet_config: WorksheetConfig, ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
+) -> None:
+    fixtures = all_fixtures(worksheet_config, ksfo_inputs, equipment_suffixes)
     path = next(path for path in fixtures if path.name == "phraseology-practice-1a-ual320.json")
     assert fixtures[path] == FIRST_FIXTURE
 
 
 def test_every_emitted_fixture_matches_the_schema(
-    worksheets: tuple[Worksheet, ...], ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
+    worksheet_config: WorksheetConfig, ksfo_inputs: AirportInputs, equipment_suffixes: tuple[EquipmentSuffix, ...]
 ) -> None:
-    fixtures = all_fixtures(worksheets, ksfo_inputs, equipment_suffixes)
+    fixtures = all_fixtures(worksheet_config, ksfo_inputs, equipment_suffixes)
     assert len(fixtures) == FIXTURE_COUNT
     for fixture in fixtures.values():
         validate(fixture, fixture_schema_path())
         assert "expected" not in fixture
+
+
+def test_type_alias_is_applied_on_import(
+    by_title: dict[str, Worksheet],
+    worksheet_config: WorksheetConfig,
+    ksfo_inputs: AirportInputs,
+    equipment_suffixes: tuple[EquipmentSuffix, ...],
+) -> None:
+    fixtures = sheet_of(by_title["Amendment Practice 2"], ksfo_inputs, equipment_suffixes, worksheet_config.type_aliases)
+    fixture = fixture_of(fixtures, "FFT2015")
+    assert worksheet_config.type_aliases["A32N"] == "A20N"
+    assert row_of(by_title, "Amendment Practice 2", "FFT2015").designator == "A32N"
+    assert fixture["scenario"]["aircraftType"] == "A20N"
+    assert fixture["source"]["note"].endswith("; type A32N filed on the sheet, read as A20N")
+
+
+def test_type_alias_to_itself_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    directory = tmp_path / "ksfo"
+    directory.mkdir()
+    path = directory / WORKSHEETS_FILE
+    path.write_text((ksfo_dir / WORKSHEETS_FILE).read_text(encoding="utf-8").replace("A32N: A20N", "A32N: A32N"), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"ksfo/worksheets\.yaml type_aliases\[A32N\]: the alias reads 'A32N' as itself"):
+        load_worksheets(path)
 
 
 @pytest.mark.network
