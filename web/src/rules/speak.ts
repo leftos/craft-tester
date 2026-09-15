@@ -57,6 +57,12 @@ const STAR_TOKEN = /^[A-Z]{3,5}\d$/;
 /** The facility word a navaid's spoken name ends in, which a procedure named after it drops. */
 const FACILITY_WORD = / (?:VOR|NDB|TACAN|DME)$/;
 
+/** A runway designator as written: one or two digits and an optional side letter. */
+const RUNWAY_DESIGNATOR = /^(\d{1,2})([LRC]?)$/;
+
+/** The word each parallel-runway side letter is spoken as. */
+const RUNWAY_SIDES: Readonly<Record<string, string>> = { L: 'left', R: 'right', C: 'center' };
+
 const UNIT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
 
 const TEEN_WORDS = [
@@ -177,6 +183,27 @@ export function speakFrequency(frequency: string): string {
     .split('.')
     .map((part) => speakDigits(part))
     .join(' point ');
+}
+
+/**
+ * Speaks a runway designator, e.g. `01R` as "one right".
+ *
+ * Per FAA JO 7110.65 2-4-17 the designator is spoken digit by digit with a leading zero dropped,
+ * and the side letter becomes a word: `28L` is "two eight left", `19L` is "one niner left", `10C`
+ * is "one zero center", and a designator with no side letter is the digits alone.
+ *
+ * @param runway The runway designator as written in the data.
+ * @returns The spoken designator in lower case; a designator this cannot parse is returned as is.
+ */
+export function speakRunway(runway: string): string {
+  const parsed = RUNWAY_DESIGNATOR.exec(runway);
+  const digits = parsed?.[1];
+  if (digits === undefined) return runway;
+  const spoken = speakDigits(
+    digits.length === 2 && digits.startsWith('0') ? digits.slice(1) : digits,
+  );
+  const side = RUNWAY_SIDES[parsed?.[2] ?? ''];
+  return side === undefined ? spoken : `${spoken} ${side}`;
 }
 
 /**
@@ -445,7 +472,8 @@ function fullRouteUnits(input: SpeakClearanceInput, tokens: readonly string[]): 
  * `abbreviated` says "then as filed"; `fullRoute` reads the filed route after the exit fix instead,
  * which is what the reveal shows after grading. Neither form repeats the filed procedure token or
  * the exit fix, because the SID phrase has already spoken both. A route with nothing after the exit
- * fix has nothing to file, so both forms end "direct" instead.
+ * fix has nothing to file, so both forms end "direct" instead. Both forms close on the departure
+ * runway, after the squawk.
  *
  * @param input The clearance plus the scenario facts the phraseology needs.
  * @returns Both spoken forms of the clearance.
@@ -455,6 +483,7 @@ export function speakClearance(input: SpeakClearanceInput): SpokenClearance {
     altitudeSentence(input.clearance),
     expectSentence(input.clearance),
     radioSentence(input),
+    `expect runway ${speakRunway(input.clearance.runway.value)}`,
   ];
   const tokens = routeAfterExitFix(input);
   const abbreviatedTail = tokens.length === 0 ? ['direct'] : ['then as filed'];
