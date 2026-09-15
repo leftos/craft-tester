@@ -203,6 +203,7 @@ def _runway_config(config: RunwayConfig) -> Document:
         "source": config.source,
         "name": config.name,
         "plan": config.plan,
+        "trainingWeight": config.training_weight,
         "arrivalRunways": list(config.arrival_runways),
         "departureRunways": [_departure_runway(runway) for runway in config.departure_runways],
     }

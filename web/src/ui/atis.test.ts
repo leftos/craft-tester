@@ -36,6 +36,7 @@ describe('advertisedRunways', () => {
       source: 'test data',
       name: 'test configuration',
       plan: 'SFOW',
+      trainingWeight: 1,
       arrivalRunways: ['28L', '28R'],
       departureRunways: [
         { runway: '01L', classes: ['J'], defaultForClasses: [], onRequestFor: [] },

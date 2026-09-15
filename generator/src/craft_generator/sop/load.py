@@ -363,10 +363,16 @@ def _runway_config(row: _Row) -> RunwayConfig:
         source=row.text("source"),
         name=row.text("name"),
         plan=row.text("plan"),
+        training_weight=row.number("training_weight"),
         arrival_runways=row.texts("arrival_runways"),
         departure_runways=tuple(_departure_runway(child) for child in row.children("departure_runways")),
     )
     row.finish()
+    if config.training_weight < 1:
+        raise ValueError(
+            f"{row.where}: training_weight must be a positive integer, got {config.training_weight}; it is the scenario "
+            "generator's draw weight relative to the other configurations"
+        )
     return config
 
 

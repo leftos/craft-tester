@@ -12,7 +12,15 @@ import { seedFromHash } from '@/scenario/rng.ts';
 
 /** A runway configuration with nothing in it but the id and the plan the filter reads. */
 function config(id: string, plan: string): RunwayConfig {
-  return { id, source: 'SOP 2-1', name: id, plan, arrivalRunways: [], departureRunways: [] };
+  return {
+    id,
+    source: 'SOP 2-1',
+    name: id,
+    plan,
+    trainingWeight: 1,
+    arrivalRunways: [],
+    departureRunways: [],
+  };
 }
 
 const TIMES: readonly TimeFilter[] = ['either', 'day', 'night'];

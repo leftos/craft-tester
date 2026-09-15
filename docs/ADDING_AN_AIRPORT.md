@@ -75,7 +75,10 @@ the hooks rejects the file.
 4. **`runways`**: every runway the CIFP `PG` records list; the build rejects a runway CIFP does not know.
 5. **`runway_configs`**: one per configuration in the SOP, with the plan (`SFOW`/`SFOE`, the SOP's flow
    name), arrival runways, and departure runways with the aircraft classes allowed on each and a `note`
-   for conditional ones (KSFO: heavies on 28L/R in 28/01 for performance). The config `id` is what
+   for conditional ones (KSFO: heavies on 28L/R in 28/01 for performance). Each row also carries
+   `training_weight`, how often the scenario generator draws that configuration relative to the others;
+   it is a training mix, not SOP data (KSFO: 28/01 at 55 of 100, the rare SFOE configs at 4 each), so
+   weight the configurations a trainee meets most on the live field. The config `id` is what
    worksheets and ATIS scenarios name, so use the SOP's own labels (`28/01`, `28 RT`). Where local
    practice sends a class to a runway the SOP tables do not name (KSFO: GA props and turboprops depart
    28R at Echo in 28/01), give that runway row `default_for_classes`; the importer and the scenario

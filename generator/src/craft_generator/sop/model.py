@@ -105,12 +105,17 @@ class DepartureRunway:
 
 @dataclass(frozen=True, slots=True)
 class RunwayConfig:
-    """One runway configuration, e.g. ``28/01``."""
+    """One runway configuration, e.g. ``28/01``.
+
+    ``training_weight`` is the scenario generator's draw weight for the configuration relative to the other
+    configurations of the airport.
+    """
 
     id: str
     source: str
     name: str
     plan: str
+    training_weight: int
     arrival_runways: tuple[str, ...]
     departure_runways: tuple[DepartureRunway, ...]
 

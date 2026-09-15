@@ -48,6 +48,7 @@ const minimalAirportData: AirportData = {
       source: 'SFO ATCT SOP 1-7',
       name: 'Landing runways 28, departing runways 01',
       plan: 'SFOW',
+      trainingWeight: 55,
       arrivalRunways: ['28L', '28R'],
       departureRunways: [
         { runway: '01R', classes: ['P', 'T', 'J'], defaultForClasses: [], onRequestFor: [] },

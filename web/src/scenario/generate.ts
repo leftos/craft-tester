@@ -17,34 +17,15 @@ import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter
 import { matchesConfig } from '@/scenario/filter.ts';
 import type { Rng, Weighted } from '@/scenario/rng.ts';
 
-/**
- * How often each runway configuration is drawn, keyed by configuration id.
- *
- * This is a training mix, not SOP data: the configurations a trainee meets most often on the live
- * field get the most practice, while the rare ones still come up. A configuration the airport data
- * adds later is drawn at `UNKNOWN_CONFIG_WEIGHT` until it gets a weight here.
- */
-const CONFIG_WEIGHTS: Readonly<Record<string, number>> = {
-  '28/01': 55,
-  '28 RT': 15,
-  '28 SO': 8,
-  '19/10': 10,
-  '01/01': 4,
-  '10/10': 4,
-  '19/19': 4,
-};
-
-/** The weight a configuration gets when the training mix above does not name it. */
-const UNKNOWN_CONFIG_WEIGHT = 1;
-
 /** A half-open span of local minutes past midnight. */
 type MinuteRange = { from: number; to: number };
 
 /**
  * The time-of-day mix: 70% daytime, 20% the shoulders of the noise window, 10% late night.
  *
- * Also a training choice rather than data: it keeps most scenarios in the ordinary day while still
- * drilling the noise abatement rows, which only fire between 2200L and 0700L (0800L on Sunday).
+ * A training choice kept in code rather than in the airport data, because it does not vary by
+ * airport: it keeps most scenarios in the ordinary day while still drilling the noise abatement
+ * rows, which only fire between 2200L and 0700L (0800L on Sunday).
  */
 const DAY_RANGES: readonly MinuteRange[] = [{ from: 8 * 60, to: 22 * 60 }];
 
@@ -149,10 +130,7 @@ function pickConfig(rng: Rng, airport: AirportData, filter: ConfigFilter): Runwa
     );
   }
   return rng.weighted(
-    candidates.map((config) => ({
-      item: config,
-      weight: CONFIG_WEIGHTS[config.id] ?? UNKNOWN_CONFIG_WEIGHT,
-    })),
+    candidates.map((config) => ({ item: config, weight: config.trainingWeight })),
   );
 }
 

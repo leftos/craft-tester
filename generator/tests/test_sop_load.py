@@ -62,6 +62,8 @@ def test_runway_configs_and_sectors(ksfo_inputs: AirportInputs) -> None:
     assert set(configs) == {"01/01", "28/01", "28 RT", "28 SO", "10/10", "19/10", "19/19"}
     assert all(config.source == "SFO ATCT SOP 1-7" for config in sop.runway_configs)
     assert configs["28/01"].plan == "SFOW"
+    assert configs["28/01"].training_weight == 55
+    assert sum(config.training_weight for config in sop.runway_configs) == 100
     twenty_eight_left = next(runway for runway in configs["28/01"].departure_runways if runway.runway == "28L")
     assert twenty_eight_left.classes == ("J",)
     assert twenty_eight_left.note is not None
@@ -250,6 +252,15 @@ def test_default_for_a_class_the_row_excludes_is_rejected(tmp_path: Path, ksfo_d
 
     match = r"runway_configs\[28/01\]\.departure_runways\[01L\]\.default_for_classes: class 'J' is not in the row's `classes`"
     with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_non_positive_training_weight_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["training_weight"] = 0
+
+    with pytest.raises(ValueError, match=r"training_weight must be a positive integer"):
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 

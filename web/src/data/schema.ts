@@ -117,6 +117,14 @@ export const RunwayConfigSchema = z.strictObject({
   source: z.string(),
   name: z.string(),
   plan: z.string(),
+  /**
+   * How often the scenario generator draws this configuration relative to the others.
+   *
+   * A training mix chosen by the airport's maintainer rather than SOP data: the configurations a
+   * trainee meets most often on the live field get the most practice, while the rare ones still
+   * come up.
+   */
+  trainingWeight: z.number().int().positive(),
   arrivalRunways: z.array(z.string()),
   departureRunways: z.array(RunwayAssignmentSchema),
 });

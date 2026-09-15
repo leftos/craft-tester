@@ -1044,6 +1044,11 @@
           },
           "source": {
             "type": "string"
+          },
+          "trainingWeight": {
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
           }
         },
         "required": [
@@ -1051,6 +1056,7 @@
           "source",
           "name",
           "plan",
+          "trainingWeight",
           "arrivalRunways",
           "departureRunways"
         ],

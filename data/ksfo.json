@@ -2291,7 +2291,8 @@
       "id": "01/01",
       "name": "Landing and departing runways 01",
       "plan": "SFOW",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 4
     },
     {
       "arrivalRunways": [
@@ -2362,7 +2363,8 @@
       "id": "28/01",
       "name": "Landing runways 28, departing runways 01",
       "plan": "SFOW",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 55
     },
     {
       "arrivalRunways": [
@@ -2394,7 +2396,8 @@
       "id": "28 RT",
       "name": "Landing and departing runways 28, right turn (TRUKN DP in use)",
       "plan": "SFOW",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 15
     },
     {
       "arrivalRunways": [
@@ -2426,7 +2429,8 @@
       "id": "28 SO",
       "name": "Landing and departing runways 28, straight out (TRUKN DP not in use)",
       "plan": "SFOW",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 8
     },
     {
       "arrivalRunways": [
@@ -2458,7 +2462,8 @@
       "id": "10/10",
       "name": "Landing and departing runways 10",
       "plan": "SFOE",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 4
     },
     {
       "arrivalRunways": [
@@ -2490,7 +2495,8 @@
       "id": "19/10",
       "name": "Landing runways 19, departing runways 10",
       "plan": "SFOE",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 10
     },
     {
       "arrivalRunways": [
@@ -2522,7 +2528,8 @@
       "id": "19/19",
       "name": "Landing and departing runways 19",
       "plan": "SFOE",
-      "source": "SFO ATCT SOP 1-7"
+      "source": "SFO ATCT SOP 1-7",
+      "trainingWeight": 4
     }
   ],
   "sids": [

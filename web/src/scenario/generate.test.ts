@@ -176,6 +176,28 @@ describe('generateScenario', () => {
     }
   });
 
+  it('draws configurations by their training weight', () => {
+    const lopsided: AirportData = {
+      ...ksfo,
+      runwayConfigs: ksfo.runwayConfigs.map((config) => ({
+        ...config,
+        trainingWeight: config.id === '19/19' ? 1000 : 1,
+      })),
+    };
+    const drawn = FILTERED_SEEDS.map(
+      (seed) => generateScenario(createRng(seed), lopsided, ANY_SCENARIO).scenario.runwayConfigId,
+    );
+    const nineteens = drawn.filter((id) => id === '19/19').length;
+    expect(nineteens / drawn.length).toBeGreaterThanOrEqual(0.95);
+    const counts = new Map<string, number>();
+    for (const entry of generated) {
+      const id = entry.scenario.runwayConfigId;
+      counts.set(id, (counts.get(id) ?? 0) + 1);
+    }
+    const ranked = [...counts.entries()].sort((left, right) => right[1] - left[1]);
+    expect(ranked[0]?.[0]).toBe('28/01');
+  });
+
   it('departs the runway the SOP sends that direction off', () => {
     const wrongRunway = generated
       .filter((entry) => {

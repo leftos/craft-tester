@@ -42,11 +42,14 @@ runways: [01L, 01R, 10L, 10R, 19L, 19R, 28L, 28R]
 
 # SOP 1-7. departure_runways lists which runways each aircraft class departs from in that configuration.
 # In 28/01, oceanic, Far East and cargo flights may be given 28L/R for performance (SOP 2-1 e).
+# training_weight is how often the scenario generator draws the configuration relative to the others,
+# a training mix rather than SOP data.
 runway_configs:
   - id: "01/01"
     source: "SFO ATCT SOP 1-7"
     name: Landing and departing runways 01
     plan: SFOW
+    training_weight: 4
     arrival_runways: [01L, 01R]
     departure_runways:
       - { runway: 01L, classes: [P, T, J] }
@@ -58,6 +61,7 @@ runway_configs:
     source: "SFO ATCT SOP 1-7"
     name: Landing runways 28, departing runways 01
     plan: SFOW
+    training_weight: 55
     arrival_runways: [28L, 28R]
     departure_runways:
       - { runway: 01L, classes: [P, T, J] }
@@ -69,6 +73,7 @@ runway_configs:
     source: "SFO ATCT SOP 1-7"
     name: Landing and departing runways 28, right turn (TRUKN DP in use)
     plan: SFOW
+    training_weight: 15
     arrival_runways: [28L, 28R]
     departure_runways:
       - { runway: 28L, classes: [P, T, J] }
@@ -77,6 +82,7 @@ runway_configs:
     source: "SFO ATCT SOP 1-7"
     name: Landing and departing runways 28, straight out (TRUKN DP not in use)
     plan: SFOW
+    training_weight: 8
     arrival_runways: [28L, 28R]
     departure_runways:
       - { runway: 28L, classes: [P, T, J] }
@@ -85,6 +91,7 @@ runway_configs:
     source: "SFO ATCT SOP 1-7"
     name: Landing and departing runways 10
     plan: SFOE
+    training_weight: 4
     arrival_runways: [10L, 10R]
     departure_runways:
       - { runway: 10L, classes: [P, T, J] }
@@ -93,6 +100,7 @@ runway_configs:
     source: "SFO ATCT SOP 1-7"
     name: Landing runways 19, departing runways 10
     plan: SFOE
+    training_weight: 10
     arrival_runways: [19L, 19R]
     departure_runways:
       - { runway: 10L, classes: [P, T, J] }
@@ -101,6 +109,7 @@ runway_configs:
     source: "SFO ATCT SOP 1-7"
     name: Landing and departing runways 19
     plan: SFOE
+    training_weight: 4
     arrival_runways: [19L, 19R]
     departure_runways:
       - { runway: 19L, classes: [P, T, J] }
