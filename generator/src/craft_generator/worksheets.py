@@ -13,19 +13,21 @@ The sheets carry flight plans only - no answer keys - so every fixture is writte
 without ``expected``: the clearance half comes from the rules engine and is confirmed by the user in
 the validation loop (see ``docs/ARCHITECTURE.md``, fixture lifecycle). Two scenario fields the
 worksheets do not state are filled here and recorded in ``source.note``: the departure runway, which
-is the first the sheet's runway configuration publishes, and - on the amendment sheets, which print
-no squawk - a code counted up from 4601 in octal.
+follows the direction the filed route leaves on (``direction_runway_preference`` in ``sop.yaml``) and
+falls back to the first runway the configuration publishes, and - on the amendment sheets, which
+print no squawk - a code counted up from 4601 in octal.
 """
 
 import re
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from craft_generator.emit import repo_root
 from craft_generator.http import fetch_bytes
-from craft_generator.sop.model import EquipmentSuffix, RunwayConfig, Worksheet
+from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH
+from craft_generator.sop.model import EquipmentSuffix, GateDirection, Gates, RunwayConfig, SopData, Worksheet
 
 Fixture = dict[str, Any]
 
@@ -65,6 +67,8 @@ REQUIRED_LABELS = (CALLSIGN_LABEL, TYPE_LABEL, DEPART_LABEL, ARRIVE_LABEL, CRUIS
 FORM_BUTTONS = frozenset({"Amend Plan", "Refresh Plan", "Assign Squawk", "Plot"})
 
 _TYPE_PATTERN = re.compile(r"^(?:(?P<weight>[HJ])/)?(?P<designator>[A-Z0-9]{2,4})(?:/(?P<suffix>[A-Z]))?$")
+_SID_TOKEN = re.compile(r"^[A-Z]{3,5}\d$")
+_AIRWAY_TOKEN = re.compile(r"^[JVQT]\d+$")
 _SQUAWK_PATTERN = re.compile(r"^[0-7]{4}$")
 _FLIGHT_LEVEL_PATTERN = re.compile(r"^FL(?P<hundreds>\d{2,3})$")
 _SLUG_PATTERN = re.compile(r"[^a-z0-9]+")
@@ -356,12 +360,17 @@ def rnav_suffixes(suffixes: Sequence[EquipmentSuffix]) -> frozenset[str]:
     return frozenset(entry.suffix for entry in suffixes if entry.rnav)
 
 
-def departure_runway(config_id: str | None, configs: Sequence[RunwayConfig], where: str) -> tuple[str, str]:
-    """Return the runway configuration and departure runway the fixtures of one sheet carry.
+@dataclass(frozen=True, slots=True)
+class RunwayChoice:
+    """The departure runway one plan's fixture carries and the gate direction that chose it."""
 
-    The worksheets state the configuration but not the runway, so the first departure runway the
-    configuration publishes is used and recorded in the fixture's ``source.note``; the validation
-    loop corrects it plan by plan.
+    config_id: str
+    runway: str
+    direction: GateDirection | None
+
+
+def sheet_runway_config(config_id: str | None, configs: Sequence[RunwayConfig], where: str) -> RunwayConfig:
+    """Return the runway configuration the fixtures of one sheet carry.
 
     Args:
         config_id: The ``runway_configs`` id the sheet declares, or ``None``.
@@ -369,7 +378,7 @@ def departure_runway(config_id: str | None, configs: Sequence[RunwayConfig], whe
         where: The sheet's title, used in the error messages.
 
     Returns:
-        The configuration id and the runway designator.
+        The configuration.
 
     Raises:
         ValueError: The sheet declares no configuration, names one ``sop.yaml`` does not have, or
@@ -383,21 +392,79 @@ def departure_runway(config_id: str | None, configs: Sequence[RunwayConfig], whe
         raise ValueError(f"{where}: config {config_id!r} is not a `runway_configs` id in sop.yaml; use one of {[entry.id for entry in configs]}")
     if not config.departure_runways:
         raise ValueError(f"{where}: runway configuration {config_id!r} publishes no departure runway, so its fixtures have none")
-    return config.id, config.departure_runways[0].runway
+    return config
+
+
+def exit_fix(route: str, faa: str) -> str | None:
+    """Return the fix a filed route leaves the terminal on, as ``web/src/rules/route.ts`` reads it.
+
+    A leading procedure token is dropped whether or not it is the procedure the flight will get, and
+    the airport's own navaid is skipped where it is filed next, e.g. ``SFO`` in ``WESLA5 SFO SUSEY``.
+
+    Args:
+        route: The route as the sheet files it.
+        faa: The airport's FAA identifier, e.g. ``SFO``.
+
+    Returns:
+        The first token that is neither the procedure nor the airport navaid, or ``None`` when the
+        route holds no such token.
+    """
+    tokens = route.split()
+    if tokens and _SID_TOKEN.fullmatch(tokens[0]) is not None and _AIRWAY_TOKEN.fullmatch(tokens[0]) is None:
+        tokens = tokens[1:]
+    if tokens and tokens[0] == faa:
+        tokens = tokens[1:]
+    return tokens[0] if tokens else None
+
+
+def _gate_direction(fix: str | None, gates: Gates) -> GateDirection | None:
+    if fix is None:
+        return None
+    for direction, fixes in (("north", gates.north), ("south", gates.south), ("oceanic", gates.oceanic)):
+        if fix in fixes:
+            return direction
+    return None
+
+
+def departure_runway(row: PlanRow, config: RunwayConfig, sop: SopData) -> RunwayChoice:
+    """Return the departure runway one filed plan gets in the sheet's runway configuration.
+
+    The worksheets state the configuration but not the runway, so the runway follows the direction
+    the filed route leaves on: ``direction_runway_preference`` splits the parallel runways of the
+    configuration's plan by gate direction, which is what puts a northbound plan on the right-turn
+    runway. A route whose exit fix belongs to no gate, and a direction the preference table says
+    nothing about, fall back to the first departure runway the configuration publishes.
+
+    Args:
+        row: The filed plan.
+        config: The sheet's runway configuration from :func:`sheet_runway_config`.
+        sop: The transcribed SOP, for the gates, the preference table and the airport's navaid.
+
+    Returns:
+        The runway and the direction that chose it, or ``None`` for the direction on the fallback.
+    """
+    first = config.departure_runways[0].runway
+    direction = _gate_direction(exit_fix(row.route, sop.airport.faa), sop.gates)
+    if direction is None:
+        return RunwayChoice(config.id, first, None)
+    preferred = sop.direction_runway_preference.get(config.plan, {}).get(direction, {}).get(first[:RUNWAY_FAMILY_LENGTH])
+    return RunwayChoice(config.id, first, None) if preferred is None else RunwayChoice(config.id, preferred, direction)
 
 
 def _squawk_for(row: PlanRow, index: int) -> str:
     return row.squawk if row.squawk is not None else format(FIRST_SQUAWK + index, "04o")
 
 
-def _note(worksheet: Worksheet, config_id: str, runway: str) -> str:
-    return (
-        f"{worksheet.title}; the sheet states no departure runway, so this is {runway}, "
-        f"the first runway configuration {config_id} departs, pending validation"
-    )
+def _note(worksheet: Worksheet, choice: RunwayChoice) -> str:
+    opening = f"{worksheet.title}; the sheet states no departure runway, so this is {choice.runway}, "
+    if choice.direction is None:
+        return opening + f"the first runway configuration {choice.config_id} departs, pending validation"
+    return opening + f"the runway configuration {choice.config_id} departs {choice.direction} per direction_runway_preference, pending validation"
 
 
-def fixture_for(worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, runway: tuple[str, str], rnav: frozenset[str]) -> Fixture:
+def fixture_for(
+    worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, runway: RunwayChoice, rnav: frozenset[str], type_aliases: Mapping[str, str]
+) -> Fixture:
     """Build the pending fixture of one worksheet flight plan.
 
     Args:
@@ -405,28 +472,33 @@ def fixture_for(worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, ru
         row: The plan.
         index: The plan's position in the sheet, which numbers the squawk when the sheet prints none.
         icao: The departure airport the fixtures belong to.
-        runway: The runway configuration id and departure runway from :func:`departure_runway`.
+        runway: The runway configuration and departure runway from :func:`departure_runway`.
         rnav: The equipment suffixes that make an aircraft RNAV capable.
+        type_aliases: The aircraft types the sheets file under a non-ICAO designator, out of
+            ``worksheets.yaml``, mapped to the designator the fixture carries.
 
     Returns:
         The fixture document, shaped as ``data/schema/fixture.schema.json`` describes and carrying no
         ``expected``, because the worksheets publish no answer key.
     """
-    config_id, designator = runway
+    read_as = type_aliases.get(row.designator)
+    note = _note(worksheet, runway)
+    if read_as is not None:
+        note += f"; type {row.designator} filed on the sheet, read as {read_as}"
     return {
         "id": f"ws-{slug(worksheet.title)}-{row.callsign.lower()}",
-        "source": {"kind": "worksheet", "note": _note(worksheet, config_id, designator)},
+        "source": {"kind": "worksheet", "note": note},
         "status": "pending",
         "airport": icao,
         "scenario": {
             "callsign": row.callsign,
-            "aircraftType": row.designator,
+            "aircraftType": row.designator if read_as is None else read_as,
             "rnavCapable": row.suffix in rnav,
             "destination": row.destination,
             "filedRoute": row.route,
             "filedAltitude": row.altitude_feet,
-            "runwayConfigId": config_id,
-            "departureRunway": designator,
+            "runwayConfigId": runway.config_id,
+            "departureRunway": runway.runway,
             "localTime": LOCAL_TIME,
             "dayOfWeek": DAY_OF_WEEK,
             "squawk": _squawk_for(row, index),
@@ -446,15 +518,18 @@ def fixture_dir(icao: str) -> Path:
     return repo_root() / "fixtures" / icao.lower() / "worksheets"
 
 
-def sheet_fixtures(worksheet: Worksheet, text: str, *, icao: str, configs: Sequence[RunwayConfig], rnav: frozenset[str]) -> dict[Path, Fixture]:
+def sheet_fixtures(
+    worksheet: Worksheet, text: str, *, icao: str, sop: SopData, rnav: frozenset[str], type_aliases: Mapping[str, str]
+) -> dict[Path, Fixture]:
     """Parse one worksheet and build the fixture of every flight plan on it.
 
     Args:
         worksheet: The worksheet row out of ``worksheets.yaml``.
         text: The document's exported text.
         icao: The departure airport the fixtures belong to.
-        configs: The runway configurations out of ``sop.yaml``.
+        sop: The transcribed SOP, for the runway configurations, the gates and the preference table.
         rnav: The equipment suffixes that make an aircraft RNAV capable.
+        type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
 
     Returns:
         One fixture per flight plan, keyed by the file it is written to, in sheet order.
@@ -463,7 +538,7 @@ def sheet_fixtures(worksheet: Worksheet, text: str, *, icao: str, configs: Seque
         ValueError: The text does not have the shape the sheet's kind promises, the sheet's runway
             configuration does not resolve, or two plans on the sheet share a callsign.
     """
-    runway = departure_runway(worksheet.config, configs, worksheet.title)
+    config = sheet_runway_config(worksheet.config, sop.runway_configs, worksheet.title)
     name = slug(worksheet.title)
     directory = fixture_dir(icao)
     fixtures: dict[Path, Fixture] = {}
@@ -473,5 +548,7 @@ def sheet_fixtures(worksheet: Worksheet, text: str, *, icao: str, configs: Seque
             raise ValueError(
                 f"{worksheet.title}: two flight plans are filed as {row.callsign!r}, so they name one fixture file; the sheet is ambiguous"
             )
-        fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, rnav=rnav)
+        fixtures[path] = fixture_for(
+            worksheet, row, index, icao=icao, runway=departure_runway(row, config, sop), rnav=rnav, type_aliases=type_aliases
+        )
     return fixtures

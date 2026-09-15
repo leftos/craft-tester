@@ -40,3 +40,8 @@ worksheets:
     kind: amendment
     config: "28/01"
     phraseology: null
+
+# Aircraft types the sheets file under a non-ICAO designator, mapped to the designator vNAS and the
+# fleet use.
+type_aliases:
+  A32N: A20N

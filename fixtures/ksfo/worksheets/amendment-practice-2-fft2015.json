@@ -2,7 +2,7 @@
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-fft2015",
   "scenario": {
-    "aircraftType": "A32N",
+    "aircraftType": "A20N",
     "callsign": "FFT2015",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
@@ -16,7 +16,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the first runway configuration 28 RT departs, pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the runway configuration 28 RT departs south per direction_runway_preference, pending validation; type A32N filed on the sheet, read as A20N"
   },
   "status": "pending"
 }

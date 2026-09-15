@@ -16,7 +16,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the first runway configuration 28 SO departs, pending validation"
+    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation"
   },
   "status": "pending"
 }
