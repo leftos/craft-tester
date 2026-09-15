@@ -251,6 +251,13 @@ function classDefaultRunway(
  * runways in normal use the rest. Otherwise `directionRunwayPreference` holds the SOP's split, e.g.
  * SFOW northbound off the 01s departing 1R and southbound 1L; a family the table has no entry for
  * falls back to the first runway of it.
+ *
+ * @param rng The seeded generator; the on-request draw advances it.
+ * @param airport The airport data, for the cargo airlines and the direction preference.
+ * @param config The runway configuration in force.
+ * @param fleet The fleet row of the type, for its class, wake category and airlines.
+ * @param direction The gate direction of the exit fix, or undefined when it has none.
+ * @returns The runway, and whether the flight asked for it, which is what the strip remarks say.
  */
 function pickRunway(
   rng: Rng,
@@ -258,14 +265,16 @@ function pickRunway(
   config: RunwayConfig,
   fleet: FleetEntry,
   direction: Direction | undefined,
-): string {
+): { runway: string; requested: boolean } {
   const defaulted = classDefaultRunway(config, fleet.class);
-  if (defaulted !== undefined) return defaulted;
+  if (defaulted !== undefined) return { runway: defaulted, requested: false };
   const requested = onRequestRunway(airport, config, fleet, direction);
-  if (requested !== undefined && rng.next() < ON_REQUEST_CHANCE) return requested;
+  if (requested !== undefined && rng.next() < ON_REQUEST_CHANCE) {
+    return { runway: requested, requested: true };
+  }
   const families = runwaysByFamily(config, fleet.class);
   if (families.size === 0) {
-    if (requested !== undefined) return requested;
+    if (requested !== undefined) return { runway: requested, requested: false };
     throw new Error(`configuration ${config.id} has no departure runway for class ${fleet.class}`);
   }
   const family = rng.pick([...families.keys()]);
@@ -277,7 +286,7 @@ function pickRunway(
   if (runway === undefined) {
     throw new Error(`configuration ${config.id} has no runway in family ${family}`);
   }
-  return runway;
+  return { runway, requested: false };
 }
 
 /** The same procedure one version back, e.g. `TRUKN1` for `TRUKN2`; undefined at version one. */
@@ -326,7 +335,7 @@ export function drawScenario(rng: Rng, airport: AirportData): GeneratedScenario 
   const route = rng.pick(airport.routeLibrary.routes);
   const fleet = pickFleet(rng, airport, route);
   const suffix = rng.pick(fleet.suffixes);
-  const runway = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
+  const picked = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
   const time = pickTime(rng);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const filed: Scenario = {
@@ -337,10 +346,11 @@ export function drawScenario(rng: Rng, airport: AirportData): GeneratedScenario 
     filedRoute: route.tail,
     filedAltitude: rng.pick(route.altitudes),
     runwayConfigId: config.id,
-    departureRunway: runway,
+    departureRunway: picked.runway,
     localTime: time.localTime,
     dayOfWeek: time.dayOfWeek,
     squawk: pickSquawk(rng),
+    ...(picked.requested ? { remarks: `REQ RWY ${picked.runway.slice(0, 2)}` } : {}),
     ...(noticesOff ? { activeNotices: [] } : {}),
   };
   const result = resolveClearance(filed, airport);

@@ -79,6 +79,18 @@ function defaultRunwayFor(config: RunwayConfig, aircraftClass: AircraftClass): s
   )?.runway;
 }
 
+/** Whether the runway the scenario departs is one its configuration holds for the flights that ask. */
+function departsOnRequestRunway(entry: GeneratedScenario): boolean {
+  const config = ksfo.runwayConfigs.find((row) => row.id === entry.scenario.runwayConfigId);
+  const aircraftClass = classOf(entry);
+  return (config?.departureRunways ?? []).some(
+    (row) =>
+      row.runway === entry.scenario.departureRunway &&
+      row.classes.includes(aircraftClass) &&
+      row.onRequestFor.length > 0,
+  );
+}
+
 /** The scenarios drawn in one runway configuration whose aircraft is of one of the classes. */
 function drawnIn(configId: string, classes: readonly AircraftClass[]): GeneratedScenario[] {
   return generated.filter(
@@ -211,6 +223,23 @@ describe('generateScenario', () => {
     expect(requested.length).toBeGreaterThan(0);
     expect(advertised.length).toBeGreaterThan(0);
     expect(heavies.length).toBe(requested.length + advertised.length);
+  });
+
+  it('files the request in the remarks of every flight drawn onto a runway it asked for', () => {
+    const asked = generated.filter((entry) => entry.scenario.remarks !== undefined);
+    console.log(`[seeds 0..${SEEDS.length - 1}] ${asked.length} scenarios filed remarks`);
+    expect(asked.length).toBeGreaterThan(0);
+    expect(asked.filter((entry) => !departsOnRequestRunway(entry)).map(label)).toEqual([]);
+    const misremarked = asked.filter(
+      (entry) => entry.scenario.remarks !== `REQ RWY ${entry.scenario.departureRunway.slice(0, 2)}`,
+    );
+    expect(misremarked.map(label)).toEqual([]);
+  });
+
+  it('never departs a runway it had to ask for without the remark that asked', () => {
+    const silent = generated.filter((entry) => entry.scenario.remarks === undefined);
+    expect(silent.length).toBeGreaterThan(0);
+    expect(silent.filter(departsOnRequestRunway).map(label)).toEqual([]);
   });
 
   it('never gives the 28s of 28/01 to a light jet that cannot ask for them', () => {
