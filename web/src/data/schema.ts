@@ -35,7 +35,13 @@ export const AirportIdentitySchema = z.strictObject({
   clearanceDelivery: z.string(),
 });
 
-/** Where every generated fact came from, so a stale build is visible in the diff. */
+/**
+ * Where every generated fact came from, so a stale build is visible in the diff.
+ *
+ * `sop.version` is the SOP's own document version, which moves independently of the sha256.
+ * `secondarySources` lists the documents a rule row may cite besides the SOP, such as the ZOA
+ * training deck; it is absent when every row comes from the SOP itself.
+ */
 export const ProvenanceSchema = z.strictObject({
   airac: z.strictObject({
     cycle: z.string(),
@@ -45,20 +51,38 @@ export const ProvenanceSchema = z.strictObject({
   chartsApi: z.url(),
   sop: z.strictObject({
     url: z.url(),
+    version: z.string(),
     sha256: z.string(),
     transcribedAt: z.string(),
   }),
+  secondarySources: z
+    .array(
+      z.strictObject({
+        id: z.string(),
+        title: z.string(),
+        dated: z.string(),
+        url: z.url(),
+      }),
+    )
+    .optional(),
 });
 
-/** One departure runway of a config and the aircraft classes that may use it. */
+/**
+ * One departure runway of a config and the aircraft classes that may use it.
+ *
+ * `note` carries the SOP caveat that limits the runway to some of those aircraft, e.g. the 28s in
+ * the 28/01 config being for oceanic, Far East and cargo departures.
+ */
 export const RunwayAssignmentSchema = z.strictObject({
   runway: z.string(),
   classes: z.array(AircraftClassSchema),
+  note: z.string().optional(),
 });
 
-/** An ATIS runway configuration, e.g. `28/01` on the SFOW plan. */
+/** An ATIS runway configuration, e.g. `28/01` on the SFOW plan, with the SOP's name for it. */
 export const RunwayConfigSchema = z.strictObject({
   id: z.string(),
+  name: z.string(),
   plan: z.string(),
   arrivalRunways: z.array(z.string()),
   departureRunways: z.array(RunwayAssignmentSchema),
@@ -136,29 +160,52 @@ export const SidSchema = z.strictObject({
   routePhrasing: RouteTemplateSchema,
   chartFrequencies: z.array(ChartFrequencySchema),
   chart: z.strictObject({ pdfUrl: z.url() }),
+  crossingRestrictionsByRunwayFamily: z.record(z.string(), z.boolean()).optional(),
+  note: z.string().optional(),
 });
 
-/** Extra conditions that narrow an assignment rule beyond plan, direction, runway, and class. */
+/**
+ * Extra conditions that narrow an assignment rule beyond plan, direction, runway, and class.
+ *
+ * `noiseWindow` is the id of a `NoiseWindowSchema` row, so a rule applies only inside that window.
+ * `exitFixes` limits the rule to flights leaving the SID at one of those fixes, and
+ * `forcedTransition` names the transition the clearance must use when the rule matches.
+ */
 export const AssignmentConditionSchema = z.strictObject({
   configs: z.array(z.string()).optional(),
   notConfigs: z.array(z.string()).optional(),
-  noiseWindow: z.boolean().optional(),
+  noiseWindow: z.string().optional(),
   rnav: z.boolean().optional(),
+  exitFixes: z.array(z.string()).optional(),
+  forcedTransition: z.string().optional(),
 });
 
-/** One row of the SOP DP assignment table; the engine takes the first compatible match. */
-export const AssignmentRuleSchema = z.strictObject({
-  id: z.string(),
-  source: z.string(),
-  text: z.string(),
-  plan: z.string(),
-  direction: DirectionSchema,
-  runwayFamilies: z.array(z.string()),
-  classes: z.array(AircraftClassSchema),
-  sidFamily: z.string(),
-  sector: z.string(),
-  when: AssignmentConditionSchema.optional(),
-});
+/**
+ * One row of the SOP DP assignment table; the engine takes the first compatible match.
+ *
+ * `direction` is `any` on rows that apply whichever way the flight is going, such as the noise
+ * abatement row that sends non-RNAV props off runway heading. A row either assigns a SID family or
+ * clears the flight without a DP on `nonDpHeading`, never both and never neither, which is what the
+ * refinement enforces; `sidFamily` is `null` on the `nonDpHeading` rows.
+ */
+export const AssignmentRuleSchema = z
+  .strictObject({
+    id: z.string(),
+    source: z.string(),
+    text: z.string(),
+    plan: z.string(),
+    direction: z.union([DirectionSchema, z.literal('any')]),
+    runwayFamilies: z.array(z.string()),
+    classes: z.array(AircraftClassSchema),
+    sidFamily: z.string().nullable(),
+    nonDpHeading: z.string().optional(),
+    sector: z.string(),
+    when: AssignmentConditionSchema.optional(),
+  })
+  .refine((rule) => (rule.sidFamily !== null) !== (rule.nonDpHeading !== undefined), {
+    error:
+      'an assignment rule must set exactly one of sidFamily (non-null) or nonDpHeading: a rule either assigns a SID family or clears the flight without a DP',
+  });
 
 /** A local-time window during which the noise abatement rows apply. */
 export const NoiseWindowSchema = z.strictObject({
@@ -252,20 +299,34 @@ export const LoaRuleSchema = z.strictObject({
   rule: LoaRuleKindSchema,
 });
 
-/** A destination airport with the coordinates and ARTCC the altitude checks need. */
+/**
+ * A destination airport with the coordinates and ARTCC the altitude checks need.
+ *
+ * `nct` marks a destination inside NorCal TRACON, which is where the TEC route rows apply.
+ */
 export const DestinationSchema = z.strictObject({
   icao: z.string(),
   spoken: z.string(),
   lat: z.number().min(-90).max(90),
   lon: z.number().min(-180).max(180),
   artcc: z.string(),
+  nct: z.boolean().optional(),
 });
 
-/** One curated fleet type, its class, and the service ceiling the altitude checks compare against. */
+/**
+ * One curated fleet type, its class, and the service ceiling the altitude checks compare against.
+ *
+ * `wtc` is the ICAO wake turbulence category (`L`, `M`, `H`, `J`), `suffixes` are the equipment
+ * suffixes the type normally files, and `airlines` are the callsign prefixes that operate it, empty
+ * when the type flies as a registration.
+ */
 export const FleetEntrySchema = z.strictObject({
   type: z.string(),
   class: AircraftClassSchema,
+  wtc: z.string(),
   ceilingFeet: feet,
+  suffixes: z.array(z.string().regex(/^\/[A-Z]$/)),
+  airlines: z.array(z.string()),
 });
 
 /** A curated filed route: the gate fix, the rest of the route string, and where it goes. */
@@ -284,15 +345,54 @@ export const RouteLibrarySchema = z.strictObject({
   routes: z.array(RouteLibraryEntrySchema),
 });
 
-/** The whole generated airport file, `data/<icao>.json`. */
+/**
+ * An operational notice that changes SID availability, such as a ZOA advisory taking a DP out of use.
+ *
+ * `sid_off` removes every assignment row for that SID family while the notice is active;
+ * `defaultActive` is whether a scenario starts with it in force, and `plan` narrows it to one
+ * operating plan when the notice only applies to one.
+ */
+export const NoticeSchema = z.strictObject({
+  id: z.string(),
+  source: z.string(),
+  dated: z.string(),
+  text: z.string(),
+  plan: z.string().optional(),
+  effect: z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('sid_off'), sidFamily: z.string() }),
+  ]),
+  defaultActive: z.boolean(),
+});
+
+/**
+ * The whole generated airport file, `data/<icao>.json`.
+ *
+ * `frequencies` is the labelled distractor pool the frequency dropdown draws from.
+ * `departureStaffingFallbacks` are the sectors a departure goes to when Area D is combined or
+ * offline, and have the same shape as the staffed sectors. `directionRunwayPreference` maps a plan,
+ * then a departure direction, then a runway family to the runway a flight in that direction departs
+ * from, e.g. SFOW north off the 01s departing 01R. `noSid` is the runway families that can be
+ * cleared without a DP and the route phrasing that clearance uses. `fixSpoken` maps a fix or navaid
+ * identifier to how it is spoken, e.g. `OSI` to `Woodside`.
+ */
 export const AirportDataSchema = z.strictObject({
   airport: AirportIdentitySchema,
   provenance: ProvenanceSchema,
   runwayConfigs: z.array(RunwayConfigSchema),
   departureSectors: z.array(DepartureSectorSchema),
-  frequencies: z.array(z.string()),
+  departureStaffingFallbacks: z.array(DepartureSectorSchema),
+  frequencies: z.array(z.strictObject({ label: z.string(), value: z.string() })),
+  directionRunwayPreference: z.record(
+    z.string(),
+    z.record(DirectionSchema, z.record(z.string(), z.string())),
+  ),
   gates: GatesSchema,
+  noSid: z.strictObject({
+    runwayFamilies: z.array(z.string()),
+    phrasing: RouteTemplateSchema,
+  }),
   sids: z.array(SidSchema),
+  fixSpoken: z.record(z.string(), z.string()),
   assignmentRules: z.array(AssignmentRuleSchema),
   noiseWindows: z.array(NoiseWindowSchema),
   altitudeRules: z.array(AltitudeRuleSchema),
@@ -301,6 +401,7 @@ export const AirportDataSchema = z.strictObject({
   equipmentSuffixes: z.array(EquipmentSuffixSchema),
   tecRoutes: z.array(TecRouteSchema),
   loaRules: z.array(LoaRuleSchema),
+  notices: z.array(NoticeSchema),
   aircraftClasses: z.record(z.string(), AircraftClassSchema),
   routeLibrary: RouteLibrarySchema,
 });
@@ -422,6 +523,7 @@ export type Destination = z.infer<typeof DestinationSchema>;
 export type FleetEntry = z.infer<typeof FleetEntrySchema>;
 export type RouteLibraryEntry = z.infer<typeof RouteLibraryEntrySchema>;
 export type RouteLibrary = z.infer<typeof RouteLibrarySchema>;
+export type Notice = z.infer<typeof NoticeSchema>;
 export type AirportData = z.infer<typeof AirportDataSchema>;
 export type Scenario = z.infer<typeof ScenarioSchema>;
 export type ExpectedClearance = z.infer<typeof ExpectedClearanceSchema>;

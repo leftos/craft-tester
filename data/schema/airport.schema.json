@@ -159,14 +159,25 @@
             "type": "array"
           },
           "direction": {
-            "enum": [
-              "north",
-              "south",
-              "oceanic"
-            ],
-            "type": "string"
+            "anyOf": [
+              {
+                "enum": [
+                  "north",
+                  "south",
+                  "oceanic"
+                ],
+                "type": "string"
+              },
+              {
+                "const": "any",
+                "type": "string"
+              }
+            ]
           },
           "id": {
+            "type": "string"
+          },
+          "nonDpHeading": {
             "type": "string"
           },
           "plan": {
@@ -182,7 +193,10 @@
             "type": "string"
           },
           "sidFamily": {
-            "type": "string"
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "source": {
             "type": "string"
@@ -199,8 +213,17 @@
                 },
                 "type": "array"
               },
+              "exitFixes": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "forcedTransition": {
+                "type": "string"
+              },
               "noiseWindow": {
-                "type": "boolean"
+                "type": "string"
               },
               "notConfigs": {
                 "items": {
@@ -253,6 +276,60 @@
       },
       "type": "array"
     },
+    "departureStaffingFallbacks": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "frequency": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "frequency"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "directionRunwayPreference": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "type": "string"
+          },
+          "type": "object"
+        },
+        "propertyNames": {
+          "enum": [
+            "north",
+            "south",
+            "oceanic"
+          ],
+          "type": "string"
+        },
+        "required": [
+          "north",
+          "south",
+          "oceanic"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
     "equipmentSuffixes": {
       "items": {
         "additionalProperties": false,
@@ -289,9 +366,31 @@
       },
       "type": "array"
     },
+    "fixSpoken": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
     "frequencies": {
       "items": {
-        "type": "string"
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ],
+        "type": "object"
       },
       "type": "array"
     },
@@ -451,6 +550,30 @@
       },
       "type": "array"
     },
+    "noSid": {
+      "additionalProperties": false,
+      "properties": {
+        "phrasing": {
+          "enum": [
+            "transition",
+            "radar_vectors_fix",
+            "as_filed"
+          ],
+          "type": "string"
+        },
+        "runwayFamilies": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "runwayFamilies",
+        "phrasing"
+      ],
+      "type": "object"
+    },
     "noiseWindows": {
       "items": {
         "additionalProperties": false,
@@ -475,6 +598,62 @@
           "id",
           "start",
           "end"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "notices": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "dated": {
+            "type": "string"
+          },
+          "defaultActive": {
+            "type": "boolean"
+          },
+          "effect": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "kind": {
+                    "const": "sid_off",
+                    "type": "string"
+                  },
+                  "sidFamily": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "sidFamily"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "dated",
+          "text",
+          "effect",
+          "defaultActive"
         ],
         "type": "object"
       },
@@ -557,6 +736,34 @@
           "format": "uri",
           "type": "string"
         },
+        "secondarySources": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "dated": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "url": {
+                "format": "uri",
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "dated",
+              "url"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
         "sop": {
           "additionalProperties": false,
           "properties": {
@@ -569,10 +776,14 @@
             "url": {
               "format": "uri",
               "type": "string"
+            },
+            "version": {
+              "type": "string"
             }
           },
           "required": [
             "url",
+            "version",
             "sha256",
             "transcribedAt"
           ],
@@ -609,6 +820,9 @@
                 "minimum": -180,
                 "type": "number"
               },
+              "nct": {
+                "type": "boolean"
+              },
               "spoken": {
                 "type": "string"
               }
@@ -628,6 +842,12 @@
           "items": {
             "additionalProperties": false,
             "properties": {
+              "airlines": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "ceilingFeet": {
                 "exclusiveMinimum": 0,
                 "maximum": 9007199254740991,
@@ -641,14 +861,27 @@
                 ],
                 "type": "string"
               },
+              "suffixes": {
+                "items": {
+                  "pattern": "^\\/[A-Z]$",
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "type": {
+                "type": "string"
+              },
+              "wtc": {
                 "type": "string"
               }
             },
             "required": [
               "type",
               "class",
-              "ceilingFeet"
+              "wtc",
+              "ceilingFeet",
+              "suffixes",
+              "airlines"
             ],
             "type": "object"
           },
@@ -731,6 +964,9 @@
                   },
                   "type": "array"
                 },
+                "note": {
+                  "type": "string"
+                },
                 "runway": {
                   "type": "string"
                 }
@@ -746,12 +982,16 @@
           "id": {
             "type": "string"
           },
+          "name": {
+            "type": "string"
+          },
           "plan": {
             "type": "string"
           }
         },
         "required": [
           "id",
+          "name",
           "plan",
           "arrivalRunways",
           "departureRunways"
@@ -801,6 +1041,15 @@
           "climbViaEligible": {
             "type": "boolean"
           },
+          "crossingRestrictionsByRunwayFamily": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
           "family": {
             "type": "string"
           },
@@ -817,6 +1066,9 @@
               "vector_hybrid",
               "radar_vectors"
             ],
+            "type": "string"
+          },
+          "note": {
             "type": "string"
           },
           "restrictions": {
@@ -1034,9 +1286,13 @@
     "provenance",
     "runwayConfigs",
     "departureSectors",
+    "departureStaffingFallbacks",
     "frequencies",
+    "directionRunwayPreference",
     "gates",
+    "noSid",
     "sids",
+    "fixSpoken",
     "assignmentRules",
     "noiseWindows",
     "altitudeRules",
@@ -1045,6 +1301,7 @@
     "equipmentSuffixes",
     "tecRoutes",
     "loaRules",
+    "notices",
     "aircraftClasses",
     "routeLibrary"
   ],
