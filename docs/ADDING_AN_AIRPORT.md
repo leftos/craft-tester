@@ -101,9 +101,11 @@ the hooks rejects the file.
     not add `rnav: false` gates on the fallback rows; the worksheets clear RNAV-capable heavies on the
     radar-vector SID too.
 13. **`altitude_rules`**: the interim-altitude table, ordered, with `sid_families` where the SOP names
-    SIDs. `when_top_altitude_published: climb_via` means the row applies only when the chart publishes no
-    top altitude (the SOP's "when no TOC is published" wording; confirmed against the CBT). Set
-    `expect_after_minutes` from the SOP.
+    SIDs. `when_top_altitude_published` says what a row does when the chart publishes a top altitude:
+    `interim` applies the row anyway (KSFO, on the user's reading of the SOP table), `climb_via` defers to
+    the chart and the clearance becomes a plain "climb via SID". Set `expect_after_minutes` from the SOP;
+    the clause is only spoken where the chart itself does not publish the expect note (see
+    `phraseology.expect_altitude`).
 14. **`notices`**: current operational notices that turn a SID off (`effect: {kind: sid_off}`), with
     `default_active`. The engine skips assignment rows for an off SID; scenarios drill both states.
 15. **`phraseology`** toggles and **`phraseology_rules`**: copy the KSFO block verbatim. These are FAA JO
