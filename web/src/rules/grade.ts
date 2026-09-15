@@ -8,8 +8,13 @@ const EXPECT_MINUTES: Record<PlayerPicks['expect'], number | null> = {
   none: null,
 };
 
-/** Renders feet with thousands separators, e.g. `10000` as `10,000`. */
-function formatFeet(feet: number): string {
+/**
+ * Renders feet with thousands separators, e.g. `10000` as `10,000`.
+ *
+ * @param feet The altitude in feet.
+ * @returns The altitude as it is written on a strip or in a dropdown.
+ */
+export function formatFeet(feet: number): string {
   return String(feet).replace(/\B(?=(?:\d{3})+$)/g, ',');
 }
 
@@ -21,7 +26,12 @@ const ROUTE_PHRASES: Record<RouteTemplate, string> = {
   as_filed: 'then as filed',
 };
 
-/** Renders a route element the way the results view names it, e.g. `DEDHD transition`. */
+/**
+ * Renders a route element the way the results view names it, e.g. `DEDHD transition`.
+ *
+ * @param route The route shape and, where the clearance names one, the element it speaks.
+ * @returns The label, which is the bare shape when the route names no element.
+ */
 export function routeLabel(route: ResolvedClearance['route']['value']): string {
   const { template, fix } = route;
   if (fix === undefined) return ROUTE_PHRASES[template];
@@ -30,8 +40,13 @@ export function routeLabel(route: ResolvedClearance['route']['value']): string {
   return `${ROUTE_PHRASES[template]} ${fix}`;
 }
 
-/** Renders an altitude element, e.g. `climb via SID except maintain 10,000`. */
-function altitudeLabel(altitude: ResolvedClearance['altitude']['value']): string {
+/**
+ * Renders an altitude element, e.g. `climb via SID except maintain 10,000`.
+ *
+ * @param altitude The altitude phrase and, where the phrase speaks one, the feet.
+ * @returns The label, which is the bare phrase when no feet are spoken.
+ */
+export function altitudeLabel(altitude: ResolvedClearance['altitude']['value']): string {
   const { phrase, feet } = altitude;
   if (phrase === 'climb_via') return 'climb via SID';
   const suffix = feet === undefined ? '' : ` ${formatFeet(feet)}`;
@@ -43,6 +58,16 @@ function expectLabel(minutes: number | null): string {
   return minutes === null
     ? 'no expect altitude'
     : `expect filed altitude ${minutes} minutes after departure`;
+}
+
+/**
+ * Renders an expect-clause choice the way the form and the results view name it.
+ *
+ * @param choice The expect clause the player picked, or `none` for no expect clause at all.
+ * @returns The label, e.g. `expect filed altitude 10 minutes after departure`.
+ */
+export function expectChoiceLabel(choice: PlayerPicks['expect']): string {
+  return expectLabel(EXPECT_MINUTES[choice]);
 }
 
 /**
