@@ -30,15 +30,33 @@ function citationList(citations: readonly RuleCitation[]): HTMLElement {
   return list;
 }
 
-/** One element's verdict: what the player said, what the clearance says, and why. */
+/**
+ * The lines one verdict reads as: the player's answer, and the correction a wrong answer earns.
+ *
+ * @param verdict The verdict for one element.
+ * @returns The answer line, whether it was right, and the correction line when it was not.
+ */
+export function verdictLines(verdict: Grade): {
+  answer: string;
+  correct: boolean;
+  correction: string | undefined;
+} {
+  return {
+    answer: `you said: ${verdict.actualLabel}`,
+    correct: verdict.ok,
+    correction: verdict.ok ? undefined : `correction: ${verdict.expectedLabel}`,
+  };
+}
+
+/** One element's verdict: what the player said, the correction where it was wrong, and why. */
 function gradeRow(verdict: Grade): HTMLElement {
+  const lines = verdictLines(verdict);
   const row = el('div', `verdict ${verdict.ok ? 'ok' : 'bad'}`);
-  row.append(
-    el('h3', '', elementLabel(verdict.element)),
-    el('p', 'answer', `you said: ${verdict.actualLabel}`),
-    el('p', 'expected', `clearance: ${verdict.expectedLabel}`),
-    citationList(verdict.citations),
-  );
+  const answer = el('p', 'answer', lines.answer);
+  if (lines.correct) answer.append(el('span', 'mark', '✓'));
+  row.append(el('h3', '', elementLabel(verdict.element)), answer);
+  if (lines.correction !== undefined) row.append(el('p', 'expected', lines.correction));
+  row.append(citationList(verdict.citations));
   return row;
 }
 

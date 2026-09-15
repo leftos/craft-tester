@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Sid } from '@/data/schema.ts';
 import { grade } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance, RuleCitation } from '@/rules/types.ts';
+import { NO_SID } from '@/rules/types.ts';
 
 const assignmentCitation: RuleCitation = {
   id: 'SFOW-N-TRUKN-01',
@@ -172,6 +173,12 @@ describe('grade', () => {
     const [, sid] = grade({ ...correct, sidId: 'TRUKN9' }, expected, sids);
     expect(sid?.actualLabel).toBe('unknown SID');
     expect(sid?.expectedLabel).toBe('TRUKN TWO (RNAV)');
+  });
+
+  it('labels the no-SID pick as no SID', () => {
+    const [, sid] = grade({ ...correct, sidId: NO_SID }, expected, sids);
+    expect(sid?.actualLabel).toBe('no SID');
+    expect(sid?.ok).toBe(false);
   });
 
   it('grades an as-filed route on the fix it hands over on', () => {

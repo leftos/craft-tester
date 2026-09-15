@@ -44,6 +44,9 @@ export type EngineResult =
   | { ok: true; clearance: ResolvedClearance }
   | { ok: false; unresolved: Unresolved[] };
 
+/** The SID pick that means the controller issues no departure procedure. */
+export const NO_SID = 'no-sid';
+
 /** What the player entered in the CRAFT form, before grading. */
 export type PlayerPicks = {
   clearedTo: string;

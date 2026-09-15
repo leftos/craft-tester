@@ -1,5 +1,6 @@
 import type { RouteTemplate, Sid } from '@/data/schema.ts';
 import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
+import { NO_SID } from '@/rules/types.ts';
 
 /** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
 const EXPECT_MINUTES: Record<PlayerPicks['expect'], number | null> = {
@@ -95,7 +96,7 @@ function gradeSid(picks: PlayerPicks, expected: ResolvedClearance, sids: readonl
     element: 'R.sid',
     ok: picked !== undefined && picked.family === wanted.family,
     expectedLabel: wantedSid?.chartName ?? wanted.id,
-    actualLabel: picked?.chartName ?? 'unknown SID',
+    actualLabel: picks.sidId === NO_SID ? 'no SID' : (picked?.chartName ?? 'unknown SID'),
     citations: expected.sid.citations,
   };
 }

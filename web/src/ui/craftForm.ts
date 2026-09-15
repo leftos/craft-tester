@@ -3,11 +3,12 @@ import { altitudeLabel, expectChoiceLabel, formatFeet, routeLabel } from '@/rule
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
 import type { ClearanceElement } from '@/rules/types.ts';
+import { NO_SID } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
-import { NO_SID, toPlayerPicks } from '@/ui/state.ts';
+import { toPlayerPicks } from '@/ui/state.ts';
 
 /** The blank choice every dropdown opens on. */
 const PLACEHOLDER = '—';
