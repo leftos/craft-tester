@@ -17,6 +17,9 @@ destinations:
   - { icao: KONT, spoken: Ontario, artcc: ZLA }
   - { icao: KCRQ, spoken: Carlsbad, artcc: ZLA }
   - { icao: KSMO, spoken: Santa Monica, artcc: ZLA }
+  - { icao: KVNY, spoken: Van Nuys, artcc: ZLA }
+  - { icao: KSNA, spoken: John Wayne, artcc: ZLA }
+  - { icao: KLGB, spoken: Long Beach, artcc: ZLA }
   - { icao: KUDD, spoken: Bermuda Dunes, artcc: ZLA }
   - { icao: KSBA, spoken: Santa Barbara, artcc: ZLA }
   - { icao: KMCI, spoken: Kansas City, artcc: ZKC }
@@ -33,6 +36,9 @@ destinations:
   - { icao: KMYV, spoken: Marysville, artcc: ZOA, nct: true }
   - { icao: KOVE, spoken: Oroville, artcc: ZOA, nct: true }
   - { icao: O88, spoken: Rio Vista, artcc: ZOA, nct: true }
+  - { icao: KSAC, spoken: Sacramento Executive, artcc: ZOA, nct: true }
+  - { icao: KOAK, spoken: Oakland, artcc: ZOA, nct: true }
+  - { icao: KSJC, spoken: San Jose, artcc: ZOA, nct: true }
   - { icao: PHNL, spoken: Honolulu, artcc: ZAK }
   - { icao: RKSI, spoken: Seoul Incheon, artcc: ZAK, lat: 37.469, lon: 126.451 }
   - { icao: ESSA, spoken: Stockholm Arlanda, artcc: ZAK, lat: 59.652, lon: 17.919 }

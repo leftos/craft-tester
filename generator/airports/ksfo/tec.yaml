@@ -3,7 +3,8 @@
 # 2026-09-15. The tool prints `[SFOW]`/`[SFOE]` plans, `(1)`/`(28)` departure-runway tags, and a trailing
 # altitude cap in hundreds of feet (`050/` = at or below 5,000). SIDs are written with `#` in place of the
 # version so a cycle bump does not stale the row; the engine substitutes the current procedure.
-# `runway_families` empty = every departure runway of the plan. SOP 2-1 b: issue TEC routes for
+# `kind: adr` marks an assigned departure route, which is advisory; a row without the key is a TEC
+# route. `runway_families` empty = every departure runway of the plan. SOP 2-1 b: issue TEC routes for
 # destinations within NCT except RNO and satellites; if a pilot cannot accept one, vectors direct.
 source:
   title: ZOA Reference Tool, TEC/AAR/ADR Routes
@@ -67,5 +68,5 @@ routes:
   - { id: TEC-KSJC-SFOW, destination: KSJC, plan: SFOW, classes: [J, T, P], runway_families: [], route: "GAPP# OSI SJC", altitude_cap_feet: 5000 }
   - { id: TEC-KSJC-SFOE, destination: KSJC, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# SJC", altitude_cap_feet: 3000 }
   # KSAN San Diego — an ADR (assigned departure route), not a TEC route; the ZLA LOA requires the offshore route
-  - { id: ADR-KSAN-SFOW, destination: KSAN, plan: SFOW, classes: [J, T, P], runway_families: ["01", "28"], route: "SEGUL# YYUNG LAX HUBRD1" }
-  - { id: ADR-KSAN-SFOE, destination: KSAN, plan: SFOE, classes: [J, T, P], runway_families: ["10"], route: "GAPP# SFO WAGES FLW LAX HUBRD1" }
+  - { id: ADR-KSAN-SFOW, kind: adr, destination: KSAN, plan: SFOW, classes: [J, T, P], runway_families: ["01", "28"], route: "SEGUL# YYUNG LAX HUBRD1" }
+  - { id: ADR-KSAN-SFOE, kind: adr, destination: KSAN, plan: SFOE, classes: [J, T, P], runway_families: ["10"], route: "GAPP# SFO WAGES FLW LAX HUBRD1" }

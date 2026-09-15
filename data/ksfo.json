@@ -893,7 +893,78 @@
       "SXC"
     ]
   },
-  "loaRules": [],
+  "loaRules": [
+    {
+      "artcc": "ZSE",
+      "id": "LOA-ZSE-PARITY",
+      "rule": {
+        "kind": "parity_rotated",
+        "oddCourseFrom": 20,
+        "oddCourseTo": 199
+      },
+      "source": "ZOA-ZSE LOA 4 c (1)-(2), effective 2025-09-04",
+      "text": "Aircraft tracking a course of 020 through 199 degrees are assigned altitudes as 7110.65 specifies for 0 through 179 degrees (odd); 200 through 019 degrees as for 180 through 359 (even)"
+    },
+    {
+      "destinations": [
+        "KSEA",
+        "KBFI"
+      ],
+      "id": "LOA-ZSE-SEA-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "RBL",
+          "LMT",
+          "BTG",
+          "KNGDM",
+          "HAWKZ",
+          "OLM"
+        ]
+      },
+      "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
+      "text": "SEA arrivals from the Bay: ..RBL..LMT then the HAWKZ STAR, or ..BTG then the OLM STAR; non-RNAV ..KNGDM or ..BTG"
+    },
+    {
+      "destinations": [
+        "KPDX"
+      ],
+      "id": "LOA-ZSE-PDX-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "MACHU",
+          "MOXEE",
+          "OED"
+        ]
+      },
+      "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
+      "text": "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
+    },
+    {
+      "destinations": [
+        "KLAX",
+        "KBUR",
+        "KVNY",
+        "KSMO",
+        "KSNA",
+        "KLGB"
+      ],
+      "id": "LOA-ZSE-LA-BASIN-DIRECT",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "ENI",
+          "LIN",
+          "FRA",
+          "REBRG",
+          "JAGWA"
+        ]
+      },
+      "source": "ZOA-ZSE LOA 4 b (2)",
+      "text": "Aircraft landing Los Angeles Basin airports (LAX, BUR, VNY, SMO, SNA, LGB) may be routed no further direct than ENI, LIN, FRA, REBRG or JAGWA"
+    }
+  ],
   "noSid": {
     "phrasing": "radar_vectors_fix",
     "runwayFamilies": [
@@ -1121,6 +1192,30 @@
       },
       {
         "artcc": "ZLA",
+        "icao": "KVNY",
+        "lat": 34.209806,
+        "lon": -118.489972,
+        "nct": false,
+        "spoken": "Van Nuys"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSNA",
+        "lat": 33.675661,
+        "lon": -117.868233,
+        "nct": false,
+        "spoken": "John Wayne"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KLGB",
+        "lat": 33.817931,
+        "lon": -118.151892,
+        "nct": false,
+        "spoken": "Long Beach"
+      },
+      {
+        "artcc": "ZLA",
         "icao": "KUDD",
         "lat": 33.748439,
         "lon": -116.274814,
@@ -1246,6 +1341,30 @@
         "lon": -121.703633,
         "nct": true,
         "spoken": "Rio Vista"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSAC",
+        "lat": 38.512861,
+        "lon": -121.4933,
+        "nct": true,
+        "spoken": "Sacramento Executive"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KOAK",
+        "lat": 37.721261,
+        "lon": -122.22115,
+        "nct": true,
+        "spoken": "Oakland"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSJC",
+        "lat": 37.362994,
+        "lon": -121.928619,
+        "nct": true,
+        "spoken": "San Jose"
       },
       {
         "artcc": "ZAK",
@@ -3063,5 +3182,711 @@
       ]
     }
   ],
-  "tecRoutes": []
+  "tecRoutes": [
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# TRUKN FEVTA FEVTA1",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# CIITY FEVTA FEVTA1",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 6000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOW-P-01",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "SFO# OAK V6 SAC",
+      "runwayFamilies": [
+        "01"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 6000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOW-P-28",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OAK V6 SAC",
+      "runwayFamilies": [
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 6000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOE-P",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM V392 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOE",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OSI V25 SNS",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOE",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OSI V25 SNS",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOW-JT",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# TRUKN ALTAM",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOW-JT-01",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "SFO# V244 ALTAM MOD",
+      "runwayFamilies": [
+        "01"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOW-JT-28",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OAK V244 ALTAM MOD",
+      "runwayFamilies": [
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOE-JT",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# CIITY ALTAM",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 3000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOE-T",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# TRUKN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOE-P",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KAPC",
+      "id": "TEC-KAPC",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KAPC",
+      "id": "TEC-KAPC-SFOE",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOW-JT",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOE-JT",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# CIITY ALTAM",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOW-TP-01",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "SFO# OAK V6 SAC",
+      "runwayFamilies": [
+        "01"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOW-TP-28",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OAK V6 SAC",
+      "runwayFamilies": [
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOW-JT",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOE-JT",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# CIITY ALTAM",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOW-TP-01",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "SFO# OAK V6 SAC",
+      "runwayFamilies": [
+        "01"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOW-TP-28",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OAK V6 SAC",
+      "runwayFamilies": [
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-TP-01",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "SFO# V6 SAC",
+      "runwayFamilies": [
+        "01"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-TP-28",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OAK V6 SAC",
+      "runwayFamilies": [
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM V392 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-TP-01",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "SFO# V6 SAC",
+      "runwayFamilies": [
+        "01"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-TP-28",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OAK V6 SAC",
+      "runwayFamilies": [
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# OAK V244 ALTAM V392 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 3000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KOAK",
+      "id": "TEC-KOAK-SFOW",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "TRUKN# TRUKN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 3000,
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destination": "KOAK",
+      "id": "TEC-KOAK-SFOE-JT",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "CIITY# CIITY",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 3000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KOAK",
+      "id": "TEC-KOAK-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP#",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSJC",
+      "id": "TEC-KSJC-SFOW",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "GAPP# OSI SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 3000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSJC",
+      "id": "TEC-KSJC-SFOE",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "GAPP# SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSAN",
+      "id": "ADR-KSAN-SFOW",
+      "kind": "adr",
+      "plan": "SFOW",
+      "route": "SEGUL# YYUNG LAX HUBRD1",
+      "runwayFamilies": [
+        "01",
+        "28"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSAN",
+      "id": "ADR-KSAN-SFOE",
+      "kind": "adr",
+      "plan": "SFOE",
+      "route": "GAPP# SFO WAGES FLW LAX HUBRD1",
+      "runwayFamilies": [
+        "10"
+      ],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    }
+  ]
 }
