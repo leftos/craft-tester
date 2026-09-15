@@ -22,6 +22,7 @@ const full: DraftPicks = {
   altitudeFeet: 10000,
   expect: 'ten_minutes',
   frequency: '120.9',
+  runway: '01R',
 };
 
 describe('applyPick', () => {
@@ -85,6 +86,7 @@ describe('toPlayerPicks', () => {
       altitudeFeet: 10000,
       expect: 'ten_minutes',
       frequency: '120.9',
+      runway: '01R',
     });
   });
 });
@@ -100,6 +102,7 @@ describe('revisiting a solved scenario', () => {
     altitudeFeet: 10_000,
     expect: 'ten_minutes',
     frequency: '120.9',
+    runway: '01R',
   };
   let airport: AirportData;
 

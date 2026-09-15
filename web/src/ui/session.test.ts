@@ -40,6 +40,7 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
       expectValue === null ? 'none' : `${expectValue.minutes === 10 ? 'ten' : 'three'}_minutes`,
     ],
     ['frequency', clearance.frequency.value.value],
+    ['runway', clearance.runway.value],
   ];
   if (feet === undefined) return answers;
   return [...answers, ['altitudeFeet', String(feet)]];

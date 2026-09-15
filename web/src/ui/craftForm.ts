@@ -176,8 +176,25 @@ function frequencyGroup(
   };
 }
 
+/** The runway the flight expects, which is every runway its configuration departs. */
+function runwayGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
+  return {
+    element: 'RWY',
+    fields: [
+      {
+        key: 'runway',
+        label: 'expect runway',
+        options: plainOptions(options.runways),
+        value: picks.runway,
+        disabled: false,
+        placeholder: PLACEHOLDER,
+      },
+    ],
+  };
+}
+
 /**
- * Builds the six groups of dropdowns the player answers the clearance with.
+ * Builds the seven groups of dropdowns the player answers the clearance with.
  *
  * @param scenario The scenario being cleared, which contributes the filed route and altitude.
  * @param airport The airport data.
@@ -197,6 +214,7 @@ export function craftGroups(
     altitudeGroup(options, picks),
     expectGroup(options, picks),
     frequencyGroup(options, airport, picks),
+    runwayGroup(options, picks),
   ];
 }
 
