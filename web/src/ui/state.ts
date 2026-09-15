@@ -5,9 +5,6 @@ import { seedToHash } from '@/scenario/rng.ts';
 import { buildScenario } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 
-/** The value the SID dropdown carries for "no SID", which is no procedure the airport publishes. */
-export const NO_SID = 'no-sid';
-
 /** Every expect clause the form offers, in the order it offers them. */
 const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = ['ten_minutes', 'three_minutes', 'none'];
 

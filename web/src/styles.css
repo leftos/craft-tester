@@ -234,8 +234,14 @@ button.primary:disabled {
   border-left-color: var(--bad);
 }
 
-.verdict.ok h3 {
+.verdict.ok h3,
+.verdict.ok .mark {
   color: var(--ok);
+}
+
+.verdict .mark {
+  margin-left: 0.35rem;
+  font-weight: 600;
 }
 
 .verdict.bad h3 {
