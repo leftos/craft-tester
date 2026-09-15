@@ -35,6 +35,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
   - [ ] `fixtures.test.ts` and the exhaustive test import `@data/ksfo.json` directly; loop over `data/airports.json` before the second airport
 - [x] 18. TEC routes, LOA rules, equipment suffixes, destination coordinates, fleet ceilings (`data/ksfo.json` now carries 49 TEC/ADR rows and 4 LOA rules; the build fails when a TEC row's leading DP is not published for the runway family it departs. `routes.yaml` gained KSAC/KOAK/KSJC for the TEC rows and KVNY/KSNA/KLGB because the ZOA–ZSE LA-basin LOA row names them; none of the six has a `routes` entry yet, so they cannot be drawn as scenarios. The build summary line does not count TEC/LOA rows)
 - [ ] 19. Amendment engine
+  - [ ] User rule 2026-09-15: when the controller amends the final altitude from what was filed (parity, RVSM band, TEC cap, ceiling), the expect clause is spoken and marked as amended: "expect amended flight level three two zero", "expect amended one zero thousand". Chart note does not cover an amended altitude, so this overrides the `unless_chart_publishes_it` drop. Needs an `expect.amended: true` flag in `ResolvedClearance`/`ExpectedClearance`, a `speak.ts` rendering, and the A-EXPECT rule text extended (confirm with the user whether the "(minutes) minutes after departure" tail is still spoken on the amended form)
 - [ ] 20. Amendment scenario generator + UI + mode switch
 - [ ] 21. Validation loop, amendment mode
 
