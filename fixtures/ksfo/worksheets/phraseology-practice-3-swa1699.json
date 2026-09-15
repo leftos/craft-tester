@@ -1,5 +1,19 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 10000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KBOI",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "ORRCA",
+      "template": "transition"
+    },
+    "sidFamily": "SNTNA"
+  },
   "id": "ws-phraseology-practice-3-swa1699",
   "scenario": {
     "aircraftType": "B737",
@@ -16,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation"
+    "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation; validated by the user 2026-09-15: SNTNA2 ORRCA transition off 28L in 28 SO, climb via SID except maintain 10,000, no expect clause, 120.9; full route confirmed"
   },
-  "status": "pending"
+  "status": "settled"
 }

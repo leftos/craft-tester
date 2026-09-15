@@ -95,8 +95,11 @@ describe('speakFix', () => {
 describe('speakRouteToken', () => {
   it.each([
     ['J70', 'Jay seventy'],
+    ['J501', 'Jay five zero one'],
+    ['V6', 'Victor six'],
     ['V244', 'Victor two forty-four'],
-    ['Q124', 'Q one twenty-four'],
+    ['Q124', 'Queue one twenty-four'],
+    ['Q174', 'Queue one seventy-four'],
     ['T575', 'Tango five seventy-five'],
     ['B932', 'Bravo nine thirty-two'],
     ['HAWKZ7', 'Hawkz Seven arrival'],

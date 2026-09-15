@@ -45,8 +45,8 @@ const PHONETIC_LETTERS: Readonly<Record<string, string>> = {
   Z: 'zulu',
 };
 
-/** Airway letters that are not spoken phonetically. */
-const AIRWAY_LETTERS: Readonly<Record<string, string>> = { J: 'Jay', V: 'Victor', Q: 'Q' };
+/** Airway letters that are not spoken phonetically: "Victor 6", "Jay 5", "Queue 2". */
+const AIRWAY_LETTERS: Readonly<Record<string, string>> = { J: 'Jay', V: 'Victor', Q: 'Queue' };
 
 /** An airway as filed: one letter and up to three digits, e.g. `V244`. */
 const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
