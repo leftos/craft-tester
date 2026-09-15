@@ -1,10 +1,11 @@
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from craft_generator.emit import fixture_schema_path, validate
+from craft_generator.emit import dump, fixture_schema_path, validate, write_or_check
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
 from craft_generator.sop.model import AircraftClass, AirportInputs, EquipmentSuffix, Worksheet, WorksheetConfig
 from craft_generator.worksheets import (
@@ -16,6 +17,7 @@ from craft_generator.worksheets import (
     parse_phraseology_sheet,
     parse_worksheet,
     rnav_suffixes,
+    settled_fixture_at,
     sheet_fixtures,
     slug,
 )
@@ -89,6 +91,30 @@ def by_title(worksheets: tuple[Worksheet, ...]) -> dict[str, Worksheet]:
 @pytest.fixture(scope="module")
 def aircraft_classes(aircraft_specs_subset: list[dict[str, Any]], worksheet_config: WorksheetConfig) -> dict[str, AircraftClass]:
     return designator_classes(aircraft_specs_subset, worksheet_config.type_aliases)
+
+
+@pytest.fixture(scope="module")
+def turboprop_fixture(
+    by_title: dict[str, Worksheet],
+    ksfo_inputs: AirportInputs,
+    equipment_suffixes: tuple[EquipmentSuffix, ...],
+    aircraft_classes: dict[str, AircraftClass],
+) -> Fixture:
+    """Return the regenerated fixture of the B350 on Phraseology Practice 1A."""
+    return fixture_of(sheet_of(by_title["Phraseology Practice 1A"], ksfo_inputs, equipment_suffixes, {}, aircraft_classes), "N483KA")
+
+
+def write_settled(tmp_path: Path, fixture: Fixture, **scenario: Any) -> Path:
+    """Write a settled copy of a fixture, with its scenario amended, and return the path."""
+    settled = {
+        **fixture,
+        "status": "settled",
+        "expected": {"clearedTo": fixture["scenario"]["destination"]},
+        "scenario": {**fixture["scenario"], **scenario},
+    }
+    path = tmp_path / f"{fixture['id']}.json"
+    path.write_text(dump(settled), encoding="utf-8", newline="")
+    return path
 
 
 def sheet_text(worksheet: Worksheet) -> str:
@@ -277,6 +303,32 @@ def test_unknown_designator_skips_the_class_default(
     fixture = fixture_of(fixtures, "N483KA")
     assert fixture["scenario"]["departureRunway"] == "01R"
     assert fixture["source"]["note"].endswith("; type B350 is not in the vNAS specs, so the class default was not applied")
+
+
+def test_settled_fixture_with_same_scenario_is_kept(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    path = write_settled(tmp_path, turboprop_fixture)
+    settled = settled_fixture_at(path, turboprop_fixture, overwrite_settled=False)
+    assert settled is not None
+    assert (settled.id, settled.changed_fields) == (turboprop_fixture["id"], ())
+    assert json.loads(path.read_text(encoding="utf-8"))["status"] == "settled"
+
+
+def test_settled_fixture_with_changed_scenario_is_refused(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    path = write_settled(tmp_path, turboprop_fixture, departureRunway="01R", squawk="4601")
+    settled = settled_fixture_at(path, turboprop_fixture, overwrite_settled=False)
+    assert settled is not None
+    assert settled.changed_fields == ("departureRunway", "squawk")
+    committed = json.loads(path.read_text(encoding="utf-8"))
+    assert (committed["status"], committed["scenario"]["departureRunway"]) == ("settled", "01R")
+
+
+def test_overwrite_flag_downgrades_a_settled_fixture(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    path = write_settled(tmp_path, turboprop_fixture, departureRunway="01R")
+    assert settled_fixture_at(path, turboprop_fixture, overwrite_settled=True) is None
+    assert write_or_check(path, dump(turboprop_fixture), check=False).status == "written"
+    written = json.loads(path.read_text(encoding="utf-8"))
+    assert (written["status"], "expected" in written) == ("pending", False)
+    assert written["scenario"]["departureRunway"] == turboprop_fixture["scenario"]["departureRunway"]
 
 
 def test_a_worksheet_plan_becomes_a_pending_fixture(

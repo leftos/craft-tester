@@ -1,5 +1,19 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KTRK",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "OAK",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "GAPP"
+  },
   "id": "ws-phraseology-practice-1a-n483ka",
   "scenario": {
     "aircraftType": "B350",
@@ -16,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class T to it (default_for_classes), pending validation"
+    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class T to it (default_for_classes), pending validation; validated by the user 2026-09-15: GAPP7 off 28R at Echo, radar vectors OAK, maintain 3,000, no expect clause, 120.9"
   },
-  "status": "pending"
+  "status": "settled"
 }

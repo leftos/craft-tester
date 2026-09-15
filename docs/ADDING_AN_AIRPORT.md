@@ -195,7 +195,10 @@ Then:
    `amendment`), the runway config the sheet declares, and which reading it drills.
 2. `uv run craft-gen import-worksheets --airport <ICAO>` writes `fixtures/<icao>/worksheets/*.json` with
    `status: pending` and no `expected`. Expect stale SID versions (valid distractors), typos, and
-   truncated rows in the source; record them in the plan rather than editing the fixtures.
+   truncated rows in the source; record them in the plan rather than editing the fixtures. A re-import
+   never overwrites a fixture you have settled: one whose scenario is unchanged is counted `kept
+   (settled)`, and one whose scenario would change is left on disk and named in a non-zero exit, so
+   re-validate it with the user or pass `--overwrite-settled` to downgrade it to pending.
 3. Validation loop: `pnpm -C web propose <fixture-id>` prints the engine's clearance with citations. Go
    one fixture at a time with the trainer or trainee who owns the airport. A correction is a YAML edit
    plus a rebuild, never an engine edit; if it cannot be expressed as data, add the rule concept to the

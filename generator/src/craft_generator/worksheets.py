@@ -11,7 +11,8 @@ header taken five at a time.
 
 The sheets carry flight plans only - no answer keys - so every fixture is written ``pending`` and
 without ``expected``: the clearance half comes from the rules engine and is confirmed by the user in
-the validation loop (see ``docs/ARCHITECTURE.md``, fixture lifecycle). Two scenario fields the
+the validation loop (see ``docs/ARCHITECTURE.md``, fixture lifecycle). A fixture the user has
+settled is never overwritten by a later import; :func:`settled_fixture_at` is the guard. Two scenario fields the
 worksheets do not state are filled here and recorded in ``source.note``: the departure runway, which
 is the one the configuration defaults the plan's aircraft class to (``default_for_classes`` in
 ``sop.yaml``), else the one the direction the filed route leaves on prefers
@@ -19,6 +20,7 @@ is the one the configuration defaults the plan's aircraft class to (``default_fo
 and - on the amendment sheets, which print no squawk - a code counted up from 4601 in octal.
 """
 
+import json
 import re
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
@@ -37,6 +39,7 @@ EXPORT_URL = "https://docs.google.com/document/d/{document_id}/export?format=txt
 
 LOCAL_TIME = "1400"
 DAY_OF_WEEK = "tuesday"
+SETTLED_STATUS = "settled"
 FIRST_SQUAWK = 0o4601
 TRUNCATION_MARKER = "(continued)"
 
@@ -574,6 +577,67 @@ def fixture_for(
             "squawk": _squawk_for(row, index),
         },
     }
+
+
+@dataclass(frozen=True, slots=True)
+class SettledFixture:
+    """A committed fixture the user has validated, and the scenario fields a re-import would change.
+
+    ``changed_fields`` is empty when the regenerated scenario matches the committed one, so the file
+    is kept as it stands; otherwise it names the ``scenario`` keys that differ.
+    """
+
+    id: str
+    path: Path
+    changed_fields: tuple[str, ...]
+
+
+def _fixture_on_disk(path: Path) -> Mapping[str, Any]:
+    try:
+        body = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{path}: the committed fixture is not valid JSON: {exc}") from exc
+    if not isinstance(body, Mapping):
+        raise ValueError(f"{path}: the committed fixture is a {type(body).__name__}, expected a fixture object")
+    return body
+
+
+def _scenario_changes(committed: object, regenerated: Mapping[str, Any], path: Path) -> tuple[str, ...]:
+    if not isinstance(committed, Mapping):
+        raise ValueError(f"{path}: the committed fixture has no `scenario` object, so the import cannot tell whether it would change")
+    keys = set(committed) | set(regenerated)
+    return tuple(sorted(key for key in keys if committed.get(key) != regenerated.get(key)))
+
+
+def settled_fixture_at(path: Path, fixture: Fixture, *, overwrite_settled: bool) -> SettledFixture | None:
+    """Return the validated fixture at ``path`` that the import must leave alone.
+
+    The importer regenerates every fixture ``pending`` and without ``expected``, so writing over one
+    the user has settled throws that validation away. A settled file is therefore never written:
+    when the regenerated scenario matches the committed one the file is kept untouched, and when it
+    differs the caller reports the fixture instead of writing it.
+
+    Args:
+        path: The fixture file the import is about to write.
+        fixture: The regenerated fixture document.
+        overwrite_settled: Stand the guard down, so the caller writes the pending document over the
+            settled one.
+
+    Returns:
+        ``None`` when the guard stands down, the path holds no file, or the committed fixture is not
+        settled - the caller writes as usual. Otherwise the settled fixture and the scenario fields
+        a write would change.
+
+    Raises:
+        ValueError: The committed fixture is not a JSON object, or carries no ``scenario``.
+    """
+    if overwrite_settled or not path.exists():
+        return None
+    body = _fixture_on_disk(path)
+    if body.get("status") != SETTLED_STATUS:
+        return None
+    changed = _scenario_changes(body.get("scenario"), fixture["scenario"], path)
+    return SettledFixture(id=str(body.get("id", path.stem)), path=path, changed_fields=changed)
 
 
 def fixture_dir(icao: str) -> Path:
