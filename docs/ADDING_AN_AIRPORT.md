@@ -76,7 +76,10 @@ the hooks rejects the file.
 5. **`runway_configs`**: one per configuration in the SOP, with the plan (`SFOW`/`SFOE`, the SOP's flow
    name), arrival runways, and departure runways with the aircraft classes allowed on each and a `note`
    for conditional ones (KSFO: heavies on 28L/R in 28/01 for performance). The config `id` is what
-   worksheets and ATIS scenarios name, so use the SOP's own labels (`28/01`, `28 RT`).
+   worksheets and ATIS scenarios name, so use the SOP's own labels (`28/01`, `28 RT`). Where local
+   practice sends a class to a runway the SOP tables do not name (KSFO: GA props and turboprops depart
+   28R at Echo in 28/01), give that runway row `default_for_classes`; the importer and the scenario
+   generator use it before the turn-direction preference.
 6. **`departure_sectors`**: id, name, frequency, from the ZOA positions list and the chart's DEP CON boxes.
    **`departure_staffing_fallbacks`**: the combined-sector frequencies from the CBT (not used by the engine
    yet; recorded so the data exists when a staffing scenario is added).
