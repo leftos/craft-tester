@@ -31,6 +31,9 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [x] Parse the ZOA CBT module `d14ccce0-8840-11e8-a6af-2a32edb55910` (S1-SFO-0 deck, Google Slides `1yqKhIdUYZlHxmA-mWC_UIX1A1jb7kuMJO3vu_ApTbV8`) into rule rows: done in `generator/airports/ksfo/sop.yaml` and `overrides.yaml` (altitude rows now `climb_via` when a top altitude is published; props → GAPP; SSTIK 1L-only, TRUKN 1R/28s; runway-by-turn preference; staffing fallbacks; no-SID rule)
 - [x] Review the S1-SFO-T Major Ground exam results (module `25f8acdc-1afc-11ea-872b-2a32edb55910`): 24/25, the miss was a taxi-route question. Exam questions are not copied into this public repo; the clearance rules they test (28 RT → SSTIK must become WESLA; 28 SO → TRUKN must become SNTNA; SFOE → SSTIK/WESLA become SAHEY, SNTNA/TRUKN become CIITY; heavies may take 28L in 28/01 on request; SAN via the offshore SID) are covered by rule rows and go into synthetic fixtures in step 11
 
+- [x] Operational notice (user, 2026-09-15): "SFO/OAK SEGUL/COAST SID: OFF — issue SSTIK#/WESLA#/CNDEL# YYUNG, CFG SFOW". Modelled as `notices[]` with a `sid_off` effect in `sop.yaml`; the engine skips assignment rows for an off SID so the SSTIK/WESLA YYUNG rows take over. Scenarios can show the notice on the ATIS panel and drill both states.
+- [ ] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement"
+
 ## Blockers
 
 None. Worksheets are public Google Docs (ids in the subplan); no browser needed to fetch them.

@@ -426,6 +426,18 @@ altitude_rules:
     when_top_altitude_published: climb_via
     expect_after_minutes: 10
 
+# Operational notices that change which SIDs are available. `sid_off` removes every assignment row for
+# that SID family while the notice is active, so the next compatible row applies (here SSTIK#/WESLA# with
+# the YYUNG transition). Scenarios may present a notice as active or inactive so both states get drilled.
+notices:
+  - id: SFO-SEGUL-OFF
+    source: ZOA operational notice relayed by the user, 2026-09-15
+    dated: 2026-09-15
+    text: "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
+    plan: SFOW
+    effect: { kind: sid_off, sid_family: SEGUL }
+    default_active: true
+
 # Airport-level phraseology toggles. Defaults follow FAA JO 7110.65 4-3-2; the validation loop may flip them.
 phraseology:
   expect_altitude: always

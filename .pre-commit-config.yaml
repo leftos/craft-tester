@@ -12,3 +12,30 @@ repos:
       - id: check-merge-conflict
       - id: mixed-line-ending
         args: [--fix=lf]
+
+  - repo: local
+    hooks:
+      - id: web-lint
+        name: web oxlint
+        entry: pnpm -C web lint
+        language: system
+        files: ^(web/|data/)
+        pass_filenames: false
+      - id: web-fmt
+        name: web oxfmt --check
+        entry: pnpm -C web fmt:check
+        language: system
+        files: ^web/
+        pass_filenames: false
+      - id: web-typecheck
+        name: web tsc --noEmit
+        entry: pnpm -C web typecheck
+        language: system
+        files: ^(web/|data/)
+        pass_filenames: false
+      - id: web-test
+        name: web vitest
+        entry: pnpm -C web test
+        language: system
+        files: ^(web/|data/|fixtures/)
+        pass_filenames: false
