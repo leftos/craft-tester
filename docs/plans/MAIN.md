@@ -32,6 +32,7 @@ Entry point for anyone continuing this work. Detailed design, data facts, and ra
 - [x] Review the S1-SFO-T Major Ground exam results (module `25f8acdc-1afc-11ea-872b-2a32edb55910`): 24/25, the miss was a taxi-route question. Exam questions are not copied into this public repo; the clearance rules they test (28 RT → SSTIK must become WESLA; 28 SO → TRUKN must become SNTNA; SFOE → SSTIK/WESLA become SAHEY, SNTNA/TRUKN become CIITY; heavies may take 28L in 28/01 on request; SAN via the offshore SID) are covered by rule rows and go into synthetic fixtures in step 11
 
 - [x] Operational notice (user, 2026-09-15): "SFO/OAK SEGUL/COAST SID: OFF — issue SSTIK#/WESLA#/CNDEL# YYUNG, CFG SFOW". Modelled as `notices[]` with a `sid_off` effect in `sop.yaml`; the engine skips assignment rows for an off SID so the SSTIK/WESLA YYUNG rows take over. Scenarios can show the notice on the ATIS panel and drill both states.
+- [x] User steer 2026-09-15: only TEC routes are obligatory, and only for destinations inside contiguous NCT (not Area E Nevada or Area R). AAR/ADR routes are advisory. Encoded as `tecRoutes[].kind: tec | adr`; amendment mode must flag a missing TEC route only for `kind: tec` rows and only when the destination is `nct: true` (KRNO and Area E/R satellites stay `nct: false`)
 - [ ] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement"
 
 ## Blockers

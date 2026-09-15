@@ -266,6 +266,7 @@ export const EquipmentSuffixSchema = z.strictObject({
 export const TecRouteSchema = z.strictObject({
   id: z.string(),
   source: z.string(),
+  kind: z.enum(['tec', 'adr']),
   destination: z.string(),
   plan: z.string(),
   runwayFamilies: z.array(z.string()),

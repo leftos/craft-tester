@@ -1276,6 +1276,13 @@
           "id": {
             "type": "string"
           },
+          "kind": {
+            "enum": [
+              "tec",
+              "adr"
+            ],
+            "type": "string"
+          },
           "plan": {
             "type": "string"
           },
@@ -1295,6 +1302,7 @@
         "required": [
           "id",
           "source",
+          "kind",
           "destination",
           "plan",
           "runwayFamilies",
