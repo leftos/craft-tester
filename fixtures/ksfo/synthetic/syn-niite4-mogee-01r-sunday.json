@@ -30,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOW-NOISE-N-NIITE at 0730 on a Sunday, when the noise window runs to 0800L instead of 0700L; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); SOP 2-2 c interim table applies despite the published top altitude (user review 2026-09-15): climb via SID except maintain 10,000"
+    "note": "SFOW-NOISE-N-NIITE at 0730 on a Sunday, when the noise window runs to 0800L instead of 0700L; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); NIITE4 publishes FL190 and the plan files 39,000, above it, so the altitude is plain climb via SID (SOP 2-2 c (1) issues the interim table only when no top altitude is published, user decision 2026-09-15)"
   },
   "status": "settled"
 }

@@ -30,7 +30,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "SFOE-N-CIITY: the east plan northbound off the 10s while landing the 19s. CIITY3 publishes FL190, but the SOP 2-2 c interim table applies despite a published top altitude (user review 2026-09-15), so SFOE-J-15000 gives climb via SID except maintain 15,000. Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."
+    "note": "SFOE-N-CIITY: the east plan northbound off the 10s while landing the 19s. CIITY3 publishes FL190 and the plan files 34,000, above it, so the altitude is plain climb via SID: SOP 2-2 c (1) issues the interim table only when no top altitude is published (user decision 2026-09-15). Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."
   },
   "status": "settled"
 }
