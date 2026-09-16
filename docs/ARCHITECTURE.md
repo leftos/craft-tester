@@ -48,7 +48,7 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 | directory | job |
 |---|---|
 | `data/` | zod schema, loader |
-| `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak` |
+| `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/amend/` checks the three strip boxes; its `build.ts` route-builds before the vector-SID fallback (a filed SID whose transition connects onward to the filed route over `routeConnections`, or a row's forced transition) |
 | `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`), time-of-day and runway-configuration filters |
 | `ui/` | strip, ATIS panel, CRAFT form, results, solved-scenario store (`solved.ts`, localStorage, best effort) |
 

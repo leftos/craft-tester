@@ -77,6 +77,7 @@ describe('checkRoute procedure', () => {
     expect(amendment(flight).reason).toBe(
       'SSTIK5 is not the procedure the SOP assigns an RNAV jet from 28L in 28 RT; it is GAPP7',
     );
+    expect(citations(flight)).toContain('SFOW-S-GAPP');
   });
 
   it('replaces a procedure an operational notice has taken out of use, and cites the notice', () => {
@@ -89,6 +90,83 @@ describe('checkRoute procedure', () => {
     });
     expect(amendment(flight).proposed).toBe('SSTIK5 YYUNG LAX COMIX2');
     expect(citations(flight)).toContain('SFO-SEGUL-OFF');
+  });
+});
+
+describe('checkRoute route building', () => {
+  /** The worksheet plan filed to a fix the assigned SSTIK# does not publish a transition to. */
+  function swa984(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'SWA984',
+      aircraftType: 'B737',
+      destination: 'KLAX',
+      filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+      filedAltitude: 35000,
+      departureRunway: '01L',
+      squawk: '4602',
+      ...overrides,
+    });
+  }
+
+  it('keeps the assigned SID by the transition that always connects to the filed route', () => {
+    const flight = swa984();
+    expect(amendment(flight).proposed).toBe('SSTIK5 SUSEY EBAYE AVE SADDE8');
+    expect(amendment(flight).reason).toBe(
+      'SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one ' +
+        'of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so ' +
+        'the SID is kept',
+    );
+    expect(citations(flight)).toEqual(['SFOW-S-SSTIK-01', 'CONN-SUSEY-EBAYE', 'R-ROUTE-BUILD']);
+  });
+
+  it('builds a two-hop chain over a connection that usually holds, and says so', () => {
+    const flight = swa984({ filedRoute: 'SSTIK5 BOILE EHF SADDE8' });
+    expect(amendment(flight).proposed).toBe('SSTIK5 KAYEX LOSHN BOILE EHF SADDE8');
+    expect(amendment(flight).reason).toContain('LOSHN usually connects to BOILE');
+    expect(citations(flight)).toEqual([
+      'SFOW-S-SSTIK-01',
+      'CONN-KAYEX-LOSHN',
+      'CONN-LOSHN-BOILE',
+      'R-ROUTE-BUILD',
+    ]);
+  });
+
+  it('falls back to the vector SID when no connection reaches the filed route', () => {
+    const flight = swa984({ filedRoute: 'SSTIK5 OSI SNS SADDE8' });
+    expect(amendment(flight).proposed).toBe('GAPP7 OSI SNS SADDE8');
+    expect(citations(flight)).toContain('SFOW-S-GAPP');
+  });
+
+  it('leaves a plan that already files the transition alone', () => {
+    expect(check(swa984({ filedRoute: 'SSTIK5 SUSEY EBAYE AVE SADDE8' }))).toBeUndefined();
+  });
+
+  it('leaves a plan filed on the vector SID alone rather than building the SOP one', () => {
+    const flight = scenario({
+      callsign: 'LXJ351',
+      aircraftType: 'E55P',
+      destination: 'KCRQ',
+      filedRoute: 'GAPP7 EHF LHS V459 SLI V23 OCN',
+      filedAltitude: 39000,
+      departureRunway: '01L',
+    });
+    expect(check(flight)).toBeUndefined();
+  });
+
+  it('gives a plan filed without a procedure the assigned one, not a built route', () => {
+    const flight = scenario({
+      callsign: 'KAL65',
+      aircraftType: 'B77L',
+      destination: 'RKSI',
+      filedRoute: 'RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)',
+      filedAltitude: 30000,
+    });
+    expect(amendment(flight).proposed).toBe(
+      'SFO5 RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)',
+    );
+    expect(amendment(flight).reason).toBe(
+      'the route files no departure procedure; the SOP assigns SFO5 from 01R in 28/01',
+    );
   });
 });
 

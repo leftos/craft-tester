@@ -117,3 +117,35 @@ export function parseFiledRoute(
 export function directionOf(fix: string, gates: Gates): Direction | undefined {
   return DIRECTIONS.find((direction) => gates[direction].includes(fix));
 }
+
+/** Whether a procedure token is the current or a stale version of that SID family. */
+function isFamily(token: string | undefined, family: string | null): boolean {
+  if (token === undefined || family === null) return false;
+  return isSidToken(token) && token.slice(0, -1) === family;
+}
+
+/**
+ * The direction the flight is departing in, which is the gate its route leaves the terminal by.
+ *
+ * A forced transition is the exception: a row that sends a flight over a fix for noise abatement
+ * routes it away from where it is going, so the gate that fix belongs to is not the direction of
+ * flight. KSFO's 0100L-0500L southbound row sends departures over GOBBS, a north gate, and a route
+ * already reading `NIITE4 GOBBS YYUNG …` would otherwise be read as a northbound flight and cleared
+ * by the northbound night row. The direction is then the first gate fix further along the route,
+ * which is where the flight is actually going; a route with none keeps the gate of its exit fix.
+ *
+ * @param parsed The filed route, whose procedure token says which family the detour belongs to.
+ * @param airport The airport data, for the gates and the rows that force a transition.
+ * @returns The direction, or undefined when no fix on the route is a gate.
+ */
+export function flightDirection(parsed: ParsedRoute, airport: AirportData): Direction | undefined {
+  const detour = airport.assignmentRules.some(
+    (row) =>
+      row.when?.forcedTransition === parsed.exitFix &&
+      isFamily(parsed.filedSidToken, row.sidFamily),
+  );
+  const onward = detour
+    ? parsed.tokens.slice(1).find((token) => directionOf(token, airport.gates) !== undefined)
+    : undefined;
+  return directionOf(onward ?? parsed.exitFix, airport.gates);
+}

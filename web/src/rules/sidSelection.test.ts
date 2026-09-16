@@ -9,7 +9,7 @@ import type {
   Sid,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
-import { selectSid } from '@/rules/sidSelection.ts';
+import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -318,5 +318,27 @@ describe('selectSid', () => {
       element: 'R.sid',
       reason: 'no assignment rule applies to SFOW north runway 01 class P',
     });
+  });
+});
+
+describe('unservedSids', () => {
+  const swa984 = scenario({
+    callsign: 'SWA984',
+    aircraftType: 'B737',
+    destination: 'KLAX',
+    filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+    departureRunway: '01L',
+  });
+
+  it('lists the SOP SID of a row above the one selectSid takes, with that row', () => {
+    const result = unservedSids(ctx({}), 'EBAYE', 'south', swa984, ksfo);
+    expect(result.map((candidate) => [candidate.sid.id, candidate.row.id])).toEqual([
+      ['SSTIK5', 'SFOW-S-SSTIK-01'],
+    ]);
+  });
+
+  it('is empty when the first applicable row already reaches the exit element', () => {
+    const filed = { ...swa984, filedRoute: 'SSTIK5 SUSEY EBAYE AVE SADDE8' };
+    expect(unservedSids(ctx({}), 'SUSEY', 'south', filed, ksfo)).toEqual([]);
   });
 });

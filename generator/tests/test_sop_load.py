@@ -30,6 +30,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-AS-FILED",
     "R-RV-SID",
     "R-THEN-AS-FILED",
+    "R-ROUTE-BUILD",
     "R-RV-AIRWAY",
     "R-AIRWAY",
     "R-NAVAID",

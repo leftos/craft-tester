@@ -355,6 +355,28 @@ function amendmentGap(clean: Scenario, airport: AirportData): Unresolved | undef
 }
 
 /**
+ * The clean plan as the amendment engine writes it, where the composed one only needed its route.
+ *
+ * A clean plan is by definition the plan the amendment engine would not amend, and prepending the
+ * assigned procedure to the library tail cannot always reach one: the route builder answers a
+ * southbound night departure with `NIITE4 GOBBS …` and a route that leaves at a connection target
+ * with the transition that connects to it, neither of which the prepend can write. Adopting the
+ * corrected route gives the draw the plan the flight would really file. Only the route box may be
+ * adopted: an amended type or altitude is a fault in the drawn plan itself, which clearance mode
+ * throws away rather than corrects.
+ *
+ * @param clean The composed plan, with the assigned procedure at the head of the filed route.
+ * @param airport The airport data.
+ * @returns The plan with the built route adopted, or the composed plan where nothing was adopted.
+ */
+function withBuiltRoute(clean: Scenario, airport: AirportData): Scenario {
+  const result = resolveAmendments(clean, airport);
+  if (!result.ok || result.amendments.length === 0) return clean;
+  if (!result.amendments.every((amendment) => amendment.box === 'route')) return clean;
+  return result.corrected;
+}
+
+/**
  * Draws one candidate scenario and runs both engines over it.
  *
  * The filed route is assembled after the clearance engine has spoken, because it names the
@@ -365,7 +387,9 @@ function amendmentGap(clean: Scenario, airport: AirportData): Unresolved | undef
  * A scenario is then one the clearance engine can clear *and* the amendment engine has nothing to
  * amend: the amendment engine is the single definition of a plan that is correct as filed, so a
  * route library row is drawn only in the configurations, classes and suffixes where its tail and
- * altitude are the correctly-filed plan, and a draw where they are not is thrown away.
+ * altitude are the correctly-filed plan, and a draw where they are not is thrown away. Where the
+ * route box alone is what the engine would write differently, the plan takes the route the engine
+ * writes rather than being thrown away, because that route is what the flight would have filed.
  *
  * A filter that names a destination narrows the route draw to the route library rows filed to it.
  *
@@ -407,10 +431,11 @@ export function drawScenario(
   if (!result.ok) {
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }
-  const clean: Scenario = {
+  const composed: Scenario = {
     ...filed,
     filedRoute: `${result.clearance.sid.value.id} ${route.tail}`,
   };
+  const clean = withBuiltRoute(composed, airport);
   return amendmentGap(clean, airport) ?? clean;
 }
 

@@ -3,6 +3,7 @@ import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { resolveAmendedClearance, resolveAmendments } from '@/rules/amend/engine.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { speakClearance } from '@/rules/speak.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -72,6 +73,28 @@ function cleared(flight: Scenario) {
   return result.clearance;
 }
 
+/** Reads the corrected plan's clearance aloud, the way the reveal does (`ui/session.ts`). */
+function spoken(flight: Scenario) {
+  const { corrected } = resolved(flight);
+  const result = resolveAmendedClearance(flight, corrected, ksfo);
+  if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+  const { clearance } = result;
+  return speakClearance({
+    callsign: corrected.callsign,
+    clearance,
+    destinationSpoken:
+      ksfo.routeLibrary.destinations.find((row) => row.icao === corrected.destination)?.spoken ??
+      corrected.destination,
+    filedRoute: corrected.filedRoute,
+    originalRoute: flight.filedRoute,
+    airportFaa: ksfo.airport.faa,
+    squawk: corrected.squawk,
+    telephony: ksfo.routeLibrary.telephony,
+    fixSpoken: ksfo.fixSpoken,
+    sidTransitions: ksfo.sids.find((sid) => sid.id === clearance.sid.value.id)?.transitions ?? [],
+  });
+}
+
 describe('resolveAmendments', () => {
   it('amends nothing on a plan filed as the SOP and the letters of agreement want it', () => {
     const flight = scenario({});
@@ -122,6 +145,51 @@ describe('resolveAmendments', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.unresolved.map((item) => item.element)).toContain('BOX.altitude');
+  });
+});
+
+describe('resolveAmendments forced transition', () => {
+  /** The southbound jet off the 01s inside the 0100L-0500L window, which the SOP sends over GOBBS. */
+  function nightSouth(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'SWA77',
+      aircraftType: 'B737',
+      destination: 'KSAN',
+      filedRoute: 'SSTIK5 YYUNG LAX COMIX2',
+      filedAltitude: 35000,
+      departureRunway: '01L',
+      localTime: '0200',
+      squawk: '4620',
+      ...overrides,
+    });
+  }
+
+  /** The route amendment of a plan, absent when the route box reads right as filed. */
+  function routeAmendment(flight: Scenario) {
+    return resolved(flight).amendments.find((amendment) => amendment.box === 'route');
+  }
+
+  it('routes a southbound night departure over the transition the noise row forces', () => {
+    const amendment = routeAmendment(nightSouth());
+    expect(amendment?.proposed).toBe('NIITE4 GOBBS YYUNG LAX COMIX2');
+    expect(amendment?.citations.map((citation) => citation.id)).toEqual([
+      'SFOW-NOISE-S-NIITE-GOBBS',
+      'R-TRANSITION',
+    ]);
+  });
+
+  it('clears the corrected plan on the southbound noise row, not the northbound one', () => {
+    const { corrected } = resolved(nightSouth());
+    const clearance = cleared(corrected);
+    expect(clearance.sid.value.id).toBe('NIITE4');
+    expect(clearance.route.value).toMatchObject({ fix: 'GOBBS' });
+    expect(clearance.sid.citations.map((citation) => citation.id)).toEqual([
+      'SFOW-NOISE-S-NIITE-GOBBS',
+    ]);
+  });
+
+  it('leaves the same plan alone outside the noise window', () => {
+    expect(routeAmendment(nightSouth({ localTime: '1400' }))).toBeUndefined();
   });
 });
 
@@ -248,5 +316,20 @@ describe('resolveAmendedClearance', () => {
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.expect).toEqual(cleared(corrected).expect);
     expect(result.clearance.expect.value).toBeNull();
+  });
+
+  it('reads a built route as the transition, the chain flown direct, then as filed', () => {
+    const original = scenario({
+      callsign: 'SWA984',
+      aircraftType: 'B737',
+      destination: 'KLAX',
+      filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+      filedAltitude: 35000,
+      departureRunway: '01L',
+      squawk: '4602',
+    });
+    expect(spoken(original).abbreviated).toContain(
+      'Sstik Five departure, Susey transition, direct Ebaye, then as filed.',
+    );
   });
 });

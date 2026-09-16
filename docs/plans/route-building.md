@@ -28,6 +28,14 @@ possible; a suboptimal route that is legal per SOPs and LOAs is not an unclean r
    join applies at the first filed token reached (`asFiledJoin` already does this for
    `SUSEY EBAYE AVE SADDE8` against `EBAYE AVE SADDE8`: join index 1, units "direct Ebaye").
 
+5. **User decision 2026-09-16 (scope)**: the connection search runs only to keep a SID the pilot
+   filed that the SOP prefers but that does not serve the filed exit fix (SWA984: filed `SSTIK5 EBAYE`,
+   SSTIK5 kept via SUSEY). It does not run for a plan that files a SID the SOP does assign (LXJ351's
+   `GAPP7 EHF`, settled as correct) or no DP at all (KAL65 `RBL J1 …`, settled as `SFO5 RBL` / `GAPP7
+   RBL`): fewest changes wins, and those settled fixtures stand. Concretely, `buildRoute`'s connection
+   candidates are the unserved SIDs whose family is the family of the filed procedure token; the forced
+   transition (NIITE# GOBBS) is a separate mechanism and applies whatever was filed.
+
 ## Data
 
 `generator/shared/route_connections.yaml`, transcribed from the cheat sheet (one row per arrow; `to`
@@ -155,7 +163,12 @@ tests, `schema.ts` and the data)
    most connection endpoints (AVE, BOILE, CISKO, EBAYE, EHF, KAYEX, LIN, LOSHN, MCKEY…), so no library
    route leaves the DP at a connection target today and the `dropped_transition` fault likely has no
    drawable plan; step 3 confirms and reports it.
-2. Engine: `unservedSids`, `build.ts`, `route.ts` changes, `R-ROUTE-BUILD` row; tests: SWA984 rebuilt to
+2. [x] Engine — landed 2026-09-16: `unservedSids` (`sidSelection.ts`), `buildRoute`/`builtTokens`
+   (`amend/build.ts`, BFS over `always` edges then all, one edge minimum, filed-family guard, forced
+   branch), `route.ts` `builtExpectation`/`builtReason`/`builtCitations`, `flightDirection` (`rules/route.ts`,
+   a forced transition is a detour not a direction), clean draws adopt the engine's route when only the
+   route box changed (`generate.ts` `withBuiltRoute`), shared row `R-ROUTE-BUILD`. SWA984 settled; the
+   LXJ351 and KAL65 fixtures stand (scope decision 5). Original spec: `unservedSids`, `build.ts`, `route.ts` changes, `R-ROUTE-BUILD` row; tests: SWA984 rebuilt to
    `SSTIK5 SUSEY EBAYE AVE SADDE8` with the SSTIK row, `CONN-SUSEY-EBAYE` and `R-ROUTE-BUILD` cited; a
    two-hop chain (KAYEX → LOSHN → BOILE) with `usually` named; a plan whose exit fix connects to nothing
    still falls back to GAPP#; a `usually` chain beats the fallback; `always` chain preferred over a shorter

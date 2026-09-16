@@ -3,7 +3,7 @@ import { resolveAltitude } from '@/rules/altitude.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveFrequency } from '@/rules/frequency.ts';
-import { directionOf, parseFiledRoute } from '@/rules/route.ts';
+import { flightDirection, parseFiledRoute } from '@/rules/route.ts';
 import { phraseRoute } from '@/rules/routePhrasing.ts';
 import { explainRunway } from '@/rules/runway.ts';
 import { selectSid } from '@/rules/sidSelection.ts';
@@ -32,7 +32,7 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
   if (isUnresolved(ctx)) return blocked(ctx);
   const route = parseFiledRoute(scenario.filedRoute, airport);
   if (isUnresolved(route)) return blocked(route);
-  const direction = directionOf(route.exitFix, airport.gates);
+  const direction = flightDirection(route, airport);
   const selection = selectSid(ctx, route.exitElement, direction, scenario, airport);
   if (isUnresolved(selection)) return blocked(selection);
   const altitude = resolveAltitude(ctx, selection.sid, scenario, airport);

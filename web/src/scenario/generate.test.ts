@@ -3,6 +3,7 @@ import ksfoJson from '@data/ksfo.json';
 import type {
   AircraftClass,
   AirportData,
+  Direction,
   FleetEntry,
   RunwayConfig,
   Scenario,
@@ -11,7 +12,7 @@ import { ScenarioSchema } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { isNoiseWindowActive } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
-import { directionOf, isSidToken } from '@/rules/route.ts';
+import { directionOf, flightDirection, isSidToken, parseFiledRoute } from '@/rules/route.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 import { generateAmendmentScenario } from '@/scenario/amend.ts';
@@ -54,6 +55,17 @@ function minuteOf(entry: Scenario): number {
 /** The fix the flight leaves the terminal on: the first filed token that is not a procedure. */
 function exitFixOf(entry: Scenario): string {
   return entry.filedRoute.split(' ').find((token) => !isSidToken(token)) ?? '';
+}
+
+/**
+ * The direction the flight departs in, which the engine reads off the whole route.
+ *
+ * A plan sent over a forced transition leaves the terminal by a gate of the other direction, so
+ * the first fix of its route is not what the SOP assigned it its runway for.
+ */
+function directionFor(entry: Scenario): Direction | undefined {
+  const parsed = parseFiledRoute(entry.filedRoute, ksfo);
+  return isUnresolved(parsed) ? undefined : flightDirection(parsed, ksfo);
 }
 
 /** Which of the three time-of-day buckets the local time falls in. */
@@ -227,7 +239,7 @@ describe('generateScenario', () => {
     const wrongRunway = generated
       .filter((entry) => {
         const config = ksfo.runwayConfigs.find((row) => row.id === entry.runwayConfigId);
-        const direction = directionOf(exitFixOf(entry), ksfo.gates);
+        const direction = directionFor(entry);
         if (config === undefined || direction === undefined) return false;
         if (defaultRunwayFor(config, classOf(entry)) !== undefined) return false;
         const family = entry.departureRunway.slice(0, 2);
@@ -244,8 +256,8 @@ describe('generateScenario', () => {
         entry.departureRunway.startsWith('01') &&
         ksfo.runwayConfigs.find((row) => row.id === entry.runwayConfigId)?.plan === 'SFOW',
     );
-    const north = offThe01s.filter((entry) => ksfo.gates.north.includes(exitFixOf(entry)));
-    const south = offThe01s.filter((entry) => ksfo.gates.south.includes(exitFixOf(entry)));
+    const north = offThe01s.filter((entry) => directionFor(entry) === 'north');
+    const south = offThe01s.filter((entry) => directionFor(entry) === 'south');
     expect(north.length).toBeGreaterThan(0);
     expect(south.length).toBeGreaterThan(0);
     expect(north.filter((entry) => entry.departureRunway !== '01R').map(label)).toEqual([]);
@@ -424,5 +436,24 @@ describe('the forced destination', () => {
       generateScenario(createRng(1), ksfo, { ...ANY_SCENARIO, destination: 'KZZZ' });
     expect(draw).toThrow('KZZZ');
     expect(draw).toThrow('KSMF');
+  });
+});
+
+describe('the route the draw files', () => {
+  it('files the transition the noise row forces on a late-night southbound draw', () => {
+    const drawn = drawnUnder({
+      time: 'night',
+      config: { kind: 'id', id: '28/01' },
+      destination: 'KSAN',
+    }).filter(
+      (entry) =>
+        timeBucket(entry.localTime) === 'late night' &&
+        entry.departureRunway.startsWith('01') &&
+        entry.filedRoute.startsWith('NIITE'),
+    );
+    expect(drawn.length).toBeGreaterThan(0);
+    expect(
+      drawn.filter((entry) => entry.filedRoute !== 'NIITE4 GOBBS YYUNG LAX COMIX2').map(label),
+    ).toEqual([]);
   });
 });

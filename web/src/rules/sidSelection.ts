@@ -81,6 +81,11 @@ function servesExitElement(sid: Sid, exitElement: string): boolean {
   return sid.baseFix === exitElement;
 }
 
+/** Whether the flight can fly the SID at all: off its runway, with the equipment it carries. */
+function isFlyable(sid: Sid, scenario: Scenario, ctx: Classification): boolean {
+  return sid.runways.includes(scenario.departureRunway) && (!sid.rnavRequired || ctx.rnavCapable);
+}
+
 /** Whether the flight can fly the SID from its runway with its equipment to its exit element. */
 function isCompatible(
   sid: Sid,
@@ -88,11 +93,7 @@ function isCompatible(
   scenario: Scenario,
   ctx: Classification,
 ): boolean {
-  return (
-    sid.runways.includes(scenario.departureRunway) &&
-    (!sid.rnavRequired || ctx.rnavCapable) &&
-    servesExitElement(sid, exitElement)
-  );
+  return isFlyable(sid, scenario, ctx) && servesExitElement(sid, exitElement);
 }
 
 /** Names the data gap when no row produced a SID, listing the rows that matched but did not fit. */
@@ -148,4 +149,53 @@ export function selectSid(
     return { sid, row, sector: row.sector, notices };
   }
   return unresolved('R.sid', noSidReason(ctx, direction, incompatible));
+}
+
+/** A SID an applicable row assigns that the flight can fly but that does not reach its exit. */
+export type UnservedSid = {
+  sid: Sid;
+  row: AssignmentRule;
+};
+
+/**
+ * The SIDs of the rows `selectSid` walks past because their SID does not reach the exit element.
+ *
+ * Those rows are the SOP's own answer for the flight, passed over only because the filed route
+ * leaves the terminal somewhere the chart publishes no transition to; route building asks whether a
+ * transition of one of them connects onward to the filed route, and answers with the SID the SOP
+ * wanted rather than the vector-SID fallback further down the table. The walk is `selectSid`'s, so
+ * the two agree on which rows apply: a row whose SID an active notice took out of use is skipped, a
+ * row that clears the flight without a procedure ends it, and the first row whose SID the flight
+ * can fly to its exit element is where `selectSid` stops and so is where this stops too.
+ *
+ * @param ctx The classified flight.
+ * @param exitElement The fix, or the airway, the flight leaves the terminal on.
+ * @param direction The gate direction of the flight, undefined when its exit fix is not a gate.
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @returns The candidates in table order, empty when the first applicable row already fits.
+ */
+export function unservedSids(
+  ctx: Classification,
+  exitElement: string,
+  direction: Direction | undefined,
+  scenario: Scenario,
+  airport: AirportData,
+): UnservedSid[] {
+  const candidates: UnservedSid[] = [];
+  for (const row of airport.assignmentRules) {
+    if (!rowApplies(row, ctx, exitElement, direction)) continue;
+    if (sidOffNotice(row.sidFamily, ctx, airport) !== undefined) continue;
+    const family = row.sidFamily;
+    if (family === null) return candidates;
+    const fits = airport.sids.some(
+      (entry) => entry.family === family && isCompatible(entry, exitElement, scenario, ctx),
+    );
+    if (fits) return candidates;
+    const sid = airport.sids.find(
+      (entry) => entry.family === family && isFlyable(entry, scenario, ctx),
+    );
+    if (sid !== undefined) candidates.push({ sid, row });
+  }
+  return candidates;
 }

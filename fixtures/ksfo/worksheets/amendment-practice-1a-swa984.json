@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "SSTIK5 SUSEY EBAYE AVE SADDE8",
+        "reason": "SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so the SID is kept"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1a-swa984",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation; validated by the user 2026-09-16: route-build to keep SSTIK5 (EBAYE connects off the SUSEY transition per the OAK Route Building Cheat Sheet) rather than falling back to GAPP7 radar vectors; read \"Sstik Five departure, Susey transition, direct Ebaye, then as filed\""
   },
-  "status": "pending"
+  "status": "settled"
 }
