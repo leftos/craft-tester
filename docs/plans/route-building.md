@@ -121,13 +121,20 @@ table: the rebuilt route is `[sid.id, forcedTransition, ...parsed.tokens]`, the 
 its first fix after the forced transition (filed `SSTIK5 YYUNG …` → `NIITE4 GOBBS YYUNG …`), cited to
 the row. Reading under the join rule: "Niite Four departure, Gobbs transition, direct Yyung, then as
 filed". A row with a forced transition is tried before the connection search, in row order like any
-other. The corrected plan must then resolve to NIITE4 GOBBS in `resolveClearance`: check that
-`directionOf(GOBBS)` gives `south` (the row is `direction: south`); if GOBBS is not in the south gate
-list, the row cannot match the corrected plan and the gate list needs GOBBS (data fix in `sop.yaml`
-`gates`, reported for the user rather than assumed). Clearance mode draws such plans already carrying
-`NIITE4 GOBBS`: the clean-draw composition in `scenario/generate.ts` must insert the forced transition
-after the SID token when the selected row carries one, and the draw's amendment-engine verification
-then passes.
+other. The corrected plan must then resolve to NIITE4 GOBBS in `resolveClearance`, and there is a
+catch: GOBBS is a **north** gate (`sop.yaml` `gates.north`), so `directionOf(exitFix)` on
+`NIITE4 GOBBS YYUNG …` says north, the southbound noise row (`direction: south`) does not match, and the
+northbound night row `SFOW-NOISE-N-NIITE` would select NIITE4 for the wrong reason. Rule (assumption
+stated, not asked): a forced transition is a noise-abatement detour, not the direction of flight, so
+the direction of a route whose exit fix is the forced transition of a row whose family the filed
+procedure token belongs to is the direction of the next gate fix on the route (YYUNG → south). That
+goes in `engine.ts` beside `directionOf` (a small `flightDirection(route, airport)` reading
+`assignmentRules[].when.forcedTransition`), and the exit element for `selectSid` stays GOBBS so the
+S-GOBBS row's NIITE4 serves it. Clearance mode draws such plans already carrying `NIITE4 GOBBS`: the
+clean-draw composition in `scenario/generate.ts` (`filedRoute: \`${sid.id} ${route.tail}\``) must insert
+the forced transition after the SID token when the selected row carries one (the selection's row is
+not on `ResolvedClearance`; expose it, or re-read the row by the clearance's SID citations), and the
+draw's amendment-engine verification then passes.
 
 ## Drill (user decision 2026-09-16: inject the fault)
 
