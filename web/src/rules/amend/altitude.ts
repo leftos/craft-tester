@@ -6,6 +6,7 @@ import type {
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
+import { citeTec } from '@/rules/amend/cite.ts';
 import { magneticCourse } from '@/rules/amend/course.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
@@ -61,20 +62,6 @@ const LOWEST_PROPOSAL_FEET = 1000;
  */
 function altitudeText(feet: number): string {
   return feet < FLIGHT_LEVEL_FLOOR_FEET ? formatFeet(feet) : `FL${Math.round(feet / 100)}`;
-}
-
-/**
- * Cites a TEC route row, which is the one citable row that carries no `text` of its own.
- *
- * @param row The TEC route row the check read.
- * @returns The citation, with the row's own key facts written out as its text.
- */
-export function citeTec(row: TecRoute): RuleCitation {
-  const runways = row.runwayFamilies.length === 0 ? '' : ` ${row.runwayFamilies.join('/')}`;
-  const cap =
-    row.altitudeCapFeet === undefined ? '' : ` at or below ${formatFeet(row.altitudeCapFeet)}`;
-  const keys = `${row.destination} ${row.plan}${runways} ${row.classes.join('/')}`;
-  return { id: row.id, source: row.source, text: `${keys}: ${row.route}${cap}` };
 }
 
 /** Whether an LOA row is written for this destination, by its ARTCC or by name. */

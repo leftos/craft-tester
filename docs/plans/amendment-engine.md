@@ -100,7 +100,7 @@ the engine must still resolve the clearance a dirty plan gets after amendment.
 - [x] 3. (landed 2026-09-15; measured magnetic courses KSEA 346°, KSLC 51°, KLAX 124°; only the constraints the filed altitude broke are cited; a non-RVSM flight above FL410 is legal per 91.180, flag in step 21 if a sheet disagrees) `course.ts` + `altitude.ts` + tests (table tests per constraint, plus SFO→SEA even under the
   LOA, SFO→SLC odd, B737 FL430 → FL410, /A at FL330 → FL280 or FL270 by course, C172 to O88 at 10,000
   → 5,000 by the TEC cap)
-- [ ] 4. `route.ts` + `type.ts` + `engine.ts` + `toExpectedAmendments`; `fixtures.test.ts` runs
+- [x] 4. (landed 2026-09-15: 51 of 52 worksheet plans resolve, 5 need no amendment, boxes amended altitude 25 / route 41 / type 5, one unresolved: SWA2021 KPDX via LMT against LOA-ZSE-PDX-ROUTE) `route.ts` + `type.ts` + `engine.ts` + `toExpectedAmendments`; `fixtures.test.ts` runs
   amendment fixtures (settled must match, pending must still differ, pending-without-expected are
   reported) and `propose.ts` prints amendments for `mode: amendment` fixtures. Proving: the full web
   gate; the runner reports how many of the 52 plans resolve
@@ -112,4 +112,9 @@ the engine must still resolve the clearance a dirty plan gets after amendment.
   flagged every airway route to LAX. **User decision 2026-09-15: dropped from `loa.yaml`** (3 LOA rows
   remain). A direct-routing limit becomes its own rule kind if a worksheet plan ever needs it.
 - Whether the sheet authors amend the type or the route when a non-RNAV suffix files an RNAV SID.
+  Concrete on UAL313 (B752/Q, TRUKN2 in 28 RT): the engine returns two type amendments proposing
+  the same `B752/L` (unknown suffix; RNAV ambiguity) plus the route amendment to GAPP7, and
+  `corrected` ends with the RNAV suffix *and* the non-RNAV route, so the corrected clearance
+  re-assigns TRUKN2. Policy to settle: collapse same-value type proposals into one, and decide which
+  box wins when the type fix would make the route fix unnecessary.
 - Whether SWA2021 (KPDX via LMT, no MACHU/MOXEE/OED) is a route fault, and to what.

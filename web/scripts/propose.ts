@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AirportData, Fixture, Scenario } from '#src/data/schema.ts';
+import type { ResolvedAmendment } from '#src/rules/amend/types.ts';
 import type { SpokenClearance } from '#src/rules/speak.ts';
 import type { ResolvedClearance, RuleCitation } from '#src/rules/types.ts';
 
@@ -18,15 +19,41 @@ export type ProposalElement = {
   citations: readonly RuleCitation[];
 };
 
-/** What the engine made of a fixture: a clearance to propose, or the elements that blocked it. */
+/** One amended strip box as the proposal prints it. */
+export type ProposalAmendment = {
+  box: string;
+  proposed: string;
+  reason: string;
+  citations: readonly RuleCitation[];
+};
+
+/** The clearance half of an outcome, which amendment mode also prints for the corrected plan. */
+export type ProposalClearance = {
+  kind: 'clearance';
+  elements: readonly ProposalElement[];
+  spoken: SpokenClearance;
+  expected: unknown;
+};
+
+/** The elements an engine could not resolve, with the reason each was blocked for. */
+export type ProposalUnresolved = { kind: 'unresolved'; reasons: readonly string[] };
+
+/**
+ * What the engine made of a fixture: a clearance to propose, the boxes to amend, or the elements
+ * that blocked it.
+ *
+ * An amendment outcome carries the clearance the corrected plan gets, which is the second half of
+ * the exercise: amend the strip, then read the clearance for the plan as amended.
+ */
 export type ProposalOutcome =
+  | ProposalClearance
+  | ProposalUnresolved
   | {
-      kind: 'clearance';
-      elements: readonly ProposalElement[];
-      spoken: SpokenClearance;
+      kind: 'amendments';
+      amendments: readonly ProposalAmendment[];
+      corrected: ProposalClearance | ProposalUnresolved;
       expected: unknown;
-    }
-  | { kind: 'unresolved'; reasons: readonly string[] };
+    };
 
 /** Everything one proposal prints. */
 export type ProposalView = {
@@ -37,7 +64,12 @@ export type ProposalView = {
   outcome: ProposalOutcome;
 };
 
-/** One line of the `--pending` table. */
+/**
+ * One line of the `--pending` table.
+ *
+ * `amendments` is set for an amendment-mode fixture, one entry per amended box, and is empty when
+ * the plan is right as filed; the clearance columns are what a clearance-mode fixture fills.
+ */
 export type PendingRow = {
   id: string;
   sid: string;
@@ -45,6 +77,7 @@ export type PendingRow = {
   altitude: string;
   frequency: string;
   blocked: string | undefined;
+  amendments?: readonly string[];
 };
 
 /** Recursively sorts object keys so a pasted `expected` block matches the checked-in fixtures. */
@@ -69,9 +102,67 @@ function expectedBlock(expected: unknown): string {
   return `  "expected": ${json}`;
 }
 
+/** The CRAFT elements with their citations, and both spoken forms. */
+function clearanceLines(outcome: ProposalClearance): string[] {
+  const lines = ['', 'CRAFT'];
+  for (const element of outcome.elements) {
+    lines.push(`  ${element.label.padEnd(12)} ${element.value}`);
+    for (const citation of element.citations)
+      lines.push(`       ${citation.id} — ${citation.text}`);
+  }
+  lines.push(
+    '',
+    'SPOKEN',
+    `  abbreviated: ${outcome.spoken.abbreviated}`,
+    `  full route:  ${outcome.spoken.fullRoute}`,
+  );
+  return lines;
+}
+
+/** The elements that blocked an engine, one per line. */
+function unresolvedLines(reasons: readonly string[]): string[] {
+  return ['', 'UNRESOLVED', ...reasons.map((reason) => `  ${reason}`)];
+}
+
+/** The amended boxes, then the clearance the corrected plan gets. */
+function amendmentLines(
+  amendments: readonly ProposalAmendment[],
+  corrected: ProposalClearance | ProposalUnresolved,
+): string[] {
+  const lines = ['', 'AMENDMENTS'];
+  if (amendments.length === 0) lines.push('  none — the plan is correct as filed');
+  for (const amendment of amendments) {
+    lines.push(`  ${amendment.box.padEnd(12)} ${amendment.proposed}`);
+    lines.push(`       ${amendment.reason}`);
+    for (const citation of amendment.citations)
+      lines.push(`       ${citation.id} — ${citation.text}`);
+  }
+  lines.push('', 'clearance for the corrected plan');
+  const clearance =
+    corrected.kind === 'unresolved'
+      ? unresolvedLines(corrected.reasons)
+      : clearanceLines(corrected);
+  return [...lines, ...clearance];
+}
+
+/** Everything a proposal prints below the strip, which depends on what the engine made of it. */
+function outcomeLines(outcome: ProposalOutcome): string[] {
+  if (outcome.kind === 'unresolved') return unresolvedLines(outcome.reasons);
+  if (outcome.kind === 'amendments') {
+    return [
+      ...amendmentLines(outcome.amendments, outcome.corrected),
+      '',
+      'FIXTURE',
+      expectedBlock(outcome.expected),
+    ];
+  }
+  return [...clearanceLines(outcome), '', 'FIXTURE', expectedBlock(outcome.expected)];
+}
+
 /**
- * Renders one proposal: the strip, the CRAFT elements with their citations, the spoken clearance,
- * and the fixture block.
+ * Renders one proposal: the strip, then what the engine made of the plan — the CRAFT elements with
+ * their citations and the spoken clearance, or the boxes to amend and the clearance the corrected
+ * plan gets — and the fixture block.
  *
  * @param view The prepared proposal.
  * @returns The text the script prints, without a trailing newline.
@@ -81,32 +172,16 @@ export function formatProposal(view: ProposalView): string {
   if (view.note !== undefined) lines.push(`note: ${view.note}`);
   lines.push('', 'STRIP');
   for (const [label, value] of view.strip) lines.push(`  ${label.padEnd(12)} ${value}`);
-  if (view.outcome.kind === 'unresolved') {
-    lines.push('', 'UNRESOLVED');
-    for (const reason of view.outcome.reasons) lines.push(`  ${reason}`);
-    return lines.join('\n');
-  }
-  lines.push('', 'CRAFT');
-  for (const element of view.outcome.elements) {
-    lines.push(`  ${element.label.padEnd(12)} ${element.value}`);
-    for (const citation of element.citations)
-      lines.push(`       ${citation.id} — ${citation.text}`);
-  }
-  lines.push(
-    '',
-    'SPOKEN',
-    `  abbreviated: ${view.outcome.spoken.abbreviated}`,
-    `  full route:  ${view.outcome.spoken.fullRoute}`,
-    '',
-    'FIXTURE',
-    expectedBlock(view.outcome.expected),
-  );
-  return lines.join('\n');
+  return [...lines, ...outcomeLines(view.outcome)].join('\n');
 }
 
 /** Renders one row of the `--pending` table. */
 export function formatPendingLine(row: PendingRow): string {
   if (row.blocked !== undefined) return `${row.id.padEnd(38)} UNRESOLVED ${row.blocked}`;
+  if (row.amendments !== undefined) {
+    const boxes = row.amendments.length === 0 ? 'as filed' : row.amendments.join('  ');
+    return `${row.id.padEnd(38)} ${boxes}`;
+  }
   return [
     row.id.padEnd(38),
     row.sid.padEnd(7),
@@ -211,15 +286,17 @@ function registerAliasHook(): void {
 
 /** The app modules, imported after the alias hook is in place. */
 async function loadRuntime() {
-  const [schema, load, engine, types, speak, grade] = await Promise.all([
+  const [schema, load, engine, types, speak, grade, amend, amendTypes] = await Promise.all([
     import('#src/data/schema.ts'),
     import('#src/data/load.ts'),
     import('#src/rules/engine.ts'),
     import('#src/rules/types.ts'),
     import('#src/rules/speak.ts'),
     import('#src/rules/grade.ts'),
+    import('#src/rules/amend/engine.ts'),
+    import('#src/rules/amend/types.ts'),
   ]);
-  return { ...schema, ...load, ...engine, ...types, ...speak, ...grade };
+  return { ...schema, ...load, ...engine, ...types, ...speak, ...grade, ...amend, ...amendTypes };
 }
 
 /** Everything the CLI half needs from the app. */
@@ -257,9 +334,13 @@ function destinationSpoken(icao: string, airport: AirportData): string {
   return airport.routeLibrary.destinations.find((row) => row.icao === icao)?.spoken ?? icao;
 }
 
-/** Runs the engine over a fixture and shapes the result for printing. */
-function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): ProposalOutcome {
-  const result = runtime.resolveClearance(fixture.scenario, airport);
+/** Runs the clearance engine over a plan and shapes the result for printing. */
+function clearanceOutcome(
+  scenario: Scenario,
+  airport: AirportData,
+  runtime: Runtime,
+): ProposalClearance | ProposalUnresolved {
+  const result = runtime.resolveClearance(scenario, airport);
   if (!result.ok) {
     return {
       kind: 'unresolved',
@@ -271,12 +352,12 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
     kind: 'clearance',
     elements: craftElements(clearance, runtime),
     spoken: runtime.speakClearance({
-      callsign: fixture.scenario.callsign,
+      callsign: scenario.callsign,
       clearance,
-      destinationSpoken: destinationSpoken(fixture.scenario.destination, airport),
-      filedRoute: fixture.scenario.filedRoute,
+      destinationSpoken: destinationSpoken(scenario.destination, airport),
+      filedRoute: scenario.filedRoute,
       airportFaa: airport.airport.faa,
-      squawk: fixture.scenario.squawk,
+      squawk: scenario.squawk,
       telephony: airport.routeLibrary.telephony,
       fixSpoken: airport.fixSpoken,
       sidTransitions:
@@ -286,16 +367,55 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
   };
 }
 
+/** The value an amended box takes, which for the altitude box is a number of feet. */
+function proposedValue(amendment: ResolvedAmendment): string {
+  return amendment.box === 'altitude' ? String(amendment.proposedFeet) : amendment.proposed;
+}
+
+/** Runs the amendment engine over a plan, and the clearance engine over the corrected plan. */
+function amendmentOutcome(
+  scenario: Scenario,
+  airport: AirportData,
+  runtime: Runtime,
+): ProposalOutcome {
+  const result = runtime.resolveAmendments(scenario, airport);
+  if (!result.ok) {
+    return {
+      kind: 'unresolved',
+      reasons: result.unresolved.map((item) => `${item.element}: ${item.reason}`),
+    };
+  }
+  return {
+    kind: 'amendments',
+    amendments: result.amendments.map((amendment) => ({
+      box: amendment.box,
+      proposed: proposedValue(amendment),
+      reason: amendment.reason,
+      citations: amendment.citations,
+    })),
+    corrected: clearanceOutcome(result.corrected, airport, runtime),
+    expected: runtime.toExpectedAmendments(result),
+  };
+}
+
+/** Runs the engine the fixture's mode names over it, and shapes the result for printing. */
+function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): ProposalOutcome {
+  return fixture.mode === 'amendment'
+    ? amendmentOutcome(fixture.scenario, airport, runtime)
+    : clearanceOutcome(fixture.scenario, airport, runtime);
+}
+
 /** Builds the `--pending` row for one fixture. */
 function pendingRow(fixture: Fixture, outcome: ProposalOutcome): PendingRow {
+  const empty = { id: fixture.id, sid: '', route: '', altitude: '', frequency: '' };
   if (outcome.kind === 'unresolved') {
+    return { ...empty, blocked: outcome.reasons.join('; ') };
+  }
+  if (outcome.kind === 'amendments') {
     return {
-      id: fixture.id,
-      sid: '',
-      route: '',
-      altitude: '',
-      frequency: '',
-      blocked: outcome.reasons.join('; '),
+      ...empty,
+      blocked: undefined,
+      amendments: outcome.amendments.map((amendment) => `${amendment.box}=${amendment.proposed}`),
     };
   }
   const value = (label: string): string =>
