@@ -1726,6 +1726,7 @@
           "VOI",
           "JBU"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1739,6 +1740,7 @@
           "VOI",
           "JBU"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1751,6 +1753,7 @@
           "AAY",
           "UAL"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1763,6 +1766,7 @@
           "SWA",
           "ASA"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1777,6 +1781,7 @@
           "UAL",
           "ASA"
         ],
+        "approachCategory": "D",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1791,6 +1796,7 @@
           "DAL",
           "UAL"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1803,6 +1809,7 @@
           "FDX",
           "KAL"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1815,6 +1822,7 @@
           "NAX",
           "UAL"
         ],
+        "approachCategory": "D",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1827,6 +1835,7 @@
           "UPS",
           "FDX"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1839,6 +1848,7 @@
           "FDX",
           "UPS"
         ],
+        "approachCategory": "D",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1851,6 +1861,7 @@
           "SKW",
           "QXE"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1862,6 +1873,7 @@
         "airlines": [
           "JSX"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1874,6 +1886,7 @@
           "TWY",
           "EJA"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1885,6 +1898,7 @@
         "airlines": [
           "EJA"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1896,6 +1910,7 @@
         "airlines": [
           "XOJ"
         ],
+        "approachCategory": "C",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1905,6 +1920,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "B",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1914,6 +1930,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "B",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1923,6 +1940,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "B",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1934,6 +1952,7 @@
         "airlines": [
           "LXJ"
         ],
+        "approachCategory": "B",
         "class": "J",
         "suffixes": [
           "/L"
@@ -1943,6 +1962,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "B",
         "class": "T",
         "suffixes": [
           "/G",
@@ -1953,6 +1973,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "B",
         "class": "T",
         "suffixes": [
           "/G",
@@ -1963,6 +1984,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "A",
         "class": "T",
         "suffixes": [
           "/L",
@@ -1973,6 +1995,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "A",
         "class": "P",
         "suffixes": [
           "/G",
@@ -1984,6 +2007,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "A",
         "class": "P",
         "suffixes": [
           "/G"
@@ -1993,6 +2017,7 @@
       },
       {
         "airlines": [],
+        "approachCategory": "A",
         "class": "P",
         "suffixes": [
           "/G",

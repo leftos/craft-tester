@@ -512,7 +512,6 @@ def test_an_airport_whose_rows_name_no_group_emits_an_empty_table(ksfo_document:
     assert all("groups" not in rule for rule in ksfo_document["assignmentRules"])
     assert all("approachCategories" not in rule for rule in ksfo_document["assignmentRules"])
     assert all("groups" not in rule for rule in ksfo_document["altitudeRules"])
-    assert all("approachCategory" not in entry for entry in ksfo_document["routeLibrary"]["fleet"])
 
 
 def test_aircraft_groups_and_the_rows_naming_them_are_emitted(ksfo_build_inputs: BuildInputs) -> None:
@@ -527,11 +526,31 @@ def test_aircraft_groups_and_the_rows_naming_them_are_emitted(ksfo_build_inputs:
     assert document["altitudeRules"][0]["groups"] == ["jets_and_dh8d"]
 
 
-def test_a_row_selecting_on_approach_category_needs_the_fleet_to_carry_one(ksfo_build_inputs: BuildInputs) -> None:
-    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
-    rules[0] = replace(rules[0], approach_categories=("A", "B"))
-    with pytest.raises(ValueError, match=r"carry no `approach_category`.*selects on approach category"):
-        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+def test_the_faa_table_fills_the_approach_category_of_every_fleet_type(ksfo_document: Document) -> None:
+    categories = {entry["type"]: entry["approachCategory"] for entry in ksfo_document["routeLibrary"]["fleet"]}
+    assert len(categories) == len(ksfo_document["routeLibrary"]["fleet"])
+    assert set(categories.values()) <= {"A", "B", "C", "D"}
+    assert categories["C172"] == "A"
+    assert categories["B738"] == "D"
+
+
+def test_a_fleet_type_the_faa_table_has_no_category_for_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    table = {code: ksfo_build_inputs.aircraft_characteristics[code] for code in ("C172", "B738")}
+    message = (
+        r"routes\.yaml fleet\[A320\]: no approach category: the FAA table generator/shared/faa_aircraft_characteristics\.yaml "
+        r"has no AAC for A320; run craft-gen fetch-aircraft-characteristics or state approach_category on the row with a note"
+    )
+    with pytest.raises(ValueError, match=message):
+        build_airport(replace(ksfo_build_inputs, aircraft_characteristics=table))
+
+
+def test_a_hand_approach_category_wins_over_the_faa_table(ksfo_build_inputs: BuildInputs) -> None:
+    fleet = tuple(replace(entry, approach_category="B") if entry.type == "C172" else entry for entry in ksfo_build_inputs.airport.routes.fleet)
+    library = replace(ksfo_build_inputs.airport.routes, fleet=fleet)
+    document = build_airport(replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, routes=library)))
+    categories = {entry["type"]: entry["approachCategory"] for entry in document["routeLibrary"]["fleet"]}
+    assert categories["C172"] == "B"
+    assert categories["B738"] == "D"
 
 
 def test_approach_categories_are_emitted_once_the_fleet_carries_them(ksfo_build_inputs: BuildInputs) -> None:

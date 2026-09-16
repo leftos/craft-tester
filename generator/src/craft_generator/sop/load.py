@@ -99,6 +99,7 @@ WORKSHEETS_FILE = "worksheets.yaml"
 EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
+AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
 SID_PLACEHOLDER = "#"

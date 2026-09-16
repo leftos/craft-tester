@@ -11,6 +11,14 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+from craft_generator.aircraft_characteristics import (
+    AIRCRAFT_CHARACTERISTICS_TITLE,
+    AIRCRAFT_CHARACTERISTICS_URL,
+    aircraft_characteristics_cache_path,
+    load_aircraft_characteristics,
+    parse_aircraft_characteristics,
+    write_aircraft_characteristics,
+)
 from craft_generator.aircraft_classes import classes_for_fleet, fetch_aircraft_specs, specs_cache_path
 from craft_generator.chart_text import extract_text, parse_chart_facts
 from craft_generator.charts_api import (
@@ -33,6 +41,7 @@ from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_pa
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.sop.load import (
+    AIRCRAFT_CHARACTERISTICS_FILE,
     EQUIPMENT_SUFFIXES_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
@@ -67,12 +76,15 @@ EXIT_NOT_IMPLEMENTED = 2
 KEPT_SETTLED = "kept (settled)"
 IMPORT_STATUSES = ("unchanged", "written", KEPT_SETTLED, "differs")
 
+FETCH_AIRCRAFT_CHARACTERISTICS = "fetch-aircraft-characteristics"
+
 _SUBCOMMANDS: dict[str, str] = {
     "build": "build data/<icao>.json from CIFP, charts and the airport YAML",
     "verify-sop": "download the SOP PDF and check its sha256 and sentinel strings",
     "import-worksheets": "fetch the trainer worksheets and write pending fixtures",
     "fetch-cifp": "download and unpack the FAA CIFP for an AIRAC cycle",
     "fetch-charts": "download the departure-procedure chart PDFs for an airport",
+    FETCH_AIRCRAFT_CHARACTERISTICS: "download the FAA Aircraft Characteristics Database and write the shared aircraft table",
 }
 
 
@@ -117,8 +129,11 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True, metavar="COMMAND")
     for name, help_text in _SUBCOMMANDS.items():
         sub = subparsers.add_parser(name, help=help_text, description=help_text)
-        sub.add_argument("--airport", required=True, type=normalize_icao, metavar="ICAO", help="airport ICAO identifier, e.g. KSFO")
+        if name != FETCH_AIRCRAFT_CHARACTERISTICS:
+            sub.add_argument("--airport", required=True, type=normalize_icao, metavar="ICAO", help="airport ICAO identifier, e.g. KSFO")
         sub.add_argument("--force", action="store_true", help="re-download even when the cache already holds the file")
+        if name == FETCH_AIRCRAFT_CHARACTERISTICS:
+            sub.add_argument("--from", dest="from_file", type=Path, metavar="PATH", help="read this local .xlsx workbook instead of downloading it")
         if name in {"build", "fetch-cifp"}:
             sub.add_argument("--cycle", metavar="YYNN", help="AIRAC cycle id, e.g. 2609; defaults to the cycle effective today")
         if name == "build":
@@ -185,6 +200,36 @@ def fetch_charts(airport: str, *, force: bool = False) -> int:
         cycle_id = cycle_id_from_url(chart.pdf_url)
         pdf = fetch_chart_pdf(chart, cache, cycle_id, force=force)
         print(f"  {chart.chart_name} -> {pdf_cache_path(cache, cycle_id, chart)} ({len(pdf)} bytes)")
+    return EXIT_OK
+
+
+def fetch_aircraft_characteristics(*, from_file: Path | None = None, force: bool = False) -> int:
+    """Download the FAA Aircraft Characteristics Database and write the shared aircraft table.
+
+    The table is national, so it is written once to ``generator/shared/`` and every airport reads the
+    approach category of its fleet types from it.
+
+    Args:
+        from_file: Read this local ``.xlsx`` workbook instead of downloading one; nothing is fetched
+            and the download cache is left alone.
+        force: Re-download even when the cache already holds the workbook.
+
+    Returns:
+        The process exit status.
+    """
+    if from_file is None:
+        data = fetch_bytes(AIRCRAFT_CHARACTERISTICS_URL, aircraft_characteristics_cache_path(cache_dir()), force=force)
+        source = AIRCRAFT_CHARACTERISTICS_URL
+    else:
+        data = from_file.read_bytes()
+        source = str(from_file)
+    table = parse_aircraft_characteristics(data)
+    path = shared_dir() / AIRCRAFT_CHARACTERISTICS_FILE
+    write_aircraft_characteristics(path, table.aircraft, source_url=AIRCRAFT_CHARACTERISTICS_URL, fetched_at=date.today())
+    print(f"{AIRCRAFT_CHARACTERISTICS_TITLE}: {len(table.aircraft)} aircraft type(s) from {source} ({len(data)} bytes)")
+    print(f"  {path}")
+    for warning in table.warnings:
+        print(f"  warning: {warning}")
     return EXIT_OK
 
 
@@ -364,6 +409,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             navaids=parse_navaids(lines),
             charts=charts,
             aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),
+            aircraft_characteristics=load_aircraft_characteristics(shared_dir() / AIRCRAFT_CHARACTERISTICS_FILE),
             airport_records=parse_airport_records(lines),
             destination_stars=parse_star_ids(lines),
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
@@ -524,6 +570,7 @@ def _run(args: argparse.Namespace) -> int:
         "import-worksheets": lambda: import_worksheets(args.airport, check=args.check, force=args.force, overwrite_settled=args.overwrite_settled),
         "fetch-cifp": lambda: fetch_cifp(args.airport, args.cycle, force=args.force),
         "fetch-charts": lambda: fetch_charts(args.airport, force=args.force),
+        FETCH_AIRCRAFT_CHARACTERISTICS: lambda: fetch_aircraft_characteristics(from_file=args.from_file, force=args.force),
         "verify-sop": lambda: verify_sop(args.airport, allow_drift=args.allow_sop_drift, force=args.force),
     }
     handler = handlers.get(args.command)

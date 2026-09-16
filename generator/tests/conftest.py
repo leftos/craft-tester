@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 
+from craft_generator.aircraft_characteristics import AircraftCharacteristic, load_aircraft_characteristics
 from craft_generator.aircraft_classes import classes_for_fleet
 from craft_generator.chart_text import parse_chart_facts
 from craft_generator.charts_api import ChartRef, charts_api_url, parse_departure_charts
@@ -17,6 +18,7 @@ from craft_generator.cifp.stars import parse_star_ids
 from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.sop.load import (
+    AIRCRAFT_CHARACTERISTICS_FILE,
     EQUIPMENT_SUFFIXES_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
@@ -149,6 +151,12 @@ def equipment_suffixes() -> tuple[EquipmentSuffix, ...]:
 
 
 @pytest.fixture(scope="session")
+def aircraft_characteristics() -> dict[str, AircraftCharacteristic]:
+    """Return the shared FAA aircraft characteristics table every airport reads approach categories from."""
+    return load_aircraft_characteristics(shared_dir() / AIRCRAFT_CHARACTERISTICS_FILE)
+
+
+@pytest.fixture(scope="session")
 def ksfo_chart_inputs(sfo_charts: list[ChartRef]) -> dict[str, ChartInput]:
     """Return the chart facts of every KSFO departure chart, keyed by chart name in API order."""
     return {
@@ -164,6 +172,7 @@ def ksfo_build_inputs(
     ksfo_chart_inputs: dict[str, ChartInput],
     aircraft_specs_subset: list[dict[str, Any]],
     ksfo_navaids: dict[str, Navaid],
+    aircraft_characteristics: dict[str, AircraftCharacteristic],
 ) -> BuildInputs:
     """Return every build input of KSFO, read from the checked-in fixtures only."""
     legs, runway_records = ksfo_records
@@ -174,6 +183,7 @@ def ksfo_build_inputs(
         navaids=ksfo_navaids,
         charts=ksfo_chart_inputs,
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),
+        aircraft_characteristics=aircraft_characteristics,
         airport_records=parse_airport_records(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
         destination_stars=parse_star_ids(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),

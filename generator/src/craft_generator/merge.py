@@ -56,12 +56,13 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Any
 
+from craft_generator.aircraft_characteristics import AircraftCharacteristic
 from craft_generator.chart_text import ChartFacts, TopAltitude
 from craft_generator.cifp.airports import AirportRecord
 from craft_generator.cifp.navaids import Navaid
 from craft_generator.cifp.records import RunwayRecord
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
-from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
+from craft_generator.sop.load import AIRCRAFT_CHARACTERISTICS_FILE, RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
 from craft_generator.sop.model import (
     AircraftClass,
     AircraftGroup,
@@ -139,9 +140,10 @@ class BuildInputs:
     ``aircraft_classes`` from the vNAS specs, and ``fixture_routes`` from the filed route of every
     checked-in fixture of the airport, which name navaids the airport data itself never mentions.
 
-    ``equipment_suffixes``, ``phraseology_rules`` and ``route_connections`` come from
-    ``generator/shared/``, the YAML every airport inherits; the airport's own ``sop.yaml`` overrides
-    a phraseology row by id.
+    ``equipment_suffixes``, ``phraseology_rules``, ``route_connections`` and
+    ``aircraft_characteristics`` come from ``generator/shared/``, the YAML every airport inherits;
+    the airport's own ``sop.yaml`` overrides a phraseology row by id, and a fleet row that states an
+    ``approach_category`` of its own overrides the category the FAA table publishes for the type.
 
     ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier. A
     destination the FAA file does not carry - every foreign one - is simply absent, as is a US airport
@@ -154,6 +156,7 @@ class BuildInputs:
     navaids: dict[str, Navaid]
     charts: dict[str, ChartInput]
     aircraft_classes: dict[str, AircraftClass]
+    aircraft_characteristics: dict[str, AircraftCharacteristic]
     airport_records: dict[str, AirportRecord]
     destination_stars: dict[str, frozenset[str]]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
@@ -389,15 +392,28 @@ def _destination(destination: Destination, airport_records: Mapping[str, Airport
     }
 
 
-def _fleet_entry(entry: FleetEntry) -> Document:
-    document: Document = {
+def _approach_category(entry: FleetEntry, characteristics: Mapping[str, AircraftCharacteristic]) -> str:
+    """Return the approach category of one fleet type: the row's own, else the FAA table's."""
+    if entry.approach_category is not None:
+        return entry.approach_category
+    published = characteristics.get(entry.type)
+    if published is None or published.aac is None:
+        raise ValueError(
+            f"routes.yaml fleet[{entry.type}]: no approach category: the FAA table generator/shared/{AIRCRAFT_CHARACTERISTICS_FILE} "
+            f"has no AAC for {entry.type}; run craft-gen fetch-aircraft-characteristics or state approach_category on the row with a note"
+        )
+    return published.aac
+
+
+def _fleet_entry(entry: FleetEntry, characteristics: Mapping[str, AircraftCharacteristic]) -> Document:
+    return {
         "type": entry.type,
         "class": entry.aircraft_class,
         "wtc": entry.wtc,
         "suffixes": list(entry.suffixes),
         "airlines": list(entry.airlines),
+        "approachCategory": _approach_category(entry, characteristics),
     }
-    return _with_optional(document, approachCategory=entry.approach_category)
 
 
 def _route_where(route: RouteEntry) -> str:
@@ -515,7 +531,7 @@ def _route_library(inputs: BuildInputs) -> Document:
         "destinations": [_destination(destination, inputs.airport_records) for destination in routes.destinations],
         "telephony": dict(routes.telephony),
         "cargoAirlines": list(routes.cargo_airlines),
-        "fleet": [_fleet_entry(entry) for entry in routes.fleet],
+        "fleet": [_fleet_entry(entry, inputs.aircraft_characteristics) for entry in routes.fleet],
         "routes": [_route_entry(route, inputs.airport_records, inputs.destination_stars) for route in routes.routes],
     }
 
@@ -1025,8 +1041,8 @@ def build_airport(inputs: BuildInputs) -> Document:
 
     Raises:
         ValueError: Two sources disagree, or a rule, runway, fix, navaid name, fleet type or
-            destination does not resolve, or a rule selects on approach category while the fleet
-            does not carry one. Every message names the row it came from.
+            destination does not resolve, or a fleet type states no approach category and the FAA
+            table publishes none for it. Every message names the row it came from.
     """
     sop = inputs.airport.sop
     document: Document = {
