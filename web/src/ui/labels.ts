@@ -1,7 +1,7 @@
 import type { DayOfWeek } from '@/data/schema.ts';
 import type { ClearanceElement } from '@/rules/types.ts';
 
-/** How the form and the results view name each graded element of the clearance. */
+/** How the form and the results view name each element of the clearance and each strip box. */
 const ELEMENT_LABELS: Record<ClearanceElement, string> = {
   'R.sid': 'R — procedure',
   'R.route': 'R — route',
@@ -9,10 +9,13 @@ const ELEMENT_LABELS: Record<ClearanceElement, string> = {
   'A.expect': 'A — expect',
   F: 'F — frequency',
   RWY: 'expect runway',
+  'BOX.type': 'strip — type',
+  'BOX.altitude': 'strip — altitude',
+  'BOX.route': 'strip — route',
 };
 
 /**
- * Names one graded element of the clearance.
+ * Names one element of the clearance, or one box of the strip.
  *
  * @param element The element, as the engine and the grader key it.
  * @returns The heading the form and the results view show, e.g. `R — procedure`.

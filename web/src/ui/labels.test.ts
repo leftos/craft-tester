@@ -3,8 +3,18 @@ import type { ClearanceElement } from '@/rules/types.ts';
 import { aircraftLabel, dayLabel, elementLabel, timeLabel } from '@/ui/labels.ts';
 
 describe('elementLabel', () => {
-  it('names every graded element', () => {
-    const elements: ClearanceElement[] = ['R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'RWY'];
+  it('names every element and every strip box', () => {
+    const elements: ClearanceElement[] = [
+      'R.sid',
+      'R.route',
+      'A.phrase',
+      'A.expect',
+      'F',
+      'RWY',
+      'BOX.type',
+      'BOX.altitude',
+      'BOX.route',
+    ];
     expect(elements.map((element) => elementLabel(element))).toStrictEqual([
       'R — procedure',
       'R — route',
@@ -12,6 +22,9 @@ describe('elementLabel', () => {
       'A — expect',
       'F — frequency',
       'expect runway',
+      'strip — type',
+      'strip — altitude',
+      'strip — route',
     ]);
   });
 });

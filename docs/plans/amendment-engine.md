@@ -97,7 +97,7 @@ the engine must still resolve the clearance a dirty plan gets after amendment.
   magnetic variation and `merge.py` emits `airport.magneticVariation`; `A-PARITY` and `A-RVSM`
   phraseology rows in `sop.yaml`; `craft-gen build --check`. Proving: generator gate + `pnpm -C web test`
   all green, settled fixtures unchanged in `expected`
-- [ ] 3. `course.ts` + `altitude.ts` + tests (table tests per constraint, plus SFO→SEA even under the
+- [x] 3. (landed 2026-09-15; measured magnetic courses KSEA 346°, KSLC 51°, KLAX 124°; only the constraints the filed altitude broke are cited; a non-RVSM flight above FL410 is legal per 91.180, flag in step 21 if a sheet disagrees) `course.ts` + `altitude.ts` + tests (table tests per constraint, plus SFO→SEA even under the
   LOA, SFO→SLC odd, B737 FL430 → FL410, /A at FL330 → FL280 or FL270 by course, C172 to O88 at 10,000
   → 5,000 by the TEC cap)
 - [ ] 4. `route.ts` + `type.ts` + `engine.ts` + `toExpectedAmendments`; `fixtures.test.ts` runs

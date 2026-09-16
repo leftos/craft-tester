@@ -31,12 +31,25 @@ export type ResolvedClearance = {
 };
 
 /**
- * The elements of a clearance the engine resolves, in the order CRAFT speaks them.
+ * The elements of a clearance the engine resolves, in the order CRAFT speaks them, followed by the
+ * strip boxes amendment mode reports under.
  *
- * Grading covers all of them but `R.sid`: the flight plan always files the procedure the SOP
- * assigns, so the element is resolved, spoken and reported unresolved under this key, never graded.
+ * Grading covers all the clearance elements but `R.sid`: the flight plan always files the procedure
+ * the SOP assigns, so the element is resolved, spoken and reported unresolved under this key, never
+ * graded. The `BOX.` keys name the three boxes of the flight progress strip an amendment can change
+ * — the type box, the altitude box and the route box — and are what the amendment checks report an
+ * unresolved box under.
  */
-export type ClearanceElement = 'R.sid' | 'R.route' | 'A.phrase' | 'A.expect' | 'F' | 'RWY';
+export type ClearanceElement =
+  | 'R.sid'
+  | 'R.route'
+  | 'A.phrase'
+  | 'A.expect'
+  | 'F'
+  | 'RWY'
+  | 'BOX.type'
+  | 'BOX.altitude'
+  | 'BOX.route';
 
 /** An element the engine could not resolve, with the reason to show the player. */
 export type Unresolved = {
