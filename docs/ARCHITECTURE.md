@@ -35,8 +35,11 @@ Sections of `AirportData` (see the schema for fields): `airport`, `provenance`, 
 | `worksheets.py` | Google Docs text export → fixture files with `status: pending` |
 
 Hand-authored inputs per airport live in `generator/airports/<icao>/`: `sop.yaml`, `overrides.yaml`,
-`routes.yaml`, `tec.yaml`, `loa.yaml`. Adding an airport is adding that directory and a line in
-`data/airports.json`; the step-by-step runbook is [ADDING_AN_AIRPORT.md](./ADDING_AN_AIRPORT.md).
+`routes.yaml`, `tec.yaml`, `loa.yaml`. Inputs every airport inherits live in `generator/shared/`:
+`equipment_suffixes.yaml` (the FAA suffix table) and `phraseology_rules.yaml` (the national CRAFT rule
+rows, which an airport's `sop.yaml` overrides by id; `merge.py` joins them, shared rows first). Adding an
+airport is adding that directory and a line in `data/airports.json`; the step-by-step runbook is
+[ADDING_AN_AIRPORT.md](./ADDING_AN_AIRPORT.md).
 
 ## Web (`web/src/`)
 

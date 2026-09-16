@@ -84,8 +84,10 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
 
 - **Rules are data, code is a matcher.** Every SOP, TEC, and LOA decision is a row in
   `generator/airports/<icao>/*.yaml` with `id`, `source`, `text`; the engine cites rows, never hard-codes
-  them. A worksheet correction is a YAML edit plus `craft-gen build`, not an engine change. If a correction
-  cannot be expressed as data, stop and add the new rule concept to the plan first.
+  them. National CRAFT phraseology (FAA JO 7110.65) lives once in `generator/shared/phraseology_rules.yaml`
+  and every airport inherits it; an airport's `sop.yaml` overrides a row by id. A worksheet correction is a
+  YAML edit plus `craft-gen build`, not an engine change. If a correction cannot be expressed as data,
+  stop and add the new rule concept to the plan first.
 - **No code keyed on KSFO.** Adding an airport is a YAML directory plus a line in `data/airports.json`;
   a code change needed for a new airport is a new rule concept and goes through the plan first.
 - **`web/src/data/schema.ts` is the single source of truth** for the data shape. Change it, run

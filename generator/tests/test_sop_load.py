@@ -8,17 +8,40 @@ import yaml
 
 from craft_generator.sop.load import (
     OVERRIDES_FILE,
+    PHRASEOLOGY_RULES_FILE,
     ROUTES_FILE,
     SOP_FILE,
     load_airport,
     load_overrides,
+    load_phraseology_rules,
     load_routes,
     load_sop,
+    shared_dir,
     sid_family_of,
 )
 from craft_generator.sop.model import AirportInputs
 
 Mutation = Callable[[Any], None]
+
+SHARED_PHRASEOLOGY_IDS = [
+    "R-TRANSITION",
+    "R-AS-FILED",
+    "R-RV-SID",
+    "R-THEN-AS-FILED",
+    "R-RV-AIRWAY",
+    "R-AIRWAY",
+    "R-NAVAID",
+    "A-CLIMB-VIA",
+    "A-CLIMB-VIA-EXCEPT",
+    "A-MAINTAIN",
+    "A-EXPECT",
+    "A-EXPECT-AMENDED",
+    "A-EXPECT-REDUNDANT",
+    "C-DEST",
+    "A-PARITY",
+    "A-RVSM",
+]
+KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
 
 
 def airport_copy(tmp_path: Path, ksfo_dir: Path, **mutations: Mutation) -> Path:
@@ -122,15 +145,31 @@ def test_altitude_rules_notices_and_phraseology(ksfo_inputs: AirportInputs) -> N
     assert sop.phraseology.expect_altitude == "unless_chart_publishes_it"
     assert sop.phraseology.non_standard_interim_expect_minutes == 3
     assert sop.phraseology.vector_hybrid_transitions_spoken is False
-    assert {
-        "R-TRANSITION",
-        "R-AIRWAY",
-        "R-NAVAID",
-        "RWY-CLASS-DEFAULT",
-        "RWY-ON-REQUEST",
-        "RWY-DIRECTION",
-        "RWY-FIRST",
-    } <= {rule.id for rule in sop.phraseology_rules}
+    assert {rule.id for rule in sop.phraseology_rules} == KSFO_PHRASEOLOGY_IDS
+
+
+def test_the_shared_phraseology_rules_carry_the_rows_every_airport_inherits() -> None:
+    rules = load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE)
+    assert [rule.id for rule in rules] == SHARED_PHRASEOLOGY_IDS
+    assert [rule.id for rule in rules if rule.id.startswith("RWY-")] == []
+
+
+def test_a_shared_phraseology_id_stated_twice_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / PHRASEOLOGY_RULES_FILE
+    path.write_text(
+        "phraseology_rules:\n  - { id: A-MAINTAIN, source: one, text: first }\n  - { id: A-MAINTAIN, source: two, text: second }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"A-MAINTAIN.*already used by an earlier row"):
+        load_phraseology_rules(path)
+
+
+def test_an_airport_phraseology_id_stated_twice_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["phraseology_rules"].append(dict(data["phraseology_rules"][0]))
+
+    with pytest.raises(ValueError, match=r"RWY-CLASS-DEFAULT.*already used by an earlier row"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
 def test_overrides_carry_per_runway_facts(ksfo_inputs: AirportInputs) -> None:

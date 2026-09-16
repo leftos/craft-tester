@@ -33,11 +33,13 @@ from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.sop.load import (
     EQUIPMENT_SUFFIXES_FILE,
+    PHRASEOLOGY_RULES_FILE,
     SOP_FILE,
     WORKSHEETS_FILE,
     airport_dir,
     load_airport,
     load_equipment_suffixes,
+    load_phraseology_rules,
     load_sop,
     load_worksheets,
     shared_dir,
@@ -359,6 +361,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             airport_records=parse_airport_records(lines),
             destination_stars=parse_star_ids(lines),
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
+            phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
             fixture_routes=fixture_filed_routes(airport),
             provenance=Provenance(
                 cycle=cycle_id,

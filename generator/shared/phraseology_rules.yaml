@@ -1,0 +1,55 @@
+# CRAFT phraseology rule text every airport inherits. The rows are national or ZOA-wide rather than
+# facts of one facility, so they live here rather than in `airports/<icao>/`: the sources are FAA JO
+# 7110.65 and the ZOA CRAFT Phraseology reference (Google Doc
+# 1Jq0uqpuhIZRSfKvYbyJvAplT1h6zf-wMhcAN6MAQC6k). An airport's `sop.yaml` `phraseology_rules` list
+# overrides a row of the same id with its own source and text, and adds the rows only that airport
+# has. The engine cites a row by id, so an id here is a promise to every airport.
+phraseology_rules:
+  - id: R-TRANSITION
+    source: "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference"
+    text: "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions"
+  - id: R-AS-FILED
+    source: "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference"
+    text: "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word"
+  - id: R-RV-SID
+    source: "FAA JO 7110.65 4-3-2 c 5 / ZOA practice; ZOA CRAFT Phraseology reference"
+    text: "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
+  - id: R-THEN-AS-FILED
+    source: "ZOA CRAFT Phraseology reference; user rule 2026-09-16 (N172SP amendment plan)"
+    text: "THEN AS FILED — only when the last fix spoken connects to the rest of the route the pilot filed: on an amended route the controller reads every element up to the first fix that was already on the filed plan and after which the two routes are identical, then THEN AS FILED; when no such fix exists, or nothing follows it, the route is read in full to the end"
+  - id: R-RV-AIRWAY
+    source: ZOA CRAFT Phraseology reference
+    text: "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+  - id: R-AIRWAY
+    source: "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15"
+    text: "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically"
+  - id: R-NAVAID
+    source: "FAA JO 7110.65 2-5-2; ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15"
+    text: "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
+  - id: A-CLIMB-VIA
+    source: "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference"
+    text: "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+  - id: A-CLIMB-VIA-EXCEPT
+    source: "FAA JO 7110.65 4-3-2 c 4 (b); ZOA CRAFT Phraseology reference"
+    text: "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions and the altitude to maintain is not its published top: either no top altitude is published and an SOP interim altitude applies, or the flight files below the published top"
+  - id: A-MAINTAIN
+    source: "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference"
+    text: "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
+  - id: A-EXPECT
+    source: "FAA JO 7110.65 4-3-2 c 3; ZOA CRAFT Phraseology reference"
+    text: "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note"
+  - id: A-EXPECT-AMENDED
+    source: "ZOA CRAFT Phraseology reference; FAA JO 7110.65 4-3-2 c 3"
+    text: "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one"
+  - id: A-EXPECT-REDUNDANT
+    source: "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3"
+    text: "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise"
+  - id: C-DEST
+    source: "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference"
+    text: "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
+  - id: A-PARITY
+    source: "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1); 14 CFR 91.179"
+    text: "Below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359"
+  - id: A-RVSM
+    source: "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 4-5-1 b"
+    text: "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band"

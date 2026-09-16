@@ -91,6 +91,7 @@ TEC_FILE = "tec.yaml"
 LOA_FILE = "loa.yaml"
 WORKSHEETS_FILE = "worksheets.yaml"
 EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
+PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
 SID_PLACEHOLDER = "#"
@@ -503,6 +504,17 @@ def _phraseology_rule(row: _Row) -> PhraseologyRule:
     return rule
 
 
+def _check_phraseology_rules(rules: Sequence[PhraseologyRule], where: str) -> None:
+    seen: set[str] = set()
+    for rule in rules:
+        if rule.id in seen:
+            raise ValueError(
+                f"{where} phraseology_rules[{rule.id}]: the id {rule.id!r} is already used by an earlier row of this file; "
+                "the engine cites a rule by its id, so a file states each id once"
+            )
+        seen.add(rule.id)
+
+
 def _plan_preference(value: object, where: str) -> dict[GateDirection, dict[str, str]]:
     table = _string_keys(value, where)
     return {_as_choice(key, GATE_DIRECTIONS, f"{where} key"): _text_table(item, f"{where}.{key}") for key, item in table.items()}
@@ -623,6 +635,7 @@ def _check_sop(sop: SopData, where: str) -> None:
     _check_runway_families(sop.no_sid.runway_families, families, f"{where} no_sid")
     _check_direction_runway_preference(sop, where, families)
     _check_gates(sop.gates, where)
+    _check_phraseology_rules(sop.phraseology_rules, where)
 
 
 def load_sop(path: Path) -> SopData:
@@ -636,8 +649,9 @@ def load_sop(path: Path) -> SopData:
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown or mistyped key, holds a rule
-            whose sector, runway configuration, noise window or runway family does not exist, or
-            holds a departure runway that is both a class default and on request.
+            whose sector, runway configuration, noise window or runway family does not exist, holds
+            a departure runway that is both a class default and on request, or states one
+            phraseology rule id twice.
     """
     where = _where(path)
     sop = _sop_data(_Row(where, _load_yaml_mapping(path, where)))
@@ -843,6 +857,27 @@ def load_equipment_suffixes(path: Path) -> tuple[EquipmentSuffix, ...]:
     suffixes = tuple(_equipment_suffix(child) for child in root.children("suffixes"))
     root.finish()
     return suffixes
+
+
+def load_phraseology_rules(path: Path) -> tuple[PhraseologyRule, ...]:
+    """Load the phraseology rule rows every airport shares.
+
+    Args:
+        path: Path to ``generator/shared/phraseology_rules.yaml``.
+
+    Returns:
+        One row per rule, in file order. An airport's own ``sop.yaml`` overrides a row of the same id.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, or states one rule id twice.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    rules = tuple(_phraseology_rule(child) for child in root.children("phraseology_rules"))
+    root.finish()
+    _check_phraseology_rules(rules, where)
+    return rules
 
 
 def _tec_source(row: _Row) -> TecSource:

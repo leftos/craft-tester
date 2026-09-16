@@ -1047,26 +1047,6 @@
       "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
     },
     {
-      "id": "RWY-CLASS-DEFAULT",
-      "source": "SFO ATCT SOP 1-7; user review 2026-09-15 (N483KA)",
-      "text": "The configuration departs this aircraft class from this runway by default, before the direction-of-turn split: in 28/01, props and turboprops depart 28R at intersection Echo, a short taxi from the north ramp"
-    },
-    {
-      "id": "RWY-ON-REQUEST",
-      "source": "SFO ATCT SOP 2-1 e; user review 2026-09-15 (FDX1563, UPS2896)",
-      "text": "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honoured"
-    },
-    {
-      "id": "RWY-DIRECTION",
-      "source": "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?",
-      "text": "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the 28s and the SFOE families"
-    },
-    {
-      "id": "RWY-FIRST",
-      "source": "SFO ATCT SOP 1-7",
-      "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
-    },
-    {
       "id": "A-CLIMB-VIA",
       "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
       "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO this is the form for a SID that publishes a top altitude when the flight files at or above that top, because the SOP interim table applies only where no top altitude is published"
@@ -1110,6 +1090,26 @@
       "id": "A-RVSM",
       "source": "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 4-5-1 b",
       "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band"
+    },
+    {
+      "id": "RWY-CLASS-DEFAULT",
+      "source": "SFO ATCT SOP 1-7; user review 2026-09-15 (N483KA)",
+      "text": "The configuration departs this aircraft class from this runway by default, before the direction-of-turn split: in 28/01, props and turboprops depart 28R at intersection Echo, a short taxi from the north ramp"
+    },
+    {
+      "id": "RWY-ON-REQUEST",
+      "source": "SFO ATCT SOP 2-1 e; user review 2026-09-15 (FDX1563, UPS2896)",
+      "text": "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honoured"
+    },
+    {
+      "id": "RWY-DIRECTION",
+      "source": "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?",
+      "text": "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the 28s and the SFOE families"
+    },
+    {
+      "id": "RWY-FIRST",
+      "source": "SFO ATCT SOP 1-7",
+      "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
     }
   ],
   "provenance": {

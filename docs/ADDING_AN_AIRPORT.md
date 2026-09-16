@@ -124,15 +124,18 @@ the hooks rejects the file.
     `phraseology.expect_altitude`).
 14. **`notices`**: current operational notices that turn a SID off (`effect: {kind: sid_off}`), with
     `default_active`. The engine skips assignment rows for an off SID; scenarios drill both states.
-15. **`phraseology`** toggles and **`phraseology_rules`**: copy the KSFO block verbatim. These are FAA JO
-    7110.65 4-3-2 citations and are national; change the toggles only when the airport's trainers
-    disagree with a default, during validation. The four `RWY-*` rows (`RWY-CLASS-DEFAULT`,
-    `RWY-ON-REQUEST`, `RWY-DIRECTION`, `RWY-FIRST`) are the exception: the engine cites them by id to
-    explain the departure runway, so keep the ids and rewrite the `source` and `text` for the airport's
-    own runway-assignment practice (or make the text say the mechanism does not apply). `A-EXPECT-REDUNDANT`
-    is cited when a student speaks the expect clause a SID chart already publishes: the grader marks that
-    reading acceptable rather than wrong (ZOA staff, 2026-09-16), so keep the id and rewrite the source
-    if the airport's trainers grade it differently.
+15. **`phraseology`** toggles: copy the KSFO block and change a toggle only when the airport's trainers
+    disagree with a default, during validation. **`phraseology_rules`**: the CRAFT rows every airport
+    inherits (the route forms, climb via, maintain, expect, parity, RVSM) live in
+    `generator/shared/phraseology_rules.yaml` and are FAA JO 7110.65 citations, so the airport file
+    does not repeat them. The airport lists only two kinds of row: an **override** of a shared row,
+    stated under the same id with the facility's own `source` and `text` (KSFO overrides `A-CLIMB-VIA`
+    and `A-EXPECT` for its SOP interim-altitude table and the 3-minute expect), and the four `RWY-*`
+    rows (`RWY-CLASS-DEFAULT`, `RWY-ON-REQUEST`, `RWY-DIRECTION`, `RWY-FIRST`), which every airport must
+    state because the engine cites them by id to explain the departure runway: write the `source` and
+    `text` for the airport's own runway-assignment practice, or make the text say the mechanism does
+    not apply. A file may state an id once; the build joins shared and airport rows and the airport
+    row wins.
 
 Prove it: `uv run craft-gen verify-sop --airport <ICAO>` passes and the loader accepts the file (the build
 in step 6 reports loader errors by field).

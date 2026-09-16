@@ -79,6 +79,7 @@ from craft_generator.sop.model import (
     NoiseWindow,
     Notice,
     ParityRotatedRule,
+    PhraseologyRule,
     RouteEntry,
     RouteTokenRule,
     RunwayConfig,
@@ -129,6 +130,9 @@ class BuildInputs:
     ``aircraft_classes`` from the vNAS specs, and ``fixture_routes`` from the filed route of every
     checked-in fixture of the airport, which name navaids the airport data itself never mentions.
 
+    ``equipment_suffixes`` and ``phraseology_rules`` come from ``generator/shared/``, the YAML every
+    airport inherits; the airport's own ``sop.yaml`` overrides a phraseology row by id.
+
     ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier. A
     destination the FAA file does not carry - every foreign one - is simply absent, as is a US airport
     that publishes no arrival at all.
@@ -143,6 +147,7 @@ class BuildInputs:
     airport_records: dict[str, AirportRecord]
     destination_stars: dict[str, frozenset[str]]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
+    phraseology_rules: tuple[PhraseologyRule, ...]
     fixture_routes: tuple[str, ...]
     provenance: Provenance
 
@@ -309,6 +314,24 @@ def _equipment_suffix(suffix: EquipmentSuffix) -> Document:
         "transponderModeC": suffix.transponder_mode_c,
         "text": suffix.text,
     }
+
+
+def _phraseology_rules(shared: Sequence[PhraseologyRule], airport: Sequence[PhraseologyRule]) -> list[Document]:
+    """Join the phraseology rows every airport shares with the rows one airport states itself.
+
+    Args:
+        shared: The inherited rows, in the order ``shared/phraseology_rules.yaml`` states them.
+        airport: The rows the airport's ``sop.yaml`` states, in its file order.
+
+    Returns:
+        The shared rows in shared-file order, each replaced in place by the airport row of the same
+        id where the airport states one, followed by the rows only the airport has, in its file order.
+    """
+    overrides = {rule.id: rule for rule in airport}
+    shared_ids = {rule.id for rule in shared}
+    rules = [overrides.get(rule.id, rule) for rule in shared]
+    rules += [rule for rule in airport if rule.id not in shared_ids]
+    return [{"id": rule.id, "source": rule.source, "text": rule.text} for rule in rules]
 
 
 def _destination(destination: Destination, airport_records: Mapping[str, AirportRecord]) -> Document:
@@ -925,7 +948,7 @@ def build_airport(inputs: BuildInputs) -> Document:
             "nonStandardInterimExpectMinutes": sop.phraseology.non_standard_interim_expect_minutes,
             "vectorHybridTransitionsSpoken": sop.phraseology.vector_hybrid_transitions_spoken,
         },
-        "phraseologyRules": [{"id": rule.id, "source": rule.source, "text": rule.text} for rule in sop.phraseology_rules],
+        "phraseologyRules": _phraseology_rules(inputs.phraseology_rules, sop.phraseology_rules),
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
         "tecRoutes": _tec_routes(inputs),
         "loaRules": _loa_rules(inputs),

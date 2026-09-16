@@ -16,7 +16,15 @@ from craft_generator.cifp.sid import CifpSid, group_sids
 from craft_generator.cifp.stars import parse_star_ids
 from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
-from craft_generator.sop.load import EQUIPMENT_SUFFIXES_FILE, airport_dir, load_airport, load_equipment_suffixes, shared_dir
+from craft_generator.sop.load import (
+    EQUIPMENT_SUFFIXES_FILE,
+    PHRASEOLOGY_RULES_FILE,
+    airport_dir,
+    load_airport,
+    load_equipment_suffixes,
+    load_phraseology_rules,
+    shared_dir,
+)
 from craft_generator.sop.model import AirportInputs, EquipmentSuffix
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -168,6 +176,7 @@ def ksfo_build_inputs(
         airport_records=parse_airport_records(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
         destination_stars=parse_star_ids(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
+        phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
         fixture_routes=fixture_filed_routes("KSFO"),
         provenance=Provenance(
             cycle=FIXTURE_CYCLE,

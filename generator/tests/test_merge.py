@@ -4,8 +4,8 @@ from typing import Any
 import pytest
 
 from craft_generator.emit import data_path, dump, schema_path, validate
-from craft_generator.merge import BuildInputs, Document, build_airport
-from craft_generator.sop.model import RouteEntry
+from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport
+from craft_generator.sop.model import PhraseologyRule, RouteEntry
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -353,6 +353,21 @@ def test_a_literal_arrival_revision_fails_for_a_destination_the_faa_file_carries
 
 def test_a_literal_arrival_revision_is_kept_for_a_destination_the_faa_file_does_not_carry(ksfo_document: Document) -> None:
     assert _tail(ksfo_document, "DEDHD", "CYVR") == "DEDHD LMT BTG J1 SEA PAE GRIZZ1"
+
+
+def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
+    shared = (
+        PhraseologyRule(id="A", source="shared A source", text="shared A text"),
+        PhraseologyRule(id="B", source="shared B source", text="shared B text"),
+    )
+    airport = (
+        PhraseologyRule(id="B", source="airport B source", text="airport B text"),
+        PhraseologyRule(id="C", source="airport C source", text="airport C text"),
+    )
+    rules = _phraseology_rules(shared, airport)
+    assert [rule["id"] for rule in rules] == ["A", "B", "C"]
+    assert rules[1] == {"id": "B", "source": "airport B source", "text": "airport B text"}
+    assert rules[0]["text"] == "shared A text"
 
 
 def test_build_matches_committed_data(ksfo_document: Document) -> None:
