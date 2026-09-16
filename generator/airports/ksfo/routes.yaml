@@ -118,7 +118,9 @@ routes:
   # north via TRUKN/SNTNA/NIITE/CIITY transitions
   - { exit_fix: DEDHD, destination: KSEA, tail: DEDHD RBL LMT HAWKZ7, classes: [J], altitudes: [32000, 34000, 36000] }
   - { exit_fix: DEDHD, destination: KPDX, tail: DEDHD LMT OCITY7, classes: [J], altitudes: [34000, 36000] }
-  - { exit_fix: DEDHD, destination: CYVR, tail: DEDHD LMT BTG HAWKZ7, classes: [J], altitudes: [36000, 38000] }
+  # CYVR is outside the FAA CIFP, so its arrival and the revision number are hand-maintained from the CZVR
+  # preferred-routing table (https://czvr.ca/preferredrouting), which publishes BTG J1 SEA PAE GRIZZ# from BTG.
+  - { exit_fix: DEDHD, destination: CYVR, tail: DEDHD LMT BTG J1 SEA PAE GRIZZ1, classes: [J], altitudes: [36000, 38000] }
   - { exit_fix: GRTFL, destination: KPDX, tail: GRTFL MACHU TMBRS2, classes: [J], altitudes: [34000, 36000] }
   - { exit_fix: GRTFL, destination: KBLI, tail: GRTFL OED J1 SEA PAE MADEE4, classes: [J], altitudes: [36000] }
   - { exit_fix: MOGEE, destination: KSLC, tail: MOGEE Q124 BVL WAATS5, classes: [J], altitudes: [37000, 39000] }

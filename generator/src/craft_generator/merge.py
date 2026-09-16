@@ -11,8 +11,11 @@ What the sources disagree about is a build failure, not a silent choice: a SID w
 a different set of transition fixes than the CIFP codes stops the build, as does a rule naming a DP
 family no procedure has, an exit fix in no gate, a runway no runway record lists, or a fleet type the
 vNAS specs cannot class. A TEC row is checked the same way: the DP its route begins on must be
-published for at least one runway family the row departs from. Two conditions only warn, because both are ordinary while the data is being
-built up: a SID no assignment rule ever issues, and a gate fix no route in the library uses.
+published for at least one runway family the row departs from. Three conditions only warn, because each is ordinary while the data is
+being built up: a SID no assignment rule ever issues, a gate fix no route in the library uses, and a route tail that ends on an arrival
+an LOA row names for other destinations. The last one only warns because it cannot be proved: an arrival may serve several airports, so
+what makes one wrong for a destination is not being published there, and the FAA file carries no procedures at all for a foreign
+destination. A Seattle STAR ending a Vancouver route is a smell the build reports rather than an error it can demonstrate.
 
 ``fixSpoken`` is derived, not transcribed: every two- or three-letter token the route library, the
 TEC rows, the gates, the SID transitions and the checked-in fixtures name is looked up in the CIFP
@@ -88,6 +91,7 @@ PUBLISHED_TOP_ALTITUDE = "published"
 
 _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
 _NAVAID_TOKEN = re.compile(r"[A-Z]{2,3}")
+_PROCEDURE_TOKEN = re.compile(r"(?P<family>[A-Z]{3,5})\d+")
 
 
 @dataclass(frozen=True, slots=True)
@@ -762,6 +766,42 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_fix_spoken(document)
 
 
+def _trailing_procedure(tail: str) -> str | None:
+    """Return the procedure family the last token of a route tail names, or None when it names none."""
+    tokens = tail.split()
+    if not tokens:
+        return None
+    found = _PROCEDURE_TOKEN.fullmatch(tokens[-1])
+    return None if found is None else found.group("family")
+
+
+def _loa_claimed_arrivals(document: Document) -> dict[str, tuple[str, frozenset[str]]]:
+    """Map every token an LOA route row names to that row and the destinations it covers."""
+    destinations = document["routeLibrary"]["destinations"]
+    claimed: dict[str, tuple[str, frozenset[str]]] = {}
+    for rule in document["loaRules"]:
+        if rule["rule"]["kind"] != "route":
+            continue
+        covered = set(rule.get("destinations", []))
+        covered |= {entry["icao"] for entry in destinations if entry["artcc"] == rule.get("artcc")}
+        for token in rule["rule"]["tokens"]:
+            claimed.setdefault(token, (rule["id"], frozenset(covered)))
+    return claimed
+
+
+def _warn_route_arrivals(document: Document) -> None:
+    claimed = _loa_claimed_arrivals(document)
+    for route in _routes(document):
+        family = _trailing_procedure(str(route["tail"]))
+        names = claimed.get(family) if family is not None else None
+        if names is not None and route["destination"] not in names[1]:
+            print(
+                f"warning: routeLibrary.routes[{route['exitFix']} -> {route['destination']}].tail ends on the {family} arrival, which "
+                f"{names[0]} names for {sorted(names[1])}",
+                file=sys.stderr,
+            )
+
+
 def _warn(document: Document, inputs: BuildInputs) -> None:
     assigned = {rule["sidFamily"] for rule in document["assignmentRules"]}
     unassigned = sorted(sid["id"] for sid in document["sids"] if sid["family"] not in assigned)
@@ -774,6 +814,7 @@ def _warn(document: Document, inputs: BuildInputs) -> None:
     unnamed = sorted(token for token in _fixture_navaid_tokens(document, inputs) if token not in document["fixSpoken"])
     if unnamed:
         print(f"warning: {len(unnamed)} navaid(s) on worksheet routes have no spoken name: {', '.join(unnamed)}", file=sys.stderr)
+    _warn_route_arrivals(document)
 
 
 def build_airport(inputs: BuildInputs) -> Document:

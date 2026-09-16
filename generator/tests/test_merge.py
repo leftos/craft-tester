@@ -5,6 +5,7 @@ import pytest
 
 from craft_generator.emit import data_path, dump, schema_path, validate
 from craft_generator.merge import BuildInputs, Document, build_airport
+from craft_generator.sop.model import RouteEntry
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -297,6 +298,15 @@ def test_a_navaid_the_cifp_does_not_name_fails_the_build(ksfo_build_inputs: Buil
 def test_a_navaid_only_a_fixture_names_warns_instead_of_failing(ksfo_build_inputs: BuildInputs, capsys: pytest.CaptureFixture[str]) -> None:
     build_airport(replace(ksfo_build_inputs, fixture_routes=("TRUKN2 DEDHD RBL ZZQ HAWKZ7",)))
     assert "navaid(s) on worksheet routes have no spoken name: ZZQ" in capsys.readouterr().err
+
+
+def test_a_route_tail_ending_on_another_destinations_arrival_warns(ksfo_build_inputs: BuildInputs, capsys: pytest.CaptureFixture[str]) -> None:
+    routes = ksfo_build_inputs.airport.routes
+    seattle_star_to_vancouver = RouteEntry(exit_fix="DEDHD", destination="CYVR", tail="DEDHD LMT BTG HAWKZ7", classes=("J",), altitudes=(36000,))
+    library = replace(routes, routes=(*routes.routes, seattle_star_to_vancouver))
+    build_airport(replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, routes=library)))
+    warning = "routeLibrary.routes[DEDHD -> CYVR].tail ends on the HAWKZ arrival, which LOA-ZSE-SEA-ROUTE names for ['KBFI', 'KSEA']"
+    assert warning in capsys.readouterr().err
 
 
 def test_build_matches_committed_data(ksfo_document: Document) -> None:
