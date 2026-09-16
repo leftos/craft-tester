@@ -234,7 +234,14 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   airline codes and destination codes it draws plus its routes, and the build composes the same `routeLibrary`
   JSON as today, so the web app does not change. KSFO converts in that brief; KOAK's `routes.yaml` converts in 3b.
   Dispatched 2026-09-16 into `wt/koak-shared` (from `abea86b`); the shared files also gain the KOAK additions (KPHX,
-  QXE types, PCM, DH8D, C208) so 3b touches no shared file.
+  QXE types, PCM, DH8D, C208) so 3b touches no shared file. First dispatch came back underspecified: seven KSFO
+  telephony codes (AAL, ABX, ATN, CKS, CLX, GTI, NCA) operate no drawn type and exist for worksheet callsigns and the
+  cargo runway rule, so an airport may list an airline that operates none of its fleet types (no check) and a shared
+  airline may have `types: []`; the per-type airline order follows the airport's airline list, which changes A319 and
+  A306 (today's orders contradict each other), an accepted seed shift. Landed 2026-09-16 (`fe9dc58`): three shared
+  files (43 destinations, 29 airlines, 27 types), `load_shared_route_facts`, `load_routes(path, shared)`,
+  KSFO `routes.yaml` is three code lists plus routes; `data/ksfo.json` changed only in `cargoAirlines` and eight
+  fleet airline arrays; one seeded web test moved (seed 1 callsign).
 - [x] **Brief 2e-ii, heading-keyed altitudes and notice headings** (landed 2026-09-16, `abea86b`): (1) an altitude row may list `non_dp_headings`
   (`[315]`, `[runway heading]`) the way it lists `sid_families`, matching only a flight cleared on one of those
   headings; the two keys are exclusive. (2) A `sid_off` notice effect may carry `heading: 120`: while the notice is

@@ -89,7 +89,7 @@ the hooks rejects the file.
    generator use it before the turn-direction preference. Where one airline parks on the other side
    of the field from the rest of its class (OAK: PCM's props default to 28L, every other prop to 28R),
    give a row of that airline's classes `default_for_airlines: [PCM]`, read ahead of the class default
-   for a flight whose callsign carries the code; the code must be a `routes.yaml` `telephony` key and
+   for a flight whose callsign carries the code; the code must be one of the airport's `routes.yaml` `airlines` and
    the airport must carry a `RWY-AIRLINE-DEFAULT` row, or the build fails. Where the SOP keeps a type off a
    runway its class would take (OAK: turboprops over 17,000 lbs stay off the 28s, so the Dash 8 departs
    with the jets), give the jets' row `default_for_groups: [jets_and_dh8d]` naming an `aircraft_groups`
@@ -98,7 +98,7 @@ the hooks rejects the file.
    row: keep the runway's normal-use row for the other classes beside it, or the ATIS stops
    advertising the runway. A runway issued only on request (KSFO: 28L/R
    in 28/01 for oceanic, Far East and cargo flights, SOP 2-1 e) gets `on_request_for: [cargo, heavy,
-   oceanic]`; cargo is decided by `routes.yaml` `cargo_airlines`, heavy by the vNAS wake category, oceanic
+   oceanic]`; cargo is decided by `cargo: true` on the shared airline row, heavy by the vNAS wake category, oceanic
    by the exit fix's gate, and the importer reads a qualifying flight that files a SID published only for
    that runway as requesting it. Every config row carries `source` (the SOP section, KSFO `SFO ATCT SOP
    1-7`) because the graded "expect runway" element cites the configuration itself. The ATIS panel
@@ -195,19 +195,30 @@ nor this table names fails the build; one only a worksheet fixture names is a wa
 
 Scenarios are drawn from this file, so its breadth is the game's variety.
 
-- **`destinations`**: `icao`, `spoken`, `artcc` (the center, for LOA rules), `nct: true` for destinations
-  inside contiguous NCT (TEC routes are obligatory only there; Reno and its satellites are not contiguous
-  and stay `nct: false`), and `lat`/`lon` only for airports outside the CIFP (foreign). The build fills US
-  coordinates from CIFP `PA` records and fails on a destination it cannot place.
-- **`telephony`**: airline code → spoken callsign for the reveal.
-- **`fleet`**: type, class (checked against vNAS `AircraftSpecs.json` EngineType; the build fails on a
-  disagreement), wake category, equipment suffixes it files, airlines that fly it. No service ceiling: a
-  controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16). The approach
-  category is not written here: the build reads it by type from the shared
-  `generator/shared/faa_aircraft_characteristics.yaml` (the FAA Aircraft Characteristics Database, refreshed
-  with `craft-gen fetch-aircraft-characteristics`), and fails naming the type when the FAA states none; a
-  hand `approach_category` on a row, with a `note`, overrides the table for that one type. Use the ICAO
-  type designators pilots actually file; worksheets
+What a destination, an airline or an aircraft type *is* holds at every airport, so those facts live once
+under `generator/shared/` and this file lists only codes into them (user rule 2026-09-16: never copy
+airport-independent data between airports). A code the shared file lacks fails the load naming the file
+to add it to; add the row there first.
+
+- **`destinations`**: the ICAO codes the airport's scenarios file to, in draw order. The facts sit in
+  `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), `nct: true` for
+  destinations inside contiguous NCT (TEC routes are obligatory only there; Reno and its satellites are
+  not contiguous and stay `nct: false`), and `lat`/`lon` only for airports outside the CIFP (foreign).
+  The build fills US coordinates from CIFP `PA` records and fails on a destination it cannot place.
+- **`airlines`**: the ICAO codes that fly out of the airport, alphabetical. `generator/shared/airlines.yaml`
+  holds each code's `telephony` (the spoken callsign), `cargo: true` for an all-cargo carrier (which is
+  what makes a flight a cargo flight for the runway rules) and `types`, every type it operates. An airline
+  may be listed although it operates none of the airport's fleet types: it is still spoken and classified
+  for the worksheet plans that file its callsign.
+- **`fleet`**: the type designators the airport's scenarios draw, in draw order. `generator/shared/
+  aircraft_types.yaml` holds each type's class (checked against vNAS `AircraftSpecs.json` EngineType; the
+  build fails on a disagreement), wake category and the equipment suffixes it files; a fleet entry's
+  airlines are the airport's airlines whose `types` list it, in the airport's airline order. No service
+  ceiling: a controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16).
+  The approach category comes from `generator/shared/faa_aircraft_characteristics.yaml` (the FAA Aircraft
+  Characteristics Database, refreshed with `craft-gen fetch-aircraft-characteristics`), and the build fails
+  naming the type when the FAA states none; an `approach_category` with a `note` on the shared type row
+  overrides the table for that one type. Use the ICAO type designators pilots actually file; worksheets
   file `A32N`, which is `A20N` in vNAS, and that alias is still an open item.
 - **`routes`**: keyed by `exit_fix` (where the aircraft leaves the SID), with the `tail` from that fix,
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.
