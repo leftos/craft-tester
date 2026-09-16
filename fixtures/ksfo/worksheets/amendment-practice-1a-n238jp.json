@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 31000,
+        "reason": "filed FL320 on a 38° magnetic course to Jackson Hole needs an odd level; the highest legal altitude at or below it is FL310"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1a-n238jp",
   "mode": "amendment",
   "scenario": {
@@ -19,5 +28,5 @@
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation"
   },
-  "status": "pending"
+  "status": "settled"
 }

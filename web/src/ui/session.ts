@@ -144,13 +144,16 @@ function destinationSpoken(icao: string, airport: AirportData): string {
 /**
  * Reads a resolved clearance the way the reveal speaks it, abbreviated and with the full route.
  *
- * @param scenario The filed flight plan the clearance answers.
+ * @param scenario The flight plan the clearance answers, which in amendment mode is the corrected
+ *   plan rather than the one the pilot filed.
+ * @param original The plan as the pilot filed it, which is what "as filed" hands the route over to.
  * @param clearance The clearance the engine resolved for it.
  * @param airport The airport data, for the telephony, the spoken fixes, and the SID's transitions.
  * @returns Both spoken forms of the clearance.
  */
 export function spokenFor(
   scenario: Scenario,
+  original: Scenario,
   clearance: ResolvedClearance,
   airport: AirportData,
 ): SpokenClearance {
@@ -159,6 +162,7 @@ export function spokenFor(
     clearance,
     destinationSpoken: destinationSpoken(scenario.destination, airport),
     filedRoute: scenario.filedRoute,
+    originalRoute: original.filedRoute,
     airportFaa: airport.airport.faa,
     squawk: scenario.squawk,
     telephony: airport.routeLibrary.telephony,

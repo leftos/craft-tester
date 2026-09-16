@@ -48,6 +48,21 @@ the page scrolls sideways and a full-page screenshot to `.tmp/browser-check/`. T
 `d=<ICAO>` part that forces the drawn destination in both modes (`s=4,d=KSMF,m=amend`), so a destination is
 checked directly instead of drawing until the RNG lands on it; it is never shown in the UI or remembered.
 
+## References cached outside git
+
+`docs/refs/` is gitignored and holds FAA JO 7110.65 for paragraph lookups: the current full-order PDF
+(`7110.65BB` with changes 1–3, effective 2026-07-09) and a pypdf text dump next to it with a
+`===== page N =====` marker per page, so `rg -n "4-3-2" docs/refs/7110.65BB.txt` finds a paragraph.
+Fetch it once per machine:
+
+```powershell
+Invoke-WebRequest -Uri 'https://www.faa.gov/documentLibrary/media/Order/7110.65BB_Bsc_w_Chg_1_2_and_3_dtd_7-9-26_Final.pdf' -OutFile docs\refs\7110.65BB.pdf
+cd generator; uv run python -c "from pypdf import PdfReader; r=PdfReader('../docs/refs/7110.65BB.pdf'); open('../docs/refs/7110.65BB.txt','w',encoding='utf-8').write(''.join(f'\n===== page {i} =====\n'+(p.extract_text() or '') for i,p in enumerate(r.pages,1)))"
+```
+
+The current edition and its URL are listed at https://www.faa.gov/air_traffic/publications (Orders
+table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpubs/atc_html/.
+
 ## Layout notes not in the architecture doc
 
 - **Import aliases.** App and test code under `web/src/` import with `@/…` (web/src) and `@data/…` (data/),

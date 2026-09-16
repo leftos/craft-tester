@@ -82,15 +82,18 @@ export function renderVerdict(verdict: Grade): HTMLElement {
   return row;
 }
 
-/** The clearance as it is read on frequency, abbreviated and with the filed route in full. */
+/**
+ * The clearance as it is read on frequency, and the same clearance with the route read in full.
+ *
+ * A route with nothing to hand over as filed is read in full on frequency, and the second block
+ * would then repeat the first word for word, so it is left out.
+ */
 function revealPanel(spoken: SpokenClearance): HTMLElement {
   const panel = el('div', 'reveal');
-  panel.append(
-    el('h3', '', 'On frequency'),
-    el('p', 'spoken', spoken.abbreviated),
-    el('h3', '', 'With the route read in full'),
-    el('p', 'spoken', spoken.fullRoute),
-  );
+  panel.append(el('h3', '', 'On frequency'), el('p', 'spoken', spoken.abbreviated));
+  if (spoken.abbreviated !== spoken.fullRoute) {
+    panel.append(el('h3', '', 'With the route read in full'), el('p', 'spoken', spoken.fullRoute));
+  }
   return panel;
 }
 

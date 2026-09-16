@@ -82,7 +82,7 @@ function revisitPanels(
     renderAtis(drawn.filed, state.airport),
     renderRevisit({
       grades: amendmentGrades(drawn, clearance, state.airport, attempt.boxes, attempt.picks),
-      spoken: spokenFor(drawn.result.corrected, clearance, state.airport),
+      spoken: spokenFor(drawn.result.corrected, drawn.filed, clearance, state.airport),
       onNext: handlers.onNewScenario,
       onRetry: handlers.onRetry,
     }),
@@ -147,7 +147,7 @@ function resultPanels(
     renderAtis(corrected, state.airport),
     renderResults({
       grades: amendmentGrades(drawn, clearance, state.airport, answers, picks),
-      spoken: spokenFor(corrected, clearance, state.airport),
+      spoken: spokenFor(corrected, view.drawn.filed, clearance, state.airport),
       onNext: handlers.onNewScenario,
       onRetry: handlers.onRetry,
     }),

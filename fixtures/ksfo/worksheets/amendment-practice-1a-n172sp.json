@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "GAPP7 OAK V6 SAC",
+        "reason": "KMYV is inside NorCal TRACON; the TEC route for a piston in SFOW is GAPP7 OAK V6 SAC"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1a-n172sp",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class P to it (default_for_classes), pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: SGD SAC → the TEC route GAPP7 OAK V6 SAC, and the spoken form is a full route (radar vectors Oakland VOR, Victor six Sacramento VOR, direct), never then-as-filed, because only the last fix survives from the filed route"
   },
-  "status": "pending"
+  "status": "settled"
 }

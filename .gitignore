@@ -24,3 +24,5 @@ Thumbs.db
 
 # claude worktrees
 .claude/worktrees/
+
+docs/refs/

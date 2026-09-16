@@ -306,14 +306,18 @@ function speakProcedureName(name: string, fixSpoken: Readonly<Record<string, str
  * Everything the spoken clearance needs beyond the resolved clearance itself.
  *
  * `airportFaa` is the departure airport's own navaid identifier, which the full-route reading needs
- * to find the exit fix the same way the engine does. `sidTransitions` are the transitions of the
- * issued procedure, which name their fix the way the chart publishes it.
+ * to find the exit fix the same way the engine does. `filedRoute` is the route the clearance is read
+ * for, which on an amended plan is the corrected route; `originalRoute` is the route the pilot filed,
+ * which is what "as filed" refers to and equals `filedRoute` where nothing was amended.
+ * `sidTransitions` are the transitions of the issued procedure, which name their fix the way the
+ * chart publishes it.
  */
 export type SpeakClearanceInput = {
   callsign: string;
   clearance: ResolvedClearance;
   destinationSpoken: string;
   filedRoute: string;
+  originalRoute: string;
   airportFaa: string;
   squawk: string;
   telephony: Readonly<Record<string, string>>;
@@ -350,14 +354,54 @@ function radioSentence(input: SpeakClearanceInput): string {
 }
 
 /**
- * The filed route after the element the SID phrase has already spoken.
+ * The route after the element the SID phrase has already spoken.
  *
  * That element is the transition fix, the fix the vectors go to, the SID's base fix, or the airway
  * the vectors join, and it is always the first token the route leaves the terminal on, so dropping
  * it needs no case analysis.
  */
-function routeAfterExitFix(input: SpeakClearanceInput): string[] {
-  return routeFromExitFix(input.filedRoute, input.airportFaa).slice(1);
+function afterExitElement(route: readonly string[]): string[] {
+  return route.slice(1);
+}
+
+/** How many tokens the two routes share at their tails, counted from the last token back. */
+function commonSuffixLength(amended: readonly string[], original: readonly string[]): number {
+  let shared = 0;
+  while (
+    shared < amended.length &&
+    shared < original.length &&
+    amended[amended.length - 1 - shared] === original[original.length - 1 - shared]
+  ) {
+    shared += 1;
+  }
+  return shared;
+}
+
+/**
+ * The token of an amended route that "then as filed" may be spoken after.
+ *
+ * The two routes run identically from the join onwards, so everything read up to it is the
+ * amendment and everything after it is the route the pilot already has. The join is the first token
+ * of the longest suffix the two share, and it has to be a fix: an airway is the way to the next fix
+ * rather than a point the flight is cleared to, so a shared suffix that opens on one joins at the
+ * fix that follows. A suffix reaching the exit element joins there whatever that element is, airway
+ * included, because the route phrase of the clearance has already spoken it.
+ *
+ * @param amended The route being cleared, from its exit element on and without its procedure token.
+ * @param original The route the pilot filed, read the same way.
+ * @returns The index in `amended` of the join, or undefined when the two share no tail, or when no
+ *   fix follows the airways the shared tail opens on.
+ */
+export function asFiledJoin(
+  amended: readonly string[],
+  original: readonly string[],
+): number | undefined {
+  const shared = commonSuffixLength(amended, original);
+  if (shared === 0) return undefined;
+  let index = amended.length - shared;
+  if (index === 0) return 0;
+  while (index < amended.length && AIRWAY_TOKEN.test(amended[index] ?? '')) index += 1;
+  return index < amended.length ? index : undefined;
 }
 
 /**
@@ -385,13 +429,8 @@ function routeUnit(
   return { unit: `direct ${speakFix(token, fixSpoken)}`, consumed: 1 };
 }
 
-/**
- * The route after the exit fix as it is read on frequency.
- *
- * A route that does not end on a published arrival ends "direct", which is the clearance to the
- * destination airport, so a route with nothing after the exit fix reads "direct" alone.
- */
-function routeUnits(
+/** The units the tokens read as, one per fix or airway-and-fix pair, and nothing to close them. */
+function routeUnitList(
   tokens: readonly string[],
   fixSpoken: Readonly<Record<string, string>>,
 ): string[] {
@@ -402,9 +441,19 @@ function routeUnits(
     units.push(unit);
     index += consumed;
   }
-  const last = tokens[tokens.length - 1];
-  if (last === undefined || !STAR_TOKEN.test(last)) units.push('direct');
   return units;
+}
+
+/**
+ * How a route reading closes.
+ *
+ * A route that does not end on a published arrival ends "direct", which is the clearance to the
+ * destination airport, so a route with nothing after the exit fix reads "direct" alone. A reading
+ * that stops part way through the route, to hand the rest over as filed, closes on neither.
+ */
+function closingUnits(tokens: readonly string[]): string[] {
+  const last = tokens[tokens.length - 1];
+  return last === undefined || !STAR_TOKEN.test(last) ? ['direct'] : [];
 }
 
 /** The transition fix as the issued procedure publishes it, which carries no facility word. */
@@ -454,27 +503,52 @@ function joinSentences(parts: readonly string[]): string {
 }
 
 /**
- * The full-route reading of everything after the element the SID phrase already spoke.
+ * The reading of everything after the element the SID phrase already spoke, with nothing closing it.
  *
  * A clearance that joined an airway has spoken the airway but not the fix it leads to, and that fix
  * is not flown direct, so it is read bare; the ordinary grammar takes over from the next token.
  */
-function fullRouteUnits(input: SpeakClearanceInput, tokens: readonly string[]): string[] {
+function openRouteUnits(input: SpeakClearanceInput, tokens: readonly string[]): string[] {
   const [first, ...rest] = tokens;
   if (input.clearance.route.value.template !== 'radar_vectors_airway' || first === undefined) {
-    return routeUnits(tokens, input.fixSpoken);
+    return routeUnitList(tokens, input.fixSpoken);
   }
-  return [speakFix(first, input.fixSpoken), ...routeUnits(rest, input.fixSpoken)];
+  return [speakFix(first, input.fixSpoken), ...routeUnitList(rest, input.fixSpoken)];
+}
+
+/** The full-route reading: every unit after the element the SID phrase spoke, and its close. */
+function fullRouteUnits(input: SpeakClearanceInput, tokens: readonly string[]): string[] {
+  return [...openRouteUnits(input, tokens), ...closingUnits(tokens)];
+}
+
+/**
+ * The tail of the abbreviated reading, or undefined where the route has to be read in full.
+ *
+ * The route is handed over as filed from the join onwards, so the reading names every element up to
+ * it and then says "then as filed". A join at the exit element leaves nothing to read, because the
+ * route phrase has spoken it already. A route the pilot's own route joins nowhere, and one whose
+ * join is its last element, have nothing to hand over, and are read to the end instead.
+ */
+function abbreviatedTail(
+  input: SpeakClearanceInput,
+  route: readonly string[],
+): string[] | undefined {
+  const original = routeFromExitFix(input.originalRoute, input.airportFaa);
+  const join = asFiledJoin(route, original);
+  if (join === undefined || join >= route.length - 1) return undefined;
+  if (join === 0) return ['then as filed'];
+  return [...openRouteUnits(input, afterExitElement(route).slice(0, join)), 'then as filed'];
 }
 
 /**
  * Renders a resolved clearance as it is read on frequency.
  *
- * `abbreviated` says "then as filed"; `fullRoute` reads the filed route after the exit fix instead,
- * which is what the reveal shows after grading. Neither form repeats the filed procedure token or
- * the exit fix, because the SID phrase has already spoken both. A route with nothing after the exit
- * fix has nothing to file, so both forms end "direct" instead. Both forms close on the departure
- * runway, after the squawk.
+ * `abbreviated` hands the route over as filed where it can; `fullRoute` reads every element of the
+ * route after the exit fix instead, which is what the reveal shows after grading. Neither form
+ * repeats the filed procedure token or the exit fix, because the SID phrase has already spoken both.
+ * A route the pilot filed the whole of is handed over at the exit fix, an amended one at the element
+ * the two routes run together from, and a route with nothing left to hand over is read in full, so
+ * the two forms are then the same text. Both forms close on the departure runway, after the squawk.
  *
  * @param input The clearance plus the scenario facts the phraseology needs.
  * @returns Both spoken forms of the clearance.
@@ -486,10 +560,13 @@ export function speakClearance(input: SpeakClearanceInput): SpokenClearance {
     radioSentence(input),
     `expect runway ${speakRunway(input.clearance.runway.value)}`,
   ];
-  const tokens = routeAfterExitFix(input);
-  const abbreviatedTail = tokens.length === 0 ? ['direct'] : ['then as filed'];
+  const route = routeFromExitFix(input.filedRoute, input.airportFaa);
+  const full = fullRouteUnits(input, afterExitElement(route));
   return {
-    abbreviated: joinSentences([clearedSentence(input, abbreviatedTail), ...tail]),
-    fullRoute: joinSentences([clearedSentence(input, fullRouteUnits(input, tokens)), ...tail]),
+    abbreviated: joinSentences([
+      clearedSentence(input, abbreviatedTail(input, route) ?? full),
+      ...tail,
+    ]),
+    fullRoute: joinSentences([clearedSentence(input, full), ...tail]),
   };
 }

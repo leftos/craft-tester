@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  asFiledJoin,
   speakAltitude,
   speakCallsign,
   speakClearance,
@@ -150,12 +151,15 @@ function clearance(parts: ClearanceParts = {}): ResolvedClearance {
   };
 }
 
+/** The speak input; `originalRoute` follows the filed route unless a test amends the plan. */
 function input(overrides: Partial<SpeakClearanceInput> = {}): SpeakClearanceInput {
+  const filedRoute = overrides.filedRoute ?? 'TRUKN2 DEDHD RBL HAWKZ7';
   return {
     callsign: 'UAL320',
     clearance: clearance(),
     destinationSpoken: 'Seattle',
-    filedRoute: 'TRUKN2 DEDHD RBL HAWKZ7',
+    filedRoute,
+    originalRoute: filedRoute,
     airportFaa: 'SFO',
     squawk: '3342',
     telephony,
@@ -168,6 +172,34 @@ function input(overrides: Partial<SpeakClearanceInput> = {}): SpeakClearanceInpu
 const closing =
   'Climb via SID. Departure frequency one two zero point niner, squawk three three four two. ' +
   'Expect runway one right.';
+
+describe('asFiledJoin', () => {
+  it('joins at the exit element when the two routes are the same', () => {
+    expect(asFiledJoin(['DEDHD', 'RBL', 'HAWKZ7'], ['DEDHD', 'RBL', 'HAWKZ7'])).toBe(0);
+  });
+
+  it('joins at the fix the two routes run together from', () => {
+    expect(asFiledJoin(['OAK', 'V6', 'SAC'], ['SGD', 'SAC'])).toBe(2);
+  });
+
+  it('joins at the fix after the airway a shared tail opens on', () => {
+    expect(
+      asFiledJoin(['OAK', 'V6', 'SAC', 'V23', 'YUBBA'], ['SGD', 'V6', 'SAC', 'V23', 'YUBBA']),
+    ).toBe(2);
+  });
+
+  it('joins nowhere when the shared tail is an airway with no fix after it', () => {
+    expect(asFiledJoin(['OAK', 'V6'], ['SGD', 'V6'])).toBeUndefined();
+  });
+
+  it('joins nowhere when the two routes share no tail', () => {
+    expect(asFiledJoin(['OAK', 'SAC'], ['PXN', 'AVE'])).toBeUndefined();
+  });
+
+  it('joins nowhere when the amended route has nothing after the procedure', () => {
+    expect(asFiledJoin([], ['SGD', 'SAC'])).toBeUndefined();
+  });
+});
 
 describe('speakClearance', () => {
   it('reads the abbreviated clearance the way clearance delivery does', () => {
@@ -455,6 +487,60 @@ describe('speakClearance', () => {
         `Ntell transition, direct. ${closing}`,
     );
     expect(spoken.fullRoute).toBe(spoken.abbreviated);
+  });
+
+  it('reads an amended route in full where the pilot has nothing left to fly as filed', () => {
+    const spoken = speakClearance(
+      input({
+        callsign: 'N172SP',
+        clearance: clearance({
+          sid: { id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+        }),
+        filedRoute: 'GAPP7 OAK V6 SAC',
+        originalRoute: 'SGD SAC',
+      }),
+    );
+    expect(spoken.abbreviated).toContain(
+      'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, direct.',
+    );
+    expect(spoken.fullRoute).toBe(spoken.abbreviated);
+  });
+
+  it('hands an amended procedure over as filed at the transition the two routes share', () => {
+    const spoken = speakClearance(
+      input({
+        callsign: 'N483KA',
+        clearance: clearance({
+          sid: { id: 'SSTIK5', family: 'SSTIK', spoken: 'Sstik Five' },
+          route: { template: 'transition', fix: 'NTELL' },
+        }),
+        filedRoute: 'SSTIK5 NTELL Q162 ESSAA BTY SUNST4',
+        originalRoute: 'WESLA5 NTELL Q162 ESSAA BTY SUNST4',
+        sidTransitions: [{ fix: 'NTELL', spoken: 'Ntell' }],
+      }),
+    );
+    expect(spoken.abbreviated).toContain('Sstik Five departure, Ntell transition, then as filed.');
+  });
+
+  it('reads an amended route out to the fix it rejoins the filed one at', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          sid: { id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+        }),
+        filedRoute: 'GAPP7 OAK V6 SAC V23 YUBBA',
+        originalRoute: 'GAPP7 SGD V6 SAC V23 YUBBA',
+      }),
+    );
+    expect(spoken.abbreviated).toContain(
+      'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, then as filed.',
+    );
+    expect(spoken.fullRoute).toContain(
+      'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, ' +
+        'Victor twenty-three Yubba, direct.',
+    );
   });
 
   it('keeps a registration callsign phonetic', () => {

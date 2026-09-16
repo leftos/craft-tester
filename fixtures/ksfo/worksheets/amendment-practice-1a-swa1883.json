@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "SSTIK5 YYUNG LAX COMIX2",
+        "reason": "SEGUL1 is not the procedure the SOP assigns an RNAV jet from 01L in 28/01; it is SSTIK5"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1a-swa1883",
   "mode": "amendment",
   "scenario": {
@@ -19,5 +28,5 @@
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation"
   },
-  "status": "pending"
+  "status": "settled"
 }

@@ -208,7 +208,7 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
     panels.push(
       renderRevisit({
         grades: grade(state.revisit.picks, clearance),
-        spoken: spokenFor(generated, clearance, state.airport),
+        spoken: spokenFor(generated, generated, clearance, state.airport),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
@@ -220,7 +220,7 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
     panels.push(
       renderResults({
         grades: grade(picks, clearance),
-        spoken: spokenFor(generated, clearance, state.airport),
+        spoken: spokenFor(generated, generated, clearance, state.airport),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),

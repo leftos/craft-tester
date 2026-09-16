@@ -105,7 +105,7 @@ describe(`the scenario of seed ${SEED}`, () => {
 
   it('is read back as a spoken clearance', () => {
     if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
-    const spoken = spokenFor(view.generated, view.clearance, airport);
+    const spoken = spokenFor(view.generated, view.generated, view.clearance, airport);
     console.log(`[seed ${SEED}] abbreviated: ${spoken.abbreviated}`);
     console.log(`[seed ${SEED}] full route:  ${spoken.fullRoute}`);
     expect(spoken.abbreviated).toContain('cleared to');

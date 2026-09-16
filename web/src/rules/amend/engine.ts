@@ -133,12 +133,63 @@ function amendedMinutes(clearance: ResolvedClearance, airport: AirportData): num
 }
 
 /**
- * Resolves the clearance read for a plan the controller amended, which is the corrected plan's own
- * clearance with the expect clause the amendment calls for.
+ * The clearance with the expect clause an amended final altitude calls for.
  *
  * A flight whose final altitude was amended is told what to expect and when, whatever the SID chart
  * publishes: the chart's note covers the altitude the pilot filed, not the one the strip now reads.
- * The amended reading is mandatory, so nothing in it is redundant. Every other element is the
+ * The amended reading is mandatory, so nothing in it is redundant.
+ *
+ * @param clearance The clearance resolved for the corrected plan.
+ * @param corrected The plan with every amendment applied.
+ * @param airport The airport data.
+ * @returns The clearance with the amended expect clause.
+ */
+function withAmendedExpect(
+  clearance: ResolvedClearance,
+  corrected: Scenario,
+  airport: AirportData,
+): ResolvedClearance {
+  return {
+    ...clearance,
+    expect: {
+      value: {
+        feet: corrected.filedAltitude,
+        minutes: amendedMinutes(clearance, airport),
+        amended: true,
+      },
+      citations: citePhraseology(airport, 'A-EXPECT-AMENDED'),
+    },
+    redundantExpect: { value: null, citations: [] },
+  };
+}
+
+/**
+ * The clearance with the rule an amended route is read under cited on the route element.
+ *
+ * "Then as filed" hands the route over to the one the pilot has in front of them, so an amended
+ * route is read out to the point the two run together from, and the rule that says so is quoted
+ * beside the route the player is graded against.
+ *
+ * @param clearance The clearance resolved for the corrected plan.
+ * @param airport The airport data, whose `phraseologyRules` hold the row.
+ * @returns The clearance with the route element citing the rule.
+ */
+function withAsFiledRule(clearance: ResolvedClearance, airport: AirportData): ResolvedClearance {
+  return {
+    ...clearance,
+    route: {
+      ...clearance.route,
+      citations: [...clearance.route.citations, ...citePhraseology(airport, 'R-THEN-AS-FILED')],
+    },
+  };
+}
+
+/**
+ * Resolves the clearance read for a plan the controller amended, which is the corrected plan's own
+ * clearance with what each amended box adds to the reading.
+ *
+ * An amended altitude adds the expect clause and an amended route the rule its reading follows, and
+ * the two are independent: a plan can be amended in either box alone. Every other element is the
  * corrected plan's, so the reading never mixes the two plans.
  *
  * @param original The plan as filed.
@@ -152,21 +203,13 @@ export function resolveAmendedClearance(
   airport: AirportData,
 ): EngineResult {
   const result = resolveClearance(corrected, airport);
-  if (!result.ok || corrected.filedAltitude === original.filedAltitude) return result;
-  const { clearance } = result;
-  return {
-    ok: true,
-    clearance: {
-      ...clearance,
-      expect: {
-        value: {
-          feet: corrected.filedAltitude,
-          minutes: amendedMinutes(clearance, airport),
-          amended: true,
-        },
-        citations: citePhraseology(airport, 'A-EXPECT-AMENDED'),
-      },
-      redundantExpect: { value: null, citations: [] },
-    },
-  };
+  if (!result.ok) return result;
+  let clearance = result.clearance;
+  if (corrected.filedRoute !== original.filedRoute) {
+    clearance = withAsFiledRule(clearance, airport);
+  }
+  if (corrected.filedAltitude !== original.filedAltitude) {
+    clearance = withAmendedExpect(clearance, corrected, airport);
+  }
+  return { ok: true, clearance };
 }

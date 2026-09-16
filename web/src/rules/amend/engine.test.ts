@@ -134,6 +134,30 @@ describe('resolveAmendedClearance', () => {
     expect(corrected.filedRoute.startsWith(result.clearance.sid.value.id)).toBe(true);
   });
 
+  it('cites the rule an amended route is read under on the route element', () => {
+    const original = scenario({ filedRoute: 'TRUKN1 DEDHD RBL LMT HAWKZ7' });
+    const { corrected } = resolved(original);
+    expect(corrected.filedRoute).not.toBe(original.filedRoute);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.route.citations.map((citation) => citation.id)).toContain(
+      'R-THEN-AS-FILED',
+    );
+  });
+
+  it('leaves the route element of a plan whose route was not amended alone', () => {
+    const original = scenario({ filedAltitude: 33000 });
+    const { corrected } = resolved(original);
+    expect(corrected.filedRoute).toBe(original.filedRoute);
+    expect(corrected.filedAltitude).not.toBe(original.filedAltitude);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.route).toEqual(cleared(corrected).route);
+    expect(result.clearance.route.citations.map((citation) => citation.id)).not.toContain(
+      'R-THEN-AS-FILED',
+    );
+  });
+
   it('leaves the expect clause of a plan whose altitude was not amended alone', () => {
     const original = scenario({ filedRoute: 'TRUKN1 DEDHD RBL LMT HAWKZ7' });
     const { corrected } = resolved(original);

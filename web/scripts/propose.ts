@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AirportData, Fixture, Scenario } from '#src/data/schema.ts';
 import type { ResolvedAmendment } from '#src/rules/amend/types.ts';
 import type { SpokenClearance } from '#src/rules/speak.ts';
-import type { ResolvedClearance, RuleCitation } from '#src/rules/types.ts';
+import type { EngineResult, ResolvedClearance, RuleCitation } from '#src/rules/types.ts';
 
 /** The repository root, two levels above this script. */
 const repoRoot = new URL('../../', import.meta.url);
@@ -345,13 +345,23 @@ function destinationSpoken(icao: string, airport: AirportData): string {
   return airport.routeLibrary.destinations.find((row) => row.icao === icao)?.spoken ?? icao;
 }
 
-/** Runs the clearance engine over a plan and shapes the result for printing. */
+/**
+ * Shapes what the clearance engine made of a plan for printing.
+ *
+ * @param result What the engine answered for the plan.
+ * @param scenario The plan the clearance is read for, which in amendment mode is the corrected plan.
+ * @param original The plan as the pilot filed it, which is what "as filed" hands the route over to.
+ * @param airport The airport data.
+ * @param runtime The app modules the script speaks the clearance with.
+ * @returns The clearance as the proposal prints it, or the elements that blocked it.
+ */
 function clearanceOutcome(
+  result: EngineResult,
   scenario: Scenario,
+  original: Scenario,
   airport: AirportData,
   runtime: Runtime,
 ): ProposalClearance | ProposalUnresolved {
-  const result = runtime.resolveClearance(scenario, airport);
   if (!result.ok) {
     return {
       kind: 'unresolved',
@@ -367,6 +377,7 @@ function clearanceOutcome(
       clearance,
       destinationSpoken: destinationSpoken(scenario.destination, airport),
       filedRoute: scenario.filedRoute,
+      originalRoute: original.filedRoute,
       airportFaa: airport.airport.faa,
       squawk: scenario.squawk,
       telephony: airport.routeLibrary.telephony,
@@ -383,7 +394,12 @@ function proposedValue(amendment: ResolvedAmendment): string {
   return amendment.box === 'altitude' ? String(amendment.proposedFeet) : amendment.proposed;
 }
 
-/** Runs the amendment engine over a plan, and the clearance engine over the corrected plan. */
+/**
+ * Runs the amendment engine over a plan, and the clearance engine over the corrected plan.
+ *
+ * The corrected plan's clearance is resolved the way the app resolves it, which is what carries the
+ * amended expect clause and the rule an amended route is read under.
+ */
 function amendmentOutcome(
   scenario: Scenario,
   airport: AirportData,
@@ -404,16 +420,28 @@ function amendmentOutcome(
       reason: amendment.reason,
       citations: amendment.citations,
     })),
-    corrected: clearanceOutcome(result.corrected, airport, runtime),
+    corrected: clearanceOutcome(
+      runtime.resolveAmendedClearance(scenario, result.corrected, airport),
+      result.corrected,
+      scenario,
+      airport,
+      runtime,
+    ),
     expected: runtime.toExpectedAmendments(result),
   };
 }
 
 /** Runs the engine the fixture's mode names over it, and shapes the result for printing. */
 function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): ProposalOutcome {
-  return fixture.mode === 'amendment'
-    ? amendmentOutcome(fixture.scenario, airport, runtime)
-    : clearanceOutcome(fixture.scenario, airport, runtime);
+  const { scenario } = fixture;
+  if (fixture.mode === 'amendment') return amendmentOutcome(scenario, airport, runtime);
+  return clearanceOutcome(
+    runtime.resolveClearance(scenario, airport),
+    scenario,
+    scenario,
+    airport,
+    runtime,
+  );
 }
 
 /** Builds the `--pending` row for one fixture. */

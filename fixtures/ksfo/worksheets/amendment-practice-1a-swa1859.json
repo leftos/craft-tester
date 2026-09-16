@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "TRUKN2 TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4",
+        "reason": "NIITE3 is not the procedure the SOP assigns an RNAV jet from 01R in 28/01; it is TRUKN2"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1a-swa1859",
   "mode": "amendment",
   "scenario": {
@@ -19,5 +28,5 @@
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01R, the runway configuration 28/01 departs north per direction_runway_preference, pending validation"
   },
-  "status": "pending"
+  "status": "settled"
 }
