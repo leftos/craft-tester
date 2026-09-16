@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import ksfoJson from '@data/ksfo.json';
+import { checkedInAirports } from '@/data/checkedIn.ts';
 import type { AircraftClass, AirportData, RouteLibraryEntry, Scenario } from '@/data/schema.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
 import type { EngineResult } from '@/rules/types.ts';
-
-const ksfo = ksfoJson as unknown as AirportData;
 
 const CLASSES: readonly AircraftClass[] = ['P', 'T', 'J'];
 
@@ -23,18 +21,6 @@ const NOTICE_SETS = [
   { label: 'no notices', activeNotices: [] },
 ] as const;
 
-/** Every fix that some SID publishes as an enroute transition. */
-const ENROUTE_TRANSITION_FIXES = new Set(
-  ksfo.sids.flatMap((sid) =>
-    sid.transitions.filter((transition) => transition.kind === 'enroute').map((t) => t.fix),
-  ),
-);
-
-/** The rows that clear a flight without a procedure, which v1 deliberately cannot issue. */
-const NON_DP_ROW_TEXTS = new Set(
-  ksfo.assignmentRules.filter((row) => row.nonDpHeading !== undefined).map((row) => row.text),
-);
-
 /** One enumerated scenario plus the facts the assertions are keyed by. */
 type Combination = {
   scenario: Scenario;
@@ -44,17 +30,48 @@ type Combination = {
   label: string;
 };
 
+/** One enumerated scenario and what the engine made of it. */
+type Outcome = {
+  combination: Combination;
+  result: EngineResult;
+};
+
+/** How many combinations hit one `element + reason`, and the first combination that did. */
+type UnresolvedGroups = Map<string, { count: number; example: string }>;
+
+/** The facts about one airport's data that the assertions key on. */
+type AirportFacts = {
+  /** Every fix that some SID publishes as an enroute transition. */
+  enrouteTransitionFixes: ReadonlySet<string>;
+  /** The rows that clear a flight without a procedure, which v1 deliberately cannot issue. */
+  nonDpRowTexts: ReadonlySet<string>;
+};
+
+/** Reads the two sets the assertions key on out of one airport's data. */
+function airportFacts(data: AirportData): AirportFacts {
+  return {
+    enrouteTransitionFixes: new Set(
+      data.sids.flatMap((sid) =>
+        sid.transitions.filter((transition) => transition.kind === 'enroute').map((t) => t.fix),
+      ),
+    ),
+    nonDpRowTexts: new Set(
+      data.assignmentRules.filter((row) => row.nonDpHeading !== undefined).map((row) => row.text),
+    ),
+  };
+}
+
 /** A sample fleet type of each class, so the scenarios use types the data knows. */
-function typeOfClass(aircraftClass: AircraftClass): string {
-  const entry = ksfo.routeLibrary.fleet.find((fleet) => fleet.class === aircraftClass);
+function typeOfClass(data: AirportData, aircraftClass: AircraftClass): string {
+  const entry = data.routeLibrary.fleet.find((fleet) => fleet.class === aircraftClass);
   if (entry === undefined) throw new Error(`the fleet has no ${aircraftClass} type`);
   return entry.type;
 }
 
 /** One curated route per exit fix that the class may fly. */
-function routesOfClass(aircraftClass: AircraftClass): RouteLibraryEntry[] {
+function routesOfClass(data: AirportData, aircraftClass: AircraftClass): RouteLibraryEntry[] {
   const chosen = new Map<string, RouteLibraryEntry>();
-  for (const route of ksfo.routeLibrary.routes) {
+  for (const route of data.routeLibrary.routes) {
     if (route.classes.includes(aircraftClass) && !chosen.has(route.exitFix)) {
       chosen.set(route.exitFix, route);
     }
@@ -63,18 +80,18 @@ function routesOfClass(aircraftClass: AircraftClass): RouteLibraryEntry[] {
 }
 
 /** Every config, departure runway, class, equipment, gate fix, time, and notice state. */
-function enumerateCombinations(): Combination[] {
+function enumerateCombinations(data: AirportData): Combination[] {
   const combinations: Combination[] = [];
-  for (const config of ksfo.runwayConfigs) {
+  for (const config of data.runwayConfigs) {
     for (const assignment of config.departureRunways) {
       for (const aircraftClass of CLASSES) {
-        for (const route of routesOfClass(aircraftClass)) {
+        for (const route of routesOfClass(data, aircraftClass)) {
           for (const equipmentSuffix of ['/L', '/A'] as const) {
             for (const time of TIME_BUCKETS) {
               for (const notices of NOTICE_SETS) {
                 const base: Scenario = {
                   callsign: 'TST123',
-                  aircraftType: typeOfClass(aircraftClass),
+                  aircraftType: typeOfClass(data, aircraftClass),
                   equipmentSuffix,
                   destination: route.destination,
                   filedRoute: route.tail,
@@ -111,17 +128,35 @@ function enumerateCombinations(): Combination[] {
 }
 
 /** Whether the flight departs the runway the plan sends that direction off, as the SOP does. */
-function departsPreferredRunway(combination: Combination): boolean {
-  const direction = directionOf(combination.exitFix, ksfo.gates);
+function departsPreferredRunway(data: AirportData, combination: Combination): boolean {
+  const direction = directionOf(combination.exitFix, data.gates);
   if (direction === undefined) return false;
   const preferred =
-    ksfo.directionRunwayPreference[combination.plan]?.[direction]?.[combination.runwayFamily];
+    data.directionRunwayPreference[combination.plan]?.[direction]?.[combination.runwayFamily];
   return preferred === undefined || preferred === combination.scenario.departureRunway;
 }
 
 /** A clearance the SOP deliberately withholds: the row sends the flight off without a procedure. */
-function isNonDpRow(result: EngineResult): boolean {
-  return !result.ok && result.unresolved.some((item) => NON_DP_ROW_TEXTS.has(item.reason));
+function isNonDpRow(facts: AirportFacts, result: EngineResult): boolean {
+  return !result.ok && result.unresolved.some((item) => facts.nonDpRowTexts.has(item.reason));
+}
+
+/** Counts every blocked element of every outcome against its `element + reason` group. */
+function groupUnresolved(outcomes: readonly Outcome[]): UnresolvedGroups {
+  const groups: UnresolvedGroups = new Map();
+  for (const { combination, result } of outcomes) {
+    if (result.ok) continue;
+    for (const item of result.unresolved) {
+      const key = `${item.element} | ${item.reason}`;
+      const group = groups.get(key);
+      if (group === undefined) {
+        groups.set(key, { count: 1, example: combination.label });
+      } else {
+        group.count += 1;
+      }
+    }
+  }
+  return groups;
 }
 
 /** One line per `element + reason`, with how many combinations hit it and one that did. */
@@ -135,32 +170,20 @@ function formatGroups(groups: ReadonlyMap<string, { count: number; example: stri
   return lines.join('\n');
 }
 
-const combinations = enumerateCombinations();
-const outcomes = combinations.map((combination) => ({
-  combination,
-  result: resolveClearance(combination.scenario, ksfo),
-}));
+describe.each(checkedInAirports())('every reachable $icao scenario', ({ icao, data }) => {
+  const facts = airportFacts(data);
+  const combinations = enumerateCombinations(data);
+  const outcomes: Outcome[] = combinations.map((combination) => ({
+    combination,
+    result: resolveClearance(combination.scenario, data),
+  }));
+  const unresolvedGroups = groupUnresolved(outcomes);
 
-const unresolvedGroups = new Map<string, { count: number; example: string }>();
-for (const { combination, result } of outcomes) {
-  if (result.ok) continue;
-  for (const item of result.unresolved) {
-    const key = `${item.element} | ${item.reason}`;
-    const group = unresolvedGroups.get(key);
-    if (group === undefined) {
-      unresolvedGroups.set(key, { count: 1, example: combination.label });
-    } else {
-      group.count += 1;
-    }
-  }
-}
-
-describe('every reachable KSFO scenario', () => {
   it('reports the combinations the data cannot clear', () => {
     const resolved = outcomes.filter((outcome) => outcome.result.ok).length;
     console.info(
       [
-        `KSFO engine enumeration: ${resolved} of ${outcomes.length} combinations resolved,`,
+        `${icao} engine enumeration: ${resolved} of ${outcomes.length} combinations resolved,`,
         `${unresolvedGroups.size} unresolved groups (count, element, reason, example):`,
         formatGroups(unresolvedGroups),
       ].join('\n'),
@@ -173,10 +196,10 @@ describe('every reachable KSFO scenario', () => {
     const gaps = outcomes
       .filter(
         (outcome) =>
-          ENROUTE_TRANSITION_FIXES.has(outcome.combination.exitFix) &&
-          departsPreferredRunway(outcome.combination) &&
+          facts.enrouteTransitionFixes.has(outcome.combination.exitFix) &&
+          departsPreferredRunway(data, outcome.combination) &&
           !outcome.result.ok &&
-          !isNonDpRow(outcome.result),
+          !isNonDpRow(facts, outcome.result),
       )
       .map((outcome) => `${outcome.combination.label}`);
     expect(gaps).toEqual([]);

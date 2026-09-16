@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'node:util';
 import { describe, expect, it } from 'vitest';
-import ksfoJson from '@data/ksfo.json';
+import { checkedInAirports } from '@/data/checkedIn.ts';
 import type {
   AirportData,
   Amendment,
@@ -14,7 +14,22 @@ import { toExpectedAmendments } from '@/rules/amend/types.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { toExpectedClearance } from '@/rules/types.ts';
 
-const ksfo = ksfoJson as unknown as AirportData;
+/** Every checked-in airport, keyed by ICAO, so a fixture is graded against the field it names. */
+const airports = new Map<string, AirportData>(
+  checkedInAirports().map((entry) => [entry.icao, entry.data]),
+);
+
+/** The data of the airport a fixture is filed at. */
+function airportOf(fixture: Fixture): AirportData {
+  const data = airports.get(fixture.airport);
+  if (data === undefined) {
+    const known = [...airports.keys()].join(', ');
+    throw new Error(
+      `fixture ${fixture.id} is filed at ${fixture.airport}, which data/airports.json does not list; it lists ${known}`,
+    );
+  }
+  return data;
+}
 
 /**
  * Every checked-in fixture, loaded by a relative glob.
@@ -66,7 +81,7 @@ function comparable(expected: ExpectedClearance): ExpectedClearance {
 
 /** What the engine makes of a fixture: the clearance in fixture shape, or why it is blocked. */
 function engineResult(fixture: Fixture): ExpectedClearance | string {
-  const result = resolveClearance(fixture.scenario, ksfo);
+  const result = resolveClearance(fixture.scenario, airportOf(fixture));
   return result.ok
     ? toExpectedClearance(result.clearance)
     : result.unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
@@ -74,7 +89,7 @@ function engineResult(fixture: Fixture): ExpectedClearance | string {
 
 /** What the amendment engine makes of a fixture: the amendments in fixture shape, or the gaps. */
 function amendmentResult(fixture: Fixture): ExpectedAmendments | string {
-  const result = resolveAmendments(fixture.scenario, ksfo);
+  const result = resolveAmendments(fixture.scenario, airportOf(fixture));
   return result.ok
     ? toExpectedAmendments(result)
     : result.unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
@@ -126,7 +141,7 @@ describe('fixtures', () => {
   });
 
   it('carries only airports the suite has data for', () => {
-    const unknown = fixtures.filter((fixture) => fixture.airport !== 'KSFO').map((f) => f.id);
+    const unknown = fixtures.filter((fixture) => !airports.has(fixture.airport)).map((f) => f.id);
     expect(unknown).toEqual([]);
   });
 
@@ -137,7 +152,7 @@ describe('fixtures', () => {
       const groups: UnresolvedGroups = new Map();
       let resolved = 0;
       for (const fixture of clearancePlans) {
-        const result = resolveClearance(fixture.scenario, ksfo);
+        const result = resolveClearance(fixture.scenario, airportOf(fixture));
         if (result.ok) {
           resolved += 1;
           continue;
@@ -166,7 +181,7 @@ describe('fixtures', () => {
       let resolved = 0;
       let clean = 0;
       for (const fixture of amendmentPlans) {
-        const result = resolveAmendments(fixture.scenario, ksfo);
+        const result = resolveAmendments(fixture.scenario, airportOf(fixture));
         if (!result.ok) {
           for (const item of result.unresolved) {
             addGroup(groups, `${item.element} | ${item.reason}`, fixture.id);
