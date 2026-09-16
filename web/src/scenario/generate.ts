@@ -313,6 +313,20 @@ function classDefaultRunway(
   )?.runway;
 }
 
+/** The flight a departure runway is drawn for, as everything the draw reads about it. */
+export type RunwayDraw = {
+  /** The airport data, for the cargo airlines and the direction preference. */
+  airport: AirportData;
+  /** The runway configuration in force. */
+  config: RunwayConfig;
+  /** The fleet row of the type, for its class, wake category and airlines. */
+  fleet: FleetEntry;
+  /** The drawn callsign, whose airline code a configuration may default to a runway. */
+  callsign: string;
+  /** The gate direction of the exit fix, or undefined when it has none. */
+  direction: Direction | undefined;
+};
+
 /**
  * Draws the departure runway: a family the class may use, then the runway that direction departs.
  *
@@ -326,20 +340,12 @@ function classDefaultRunway(
  * falls back to the first runway of it.
  *
  * @param rng The seeded generator; the on-request draw advances it.
- * @param airport The airport data, for the cargo airlines and the direction preference.
- * @param config The runway configuration in force.
- * @param fleet The fleet row of the type, for its class, wake category and airlines.
- * @param callsign The drawn callsign, whose airline code a configuration may default to a runway.
- * @param direction The gate direction of the exit fix, or undefined when it has none.
+ * @param draw The flight the runway is drawn for.
  * @returns The runway, and whether the flight asked for it, which is what the strip remarks say.
  */
 export function pickRunway(
   rng: Rng,
-  airport: AirportData,
-  config: RunwayConfig,
-  fleet: FleetEntry,
-  callsign: string,
-  direction: Direction | undefined,
+  { airport, config, fleet, callsign, direction }: RunwayDraw,
 ): { runway: string; requested: boolean } {
   const byAirline = airlineDefaultRunway(config, callsign, fleet.class);
   if (byAirline !== undefined) return { runway: byAirline, requested: false };
@@ -449,14 +455,13 @@ export function drawScenario(
   const fleet = pickFleet(rng, airport, route);
   const equipmentSuffix = rng.pick(fleet.suffixes);
   const callsign = pickCallsign(rng, fleet);
-  const picked = pickRunway(
-    rng,
+  const picked = pickRunway(rng, {
     airport,
     config,
     fleet,
     callsign,
-    directionOf(route.exitFix, airport.gates),
-  );
+    direction: directionOf(route.exitFix, airport.gates),
+  });
   const time = pickTime(rng, filter.time);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const filed: Scenario = {

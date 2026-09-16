@@ -182,27 +182,6 @@ function tecConstraint(
   };
 }
 
-/**
- * The LOA ceilings written for the destination, one constraint per row.
- *
- * @param airport The airport data.
- * @param destination The destination row.
- * @returns A constraint for every `max` row that applies, which is usually none.
- */
-function maxConstraints(airport: AirportData, destination: Destination): Constraint[] {
-  return airport.loaRules.flatMap((row) => {
-    if (!appliesTo(row, destination) || row.rule.kind !== 'max') return [];
-    const { feet } = row.rule;
-    return [
-      {
-        legal: (candidate: number) => candidate <= feet,
-        reason: `${row.id} caps altitudes to ${destination.spoken} at ${formatAltitude(feet)}`,
-        citations: [toCitation(row)],
-      },
-    ];
-  });
-}
-
 /** The highest altitude at or below the filed one that every constraint accepts. */
 function highestLegal(filedFeet: number, constraints: Constraint[]): number | undefined {
   for (let feet = filedFeet; feet >= LOWEST_PROPOSAL_FEET; feet -= STEP_FEET) {
@@ -229,9 +208,8 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
  * The constraints are the direction-of-flight parity, rotated where an LOA row for the destination
  * rotates it; the RVSM band for a suffix without RVSM approval; the cap on the TEC route a TRACON
  * destination is routed on, which is the row beginning on a departure the SOP would issue this
- * flight and nothing where no row does; and an LOA ceiling. The proposal is the highest altitude at
- * or below the filed one that satisfies all of them at once, so an amendment never trades one
- * broken rule for another.
+ * flight and nothing where no row does. The proposal is the highest altitude at or below the filed
+ * one that satisfies all of them at once, so an amendment never trades one broken rule for another.
  *
  * Only the constraints the *filed* altitude broke are reported and cited: the reason says what is
  * wrong with what the pilot filed, and a rule the filed altitude honours is not part of that, even
@@ -261,7 +239,6 @@ export function checkAltitude(
     parityConstraint(scenario, airport, destination),
     rvsmConstraint(scenario, airport),
     tecConstraint(ctx, scenario, airport, destination),
-    ...maxConstraints(airport, destination),
   ].filter((constraint) => constraint !== undefined);
   const broken = constraints.filter((constraint) => !constraint.legal(scenario.filedAltitude));
   if (broken.length === 0) return undefined;

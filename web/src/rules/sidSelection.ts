@@ -212,8 +212,11 @@ function tecHeadConflict(
  * Walks the assignment table in order and takes the first row whose SID the flight can fly.
  *
  * A row whose SID family an active notice has taken out of use is skipped, and the notice travels
- * with the selection so the clearance can cite it. A row that assigns no SID family clears the
- * flight on the heading it names instead, which the engine issues in place of a procedure; where
+ * with the selection so the clearance can cite it. A notice that issues a heading in the DP's place
+ * skips nothing: the row it names clears the flight on the notice's heading, with the sector and
+ * conditions the row already carries, and both the row and the notice are cited. A row that assigns
+ * no SID family clears the flight on the heading it names instead, which the engine issues in place
+ * of a procedure; where
  * that row is written for a flight whose TEC route carries no departure procedure, the heading it
  * names and the one that route begins on must agree.
  *
@@ -238,8 +241,17 @@ export function selectSid(
     if (!rowApplies(row, ctx, exitElement, direction, flight)) continue;
     const notice = sidOffNotice(row.sidFamily, ctx, airport);
     if (notice !== undefined) {
-      notices.push(notice);
-      continue;
+      const { heading } = notice.effect;
+      if (heading === undefined) {
+        notices.push(notice);
+        continue;
+      }
+      const asHeading: AssignmentRule = { ...row, sidFamily: null, nonDpHeading: heading };
+      const conflict = tecHeadConflict(asHeading, ctx, flight);
+      if (conflict !== undefined) return conflict;
+      const procedure = headingProcedure(asHeading, scenario, airport);
+      if (isUnresolved(procedure)) return procedure;
+      return { procedure, row: asHeading, sector: row.sector, notices: [...notices, notice] };
     }
     if (row.sidFamily === null) {
       const conflict = tecHeadConflict(row, ctx, flight);
@@ -274,8 +286,9 @@ export type UnservedSid = {
  * transition of one of them connects onward to the filed route, and answers with the SID the SOP
  * wanted rather than the vector-SID fallback further down the table. The walk is `selectSid`'s, so
  * the two agree on which rows apply: a row whose SID an active notice took out of use is skipped, a
- * row that clears the flight without a procedure ends it, and the first row whose SID the flight
- * can fly to its exit element is where `selectSid` stops and so is where this stops too.
+ * row that clears the flight without a procedure ends it, a row whose notice issues a heading in
+ * its DP's place ends it too, and the first row whose SID the flight can fly to its exit element is
+ * where `selectSid` stops and so is where this stops too.
  *
  * @param ctx The classified flight.
  * @param exitElement The fix, or the airway, the flight leaves the terminal on.
@@ -295,7 +308,11 @@ export function unservedSids(
   const flight: Flight = { scenario, airport };
   for (const row of airport.assignmentRules) {
     if (!rowApplies(row, ctx, exitElement, direction, flight)) continue;
-    if (sidOffNotice(row.sidFamily, ctx, airport) !== undefined) continue;
+    const notice = sidOffNotice(row.sidFamily, ctx, airport);
+    if (notice !== undefined) {
+      if (notice.effect.heading === undefined) continue;
+      return candidates;
+    }
     const family = row.sidFamily;
     if (family === null) return candidates;
     const fits = airport.sids.some(

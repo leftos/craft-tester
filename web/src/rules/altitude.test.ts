@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData, AltitudeRule, RunwayConfig, Scenario, Sid } from '@/data/schema.ts';
+import type {
+  AirportData,
+  AltitudeRule,
+  NonDpHeading,
+  RunwayConfig,
+  Scenario,
+  Sid,
+} from '@/data/schema.ts';
 import { resolveAltitude } from '@/rules/altitude.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
@@ -230,6 +237,61 @@ describe('resolveAltitude', () => {
       ksfo,
     );
     expect(result).toEqual({ element: 'A.phrase', reason: expect.stringContaining('SFOX') });
+  });
+});
+
+describe('a row keyed to non-DP headings', () => {
+  /** An interim row written for the jets cleared off the 01s on heading 315 and no one else. */
+  const HEADING_ROW: AltitudeRule = {
+    ...CLIMB_VIA_ROW,
+    id: 'TEST-315',
+    nonDpHeadings: [315],
+    outcome: { kind: 'interim', feet: 4000 },
+  };
+
+  /** An interim row keyed to neither SID families nor headings, so it answers every procedure. */
+  const ANY_PROCEDURE_ROW: AltitudeRule = {
+    ...CLIMB_VIA_ROW,
+    id: 'TEST-ANY',
+    outcome: { kind: 'interim', feet: 5000 },
+  };
+
+  function onHeading(heading: NonDpHeading, rules: AltitudeRule[]) {
+    return resolveAltitude(ctx({}), { kind: 'heading', heading, turn: undefined }, scenario({}), {
+      ...ksfo,
+      altitudeRules: rules,
+    });
+  }
+
+  it('answers a flight cleared on a heading it lists', () => {
+    const result = onHeading(315, [HEADING_ROW]);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.altitude.value).toEqual({ phrase: 'maintain', feet: 4000 });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-MAINTAIN',
+      'TEST-315',
+    ]);
+  });
+
+  it('passes over a flight cleared on a heading it does not list', () => {
+    expect(onHeading('runway heading', [HEADING_ROW])).toEqual({
+      element: 'A.phrase',
+      reason: expect.stringContaining('no altitude rule'),
+    });
+  });
+
+  it('passes over a flight flying a SID', () => {
+    const result = resolveAltitude(ctx({}), { kind: 'sid', sid: sid('TRUKN2') }, scenario({}), {
+      ...ksfo,
+      altitudeRules: [HEADING_ROW],
+    });
+    expect(result).toEqual({ element: 'A.phrase', reason: expect.stringContaining('TRUKN') });
+  });
+
+  it('leaves a row keyed to neither answering the heading clearances it always answered', () => {
+    const result = onHeading(120, [ANY_PROCEDURE_ROW]);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.altitude.value).toEqual({ phrase: 'maintain', feet: 5000 });
   });
 });
 

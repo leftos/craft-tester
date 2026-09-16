@@ -167,6 +167,7 @@ def test_altitude_rules_notices_and_phraseology(ksfo_inputs: AirportInputs) -> N
     assert sop.altitude_rules[1].sid_families is None
     notice = sop.notices[0]
     assert (notice.id, notice.effect.kind, notice.effect.sid_family, notice.default_active) == ("SFO-SEGUL-OFF", "sid_off", "SEGUL", True)
+    assert notice.effect.heading is None
     assert notice.dated == date(2026, 9, 15)
     assert sop.phraseology.expect_altitude == "unless_chart_publishes_it"
     assert sop.phraseology.non_standard_interim_expect_minutes == 3
@@ -320,6 +321,60 @@ def test_rule_with_a_heading_that_is_not_a_degree_number_is_rejected(tmp_path: P
     message = f"non_dp_heading is {value!r}; write 'runway heading' or a magnetic heading as an integer from 1 to 360"
     with pytest.raises(ValueError, match=re.escape(message)):
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_non_dp_heading(value)) / SOP_FILE)
+
+
+def _with_notice_heading(value: Any) -> Mutation:
+    """A mutation that has the KSFO notice issue ``value`` in place of the DP it takes out of use."""
+
+    def mutate(data: Any) -> None:
+        data["notices"][0]["effect"]["heading"] = value
+
+    return mutate
+
+
+def test_notice_that_issues_a_heading_loads(tmp_path: Path, ksfo_dir: Path) -> None:
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_notice_heading(120)) / SOP_FILE)
+    assert sop.notices[0].effect.heading == 120
+
+
+def test_notice_heading_that_is_not_a_degree_number_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    message = "non_dp_heading is 0; write 'runway heading' or a magnetic heading as an integer from 1 to 360"
+    with pytest.raises(ValueError, match=re.escape(message)):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_notice_heading(0)) / SOP_FILE)
+
+
+def _with_altitude_headings(value: Any) -> Mutation:
+    """A mutation that keys the first KSFO altitude row to ``value`` in place of its DP families."""
+
+    def mutate(data: Any) -> None:
+        rule = data["altitude_rules"][0]
+        del rule["sid_families"]
+        rule["non_dp_headings"] = value
+
+    return mutate
+
+
+def test_altitude_rule_keyed_to_headings_loads(tmp_path: Path, ksfo_dir: Path) -> None:
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_altitude_headings([315, "runway heading"])) / SOP_FILE)
+    rule = sop.altitude_rules[0]
+    assert rule.non_dp_headings == (315, "runway heading")
+    assert rule.sid_families is None
+    assert sop.altitude_rules[1].non_dp_headings is None
+
+
+@pytest.mark.parametrize("value", [0, 361, "north"])
+def test_altitude_rule_heading_that_is_not_a_degree_number_is_rejected(tmp_path: Path, ksfo_dir: Path, value: Any) -> None:
+    message = f"non_dp_heading is {value!r}; write 'runway heading' or a magnetic heading as an integer from 1 to 360"
+    with pytest.raises(ValueError, match=re.escape(message)):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_altitude_headings([value])) / SOP_FILE)
+
+
+def test_altitude_rule_with_both_sid_families_and_headings_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["altitude_rules"][0]["non_dp_headings"] = ["runway heading"]
+
+    with pytest.raises(ValueError, match=r"altitude_rules\[SFOW-28-3000\]: a rule keys on `sid_families` or on `non_dp_headings`, never both"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
 def test_rule_with_neither_a_sid_family_nor_a_heading_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:

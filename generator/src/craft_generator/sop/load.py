@@ -62,7 +62,6 @@ from craft_generator.sop.model import (
     LoaRuleKind,
     LoaRuleKindName,
     LoaSource,
-    MaxAltitudeRule,
     NoiseWindow,
     NonDpHeading,
     NoSid,
@@ -480,16 +479,28 @@ def _assignment_condition(row: _Row) -> AssignmentCondition:
     return condition
 
 
-def _non_dp_heading(row: _Row) -> NonDpHeading | None:
-    """The heading a row clears a flight on where it assigns no DP: the runway heading, or 1 to 360 degrees."""
-    value = row.optional_raw("non_dp_heading")
-    if value is None:
-        return None
+def _check_non_dp_heading(value: object, where: str) -> NonDpHeading:
+    """One non-DP heading as YAML wrote it: the runway heading, or a magnetic heading of 1 to 360 degrees."""
     if value == RUNWAY_HEADING:
         return RUNWAY_HEADING
     if isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= 360:
         return value
-    raise ValueError(f"{row.where}: non_dp_heading is {value!r}; write 'runway heading' or a magnetic heading as an integer from 1 to 360")
+    raise ValueError(f"{where}: non_dp_heading is {value!r}; write 'runway heading' or a magnetic heading as an integer from 1 to 360")
+
+
+def _non_dp_heading(row: _Row) -> NonDpHeading | None:
+    """The heading a row clears a flight on where it assigns no DP: the runway heading, or 1 to 360 degrees."""
+    value = row.optional_raw("non_dp_heading")
+    return None if value is None else _check_non_dp_heading(value, row.where)
+
+
+def _non_dp_headings(row: _Row) -> tuple[NonDpHeading, ...] | None:
+    """The headings a row is keyed to, for a row that answers only flights cleared without a DP."""
+    value = row.optional_raw("non_dp_headings")
+    if value is None:
+        return None
+    at = f"{row.where}.non_dp_headings"
+    return tuple(_check_non_dp_heading(item, at) for item in _as_sequence(value, at))
 
 
 def _assignment_rule(row: _Row) -> AssignmentRule:
@@ -535,16 +546,27 @@ def _altitude_rule(row: _Row) -> AltitudeRule:
         classes=row.choices("classes", AIRCRAFT_CLASSES),
         groups=row.optional_texts("groups"),
         sid_families=row.optional_texts("sid_families"),
+        non_dp_headings=_non_dp_headings(row),
         outcome=_altitude_outcome(row.child("outcome")),
         when_top_altitude_published=row.choice("when_top_altitude_published", ALTITUDE_OUTCOME_KINDS),
         expect_after_minutes=row.number("expect_after_minutes"),
     )
     row.finish()
+    if rule.sid_families is not None and rule.non_dp_headings is not None:
+        raise ValueError(
+            f"{row.where}: a rule keys on `sid_families` or on `non_dp_headings`, never both; "
+            "drop one of them, or drop both to key the row to every procedure"
+        )
     return rule
 
 
 def _notice_effect(row: _Row) -> NoticeEffect:
-    effect = NoticeEffect(kind=row.choice("kind", NOTICE_EFFECT_KINDS), sid_family=row.text("sid_family"))
+    heading = row.optional_raw("heading")
+    effect = NoticeEffect(
+        kind=row.choice("kind", NOTICE_EFFECT_KINDS),
+        sid_family=row.text("sid_family"),
+        heading=None if heading is None else _check_non_dp_heading(heading, f"{row.where}.heading"),
+    )
     row.finish()
     return effect
 
@@ -1118,8 +1140,6 @@ def _loa_rule_kind(kind: LoaRuleKindName, row: _Row) -> LoaRuleKind:
             odd_course_from=_check_course(row.number("odd_course_from"), f"{row.where}.odd_course_from"),
             odd_course_to=_check_course(row.number("odd_course_to"), f"{row.where}.odd_course_to"),
         )
-    if kind == "max":
-        return MaxAltitudeRule(feet=row.number("feet"))
     if kind == "route":
         return RouteTokenRule(tokens=row.texts("tokens"))
     return EvenAltitudeRule() if kind == "even" else OddAltitudeRule()

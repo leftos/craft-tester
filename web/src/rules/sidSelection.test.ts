@@ -114,6 +114,12 @@ const segulOff: Notice = {
   defaultActive: true,
 };
 
+/** The same notice, issuing heading 120 to the flights the SEGUL row would have put on the SID. */
+const segulOffOnHeading: Notice = {
+  ...segulOff,
+  effect: { kind: 'sid_off', sidFamily: 'SEGUL', heading: 120 },
+};
+
 describe('selectSid', () => {
   it('takes the first applicable row whose SID the flight can fly', () => {
     const result = selectSid(
@@ -225,6 +231,28 @@ describe('selectSid', () => {
     );
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.row.id).toBe('SSTIK-ROW');
+    expect(result.notices.map((notice) => notice.id)).toEqual(['SEGUL-OFF']);
+  });
+
+  it("clears the flight on the heading an active notice issues in the DP's place", () => {
+    const result = selectSid(
+      ctx({ activeNotices: ['SEGUL-OFF'] }),
+      'YYUNG',
+      'south',
+      scenario({ departureRunway: '01L' }),
+      airportWith(
+        [
+          rule({ id: 'SEGUL-ROW', direction: 'south', sidFamily: 'SEGUL', classes: ['J'] }),
+          rule({ id: 'SSTIK-ROW', direction: 'south', sidFamily: 'SSTIK', classes: ['J'] }),
+        ],
+        [segulOffOnHeading],
+      ),
+    );
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.procedure).toEqual({ kind: 'heading', heading: 120, turn: 'right' });
+    expect(result.row.id).toBe('SEGUL-ROW');
+    expect(result.row.sidFamily).toBeNull();
+    expect(result.sector).toBe('richmond');
     expect(result.notices.map((notice) => notice.id)).toEqual(['SEGUL-OFF']);
   });
 
@@ -508,5 +536,23 @@ describe('unservedSids', () => {
   it('is empty when the first applicable row already reaches the exit element', () => {
     const filed = { ...swa984, filedRoute: 'SSTIK5 SUSEY EBAYE AVE SADDE8' };
     expect(unservedSids(ctx({}), 'SUSEY', 'south', filed, ksfo)).toEqual([]);
+  });
+
+  it('stops at a row whose notice issues a heading, keeping what it has collected', () => {
+    const airport = airportWith(
+      [
+        rule({ id: 'SEGUL-ROW', direction: 'south', sidFamily: 'SEGUL', classes: ['J'] }),
+        rule({ id: 'SSTIK-ROW', direction: 'south', sidFamily: 'SSTIK', classes: ['J'] }),
+      ],
+      [segulOffOnHeading],
+    );
+    const flight = ctx({ activeNotices: ['SEGUL-OFF'] });
+    expect(unservedSids(flight, 'EBAYE', 'south', swa984, airport)).toEqual([]);
+    const withoutHeading = { ...airport, notices: [segulOff] };
+    expect(
+      unservedSids(flight, 'EBAYE', 'south', swa984, withoutHeading).map(
+        (candidate) => candidate.sid.id,
+      ),
+    ).toEqual(['SSTIK5']);
   });
 });

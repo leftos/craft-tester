@@ -553,6 +553,26 @@ def test_a_hand_approach_category_wins_over_the_faa_table(ksfo_build_inputs: Bui
     assert categories["B738"] == "D"
 
 
+def test_a_notice_that_issues_a_heading_emits_it(ksfo_build_inputs: BuildInputs) -> None:
+    notice = ksfo_build_inputs.airport.sop.notices[0]
+    with_heading = replace(notice, effect=replace(notice.effect, heading=120))
+    document = build_airport(_with_sop(ksfo_build_inputs, notices=(with_heading,)))
+    assert document["notices"][0]["effect"] == {"kind": "sid_off", "sidFamily": "SEGUL", "heading": 120}
+
+
+def test_a_notice_that_issues_no_heading_emits_none(ksfo_document: Document) -> None:
+    assert "heading" not in ksfo_document["notices"][0]["effect"]
+
+
+def test_an_altitude_row_keyed_to_headings_emits_them(ksfo_build_inputs: BuildInputs) -> None:
+    altitudes = list(ksfo_build_inputs.airport.sop.altitude_rules)
+    altitudes[0] = replace(altitudes[0], sid_families=None, non_dp_headings=(315, "runway heading"))
+    document = build_airport(_with_sop(ksfo_build_inputs, altitude_rules=tuple(altitudes)))
+    assert document["altitudeRules"][0]["nonDpHeadings"] == [315, "runway heading"]
+    assert "sidFamilies" not in document["altitudeRules"][0]
+    assert all("nonDpHeadings" not in rule for rule in document["altitudeRules"][1:])
+
+
 def test_approach_categories_are_emitted_once_the_fleet_carries_them(ksfo_build_inputs: BuildInputs) -> None:
     rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
     rules[0] = replace(rules[0], approach_categories=("A", "B"))

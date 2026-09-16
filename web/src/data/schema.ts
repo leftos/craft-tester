@@ -359,6 +359,14 @@ export const AltitudeRuleSchema = z.strictObject({
   classes: z.array(AircraftClassSchema),
   groups: z.array(z.string()).optional(),
   sidFamilies: z.array(z.string()).optional(),
+  /**
+   * The headings this row answers for, on a row written for flights cleared without a DP.
+   *
+   * A row carries `sidFamilies` or `nonDpHeadings`, never both: `sidFamilies` keys the row to the
+   * DP families it names, `nonDpHeadings` to the headings a flight cleared on no procedure is on,
+   * and a row carrying neither answers whatever procedure the flight flies.
+   */
+  nonDpHeadings: z.array(NonDpHeadingSchema).optional(),
   outcome: AltitudeOutcomeSchema,
   whenTopAltitudePublished: z.enum(['interim', 'climb_via']),
   expectAfterMinutes: z.number().int().positive(),
@@ -437,7 +445,6 @@ export const LoaRuleKindSchema = z.discriminatedUnion('kind', [
   }),
   z.strictObject({ kind: z.literal('even') }),
   z.strictObject({ kind: z.literal('odd') }),
-  z.strictObject({ kind: z.literal('max'), feet }),
   z.strictObject({ kind: z.literal('route'), tokens: z.array(z.string()) }),
 ]);
 
@@ -510,6 +517,10 @@ export const RouteLibrarySchema = z.strictObject({
  * `sid_off` removes every assignment row for that SID family while the notice is active;
  * `defaultActive` is whether a scenario starts with it in force, and `plan` narrows it to one
  * operating plan when the notice only applies to one.
+ *
+ * A `sid_off` notice that carries a `heading` puts something in the DP's place: the row is not
+ * removed but read as clearing the flight on that heading, with the sector and conditions it
+ * already carries.
  */
 export const NoticeSchema = z.strictObject({
   id: z.string(),
@@ -518,7 +529,11 @@ export const NoticeSchema = z.strictObject({
   text: z.string(),
   plan: z.string().optional(),
   effect: z.discriminatedUnion('kind', [
-    z.strictObject({ kind: z.literal('sid_off'), sidFamily: z.string() }),
+    z.strictObject({
+      kind: z.literal('sid_off'),
+      sidFamily: z.string(),
+      heading: NonDpHeadingSchema.optional(),
+    }),
   ]),
   defaultActive: z.boolean(),
 });

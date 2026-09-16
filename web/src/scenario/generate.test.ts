@@ -427,55 +427,57 @@ function dash8Fleet(): FleetEntry {
 
 describe('pickRunway', () => {
   it('departs a defaulted airline off its own runway, ahead of the class default', () => {
-    const picked = pickRunway(
-      createRng(1),
-      ksfo,
-      pcmOff28L(),
-      turbopropFleet(),
-      'PCM7679',
-      'north',
-    );
+    const picked = pickRunway(createRng(1), {
+      airport: ksfo,
+      config: pcmOff28L(),
+      fleet: turbopropFleet(),
+      callsign: 'PCM7679',
+      direction: 'north',
+    });
     expect(picked).toStrictEqual({ runway: '28L', requested: false });
   });
 
   it('departs a prop of another airline off the class default', () => {
-    const picked = pickRunway(
-      createRng(1),
-      ksfo,
-      pcmOff28L(),
-      turbopropFleet(),
-      'SKW1234',
-      'north',
-    );
+    const picked = pickRunway(createRng(1), {
+      airport: ksfo,
+      config: pcmOff28L(),
+      fleet: turbopropFleet(),
+      callsign: 'SKW1234',
+      direction: 'north',
+    });
     expect(picked).toStrictEqual({ runway: '28R', requested: false });
   });
 
   it('departs a type the group adds off the group runway, ahead of the class default', () => {
-    const picked = pickRunway(
-      createRng(1),
-      groupedAirport(),
-      dash8Off30(),
-      dash8Fleet(),
-      'QXE2451',
-      'north',
-    );
+    const picked = pickRunway(createRng(1), {
+      airport: groupedAirport(),
+      config: dash8Off30(),
+      fleet: dash8Fleet(),
+      callsign: 'QXE2451',
+      direction: 'north',
+    });
     expect(picked).toStrictEqual({ runway: '30', requested: false });
   });
 
   it('departs a turboprop outside the group off the class default', () => {
-    const picked = pickRunway(
-      createRng(1),
-      groupedAirport(),
-      dash8Off30(),
-      turbopropFleet(),
-      'SKW1234',
-      'north',
-    );
+    const picked = pickRunway(createRng(1), {
+      airport: groupedAirport(),
+      config: dash8Off30(),
+      fleet: turbopropFleet(),
+      callsign: 'SKW1234',
+      direction: 'north',
+    });
     expect(picked).toStrictEqual({ runway: '28R', requested: false });
   });
 
   it('departs a registration off the class default, having no airline to default', () => {
-    const picked = pickRunway(createRng(1), ksfo, pcmOff28L(), turbopropFleet(), 'N483KA', 'north');
+    const picked = pickRunway(createRng(1), {
+      airport: ksfo,
+      config: pcmOff28L(),
+      fleet: turbopropFleet(),
+      callsign: 'N483KA',
+      direction: 'north',
+    });
     expect(picked).toStrictEqual({ runway: '28R', requested: false });
   });
 });

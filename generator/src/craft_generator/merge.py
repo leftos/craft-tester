@@ -81,7 +81,6 @@ from craft_generator.sop.model import (
     Gates,
     LoaRule,
     LoaRuleKind,
-    MaxAltitudeRule,
     NoiseWindow,
     Notice,
     ParityRotatedRule,
@@ -317,17 +316,19 @@ def _altitude_rule(rule: AltitudeRule) -> Document:
         "whenTopAltitudePublished": rule.when_top_altitude_published,
         "expectAfterMinutes": rule.expect_after_minutes,
     }
-    return _with_optional(entry, groups=_texts(rule.groups), sidFamilies=_texts(rule.sid_families))
+    headings = None if rule.non_dp_headings is None else list(rule.non_dp_headings)
+    return _with_optional(entry, groups=_texts(rule.groups), sidFamilies=_texts(rule.sid_families), nonDpHeadings=headings)
 
 
 def _notice(notice: Notice) -> Document:
+    effect: Document = {"kind": notice.effect.kind, "sidFamily": notice.effect.sid_family}
     return {
         "id": notice.id,
         "source": notice.source,
         "dated": notice.dated.isoformat(),
         "text": notice.text,
         "plan": notice.plan,
-        "effect": {"kind": notice.effect.kind, "sidFamily": notice.effect.sid_family},
+        "effect": _with_optional(effect, heading=notice.effect.heading),
         "defaultActive": notice.default_active,
     }
 
@@ -508,8 +509,6 @@ def _tec_routes(inputs: BuildInputs) -> list[Document]:
 def _loa_effect(rule: LoaRuleKind) -> Document:
     if isinstance(rule, ParityRotatedRule):
         return {"kind": rule.kind, "oddCourseFrom": rule.odd_course_from, "oddCourseTo": rule.odd_course_to}
-    if isinstance(rule, MaxAltitudeRule):
-        return {"kind": rule.kind, "feet": rule.feet}
     if isinstance(rule, RouteTokenRule):
         return {"kind": rule.kind, "tokens": list(rule.tokens)}
     return {"kind": rule.kind}

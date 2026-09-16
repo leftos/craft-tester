@@ -28,10 +28,24 @@ function isClimbViaEligible(sid: Sid, runwayFamily: string): boolean {
 }
 
 /**
- * Whether an interim altitude row is keyed to this flight and the procedure it flies.
+ * Whether the row is keyed to the procedure the flight flies.
  *
- * A flight cleared on the runway heading flies no procedure, so only a row written for every
- * procedure can be keyed to it: a row naming SID families has nothing to match against.
+ * A row naming SID families answers the flights on one of them; a row naming non-DP headings
+ * answers the flights cleared on one of those headings and has nothing to match a SID against; a
+ * row naming neither answers whatever the flight flies, procedure or heading.
+ */
+function procedureMatches(row: AltitudeRule, procedure: SelectedProcedure): boolean {
+  if (row.sidFamilies !== undefined) {
+    return procedure.kind === 'sid' && row.sidFamilies.includes(procedure.sid.family);
+  }
+  if (row.nonDpHeadings !== undefined) {
+    return procedure.kind === 'heading' && row.nonDpHeadings.includes(procedure.heading);
+  }
+  return true;
+}
+
+/**
+ * Whether an interim altitude row is keyed to this flight and the procedure it flies.
  *
  * The row's audience is the class and the groups it is written for, which `addresses` reads against
  * the airport's `aircraftGroups`.
@@ -42,14 +56,11 @@ function rowMatches(
   procedure: SelectedProcedure,
   airport: AirportData,
 ): boolean {
-  const familyMatches =
-    row.sidFamilies === undefined ||
-    (procedure.kind === 'sid' && row.sidFamilies.includes(procedure.sid.family));
   return (
     row.plan === ctx.plan &&
     row.runwayFamilies.includes(ctx.runwayFamily) &&
     addresses(row, ctx, airport) &&
-    familyMatches
+    procedureMatches(row, procedure)
   );
 }
 
@@ -186,8 +197,8 @@ function expectClause(
  * a SID whose published top altitude the row defers to is cleared "climb via SID", an interim
  * altitude is capped at the filed altitude and spoken as "climb via SID except maintain" where the
  * SID has crossing restrictions off that runway, and as "maintain" where it has none. A flight
- * cleared on the runway heading is keyed to the first row written for every procedure, and is
- * always told to maintain that row's altitude.
+ * cleared on a heading is keyed to the first row written for that heading, or for every procedure,
+ * and is always told to maintain that row's altitude.
  *
  * @param ctx The classified flight.
  * @param procedure The selected SID, or the heading the flight is cleared on.

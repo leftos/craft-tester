@@ -24,7 +24,7 @@ from craft_generator.chart_text import TopAltitudeKind
 AircraftClass = Literal["P", "T", "J"]
 ApproachCategory = Literal["A", "B", "C", "D"]
 TecRouteKind = Literal["tec", "adr"]
-LoaRuleKindName = Literal["parity_rotated", "even", "odd", "max", "route"]
+LoaRuleKindName = Literal["parity_rotated", "even", "odd", "route"]
 Direction = Literal["north", "south", "oceanic", "any"]
 GateDirection = Literal["north", "south", "oceanic"]
 WakeCategory = Literal["L", "M", "H", "J"]
@@ -42,7 +42,7 @@ ConnectionStrength = Literal["always", "usually"]
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
 APPROACH_CATEGORIES: tuple[ApproachCategory, ...] = ("A", "B", "C", "D")
 TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr")
-LOA_RULE_KIND_NAMES: tuple[LoaRuleKindName, ...] = ("parity_rotated", "even", "odd", "max", "route")
+LOA_RULE_KIND_NAMES: tuple[LoaRuleKindName, ...] = ("parity_rotated", "even", "odd", "route")
 DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
 GATE_DIRECTIONS: tuple[GateDirection, ...] = ("north", "south", "oceanic")
 WAKE_CATEGORIES: tuple[WakeCategory, ...] = ("L", "M", "H", "J")
@@ -252,6 +252,10 @@ class AltitudeRule:
 
     ``groups`` names :class:`AircraftGroup` ids the row addresses beyond ``classes``, and is
     ``None`` on a row that names none.
+
+    A row keys on the procedure through ``sid_families`` or through ``non_dp_headings``, never both:
+    ``sid_families`` names the DP families it answers for, ``non_dp_headings`` the headings a flight
+    cleared without a DP is on, and a row naming neither answers whatever procedure the flight flies.
     """
 
     id: str
@@ -262,6 +266,7 @@ class AltitudeRule:
     classes: tuple[AircraftClass, ...]
     groups: tuple[str, ...] | None
     sid_families: tuple[str, ...] | None
+    non_dp_headings: tuple[NonDpHeading, ...] | None
     outcome: AltitudeOutcome
     when_top_altitude_published: AltitudeOutcomeKind
     expect_after_minutes: int
@@ -269,10 +274,15 @@ class AltitudeRule:
 
 @dataclass(frozen=True, slots=True)
 class NoticeEffect:
-    """What an operational notice does while it is active."""
+    """What an operational notice does while it is active.
+
+    ``heading`` is the heading the flights that would have taken the DP are cleared on instead, and
+    is ``None`` on a notice that takes the DP out of use without putting anything in its place.
+    """
 
     kind: NoticeEffectKind
     sid_family: str
+    heading: NonDpHeading | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -491,14 +501,6 @@ class OddAltitudeRule:
 
 
 @dataclass(frozen=True, slots=True)
-class MaxAltitudeRule:
-    """The altitudes the rule covers are capped at ``feet``."""
-
-    kind: ClassVar[LoaRuleKindName] = "max"
-    feet: int
-
-
-@dataclass(frozen=True, slots=True)
 class RouteTokenRule:
     """The route to the destinations the rule covers is built from one of ``tokens``."""
 
@@ -506,7 +508,7 @@ class RouteTokenRule:
     tokens: tuple[str, ...]
 
 
-LoaRuleKind = ParityRotatedRule | EvenAltitudeRule | OddAltitudeRule | MaxAltitudeRule | RouteTokenRule
+LoaRuleKind = ParityRotatedRule | EvenAltitudeRule | OddAltitudeRule | RouteTokenRule
 
 
 @dataclass(frozen=True, slots=True)
