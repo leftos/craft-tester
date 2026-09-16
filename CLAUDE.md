@@ -50,10 +50,13 @@ checked directly instead of drawing until the RNG lands on it; it is never shown
 
 ## References cached outside git
 
-`docs/refs/` is gitignored and holds FAA JO 7110.65 for paragraph lookups: the current full-order PDF
-(`7110.65BB` with changes 1–3, effective 2026-07-09) and a pypdf text dump next to it with a
-`===== page N =====` marker per page, so `rg -n "4-3-2" docs/refs/7110.65BB.txt` finds a paragraph.
-Fetch it once per machine:
+`docs/refs/` is gitignored and holds FAA JO 7110.65 for paragraph lookups. Read it from
+`docs/refs/7110.65/`: one markdown file per section (`chap04_sec03.md` is 4-3, Departure Procedures)
+with `INDEX.md` listing every paragraph title, converted from the FAA's HTML version and shared with
+`X:\dev\yaat\.claude\reference\faa\7110.65\` (copy that directory to refresh it). Never web-search a
+7110.65 paragraph; `rg -n "4-3-2" docs/refs/7110.65/` finds it. Next to it sit the dated full-order PDF
+(`7110.65BB.pdf`, Basic with changes 1–3, effective 2026-07-09) and its pypdf text dump for a
+page-numbered citation. Fetch those once per machine:
 
 ```powershell
 Invoke-WebRequest -Uri 'https://www.faa.gov/documentLibrary/media/Order/7110.65BB_Bsc_w_Chg_1_2_and_3_dtd_7-9-26_Final.pdf' -OutFile docs\refs\7110.65BB.pdf
