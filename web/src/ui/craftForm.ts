@@ -109,8 +109,13 @@ function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGrou
   };
 }
 
-/** The expect clause, which the filed altitude fills in once the delay is picked. */
-function expectGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
+/**
+ * The expect clause, which the altitude on the strip fills in once the delay is picked.
+ *
+ * `amended` says whether that altitude is the amended one rather than the filed one, which is what
+ * the choices are named after.
+ */
+function expectGroup(options: ClearanceOptions, picks: DraftPicks, amended: boolean): PickedGroup {
   return {
     kind: 'picked',
     element: 'A.expect',
@@ -120,7 +125,7 @@ function expectGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup 
         label: 'expect clause',
         options: options.expect.map((choice) => ({
           value: choice,
-          label: expectChoiceLabel(choice),
+          label: expectChoiceLabel(choice, amended),
         })),
         value: picks.expect,
         disabled: false,
@@ -219,7 +224,7 @@ export function craftGroups(
     procedureRow(clearance, airport),
     routeGroup(options, picks),
     altitudeGroup(options, picks),
-    expectGroup(options, picks),
+    expectGroup(options, picks, clearance.expect.value?.amended ?? false),
     frequencyGroup(options, airport, picks),
     { kind: 'given', heading: 'T — transponder', value: scenario.squawk },
     runwayGroup(options, picks),

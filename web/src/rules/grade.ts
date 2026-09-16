@@ -58,21 +58,26 @@ export function altitudeLabel(altitude: ResolvedClearance['altitude']['value']):
   return phrase === 'maintain' ? `maintain${suffix}` : `climb via SID except maintain${suffix}`;
 }
 
-/** Renders an expect clause by its delay, or names its absence. */
-function expectLabel(minutes: number | null): string {
-  return minutes === null
-    ? 'no expect altitude'
-    : `expect filed altitude ${minutes} minutes after departure`;
+/**
+ * Renders an expect clause by its delay, or names its absence.
+ *
+ * The clause names the filed altitude on an ordinary clearance and the amended one where the
+ * controller amended the altitude box, so the label follows the scenario rather than the pick.
+ */
+function expectLabel(minutes: number | null, amended: boolean): string {
+  if (minutes === null) return 'no expect altitude';
+  return `expect ${amended ? 'amended' : 'filed'} altitude ${minutes} minutes after departure`;
 }
 
 /**
  * Renders an expect-clause choice the way the form and the results view name it.
  *
  * @param choice The expect clause the player picked, or `none` for no expect clause at all.
+ * @param amended Whether the altitude the flight filed was amended, which the clause names instead.
  * @returns The label, e.g. `expect filed altitude 10 minutes after departure`.
  */
-export function expectChoiceLabel(choice: PlayerPicks['expect']): string {
-  return expectLabel(EXPECT_MINUTES[choice]);
+export function expectChoiceLabel(choice: PlayerPicks['expect'], amended: boolean): string {
+  return expectLabel(EXPECT_MINUTES[choice], amended);
 }
 
 /**
@@ -94,12 +99,14 @@ function altitudeOk(picks: PlayerPicks, altitude: ResolvedClearance['altitude'][
 /** Grades the expect clause on its delay alone; the altitude in it is the filed one, not a pick. */
 function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   const picked = EXPECT_MINUTES[picks.expect];
-  const wanted = expected.expect.value === null ? null : expected.expect.value.minutes;
+  const clause = expected.expect.value;
+  const wanted = clause === null ? null : clause.minutes;
+  const amended = clause?.amended ?? false;
   return {
     element: 'A.expect',
     ok: picked === wanted,
-    expectedLabel: expectLabel(wanted),
-    actualLabel: expectLabel(picked),
+    expectedLabel: expectLabel(wanted, amended),
+    actualLabel: expectLabel(picked, amended),
     citations: expected.expect.citations,
   };
 }

@@ -205,7 +205,7 @@ describe('the expect clause', () => {
 
   it('is spoken under always while the filed altitude is above the altitude cleared to', () => {
     const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), withExpectAltitude('always'));
-    expect(result.expect.value).toEqual({ feet: 34000, minutes: 10 });
+    expect(result.expect.value).toEqual({ feet: 34000, minutes: 10, amended: false });
     expect(result.expect.citations.map((citation) => citation.id)).toEqual(['A-EXPECT']);
   });
 
@@ -233,6 +233,7 @@ describe('the expect clause', () => {
     expect(resolve(ctx({}), sid('SEGUL1'), scenario({}), airport).expect.value).toEqual({
       feet: 34000,
       minutes: 10,
+      amended: false,
     });
   });
 
@@ -243,13 +244,13 @@ describe('the expect clause', () => {
     };
     const result = resolve(ctx({}), sid('GAPP7'), scenario({}), airport);
     expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
-    expect(result.expect.value).toEqual({ feet: 34000, minutes: 10 });
+    expect(result.expect.value).toEqual({ feet: 34000, minutes: 10, amended: false });
   });
 
   it('speaks the clause when the chart publishes no expect note', () => {
     const airport = withExpectAltitude('unless_chart_publishes_it');
     const result = resolve(ctx({}), withoutChartNote('TRUKN2'), scenario({}), airport);
-    expect(result.expect.value).toEqual({ feet: 34000, minutes: 10 });
+    expect(result.expect.value).toEqual({ feet: 34000, minutes: 10, amended: false });
   });
 
   it('drops the clause when the chart publishes the note', () => {

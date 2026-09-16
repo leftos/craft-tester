@@ -282,7 +282,7 @@ describe('speakClearance', () => {
       input({
         clearance: clearance({
           altitude: { phrase: 'climb_via_except', feet: 10000 },
-          expect: { feet: 32000, minutes: 10 },
+          expect: { feet: 32000, minutes: 10, amended: false },
         }),
       }),
     );
@@ -295,10 +295,19 @@ describe('speakClearance', () => {
 
   it('speaks a non-standard three minute expect below the flight levels', () => {
     const spoken = speakClearance(
-      input({ clearance: clearance({ expect: { feet: 17000, minutes: 3 } }) }),
+      input({ clearance: clearance({ expect: { feet: 17000, minutes: 3, amended: false } }) }),
     );
     expect(spoken.abbreviated).toContain(
       'Expect one seven thousand three minutes after departure.',
+    );
+  });
+
+  it('speaks an amended expect clause as the amended altitude', () => {
+    const spoken = speakClearance(
+      input({ clearance: clearance({ expect: { feet: 27000, minutes: 10, amended: true } }) }),
+    );
+    expect(spoken.abbreviated).toContain(
+      'Expect amended flight level two seven zero one zero minutes after departure.',
     );
   });
 

@@ -44,7 +44,11 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
 
 ## Steps (briefs; A in the gen worktree, B–D sequential after it)
 
-- [ ] A. Engine follow-ups: `alternativeTo` on the RNAV pair, duplicate type proposals collapsed
+- [x] A. (landed 2026-09-15; `parseAltitude` reads three digits as hundreds and four or five as
+  feet, anything else is not an altitude; in a pair with one box fixed, any amendment to the other
+  box is a miss, labelled "correct as filed (the other box already fixes this)"; `gradeBoxes` takes
+  the last amendment raised for a box, which is the one `corrected` applied; `toExpectedAmendments`
+  keeps `alternativeTo`) Engine follow-ups: `alternativeTo` on the RNAV pair, duplicate type proposals collapsed
   (reasons joined), `resolveAmendedClearance`, `expect.amended` in the clearance and fixture shapes,
   `A-EXPECT-AMENDED` row, `speak.ts` rendering, `gradeBoxes(answers, result)` in `amend/grade.ts`
   with the either/or rule and the normalisers. Proving: `pnpm -C web test amend` plus the generator

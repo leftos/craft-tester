@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { grade } from '@/rules/grade.ts';
+import { expectChoiceLabel, grade } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance, RuleCitation } from '@/rules/types.ts';
 
 const assignmentCitation: RuleCitation = {
@@ -32,7 +32,7 @@ const expected: ResolvedClearance = {
     value: { phrase: 'climb_via_except', feet: 10000 },
     citations: [altitudeCitation],
   },
-  expect: { value: { feet: 35000, minutes: 10 }, citations: [altitudeCitation] },
+  expect: { value: { feet: 35000, minutes: 10, amended: false }, citations: [altitudeCitation] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [assignmentCitation] },
 };
 
@@ -172,6 +172,17 @@ describe('grade', () => {
     expect(clause?.actualLabel).toBe('no expect altitude');
   });
 
+  it('names the amended altitude in both labels where the altitude box was amended', () => {
+    const amended: ResolvedClearance = {
+      ...expected,
+      expect: { value: { feet: 27000, minutes: 10, amended: true }, citations: [] },
+    };
+    const [, , clause] = grade({ ...correct, expect: 'three_minutes' }, amended);
+    expect(clause?.ok).toBe(false);
+    expect(clause?.expectedLabel).toBe('expect amended altitude 10 minutes after departure');
+    expect(clause?.actualLabel).toBe('expect amended altitude 3 minutes after departure');
+  });
+
   it('labels every element the way the results view reads them', () => {
     const wrong: PlayerPicks = {
       ...correct,
@@ -205,5 +216,17 @@ describe('grade', () => {
       [assignmentCitation],
       [runwayCitation],
     ]);
+  });
+});
+
+describe('expectChoiceLabel', () => {
+  it('names the filed altitude on a clearance and the amended one after an amendment', () => {
+    expect(expectChoiceLabel('ten_minutes', false)).toBe(
+      'expect filed altitude 10 minutes after departure',
+    );
+    expect(expectChoiceLabel('ten_minutes', true)).toBe(
+      'expect amended altitude 10 minutes after departure',
+    );
+    expect(expectChoiceLabel('none', true)).toBe('no expect altitude');
   });
 });

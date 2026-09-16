@@ -340,7 +340,8 @@ function expectSentence(clearance: ResolvedClearance): string {
   const expect = clearance.expect.value;
   if (expect === null) return '';
   const minutes = speakDigits(String(expect.minutes));
-  return `expect ${speakAltitude(expect.feet)} ${minutes} minutes after departure`;
+  const opening = expect.amended ? 'expect amended' : 'expect';
+  return `${opening} ${speakAltitude(expect.feet)} ${minutes} minutes after departure`;
 }
 
 function radioSentence(input: SpeakClearanceInput): string {

@@ -3,7 +3,7 @@ import { citeSuffix } from '@/rules/amend/cite.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { isSidToken } from '@/rules/route.ts';
-import type { ResolvedClearance, Unresolved } from '@/rules/types.ts';
+import type { ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** The table of equipment suffixes as a reason names it. */
@@ -11,6 +11,9 @@ const SUFFIX_TABLE = 'FAA JO 7110.65 Table 5-4-1';
 
 /** A suffix the fleet files for the type, together with the table row that describes it. */
 type ProposedSuffix = { suffix: string; row: EquipmentSuffix };
+
+/** An amendment for the type box, which is the only box this check raises one for. */
+type TypeAmendment = Extract<ResolvedAmendment, { box: 'type' }>;
 
 /** The first suffix the fleet files for the type that the equipment table also holds. */
 function fleetSuffix(
@@ -44,7 +47,7 @@ function suffixAmendment(
   scenario: Scenario,
   airport: AirportData,
   fleet: FleetEntry | undefined,
-): ResolvedAmendment | Unresolved | undefined {
+): TypeAmendment | Unresolved | undefined {
   const filed = scenario.equipmentSuffix;
   if (filed !== null && airport.equipmentSuffixes.some((row) => row.suffix === filed)) {
     return undefined;
@@ -100,7 +103,7 @@ function rnavAmendment(
   clearance: ResolvedClearance,
   airport: AirportData,
   fleet: FleetEntry | undefined,
-): ResolvedAmendment | undefined {
+): TypeAmendment | undefined {
   if (ctx.rnavCapable || fleet === undefined) return undefined;
   const sid = filedSid(scenario, airport);
   if (sid === undefined || !sid.rnavRequired) return undefined;
@@ -110,7 +113,37 @@ function rnavAmendment(
     box: 'type',
     proposed: typeBox(scenario, proposed.suffix),
     reason: `an RNAV suffix would keep the filed ${sid.id}, which the route check otherwise replaces with ${clearance.sid.value.id}`,
+    alternativeTo: 'route',
     citations: [citeSuffix(proposed.row)],
+  };
+}
+
+/** The citations of both proposals, the first occurrence of each id kept in order. */
+function dedupe(citations: RuleCitation[]): RuleCitation[] {
+  const seen = new Set<string>();
+  return citations.filter((citation) => {
+    if (seen.has(citation.id)) return false;
+    seen.add(citation.id);
+    return true;
+  });
+}
+
+/**
+ * The two proposals as the one amendment they are, for a plan whose suffix gap and RNAV clash have
+ * the same answer.
+ *
+ * Both reasons are kept, because the box is wrong in both ways at once, and the merged amendment is
+ * still the RNAV alternative: amending the route box instead is a full answer.
+ *
+ * @param suffix The amendment the filed suffix raised.
+ * @param rnav The amendment the RNAV clash raised, which proposes the same type box.
+ * @returns The single amendment for the type box.
+ */
+function merge(suffix: TypeAmendment, rnav: TypeAmendment): TypeAmendment {
+  return {
+    ...rnav,
+    reason: `${suffix.reason}; ${rnav.reason}`,
+    citations: dedupe([...suffix.citations, ...rnav.citations]),
   };
 }
 
@@ -120,7 +153,10 @@ function rnavAmendment(
  * A plan filed with no suffix, or with one the equipment table does not hold, is amended to the
  * suffix the fleet files for the type. A non-RNAV flight that files an RNAV procedure raises a
  * second amendment, because raising the suffix and amending the route are both ways to make the
- * plan fly and the data does not settle which the controller meant.
+ * plan fly and the data does not settle which the controller meant; that one is marked as the
+ * alternative to the route box. Where both proposals write the same type box — the usual case, a
+ * fleet that files one suffix and that suffix being an RNAV one — they are reported as the one
+ * amendment they are, carrying both reasons.
  *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight.
@@ -139,5 +175,8 @@ export function checkType(
   const suffix = suffixAmendment(scenario, airport, fleet);
   if (suffix !== undefined && isUnresolved(suffix)) return suffix;
   const rnav = rnavAmendment(scenario, ctx, clearance, airport, fleet);
+  if (suffix !== undefined && rnav !== undefined && suffix.proposed === rnav.proposed) {
+    return [merge(suffix, rnav)];
+  }
   return [suffix, rnav].filter((amendment) => amendment !== undefined);
 }

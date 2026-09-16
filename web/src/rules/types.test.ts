@@ -18,7 +18,7 @@ const resolved: ResolvedClearance = {
   },
   route: { value: { template: 'transition', fix: 'DEDHD' }, citations: [citation] },
   altitude: { value: { phrase: 'climb_via_except', feet: 10000 }, citations: [citation] },
-  expect: { value: { feet: 35000, minutes: 10 }, citations: [citation] },
+  expect: { value: { feet: 35000, minutes: 10, amended: false }, citations: [citation] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [citation] },
 };
 

@@ -1,0 +1,229 @@
+import { describe, expect, it } from 'vitest';
+import type { Scenario } from '@/data/schema.ts';
+import type { BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
+import { gradeBoxes, normaliseRoute, normaliseType, parseAltitude } from '@/rules/amend/grade.ts';
+import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
+import type { RuleCitation } from '@/rules/types.ts';
+
+const citation: RuleCitation = {
+  id: 'EQUIP/L',
+  source: 'FAA JO 7110.65 TBL 5-4-1',
+  text: 'RNAV and RVSM',
+};
+
+/** The corrected plan the result carries, which grading never reads. */
+const CORRECTED: Scenario = {
+  callsign: 'UAL313',
+  aircraftType: 'B752',
+  equipmentSuffix: '/L',
+  destination: 'KSLC',
+  filedRoute: 'SFO5 MOGEE BVL',
+  filedAltitude: 27000,
+  runwayConfigId: '28 RT',
+  departureRunway: '28L',
+  localTime: '1400',
+  dayOfWeek: 'tuesday',
+  squawk: '4614',
+};
+
+const TYPE: ResolvedAmendment = {
+  box: 'type',
+  proposed: 'B752/L',
+  reason: 'suffix /Q is not in the table',
+  citations: [citation],
+};
+
+const ALTITUDE: ResolvedAmendment = {
+  box: 'altitude',
+  proposedFeet: 27000,
+  reason: 'FL330 is inside RVSM airspace',
+  citations: [citation],
+};
+
+const ROUTE: ResolvedAmendment = {
+  box: 'route',
+  proposed: 'SFO5 MOGEE BVL',
+  reason: 'TRUKN2 is not the procedure the SOP assigns',
+  citations: [citation],
+};
+
+/** The RNAV pair: the type box and the route box are two ways to fix the same clash. */
+const PAIRED_TYPE: ResolvedAmendment = { ...TYPE, alternativeTo: 'route' };
+const PAIRED_ROUTE: ResolvedAmendment = { ...ROUTE, alternativeTo: 'type' };
+
+const AS_FILED: BoxAnswer = { kind: 'as_filed' };
+
+function wrote(value: string): BoxAnswer {
+  return { kind: 'amended', value };
+}
+
+function answers(overrides: Partial<BoxAnswers> = {}): BoxAnswers {
+  return { type: AS_FILED, altitude: AS_FILED, route: AS_FILED, ...overrides };
+}
+
+function result(...amendments: ResolvedAmendment[]): Extract<AmendmentResult, { ok: true }> {
+  return { ok: true, amendments, corrected: CORRECTED };
+}
+
+const cases: {
+  name: string;
+  answers: BoxAnswers;
+  result: Extract<AmendmentResult, { ok: true }>;
+  ok: boolean[];
+}[] = [
+  {
+    name: 'a plan that needs no amendment, answered as filed everywhere',
+    answers: answers(),
+    result: result(),
+    ok: [true, true, true],
+  },
+  {
+    name: 'amending a box that was already correct as filed',
+    answers: answers({ type: wrote('B752/L') }),
+    result: result(),
+    ok: [false, true, true],
+  },
+  {
+    name: 'every amended box written the way the engine proposes it',
+    answers: answers({
+      type: wrote('B752/L'),
+      altitude: wrote('27000'),
+      route: wrote('SFO5 MOGEE BVL'),
+    }),
+    result: result(TYPE, ALTITUDE, ROUTE),
+    ok: [true, true, true],
+  },
+  {
+    name: 'an amended box left as filed',
+    answers: answers(),
+    result: result(TYPE, ALTITUDE, ROUTE),
+    ok: [false, false, false],
+  },
+  {
+    name: 'an amended box written with the wrong value',
+    answers: answers({ altitude: wrote('FL290') }),
+    result: result(ALTITUDE),
+    ok: [true, false, true],
+  },
+  {
+    name: 'an altitude written as a flight level, a type spaced out, a route cased and spaced',
+    answers: answers({
+      type: wrote('b752 /L'),
+      altitude: wrote('FL270'),
+      route: wrote('sfo5  mogee   bvl'),
+    }),
+    result: result(TYPE, ALTITUDE, ROUTE),
+    ok: [true, true, true],
+  },
+  {
+    name: 'an alternative pair fixed on the type box alone',
+    answers: answers({ type: wrote('B752/L') }),
+    result: result(PAIRED_TYPE, PAIRED_ROUTE),
+    ok: [true, true, true],
+  },
+  {
+    name: 'an alternative pair fixed on the route box alone',
+    answers: answers({ route: wrote('SFO5 MOGEE BVL') }),
+    result: result(PAIRED_TYPE, PAIRED_ROUTE),
+    ok: [true, true, true],
+  },
+  {
+    name: 'an alternative pair fixed on both boxes, which is a miss on the second',
+    answers: answers({ type: wrote('B752/L'), route: wrote('SFO5 MOGEE BVL') }),
+    result: result(PAIRED_TYPE, PAIRED_ROUTE),
+    ok: [true, true, false],
+  },
+  {
+    name: 'an alternative pair fixed on neither box',
+    answers: answers(),
+    result: result(PAIRED_TYPE, PAIRED_ROUTE),
+    ok: [false, true, false],
+  },
+  {
+    name: 'an alternative pair fixed on the type box with the route box amended wrongly',
+    answers: answers({ type: wrote('B752/L'), route: wrote('TRUKN2 MOGEE BVL') }),
+    result: result(PAIRED_TYPE, PAIRED_ROUTE),
+    ok: [true, true, false],
+  },
+];
+
+describe('gradeBoxes', () => {
+  for (const testCase of cases) {
+    it(`grades ${testCase.name}`, () => {
+      const grades = gradeBoxes(testCase.answers, testCase.result);
+      expect(grades.map((grade) => grade.box)).toEqual(['type', 'altitude', 'route']);
+      expect(grades.map((grade) => grade.ok)).toEqual(testCase.ok);
+    });
+  }
+
+  it('labels a box that needed no amendment as correct as filed', () => {
+    const [type] = gradeBoxes(answers(), result());
+    expect(type?.expectedLabel).toBe('correct as filed');
+    expect(type?.actualLabel).toBe('correct as filed');
+    expect(type?.citations).toEqual([]);
+  });
+
+  it('labels an amended box with the proposal as the strip writes it', () => {
+    const grades = gradeBoxes(
+      answers({ type: wrote('B752/Q'), altitude: wrote('FL290') }),
+      result(TYPE, ALTITUDE, ROUTE),
+    );
+    expect(grades.map((grade) => grade.expectedLabel)).toEqual([
+      'B752/L',
+      '27,000',
+      'SFO5 MOGEE BVL',
+    ]);
+    expect(grades.map((grade) => grade.actualLabel)).toEqual([
+      'B752/Q',
+      'FL290',
+      'correct as filed',
+    ]);
+    expect(grades.map((grade) => grade.citations)).toEqual([[citation], [citation], [citation]]);
+  });
+
+  it('labels the second box of a pair with the box that already fixes it', () => {
+    const grades = gradeBoxes(
+      answers({ type: wrote('B752/L'), route: wrote('SFO5 MOGEE BVL') }),
+      result(PAIRED_TYPE, PAIRED_ROUTE),
+    );
+    expect(grades[0]?.expectedLabel).toBe('B752/L');
+    expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+    expect(grades[2]?.citations).toEqual([citation]);
+  });
+
+  it('labels both boxes of a pair with their proposals while neither carries the fix', () => {
+    const grades = gradeBoxes(answers(), result(PAIRED_TYPE, PAIRED_ROUTE));
+    expect(grades[0]?.expectedLabel).toBe('B752/L');
+    expect(grades[2]?.expectedLabel).toBe('SFO5 MOGEE BVL');
+  });
+});
+
+describe('the normalisers', () => {
+  it('compares a route as its tokens', () => {
+    expect(normaliseRoute('  trukn2   dedhd rbl ')).toBe('TRUKN2 DEDHD RBL');
+    expect(normaliseRoute('')).toBe('');
+  });
+
+  it('compares a type with its whitespace taken out', () => {
+    expect(normaliseType(' b752 / l ')).toBe('B752/L');
+  });
+
+  it('reads every form an altitude is written in', () => {
+    expect(parseAltitude('32000')).toBe(32000);
+    expect(parseAltitude('32,000')).toBe(32000);
+    expect(parseAltitude('FL320')).toBe(32000);
+    expect(parseAltitude('fl 320')).toBe(32000);
+    expect(parseAltitude('320')).toBe(32000);
+    expect(parseAltitude('3000')).toBe(3000);
+  });
+
+  it('reads nothing else as an altitude', () => {
+    expect(parseAltitude('')).toBeUndefined();
+    expect(parseAltitude('90')).toBeUndefined();
+    expect(parseAltitude('FL32')).toBeUndefined();
+    expect(parseAltitude('FL3200')).toBeUndefined();
+    expect(parseAltitude('320000')).toBeUndefined();
+    expect(parseAltitude('one zero thousand')).toBeUndefined();
+    expect(parseAltitude('32000 ft')).toBeUndefined();
+  });
+});

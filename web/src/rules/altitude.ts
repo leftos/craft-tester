@@ -14,7 +14,7 @@ import { unresolved } from '@/rules/unresolved.ts';
 /** The altitude element of a clearance and the expect clause that follows it. */
 export type ResolvedAltitude = {
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
-  expect: Cited<{ feet: number; minutes: number } | null>;
+  expect: Cited<{ feet: number; minutes: number; amended: boolean } | null>;
 };
 
 /** The altitude phrase and, where one is spoken, the feet it carries. */
@@ -105,7 +105,8 @@ function clearedToFeet(altitude: AltitudeValue, sid: Sid): number | undefined {
  * @param sid The selected SID.
  * @param scenario The filed flight plan.
  * @param phraseology The airport's phraseology toggles.
- * @returns The expect clause, or null where none is spoken.
+ * @returns The expect clause, or null where none is spoken. The clause names the filed altitude, so
+ *   it is never the amended one; `resolveAmendedClearance` writes that clause instead.
  */
 function expectClause(
   row: AltitudeRule,
@@ -113,7 +114,7 @@ function expectClause(
   sid: Sid,
   scenario: Scenario,
   phraseology: Phraseology,
-): { feet: number; minutes: number } | null {
+): { feet: number; minutes: number; amended: boolean } | null {
   if (phraseology.expectAltitude === 'never') return null;
   if (
     phraseology.expectAltitude === 'unless_chart_publishes_it' &&
@@ -123,7 +124,7 @@ function expectClause(
   }
   const clearedTo = clearedToFeet(altitude, sid);
   if (clearedTo !== undefined && clearedTo >= scenario.filedAltitude) return null;
-  return { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes };
+  return { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes, amended: false };
 }
 
 /**

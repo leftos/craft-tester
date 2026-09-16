@@ -19,6 +19,8 @@ export type Cited<T> = {
  * `runway` is the scenario's departure runway together with the configuration row and the mechanism
  * row that settled it. `sid.value.spoken` is the chart's spoken name ("Trukn Two");
  * `sid.value.family` is what grading compares, because AIRAC cycles bump the version in `id`.
+ * `expect.value.amended` marks the clause the controller speaks after amending the final altitude,
+ * which names the amended altitude rather than the filed one.
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
@@ -26,7 +28,7 @@ export type ResolvedClearance = {
   sid: Cited<{ id: string; family: string; spoken: string }>;
   route: Cited<{ template: RouteTemplate; fix?: string }>;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
-  expect: Cited<{ feet: number; minutes: number } | null>;
+  expect: Cited<{ feet: number; minutes: number; amended: boolean } | null>;
   frequency: Cited<{ value: string; sectorId: string }>;
 };
 
@@ -82,11 +84,20 @@ export type Grade = {
   citations: RuleCitation[];
 };
 
+/** The expect clause as a fixture stores it, which carries `amended` only where it is set. */
+function expectedExpect(
+  expect: NonNullable<ResolvedClearance['expect']['value']>,
+): NonNullable<ExpectedClearance['expect']> {
+  const stored = { feet: expect.feet, minutes: expect.minutes };
+  return expect.amended ? { ...stored, amended: true } : stored;
+}
+
 /**
  * Flattens a resolved clearance into the fixture schema's `ExpectedClearance` shape.
  *
  * Drops the citations and keeps the SID family rather than its versioned id, so a fixture runner
- * can compare an engine result with a checked-in expectation by deep equality.
+ * can compare an engine result with a checked-in expectation by deep equality. An expect clause
+ * writes `amended` only where it is set, which leaves an ordinary clause the shape it always had.
  *
  * @param resolved The clearance the engine resolved.
  * @returns The same clearance in the shape a fixture stores.
@@ -106,7 +117,7 @@ export function toExpectedClearance(resolved: ResolvedClearance): ExpectedCleara
       altitude.feet === undefined
         ? { phrase: altitude.phrase }
         : { phrase: altitude.phrase, feet: altitude.feet },
-    expect: expect === null ? null : { feet: expect.feet, minutes: expect.minutes },
+    expect: expect === null ? null : expectedExpect(expect),
     frequency: resolved.frequency.value.value,
   };
 }

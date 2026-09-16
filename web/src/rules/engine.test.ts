@@ -337,6 +337,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearanceFor(scenario({}), airport).expect.value).toEqual({
       feet: scenario({}).filedAltitude,
       minutes: 10,
+      amended: false,
     });
   });
 

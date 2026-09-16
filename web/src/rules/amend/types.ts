@@ -24,13 +24,8 @@ export type AmendmentResult =
 
 /** One amendment in the shape a fixture stores, which is the resolved one without its citations. */
 function toAmendment(resolved: ResolvedAmendment): Amendment {
-  if (resolved.box === 'altitude') {
-    return { box: 'altitude', proposedFeet: resolved.proposedFeet, reason: resolved.reason };
-  }
-  if (resolved.box === 'route') {
-    return { box: 'route', proposed: resolved.proposed, reason: resolved.reason };
-  }
-  return { box: 'type', proposed: resolved.proposed, reason: resolved.reason };
+  const { citations: _citations, ...amendment } = resolved;
+  return amendment;
 }
 
 /**

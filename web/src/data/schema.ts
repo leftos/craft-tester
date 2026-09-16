@@ -515,6 +515,11 @@ export const ExpectedClearanceSchema = z.strictObject({
     .strictObject({
       feet,
       minutes: z.number().int().positive(),
+      /**
+       * Set on the clause the controller speaks after amending the final altitude, which names the
+       * amended altitude rather than the filed one; absent on an ordinary expect clause.
+       */
+      amended: z.boolean().optional(),
     })
     .nullable(),
   frequency: z.string(),
@@ -529,12 +534,22 @@ export const AmendmentSchema = z.discriminatedUnion('box', [
     proposed: z.string(),
     /** One sentence for the player, saying why the box is wrong. */
     reason: z.string(),
+    /**
+     * The other box this amendment pairs with: the two are two ways to fix the same fault, and
+     * either alone is a full answer.
+     */
+    alternativeTo: z.enum(['type', 'altitude', 'route']).optional(),
   }),
   z.strictObject({
     box: z.literal('altitude'),
     proposedFeet: feet,
     /** One sentence for the player, saying why the box is wrong. */
     reason: z.string(),
+    /**
+     * The other box this amendment pairs with: the two are two ways to fix the same fault, and
+     * either alone is a full answer.
+     */
+    alternativeTo: z.enum(['type', 'altitude', 'route']).optional(),
   }),
   z.strictObject({
     box: z.literal('type'),
@@ -542,6 +557,11 @@ export const AmendmentSchema = z.discriminatedUnion('box', [
     proposed: z.string(),
     /** One sentence for the player, saying why the box is wrong. */
     reason: z.string(),
+    /**
+     * The other box this amendment pairs with: the two are two ways to fix the same fault, and
+     * either alone is a full answer.
+     */
+    alternativeTo: z.enum(['type', 'altitude', 'route']).optional(),
   }),
 ]);
 

@@ -1082,6 +1082,11 @@
       "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note; three minutes when a non-standard interim altitude is issued (SFO ATCT SOP 2-2 c iv)"
     },
     {
+      "id": "A-EXPECT-AMENDED",
+      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 4-3-2 c 3",
+      "text": "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one"
+    },
+    {
       "id": "C-DEST",
       "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
       "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
