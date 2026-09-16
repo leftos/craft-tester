@@ -318,6 +318,9 @@
               },
               "rnav": {
                 "type": "boolean"
+              },
+              "tecRouteWithoutDp": {
+                "type": "boolean"
               }
             },
             "type": "object"

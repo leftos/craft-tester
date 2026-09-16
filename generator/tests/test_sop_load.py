@@ -130,6 +130,24 @@ def test_assignment_rules_carry_their_conditions(ksfo_inputs: AirportInputs) -> 
     assert rule_by_id(ksfo_inputs, "SFOW-N-SNTNA-28").when.not_configs == ("28 RT",)
     assert rule_by_id(ksfo_inputs, "SFOW-S-SEGUL").when.exit_fixes == ("YYUNG",)
     assert rule_by_id(ksfo_inputs, "SFOW-S-GAPP").when is None
+    assert first.when.tec_route_without_dp is None
+
+
+def test_tec_route_without_dp_loads_as_a_flag(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["assignment_rules"][0]["when"]["tec_route_without_dp"] = True
+
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+    assert sop.assignment_rules[0].when is not None
+    assert sop.assignment_rules[0].when.tec_route_without_dp is True
+
+
+def test_non_boolean_tec_route_without_dp_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["assignment_rules"][0]["when"]["tec_route_without_dp"] = "yes"
+
+    with pytest.raises(ValueError, match=r"tec_route_without_dp"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
 def test_non_dp_rule_has_no_sid_family(ksfo_inputs: AirportInputs) -> None:

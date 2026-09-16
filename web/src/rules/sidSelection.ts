@@ -9,6 +9,7 @@ import type {
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { addresses } from '@/rules/classify.ts';
+import { keyedTecRoute, tecHead } from '@/rules/tecRoutes.ts';
 import type { SelectedProcedure, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
@@ -23,16 +24,38 @@ export type SidSelection = {
   notices: Notice[];
 };
 
+/** The filed plan with the airport data it is read against, passed to the row tests as one. */
+type Flight = {
+  scenario: Scenario;
+  airport: AirportData;
+};
+
+/**
+ * Whether the flight's TEC route is one that carries no departure procedure.
+ *
+ * The row that keys the flight is the route it would be issued, and a row that begins on anything
+ * but a departure family — an initial heading, a fix, an airway — is one no procedure fits, which
+ * SOP 2-1 c makes the case for clearing the flight on a heading. A flight with no TEC route at all
+ * is not such a case.
+ */
+function tecRouteWithoutDp(ctx: Classification, flight: Flight): boolean {
+  const row = keyedTecRoute(ctx, flight.scenario, flight.airport);
+  return row !== undefined && tecHead(row).kind !== 'family';
+}
+
 /**
  * Whether every extra condition of a row holds for this flight.
  *
  * `exitFixes` is matched against the element the flight leaves on, so a row that lists fixes never
- * applies to a route that joins an airway straight off the SID.
+ * applies to a route that joins an airway straight off the SID. `tecRouteWithoutDp` is read against
+ * the TEC route the flight would be issued, and is the only condition that looks outside the
+ * classified flight, so the row tests carry the filed plan and the airport data with them.
  */
 function conditionsHold(
   when: AssignmentCondition,
   ctx: Classification,
   exitElement: string,
+  flight: Flight,
 ): boolean {
   return [
     when.configs === undefined || when.configs.includes(ctx.config.id),
@@ -40,6 +63,8 @@ function conditionsHold(
     when.noiseWindow === undefined || ctx.activeNoiseWindows.includes(when.noiseWindow),
     when.rnav === undefined || when.rnav === ctx.rnavCapable,
     when.exitFixes === undefined || when.exitFixes.includes(exitElement),
+    when.tecRouteWithoutDp === undefined ||
+      when.tecRouteWithoutDp === tecRouteWithoutDp(ctx, flight),
   ].every(Boolean);
 }
 
@@ -54,13 +79,13 @@ function rowApplies(
   ctx: Classification,
   exitElement: string,
   direction: Direction | undefined,
-  airport: AirportData,
+  flight: Flight,
 ): boolean {
   if (row.plan !== ctx.plan) return false;
   if (row.direction !== 'any' && row.direction !== direction) return false;
   if (!row.runwayFamilies.includes(ctx.runwayFamily)) return false;
-  if (!addresses(row, ctx, airport)) return false;
-  return row.when === undefined || conditionsHold(row.when, ctx, exitElement);
+  if (!addresses(row, ctx, flight.airport)) return false;
+  return row.when === undefined || conditionsHold(row.when, ctx, exitElement, flight);
 }
 
 /** The active notice, if any, that takes a row's SID family out of use. */
@@ -154,11 +179,43 @@ function headingProcedure(
 }
 
 /**
+ * The gap where a row written for a TEC route without a DP names another heading than the route.
+ *
+ * The SOP row and the route tool's row are one fact transcribed twice: the SOP names the heading
+ * the flight is cleared on, and the route it is issued begins on that same heading. Where the two
+ * disagree one of them is mistranscribed, and there is no answer to give until the data is fixed.
+ *
+ * @param row The assignment row selected for the flight.
+ * @param ctx The classified flight.
+ * @param flight The filed plan and the airport data.
+ * @returns `Unresolved` naming both rows, or `undefined` where they agree or the row names no
+ *   numbered heading of its own.
+ */
+function tecHeadConflict(
+  row: AssignmentRule,
+  ctx: Classification,
+  flight: Flight,
+): Unresolved | undefined {
+  if (row.when?.tecRouteWithoutDp !== true || typeof row.nonDpHeading !== 'number')
+    return undefined;
+  const tec = keyedTecRoute(ctx, flight.scenario, flight.airport);
+  if (tec === undefined) return undefined;
+  const head = tecHead(tec);
+  if (head.kind !== 'heading' || head.heading === row.nonDpHeading) return undefined;
+  return unresolved(
+    'R.sid',
+    `${row.id} clears the flight on heading ${row.nonDpHeading} but its TEC route ${tec.id} begins on heading ${head.heading}`,
+  );
+}
+
+/**
  * Walks the assignment table in order and takes the first row whose SID the flight can fly.
  *
  * A row whose SID family an active notice has taken out of use is skipped, and the notice travels
  * with the selection so the clearance can cite it. A row that assigns no SID family clears the
- * flight on the heading it names instead, which the engine issues in place of a procedure.
+ * flight on the heading it names instead, which the engine issues in place of a procedure; where
+ * that row is written for a flight whose TEC route carries no departure procedure, the heading it
+ * names and the one that route begins on must agree.
  *
  * @param ctx The classified flight.
  * @param exitElement The fix, or the airway, the flight leaves the terminal on.
@@ -176,14 +233,17 @@ export function selectSid(
 ): SidSelection | Unresolved {
   const incompatible: string[] = [];
   const notices: Notice[] = [];
+  const flight: Flight = { scenario, airport };
   for (const row of airport.assignmentRules) {
-    if (!rowApplies(row, ctx, exitElement, direction, airport)) continue;
+    if (!rowApplies(row, ctx, exitElement, direction, flight)) continue;
     const notice = sidOffNotice(row.sidFamily, ctx, airport);
     if (notice !== undefined) {
       notices.push(notice);
       continue;
     }
     if (row.sidFamily === null) {
+      const conflict = tecHeadConflict(row, ctx, flight);
+      if (conflict !== undefined) return conflict;
       const procedure = headingProcedure(row, scenario, airport);
       if (isUnresolved(procedure)) return procedure;
       return { procedure, row, sector: row.sector, notices };
@@ -232,8 +292,9 @@ export function unservedSids(
   airport: AirportData,
 ): UnservedSid[] {
   const candidates: UnservedSid[] = [];
+  const flight: Flight = { scenario, airport };
   for (const row of airport.assignmentRules) {
-    if (!rowApplies(row, ctx, exitElement, direction, airport)) continue;
+    if (!rowApplies(row, ctx, exitElement, direction, flight)) continue;
     if (sidOffNotice(row.sidFamily, ctx, airport) !== undefined) continue;
     const family = row.sidFamily;
     if (family === null) return candidates;

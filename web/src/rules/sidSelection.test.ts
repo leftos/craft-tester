@@ -8,6 +8,7 @@ import type {
   RunwayConfig,
   Scenario,
   Sid,
+  TecRoute,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
 import type { SidSelection } from '@/rules/sidSelection.ts';
@@ -415,6 +416,68 @@ describe('selectSid', () => {
     expect(result).toEqual({
       element: 'R.sid',
       reason: 'no assignment rule applies to SFOW north runway 01 class T',
+    });
+  });
+});
+
+/** The TEC row the route tool writes on an initial heading rather than on a departure. */
+const oakeTec: TecRoute = {
+  id: 'TEC-KSMF-OAKE-J',
+  source: 'ZOA Reference Tool, TEC/AAR/ADR Routes',
+  kind: 'tec',
+  destination: 'KSMF',
+  plan: 'SFOW',
+  runwayFamilies: [],
+  classes: ['J'],
+  route: 'H270 FEVTA FEVTA1',
+  altitudeCapFeet: 10000,
+};
+
+describe('selectSid on a TEC route that carries no departure procedure', () => {
+  const headingRow = rule({
+    id: 'NO-DP-TEC',
+    sidFamily: null,
+    nonDpHeading: 270,
+    direction: 'any',
+    classes: ['J'],
+    runwayFamilies: ['28'],
+    when: { tecRouteWithoutDp: true },
+  });
+  const fallback = rule({ id: 'FALLBACK', runwayFamilies: ['28'] });
+  const jet = scenario({
+    destination: 'KSMF',
+    filedRoute: 'DEDHD',
+    departureRunway: '28L',
+    runwayConfigId: '28 RT',
+  });
+
+  function selectionFor(flight: Scenario, rules: AssignmentRule[]): SidSelection | Unresolved {
+    return selectSid(ctx({ runwayFamily: '28' }), 'DEDHD', 'north', flight, {
+      ...airportWith(rules),
+      tecRoutes: [oakeTec, ...ksfo.tecRoutes],
+    });
+  }
+
+  it('clears the flight on the heading its TEC route begins on, turned the shorter way', () => {
+    const result = selectionFor(jet, [headingRow, fallback]);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.procedure).toEqual({ kind: 'heading', heading: 270, turn: 'left' });
+    expect(result.row.id).toBe('NO-DP-TEC');
+  });
+
+  it('walks past the row for a destination with no TEC route at all', () => {
+    const result = selectionFor({ ...jet, destination: 'KSLC' }, [headingRow, fallback]);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.row.id).toBe('FALLBACK');
+    expect(sidOf(result).id).toBe('TRUKN2');
+  });
+
+  it('blocks the SID element where the row and its TEC route name different headings', () => {
+    const result = selectionFor(jet, [rule({ ...headingRow, nonDpHeading: 250 })]);
+    expect(result).toEqual({
+      element: 'R.sid',
+      reason:
+        'NO-DP-TEC clears the flight on heading 250 but its TEC route TEC-KSMF-OAKE-J begins on heading 270',
     });
   });
 });

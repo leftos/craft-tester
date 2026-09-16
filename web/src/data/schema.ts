@@ -258,6 +258,12 @@ export const AssignmentConditionSchema = z.strictObject({
   rnav: z.boolean().optional(),
   exitFixes: z.array(z.string()).optional(),
   forcedTransition: z.string().optional(),
+  /**
+   * Holds when the TEC row keyed for the flight — by destination, plan, runway family and class —
+   * begins on no departure placeholder, i.e. on a heading token or on a fix or an airway, which SOP
+   * 2-1 c makes the case for an initial heading. A flight with no TEC row never satisfies it.
+   */
+  tecRouteWithoutDp: z.boolean().optional(),
 });
 
 /**

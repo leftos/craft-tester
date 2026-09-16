@@ -185,7 +185,12 @@ class NoiseWindow:
 
 @dataclass(frozen=True, slots=True)
 class AssignmentCondition:
-    """The ``when`` block of an assignment rule; every field is optional and unset means unrestricted."""
+    """The ``when`` block of an assignment rule; every field is optional and unset means unrestricted.
+
+    ``tec_route_without_dp`` holds when the TEC row keyed for the flight begins on no departure
+    placeholder — on a heading token, a fix or an airway — which SOP 2-1 c makes the case for an
+    initial heading; a flight with no TEC row never satisfies it.
+    """
 
     configs: tuple[str, ...] | None
     not_configs: tuple[str, ...] | None
@@ -193,6 +198,7 @@ class AssignmentCondition:
     rnav: bool | None
     exit_fixes: tuple[str, ...] | None
     forced_transition: str | None
+    tec_route_without_dp: bool | None
 
 
 @dataclass(frozen=True, slots=True)

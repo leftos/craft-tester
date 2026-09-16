@@ -265,6 +265,7 @@ def _condition(when: AssignmentCondition) -> Document:
         rnav=when.rnav,
         exitFixes=_texts(when.exit_fixes),
         forcedTransition=when.forced_transition,
+        tecRouteWithoutDp=when.tec_route_without_dp,
     )
 
 

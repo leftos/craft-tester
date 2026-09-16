@@ -447,6 +447,7 @@ def _assignment_condition(row: _Row) -> AssignmentCondition:
         rnav=row.optional_flag("rnav"),
         exit_fixes=row.optional_texts("exit_fixes"),
         forced_transition=row.optional_text("forced_transition"),
+        tec_route_without_dp=row.optional_flag("tec_route_without_dp"),
     )
     row.finish()
     return condition

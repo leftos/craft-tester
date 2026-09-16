@@ -1,20 +1,15 @@
 import type { AirportData, Destination, Scenario, TecRoute } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { FAMILY_PLACEHOLDER, keyedFor, tecHead } from '@/rules/tecRoutes.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
-/** A TEC route's placeholder for the current version of a family, e.g. `TRUKN#`. */
-const FAMILY_PLACEHOLDER = /^([A-Z]+)#$/;
-
-/** The departure family a TEC route begins on, absent when it does not begin on a procedure. */
-function leadingFamily(row: TecRoute): string | undefined {
-  const head = row.route.trim().split(/\s+/)[0];
-  return head === undefined ? undefined : FAMILY_PLACEHOLDER.exec(head)?.[1];
-}
-
 /**
  * Reads a TEC row's route, putting the current version of each family in place of its placeholder.
+ *
+ * A row issued on an initial heading begins on that heading, which is the procedure the clearance
+ * names rather than a token of the route box, so it is dropped and the route follows it.
  *
  * @param row The TEC route row the flight is routed on.
  * @param airport The airport data, whose `sids` carry the versions in force this cycle.
@@ -23,7 +18,8 @@ function leadingFamily(row: TecRoute): string | undefined {
  */
 export function tecTokens(row: TecRoute, airport: AirportData): string[] | Unresolved {
   const tokens: string[] = [];
-  for (const token of row.route.split(/\s+/)) {
+  const written = row.route.trim().split(/\s+/);
+  for (const token of tecHead(row).kind === 'heading' ? written.slice(1) : written) {
     const family = FAMILY_PLACEHOLDER.exec(token)?.[1];
     if (family === undefined) {
       tokens.push(token);
@@ -41,22 +37,14 @@ export function tecTokens(row: TecRoute, airport: AirportData): string[] | Unres
   return tokens;
 }
 
-/** Whether a row is written for this flight's destination, plan, runway family and class. */
-function keyedFor(row: TecRoute, ctx: Classification, destination: Destination): boolean {
-  if (row.kind !== 'tec' || row.destination !== destination.icao || row.plan !== ctx.plan) {
-    return false;
-  }
-  if (row.runwayFamilies.length > 0 && !row.runwayFamilies.includes(ctx.runwayFamily)) return false;
-  return row.classes.includes(ctx.aircraftClass);
-}
-
 /**
  * Whether the departure a row begins on is one the SOP would issue this flight.
  *
  * The clearance engine answers it: the row's own route, at the versions in force, is put to the
- * engine as though the flight had filed it, and the row is issuable when the engine assigns the
- * family the row begins on. A row that begins on a fix or an airway rather than a placeholder
- * carries no such condition.
+ * engine as though the flight had filed it, and the row is issuable when the engine clears the
+ * flight on what the row begins on — the family it names, or the initial heading it is issued on,
+ * which SOP 2-1 c reaches only where no departure procedure can be used. A row that begins on a fix
+ * or an airway carries no such condition.
  *
  * @param row The TEC route row under test.
  * @param scenario The filed flight plan, whose runway, configuration, type and suffix decide what
@@ -65,23 +53,26 @@ function keyedFor(row: TecRoute, ctx: Classification, destination: Destination):
  * @returns True when the SOP would issue the row's departure to this flight.
  */
 function issuable(row: TecRoute, scenario: Scenario, airport: AirportData): boolean {
-  const family = leadingFamily(row);
-  if (family === undefined) return true;
+  const head = tecHead(row);
+  if (head.kind === 'none') return true;
   const tokens = tecTokens(row, airport);
   if (isUnresolved(tokens)) return false;
   const result = resolveClearance({ ...scenario, filedRoute: tokens.join(' ') }, airport);
   if (!result.ok) return false;
   const procedure = result.clearance.procedure.value;
-  return procedure.kind === 'sid' && procedure.family === family;
+  if (head.kind === 'family') {
+    return procedure.kind === 'sid' && procedure.family === head.family;
+  }
+  return procedure.kind === 'heading' && procedure.heading === head.heading;
 }
 
 /**
  * The TEC route row that routes this flight, for a destination inside the TRACON.
  *
  * A row is keyed by destination, plan, runway family and class, and the first row that matches all
- * four is the flight's — with one further test: a row whose route begins on a departure family is
- * the flight's only where the SOP would issue that departure to this flight, from this runway, in
- * the configuration in use. SOP 2-1 b, quoted in the `tec.yaml` header, says the route is issued
+ * four is the flight's — with one further test: a row whose route begins on a departure family, or
+ * on the initial heading it is issued on, is the flight's only where the SOP would issue that
+ * departure to this flight, from this runway, in the configuration in use. SOP 2-1 b, quoted in the `tec.yaml` header, says the route is issued
  * only where the pilot can accept it — "if a pilot cannot accept one, vectors direct" — and that
  * one test covers a non-RNAV flight, for which an RNAV departure is never assigned; a runway family
  * the departure is not issued from; and a configuration that issues another departure, as 28R in
