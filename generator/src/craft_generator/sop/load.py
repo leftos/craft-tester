@@ -24,6 +24,7 @@ import yaml
 from craft_generator.sop.model import (
     AIRCRAFT_CLASSES,
     ALTITUDE_OUTCOME_KINDS,
+    CONNECTION_STRENGTHS,
     DEPARTURE_SID_KINDS,
     DIRECTIONS,
     EXPECT_ALTITUDE_POLICIES,
@@ -68,6 +69,7 @@ from craft_generator.sop.model import (
     ParityRotatedRule,
     Phraseology,
     PhraseologyRule,
+    RouteConnection,
     RouteEntry,
     RouteLibrary,
     RouteTokenRule,
@@ -92,6 +94,7 @@ LOA_FILE = "loa.yaml"
 WORKSHEETS_FILE = "worksheets.yaml"
 EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
+ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
 SID_PLACEHOLDER = "#"
@@ -100,6 +103,7 @@ COURSE_DEGREES_MAX = 359
 _SUFFIX_PATTERN = re.compile(r"^/[A-Z]$")
 _CIFP_ID_PATTERN = re.compile(r"^(?P<family>[A-Z]+)\d+$")
 _DESIGNATOR_PATTERN = re.compile(r"^[A-Z0-9]{2,4}$")
+_ROUTE_TOKEN_PATTERN = re.compile(r"^[A-Z0-9]{2,5}$")
 
 
 def airports_dir() -> Path:
@@ -877,6 +881,59 @@ def load_phraseology_rules(path: Path) -> tuple[PhraseologyRule, ...]:
     root.finish()
     _check_phraseology_rules(rules, where)
     return rules
+
+
+def _route_token(value: str, key: str, row: _Row) -> str:
+    if _ROUTE_TOKEN_PATTERN.fullmatch(value) is None:
+        raise ValueError(f"{row.where}.{key}: {value!r} is not an upper-case route token of two to five letters or digits, e.g. EBAYE, AVE or Q120")
+    return value
+
+
+def _route_connection(source: str, row: _Row) -> RouteConnection:
+    connection = RouteConnection(
+        from_fix=_route_token(row.text("from"), "from", row),
+        to=_route_token(row.text("to"), "to", row),
+        connects=row.choice("connects", CONNECTION_STRENGTHS),
+        source=source,
+    )
+    row.finish()
+    return connection
+
+
+def _check_route_connections(connections: Sequence[RouteConnection], where: str) -> None:
+    seen: set[tuple[str, str]] = set()
+    for connection in connections:
+        pair = (connection.from_fix, connection.to)
+        if pair in seen:
+            raise ValueError(
+                f"{where} connections[{connection.from_fix} -> {connection.to}]: the pair is already stated by an earlier row of this file; "
+                "the engine cites a connection by its pair, so a file states each pair once"
+            )
+        seen.add(pair)
+
+
+def load_route_connections(path: Path) -> tuple[RouteConnection, ...]:
+    """Load the route-connection rows every airport shares.
+
+    Args:
+        path: Path to ``generator/shared/route_connections.yaml``.
+
+    Returns:
+        One row per arrow of the cheat sheet, in file order, each carrying the file-level source.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, names a strength other
+            than ``always`` or ``usually``, holds a ``from`` or ``to`` that is not an upper-case
+            route token, or states one ``(from, to)`` pair twice.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    source = root.text("source")
+    connections = tuple(_route_connection(source, child) for child in root.children("connections"))
+    root.finish()
+    _check_route_connections(connections, where)
+    return connections
 
 
 def _tec_source(row: _Row) -> TecSource:

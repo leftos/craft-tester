@@ -24,7 +24,8 @@ what makes one wrong for a destination is not being published there, and the FAA
 destination. A Seattle STAR ending a Vancouver route is a smell the build reports rather than an error it can demonstrate.
 
 ``fixSpoken`` is derived, not transcribed: every two- or three-letter token the route library, the
-TEC rows, the gates, the SID transitions and the checked-in fixtures name is looked up in the CIFP
+TEC rows, the gates, the SID transitions, the shared route connections and the checked-in fixtures
+name is looked up in the CIFP
 navaid table and emitted as the name and its facility word, "Red Bluff VOR". A hand ``fix_spoken``
 row still wins, for the names the CIFP spells badly. A navaid the airport data names and neither
 source names is a build failure, because the speaker would otherwise spell it out letter by letter;
@@ -80,6 +81,7 @@ from craft_generator.sop.model import (
     Notice,
     ParityRotatedRule,
     PhraseologyRule,
+    RouteConnection,
     RouteEntry,
     RouteTokenRule,
     RunwayConfig,
@@ -130,8 +132,9 @@ class BuildInputs:
     ``aircraft_classes`` from the vNAS specs, and ``fixture_routes`` from the filed route of every
     checked-in fixture of the airport, which name navaids the airport data itself never mentions.
 
-    ``equipment_suffixes`` and ``phraseology_rules`` come from ``generator/shared/``, the YAML every
-    airport inherits; the airport's own ``sop.yaml`` overrides a phraseology row by id.
+    ``equipment_suffixes``, ``phraseology_rules`` and ``route_connections`` come from
+    ``generator/shared/``, the YAML every airport inherits; the airport's own ``sop.yaml`` overrides
+    a phraseology row by id.
 
     ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier. A
     destination the FAA file does not carry - every foreign one - is simply absent, as is a US airport
@@ -148,6 +151,7 @@ class BuildInputs:
     destination_stars: dict[str, frozenset[str]]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
     phraseology_rules: tuple[PhraseologyRule, ...]
+    route_connections: tuple[RouteConnection, ...]
     fixture_routes: tuple[str, ...]
     provenance: Provenance
 
@@ -313,6 +317,17 @@ def _equipment_suffix(suffix: EquipmentSuffix) -> Document:
         "rvsm": suffix.rvsm,
         "transponderModeC": suffix.transponder_mode_c,
         "text": suffix.text,
+    }
+
+
+def _route_connection(connection: RouteConnection) -> Document:
+    return {
+        "id": f"CONN-{connection.from_fix}-{connection.to}",
+        "from": connection.from_fix,
+        "to": connection.to,
+        "connects": connection.connects,
+        "source": connection.source,
+        "text": f"{connection.from_fix} {connection.connects} connects to {connection.to}",
     }
 
 
@@ -812,6 +827,8 @@ def _route_navaid_tokens(document: Document) -> list[tuple[str, str]]:
         wanted += [(fix, f"gates.{direction}") for fix in fixes]
     for sid in document["sids"]:
         wanted += [(transition["fix"], f"sids[{sid['id']}].transitions") for transition in sid["transitions"]]
+    for connection in document["routeConnections"]:
+        wanted += [(connection["from"], f"routeConnections[{connection['id']}]"), (connection["to"], f"routeConnections[{connection['id']}]")]
     return wanted
 
 
@@ -949,6 +966,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         },
         "phraseologyRules": _phraseology_rules(inputs.phraseology_rules, sop.phraseology_rules),
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
+        "routeConnections": [_route_connection(connection) for connection in inputs.route_connections],
         "tecRoutes": _tec_routes(inputs),
         "loaRules": _loa_rules(inputs),
         "aircraftClasses": dict(inputs.aircraft_classes),

@@ -178,6 +178,20 @@ def test_the_tec_rows_carry_their_source_cap_and_kind(ksfo_document: Document) -
     assert [row["id"] for row in ksfo_document["tecRoutes"] if row["kind"] == "adr"] == ADR_ROUTE_IDS
 
 
+def test_the_shared_route_connections_are_emitted_as_citable_rows(ksfo_document: Document, ksfo_build_inputs: BuildInputs) -> None:
+    rows = ksfo_document["routeConnections"]
+    assert len(rows) == len(ksfo_build_inputs.route_connections)
+    source = ksfo_build_inputs.route_connections[0].source
+    assert next(row for row in rows if row["id"] == "CONN-SUSEY-EBAYE") == {
+        "id": "CONN-SUSEY-EBAYE",
+        "from": "SUSEY",
+        "to": "EBAYE",
+        "connects": "always",
+        "source": source,
+        "text": "SUSEY always connects to EBAYE",
+    }
+
+
 def test_the_loa_rules_keep_their_discriminated_kinds(ksfo_document: Document) -> None:
     rules = {rule["id"]: rule for rule in ksfo_document["loaRules"]}
     assert len(rules) == LOA_RULE_COUNT

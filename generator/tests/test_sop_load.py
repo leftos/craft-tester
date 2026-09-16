@@ -9,11 +9,13 @@ import yaml
 from craft_generator.sop.load import (
     OVERRIDES_FILE,
     PHRASEOLOGY_RULES_FILE,
+    ROUTE_CONNECTIONS_FILE,
     ROUTES_FILE,
     SOP_FILE,
     load_airport,
     load_overrides,
     load_phraseology_rules,
+    load_route_connections,
     load_routes,
     load_sop,
     shared_dir,
@@ -42,6 +44,8 @@ SHARED_PHRASEOLOGY_IDS = [
     "A-RVSM",
 ]
 KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
+ROUTE_CONNECTION_COUNT = 26
+ROUTE_CONNECTION_SOURCE = "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16"
 
 
 def airport_copy(tmp_path: Path, ksfo_dir: Path, **mutations: Mutation) -> Path:
@@ -162,6 +166,32 @@ def test_a_shared_phraseology_id_stated_twice_is_rejected(tmp_path: Path) -> Non
     )
     with pytest.raises(ValueError, match=r"A-MAINTAIN.*already used by an earlier row"):
         load_phraseology_rules(path)
+
+
+def test_the_shared_route_connections_load() -> None:
+    connections = load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE)
+    assert len(connections) == ROUTE_CONNECTION_COUNT
+    strengths = {(connection.from_fix, connection.to): connection.connects for connection in connections}
+    assert strengths[("SUSEY", "EBAYE")] == "always"
+    assert strengths[("EBAYE", "AVE")] == "usually"
+    assert {connection.source for connection in connections} == {ROUTE_CONNECTION_SOURCE}
+
+
+def test_a_route_connection_stated_twice_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / ROUTE_CONNECTIONS_FILE
+    path.write_text(
+        "source: the sheet\nconnections:\n  - { from: SUSEY, to: EBAYE, connects: always }\n  - { from: SUSEY, to: EBAYE, connects: usually }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"SUSEY -> EBAYE.*already stated by an earlier row"):
+        load_route_connections(path)
+
+
+def test_a_route_connection_with_a_bad_token_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / ROUTE_CONNECTIONS_FILE
+    path.write_text("source: the sheet\nconnections:\n  - { from: SUSEY, to: ebaye, connects: always }\n", encoding="utf-8")
+    with pytest.raises(ValueError, match=r"connections\[0\]\.to: 'ebaye' is not an upper-case route token"):
+        load_route_connections(path)
 
 
 def test_an_airport_phraseology_id_stated_twice_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:

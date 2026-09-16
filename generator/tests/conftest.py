@@ -19,10 +19,12 @@ from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance,
 from craft_generator.sop.load import (
     EQUIPMENT_SUFFIXES_FILE,
     PHRASEOLOGY_RULES_FILE,
+    ROUTE_CONNECTIONS_FILE,
     airport_dir,
     load_airport,
     load_equipment_suffixes,
     load_phraseology_rules,
+    load_route_connections,
     shared_dir,
 )
 from craft_generator.sop.model import AirportInputs, EquipmentSuffix
@@ -177,6 +179,7 @@ def ksfo_build_inputs(
         destination_stars=parse_star_ids(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
         phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
+        route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),
         fixture_routes=fixture_filed_routes("KSFO"),
         provenance=Provenance(
             cycle=FIXTURE_CYCLE,

@@ -35,6 +35,7 @@ ExpectAltitudePolicy = Literal["always", "unless_chart_publishes_it", "never"]
 WorksheetKind = Literal["phraseology", "amendment"]
 PhraseologyReading = Literal["abbreviated", "full_route"]
 OnRequestKind = Literal["cargo", "heavy", "oceanic"]
+ConnectionStrength = Literal["always", "usually"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
 TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr")
@@ -51,6 +52,7 @@ TOP_ALTITUDE_KINDS: tuple[TopAltitudeKind, ...] = ("published", "assigned_by_atc
 WORKSHEET_KINDS: tuple[WorksheetKind, ...] = ("phraseology", "amendment")
 PHRASEOLOGY_READINGS: tuple[PhraseologyReading, ...] = ("abbreviated", "full_route")
 ON_REQUEST_KINDS: tuple[OnRequestKind, ...] = ("cargo", "heavy", "oceanic")
+CONNECTION_STRENGTHS: tuple[ConnectionStrength, ...] = ("always", "usually")
 
 
 @dataclass(frozen=True, slots=True)
@@ -486,6 +488,16 @@ class EquipmentSuffix:
     rvsm: bool
     transponder_mode_c: bool
     text: str
+
+
+@dataclass(frozen=True, slots=True)
+class RouteConnection:
+    """One arrow of the ZOA route-building cheat sheet: SUSEY always connects onward to EBAYE."""
+
+    from_fix: str
+    to: str
+    connects: ConnectionStrength
+    source: str
 
 
 @dataclass(frozen=True, slots=True)

@@ -148,9 +148,13 @@ fault is dead data, left out and recorded here for the user).
 ## Steps (implementer briefs after the will-be-your-final brief lands, since both touch `speak.ts`
 tests, `schema.ts` and the data)
 
-1. Generator + schema + data: the shared file, loader, model, merge, CLI/conftest wiring, schema, export,
-   rebuild, tests (`test_sop_load.py`: rows load, duplicate pair rejected; `test_merge.py`: emitted rows
-   and ids). Proving: generator gate, `build --check`, `pnpm -C web test data`.
+1. [x] Generator + schema + data — landed 2026-09-16: `generator/shared/route_connections.yaml` (26
+   rows), `load_route_connections`, `RouteConnection`, `BuildInputs.route_connections`, `routeConnections`
+   emitted with ids `CONN-<from>-<to>`, connection endpoints on the checked navaid-name set, schema and
+   export. Finding for step 3: the build's "gate fixes with no route in the library" warning already lists
+   most connection endpoints (AVE, BOILE, CISKO, EBAYE, EHF, KAYEX, LIN, LOSHN, MCKEY…), so no library
+   route leaves the DP at a connection target today and the `dropped_transition` fault likely has no
+   drawable plan; step 3 confirms and reports it.
 2. Engine: `unservedSids`, `build.ts`, `route.ts` changes, `R-ROUTE-BUILD` row; tests: SWA984 rebuilt to
    `SSTIK5 SUSEY EBAYE AVE SADDE8` with the SSTIK row, `CONN-SUSEY-EBAYE` and `R-ROUTE-BUILD` cited; a
    two-hop chain (KAYEX → LOSHN → BOILE) with `usually` named; a plan whose exit fix connects to nothing

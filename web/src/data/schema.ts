@@ -319,6 +319,20 @@ export const EquipmentSuffixSchema = z.strictObject({
   text: z.string(),
 });
 
+/**
+ * One arrow of the ZOA route-building cheat sheet: `SUSEY` always connects onward to `EBAYE`.
+ * `always` is the sheet's `ac`, `usually` its `c`; `to` may be an airway. The rows are national,
+ * so every airport inherits all of them.
+ */
+export const RouteConnectionSchema = z.strictObject({
+  id: z.string(),
+  from: z.string(),
+  to: z.string(),
+  connects: z.enum(['always', 'usually']),
+  source: z.string(),
+  text: z.string(),
+});
+
 /** A transcribed TEC route for an NCT destination, keyed by plan, runway family, and class. */
 export const TecRouteSchema = z.strictObject({
   id: z.string(),
@@ -462,6 +476,7 @@ export const AirportDataSchema = z.strictObject({
   phraseology: PhraseologySchema,
   phraseologyRules: z.array(PhraseologyRuleSchema),
   equipmentSuffixes: z.array(EquipmentSuffixSchema),
+  routeConnections: z.array(RouteConnectionSchema),
   tecRoutes: z.array(TecRouteSchema),
   loaRules: z.array(LoaRuleSchema),
   notices: z.array(NoticeSchema),
@@ -635,6 +650,7 @@ export type AltitudeRule = z.infer<typeof AltitudeRuleSchema>;
 export type Phraseology = z.infer<typeof PhraseologySchema>;
 export type PhraseologyRule = z.infer<typeof PhraseologyRuleSchema>;
 export type EquipmentSuffix = z.infer<typeof EquipmentSuffixSchema>;
+export type RouteConnection = z.infer<typeof RouteConnectionSchema>;
 export type TecRoute = z.infer<typeof TecRouteSchema>;
 export type LoaRuleKind = z.infer<typeof LoaRuleKindSchema>;
 export type LoaRule = z.infer<typeof LoaRuleSchema>;

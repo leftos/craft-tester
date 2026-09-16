@@ -816,6 +816,45 @@
       ],
       "type": "object"
     },
+    "routeConnections": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "connects": {
+            "enum": [
+              "always",
+              "usually"
+            ],
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "from",
+          "to",
+          "connects",
+          "source",
+          "text"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "routeLibrary": {
       "additionalProperties": false,
       "properties": {
@@ -1388,6 +1427,7 @@
     "phraseology",
     "phraseologyRules",
     "equipmentSuffixes",
+    "routeConnections",
     "tecRoutes",
     "loaRules",
     "notices",

@@ -114,6 +114,7 @@ const minimalAirportData: AirportData = {
   },
   phraseologyRules: [],
   equipmentSuffixes: [],
+  routeConnections: [],
   tecRoutes: [],
   loaRules: [],
   notices: [],

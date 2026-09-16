@@ -1140,6 +1140,216 @@
       "version": "1.11"
     }
   },
+  "routeConnections": [
+    {
+      "connects": "usually",
+      "from": "YYUNG",
+      "id": "CONN-YYUNG-TILLT",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "YYUNG usually connects to TILLT",
+      "to": "TILLT"
+    },
+    {
+      "connects": "usually",
+      "from": "YYUNG",
+      "id": "CONN-YYUNG-LAX",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "YYUNG usually connects to LAX",
+      "to": "LAX"
+    },
+    {
+      "connects": "usually",
+      "from": "MCKEY",
+      "id": "CONN-MCKEY-TILLT",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MCKEY usually connects to TILLT",
+      "to": "TILLT"
+    },
+    {
+      "connects": "usually",
+      "from": "MCKEY",
+      "id": "CONN-MCKEY-LAX",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MCKEY usually connects to LAX",
+      "to": "LAX"
+    },
+    {
+      "connects": "always",
+      "from": "KTINA",
+      "id": "CONN-KTINA-CISKO",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "KTINA always connects to CISKO",
+      "to": "CISKO"
+    },
+    {
+      "connects": "usually",
+      "from": "CISKO",
+      "id": "CONN-CISKO-RDHOT",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "CISKO usually connects to RDHOT",
+      "to": "RDHOT"
+    },
+    {
+      "connects": "always",
+      "from": "SUSEY",
+      "id": "CONN-SUSEY-EBAYE",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SUSEY always connects to EBAYE",
+      "to": "EBAYE"
+    },
+    {
+      "connects": "usually",
+      "from": "EBAYE",
+      "id": "CONN-EBAYE-BURGL",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "EBAYE usually connects to BURGL",
+      "to": "BURGL"
+    },
+    {
+      "connects": "usually",
+      "from": "EBAYE",
+      "id": "CONN-EBAYE-AVE",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "EBAYE usually connects to AVE",
+      "to": "AVE"
+    },
+    {
+      "connects": "always",
+      "from": "KAYEX",
+      "id": "CONN-KAYEX-LOSHN",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "KAYEX always connects to LOSHN",
+      "to": "LOSHN"
+    },
+    {
+      "connects": "usually",
+      "from": "LOSHN",
+      "id": "CONN-LOSHN-BOILE",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LOSHN usually connects to BOILE",
+      "to": "BOILE"
+    },
+    {
+      "connects": "usually",
+      "from": "LOSHN",
+      "id": "CONN-LOSHN-CLASN",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LOSHN usually connects to CLASN",
+      "to": "CLASN"
+    },
+    {
+      "connects": "usually",
+      "from": "LOSHN",
+      "id": "CONN-LOSHN-EHF",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LOSHN usually connects to EHF",
+      "to": "EHF"
+    },
+    {
+      "connects": "usually",
+      "from": "NTELL",
+      "id": "CONN-NTELL-Q174",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "NTELL usually connects to Q174",
+      "to": "Q174"
+    },
+    {
+      "connects": "usually",
+      "from": "DEDHD",
+      "id": "CONN-DEDHD-RBL",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "DEDHD usually connects to RBL",
+      "to": "RBL"
+    },
+    {
+      "connects": "usually",
+      "from": "ORRCA",
+      "id": "CONN-ORRCA-Q120",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "ORRCA usually connects to Q120",
+      "to": "Q120"
+    },
+    {
+      "connects": "usually",
+      "from": "SAC",
+      "id": "CONN-SAC-Q120",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SAC usually connects to Q120",
+      "to": "Q120"
+    },
+    {
+      "connects": "usually",
+      "from": "MOGEE",
+      "id": "CONN-MOGEE-Q122",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MOGEE usually connects to Q122",
+      "to": "Q122"
+    },
+    {
+      "connects": "usually",
+      "from": "MOGEE",
+      "id": "CONN-MOGEE-Q124",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MOGEE usually connects to Q124",
+      "to": "Q124"
+    },
+    {
+      "connects": "usually",
+      "from": "TIPRE",
+      "id": "CONN-TIPRE-Q126",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "TIPRE usually connects to Q126",
+      "to": "Q126"
+    },
+    {
+      "connects": "usually",
+      "from": "SYRAH",
+      "id": "CONN-SYRAH-Q128",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SYRAH usually connects to Q128",
+      "to": "Q128"
+    },
+    {
+      "connects": "usually",
+      "from": "SYRAH",
+      "id": "CONN-SYRAH-Q130",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SYRAH usually connects to Q130",
+      "to": "Q130"
+    },
+    {
+      "connects": "usually",
+      "from": "LIN",
+      "id": "CONN-LIN-J84",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LIN usually connects to J84",
+      "to": "J84"
+    },
+    {
+      "connects": "usually",
+      "from": "ALCOA",
+      "id": "CONN-ALCOA-R463",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "ALCOA usually connects to R463",
+      "to": "R463"
+    },
+    {
+      "connects": "usually",
+      "from": "BEBOP",
+      "id": "CONN-BEBOP-R464",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "BEBOP usually connects to R464",
+      "to": "R464"
+    },
+    {
+      "connects": "usually",
+      "from": "CINNY",
+      "id": "CONN-CINNY-A220",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "CINNY usually connects to A220",
+      "to": "A220"
+    }
+  ],
   "routeLibrary": {
     "cargoAirlines": [
       "FDX",
