@@ -1,5 +1,20 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 5000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KMYV",
+    "expect": null,
+    "frequency": "120.9",
+    "heading": "runway heading",
+    "route": {
+      "fix": "OAK",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": null
+  },
   "id": "syn-heading-c172-night-kmyv",
   "mode": "clearance",
   "scenario": {
@@ -17,7 +32,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "The noise window sends a non-RNAV prop off runway 01 on the runway heading with no departure procedure (SFOW-NOISE-P-RWY, SFO ATCT SOP 2-4 e), so the clearance names no SID: the procedure element is the heading and the route element is the airport's no-SID phrasing on the first filed fix (R-HEADING; FAA JO 7110.65 4-3-2 c 3). Pending until the user confirms the spoken form."
+    "note": "The noise window sends a non-RNAV prop off runway 01 on the runway heading with no departure procedure (SFOW-NOISE-P-RWY, SFO ATCT SOP 2-4 e), so the clearance names no SID: the procedure element is the heading and the route element is the airport's no-SID phrasing on the first filed fix (R-HEADING; FAA JO 7110.65 4-3-2 c 3). Spoken form \"cleared to Marysville airport, via fly runway heading, radar vectors Oakland VOR, then as filed. Maintain five thousand.\" confirmed by the user 2026-09-16."
   },
-  "status": "pending"
+  "status": "settled"
 }
