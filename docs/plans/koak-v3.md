@@ -301,8 +301,15 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   KRAZY" is a time-windowed route rule (note only); the RNAV / conventional split of the ZLC table is not in the
   `route` kind (both columns' tokens listed, as the ZSE rows do); the prop routings to LAX/LGB/SNA differ by J1/J501
   side (note only). Each row cites the LOA attachment and row.
-- [ ] **Brief 3b-i status 2026-09-16**: the five files are in final shape in `wt/koak-data` plus a new `tec.yaml` (75
-  rows over 21 destinations; every loader check passes; `verify-sop` ok) but the build stopped on twelve NCT
+- [x] **Brief 3b-i, KOAK data landed 2026-09-16 (`3ee592d`)**: the six YAML files plus `data/koak.json` (12 SIDs, 59
+  assignment rules, 21 altitude rules, 2 notices, 45 routes; `tec.yaml` 61 rows over 18 destinations, every row
+  `runway_families: []`; `verify-sop` ok; `build --check` unchanged for KOAK and KSFO; pytest 401 green). KOAK is not
+  yet in `data/airports.json` (brief 3b-ii). Observations from the build worth carrying: the SFOE/OAKE prop and
+  turboprop TEC rows (`OAK#` heads to NUQ/PAO/RHV/SJC, bare `EUGEN` / `OAK V244 …` heads to MRY/WVI) have no
+  SOP row that can issue them, since 2-2 a ii/iii give P/T only the 090 heading; the SFOW jet TEC rows to MRY/WVI
+  end at 11,000 while `routes.yaml` files 7,000/9,000 on those tails; the build's 31-gate-fix warning is the normal
+  state of a fresh gate list (KSFO warns about 39). History: the first pass had 75 rows over 21 destinations
+  (every loader check passed; `verify-sop` ok) but the build stopped on twelve NCT
   satellites the TEC pages file to that `generator/shared/destinations.yaml` lacked (KCCR, KHWD, KMCC, KMHR, KMOD, KNUQ,
   KPAO, KRHV, KSCK, KSFO, KSQL, KSTS; added on main, `nct: true`, spoken Concord, Hayward, McClellan, Mather, Modesto,
   Moffett, Palo Alto, Reid-Hillview, Stockton, San Francisco, San Carlos, Santa Rosa). **User 2026-09-16: STS is not
@@ -322,9 +329,11 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   must end on a fix or an arrival. The `OAK ORRCA` jet rows file 11,000 (the SFOE band `030/110`), the FEVTA rows
   10,000. `direction_runway_preference` for OAKE/SFOE still maps family 10 to 10R while the prop default is 10L; it only
   decides where no default applies (nothing today) and is left for the validation loop.
-- [ ] **Brief 3b, the rest of the data**: `tec.yaml` from `.tmp/oak-tec/*.txt`, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC
-  rows from the notes), `worksheets.yaml`, `data/airports.json`, the KSFO-only web tests widened to the index, the
-  airport switch in the UI checked in the browser.
+- [ ] **Brief 3b-ii, KOAK into the index** (dispatched 2026-09-16 on `wt/koak-data` at `3ee592d`): `data/airports.json`
+  gains KOAK; `schema.test.ts` index assertion, `scenario/library.test.ts` (loop `checkedInAirports()`) and
+  `ui/session.test.ts` (load and draw every listed airport) widened; the exhaustive and fixture suites now
+  enumerate KOAK, so their KOAK unresolved-group tables are the first engine-vs-data audit; browser check of the
+  airport picker (`select:0=KOAK`) on phone and desktop. ZLA/ZLC `loa.yaml` rows are brief 3c below.
 - [ ] **Brief 2f, TEC initial altitude** (user 2026-09-16: "In TEC routes, the first number is the initial/interim
   altitude, and the second number is the final altitude. They're not a range. So 030/090 is 3,000 initial, 9,000
   final."). The KSFO `tec.yaml` header and the plan text below read the band as floor/cap, which is wrong: rename
