@@ -26,6 +26,7 @@
     "SR22": "P",
     "TBM9": "T"
   },
+  "aircraftGroups": {},
   "airport": {
     "clearanceDelivery": "118.2",
     "faa": "SFO",
@@ -2830,6 +2831,40 @@
       "plan": "SFOE",
       "source": "SFO ATCT SOP 1-7",
       "trainingWeight": 4
+    }
+  ],
+  "runways": [
+    {
+      "designator": "01L",
+      "magneticBearing": 14.0
+    },
+    {
+      "designator": "01R",
+      "magneticBearing": 14.0
+    },
+    {
+      "designator": "10L",
+      "magneticBearing": 104.0
+    },
+    {
+      "designator": "10R",
+      "magneticBearing": 104.0
+    },
+    {
+      "designator": "19L",
+      "magneticBearing": 194.0
+    },
+    {
+      "designator": "19R",
+      "magneticBearing": 194.0
+    },
+    {
+      "designator": "28L",
+      "magneticBearing": 284.0
+    },
+    {
+      "designator": "28R",
+      "magneticBearing": 284.0
     }
   ],
   "sids": [

@@ -16,6 +16,39 @@
       },
       "type": "object"
     },
+    "aircraftGroups": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "classes": {
+            "items": {
+              "enum": [
+                "P",
+                "T",
+                "J"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "classes",
+          "types"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
     "airport": {
       "additionalProperties": false,
       "properties": {
@@ -77,6 +110,12 @@
             "exclusiveMinimum": 0,
             "maximum": 9007199254740991,
             "type": "integer"
+          },
+          "groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "id": {
             "type": "string"
@@ -165,6 +204,18 @@
       "items": {
         "additionalProperties": false,
         "properties": {
+          "approachCategories": {
+            "items": {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
           "classes": {
             "items": {
               "enum": [
@@ -191,6 +242,12 @@
                 "type": "string"
               }
             ]
+          },
+          "groups": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
           "id": {
             "type": "string"
@@ -912,6 +969,15 @@
                 },
                 "type": "array"
               },
+              "approachCategory": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ],
+                "type": "string"
+              },
               "class": {
                 "enum": [
                   "P",
@@ -1098,6 +1164,27 @@
           "trainingWeight",
           "arrivalRunways",
           "departureRunways"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "runways": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "designator": {
+            "type": "string"
+          },
+          "magneticBearing": {
+            "maximum": 360,
+            "minimum": 0,
+            "type": "number"
+          }
+        },
+        "required": [
+          "designator",
+          "magneticBearing"
         ],
         "type": "object"
       },
@@ -1412,6 +1499,7 @@
   "required": [
     "airport",
     "provenance",
+    "runways",
     "runwayConfigs",
     "departureSectors",
     "departureStaffingFallbacks",
@@ -1432,6 +1520,7 @@
     "loaRules",
     "notices",
     "aircraftClasses",
+    "aircraftGroups",
     "routeLibrary"
   ],
   "type": "object"

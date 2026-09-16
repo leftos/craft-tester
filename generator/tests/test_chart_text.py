@@ -194,3 +194,21 @@ def test_published_pdf_still_matches_the_snapshot(
     chart = sfo_charts_by_name[name]
     pdf = fetch_chart_pdf(chart, tmp_path_factory.mktemp("cache"), "2609")
     assert extract_text(pdf) == chart_text(chart.pdf_name)
+
+
+def test_a_continuation_sheet_carries_facts_the_base_sheet_does_not(chart_text: Callable[[str], list[str]]) -> None:
+    """The OAK continuation sheets print the enroute transitions the base sheet leaves off."""
+    base = chart_text("00294COAST.PDF")
+    continuation = chart_text("00294COAST_C.PDF")
+    assert parse_chart_facts(base, "COAST NINE").transitions == {}
+    facts = parse_chart_facts([*base, *continuation], "COAST NINE")
+    assert facts.procedure_ids == frozenset({"COAST9"})
+    assert sorted(facts.transitions) == ["CATALINA", "FELLOWS", "GAVIOTA", "MARCUS"]
+
+
+def test_the_oakland_continuation_reads_as_one_procedure(chart_text: Callable[[str], list[str]]) -> None:
+    lines = [*chart_text("00294OAKLAND.PDF"), *chart_text("00294OAKLAND_C.PDF")]
+    facts = parse_chart_facts(lines, "OAKLAND SIX")
+    assert facts.procedure_ids == frozenset({"OAK6"})
+    assert list(facts.dep_frequencies) == [DepFrequency("120.9", None)]
+    assert facts.top_altitude == ASSIGNED

@@ -146,7 +146,11 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
 ## Steps (implementer briefs; the orchestrator does docs, data review and commits)
 
 - [x] Inspect KOAK CIFP SID records (above)
-- [ ] **Brief 1, schema + generator concepts** (worktree `wt/koak-concepts`): `aircraftGroups` on the airport
+- [x] **Brief 1, schema + generator concepts** — landed 2026-09-16 (150 implementer calls: too big for one brief; the
+  next ones carry fewer steps). Findings: OAK's five continuation sheets carry the enroute transitions the base
+  sheets do not print, so without the merge four procedures would build with no transitions; every OAK chart reads
+  `topAltitude = assigned_by_atc`, so OAK6's "CVS x FL190" needs the `climb_via_eligible` override plus an altitude
+  row; the charts API lists 12 procedures + 5 continuations = 17. Original brief: `aircraftGroups` on the airport
   document and `groups` on assignment and altitude rows; `approachCategory` on fleet rows and `approachCategories`
   on assignment rows (the build requires every fleet row to carry a category once any row names one);
   `nonDpHeading` as `runway heading` or an integer 1–360; `runways[]` with `magneticBearing` from the PG rows;
@@ -161,7 +165,11 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   windows), `overrides.yaml` (12 charts incl. NIMITZ6 radar-vector facts, OAK6 `climb_via_eligible: true`),
   `routes.yaml` seeded from the user's common routes, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC rows from the notes),
   `worksheets.yaml`; `verify-sop`; build clean.
-- [ ] `tec.yaml`: transcribe `reference.oakartcc.org/routes?dep=OAK&dest=…` for each NCT destination (Blazor page,
-  browser needed)
+- [ ] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
+  PAO RHV NUQ STS MOD SCK MHR MCC) were captured 2026-09-16 with Playwright into `.tmp/oak-tec/<FAA>.txt`
+  (gitignored; re-run `web/.tmp/oak-tec.ts` style script if lost). Findings: the tool prints an altitude band
+  `030/090` (hundreds of feet, floor/cap; KSFO recorded the cap only); **OAKE rows begin on a heading token**
+  (`[OAKE] +H270 FEVTA FEVTA1+ 100/100`), so the TEC substitution in `rules/amend/tec.ts` must accept `H<ddd>` at
+  the head of a route as the numbered heading the SOP issues there, not a SID placeholder (brief 2 or 3).
 - [ ] `data/airports.json` gains KOAK; widen the KSFO-only web tests to loop over the index; airport switch in the UI
 - [ ] `import-worksheets --airport KOAK`; validation loop with the user

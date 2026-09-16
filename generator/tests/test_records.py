@@ -1,5 +1,6 @@
 import string
 
+import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -40,8 +41,29 @@ def test_other_airports_and_record_types_are_skipped() -> None:
 
 def test_runway_row_slices() -> None:
     record = parse_runway_record(RUNWAY_SAMPLE, "KSFO")
-    assert record == RunwayRecord(ident="RW01L", raw=RUNWAY_SAMPLE)
+    assert record == RunwayRecord(ident="RW01L", magnetic_bearing=14.0, raw=RUNWAY_SAMPLE)
     assert record.designator == "01L"
+
+
+def test_every_ksfo_runway_bearing_matches_its_number(ksfo_lines: list[str]) -> None:
+    """The magnetic bearing of a runway rounds to the number the runway is named after."""
+    _, runways = parse_records(ksfo_lines, "KSFO")
+    bearings = {record.designator: record.magnetic_bearing for record in runways}
+    assert bearings == {"01L": 14.0, "01R": 14.0, "10L": 104.0, "10R": 104.0, "19L": 194.0, "19R": 194.0, "28L": 284.0, "28R": 284.0}
+    for designator, bearing in bearings.items():
+        assert round(bearing / 10) % 36 == int(designator[:2]) % 36
+
+
+def test_a_true_bearing_is_rejected() -> None:
+    line = RUNWAY_SAMPLE[:27] + "014T" + RUNWAY_SAMPLE[31:]
+    with pytest.raises(ValueError, match=r"KSFO runway row RW01L: bearing field '014T' ends in 'T'"):
+        parse_runway_record(line, "KSFO")
+
+
+def test_a_blank_bearing_is_rejected() -> None:
+    line = RUNWAY_SAMPLE[:27] + "    " + RUNWAY_SAMPLE[31:]
+    with pytest.raises(ValueError, match=r"bearing field '' is not four digits"):
+        parse_runway_record(line, "KSFO")
 
 
 def test_continuation_rows_are_skipped() -> None:
@@ -72,21 +94,30 @@ def test_fixture_sid_rows_all_carry_continuation_zero(ksfo_lines: list[str]) -> 
     assert {line[38] for line in ksfo_lines if line[12] == "D"} == {"0"}
 
 
+def runway_record_or_rejection(line: str) -> RunwayRecord | None:
+    """Parse a runway row, treating the named bearing error as the rejection it is."""
+    try:
+        return parse_runway_record(line, "KSFO")
+    except ValueError as exc:
+        assert "bearing field" in str(exc)
+        return None
+
+
 @given(st.text(alphabet=string.printable, min_size=RECORD_LENGTH, max_size=RECORD_LENGTH))
 def test_any_fixed_width_line_parses_or_returns_none(line: str) -> None:
     assert parse_sid_record(line, "KSFO") is None or isinstance(parse_sid_record(line, "KSFO"), SidRecord)
-    assert parse_runway_record(line, "KSFO") is None or isinstance(parse_runway_record(line, "KSFO"), RunwayRecord)
+    assert runway_record_or_rejection(line) is None or isinstance(runway_record_or_rejection(line), RunwayRecord)
 
 
 @given(st.integers(min_value=0, max_value=RECORD_LENGTH - 1), st.text(alphabet=string.printable, min_size=1, max_size=4))
-def test_mutating_a_real_row_never_raises(index: int, replacement: str) -> None:
+def test_mutating_a_real_row_only_ever_fails_by_name(index: int, replacement: str) -> None:
     line = SAMPLE[:index] + replacement + SAMPLE[index + len(replacement) :]
     parse_sid_record(line, "KSFO")
-    parse_runway_record(line, "KSFO")
+    runway_record_or_rejection(line)
 
 
 @given(st.lists(st.text(alphabet=string.printable, max_size=200), max_size=20))
-def test_parse_records_never_raises(lines: list[str]) -> None:
+def test_parse_records_skips_junk_lines(lines: list[str]) -> None:
     legs, runways = parse_records(lines, "KSFO")
     assert isinstance(legs, tuple)
     assert isinstance(runways, tuple)

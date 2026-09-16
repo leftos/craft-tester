@@ -37,7 +37,9 @@ uv run craft-gen fetch-cifp --airport <ICAO>         # cache/cifp/<cycle>/FAACIF
 ```
 
 The cache is `generator/cache/` (gitignored) or `$CRAFT_GEN_CACHE`. Download the SOP PDF by hand into
-the cache as well; `verify-sop` names the path it expects once `sop.yaml` has a `source.url`.
+the cache as well; `verify-sop` names the path it expects once `sop.yaml` has a `source.url`. A
+procedure too long for one sheet is listed as `<NAME>` plus `<NAME>, CONT.1` (five of OAK's twelve); the
+build reads the sheets as one document under the base name, so `overrides.yaml` lists the base name only.
 
 Get the SOP text for transcription with pypdf into `.tmp/` (never `/tmp`). Tables flatten to one cell per
 line; the text is for reading, not parsing. The chart PDFs are parsed by the build itself
@@ -107,8 +109,13 @@ the hooks rejects the file.
    build fails otherwise. Expect to extend this list during validation.
 10. **`no_sid`**: which runway families may depart without a DP and how it is phrased (CBT).
 11. **`noise_windows`**: local-time windows with `sunday_end` where the SOP differs on Sundays.
-12. **`assignment_rules`**: the DP-by-direction table as ordered rows. Noise rows first, then the SOP
-    table top to bottom, then CBT refinements. Fields: `plan`, `direction`, `runway_families`, `classes`,
+12. **`aircraft_groups`** (optional): a named set of aircraft a row addresses at once, by class and by
+    type, for a table written against "J & DH8D": `jets_and_dh8d: { classes: [J], types: [DH8D] }`. A
+    row lists `groups: [jets_and_dh8d]` beside or instead of `classes`; a row must address somebody.
+    **`assignment_rules`**: the DP-by-direction table as ordered rows. Noise rows first, then the SOP
+    table top to bottom, then CBT refinements. Fields: `plan`, `direction`, `runway_families`, `classes`
+    (and `groups`; `approach_categories: [A, B]` where the SOP says "Cat A/B", which then requires every
+    fleet row to carry `approach_category`),
     `sid_family` (or `null` plus `non_dp_heading` for a row that clears the flight with no DP; only
     `runway heading` is accepted, read "via fly runway heading, radar vectors (first fix)"; a numbered
     heading with a turn direction is a new rule concept), `sector`, and `when` with any
@@ -155,6 +162,8 @@ One entry per chart name the charts API returns; the build lists the names it is
   another's does not (SFO5: the 01 side has a DME crossing, the 28 side does not), because that decides
   "climb via SID except maintain" versus "maintain".
 - `route_phrasing` and `transitions_spoken_as_transition` for vector SIDs.
+- `climb_via_eligible` where the SOP clears a procedure "climb via SID" against the computed reading
+  (OAK6 is a vector SID the SOP clears "CVS x FL190"); the override replaces the computation outright.
 - `note` with the reasoning and the source, every time.
 
 `fix_spoken` is for corrections only. The build reads every navaid the routes, TEC rows, gates, SID
@@ -175,7 +184,9 @@ Scenarios are drawn from this file, so its breadth is the game's variety.
 - **`telephony`**: airline code → spoken callsign for the reveal.
 - **`fleet`**: type, class (checked against vNAS `AircraftSpecs.json` EngineType; the build fails on a
   disagreement), wake category, equipment suffixes it files, airlines that fly it. No service ceiling: a
-  controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16). Use the ICAO type designators pilots actually file; worksheets
+  controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16). Add
+  `approach_category: A|B|C|D` (from the published Vref) to every type once any assignment row names
+  categories. Use the ICAO type designators pilots actually file; worksheets
   file `A32N`, which is `A20N` in vNAS, and that alias is still an open item.
 - **`routes`**: keyed by `exit_fix` (where the aircraft leaves the SID), with the `tail` from that fix,
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.

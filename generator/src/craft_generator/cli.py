@@ -19,6 +19,7 @@ from craft_generator.charts_api import (
     cycle_id_from_url,
     fetch_chart_pdf,
     fetch_departure_charts,
+    group_continuations,
     parse_departure_charts,
     pdf_cache_path,
 )
@@ -230,13 +231,17 @@ def _chart_inputs(airport_faa: str, cache: Path, *, force: bool = False) -> dict
         force: Re-download even when the cache holds the response and the PDFs.
 
     Returns:
-        One entry per departure procedure, keyed by chart name, in charts API order.
+        One entry per departure procedure, keyed by the name of its base sheet, in charts API order.
+        A procedure published across continuation sheets is parsed once, from the text of the base
+        sheet followed by each continuation, and carries the base sheet's PDF URL.
     """
     charts = fetch_departure_charts(airport_faa, cache, force=force)
     inputs: dict[str, ChartInput] = {}
-    for chart in charts:
-        pdf = fetch_chart_pdf(chart, cache, cycle_id_from_url(chart.pdf_url), force=force)
-        inputs[chart.chart_name] = ChartInput(facts=parse_chart_facts(extract_text(pdf), chart.chart_name), pdf_url=chart.pdf_url)
+    for base, continuations in group_continuations(charts):
+        lines: list[str] = []
+        for sheet in (base, *continuations):
+            lines += extract_text(fetch_chart_pdf(sheet, cache, cycle_id_from_url(sheet.pdf_url), force=force))
+        inputs[base.chart_name] = ChartInput(facts=parse_chart_facts(lines, base.chart_name), pdf_url=base.pdf_url)
     return inputs
 
 
@@ -350,13 +355,12 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
     member = _cifp_member(cache, effective, cycle_id, force=force)
     lines = member.decode("ascii").splitlines()
     legs, runway_records = parse_records(lines, airport)
-    runways = tuple(record.designator for record in runway_records)
     _verify_sop_for_build(inputs.sop.source, cache, force=force, allow_drift=allow_sop_drift)
     document = build_airport(
         BuildInputs(
             airport=inputs,
-            sids=group_sids(legs, runways),
-            runways=runways,
+            sids=group_sids(legs, tuple(record.designator for record in runway_records)),
+            runways=runway_records,
             navaids=parse_navaids(lines),
             charts=charts,
             aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),

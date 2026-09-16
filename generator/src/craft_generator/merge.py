@@ -39,7 +39,9 @@ Two SID facts are computed here rather than transcribed. ``climbViaEligible`` fo
 restrictions **or** a top altitude, and when it has no vector segment - so the radar-vector and
 vector-hybrid kinds are never eligible, while SNTNA2, which publishes 3,000 as its top altitude and
 no crossing restriction, is (the ZOA S1-SFO-0 CBT clears it with "climb via SID, top altitude
-3000"). ``baseFix`` is the fix the enroute transitions of a SID all begin at - TRUKN2 starts each of
+3000"). A ``climb_via_eligible`` override replaces that reading outright, for the procedure whose
+SOP clears it "climb via SID" against the rule - the OAK6 vector SID is one.
+``baseFix`` is the fix the enroute transitions of a SID all begin at - TRUKN2 starts each of
 its six transitions at TRUKN - which is the fix a route may exit the procedure at without naming a
 transition. It is omitted when the transitions do not agree on one fix, when the procedure codes no
 transition at all, and when the fix they agree on is the airport itself, as the vector transitions
@@ -57,10 +59,12 @@ from typing import Any
 from craft_generator.chart_text import ChartFacts, TopAltitude
 from craft_generator.cifp.airports import AirportRecord
 from craft_generator.cifp.navaids import Navaid
+from craft_generator.cifp.records import RunwayRecord
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
 from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
 from craft_generator.sop.model import (
     AircraftClass,
+    AircraftGroup,
     AirportInfo,
     AirportInputs,
     AltitudeOutcome,
@@ -127,7 +131,8 @@ class BuildInputs:
     """Every source :func:`build_airport` joins, already parsed.
 
     ``sids``, ``runways``, ``navaids``, ``airport_records`` and ``destination_stars`` come from the
-    CIFP - the navaids keyed by identifier, the airport records by ICAO identifier - ``charts`` from the
+    CIFP - the runway records in CIFP order, the navaids keyed by identifier, the airport records by
+    ICAO identifier - ``charts`` from the
     charts API and the chart PDFs (keyed by chart name, in the order the API lists them),
     ``aircraft_classes`` from the vNAS specs, and ``fixture_routes`` from the filed route of every
     checked-in fixture of the airport, which name navaids the airport data itself never mentions.
@@ -143,7 +148,7 @@ class BuildInputs:
 
     airport: AirportInputs
     sids: dict[str, CifpSid]
-    runways: tuple[str, ...]
+    runways: tuple[RunwayRecord, ...]
     navaids: dict[str, Navaid]
     charts: dict[str, ChartInput]
     aircraft_classes: dict[str, AircraftClass]
@@ -247,6 +252,10 @@ def _noise_window(window: NoiseWindow) -> Document:
     return entry
 
 
+def _aircraft_group(group: AircraftGroup) -> Document:
+    return {"classes": list(group.classes), "types": list(group.types)}
+
+
 def _condition(when: AssignmentCondition) -> Document:
     return _with_optional(
         {},
@@ -271,7 +280,13 @@ def _assignment_rule(rule: AssignmentRule) -> Document:
         "sidFamily": rule.sid_family,
         "sector": rule.sector,
     }
-    return _with_optional(entry, nonDpHeading=rule.non_dp_heading, when=None if rule.when is None else _condition(rule.when))
+    return _with_optional(
+        entry,
+        groups=_texts(rule.groups),
+        approachCategories=_texts(rule.approach_categories),
+        nonDpHeading=rule.non_dp_heading,
+        when=None if rule.when is None else _condition(rule.when),
+    )
 
 
 def _altitude_outcome(outcome: AltitudeOutcome, where: str) -> Document:
@@ -294,7 +309,7 @@ def _altitude_rule(rule: AltitudeRule) -> Document:
         "whenTopAltitudePublished": rule.when_top_altitude_published,
         "expectAfterMinutes": rule.expect_after_minutes,
     }
-    return _with_optional(entry, sidFamilies=_texts(rule.sid_families))
+    return _with_optional(entry, groups=_texts(rule.groups), sidFamilies=_texts(rule.sid_families))
 
 
 def _notice(notice: Notice) -> Document:
@@ -370,13 +385,14 @@ def _destination(destination: Destination, airport_records: Mapping[str, Airport
 
 
 def _fleet_entry(entry: FleetEntry) -> Document:
-    return {
+    document: Document = {
         "type": entry.type,
         "class": entry.aircraft_class,
         "wtc": entry.wtc,
         "suffixes": list(entry.suffixes),
         "airlines": list(entry.airlines),
     }
+    return _with_optional(document, approachCategory=entry.approach_category)
 
 
 def _route_where(route: RouteEntry) -> str:
@@ -610,7 +626,9 @@ def _sid(
         "chartExpectFiledAltitudeMinutes": chart.facts.expect_filed_altitude_minutes,
         "hasCrossingRestrictions": has_restrictions,
         "restrictions": [] if cifp is None else [_restriction(restriction) for restriction in cifp.restrictions],
-        "climbViaEligible": _climb_via_eligible(kind, top_altitude, has_restrictions=has_restrictions),
+        "climbViaEligible": override.climb_via_eligible
+        if override.climb_via_eligible is not None
+        else _climb_via_eligible(kind, top_altitude, has_restrictions=has_restrictions),
         "routePhrasing": override.route_phrasing if override.route_phrasing is not None else _route_phrasing(kind),
         "chartFrequencies": [_with_optional({"frequency": frequency.frequency}, note=frequency.note) for frequency in chart.facts.dep_frequencies],
         "chart": {"pdfUrl": chart.pdf_url},
@@ -756,10 +774,11 @@ def _config_runways(document: Document) -> list[tuple[str, str]]:
     return wanted
 
 
-def _check_runways(document: Document, runways: Sequence[str]) -> None:
+def _check_runways(document: Document, runways: Sequence[RunwayRecord]) -> None:
+    published = [record.designator for record in runways]
     for runway, where in _config_runways(document):
-        if runway not in runways:
-            raise ValueError(f"{where}: runway {runway!r} has no CIFP runway record at this airport; it publishes {list(runways)}")
+        if runway not in published:
+            raise ValueError(f"{where}: runway {runway!r} has no CIFP runway record at this airport; it publishes {published}")
 
 
 def _check_fleet(document: Document) -> None:
@@ -767,6 +786,19 @@ def _check_fleet(document: Document) -> None:
     for entry in document["routeLibrary"]["fleet"]:
         if entry["type"] not in classes:
             raise ValueError(f"routeLibrary.fleet[{entry['type']}]: no aircraft class was resolved for {entry['type']!r} from the vNAS specs")
+
+
+def _check_approach_categories(document: Document) -> None:
+    """Check that the fleet can answer the approach-category question, where a rule row asks it."""
+    asking = [rule["id"] for rule in document["assignmentRules"] if rule.get("approachCategories")]
+    if not asking:
+        return
+    missing = [entry["type"] for entry in document["routeLibrary"]["fleet"] if "approachCategory" not in entry]
+    if missing:
+        raise ValueError(
+            f"routeLibrary.fleet: {len(missing)} type(s) carry no `approach_category` ({', '.join(missing)}), "
+            f"but assignmentRules[{asking[0]}] selects on approach category; give every fleet type its category in routes.yaml"
+        )
 
 
 def _check_destinations(document: Document) -> None:
@@ -869,6 +901,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_sectors(document)
     _check_runways(document, inputs.runways)
     _check_fleet(document)
+    _check_approach_categories(document)
     _check_destinations(document)
     _check_tec_routes(document)
     _check_fix_spoken(document)
@@ -937,12 +970,14 @@ def build_airport(inputs: BuildInputs) -> Document:
 
     Raises:
         ValueError: Two sources disagree, or a rule, runway, fix, navaid name, fleet type or
-            destination does not resolve. Every message names the row it came from.
+            destination does not resolve, or a rule selects on approach category while the fleet
+            does not carry one. Every message names the row it came from.
     """
     sop = inputs.airport.sop
     document: Document = {
         "airport": _airport(sop.airport, inputs.airport_records),
         "provenance": _provenance(sop, inputs.provenance),
+        "runways": [{"designator": record.designator, "magneticBearing": record.magnetic_bearing} for record in inputs.runways],
         "runwayConfigs": [_runway_config(config) for config in sop.runway_configs],
         "departureSectors": [_sector(sector) for sector in sop.departure_sectors],
         "departureStaffingFallbacks": [_sector(sector) for sector in sop.departure_staffing_fallbacks],
@@ -970,6 +1005,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "tecRoutes": _tec_routes(inputs),
         "loaRules": _loa_rules(inputs),
         "aircraftClasses": dict(inputs.aircraft_classes),
+        "aircraftGroups": {name: _aircraft_group(group) for name, group in sop.aircraft_groups.items()},
         "routeLibrary": _route_library(inputs),
     }
     document["fixSpoken"] = _fix_spoken(document, inputs)

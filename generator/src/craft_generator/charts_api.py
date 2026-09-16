@@ -4,10 +4,16 @@
 object per chart. ``chart_code == "DP"`` selects the departure procedures: 12 of the 53 SFO charts in
 cycle 2609. ``pdf_path`` is already an absolute ``https://aeronav.faa.gov/d-tpp/<cycle>/<name>.PDF``
 URL, so no URL building is needed here.
+
+A procedure too long for one sheet is published as several: OAK lists ``OAKLAND SIX`` and
+``OAKLAND SIX, CONT.1`` as separate charts with separate PDFs, and its narrative, top altitude and
+departure frequencies are spread across both. :func:`group_continuations` puts each continuation
+back with the sheet it continues so the procedure is read as one document.
 """
 
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,6 +22,7 @@ from craft_generator.http import fetch_bytes
 CHARTS_API_URL_TEMPLATE = "https://charts-api.oakartcc.org/v1/charts?apt={faa}"
 DEPARTURE_CHART_CODE = "DP"
 _CYCLE_IN_URL = re.compile(r"/d-tpp/(?P<cycle>\d{4})/")
+_CONTINUATION_NAME = re.compile(r"^(?P<base>.+), CONT\.(?P<number>\d+)$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -89,6 +96,38 @@ def _chart_ref(entry: dict[str, str], airport_faa: str) -> ChartRef:
     if missing:
         raise ValueError(f"charts API entry for {airport_faa} is missing {missing!r}: {entry!r}")
     return ChartRef(chart_name=entry["chart_name"].strip(), pdf_name=entry["pdf_name"].strip(), pdf_url=entry["pdf_path"].strip())
+
+
+def group_continuations(charts: Sequence[ChartRef]) -> list[tuple[ChartRef, list[ChartRef]]]:
+    """Group each chart with the continuation sheets that carry the rest of the same procedure.
+
+    A chart named ``<NAME>, CONT.<n>`` is sheet ``n`` of the procedure published as ``<NAME>``, e.g.
+    ``OAKLAND SIX, CONT.1`` continues ``OAKLAND SIX``.
+
+    Args:
+        charts: The departure charts of one airport, in charts API order.
+
+    Returns:
+        One entry per procedure, in the order the API lists the base sheets: the base sheet and its
+        continuations ordered by sheet number. A procedure published on one sheet has no
+        continuation.
+
+    Raises:
+        ValueError: A continuation names a base sheet the list does not carry.
+    """
+    groups: dict[str, list[tuple[int, ChartRef]]] = {
+        chart.chart_name: [] for chart in charts if _CONTINUATION_NAME.fullmatch(chart.chart_name) is None
+    }
+    for chart in charts:
+        match = _CONTINUATION_NAME.fullmatch(chart.chart_name)
+        if match is None:
+            continue
+        base = match.group("base")
+        if base not in groups:
+            raise ValueError(f"chart {chart.chart_name!r} continues {base!r}, which the charts API does not list; it lists {sorted(groups)}")
+        groups[base].append((int(match.group("number")), chart))
+    ordered = {name: [chart for _, chart in sorted(sheets, key=lambda sheet: sheet[0])] for name, sheets in groups.items()}
+    return [(chart, ordered[chart.chart_name]) for chart in charts if chart.chart_name in ordered]
 
 
 def fetch_departure_charts(airport_faa: str, cache: Path, *, force: bool = False) -> list[ChartRef]:

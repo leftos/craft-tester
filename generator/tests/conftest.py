@@ -167,11 +167,10 @@ def ksfo_build_inputs(
 ) -> BuildInputs:
     """Return every build input of KSFO, read from the checked-in fixtures only."""
     legs, runway_records = ksfo_records
-    runways = tuple(record.designator for record in runway_records)
     return BuildInputs(
         airport=ksfo_inputs,
-        sids=group_sids(legs, runways),
-        runways=runways,
+        sids=group_sids(legs, [record.designator for record in runway_records]),
+        runways=runway_records,
         navaids=ksfo_navaids,
         charts=ksfo_chart_inputs,
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),

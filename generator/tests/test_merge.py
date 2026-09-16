@@ -5,7 +5,7 @@ import pytest
 
 from craft_generator.emit import data_path, dump, schema_path, validate
 from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport
-from craft_generator.sop.model import PhraseologyRule, RouteEntry
+from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -264,7 +264,7 @@ def test_a_destination_without_coordinates_names_the_airport(ksfo_build_inputs: 
 
 
 def test_a_runway_no_runway_record_lists_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
-    runways = tuple(runway for runway in ksfo_build_inputs.runways if runway != "19L")
+    runways = tuple(record for record in ksfo_build_inputs.runways if record.designator != "19L")
     with pytest.raises(ValueError, match=r"runway '19L' has no CIFP runway record"):
         build_airport(replace(ksfo_build_inputs, runways=runways))
 
@@ -388,3 +388,63 @@ def test_build_matches_committed_data(ksfo_document: Document) -> None:
     committed = data_path("KSFO")
     assert committed.exists(), f"{committed} is missing; run `uv run craft-gen build --airport KSFO`"
     assert dump(ksfo_document) == committed.read_text(encoding="utf-8", newline="")
+
+
+def test_ksfo_emits_its_runway_bearings(ksfo_document: Document) -> None:
+    assert ksfo_document["runways"] == [
+        {"designator": "01L", "magneticBearing": 14.0},
+        {"designator": "01R", "magneticBearing": 14.0},
+        {"designator": "10L", "magneticBearing": 104.0},
+        {"designator": "10R", "magneticBearing": 104.0},
+        {"designator": "19L", "magneticBearing": 194.0},
+        {"designator": "19R", "magneticBearing": 194.0},
+        {"designator": "28L", "magneticBearing": 284.0},
+        {"designator": "28R", "magneticBearing": 284.0},
+    ]
+
+
+def test_an_airport_whose_rows_name_no_group_emits_an_empty_table(ksfo_document: Document) -> None:
+    assert ksfo_document["aircraftGroups"] == {}
+    assert all("groups" not in rule for rule in ksfo_document["assignmentRules"])
+    assert all("approachCategories" not in rule for rule in ksfo_document["assignmentRules"])
+    assert all("groups" not in rule for rule in ksfo_document["altitudeRules"])
+    assert all("approachCategory" not in entry for entry in ksfo_document["routeLibrary"]["fleet"])
+
+
+def test_aircraft_groups_and_the_rows_naming_them_are_emitted(ksfo_build_inputs: BuildInputs) -> None:
+    groups = {"jets_and_dh8d": AircraftGroup(classes=("J",), types=("DH8D",))}
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    rules[0] = replace(rules[0], groups=("jets_and_dh8d",))
+    altitudes = list(ksfo_build_inputs.airport.sop.altitude_rules)
+    altitudes[0] = replace(altitudes[0], groups=("jets_and_dh8d",))
+    document = build_airport(_with_sop(ksfo_build_inputs, aircraft_groups=groups, assignment_rules=tuple(rules), altitude_rules=tuple(altitudes)))
+    assert document["aircraftGroups"] == {"jets_and_dh8d": {"classes": ["J"], "types": ["DH8D"]}}
+    assert document["assignmentRules"][0]["groups"] == ["jets_and_dh8d"]
+    assert document["altitudeRules"][0]["groups"] == ["jets_and_dh8d"]
+
+
+def test_a_row_selecting_on_approach_category_needs_the_fleet_to_carry_one(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    rules[0] = replace(rules[0], approach_categories=("A", "B"))
+    with pytest.raises(ValueError, match=r"carry no `approach_category`.*selects on approach category"):
+        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+
+
+def test_approach_categories_are_emitted_once_the_fleet_carries_them(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    rules[0] = replace(rules[0], approach_categories=("A", "B"))
+    fleet = tuple(replace(entry, approach_category="C") for entry in ksfo_build_inputs.airport.routes.fleet)
+    library = replace(ksfo_build_inputs.airport.routes, fleet=fleet)
+    inputs = replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, routes=library))
+    document = build_airport(_with_sop(inputs, assignment_rules=tuple(rules)))
+    assert document["assignmentRules"][0]["approachCategories"] == ["A", "B"]
+    assert document["routeLibrary"]["fleet"][0]["approachCategory"] == "C"
+
+
+def test_a_climb_via_eligible_override_wins_over_the_computed_reading(ksfo_build_inputs: BuildInputs) -> None:
+    assert {sid["id"]: sid["climbViaEligible"] for sid in build_airport(ksfo_build_inputs)["sids"]}["GAPP7"] is False
+    overrides = dict(ksfo_build_inputs.airport.overrides.sids)
+    overrides["GAP SEVEN"] = replace(overrides["GAP SEVEN"], climb_via_eligible=True)
+    airport = replace(ksfo_build_inputs.airport, overrides=replace(ksfo_build_inputs.airport.overrides, sids=overrides))
+    document = build_airport(replace(ksfo_build_inputs, airport=airport))
+    assert {sid["id"]: sid["climbViaEligible"] for sid in document["sids"]}["GAPP7"] is True

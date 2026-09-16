@@ -458,3 +458,84 @@ def test_unquoted_runway_family_key_is_reported(tmp_path: Path, ksfo_dir: Path) 
 
     with pytest.raises(ValueError, match="key 10 is a int, not a string; quote it"):
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_an_airport_without_aircraft_groups_loads_an_empty_table(ksfo_inputs: AirportInputs) -> None:
+    assert ksfo_inputs.sop.aircraft_groups == {}
+    assert all(rule.groups is None and rule.approach_categories is None for rule in ksfo_inputs.sop.assignment_rules)
+    assert all(rule.groups is None for rule in ksfo_inputs.sop.altitude_rules)
+    assert all(entry.approach_category is None for entry in ksfo_inputs.routes.fleet)
+
+
+def test_aircraft_groups_round_trip_onto_the_rows_that_name_them(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["aircraft_groups"] = {"jets_and_dh8d": {"classes": ["J"], "types": ["DH8D"]}}
+        data["assignment_rules"][0]["groups"] = ["jets_and_dh8d"]
+        data["assignment_rules"][0]["approach_categories"] = ["A", "B"]
+        data["altitude_rules"][0]["groups"] = ["jets_and_dh8d"]
+
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+    assert sop.aircraft_groups["jets_and_dh8d"].classes == ("J",)
+    assert sop.aircraft_groups["jets_and_dh8d"].types == ("DH8D",)
+    assert sop.assignment_rules[0].groups == ("jets_and_dh8d",)
+    assert sop.assignment_rules[0].approach_categories == ("A", "B")
+    assert sop.altitude_rules[0].groups == ("jets_and_dh8d",)
+
+
+def test_a_group_addressing_nobody_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["aircraft_groups"] = {"nobody": {"classes": [], "types": []}}
+
+    with pytest.raises(ValueError, match=r"aircraft_groups\[nobody\]: an aircraft group addresses nobody"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_a_group_naming_an_unknown_class_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["aircraft_groups"] = {"heavies": {"classes": ["H"], "types": []}}
+
+    with pytest.raises(ValueError, match=r"aircraft_groups\[heavies\].classes\[0\]: 'H' is not one of"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+@pytest.mark.parametrize("key", ["assignment_rules", "altitude_rules"])
+def test_a_rule_naming_an_undefined_group_is_rejected(tmp_path: Path, ksfo_dir: Path, key: str) -> None:
+    def mutate(data: Any) -> None:
+        data[key][0]["groups"] = ["jets_and_dh8d"]
+
+    with pytest.raises(ValueError, match=r"groups names 'jets_and_dh8d', which is not an `aircraft_groups` id"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+@pytest.mark.parametrize("key", ["assignment_rules", "altitude_rules"])
+def test_a_rule_addressing_nobody_is_rejected(tmp_path: Path, ksfo_dir: Path, key: str) -> None:
+    def mutate(data: Any) -> None:
+        data[key][0]["classes"] = []
+
+    with pytest.raises(ValueError, match=r"the row addresses nobody"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_a_rule_naming_an_unknown_approach_category_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["assignment_rules"][0]["approach_categories"] = ["E"]
+
+    with pytest.raises(ValueError, match=r"approach_categories\[0\]: 'E' is not one of"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_a_fleet_approach_category_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["fleet"][0]["approach_category"] = "C"
+
+    routes = load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE)
+    assert routes.fleet[0].approach_category == "C"
+
+
+def test_a_climb_via_eligible_override_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["sids"]["GAP SEVEN"]["climb_via_eligible"] = True
+
+    overrides = load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
+    assert overrides.sids["GAP SEVEN"].climb_via_eligible is True
+    assert overrides.sids["TRUKN TWO (RNAV)"].climb_via_eligible is None

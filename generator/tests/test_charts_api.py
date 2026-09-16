@@ -7,9 +7,23 @@ from craft_generator.charts_api import (
     charts_api_url,
     charts_cache_path,
     fetch_departure_charts,
+    group_continuations,
     parse_departure_charts,
     pdf_cache_path,
 )
+
+# Names from the OAK departure list of cycle 2609, where 5 of the 17 charts are continuation sheets.
+OAK_CHART_NAMES = [
+    "COAST NINE",
+    "COAST NINE, CONT.1",
+    "OAKLAND SIX",
+    "OAKLAND SIX, CONT.1",
+    "CNDEL FIVE (RNAV)",
+]
+
+
+def chart_refs(*names: str) -> list[ChartRef]:
+    return [ChartRef(chart_name=name, pdf_name=f"{name}.PDF", pdf_url=f"https://aeronav.faa.gov/d-tpp/2609/{name}.PDF") for name in names]
 
 
 def test_charts_api_url() -> None:
@@ -62,3 +76,33 @@ def test_incomplete_entry_is_reported() -> None:
 def test_live_charts_api_still_lists_twelve_departures(tmp_path_factory: pytest.TempPathFactory) -> None:
     charts = fetch_departure_charts("SFO", tmp_path_factory.mktemp("cache"))
     assert len(charts) == 12
+
+
+def test_a_continuation_sheet_groups_under_the_procedure_it_continues() -> None:
+    grouped = group_continuations(chart_refs(*OAK_CHART_NAMES))
+    assert [(base.chart_name, [sheet.chart_name for sheet in sheets]) for base, sheets in grouped] == [
+        ("COAST NINE", ["COAST NINE, CONT.1"]),
+        ("OAKLAND SIX", ["OAKLAND SIX, CONT.1"]),
+        ("CNDEL FIVE (RNAV)", []),
+    ]
+
+
+def test_continuations_are_ordered_by_sheet_number() -> None:
+    names = ["OAKLAND SIX", "OAKLAND SIX, CONT.2", "OAKLAND SIX, CONT.10", "OAKLAND SIX, CONT.1"]
+    grouped = group_continuations(chart_refs(*names))
+    assert [sheet.chart_name for _, sheets in grouped for sheet in sheets] == [
+        "OAKLAND SIX, CONT.1",
+        "OAKLAND SIX, CONT.2",
+        "OAKLAND SIX, CONT.10",
+    ]
+
+
+def test_a_continuation_without_its_base_sheet_is_rejected() -> None:
+    with pytest.raises(ValueError, match=r"chart 'OAKLAND SIX, CONT.1' continues 'OAKLAND SIX', which the charts API does not list"):
+        group_continuations(chart_refs("COAST NINE", "OAKLAND SIX, CONT.1"))
+
+
+def test_an_airport_without_continuations_groups_every_chart_alone(sfo_charts: list[ChartRef]) -> None:
+    grouped = group_continuations(sfo_charts)
+    assert [base.chart_name for base, _ in grouped] == [chart.chart_name for chart in sfo_charts]
+    assert all(sheets == [] for _, sheets in grouped)

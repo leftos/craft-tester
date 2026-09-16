@@ -15,10 +15,11 @@ vNAS aircraft specs ─┘   data/schema/*.json  ◄── exported from web/src
 `data/schema/airport.schema.json` and `data/schema/fixture.schema.json`; the generator validates every emitted
 file against them. A vitest sync test fails when the checked-in export drifts from the zod source.
 
-Sections of `AirportData` (see the schema for fields): `airport`, `provenance`, `runwayConfigs`,
-`departureSectors`, `frequencies`, `gates`, `sids`, `assignmentRules`, `noiseWindows`, `altitudeRules`,
-`phraseology`, `phraseologyRules`, `equipmentSuffixes`, `tecRoutes`, `loaRules`, `aircraftClasses`,
-`routeLibrary`.
+Sections of `AirportData` (see the schema for fields): `airport`, `provenance`, `runways` (CIFP runway
+ends with their magnetic bearing), `runwayConfigs`, `departureSectors`, `frequencies`, `gates`, `sids`,
+`assignmentRules`, `noiseWindows`, `altitudeRules`, `phraseology`, `phraseologyRules`,
+`equipmentSuffixes`, `routeConnections`, `tecRoutes`, `loaRules`, `notices`, `aircraftClasses`,
+`aircraftGroups` (named class-and-type sets the rows address), `routeLibrary`.
 
 ## Generator (`generator/src/craft_generator/`)
 

@@ -44,6 +44,11 @@ const minimalAirportData: AirportData = {
       transcribedAt: '2026-09-15',
     },
   },
+  runways: [
+    { designator: '01R', magneticBearing: 14 },
+    { designator: '28L', magneticBearing: 284 },
+    { designator: '28R', magneticBearing: 284 },
+  ],
   runwayConfigs: [
     {
       id: '28/01',
@@ -119,6 +124,7 @@ const minimalAirportData: AirportData = {
   loaRules: [],
   notices: [],
   aircraftClasses: { B738: 'J' },
+  aircraftGroups: {},
   routeLibrary: { destinations: [], telephony: {}, cargoAirlines: [], fleet: [], routes: [] },
 };
 

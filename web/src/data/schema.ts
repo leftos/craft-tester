@@ -3,6 +3,22 @@ import { z } from 'zod';
 /** Aircraft performance class as the SFO SOP tables use it: piston, turboprop, jet. */
 export const AircraftClassSchema = z.enum(['P', 'T', 'J']);
 
+/** Aircraft approach category as the published Vref bands define it, from A (slowest) to D. */
+export const ApproachCategorySchema = z.enum(['A', 'B', 'C', 'D']);
+
+/**
+ * A named group of aircraft an SOP row addresses at once, by class and/or by type designator.
+ *
+ * The OAK SOP writes rows against "J & DH8D", a set no single class covers: the group names the
+ * classes it takes whole and the individual type designators it adds, e.g.
+ * `jets_and_dh8d: { classes: ['J'], types: ['DH8D'] }`. A flight matches a rule row when its class
+ * is in the row's `classes` or it is in any group the row lists.
+ */
+export const AircraftGroupSchema = z.strictObject({
+  classes: z.array(AircraftClassSchema),
+  types: z.array(z.string()),
+});
+
 /** SOP departure direction that a gate fix belongs to. */
 export const DirectionSchema = z.enum(['north', 'south', 'oceanic']);
 
@@ -82,6 +98,18 @@ export const ProvenanceSchema = z.strictObject({
       }),
     )
     .optional(),
+});
+
+/**
+ * One runway end the CIFP publishes for the airport, with the bearing it is flown on.
+ *
+ * `magneticBearing` is the runway's magnetic bearing in degrees, from the CIFP `PG` record. It is
+ * what a numbered-heading clearance derives its turn direction from: the shorter way round from the
+ * runway bearing to the assigned heading is the direction the turn is issued in.
+ */
+export const RunwaySchema = z.strictObject({
+  designator: z.string(),
+  magneticBearing: z.number().min(0).max(360),
 });
 
 /**
@@ -239,6 +267,10 @@ export const AssignmentConditionSchema = z.strictObject({
  * abatement row that sends non-RNAV props off runway heading. A row either assigns a SID family or
  * clears the flight without a DP on `nonDpHeading`, never both and never neither, which is what the
  * refinement enforces; `sidFamily` is `null` on the `nonDpHeading` rows.
+ *
+ * `groups` are `aircraftGroups` ids: a flight matches the row when its class is in `classes` or it
+ * is in any listed group. `approachCategories` narrows the row to the aircraft approach categories
+ * it names, as the OAK SOP's "P and Cat A/B" row does; absent means any category.
  */
 export const AssignmentRuleSchema = z
   .strictObject({
@@ -249,6 +281,8 @@ export const AssignmentRuleSchema = z
     direction: z.union([DirectionSchema, z.literal('any')]),
     runwayFamilies: z.array(z.string()),
     classes: z.array(AircraftClassSchema),
+    groups: z.array(z.string()).optional(),
+    approachCategories: z.array(ApproachCategorySchema).optional(),
     sidFamily: z.string().nullable(),
     nonDpHeading: z.string().optional(),
     sector: z.string(),
@@ -273,7 +307,12 @@ export const AltitudeOutcomeSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('climb_via') }),
 ]);
 
-/** One row of the SOP interim altitude table; the engine takes the first match. */
+/**
+ * One row of the SOP interim altitude table; the engine takes the first match.
+ *
+ * `groups` are `aircraftGroups` ids: a flight matches the row when its class is in `classes` or it
+ * is in any listed group, which is how a row addresses a type its class does not cover.
+ */
 export const AltitudeRuleSchema = z.strictObject({
   id: z.string(),
   source: z.string(),
@@ -281,6 +320,7 @@ export const AltitudeRuleSchema = z.strictObject({
   plan: z.string(),
   runwayFamilies: z.array(z.string()),
   classes: z.array(AircraftClassSchema),
+  groups: z.array(z.string()).optional(),
   sidFamilies: z.array(z.string()).optional(),
   outcome: AltitudeOutcomeSchema,
   whenTopAltitudePublished: z.enum(['interim', 'climb_via']),
@@ -401,6 +441,11 @@ export const FleetEntrySchema = z.strictObject({
   wtc: z.string(),
   suffixes: z.array(z.string().regex(/^\/[A-Z]$/)),
   airlines: z.array(z.string()),
+  /**
+   * The aircraft approach category from the published Vref, needed only where a rule row names
+   * categories; it is absent at an airport whose rows never do.
+   */
+  approachCategory: ApproachCategorySchema.optional(),
 });
 
 /** A curated filed route: the gate fix, the rest of the route string, and where it goes. */
@@ -450,11 +495,14 @@ export const NoticeSchema = z.strictObject({
  * then a departure direction, then a runway family to the runway a flight in that direction departs
  * from, e.g. SFOW north off the 01s departing 01R. `noSid` is the runway families that can be
  * cleared without a DP and the route phrasing that clearance uses. `fixSpoken` maps a fix or navaid
- * identifier to how it is spoken, e.g. `OSI` to `Woodside`.
+ * identifier to how it is spoken, e.g. `OSI` to `Woodside`. `runways` is every runway end the CIFP
+ * publishes for the airport with its magnetic bearing, and `aircraftGroups` the named aircraft sets
+ * the assignment and altitude rows address, empty at an airport whose rows only name classes.
  */
 export const AirportDataSchema = z.strictObject({
   airport: AirportIdentitySchema,
   provenance: ProvenanceSchema,
+  runways: z.array(RunwaySchema),
   runwayConfigs: z.array(RunwayConfigSchema),
   departureSectors: z.array(DepartureSectorSchema),
   departureStaffingFallbacks: z.array(DepartureSectorSchema),
@@ -481,6 +529,7 @@ export const AirportDataSchema = z.strictObject({
   loaRules: z.array(LoaRuleSchema),
   notices: z.array(NoticeSchema),
   aircraftClasses: z.record(z.string(), AircraftClassSchema),
+  aircraftGroups: z.record(z.string(), AircraftGroupSchema),
   routeLibrary: RouteLibrarySchema,
 });
 
@@ -642,6 +691,9 @@ export const AirportsIndexEntrySchema = z.strictObject({
 export const AirportsIndexSchema = z.array(AirportsIndexEntrySchema);
 
 export type AircraftClass = z.infer<typeof AircraftClassSchema>;
+export type ApproachCategory = z.infer<typeof ApproachCategorySchema>;
+export type AircraftGroup = z.infer<typeof AircraftGroupSchema>;
+export type Runway = z.infer<typeof RunwaySchema>;
 export type Direction = z.infer<typeof DirectionSchema>;
 export type RouteTemplate = z.infer<typeof RouteTemplateSchema>;
 export type AltitudePhrase = z.infer<typeof AltitudePhraseSchema>;

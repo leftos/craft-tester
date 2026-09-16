@@ -24,6 +24,7 @@ import yaml
 from craft_generator.sop.model import (
     AIRCRAFT_CLASSES,
     ALTITUDE_OUTCOME_KINDS,
+    APPROACH_CATEGORIES,
     CONNECTION_STRENGTHS,
     DEPARTURE_SID_KINDS,
     DIRECTIONS,
@@ -40,6 +41,7 @@ from craft_generator.sop.model import (
     WAKE_CATEGORIES,
     WORKSHEET_KINDS,
     AircraftClass,
+    AircraftGroup,
     AirportInfo,
     AirportInputs,
     AltitudeOutcome,
@@ -270,9 +272,13 @@ class _Row:
         return tuple(_as_choice(item, allowed, f"{at}[{index}]") for index, item in enumerate(_as_sequence(self._raw(key), at)))
 
     def optional_choices[Choice: str](self, key: str, allowed: tuple[Choice, ...]) -> tuple[Choice, ...]:
+        return self.optional_choices_or_none(key, allowed) or ()
+
+    def optional_choices_or_none[Choice: str](self, key: str, allowed: tuple[Choice, ...]) -> tuple[Choice, ...] | None:
+        """Read an optional list of choices, keeping an absent key distinct from an empty list."""
         value = self._optional_raw(key)
         if value is None:
-            return ()
+            return None
         at = self._at(key)
         return tuple(_as_choice(item, allowed, f"{at}[{index}]") for index, item in enumerate(_as_sequence(value, at)))
 
@@ -344,6 +350,22 @@ def _airport_info(row: _Row) -> AirportInfo:
     info = AirportInfo(icao=row.text("icao"), faa=row.text("faa"), spoken=row.text("spoken"), clearance_delivery=row.text("clearance_delivery"))
     row.finish()
     return info
+
+
+def _aircraft_group(row: _Row) -> AircraftGroup:
+    group = AircraftGroup(classes=row.optional_choices("classes", AIRCRAFT_CLASSES), types=row.optional_texts("types") or ())
+    row.finish()
+    if not group.classes and not group.types:
+        raise ValueError(f"{row.where}: an aircraft group addresses nobody; give it `classes`, `types`, or both")
+    return group
+
+
+def _aircraft_groups(root: _Row) -> dict[str, AircraftGroup]:
+    table = root.optional_table("aircraft_groups")
+    if table is None:
+        return {}
+    at = f"{root.where}.aircraft_groups"
+    return {name: _aircraft_group(_Row(f"{at}[{name}]", value)) for name, value in table.items()}
 
 
 def _departure_runway(row: _Row) -> DepartureRunway:
@@ -449,6 +471,8 @@ def _assignment_rule(row: _Row) -> AssignmentRule:
         direction=row.choice("direction", DIRECTIONS),
         runway_families=row.texts("runway_families"),
         classes=row.choices("classes", AIRCRAFT_CLASSES),
+        groups=row.optional_texts("groups"),
+        approach_categories=row.optional_choices_or_none("approach_categories", APPROACH_CATEGORIES),
         sid_family=row.optional_text("sid_family"),
         non_dp_heading=_non_dp_heading(row),
         sector=row.text("sector"),
@@ -478,6 +502,7 @@ def _altitude_rule(row: _Row) -> AltitudeRule:
         plan=row.text("plan"),
         runway_families=row.texts("runway_families"),
         classes=row.choices("classes", AIRCRAFT_CLASSES),
+        groups=row.optional_texts("groups"),
         sid_families=row.optional_texts("sid_families"),
         outcome=_altitude_outcome(row.child("outcome")),
         when_top_altitude_published=row.choice("when_top_altitude_published", ALTITUDE_OUTCOME_KINDS),
@@ -548,6 +573,7 @@ def _sop_data(root: _Row) -> SopData:
         source=_sop_source(root.child("source")),
         secondary_sources=tuple(_secondary_source(child) for child in root.children("secondary_sources")),
         airport=_airport_info(root.child("airport")),
+        aircraft_groups=_aircraft_groups(root),
         runways=root.texts("runways"),
         runway_configs=tuple(_runway_config(child) for child in root.children("runway_configs")),
         departure_sectors=tuple(_departure_sector(child) for child in root.children("departure_sectors")),
@@ -579,9 +605,20 @@ def _check_runway_families(families: Sequence[str], known: Sequence[str], where:
             raise ValueError(f"{where}: runway family {family!r} is not a two-character prefix of any runway in `runways`; use one of {list(known)}")
 
 
+def _check_audience(classes: Sequence[AircraftClass], groups: Sequence[str] | None, at: str, sop: SopData) -> None:
+    """Check that a rule row addresses somebody, by class or by a group the SOP defines."""
+    if not classes and not groups:
+        raise ValueError(f"{at}: the row addresses nobody; list the aircraft `classes` it applies to, or the `groups` of `aircraft_groups`")
+    for group in groups or ():
+        if group not in sop.aircraft_groups:
+            known = sorted(sop.aircraft_groups)
+            raise ValueError(f"{at}: groups names {group!r}, which is not an `aircraft_groups` id; use one of {known} or add the group")
+
+
 def _check_assignment_rule(rule: AssignmentRule, where: str, sop: SopData, families: Sequence[str]) -> None:
     at = f"{where} assignment_rules[{rule.id}]"
     _check_runway_families(rule.runway_families, families, at)
+    _check_audience(rule.classes, rule.groups, at, sop)
     if rule.sector not in {sector.id for sector in sop.departure_sectors}:
         known = [sector.id for sector in sop.departure_sectors]
         raise ValueError(f"{at}: sector {rule.sector!r} is not a `departure_sectors` id; use one of {known} or add the sector")
@@ -650,7 +687,9 @@ def _check_sop(sop: SopData, where: str) -> None:
     for rule in sop.assignment_rules:
         _check_assignment_rule(rule, where, sop, families)
     for altitude_rule in sop.altitude_rules:
-        _check_runway_families(altitude_rule.runway_families, families, f"{where} altitude_rules[{altitude_rule.id}]")
+        at = f"{where} altitude_rules[{altitude_rule.id}]"
+        _check_runway_families(altitude_rule.runway_families, families, at)
+        _check_audience(altitude_rule.classes, altitude_rule.groups, at, sop)
     _check_runway_families(sop.no_sid.runway_families, families, f"{where} no_sid")
     _check_direction_runway_preference(sop, where, families)
     _check_gates(sop.gates, where)
@@ -668,9 +707,10 @@ def load_sop(path: Path) -> SopData:
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown or mistyped key, holds a rule
-            whose sector, runway configuration, noise window or runway family does not exist, holds
-            a departure runway that is both a class default and on request, or states one
-            phraseology rule id twice.
+            whose sector, runway configuration, noise window, aircraft group or runway family does
+            not exist, holds a rule that addresses no aircraft at all, holds an aircraft group that
+            names neither a class nor a type, holds a departure runway that is both a class default
+            and on request, or states one phraseology rule id twice.
     """
     where = _where(path)
     sop = _sop_data(_Row(where, _load_yaml_mapping(path, where)))
@@ -700,6 +740,7 @@ def _sid_override(chart_name: str, row: _Row) -> SidOverride:
         else _flag_table(restrictions, f"{row.where}.crossing_restrictions_by_runway_family"),
         route_phrasing=row.optional_choice("route_phrasing", ROUTE_PHRASINGS),
         transitions_spoken_as_transition=row.optional_flag("transitions_spoken_as_transition"),
+        climb_via_eligible=row.optional_flag("climb_via_eligible"),
         note=row.optional_text("note"),
     )
     row.finish()
@@ -780,6 +821,7 @@ def _fleet_entry(row: _Row) -> FleetEntry:
         wtc=row.choice("wtc", WAKE_CATEGORIES),
         suffixes=row.texts("suffixes"),
         airlines=row.texts("airlines"),
+        approach_category=row.optional_choice("approach_category", APPROACH_CATEGORIES),
     )
     row.finish()
     for suffix in entry.suffixes:

@@ -1,0 +1,35 @@
+OAKLAND, CALIFORNIA
+OAKLAND, CALIFORNIA
+(OAK)
+(OAK)
+T
+(COAST9.MCKEY)
+(COAST9.MCKEY)
+DEPARTURE ROUTE DESCRIPTION
+to MQO VORTAC, then on MQO R-086 and FLW R-266 to FLW VOR/DME.
+FELLOWS TRANSITION (COAST9.FLW):  From over MCKEY INT on MQO R-295
+to MQO VORTAC, then on MQO R-126 and GVO R-307 to GVO VORTAC.
+GAVIOTA TRANSITION (COAST9.GVO):  From over MCKEY INT on MQO R-295
+R-295 to MQO VORTAC, then on MQO R-116 and RZS R-299 to RZS VORTAC.
+SAN MARCUS TRANSITION (COAST9.RZS):  From over MCKEY INT on MQO
+Maintain FL220.  Expect clearance to filed altitude ten minutes after departure.
+CYPRS INT, then on MQO R-295 to MCKEY INT, then on assigned (transition).
+. . . . intercept and proceed on the PYE R-151 to SEGUL INT, then on PYE R-151 to
+25275
+and proceed on PYE R-151, then resume own navigation.
+LOST COMMUNICATIONS:  After reaching 3000, turn left heading 200° to intercept
+01FEB18
+Thence . . . .
+cross 4 DME northwest of OAK VOR/DME at or above 1400 and at or below 2000.
+TAKEOFF RUNWAY 30:   Climb heading 296° for RADAR vectors to PYE R-151,
+R-131 to DAISY INT, then on SXC R-287 to SXC VORTAC.
+SANTA CATALINA TRANSITION (COAST9.SXC):  From over MCKEY INT on BSR
+AL-294 (FAA)COAST NINE DEPARTURE
+COAST NINE DEPARTURE
+Thence . . . .
+cross 4 DME northwest of OAK VOR/DME at or above 1400 and at or below 2000.
+TAKEOFF RUNWAYS 28L/R:  Climb heading 278° for RADAR vectors to PYE R-151,
+OAKLAND SAN FRANCISCO BAY
+OAKLAND SAN FRANCISCO BAY
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026

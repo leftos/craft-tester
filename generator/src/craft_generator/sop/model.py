@@ -22,6 +22,7 @@ from typing import ClassVar, Literal
 from craft_generator.chart_text import TopAltitudeKind
 
 AircraftClass = Literal["P", "T", "J"]
+ApproachCategory = Literal["A", "B", "C", "D"]
 TecRouteKind = Literal["tec", "adr"]
 LoaRuleKindName = Literal["parity_rotated", "even", "odd", "max", "route"]
 Direction = Literal["north", "south", "oceanic", "any"]
@@ -39,6 +40,7 @@ OnRequestKind = Literal["cargo", "heavy", "oceanic"]
 ConnectionStrength = Literal["always", "usually"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
+APPROACH_CATEGORIES: tuple[ApproachCategory, ...] = ("A", "B", "C", "D")
 TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr")
 LOA_RULE_KIND_NAMES: tuple[LoaRuleKindName, ...] = ("parity_rotated", "even", "odd", "max", "route")
 DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
@@ -87,6 +89,19 @@ class AirportInfo:
     faa: str
     spoken: str
     clearance_delivery: str
+
+
+@dataclass(frozen=True, slots=True)
+class AircraftGroup:
+    """A named set of aircraft an SOP row addresses at once, by class and by type designator.
+
+    The OAK SOP writes rows against "J & DH8D", which no single class covers: the group takes the
+    ``J`` class whole and adds the ``DH8D`` type. A row lists the group by its id instead of naming
+    the types again.
+    """
+
+    classes: tuple[AircraftClass, ...]
+    types: tuple[str, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -182,7 +197,12 @@ class AssignmentCondition:
 
 @dataclass(frozen=True, slots=True)
 class AssignmentRule:
-    """One row of SOP 2-2 a or 2-4 e: which DP (or non-DP heading) a departure gets."""
+    """One row of SOP 2-2 a or 2-4 e: which DP (or non-DP heading) a departure gets.
+
+    ``groups`` names :class:`AircraftGroup` ids the row addresses beyond ``classes``, and
+    ``approach_categories`` narrows it to the approach categories it names; both are ``None`` on a
+    row that names none, and a row with no category restriction applies to every category.
+    """
 
     id: str
     source: str
@@ -191,6 +211,8 @@ class AssignmentRule:
     direction: Direction
     runway_families: tuple[str, ...]
     classes: tuple[AircraftClass, ...]
+    groups: tuple[str, ...] | None
+    approach_categories: tuple[ApproachCategory, ...] | None
     sid_family: str | None
     non_dp_heading: NonDpHeading | None
     sector: str
@@ -207,7 +229,11 @@ class AltitudeOutcome:
 
 @dataclass(frozen=True, slots=True)
 class AltitudeRule:
-    """One row of SOP 2-2 c: the interim altitude issued when no top altitude is published."""
+    """One row of SOP 2-2 c: the interim altitude issued when no top altitude is published.
+
+    ``groups`` names :class:`AircraftGroup` ids the row addresses beyond ``classes``, and is
+    ``None`` on a row that names none.
+    """
 
     id: str
     source: str
@@ -215,6 +241,7 @@ class AltitudeRule:
     plan: str
     runway_families: tuple[str, ...]
     classes: tuple[AircraftClass, ...]
+    groups: tuple[str, ...] | None
     sid_families: tuple[str, ...] | None
     outcome: AltitudeOutcome
     when_top_altitude_published: AltitudeOutcomeKind
@@ -267,6 +294,7 @@ class SopData:
     source: SopSource
     secondary_sources: tuple[SecondarySource, ...]
     airport: AirportInfo
+    aircraft_groups: dict[str, AircraftGroup]
     runways: tuple[str, ...]
     runway_configs: tuple[RunwayConfig, ...]
     departure_sectors: tuple[DepartureSector, ...]
@@ -309,6 +337,7 @@ class SidOverride:
     crossing_restrictions_by_runway_family: dict[str, bool] | None
     route_phrasing: RoutePhrasing | None
     transitions_spoken_as_transition: bool | None
+    climb_via_eligible: bool | None
     note: str | None
 
 
@@ -334,13 +363,18 @@ class Destination:
 
 @dataclass(frozen=True, slots=True)
 class FleetEntry:
-    """One aircraft type of the curated fleet; ``aircraft_class`` is the YAML ``class`` key."""
+    """One aircraft type of the curated fleet; ``aircraft_class`` is the YAML ``class`` key.
+
+    ``approach_category`` is the type's category from its published Vref, and is ``None`` at an
+    airport whose rules never name one.
+    """
 
     type: str
     aircraft_class: AircraftClass
     wtc: WakeCategory
     suffixes: tuple[str, ...]
     airlines: tuple[str, ...]
+    approach_category: ApproachCategory | None
 
 
 @dataclass(frozen=True, slots=True)
