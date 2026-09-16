@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, NoiseWindow, Scenario } from '@/data/schema.ts';
-import { classify, isNoiseWindowActive } from '@/rules/classify.ts';
+import type { Classification, RuleAudience } from '@/rules/classify.ts';
+import { addresses, classify, isNoiseWindowActive } from '@/rules/classify.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -23,6 +24,51 @@ const BASE: Scenario = {
 function scenario(overrides: Partial<Scenario>): Scenario {
   return Object.assign({ ...BASE }, overrides);
 }
+
+/**
+ * KSFO defines no aircraft groups and publishes no approach categories, so the rows that address a
+ * flight by group or by category are exercised against a spread of it: a group that takes the jets
+ * whole and adds the DH8D, and three turboprops whose fleet rows carry category B, category C and
+ * no category at all.
+ */
+const grouped: AirportData = {
+  ...ksfo,
+  aircraftClasses: { ...ksfo.aircraftClasses, DH8D: 'T', AT72: 'T', SF34: 'T' },
+  aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
+  routeLibrary: {
+    ...ksfo.routeLibrary,
+    fleet: [
+      ...ksfo.routeLibrary.fleet,
+      {
+        type: 'DH8D',
+        class: 'T',
+        wtc: 'M',
+        suffixes: ['/L'],
+        airlines: ['QXE'],
+        approachCategory: 'B',
+      },
+      {
+        type: 'AT72',
+        class: 'T',
+        wtc: 'M',
+        suffixes: ['/L'],
+        airlines: ['QXE'],
+        approachCategory: 'C',
+      },
+      { type: 'SF34', class: 'T', wtc: 'M', suffixes: ['/L'], airlines: ['QXE'] },
+    ],
+  },
+};
+
+/** The classification of a flight of `aircraftType` at the airport with the groups. */
+function classified(aircraftType: string): Classification {
+  const result = classify(scenario({ aircraftType }), grouped);
+  if (isUnresolved(result)) throw new Error(result.reason);
+  return result;
+}
+
+/** A row addressing the jets by class and the DH8D by group, as the OAK SOP's "J & DH8D" rows do. */
+const jetsAndDh8d: RuleAudience = { id: 'OAK-J-DH8D', classes: ['J'], groups: ['jets_and_dh8d'] };
 
 const night: NoiseWindow = { id: 'night', start: '2200', end: '0700', sundayEnd: '0800' };
 const lateNight: NoiseWindow = { id: 'late_night', start: '0100', end: '0500' };
@@ -103,5 +149,78 @@ describe('classify', () => {
   it('blocks the SID element on a runway configuration the data does not have', () => {
     const result = classify(scenario({ runwayConfigId: '13/31' }), ksfo);
     expect(result).toEqual({ element: 'R.sid', reason: expect.stringContaining('13/31') });
+  });
+
+  it('carries the filed type designator', () => {
+    const result = classify(scenario({}), ksfo);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.aircraftType).toBe('B738');
+  });
+
+  it.each([
+    ['DH8D', 'B'],
+    ['AT72', 'C'],
+    ['SF34', undefined],
+  ] as const)('reads the approach category of a %s from the fleet: %s', (type, expected) => {
+    expect(classified(type).approachCategory).toBe(expected);
+  });
+
+  it('leaves the approach category unset for a type the fleet does not list', () => {
+    const noFleet: AirportData = {
+      ...grouped,
+      routeLibrary: { ...grouped.routeLibrary, fleet: [] },
+    };
+    const result = classify(scenario({ aircraftType: 'DH8D' }), noFleet);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.approachCategory).toBeUndefined();
+  });
+});
+
+describe('addresses', () => {
+  it('addresses a flight whose class the row lists', () => {
+    expect(addresses(jetsAndDh8d, classified('B738'), grouped)).toBe(true);
+  });
+
+  it('addresses a type a group adds outside the classes the row lists', () => {
+    expect(addresses(jetsAndDh8d, classified('DH8D'), grouped)).toBe(true);
+  });
+
+  it('leaves a turboprop the group does not name to the rows below', () => {
+    expect(addresses(jetsAndDh8d, classified('SF34'), grouped)).toBe(false);
+  });
+
+  it('addresses a flight whose class a group takes whole', () => {
+    const turboprops: RuleAudience = { id: 'OAK-T', classes: [], groups: ['turboprops'] };
+    const airport: AirportData = {
+      ...grouped,
+      aircraftGroups: { turboprops: { classes: ['T'], types: [] } },
+    };
+    expect(addresses(turboprops, classified('SF34'), airport)).toBe(true);
+    expect(addresses(turboprops, classified('B738'), airport)).toBe(false);
+  });
+
+  it.each([
+    ['DH8D', true],
+    ['AT72', false],
+    ['SF34', false],
+  ] as const)('narrows a row to the categories it names: a %s matches %s', (type, expected) => {
+    const catAb: RuleAudience = {
+      id: 'OAK-CAT-AB',
+      classes: ['P', 'T', 'J'],
+      approachCategories: ['A', 'B'],
+    };
+    expect(addresses(catAb, classified(type), grouped)).toBe(expected);
+  });
+
+  it('reaches every category on a row that names none', () => {
+    const anyCategory: RuleAudience = { id: 'OAK-ANY', classes: ['T'] };
+    expect(addresses(anyCategory, classified('AT72'), grouped)).toBe(true);
+    expect(addresses(anyCategory, classified('SF34'), grouped)).toBe(true);
+  });
+
+  it('rejects a row naming a group the airport data does not define', () => {
+    const ghost: RuleAudience = { id: 'OAK-GHOST', classes: ['J'], groups: ['no_such_group'] };
+    expect(() => addresses(ghost, classified('DH8D'), grouped)).toThrow(/OAK-GHOST/);
+    expect(() => addresses(ghost, classified('DH8D'), grouped)).toThrow(/no_such_group/);
   });
 });

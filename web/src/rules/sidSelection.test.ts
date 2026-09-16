@@ -42,6 +42,8 @@ const config: RunwayConfig = {
 
 const BASE_CTX: Classification = {
   aircraftClass: 'J',
+  aircraftType: 'B738',
+  approachCategory: undefined,
   plan: 'SFOW',
   runwayFamily: '01',
   config,
@@ -338,6 +340,40 @@ describe('selectSid', () => {
     expect(result).toEqual({
       element: 'R.sid',
       reason: 'no assignment rule applies to SFOW north runway 01 class P',
+    });
+  });
+
+  it('takes a row for a type its group adds outside the classes the row lists', () => {
+    const airport: AirportData = {
+      ...airportWith([rule({ id: 'JETS-AND-DH8D', classes: ['J'], groups: ['jets_and_dh8d'] })]),
+      aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
+    };
+    const result = selectSid(
+      ctx({ aircraftClass: 'T', aircraftType: 'DH8D' }),
+      'DEDHD',
+      'north',
+      scenario({ aircraftType: 'DH8D' }),
+      airport,
+    );
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.row.id).toBe('JETS-AND-DH8D');
+  });
+
+  it('walks past that row for a turboprop the group does not name', () => {
+    const airport: AirportData = {
+      ...airportWith([rule({ id: 'JETS-AND-DH8D', classes: ['J'], groups: ['jets_and_dh8d'] })]),
+      aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
+    };
+    const result = selectSid(
+      ctx({ aircraftClass: 'T', aircraftType: 'SF34' }),
+      'DEDHD',
+      'north',
+      scenario({ aircraftType: 'SF34' }),
+      airport,
+    );
+    expect(result).toEqual({
+      element: 'R.sid',
+      reason: 'no assignment rule applies to SFOW north runway 01 class T',
     });
   });
 });

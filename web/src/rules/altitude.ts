@@ -7,6 +7,7 @@ import type {
   Sid,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
+import { addresses } from '@/rules/classify.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { Cited, ExpectClause, SelectedProcedure, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
@@ -31,15 +32,23 @@ function isClimbViaEligible(sid: Sid, runwayFamily: string): boolean {
  *
  * A flight cleared on the runway heading flies no procedure, so only a row written for every
  * procedure can be keyed to it: a row naming SID families has nothing to match against.
+ *
+ * The row's audience is the class and the groups it is written for, which `addresses` reads against
+ * the airport's `aircraftGroups`.
  */
-function rowMatches(row: AltitudeRule, ctx: Classification, procedure: SelectedProcedure): boolean {
+function rowMatches(
+  row: AltitudeRule,
+  ctx: Classification,
+  procedure: SelectedProcedure,
+  airport: AirportData,
+): boolean {
   const familyMatches =
     row.sidFamilies === undefined ||
     (procedure.kind === 'sid' && row.sidFamilies.includes(procedure.sid.family));
   return (
     row.plan === ctx.plan &&
     row.runwayFamilies.includes(ctx.runwayFamily) &&
-    row.classes.includes(ctx.aircraftClass) &&
+    addresses(row, ctx, airport) &&
     familyMatches
   );
 }
@@ -193,7 +202,7 @@ export function resolveAltitude(
   scenario: Scenario,
   airport: AirportData,
 ): ResolvedAltitude | Unresolved {
-  const row = airport.altitudeRules.find((entry) => rowMatches(entry, ctx, procedure));
+  const row = airport.altitudeRules.find((entry) => rowMatches(entry, ctx, procedure, airport));
   if (row === undefined) {
     const on = procedure.kind === 'sid' ? procedure.sid.family : 'the runway heading';
     return unresolved(

@@ -8,6 +8,7 @@ import type {
   Sid,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
+import { addresses } from '@/rules/classify.ts';
 import type { SelectedProcedure, Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
@@ -42,17 +43,23 @@ function conditionsHold(
   ].every(Boolean);
 }
 
-/** Whether a row's plan, direction, runway family, class, and conditions all match. */
+/**
+ * Whether a row's plan, direction, runway family, audience, and conditions all match.
+ *
+ * The audience is the class, group and approach category the row is written for, which `addresses`
+ * reads against the airport's `aircraftGroups`.
+ */
 function rowApplies(
   row: AssignmentRule,
   ctx: Classification,
   exitElement: string,
   direction: Direction | undefined,
+  airport: AirportData,
 ): boolean {
   if (row.plan !== ctx.plan) return false;
   if (row.direction !== 'any' && row.direction !== direction) return false;
   if (!row.runwayFamilies.includes(ctx.runwayFamily)) return false;
-  if (!row.classes.includes(ctx.aircraftClass)) return false;
+  if (!addresses(row, ctx, airport)) return false;
   return row.when === undefined || conditionsHold(row.when, ctx, exitElement);
 }
 
@@ -135,7 +142,7 @@ export function selectSid(
   const incompatible: string[] = [];
   const notices: Notice[] = [];
   for (const row of airport.assignmentRules) {
-    if (!rowApplies(row, ctx, exitElement, direction)) continue;
+    if (!rowApplies(row, ctx, exitElement, direction, airport)) continue;
     const notice = sidOffNotice(row.sidFamily, ctx, airport);
     if (notice !== undefined) {
       notices.push(notice);
@@ -195,7 +202,7 @@ export function unservedSids(
 ): UnservedSid[] {
   const candidates: UnservedSid[] = [];
   for (const row of airport.assignmentRules) {
-    if (!rowApplies(row, ctx, exitElement, direction)) continue;
+    if (!rowApplies(row, ctx, exitElement, direction, airport)) continue;
     if (sidOffNotice(row.sidFamily, ctx, airport) !== undefined) continue;
     const family = row.sidFamily;
     if (family === null) return candidates;

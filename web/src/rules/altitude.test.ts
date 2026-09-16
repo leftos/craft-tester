@@ -27,6 +27,8 @@ const config: RunwayConfig = {
 
 const BASE_CTX: Classification = {
   aircraftClass: 'J',
+  aircraftType: 'B738',
+  approachCategory: undefined,
   plan: 'SFOW',
   runwayFamily: '01',
   config,
@@ -185,6 +187,32 @@ describe('resolveAltitude', () => {
     };
     const result = resolve(ctx({}), sid('GAPP7'), scenario({}), airport);
     expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+  });
+
+  it('keys a row to a type its group adds outside the classes the row lists', () => {
+    const airport: AirportData = {
+      ...ksfo,
+      aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
+      altitudeRules: [{ ...CLIMB_VIA_ROW, groups: ['jets_and_dh8d'] }],
+    };
+    const dash8 = ctx({ aircraftClass: 'T', aircraftType: 'DH8D' });
+    const result = resolve(dash8, sid('GAPP7'), scenario({ aircraftType: 'DH8D' }), airport);
+    expect(result.altitude.citations.map((citation) => citation.id)).toContain('TEST-CVS');
+  });
+
+  it('blocks the altitude element for a turboprop the row and its group both pass over', () => {
+    const airport: AirportData = {
+      ...ksfo,
+      aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
+      altitudeRules: [{ ...CLIMB_VIA_ROW, groups: ['jets_and_dh8d'] }],
+    };
+    const result = resolveAltitude(
+      ctx({ aircraftClass: 'T', aircraftType: 'SF34' }),
+      { kind: 'sid', sid: sid('GAPP7') },
+      scenario({ aircraftType: 'SF34' }),
+      airport,
+    );
+    expect(result).toEqual({ element: 'A.phrase', reason: expect.stringContaining('class T') });
   });
 
   it('blocks the altitude element when no row is keyed to the flight', () => {
