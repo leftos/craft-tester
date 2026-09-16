@@ -41,6 +41,20 @@ export function formatFeet(feet: number): string {
   return String(feet).replace(/\B(?=(?:\d{3})+$)/g, ',');
 }
 
+/** Altitudes at and above this are written as flight levels. */
+const FLIGHT_LEVEL_FLOOR_FEET = 18000;
+
+/**
+ * Writes an altitude the way a strip prints it, e.g. `10,000` and `FL330`.
+ *
+ * @param feet The altitude in feet.
+ * @returns The altitude with thousands separators below 18,000, and as a flight level at or above
+ *   it.
+ */
+export function formatAltitude(feet: number): string {
+  return feet < FLIGHT_LEVEL_FLOOR_FEET ? formatFeet(feet) : `FL${Math.round(feet / 100)}`;
+}
+
 /**
  * How the form and the results view name each route shape on its own, when the pick names no element.
  *

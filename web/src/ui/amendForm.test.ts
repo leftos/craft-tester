@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario } from '@/data/schema.ts';
-import { amendSubmitDisabled, boxInputName, boxRows } from '@/ui/amendForm.ts';
+import { amendSubmitDisabled, boxInputName, boxRows, filedRows } from '@/ui/amendForm.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { EMPTY_BOXES } from '@/ui/state.ts';
 import { stripRows } from '@/ui/strip.ts';
@@ -43,7 +43,7 @@ describe('boxRows', () => {
     }
     expect(boxRows(FILED, EMPTY_BOXES).map((row) => row.filed)).toStrictEqual([
       'B752/L',
-      '33,000',
+      'FL330',
       'SFO5 MOGEE BVL',
     ]);
   });
@@ -64,6 +64,36 @@ describe('boxRows', () => {
   it('writes a type with no suffix as the bare designator', () => {
     const rows = boxRows({ ...FILED, equipmentSuffix: null }, EMPTY_BOXES);
     expect(rows[0]?.filed).toBe('B752');
+  });
+});
+
+describe('filedRows', () => {
+  it('prints the boxes the student does not answer, in strip order', () => {
+    expect(filedRows(FILED).map(([label]) => label)).toStrictEqual([
+      'callsign',
+      'destination',
+      'squawk',
+      'time',
+    ]);
+  });
+
+  it('prints the remarks box where the flight filed remarks', () => {
+    const rows = filedRows({ ...FILED, remarks: 'REQ RWY 28' });
+    expect(rows.map(([label]) => label)).toStrictEqual([
+      'callsign',
+      'destination',
+      'squawk',
+      'remarks',
+      'time',
+    ]);
+    expect(new Map(rows).get('remarks')).toBe('REQ RWY 28');
+  });
+
+  it('leaves every box the student answers to the form', () => {
+    const printed = new Set(filedRows(FILED).map(([label]) => label));
+    for (const row of boxRows(FILED, EMPTY_BOXES)) {
+      expect(printed.has(row.label), row.box).toBe(false);
+    }
   });
 });
 

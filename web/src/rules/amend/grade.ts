@@ -1,5 +1,5 @@
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
-import { formatFeet, verdictOf } from '@/rules/grade.ts';
+import { formatAltitude, verdictOf } from '@/rules/grade.ts';
 import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 
 /** One box of the flight progress strip the student answers. */
@@ -100,7 +100,7 @@ function matches(answer: BoxAnswer, amendment: ResolvedAmendment): boolean {
 
 /** The value the box should read once amended, written the way the strip writes it. */
 function proposalLabel(amendment: ResolvedAmendment): string {
-  return amendment.box === 'altitude' ? formatFeet(amendment.proposedFeet) : amendment.proposed;
+  return amendment.box === 'altitude' ? formatAltitude(amendment.proposedFeet) : amendment.proposed;
 }
 
 /** What the student put in the box, read back for the results view. */

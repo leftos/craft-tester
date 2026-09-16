@@ -177,7 +177,7 @@ describe('gradeBoxes', () => {
     );
     expect(grades.map((grade) => grade.expectedLabel)).toEqual([
       'B752/L',
-      '27,000',
+      'FL270',
       'SFO5 MOGEE BVL',
     ]);
     expect(grades.map((grade) => grade.actualLabel)).toEqual([
@@ -210,14 +210,14 @@ describe('boxGradeAsGrade', () => {
     const verdict = boxGradeAsGrade({
       box: 'altitude',
       verdict: 'wrong',
-      expectedLabel: '27,000',
+      expectedLabel: 'FL270',
       actualLabel: 'correct as filed',
       citations: [citation],
     });
     expect(verdict).toStrictEqual({
       element: 'BOX.altitude',
       verdict: 'wrong',
-      expectedLabel: '27,000',
+      expectedLabel: 'FL270',
       actualLabel: 'correct as filed',
       citations: [citation],
     });

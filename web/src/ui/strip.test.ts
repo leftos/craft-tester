@@ -21,6 +21,11 @@ function labelsOf(scenario: Scenario): string[] {
   return stripRows(scenario).map(([label]) => label);
 }
 
+/** The value the strip prints in one of its boxes. */
+function valueOf(scenario: Scenario, label: string): string | undefined {
+  return new Map(stripRows(scenario)).get(label);
+}
+
 describe('stripRows', () => {
   it('prints the filed remarks between the beacon code and the time', () => {
     const rows = stripRows(withRemarks('REQ RWY 28'));
@@ -43,5 +48,10 @@ describe('stripRows', () => {
 
   it('leaves the remarks box out when the filed remarks are empty', () => {
     expect(labelsOf(withRemarks(''))).not.toContain('remarks');
+  });
+
+  it('prints an altitude at or above 18,000 as a flight level and a lower one in feet', () => {
+    expect(valueOf({ ...drawn, filedAltitude: 37000 }, 'altitude')).toBe('FL370');
+    expect(valueOf({ ...drawn, filedAltitude: 5000 }, 'altitude')).toBe('5,000');
   });
 });

@@ -5,7 +5,7 @@ import { grade, gradeProcedure } from '@/rules/grade.ts';
 import { isSidToken } from '@/rules/route.ts';
 import type { Grade, ResolvedClearance } from '@/rules/types.ts';
 import type { AmendmentScenario } from '@/scenario/amend.ts';
-import { renderAmendForm, renderBoxVerdicts } from '@/ui/amendForm.ts';
+import { filedRows, renderAmendForm, renderBoxVerdicts } from '@/ui/amendForm.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
@@ -13,7 +13,7 @@ import { spokenFor } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import type { AmendmentPicks, AppState, PickKey } from '@/ui/state.ts';
 import { toAmendmentPicks, toBoxAnswers } from '@/ui/state.ts';
-import { renderStrip } from '@/ui/strip.ts';
+import { renderStrip, renderStripRows } from '@/ui/strip.ts';
 
 /** The view an amendment session renders from. */
 type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
@@ -89,20 +89,25 @@ function revisitPanels(
   ];
 }
 
-/** The strip with the boxes to answer, and the ATIS the plan is read against. */
+/**
+ * The rest of the strip beside the ATIS, with the boxes to answer in their own panel under both.
+ *
+ * The boxes take the full width there, so a route reads without wrapping.
+ */
 function amendingPanels(
   state: AppState,
   view: AmendmentView,
   handlers: AmendmentHandlers,
 ): HTMLElement[] {
   return [
+    renderStripRows(filedRows(view.drawn.filed), 'Flight plan'),
+    renderAtis(view.drawn.filed, state.airport),
     renderAmendForm({
       scenario: view.drawn.filed,
       boxes: state.boxes,
       onBox: handlers.onBox,
       onSubmit: handlers.onBoxesSubmit,
     }),
-    renderAtis(view.drawn.filed, state.airport),
   ];
 }
 

@@ -5,7 +5,7 @@ import { tecRouteFor } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
-import { formatFeet } from '@/rules/grade.ts';
+import { formatAltitude } from '@/rules/grade.ts';
 import type { RuleCitation, Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
@@ -40,23 +40,9 @@ const HIGH_SERIES_STEP_FEET = 4000;
 const RVSM_FLOOR_FEET = 29000;
 const RVSM_CEILING_FEET = 41000;
 
-/** Altitudes at and above this are spoken as flight levels. */
-const FLIGHT_LEVEL_FLOOR_FEET = 18000;
-
 /** The steps a proposal walks down in, and the altitude it gives up at. */
 const STEP_FEET = 1000;
 const LOWEST_PROPOSAL_FEET = 1000;
-
-/**
- * Writes an altitude the way a controller says it.
- *
- * @param feet The altitude in feet.
- * @returns The altitude with thousands separators below 18,000, and as a flight level at or above
- *   it, e.g. `10,000` and `FL330`.
- */
-function altitudeText(feet: number): string {
-  return feet < FLIGHT_LEVEL_FLOOR_FEET ? formatFeet(feet) : `FL${Math.round(feet / 100)}`;
-}
 
 /** Whether an LOA row is written for this destination, by its ARTCC or by name. */
 function appliesTo(row: LoaRule, destination: Destination): boolean {
@@ -130,7 +116,7 @@ function parityConstraint(
   const override = parityOverride(airport, destination);
   const parity = parityFor(course, override);
   const under = override === undefined ? '' : ` under ${override.row.id}`;
-  const filed = altitudeText(scenario.filedAltitude);
+  const filed = formatAltitude(scenario.filedAltitude);
   return {
     legal: (feet) => isOnSeries(feet, parity),
     reason: `filed ${filed} on a ${course}° magnetic course to ${destination.spoken} needs an ${parity} level${under}`,
@@ -158,10 +144,10 @@ function rvsmConstraint(scenario: Scenario, airport: AirportData): Constraint | 
     scenario.equipmentSuffix === null
       ? 'a flight with no equipment suffix'
       : `a ${scenario.equipmentSuffix} flight`;
-  const band = `${altitudeText(RVSM_FLOOR_FEET)} through ${altitudeText(RVSM_CEILING_FEET)}`;
+  const band = `${formatAltitude(RVSM_FLOOR_FEET)} through ${formatAltitude(RVSM_CEILING_FEET)}`;
   return {
     legal: (feet) => feet < RVSM_FLOOR_FEET || feet > RVSM_CEILING_FEET,
-    reason: `filed ${altitudeText(scenario.filedAltitude)} is inside RVSM airspace (${band}), which ${who} may not enter`,
+    reason: `filed ${formatAltitude(scenario.filedAltitude)} is inside RVSM airspace (${band}), which ${who} may not enter`,
     citations: citePhraseology(airport, 'A-RVSM'),
   };
 }
@@ -191,7 +177,7 @@ function tecConstraint(
   if (row === undefined || cap === undefined) return undefined;
   return {
     legal: (feet) => feet <= cap,
-    reason: `the TEC route to ${destination.spoken} is at or below ${altitudeText(cap)}`,
+    reason: `the TEC route to ${destination.spoken} is at or below ${formatAltitude(cap)}`,
     citations: [citeTec(row)],
   };
 }
@@ -210,7 +196,7 @@ function maxConstraints(airport: AirportData, destination: Destination): Constra
     return [
       {
         legal: (candidate: number) => candidate <= feet,
-        reason: `${row.id} caps altitudes to ${destination.spoken} at ${altitudeText(feet)}`,
+        reason: `${row.id} caps altitudes to ${destination.spoken} at ${formatAltitude(feet)}`,
         citations: [toCitation(row)],
       },
     ];
@@ -284,13 +270,13 @@ export function checkAltitude(
   if (proposedFeet === undefined) {
     return unresolved(
       'BOX.altitude',
-      `no altitude at or below ${altitudeText(scenario.filedAltitude)} is legal for this flight: ${reasons}`,
+      `no altitude at or below ${formatAltitude(scenario.filedAltitude)} is legal for this flight: ${reasons}`,
     );
   }
   return {
     box: 'altitude',
     proposedFeet,
-    reason: `${reasons}; the highest legal altitude at or below it is ${altitudeText(proposedFeet)}`,
+    reason: `${reasons}; the highest legal altitude at or below it is ${formatAltitude(proposedFeet)}`,
     citations: dedupe(broken.flatMap((constraint) => constraint.citations)),
   };
 }

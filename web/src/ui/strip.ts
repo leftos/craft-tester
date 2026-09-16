@@ -1,5 +1,5 @@
 import type { Scenario } from '@/data/schema.ts';
-import { formatFeet } from '@/rules/grade.ts';
+import { formatAltitude } from '@/rules/grade.ts';
 import { el, rowList } from '@/ui/dom.ts';
 import { aircraftLabel, timeLabel } from '@/ui/labels.ts';
 
@@ -21,12 +21,31 @@ export function stripRows(scenario: Scenario): readonly (readonly [string, strin
     ['callsign', scenario.callsign],
     ['type', aircraftLabel(scenario.aircraftType, scenario.equipmentSuffix)],
     ['destination', scenario.destination],
-    ['altitude', formatFeet(scenario.filedAltitude)],
+    ['altitude', formatAltitude(scenario.filedAltitude)],
     ['route', scenario.filedRoute],
     ['squawk', scenario.squawk],
     ...remarksRow,
     ['time', timeLabel(scenario.localTime, scenario.dayOfWeek)],
   ];
+}
+
+/**
+ * Renders a panel of strip boxes, which is the markup every strip on the page is built from.
+ *
+ * Amendment mode prints the boxes the student answers in its own panel, so the strip beside it
+ * carries the rest of the plan rather than all of it.
+ *
+ * @param rows The label and value of every box the panel prints.
+ * @param heading The heading over the strip, e.g. `Flight plan`.
+ * @returns The strip panel.
+ */
+export function renderStripRows(
+  rows: readonly (readonly [string, string])[],
+  heading: string,
+): HTMLElement {
+  const panel = el('section', 'panel strip');
+  panel.append(el('h2', '', heading), rowList('strip-rows', rows));
+  return panel;
 }
 
 /**
@@ -40,7 +59,5 @@ export function stripRows(scenario: Scenario): readonly (readonly [string, strin
  * @returns The strip panel.
  */
 export function renderStrip(scenario: Scenario, heading: string): HTMLElement {
-  const panel = el('section', 'panel strip');
-  panel.append(el('h2', '', heading), rowList('strip-rows', stripRows(scenario)));
-  return panel;
+  return renderStripRows(stripRows(scenario), heading);
 }

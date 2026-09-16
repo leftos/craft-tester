@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
-import { expectChoiceLabel, grade, gradeProcedure, HEADING_PROCEDURE_PICK } from '@/rules/grade.ts';
+import {
+  expectChoiceLabel,
+  formatAltitude,
+  grade,
+  gradeProcedure,
+  HEADING_PROCEDURE_PICK,
+} from '@/rules/grade.ts';
 import type {
   ExpectClause,
   PlayerPicks,
@@ -477,5 +483,17 @@ describe('expectChoiceLabel', () => {
     expect(expectChoiceLabel('three_minutes', { kind: 'final', feet: 9000 }, 9000)).toBe(
       'expect amended altitude 3 minutes after departure',
     );
+  });
+});
+
+describe('formatAltitude', () => {
+  it('writes an altitude below 18,000 in feet, with a thousands separator', () => {
+    expect(formatAltitude(17000)).toBe('17,000');
+    expect(formatAltitude(5000)).toBe('5,000');
+  });
+
+  it('writes 18,000 and everything above it as a flight level', () => {
+    expect(formatAltitude(18000)).toBe('FL180');
+    expect(formatAltitude(33000)).toBe('FL330');
   });
 });

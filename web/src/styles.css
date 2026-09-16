@@ -144,8 +144,10 @@ button.primary:disabled {
 }
 
 .share a {
+  min-width: 0;
   color: var(--accent);
   font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  overflow-wrap: anywhere;
 }
 
 .layout {
@@ -162,8 +164,7 @@ button.primary:disabled {
   background: var(--panel);
 }
 
-.panel.strip,
-.panel.amend {
+.panel.strip {
   grid-column: 1;
 }
 
@@ -171,6 +172,7 @@ button.primary:disabled {
   grid-column: 2;
 }
 
+.panel.amend,
 .panel.craft,
 .panel.results,
 .panel.unresolved {
@@ -265,7 +267,7 @@ button.primary:disabled {
 }
 
 .amend-box .field {
-  flex: 1 1 8rem;
+  flex: 0 0 auto;
   min-width: 0;
 }
 
@@ -275,12 +277,23 @@ button.primary:disabled {
   border-radius: 4px;
   background: #eceff3;
   color: var(--muted);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
   overflow-wrap: anywhere;
 }
 
-.amend .strip-rows,
-.amend-filed {
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+/* Each box is as wide as what it holds: a type and an altitude are short, a route is long. */
+@media (min-width: 701px) {
+  .amend-box.type .amend-filed,
+  .amend-box.type .field.amend-value,
+  .amend-box.altitude .amend-filed,
+  .amend-box.altitude .field.amend-value {
+    flex: 0 0 7rem;
+  }
+
+  .amend-box.route .amend-filed,
+  .amend-box.route .field.amend-value {
+    flex: 1 1 18rem;
+  }
 }
 
 .panel.amend button.primary {
@@ -387,7 +400,6 @@ button.primary:disabled {
   }
 
   .panel.strip,
-  .panel.amend,
   .panel.atis {
     grid-column: 1;
   }

@@ -1,9 +1,9 @@
 import type { Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
-import { formatFeet } from '@/rules/grade.ts';
+import { formatAltitude } from '@/rules/grade.ts';
 import type { Grade } from '@/rules/types.ts';
 import type { SelectOption } from '@/ui/dom.ts';
-import { button, el, rowList, selectControl, textControl } from '@/ui/dom.ts';
+import { button, el, selectControl, textControl } from '@/ui/dom.ts';
 import { aircraftLabel } from '@/ui/labels.ts';
 import { renderVerdict, scoreLine } from '@/ui/results.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
@@ -41,7 +41,7 @@ export type AmendFormProps = {
 /** The value one answerable box reads as filed, written the way the strip writes it. */
 function filedValue(scenario: Scenario, box: Box): string {
   if (box === 'type') return aircraftLabel(scenario.aircraftType, scenario.equipmentSuffix);
-  if (box === 'altitude') return formatFeet(scenario.filedAltitude);
+  if (box === 'altitude') return formatAltitude(scenario.filedAltitude);
   return scenario.filedRoute;
 }
 
@@ -71,8 +71,13 @@ export function amendSubmitDisabled(boxes: DraftBoxes): boolean {
   return toBoxAnswers(boxes) === undefined;
 }
 
-/** The boxes of the strip the student does not answer, which are shown as the strip prints them. */
-function readOnlyRows(scenario: Scenario): readonly (readonly [string, string])[] {
+/**
+ * The boxes of the strip the student does not answer, which the strip beside the form prints.
+ *
+ * @param scenario The plan as filed.
+ * @returns The label and value of every box but type, altitude and route, in strip order.
+ */
+export function filedRows(scenario: Scenario): readonly (readonly [string, string])[] {
   const answerable = new Set<string>(ANSWERABLE);
   return stripRows(scenario).filter(([label]) => !answerable.has(label));
 }
@@ -104,9 +109,27 @@ export function boxInputName(box: Box): string {
   return `amend-${box}`;
 }
 
+/** The text box the student writes a new value in, marked apart from the answer dropdown. */
+function renderValueBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
+  const field = textControl(
+    {
+      label: 'new value',
+      name: boxInputName(row.box),
+      value: typedValue(row.answer),
+      disabled: row.answer?.kind !== 'amended',
+      placeholder: row.filed,
+    },
+    (value) => {
+      onBox(row.box, { kind: 'amended', value });
+    },
+  );
+  field.classList.add('amend-value');
+  return field;
+}
+
 /** One box the student answers: its name, the filed value, the answer, and the value it amends to. */
 function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
-  const node = el('div', 'amend-box');
+  const node = el('div', `amend-box ${row.box}`);
   node.append(
     el('h3', '', row.label),
     el('div', 'amend-filed', row.filed),
@@ -123,34 +146,23 @@ function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
         if (answer !== undefined) onBox(row.box, answer);
       },
     ),
-    textControl(
-      {
-        label: 'new value',
-        name: boxInputName(row.box),
-        value: typedValue(row.answer),
-        disabled: row.answer?.kind !== 'amended',
-        placeholder: row.filed,
-      },
-      (value) => {
-        onBox(row.box, { kind: 'amended', value });
-      },
-    ),
+    renderValueBox(row, onBox),
   );
   return node;
 }
 
 /**
- * Renders the strip with the three boxes the student answers before the clearance is read.
+ * Renders the three boxes the student answers before the clearance is read.
+ *
+ * The boxes the student does not answer are printed by the strip beside the form, from
+ * `filedRows`, so the form holds nothing but what it asks for.
  *
  * @param props The plan as filed, the answers so far, and the handlers for answer and submit.
  * @returns The amend panel; its submit button is disabled while a box is still open.
  */
 export function renderAmendForm(props: AmendFormProps): HTMLElement {
   const panel = el('section', 'panel amend');
-  panel.append(
-    el('h2', '', 'Amend the flight plan'),
-    rowList('strip-rows', readOnlyRows(props.scenario)),
-  );
+  panel.append(el('h2', '', 'Amend the flight plan'));
   for (const row of boxRows(props.scenario, props.boxes)) {
     panel.append(renderBox(row, props.onBox));
   }
