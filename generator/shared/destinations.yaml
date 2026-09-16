@@ -3,16 +3,20 @@
 # None of that depends on the departure airport, so a destination is stated once here and an airport's
 # `routes.yaml` lists only the codes its scenarios file to. US coordinates are filled from CIFP by the
 # generator; a foreign field has nothing to resolve against and gives `lat` and `lon` here.
+# `nct: true` means the field lies inside the NCT terminal polygon (the SimAware TRACON boundary, as
+# vatsim_control_recs computes its "NCT Combined" grouping; user 2026-09-16), not the NCT SOP's complex
+# tables: Napa, Concord and Santa Rosa are outside it although NCT staffs their towers, Reno is inside.
+# The flag gates the TEC route lookup, so a TEC row to a field without it is never issued.
 destinations:
   CYVR: { spoken: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
   ESSA: { spoken: Stockholm Arlanda, artcc: ZAK, lat: 59.652, lon: 17.919 }
   KACV: { spoken: Arcata, artcc: ZOA }
-  KAPC: { spoken: Napa, artcc: ZOA, nct: true }
+  KAPC: { spoken: Napa, artcc: ZOA }
   KBFI: { spoken: Boeing Field, artcc: ZSE }
   KBLI: { spoken: Bellingham, artcc: ZSE }
   KBOI: { spoken: Boise, artcc: ZLC }
   KBUR: { spoken: Burbank, artcc: ZLA }
-  KCCR: { spoken: Concord, artcc: ZOA, nct: true }
+  KCCR: { spoken: Concord, artcc: ZOA }
   KCRQ: { spoken: Carlsbad, artcc: ZLA }
   KDEN: { spoken: Denver, artcc: ZDV }
   KFAT: { spoken: Fresno, artcc: ZOA }
@@ -37,7 +41,7 @@ destinations:
   KPDX: { spoken: Portland, artcc: ZSE }
   KPHX: { spoken: Phoenix, artcc: ZAB }
   KRHV: { spoken: Reid-Hillview, artcc: ZOA, nct: true }
-  KRNO: { spoken: Reno, artcc: ZOA }
+  KRNO: { spoken: Reno, artcc: ZOA, nct: true }
   KSAC: { spoken: Sacramento Executive, artcc: ZOA, nct: true }
   KSAN: { spoken: San Diego, artcc: ZLA }
   KSBA: { spoken: Santa Barbara, artcc: ZLA }
@@ -50,7 +54,7 @@ destinations:
   KSMO: { spoken: Santa Monica, artcc: ZLA }
   KSNA: { spoken: John Wayne, artcc: ZLA }
   KSQL: { spoken: San Carlos, artcc: ZOA, nct: true }
-  KSTS: { spoken: Santa Rosa, artcc: ZOA, nct: true }
+  KSTS: { spoken: Santa Rosa, artcc: ZOA }
   KTRK: { spoken: Truckee, artcc: ZOA }
   KUDD: { spoken: Bermuda Dunes, artcc: ZLA }
   KVNY: { spoken: Van Nuys, artcc: ZLA }

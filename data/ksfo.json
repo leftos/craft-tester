@@ -1559,7 +1559,7 @@
         "icao": "KRNO",
         "lat": 39.499111,
         "lon": -119.768111,
-        "nct": false,
+        "nct": true,
         "spoken": "Reno"
       },
       {
@@ -1615,7 +1615,7 @@
         "icao": "KAPC",
         "lat": 38.213189,
         "lon": -122.280686,
-        "nct": true,
+        "nct": false,
         "spoken": "Napa"
       },
       {
@@ -3991,36 +3991,6 @@
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM MOD",
-      "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
-    },
-    {
-      "altitudeCapFeet": 5000,
-      "classes": [
-        "J",
-        "T",
-        "P"
-      ],
-      "destination": "KAPC",
-      "id": "TEC-KAPC",
-      "kind": "tec",
-      "plan": "SFOW",
-      "route": "GAPP# SAU",
-      "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
-    },
-    {
-      "altitudeCapFeet": 5000,
-      "classes": [
-        "J",
-        "T",
-        "P"
-      ],
-      "destination": "KAPC",
-      "id": "TEC-KAPC-SFOE",
-      "kind": "tec",
-      "plan": "SFOE",
-      "route": "GAPP# SAU",
       "runwayFamilies": [],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },

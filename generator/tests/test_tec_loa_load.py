@@ -13,7 +13,7 @@ Mutation = Callable[[Any], None]
 
 FILES = (("sop", SOP_FILE), ("overrides", OVERRIDES_FILE), ("routes", ROUTES_FILE), ("tec", TEC_FILE), ("loa", LOA_FILE))
 
-TEC_ROUTE_COUNT = 49
+TEC_ROUTE_COUNT = 47
 LOA_RULE_COUNT = 3
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_CAP_FEET = 6000

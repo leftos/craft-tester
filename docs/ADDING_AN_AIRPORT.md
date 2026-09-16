@@ -201,9 +201,11 @@ airport-independent data between airports). A code the shared file lacks fails t
 to add it to; add the row there first.
 
 - **`destinations`**: the ICAO codes the airport's scenarios file to, in draw order. The facts sit in
-  `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), `nct: true` for
-  destinations inside contiguous NCT (TEC routes are obligatory only there; Reno and its satellites are
-  not contiguous and stay `nct: false`), and `lat`/`lon` only for airports outside the CIFP (foreign).
+  `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), `nct: true` for a
+  field inside the NCT terminal polygon (the SimAware TRACON boundary; the NCT SOP's complex tables are
+  not the test: Napa, Concord and Santa Rosa are outside it although NCT staffs their towers, Reno is
+  inside), which is what lets a TEC route to it be issued, and `lat`/`lon` only for airports outside the
+  CIFP (foreign).
   The build fills US coordinates from CIFP `PA` records and fails on a destination it cannot place.
 - **`airlines`**: the ICAO codes that fly out of the airport, alphabetical. `generator/shared/airlines.yaml`
   holds each code's `telephony` (the spoken callsign), `cargo: true` for an all-cargo carrier (which is

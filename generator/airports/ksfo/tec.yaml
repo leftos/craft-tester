@@ -33,9 +33,8 @@ routes:
   - { id: TEC-KLVK-SFOE-T, destination: KLVK, plan: SFOE, classes: [T], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", altitude_cap_feet: 3000 }
   - { id: TEC-KLVK-SFOW-P, destination: KLVK, plan: SFOW, classes: [P], runway_families: [], route: "TRUKN# TRUKN", altitude_cap_feet: 5000 }
   - { id: TEC-KLVK-SFOE-P, destination: KLVK, plan: SFOE, classes: [P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", altitude_cap_feet: 5000 }
-  # KAPC Napa
-  - { id: TEC-KAPC, destination: KAPC, plan: SFOW, classes: [J, T, P], runway_families: [], route: "GAPP# SAU", altitude_cap_feet: 5000 }
-  - { id: TEC-KAPC-SFOE, destination: KAPC, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# SAU", altitude_cap_feet: 5000 }
+  # KAPC Napa lies outside the NCT terminal polygon (user 2026-09-16), so the tool's two GAPP# SAU rows for it are
+  # not TEC routes the engine may issue and are not transcribed.
   # KMYV Marysville and KOVE Oroville share rows
   - { id: TEC-KMYV-SFOW-JT, destination: KMYV, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# ORRCA", altitude_cap_feet: 10000 }
   - { id: TEC-KMYV-SFOE-JT, destination: KMYV, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", altitude_cap_feet: 5000 }

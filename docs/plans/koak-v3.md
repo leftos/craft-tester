@@ -301,9 +301,38 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   KRAZY" is a time-windowed route rule (note only); the RNAV / conventional split of the ZLC table is not in the
   `route` kind (both columns' tokens listed, as the ZSE rows do); the prop routings to LAX/LGB/SNA differ by J1/J501
   side (note only). Each row cites the LOA attachment and row.
+- [ ] **Brief 3b-i status 2026-09-16**: the five files are in final shape in `wt/koak-data` plus a new `tec.yaml` (75
+  rows over 21 destinations; every loader check passes; `verify-sop` ok) but the build stopped on twelve NCT
+  satellites the TEC pages file to that `generator/shared/destinations.yaml` lacked (KCCR, KHWD, KMCC, KMHR, KMOD, KNUQ,
+  KPAO, KRHV, KSCK, KSFO, KSQL, KSTS; added on main, `nct: true`, spoken Concord, Hayward, McClellan, Mather, Modesto,
+  Moffett, Palo Alto, Reid-Hillview, Stockton, San Francisco, San Carlos, Santa Rosa). **User 2026-09-16: STS is not
+  NCT; the airports under NCT control are listed in the NCT SOP** (`.tmp/nct-sop.{pdf,txt}`, oakartcc.org file
+  `7576a83b-5e65-11e9-8010-2a32edb55910`). Settled the same day after two rounds: the SOP's 1-4 complex table
+  lists STS under Napa and its 1-5 area table omits every satellite the trainer's worksheets TEC-route (a settled
+  KMYV fixture says "KMYV is inside NorCal TRACON"), so neither table is the test; **an airport is NCT when it lies
+  inside the NCT terminal polygon** (the SimAware TRACON boundary, as `vatsim_control_recs`'s "NCT Combined" preset
+  grouping computes it: `C:\Users\Leftos\source\repos\vatsim_control_recs\data\preset_groupings\ZOA.json`,
+  polygons in `data/simaware_boundaries/NCT.json`, source github.com/vatsimnetwork/simaware-tracon-project). Against
+  our destinations: Napa, Concord and Santa Rosa are outside, Reno inside, every other satellite inside. The TEC
+  lookup stays gated on the flag (user), so the KSFO `GAPP# SAU` rows to Napa and the KOAK rows to Napa, Concord and
+  Santa Rosa are dropped. **Brief 2g** (engine, later): compute `nct` at build time from a checked-in copy of the
+  NCT boundary polygons and the CIFP airport coordinates instead of the hand flag, and fail the build on a TEC row
+  to a destination outside the polygon. Left out of `tec.yaml`, a gap to
+  model later: TEC rows that name no fix (KSFO `RH RV`, KHWD `OAK6 RV` / `NIMI5 RV` / `H090 RV`) since a TEC row's route
+  must end on a fix or an arrival. The `OAK ORRCA` jet rows file 11,000 (the SFOE band `030/110`), the FEVTA rows
+  10,000. `direction_runway_preference` for OAKE/SFOE still maps family 10 to 10R while the prop default is 10L; it only
+  decides where no default applies (nothing today) and is left for the validation loop.
 - [ ] **Brief 3b, the rest of the data**: `tec.yaml` from `.tmp/oak-tec/*.txt`, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC
   rows from the notes), `worksheets.yaml`, `data/airports.json`, the KSFO-only web tests widened to the index, the
   airport switch in the UI checked in the browser.
+- [ ] **Brief 2f, TEC initial altitude** (user 2026-09-16: "In TEC routes, the first number is the initial/interim
+  altitude, and the second number is the final altitude. They're not a range. So 030/090 is 3,000 initial, 9,000
+  final."). The KSFO `tec.yaml` header and the plan text below read the band as floor/cap, which is wrong: rename
+  `altitude_cap_feet` to `final_altitude_feet` (schema `finalAltitudeFeet`) and add `initial_altitude_feet`
+  (`initialAltitudeFeet`, optional) read from the first number; re-read the KSFO rows from the tool (the tool
+  prints both numbers) and the KOAK rows from `.tmp/oak-tec/*.txt`. Open question for the user before the engine
+  reads it: when a TEC route applies, is the clearance's maintain altitude the TEC initial altitude rather than the
+  SOP altitude row (SFOW jets to SMF: SOP OAK# says CVS x FL190, the TEC row says 100/100)?
 - [ ] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
   PAO RHV NUQ STS MOD SCK MHR MCC) were captured 2026-09-16 with Playwright into `.tmp/oak-tec/<FAA>.txt`
   (gitignored; re-run `web/.tmp/oak-tec.ts` style script if lost). Findings: the tool prints an altitude band

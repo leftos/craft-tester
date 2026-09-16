@@ -27,7 +27,7 @@ BASE_FIXES = {
     "WESLA5": "PORTE",
 }
 NO_BASE_FIX = ["GAPP7", "SFO5"]
-TEC_ROUTE_COUNT = 49
+TEC_ROUTE_COUNT = 47
 LOA_RULE_COUNT = 3
 TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
