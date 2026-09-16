@@ -1040,7 +1040,7 @@
     {
       "id": "R-HEADING",
       "source": "FAA JO 7110.65 4-3-2 c 3; OAK ATCT SOP 2-1 c (via koak-v3 notes); S1-SFO-0 CBT No SID",
-      "text": "VIA FLY RUNWAY HEADING, RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading and vectored to the first filed fix; no procedure is named"
+      "text": "VIA FLY RUNWAY HEADING / VIA TURN LEFT (or RIGHT) HEADING (heading), RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading, or turned the shorter way onto the heading the row names, and vectored to the first filed fix; no procedure is named"
     },
     {
       "id": "R-RV-AIRWAY",

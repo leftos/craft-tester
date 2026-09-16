@@ -1,4 +1,10 @@
-import type { AltitudePhrase, ExpectedClearance, RouteTemplate, Sid } from '@/data/schema.ts';
+import type {
+  AltitudePhrase,
+  ExpectedClearance,
+  NonDpHeading,
+  RouteTemplate,
+  Sid,
+} from '@/data/schema.ts';
 
 /** One data row that decided an element of a clearance, quoted verbatim in the results view. */
 export type RuleCitation = {
@@ -13,26 +19,50 @@ export type Cited<T> = {
   citations: RuleCitation[];
 };
 
+/** Which way a flight is turned onto an assigned heading; absent where the heading needs no turn. */
+export type Turn = 'left' | 'right' | undefined;
+
 /**
- * What the clearance sends the flight out on: a published departure procedure, or the runway
- * heading the SOP clears a flight on where it assigns no procedure at all.
+ * What the clearance sends the flight out on: a published departure procedure, or the heading the
+ * SOP clears a flight on where it assigns no procedure at all.
  *
  * `spoken` is what the clearance reads: the chart's spoken name ("Trukn Two"), which the reading
- * follows with "departure", or "fly runway heading", which stands on its own. `family` is what
- * grading compares a SID by, because AIRAC cycles bump the version in `id`.
+ * follows with "departure", or the heading words with the heading written in digits ("fly runway
+ * heading", "turn left heading 270", "fly heading 284"), which stand on their own. `turn` is the
+ * shorter way round from the departure runway's bearing onto the heading, undefined where the
+ * heading is the runway heading or the runway's own bearing. `family` is what grading compares a
+ * SID by, because AIRAC cycles bump the version in `id`.
  */
 export type Procedure =
   | { kind: 'sid'; id: string; family: string; spoken: string }
-  | { kind: 'heading'; heading: 'runway heading'; spoken: 'fly runway heading' };
+  | { kind: 'heading'; heading: NonDpHeading; turn: Turn; spoken: string };
 
-/** What the form and the results view call a clearance the SOP issues without a procedure. */
-export const HEADING_PROCEDURE_LABEL = 'fly runway heading (no DP)';
+/**
+ * What the form and the results view call a clearance the SOP issues without a procedure.
+ *
+ * The label names the heading but never the turn: the procedure dropdown offers it before any
+ * runway is known, so there is no bearing to derive a turn direction from.
+ *
+ * @param heading The runway heading, or the assigned magnetic heading in degrees.
+ * @returns The label, e.g. `fly runway heading (no DP)` or `heading 270 (no DP)`.
+ */
+export function headingLabel(heading: NonDpHeading): string {
+  return heading === 'runway heading' ? 'fly runway heading (no DP)' : `heading ${heading} (no DP)`;
+}
 
 /**
  * The same choice as the engine carries it while it resolves the rest of the clearance, which for a
  * SID is the whole chart record the altitude and the route phrase are read off.
  */
-export type SelectedProcedure = { kind: 'sid'; sid: Sid } | { kind: 'heading' };
+export type SelectedProcedure =
+  | { kind: 'sid'; sid: Sid }
+  | { kind: 'heading'; heading: NonDpHeading; turn: Turn };
+
+/** The heading as the clearance writes it, the turn included wherever one is issued. */
+function headingSpoken(heading: NonDpHeading, turn: Turn): string {
+  if (heading === 'runway heading') return 'fly runway heading';
+  return turn === undefined ? `fly heading ${heading}` : `turn ${turn} heading ${heading}`;
+}
 
 /**
  * The clearance element a selected procedure becomes.
@@ -42,7 +72,8 @@ export type SelectedProcedure = { kind: 'sid'; sid: Sid } | { kind: 'heading' };
  */
 export function procedureOf(selected: SelectedProcedure): Procedure {
   if (selected.kind === 'heading') {
-    return { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' };
+    const { heading, turn } = selected;
+    return { kind: 'heading', heading, turn, spoken: headingSpoken(heading, turn) };
   }
   const { sid } = selected;
   return { kind: 'sid', id: sid.id, family: sid.family, spoken: sid.spoken };

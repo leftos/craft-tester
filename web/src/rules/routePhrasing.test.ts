@@ -92,13 +92,21 @@ describe('phraseRoute', () => {
   });
 
   it('speaks a clearance on the runway heading as radar vectors to the exit fix', () => {
-    const result = phraseRoute({ kind: 'heading' }, 'OAK', ksfo);
+    const result = phraseRoute(
+      { kind: 'heading', heading: 'runway heading', turn: undefined },
+      'OAK',
+      ksfo,
+    );
     expect(result.value).toEqual({ template: 'radar_vectors_fix', fix: 'OAK' });
     expect(result.citations.map((citation) => citation.id)).toEqual(['R-HEADING']);
   });
 
   it('joins an airway off a clearance on the runway heading', () => {
-    const result = phraseRoute({ kind: 'heading' }, 'V6', ksfo);
+    const result = phraseRoute(
+      { kind: 'heading', heading: 'runway heading', turn: undefined },
+      'V6',
+      ksfo,
+    );
     expect(result.value).toEqual({ template: 'radar_vectors_airway', fix: 'V6' });
     expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
   });

@@ -31,11 +31,11 @@ from craft_generator.sop.model import (
     EXPECT_ALTITUDE_POLICIES,
     GATE_DIRECTIONS,
     LOA_RULE_KIND_NAMES,
-    NON_DP_HEADINGS,
     NOTICE_EFFECT_KINDS,
     ON_REQUEST_KINDS,
     PHRASEOLOGY_READINGS,
     ROUTE_PHRASINGS,
+    RUNWAY_HEADING,
     TEC_ROUTE_KINDS,
     TOP_ALTITUDE_KINDS,
     WAKE_CATEGORIES,
@@ -202,6 +202,10 @@ class _Row:
     def optional_text(self, key: str) -> str | None:
         value = self._optional_raw(key)
         return None if value is None else _as_text(value, self._at(key))
+
+    def optional_raw(self, key: str) -> Any:
+        """The value as YAML wrote it, for a key whose type the caller checks itself."""
+        return self._optional_raw(key)
 
     def number(self, key: str) -> int:
         value = self._raw(key)
@@ -449,16 +453,15 @@ def _assignment_condition(row: _Row) -> AssignmentCondition:
 
 
 def _non_dp_heading(row: _Row) -> NonDpHeading | None:
-    """The heading a row clears a flight on where it assigns no DP; only the runway heading is supported."""
-    value = row.optional_text("non_dp_heading")
+    """The heading a row clears a flight on where it assigns no DP: the runway heading, or 1 to 360 degrees."""
+    value = row.optional_raw("non_dp_heading")
     if value is None:
         return None
-    if value not in NON_DP_HEADINGS:
-        raise ValueError(
-            f"{row.where}: non_dp_heading is {value!r}; only 'runway heading' is supported - "
-            "a numbered heading needs the turn direction and the runway's magnetic heading, which the data does not carry"
-        )
-    return "runway heading"
+    if value == RUNWAY_HEADING:
+        return RUNWAY_HEADING
+    if isinstance(value, int) and not isinstance(value, bool) and 1 <= value <= 360:
+        return value
+    raise ValueError(f"{row.where}: non_dp_heading is {value!r}; write 'runway heading' or a magnetic heading as an integer from 1 to 360")
 
 
 def _assignment_rule(row: _Row) -> AssignmentRule:

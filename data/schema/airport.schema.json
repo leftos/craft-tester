@@ -253,7 +253,17 @@
             "type": "string"
           },
           "nonDpHeading": {
-            "type": "string"
+            "anyOf": [
+              {
+                "const": "runway heading",
+                "type": "string"
+              },
+              {
+                "maximum": 360,
+                "minimum": 1,
+                "type": "integer"
+              }
+            ]
           },
           "plan": {
             "type": "string"

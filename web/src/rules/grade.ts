@@ -6,7 +6,7 @@ import type {
   ResolvedClearance,
   Verdict,
 } from '@/rules/types.ts';
-import { HEADING_PROCEDURE_LABEL } from '@/rules/types.ts';
+import { headingLabel } from '@/rules/types.ts';
 
 /**
  * What an expect clause answers: the delay in minutes, the final-altitude reading, or no clause.
@@ -224,7 +224,9 @@ function procedureLabel(id: string, airport: AirportData): string {
 /** How the clearance names what it sends the flight out on, for the expected label. */
 function expectedProcedureLabel(expected: ResolvedClearance, airport: AirportData): string {
   const procedure = expected.procedure.value;
-  return procedure.kind === 'sid' ? procedureLabel(procedure.id, airport) : HEADING_PROCEDURE_LABEL;
+  return procedure.kind === 'sid'
+    ? procedureLabel(procedure.id, airport)
+    : headingLabel(procedure.heading);
 }
 
 /**
@@ -258,7 +260,9 @@ export function gradeProcedure(
         : procedure.kind === 'sid' && family !== undefined && family === procedure.family,
     ),
     expectedLabel: expectedProcedureLabel(expected, airport),
-    actualLabel: heading ? HEADING_PROCEDURE_LABEL : procedureLabel(procedureId, airport),
+    actualLabel: heading
+      ? headingLabel(HEADING_PROCEDURE_PICK)
+      : procedureLabel(procedureId, airport),
     citations: expected.procedure.citations,
   };
 }

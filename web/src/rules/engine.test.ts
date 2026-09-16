@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData, AltitudePhrase, RouteTemplate, Scenario } from '@/data/schema.ts';
+import type {
+  AirportData,
+  AltitudePhrase,
+  AssignmentRule,
+  RouteTemplate,
+  Scenario,
+} from '@/data/schema.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 
@@ -388,6 +394,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearance.procedure.value).toEqual({
       kind: 'heading',
       heading: 'runway heading',
+      turn: undefined,
       spoken: 'fly runway heading',
     });
     expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
@@ -402,6 +409,46 @@ describe('resolveClearance on the generated KSFO data', () => {
     ]);
     expect(clearance.expect.value).toEqual({ kind: 'filed', feet: 9000, minutes: 10 });
     expect(clearance.frequency.value).toEqual({ value: '120.9', sectorId: 'richmond' });
+  });
+
+  it('turns a prop off the 28s onto the numbered heading its row names', () => {
+    const numbered: AssignmentRule = {
+      id: 'SFOW-28-270',
+      source: 'test row',
+      text: 'SFOW: props off the 28s -> turn onto 270, no DP',
+      plan: 'SFOW',
+      direction: 'any',
+      runwayFamilies: ['28'],
+      classes: ['P'],
+      sidFamily: null,
+      nonDpHeading: 270,
+      sector: 'richmond',
+    };
+    const airport: AirportData = {
+      ...ksfo,
+      assignmentRules: [numbered, ...ksfo.assignmentRules],
+    };
+    const clearance = clearanceFor(
+      scenario({
+        ...NIGHT_PROP,
+        runwayConfigId: '28 RT',
+        departureRunway: '28L',
+        localTime: '1400',
+      }),
+      airport,
+    );
+    expect(clearance.procedure.value).toEqual({
+      kind: 'heading',
+      heading: 270,
+      turn: 'left',
+      spoken: 'turn left heading 270',
+    });
+    expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
+      'SFOW-28-270',
+      'R-HEADING',
+    ]);
+    expect(clearance.route.value).toEqual({ template: 'radar_vectors_fix', fix: 'OAK' });
+    expect(clearance.altitude.value).toEqual({ phrase: 'maintain', feet: 5000 });
   });
 
   it('gives the same prop a procedure outside the noise window', () => {

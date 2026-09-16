@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
@@ -280,13 +281,27 @@ def test_rule_with_both_a_sid_family_and_a_heading_is_rejected(tmp_path: Path, k
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
-def test_rule_with_a_numbered_heading_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+def _with_non_dp_heading(value: Any) -> Mutation:
+    """A mutation that puts ``value`` on the one KSFO rule that clears a flight without a DP."""
+
     def mutate(data: Any) -> None:
         rule = next(row for row in data["assignment_rules"] if row["id"] == "SFOW-NOISE-P-RWY")
-        rule["non_dp_heading"] = "090"
+        rule["non_dp_heading"] = value
 
-    with pytest.raises(ValueError, match=r"non_dp_heading is '090'; only 'runway heading' is supported"):
-        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+    return mutate
+
+
+def test_rule_with_a_numbered_heading_loads(tmp_path: Path, ksfo_dir: Path) -> None:
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_non_dp_heading(270)) / SOP_FILE)
+    rule = next(row for row in sop.assignment_rules if row.id == "SFOW-NOISE-P-RWY")
+    assert rule.non_dp_heading == 270
+
+
+@pytest.mark.parametrize("value", ["270", 0, 361])
+def test_rule_with_a_heading_that_is_not_a_degree_number_is_rejected(tmp_path: Path, ksfo_dir: Path, value: Any) -> None:
+    message = f"non_dp_heading is {value!r}; write 'runway heading' or a magnetic heading as an integer from 1 to 360"
+    with pytest.raises(ValueError, match=re.escape(message)):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=_with_non_dp_heading(value)) / SOP_FILE)
 
 
 def test_rule_with_neither_a_sid_family_nor_a_heading_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:

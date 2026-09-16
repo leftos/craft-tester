@@ -9,7 +9,7 @@ import {
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
 import type { ClearanceElement, ExpectClause, ResolvedClearance } from '@/rules/types.ts';
-import { HEADING_PROCEDURE_LABEL } from '@/rules/types.ts';
+import { headingLabel } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -218,7 +218,7 @@ function procedureRow(clearance: ResolvedClearance, airport: AirportData): Craft
   const named =
     procedure.kind === 'sid'
       ? (airport.sids.find((sid) => sid.id === procedure.id)?.chartName ?? procedure.id)
-      : HEADING_PROCEDURE_LABEL;
+      : headingLabel(procedure.heading);
   return {
     kind: 'given',
     heading: elementLabel('R.sid'),
@@ -240,7 +240,7 @@ function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
         label: 'procedure',
         options: [
           ...airport.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
-          { value: HEADING_PROCEDURE_PICK, label: HEADING_PROCEDURE_LABEL },
+          { value: HEADING_PROCEDURE_PICK, label: headingLabel(HEADING_PROCEDURE_PICK) },
         ],
         value: picks.procedure,
         disabled: false,

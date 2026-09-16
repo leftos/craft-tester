@@ -97,7 +97,12 @@ describe('craftGroups', () => {
     const onTheHeading: ResolvedClearance = {
       ...clearance,
       procedure: {
-        value: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
+        value: {
+          kind: 'heading',
+          heading: 'runway heading',
+          turn: undefined,
+          spoken: 'fly runway heading',
+        },
         citations: [],
       },
     };

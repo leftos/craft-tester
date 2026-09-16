@@ -3,6 +3,7 @@ import ksfoJson from '@data/ksfo.json';
 import type {
   AirportData,
   AssignmentRule,
+  NonDpHeading,
   Notice,
   RunwayConfig,
   Scenario,
@@ -11,6 +12,7 @@ import type {
 import type { Classification } from '@/rules/classify.ts';
 import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
+import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -266,20 +268,59 @@ describe('selectSid', () => {
     });
     const result = selectSid(ctx({}), 'DEDHD', 'north', scenario({}), airportWith([noDp]));
     if (isUnresolved(result)) throw new Error(result.reason);
-    expect(result.procedure).toEqual({ kind: 'heading' });
+    expect(result.procedure).toEqual({
+      kind: 'heading',
+      heading: 'runway heading',
+      turn: undefined,
+    });
     expect(result.row.id).toBe('NO-DP');
     expect(result.sector).toBe('richmond');
   });
 
-  it('blocks the SID element on a heading other than the runway heading', () => {
-    const turn = rule({
-      id: 'TURN-270',
-      sidFamily: null,
-      nonDpHeading: '270',
-    });
-    expect(selectSid(ctx({}), 'DEDHD', 'north', scenario({}), airportWith([turn]))).toEqual({
+  /** The selection for a row that clears a flight off the 28s on the heading it names. */
+  function offThe28s(
+    nonDpHeading: NonDpHeading,
+    departureRunway = '28L',
+  ): SidSelection | Unresolved {
+    const row = rule({ id: 'NO-DP-28', sidFamily: null, nonDpHeading, runwayFamilies: ['28'] });
+    return selectSid(
+      ctx({ runwayFamily: '28' }),
+      'DEDHD',
+      'north',
+      scenario({ departureRunway }),
+      airportWith([row]),
+    );
+  }
+
+  it('turns the shorter way onto a numbered heading left of the runway bearing', () => {
+    const result = offThe28s(270);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.procedure).toEqual({ kind: 'heading', heading: 270, turn: 'left' });
+  });
+
+  it('turns the shorter way onto a numbered heading right of the runway bearing', () => {
+    const result = offThe28s(315);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.procedure).toEqual({ kind: 'heading', heading: 315, turn: 'right' });
+  });
+
+  it('issues no turn where the heading is the runway bearing itself', () => {
+    const result = offThe28s(284);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.procedure).toEqual({ kind: 'heading', heading: 284, turn: undefined });
+  });
+
+  it('blocks the SID element on a heading opposite the departure runway', () => {
+    expect(offThe28s(104)).toEqual({
       element: 'R.sid',
-      reason: expect.stringContaining('270'),
+      reason: expect.stringContaining('NO-DP-28'),
+    });
+  });
+
+  it('blocks the SID element where the runway has no bearing on file', () => {
+    expect(offThe28s(270, '28C')).toEqual({
+      element: 'R.sid',
+      reason: expect.stringContaining('28C'),
     });
   });
 

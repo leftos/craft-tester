@@ -29,7 +29,7 @@ Direction = Literal["north", "south", "oceanic", "any"]
 GateDirection = Literal["north", "south", "oceanic"]
 WakeCategory = Literal["L", "M", "H", "J"]
 RoutePhrasing = Literal["transition", "radar_vectors_fix", "as_filed"]
-NonDpHeading = Literal["runway heading"]
+NonDpHeading = Literal["runway heading"] | int
 DepartureSidKind = Literal["rnav_pilot_nav", "conventional_pilot_nav", "vector_hybrid", "radar_vectors"]
 AltitudeOutcomeKind = Literal["interim", "climb_via"]
 NoticeEffectKind = Literal["sid_off"]
@@ -47,7 +47,7 @@ DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
 GATE_DIRECTIONS: tuple[GateDirection, ...] = ("north", "south", "oceanic")
 WAKE_CATEGORIES: tuple[WakeCategory, ...] = ("L", "M", "H", "J")
 ROUTE_PHRASINGS: tuple[RoutePhrasing, ...] = ("transition", "radar_vectors_fix", "as_filed")
-NON_DP_HEADINGS: tuple[NonDpHeading, ...] = ("runway heading",)
+RUNWAY_HEADING: NonDpHeading = "runway heading"
 DEPARTURE_SID_KINDS: tuple[DepartureSidKind, ...] = ("rnav_pilot_nav", "conventional_pilot_nav", "vector_hybrid", "radar_vectors")
 ALTITUDE_OUTCOME_KINDS: tuple[AltitudeOutcomeKind, ...] = ("interim", "climb_via")
 NOTICE_EFFECT_KINDS: tuple[NoticeEffectKind, ...] = ("sid_off",)
@@ -202,6 +202,7 @@ class AssignmentRule:
     ``groups`` names :class:`AircraftGroup` ids the row addresses beyond ``classes``, and
     ``approach_categories`` narrows it to the approach categories it names; both are ``None`` on a
     row that names none, and a row with no category restriction applies to every category.
+    ``non_dp_heading`` is ``runway heading`` or a magnetic heading in degrees from 1 to 360.
     """
 
     id: str

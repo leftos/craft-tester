@@ -261,6 +261,17 @@ export const AssignmentConditionSchema = z.strictObject({
 });
 
 /**
+ * The heading a rule clears a flight on where it assigns no departure procedure.
+ *
+ * Either the runway heading, which needs no number, or a magnetic heading in degrees from 1 to 360,
+ * which the flight is turned onto the shorter way round from its departure runway's bearing.
+ */
+export const NonDpHeadingSchema = z.union([
+  z.literal('runway heading'),
+  z.number().int().min(1).max(360),
+]);
+
+/**
  * One row of the SOP DP assignment table; the engine takes the first compatible match.
  *
  * `direction` is `any` on rows that apply whichever way the flight is going, such as the noise
@@ -284,7 +295,7 @@ export const AssignmentRuleSchema = z
     groups: z.array(z.string()).optional(),
     approachCategories: z.array(ApproachCategorySchema).optional(),
     sidFamily: z.string().nullable(),
-    nonDpHeading: z.string().optional(),
+    nonDpHeading: NonDpHeadingSchema.optional(),
     sector: z.string(),
     when: AssignmentConditionSchema.optional(),
   })
@@ -569,10 +580,9 @@ export const ExpectedClearanceSchema = z.strictObject({
   sidFamily: z.string().nullable(),
   /**
    * The heading a clearance with no DP sends the flight out on, absent wherever a procedure is
-   * assigned. Only the runway heading is supported: a numbered heading needs turn-direction data
-   * the airport files do not carry.
+   * assigned: the runway heading, or the magnetic heading in degrees the flight is turned onto.
    */
-  heading: z.literal('runway heading').optional(),
+  heading: NonDpHeadingSchema.optional(),
   route: z.strictObject({
     template: RouteTemplateSchema,
     fix: z.string().optional(),
@@ -712,6 +722,7 @@ export type SidRestriction = z.infer<typeof SidRestrictionSchema>;
 export type ChartFrequency = z.infer<typeof ChartFrequencySchema>;
 export type Sid = z.infer<typeof SidSchema>;
 export type AssignmentCondition = z.infer<typeof AssignmentConditionSchema>;
+export type NonDpHeading = z.infer<typeof NonDpHeadingSchema>;
 export type AssignmentRule = z.infer<typeof AssignmentRuleSchema>;
 export type NoiseWindow = z.infer<typeof NoiseWindowSchema>;
 export type AltitudeOutcome = z.infer<typeof AltitudeOutcomeSchema>;

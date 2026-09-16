@@ -260,7 +260,7 @@ function procedureValue(clearance: ResolvedClearance): string {
   const procedure = clearance.procedure.value;
   return procedure.kind === 'sid'
     ? `${procedure.spoken} departure (${procedure.id})`
-    : 'fly runway heading (no DP)';
+    : `${procedure.spoken} (no DP)`;
 }
 
 /** The transitions of the issued procedure; a clearance with no DP publishes none. */

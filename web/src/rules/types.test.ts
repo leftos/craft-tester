@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ExpectedClearanceSchema } from '@/data/schema.ts';
 import { toExpectedClearance } from '@/rules/types.ts';
-import type { ResolvedClearance, RuleCitation } from '@/rules/types.ts';
+import type { Procedure, ResolvedClearance, RuleCitation } from '@/rules/types.ts';
 
 const citation: RuleCitation = {
   id: 'SFOW-N-TRUKN-01',
@@ -48,19 +48,41 @@ describe('toExpectedClearance', () => {
     expect(flattened.expect).toBeNull();
   });
 
-  it('writes a null family and the heading for a clearance issued without a DP', () => {
-    const heading: ResolvedClearance = {
+  /** A clearance the SOP issues without a DP, flown on the heading its row names. */
+  function onTheHeading(procedure: Extract<Procedure, { kind: 'heading' }>): ResolvedClearance {
+    return {
       ...resolved,
-      procedure: {
-        value: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
-        citations: [citation],
-      },
+      procedure: { value: procedure, citations: [citation] },
       route: { value: { template: 'radar_vectors_fix', fix: 'OAK' }, citations: [citation] },
       altitude: { value: { phrase: 'maintain', feet: 5000 }, citations: [citation] },
     };
-    const flattened = toExpectedClearance(heading);
+  }
+
+  it('writes a null family and the heading for a clearance issued without a DP', () => {
+    const flattened = toExpectedClearance(
+      onTheHeading({
+        kind: 'heading',
+        heading: 'runway heading',
+        turn: undefined,
+        spoken: 'fly runway heading',
+      }),
+    );
     expect(flattened.sidFamily).toBeNull();
     expect(flattened.heading).toBe('runway heading');
+    expect(ExpectedClearanceSchema.parse(flattened)).toEqual(flattened);
+  });
+
+  it('writes the degrees of a numbered heading', () => {
+    const flattened = toExpectedClearance(
+      onTheHeading({
+        kind: 'heading',
+        heading: 270,
+        turn: 'left',
+        spoken: 'turn left heading 270',
+      }),
+    );
+    expect(flattened.sidFamily).toBeNull();
+    expect(flattened.heading).toBe(270);
     expect(ExpectedClearanceSchema.parse(flattened)).toEqual(flattened);
   });
 

@@ -92,8 +92,17 @@
               "type": "string"
             },
             "heading": {
-              "const": "runway heading",
-              "type": "string"
+              "anyOf": [
+                {
+                  "const": "runway heading",
+                  "type": "string"
+                },
+                {
+                  "maximum": 360,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              ]
             },
             "route": {
               "additionalProperties": false,

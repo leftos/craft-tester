@@ -1,5 +1,9 @@
+import type { NonDpHeading } from '@/data/schema.ts';
 import { routeFromExitFix } from '@/rules/route.ts';
-import type { ResolvedClearance } from '@/rules/types.ts';
+import type { ResolvedClearance, Turn } from '@/rules/types.ts';
+
+/** A heading is read as three digits, so a two-digit heading is spoken with a leading zero. */
+const HEADING_DIGITS = 3;
 
 /** How ATC speaks each digit; `9` is "niner" so it cannot be heard as "five". */
 const DIGIT_WORDS: Readonly<Record<string, string>> = {
@@ -485,6 +489,13 @@ function routeElementPhrase(input: SpeakClearanceInput, fix: string): string {
   return speakBareFix(input, fix);
 }
 
+/** The heading a clearance with no DP goes out on, its degrees spoken digit by digit. */
+function headingPhrase(heading: NonDpHeading, turn: Turn): string {
+  if (heading === 'runway heading') return 'fly runway heading';
+  const degrees = speakDigits(String(heading).padStart(HEADING_DIGITS, '0'));
+  return turn === undefined ? `fly heading ${degrees}` : `turn ${turn} heading ${degrees}`;
+}
+
 /**
  * The procedure as the clearance names it.
  *
@@ -493,7 +504,8 @@ function routeElementPhrase(input: SpeakClearanceInput, fix: string): string {
  */
 function procedurePhrase(clearance: ResolvedClearance): string {
   const procedure = clearance.procedure.value;
-  return procedure.kind === 'sid' ? `${procedure.spoken} departure` : `via ${procedure.spoken}`;
+  if (procedure.kind === 'sid') return `${procedure.spoken} departure`;
+  return `via ${headingPhrase(procedure.heading, procedure.turn)}`;
 }
 
 function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[]): string {

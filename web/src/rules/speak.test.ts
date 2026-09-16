@@ -279,7 +279,12 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          procedure: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
+          procedure: {
+            kind: 'heading',
+            heading: 'runway heading',
+            turn: undefined,
+            spoken: 'fly runway heading',
+          },
           route: { template: 'radar_vectors_fix', fix: 'OAK' },
           altitude: { phrase: 'maintain', feet: 5000 },
           expect: { kind: 'filed', feet: 9000, minutes: 10 },
@@ -299,6 +304,38 @@ describe('speakClearance', () => {
     );
     expect(spoken.fullRoute).toContain(
       'via fly runway heading, radar vectors Oakland VOR, Victor six Sacramento VOR, direct.',
+    );
+  });
+
+  /** The reading of a clearance the SOP sends off on the heading its row names. */
+  function headingReading(heading: number, turn: 'left' | 'right' | undefined, spoken: string) {
+    return speakClearance(
+      input({
+        clearance: clearance({
+          procedure: { kind: 'heading', heading, turn, spoken },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+          altitude: { phrase: 'maintain', feet: 5000 },
+          expect: { kind: 'filed', feet: 9000, minutes: 10 },
+        }),
+        callsign: 'N172SP',
+        destinationSpoken: 'Yuba County',
+        filedRoute: 'OAK V6 SAC',
+        sidTransitions: [],
+      }),
+    );
+  }
+
+  it('speaks a numbered heading with its turn and its digits one by one', () => {
+    const spoken = headingReading(270, 'left', 'turn left heading 270');
+    expect(spoken.abbreviated).toContain(
+      'cleared to Yuba County airport, via turn left heading two seven zero, radar vectors Oakland VOR, then as filed.',
+    );
+  });
+
+  it('speaks a heading on the runway bearing without a turn', () => {
+    const spoken = headingReading(284, undefined, 'fly heading 284');
+    expect(spoken.abbreviated).toContain(
+      'cleared to Yuba County airport, via fly heading two eight four, radar vectors Oakland VOR, then as filed.',
     );
   });
 

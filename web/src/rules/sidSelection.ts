@@ -10,12 +10,12 @@ import type {
 import type { Classification } from '@/rules/classify.ts';
 import { addresses } from '@/rules/classify.ts';
 import type { SelectedProcedure, Unresolved } from '@/rules/types.ts';
-import { unresolved } from '@/rules/unresolved.ts';
+import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
-/** The only heading a row may clear a flight on; a numbered heading has no turn-direction data. */
-const SUPPORTED_HEADING = 'runway heading';
+/** Half a circle: a heading this far from the runway bearing turns neither way by less. */
+const OPPOSITE_DEGREES = 180;
 
-/** What an assignment row put the flight on: a SID, or the runway heading, with its rows. */
+/** What an assignment row put the flight on: a SID, or a heading, with its rows. */
 export type SidSelection = {
   procedure: SelectedProcedure;
   row: AssignmentRule;
@@ -119,6 +119,41 @@ function noSidReason(
 }
 
 /**
+ * The heading a row with no SID family clears the flight on, with the turn onto it.
+ *
+ * The runway heading needs no turn. A numbered heading is flown by turning the shorter way round
+ * from the departure runway's magnetic bearing, so the runway's CIFP bearing has to be on file; a
+ * heading opposite that bearing has no shorter way round and is a data error in the row.
+ */
+function headingProcedure(
+  row: AssignmentRule,
+  scenario: Scenario,
+  airport: AirportData,
+): SelectedProcedure | Unresolved {
+  const heading = row.nonDpHeading;
+  if (heading === undefined) {
+    return unresolved('R.sid', `${row.id} assigns no SID family and names no heading at all`);
+  }
+  if (heading === 'runway heading') return { kind: 'heading', heading, turn: undefined };
+  const runway = airport.runways.find((entry) => entry.designator === scenario.departureRunway);
+  if (runway === undefined) {
+    return unresolved(
+      'R.sid',
+      `${scenario.departureRunway} has no CIFP runway record with a bearing, so the turn onto heading ${heading} cannot be derived`,
+    );
+  }
+  const delta = ((heading - runway.magneticBearing + 540) % 360) - 180;
+  if (Math.abs(delta) === OPPOSITE_DEGREES) {
+    return unresolved(
+      'R.sid',
+      `${row.id} clears the flight on heading ${heading}, opposite runway ${runway.designator} on ${runway.magneticBearing}, which leaves no shorter turn`,
+    );
+  }
+  if (delta === 0) return { kind: 'heading', heading, turn: undefined };
+  return { kind: 'heading', heading, turn: delta > 0 ? 'right' : 'left' };
+}
+
+/**
  * Walks the assignment table in order and takes the first row whose SID the flight can fly.
  *
  * A row whose SID family an active notice has taken out of use is skipped, and the notice travels
@@ -149,13 +184,9 @@ export function selectSid(
       continue;
     }
     if (row.sidFamily === null) {
-      if (row.nonDpHeading !== SUPPORTED_HEADING) {
-        return unresolved(
-          'R.sid',
-          `${row.id} clears the flight on ${row.nonDpHeading ?? 'no heading at all'}; only ${SUPPORTED_HEADING} is supported`,
-        );
-      }
-      return { procedure: { kind: 'heading' }, row, sector: row.sector, notices };
+      const procedure = headingProcedure(row, scenario, airport);
+      if (isUnresolved(procedure)) return procedure;
+      return { procedure, row, sector: row.sector, notices };
     }
     const sid = airport.sids.find(
       (entry) => entry.family === row.sidFamily && isCompatible(entry, exitElement, scenario, ctx),
