@@ -89,7 +89,7 @@ function resolve(
   flight: Scenario,
   airport: AirportData = ksfo,
 ) {
-  const result = resolveAltitude(classification, procedure, flight, airport);
+  const result = resolveAltitude(classification, { kind: 'sid', sid: procedure }, flight, airport);
   if (isUnresolved(result)) throw new Error(result.reason);
   return result;
 }
@@ -188,7 +188,12 @@ describe('resolveAltitude', () => {
   });
 
   it('blocks the altitude element when no row is keyed to the flight', () => {
-    const result = resolveAltitude(ctx({ plan: 'SFOX' }), sid('TRUKN2'), scenario({}), ksfo);
+    const result = resolveAltitude(
+      ctx({ plan: 'SFOX' }),
+      { kind: 'sid', sid: sid('TRUKN2') },
+      scenario({}),
+      ksfo,
+    );
     expect(result).toEqual({ element: 'A.phrase', reason: expect.stringContaining('SFOX') });
   });
 });

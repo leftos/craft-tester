@@ -141,6 +141,16 @@ function destinationSpoken(icao: string, airport: AirportData): string {
   return airport.routeLibrary.destinations.find((row) => row.icao === icao)?.spoken ?? icao;
 }
 
+/** The transitions of the issued procedure; a clearance flown on the runway heading has none. */
+function sidTransitionsOf(
+  clearance: ResolvedClearance,
+  airport: AirportData,
+): readonly { fix: string; spoken: string }[] {
+  const procedure = clearance.procedure.value;
+  if (procedure.kind !== 'sid') return [];
+  return airport.sids.find((sid) => sid.id === procedure.id)?.transitions ?? [];
+}
+
 /**
  * Reads a resolved clearance the way the reveal speaks it, abbreviated and with the full route.
  *
@@ -167,7 +177,6 @@ export function spokenFor(
     squawk: scenario.squawk,
     telephony: airport.routeLibrary.telephony,
     fixSpoken: airport.fixSpoken,
-    sidTransitions:
-      airport.sids.find((sid) => sid.id === clearance.sid.value.id)?.transitions ?? [],
+    sidTransitions: sidTransitionsOf(clearance, airport),
   });
 }

@@ -516,7 +516,14 @@ export const ScenarioSchema = z.strictObject({
 /** The clearance a fixture expects, element by element, as clearance mode grades it. */
 export const ExpectedClearanceSchema = z.strictObject({
   clearedTo: z.string(),
-  sidFamily: z.string(),
+  /** The family of the assigned procedure, `null` on a clearance flown without a DP. */
+  sidFamily: z.string().nullable(),
+  /**
+   * The heading a clearance with no DP sends the flight out on, absent wherever a procedure is
+   * assigned. Only the runway heading is supported: a numbered heading needs turn-direction data
+   * the airport files do not carry.
+   */
+  heading: z.literal('runway heading').optional(),
   route: z.strictObject({
     template: RouteTemplateSchema,
     fix: z.string().optional(),

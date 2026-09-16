@@ -172,7 +172,9 @@ describe('generateScenario', () => {
     const misfiled = generated
       .filter((entry) => {
         const result = resolveClearance(entry, ksfo);
-        return !result.ok || entry.filedRoute.split(' ')[0] !== result.clearance.sid.value.id;
+        if (!result.ok) return true;
+        const procedure = result.clearance.procedure.value;
+        return procedure.kind !== 'sid' || entry.filedRoute.split(' ')[0] !== procedure.id;
       })
       .map(label);
     expect(misfiled).toEqual([]);

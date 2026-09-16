@@ -31,6 +31,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-RV-SID",
     "R-THEN-AS-FILED",
     "R-ROUTE-BUILD",
+    "R-HEADING",
     "R-RV-AIRWAY",
     "R-AIRWAY",
     "R-NAVAID",
@@ -276,6 +277,15 @@ def test_rule_with_both_a_sid_family_and_a_heading_is_rejected(tmp_path: Path, k
         data["assignment_rules"][0]["non_dp_heading"] = "runway heading"
 
     with pytest.raises(ValueError, match="needs exactly one of `sid_family` and `non_dp_heading`"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_rule_with_a_numbered_heading_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        rule = next(row for row in data["assignment_rules"] if row["id"] == "SFOW-NOISE-P-RWY")
+        rule["non_dp_heading"] = "090"
+
+    with pytest.raises(ValueError, match=r"non_dp_heading is '090'; only 'runway heading' is supported"):
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 

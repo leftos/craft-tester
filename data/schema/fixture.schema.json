@@ -91,6 +91,10 @@
             "frequency": {
               "type": "string"
             },
+            "heading": {
+              "const": "runway heading",
+              "type": "string"
+            },
             "route": {
               "additionalProperties": false,
               "properties": {
@@ -113,7 +117,10 @@
               "type": "object"
             },
             "sidFamily": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "spoken": {
               "type": "string"

@@ -6,6 +6,7 @@ import type {
   ResolvedClearance,
   Verdict,
 } from '@/rules/types.ts';
+import { HEADING_PROCEDURE_LABEL } from '@/rules/types.ts';
 
 /**
  * What an expect clause answers: the delay in minutes, the final-altitude reading, or no clause.
@@ -203,11 +204,18 @@ function procedureLabel(id: string, airport: AirportData): string {
   return airport.sids.find((sid) => sid.id === id)?.chartName ?? id;
 }
 
+/** How the clearance names what it sends the flight out on, for the expected label. */
+function expectedProcedureLabel(expected: ResolvedClearance, airport: AirportData): string {
+  const procedure = expected.procedure.value;
+  return procedure.kind === 'sid' ? procedureLabel(procedure.id, airport) : HEADING_PROCEDURE_LABEL;
+}
+
 /**
  * Grades the procedure the player assigned against the one the engine resolved.
  *
  * The comparison is by family rather than by identifier, because an AIRAC cycle bumps the version
- * in the identifier without changing the procedure the controller assigns.
+ * in the identifier without changing the procedure the controller assigns. A clearance the SOP
+ * sends off on the runway heading names no procedure, so every published procedure is wrong for it.
  *
  * @param procedureId The identifier of the SID the player picked, e.g. `TRUKN2`.
  * @param expected The clearance the engine resolved for the same scenario.
@@ -219,13 +227,16 @@ export function gradeProcedure(
   expected: ResolvedClearance,
   airport: AirportData,
 ): Grade {
+  const procedure = expected.procedure.value;
   const family = airport.sids.find((sid) => sid.id === procedureId)?.family;
   return {
     element: 'R.sid',
-    verdict: verdictOf(family !== undefined && family === expected.sid.value.family),
-    expectedLabel: procedureLabel(expected.sid.value.id, airport),
+    verdict: verdictOf(
+      procedure.kind === 'sid' && family !== undefined && family === procedure.family,
+    ),
+    expectedLabel: expectedProcedureLabel(expected, airport),
     actualLabel: procedureLabel(procedureId, airport),
-    citations: expected.sid.citations,
+    citations: expected.procedure.citations,
   };
 }
 

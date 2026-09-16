@@ -125,7 +125,8 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
  *
  * The clause the clearance already carries keeps its delay. Where it carries none — the chart
  * publishes the expect note itself, or the flight is cleared to the altitude it asked for — the
- * chart's own note gives the delay, and ten minutes is the standard where nothing else does.
+ * chart's own note gives the delay, and ten minutes is the standard where nothing else does. A
+ * flight cleared on the runway heading is on no chart, so it takes the standard.
  *
  * @param clearance The clearance resolved for the corrected plan.
  * @param airport The airport data, whose `sids` carry the chart note.
@@ -134,7 +135,9 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
 function amendedMinutes(clearance: ResolvedClearance, airport: AirportData): number {
   const clause = clearance.expect.value;
   if (clause !== null && clause.kind !== 'final') return clause.minutes;
-  const sid = airport.sids.find((entry) => entry.id === clearance.sid.value.id);
+  const procedure = clearance.procedure.value;
+  if (procedure.kind === 'heading') return DEFAULT_EXPECT_MINUTES;
+  const sid = airport.sids.find((entry) => entry.id === procedure.id);
   return sid?.chartExpectFiledAltitudeMinutes ?? DEFAULT_EXPECT_MINUTES;
 }
 

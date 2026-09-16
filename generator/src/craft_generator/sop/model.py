@@ -28,6 +28,7 @@ Direction = Literal["north", "south", "oceanic", "any"]
 GateDirection = Literal["north", "south", "oceanic"]
 WakeCategory = Literal["L", "M", "H", "J"]
 RoutePhrasing = Literal["transition", "radar_vectors_fix", "as_filed"]
+NonDpHeading = Literal["runway heading"]
 DepartureSidKind = Literal["rnav_pilot_nav", "conventional_pilot_nav", "vector_hybrid", "radar_vectors"]
 AltitudeOutcomeKind = Literal["interim", "climb_via"]
 NoticeEffectKind = Literal["sid_off"]
@@ -44,6 +45,7 @@ DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
 GATE_DIRECTIONS: tuple[GateDirection, ...] = ("north", "south", "oceanic")
 WAKE_CATEGORIES: tuple[WakeCategory, ...] = ("L", "M", "H", "J")
 ROUTE_PHRASINGS: tuple[RoutePhrasing, ...] = ("transition", "radar_vectors_fix", "as_filed")
+NON_DP_HEADINGS: tuple[NonDpHeading, ...] = ("runway heading",)
 DEPARTURE_SID_KINDS: tuple[DepartureSidKind, ...] = ("rnav_pilot_nav", "conventional_pilot_nav", "vector_hybrid", "radar_vectors")
 ALTITUDE_OUTCOME_KINDS: tuple[AltitudeOutcomeKind, ...] = ("interim", "climb_via")
 NOTICE_EFFECT_KINDS: tuple[NoticeEffectKind, ...] = ("sid_off",)
@@ -190,7 +192,7 @@ class AssignmentRule:
     runway_families: tuple[str, ...]
     classes: tuple[AircraftClass, ...]
     sid_family: str | None
-    non_dp_heading: str | None
+    non_dp_heading: NonDpHeading | None
     sector: str
     when: AssignmentCondition | None
 

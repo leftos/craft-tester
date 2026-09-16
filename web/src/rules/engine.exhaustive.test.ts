@@ -209,8 +209,15 @@ describe.each(checkedInAirports())('every reachable $icao scenario', ({ icao, da
     const uncited: string[] = [];
     for (const { combination, result } of outcomes) {
       if (!result.ok) continue;
-      const { clearedTo, sid, route, altitude, expect: expectClause, frequency } = result.clearance;
-      const elements = { clearedTo, sid, route, altitude, expect: expectClause, frequency };
+      const {
+        clearedTo,
+        procedure,
+        route,
+        altitude,
+        expect: expectClause,
+        frequency,
+      } = result.clearance;
+      const elements = { clearedTo, procedure, route, altitude, expect: expectClause, frequency };
       for (const [element, cited] of Object.entries(elements)) {
         if (cited.citations.length === 0) uncited.push(`${element}: ${combination.label}`);
       }

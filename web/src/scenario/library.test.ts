@@ -107,9 +107,11 @@ function uncleanReason(route: RouteLibraryEntry, combination: Combination): stri
   };
   const result = resolveClearance(filed, ksfo);
   if (!result.ok) return gapsOf(result.unresolved);
+  const procedure = result.clearance.procedure.value;
+  if (procedure.kind !== 'sid') return 'R.sid: cleared on the runway heading with no procedure';
   const clean: Scenario = {
     ...filed,
-    filedRoute: `${result.clearance.sid.value.id} ${route.tail}`,
+    filedRoute: `${procedure.id} ${route.tail}`,
   };
   const amended = resolveAmendments(clean, ksfo);
   if (!amended.ok) return gapsOf(amended.unresolved);

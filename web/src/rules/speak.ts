@@ -485,11 +485,22 @@ function routeElementPhrase(input: SpeakClearanceInput, fix: string): string {
   return speakBareFix(input, fix);
 }
 
+/**
+ * The procedure as the clearance names it.
+ *
+ * A SID is named and followed by "departure"; a clearance issued without one introduces the heading
+ * with "via", as the OAK ATCT SOP 2-1 c phraseology reads it.
+ */
+function procedurePhrase(clearance: ResolvedClearance): string {
+  const procedure = clearance.procedure.value;
+  return procedure.kind === 'sid' ? `${procedure.spoken} departure` : `via ${procedure.spoken}`;
+}
+
 function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[]): string {
   const callsign = speakCallsign(input.callsign, input.telephony);
   const parts = [
     `${callsign}, cleared to ${input.destinationSpoken} airport`,
-    `${input.clearance.sid.value.spoken} departure`,
+    procedurePhrase(input.clearance),
   ];
   const fix = input.clearance.route.value.fix;
   if (fix !== undefined) parts.push(routeElementPhrase(input, fix));

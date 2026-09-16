@@ -3,6 +3,7 @@ import { altitudeLabel, expectChoiceLabel, formatFeet, routeLabel } from '@/rule
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
 import type { ClearanceElement, ExpectClause, ResolvedClearance } from '@/rules/types.ts';
+import { HEADING_PROCEDURE_LABEL } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -207,11 +208,15 @@ function clearanceLimitRow(clearance: ResolvedClearance, airport: AirportData): 
 
 /** The assigned procedure, named as the chart names it, falling back to its identifier. */
 function procedureRow(clearance: ResolvedClearance, airport: AirportData): CraftGroup {
-  const id = clearance.sid.value.id;
+  const procedure = clearance.procedure.value;
+  const named =
+    procedure.kind === 'sid'
+      ? (airport.sids.find((sid) => sid.id === procedure.id)?.chartName ?? procedure.id)
+      : HEADING_PROCEDURE_LABEL;
   return {
     kind: 'given',
     heading: elementLabel('R.sid'),
-    value: airport.sids.find((sid) => sid.id === id)?.chartName ?? id,
+    value: named,
   };
 }
 

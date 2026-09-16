@@ -116,7 +116,7 @@ function expectedRoute(
   filed: FiledRoute,
   scenario: Scenario,
   ctx: Classification,
-  clearance: ResolvedClearance,
+  assigned: string,
   airport: AirportData,
 ): ExpectedRoute | Unresolved {
   const destination = destinationRow(airport, scenario.destination);
@@ -124,7 +124,7 @@ function expectedRoute(
   if (tec === undefined) {
     return (
       builtExpectation(scenario, ctx, airport) ?? {
-        tokens: [clearance.sid.value.id, ...filed.tail],
+        tokens: [assigned, ...filed.tail],
         tec: undefined,
       }
     );
@@ -207,13 +207,12 @@ function routeReason(
   expected: ExpectedRoute,
   scenario: Scenario,
   ctx: Classification,
-  clearance: ResolvedClearance,
+  assigned: string,
 ): string {
   if (expected.tec !== undefined) return tecReason(ctx, expected, scenario.destination);
   if (expected.built !== undefined) {
     return builtReason(expected.built, expected.exitElement ?? '', scenario, ctx);
   }
-  const assigned = clearance.sid.value.id;
   if (filed.procedure === undefined) {
     return `the route files no departure procedure; the SOP assigns ${assigned} from ${scenario.departureRunway} in ${ctx.config.id}`;
   }
@@ -267,7 +266,8 @@ export function loaRouteGap(
  * fix the route leaves the terminal at, the box is built on the filed procedure instead, by a
  * transition that connects onward to the filed route; a row that forces a transition builds the box
  * on that row's own SID whatever was filed. A box that already reads right is then held against the
- * LOA routing rows written for the destination.
+ * LOA routing rows written for the destination. A flight the SOP clears on the runway heading has no
+ * procedure for the box to read, and the box is reported unresolved rather than guessed at.
  *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
@@ -283,7 +283,14 @@ export function checkRoute(
   airport: AirportData,
 ): ResolvedAmendment | undefined | Unresolved {
   const filed = splitFiled(scenario.filedRoute);
-  const expected = expectedRoute(filed, scenario, ctx, clearance, airport);
+  const procedure = clearance.procedure.value;
+  if (procedure.kind === 'heading') {
+    return unresolved(
+      'BOX.route',
+      'the SOP clears this flight on the runway heading with no departure procedure, and the route box for a clearance without one is not written yet',
+    );
+  }
+  const expected = expectedRoute(filed, scenario, ctx, procedure.id, airport);
   if (isUnresolved(expected)) return expected;
   const tail = expected.tokens.slice(1);
   if (expected.tokens.join(' ') === filed.tokens.join(' ')) {
@@ -293,11 +300,11 @@ export function checkRoute(
   return {
     box: 'route',
     proposed: expected.tokens.join(' '),
-    reason: routeReason(filed, expected, scenario, ctx, clearance),
+    reason: routeReason(filed, expected, scenario, ctx, procedure.id),
     citations:
       expected.built === undefined
         ? [
-            ...clearance.sid.citations,
+            ...clearance.procedure.citations,
             ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
           ]
         : builtCitations(expected.built, airport),

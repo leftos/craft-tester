@@ -133,7 +133,9 @@ describe('an amendment scenario', () => {
     for (const seed of SEEDS) {
       const drawn = amendmentOf(seed);
       expect(drawn.kind, `seed ${seed}`).toBe('amendment');
-      expect(drawn.clearance.sid.value.id.length, `seed ${seed}`).toBeGreaterThan(0);
+      const { procedure } = drawn.clearance;
+      expect(procedure.value.kind, `seed ${seed}`).toBe('sid');
+      expect(procedure.value.spoken.length, `seed ${seed}`).toBeGreaterThan(0);
     }
   });
 
@@ -201,7 +203,9 @@ describe('the CRAFT form', () => {
     expect(limit.heading).toBe('C — clearance limit');
     expect(limit.value).toBe(`${icao} — ${String(spoken)}`);
     if (procedure?.kind !== 'given') throw new Error('the second row is not a given row');
-    const chartName = airport.sids.find((sid) => sid.id === clearance.sid.value.id)?.chartName;
+    const assigned = clearance.procedure.value;
+    if (assigned.kind !== 'sid') throw new Error('the clearance assigns no procedure');
+    const chartName = airport.sids.find((sid) => sid.id === assigned.id)?.chartName;
     expect(chartName).toBeDefined();
     expect(procedure.heading).toBe('R — procedure');
     expect(procedure.value).toBe(chartName);

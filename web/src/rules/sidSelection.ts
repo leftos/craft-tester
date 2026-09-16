@@ -8,12 +8,15 @@ import type {
   Sid,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
-import type { Unresolved } from '@/rules/types.ts';
+import type { SelectedProcedure, Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
-/** The SID an assignment row put the flight on, with the rows that decided it. */
+/** The only heading a row may clear a flight on; a numbered heading has no turn-direction data. */
+const SUPPORTED_HEADING = 'runway heading';
+
+/** What an assignment row put the flight on: a SID, or the runway heading, with its rows. */
 export type SidSelection = {
-  sid: Sid;
+  procedure: SelectedProcedure;
   row: AssignmentRule;
   sector: string;
   notices: Notice[];
@@ -112,15 +115,15 @@ function noSidReason(
  * Walks the assignment table in order and takes the first row whose SID the flight can fly.
  *
  * A row whose SID family an active notice has taken out of use is skipped, and the notice travels
- * with the selection so the clearance can cite it. A row that clears the flight without a
- * procedure blocks the clearance: v1 does not issue non-DP headings.
+ * with the selection so the clearance can cite it. A row that assigns no SID family clears the
+ * flight on the heading it names instead, which the engine issues in place of a procedure.
  *
  * @param ctx The classified flight.
  * @param exitElement The fix, or the airway, the flight leaves the terminal on.
  * @param direction The gate direction of the route's first fix, undefined when it is not a gate.
  * @param scenario The filed flight plan.
  * @param airport The airport data.
- * @returns The selected SID with its row and sector, or `Unresolved` naming the gap.
+ * @returns The selected SID or heading with its row and sector, or `Unresolved` naming the gap.
  */
 export function selectSid(
   ctx: Classification,
@@ -138,7 +141,15 @@ export function selectSid(
       notices.push(notice);
       continue;
     }
-    if (row.sidFamily === null) return unresolved('R.sid', row.text);
+    if (row.sidFamily === null) {
+      if (row.nonDpHeading !== SUPPORTED_HEADING) {
+        return unresolved(
+          'R.sid',
+          `${row.id} clears the flight on ${row.nonDpHeading ?? 'no heading at all'}; only ${SUPPORTED_HEADING} is supported`,
+        );
+      }
+      return { procedure: { kind: 'heading' }, row, sector: row.sector, notices };
+    }
     const sid = airport.sids.find(
       (entry) => entry.family === row.sidFamily && isCompatible(entry, exitElement, scenario, ctx),
     );
@@ -146,7 +157,7 @@ export function selectSid(
       incompatible.push(row.id);
       continue;
     }
-    return { sid, row, sector: row.sector, notices };
+    return { procedure: { kind: 'sid', sid }, row, sector: row.sector, notices };
   }
   return unresolved('R.sid', noSidReason(ctx, direction, incompatible));
 }

@@ -431,9 +431,13 @@ export function drawScenario(
   if (!result.ok) {
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }
+  const procedure = result.clearance.procedure.value;
+  if (procedure.kind !== 'sid') {
+    return unresolved('R.sid', `${filed.callsign} is cleared on the runway heading with no DP`);
+  }
   const composed: Scenario = {
     ...filed,
-    filedRoute: `${result.clearance.sid.value.id} ${route.tail}`,
+    filedRoute: `${procedure.id} ${route.tail}`,
   };
   const clean = withBuiltRoute(composed, airport);
   return amendmentGap(clean, airport) ?? clean;

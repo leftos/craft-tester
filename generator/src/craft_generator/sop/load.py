@@ -30,6 +30,7 @@ from craft_generator.sop.model import (
     EXPECT_ALTITUDE_POLICIES,
     GATE_DIRECTIONS,
     LOA_RULE_KIND_NAMES,
+    NON_DP_HEADINGS,
     NOTICE_EFFECT_KINDS,
     ON_REQUEST_KINDS,
     PHRASEOLOGY_READINGS,
@@ -61,6 +62,7 @@ from craft_generator.sop.model import (
     LoaSource,
     MaxAltitudeRule,
     NoiseWindow,
+    NonDpHeading,
     NoSid,
     Notice,
     NoticeEffect,
@@ -424,6 +426,19 @@ def _assignment_condition(row: _Row) -> AssignmentCondition:
     return condition
 
 
+def _non_dp_heading(row: _Row) -> NonDpHeading | None:
+    """The heading a row clears a flight on where it assigns no DP; only the runway heading is supported."""
+    value = row.optional_text("non_dp_heading")
+    if value is None:
+        return None
+    if value not in NON_DP_HEADINGS:
+        raise ValueError(
+            f"{row.where}: non_dp_heading is {value!r}; only 'runway heading' is supported - "
+            "a numbered heading needs the turn direction and the runway's magnetic heading, which the data does not carry"
+        )
+    return "runway heading"
+
+
 def _assignment_rule(row: _Row) -> AssignmentRule:
     when = row.optional_child("when")
     rule = AssignmentRule(
@@ -435,7 +450,7 @@ def _assignment_rule(row: _Row) -> AssignmentRule:
         runway_families=row.texts("runway_families"),
         classes=row.choices("classes", AIRCRAFT_CLASSES),
         sid_family=row.optional_text("sid_family"),
-        non_dp_heading=row.optional_text("non_dp_heading"),
+        non_dp_heading=_non_dp_heading(row),
         sector=row.text("sector"),
         when=None if when is None else _assignment_condition(when),
     )

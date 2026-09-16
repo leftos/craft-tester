@@ -70,7 +70,9 @@ function issuable(row: TecRoute, scenario: Scenario, airport: AirportData): bool
   const tokens = tecTokens(row, airport);
   if (isUnresolved(tokens)) return false;
   const result = resolveClearance({ ...scenario, filedRoute: tokens.join(' ') }, airport);
-  return result.ok && result.clearance.sid.value.family === family;
+  if (!result.ok) return false;
+  const procedure = result.clearance.procedure.value;
+  return procedure.kind === 'sid' && procedure.family === family;
 }
 
 /**

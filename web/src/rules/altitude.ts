@@ -8,8 +8,8 @@ import type {
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
-import type { Cited, ExpectClause, Unresolved } from '@/rules/types.ts';
-import { unresolved } from '@/rules/unresolved.ts';
+import type { Cited, ExpectClause, SelectedProcedure, Unresolved } from '@/rules/types.ts';
+import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** The altitude element of a clearance and the expect clause that follows it. */
 export type ResolvedAltitude = {
@@ -26,13 +26,21 @@ function isClimbViaEligible(sid: Sid, runwayFamily: string): boolean {
   return sid.crossingRestrictionsByRunwayFamily?.[runwayFamily] ?? sid.climbViaEligible;
 }
 
-/** Whether an interim altitude row is keyed to this flight and this SID family. */
-function rowMatches(row: AltitudeRule, ctx: Classification, sid: Sid): boolean {
+/**
+ * Whether an interim altitude row is keyed to this flight and the procedure it flies.
+ *
+ * A flight cleared on the runway heading flies no procedure, so only a row written for every
+ * procedure can be keyed to it: a row naming SID families has nothing to match against.
+ */
+function rowMatches(row: AltitudeRule, ctx: Classification, procedure: SelectedProcedure): boolean {
+  const familyMatches =
+    row.sidFamilies === undefined ||
+    (procedure.kind === 'sid' && row.sidFamilies.includes(procedure.sid.family));
   return (
     row.plan === ctx.plan &&
     row.runwayFamilies.includes(ctx.runwayFamily) &&
     row.classes.includes(ctx.aircraftClass) &&
-    (row.sidFamilies === undefined || row.sidFamilies.includes(sid.family))
+    familyMatches
   );
 }
 
@@ -44,18 +52,35 @@ function rowMatches(row: AltitudeRule, ctx: Classification, sid: Sid): boolean {
  * controller say "climb via SID except maintain (altitude)" whenever the altitude to maintain
  * differs from the published top. A flight filed at or above the top keeps the plain climb via SID.
  *
+ * A flight cleared on the runway heading is on no procedure, so there is nothing to climb via and
+ * nothing publishing a top altitude: it is held at the row's own interim altitude, capped at the
+ * altitude it filed, and told so plainly. A row that defers to a procedure cannot answer such a
+ * flight, and says so rather than clearing it to nothing.
+ *
  * @param row The interim-altitude row the flight matched.
- * @param sid The selected SID.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param ctx The classified flight.
  * @param scenario The filed flight plan.
- * @returns The altitude phrase with its feet, and the phraseology rule that produced it.
+ * @returns The altitude phrase with its feet, and the phraseology rule that produced it, or
+ *   `Unresolved` where the row has no altitude for a flight on no procedure.
  */
 function altitudeValue(
   row: AltitudeRule,
-  sid: Sid,
+  procedure: SelectedProcedure,
   ctx: Classification,
   scenario: Scenario,
-): { value: AltitudeValue; ruleId: string } {
+): { value: AltitudeValue; ruleId: string } | Unresolved {
+  if (procedure.kind === 'heading') {
+    if (row.outcome.kind !== 'interim') {
+      return unresolved(
+        'A.phrase',
+        `${row.id} clears the flight via its procedure, and this one is cleared on the runway heading with none`,
+      );
+    }
+    const feet = Math.min(row.outcome.feet, scenario.filedAltitude);
+    return { value: { phrase: 'maintain', feet }, ruleId: 'A-MAINTAIN' };
+  }
+  const { sid } = procedure;
   const publishedWins =
     sid.topAltitude.kind === 'published' && row.whenTopAltitudePublished === 'climb_via';
   if (publishedWins || row.outcome.kind === 'climb_via') {
@@ -78,13 +103,15 @@ function altitudeValue(
  * the SID's published top altitude on a plain "climb via SID".
  *
  * @param altitude The resolved altitude phrase and its feet, where the phrase carries any.
- * @param sid The selected SID.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
  * @returns The feet the aircraft may climb to under this clearance, and `undefined` where there is
  *   no such altitude: a plain "climb via SID" on a SID that publishes no top altitude.
  */
-function clearedToFeet(altitude: AltitudeValue, sid: Sid): number | undefined {
+function clearedToFeet(altitude: AltitudeValue, procedure: SelectedProcedure): number | undefined {
   if (altitude.feet !== undefined) return altitude.feet;
-  return sid.topAltitude.kind === 'published' ? sid.topAltitude.feet : undefined;
+  if (procedure.kind === 'heading') return undefined;
+  const { topAltitude } = procedure.sid;
+  return topAltitude.kind === 'published' ? topAltitude.feet : undefined;
 }
 
 /**
@@ -103,9 +130,12 @@ function clearedToFeet(altitude: AltitudeValue, sid: Sid): number | undefined {
  * wrong, so it comes back as `redundant` rather than as nothing at all; a clause dropped because the
  * flight is cleared to the altitude it filed says something untrue, and comes back as nothing.
  *
+ * A flight cleared on the runway heading has no chart to publish the note, so nothing drops the
+ * clause there but the comparison with the altitude it is cleared to.
+ *
  * @param row The interim-altitude row the flight matched.
  * @param altitude The resolved altitude phrase and its feet.
- * @param sid The selected SID.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param scenario The filed flight plan.
  * @param phraseology The airport's phraseology toggles.
  * @returns The expect clause to speak, or null where none is; and the clause the chart already
@@ -115,7 +145,7 @@ function clearedToFeet(altitude: AltitudeValue, sid: Sid): number | undefined {
 function expectClause(
   row: AltitudeRule,
   altitude: AltitudeValue,
-  sid: Sid,
+  procedure: SelectedProcedure,
   scenario: Scenario,
   phraseology: Phraseology,
 ): {
@@ -124,15 +154,14 @@ function expectClause(
 } {
   const nothing = { clause: null, redundant: null };
   if (phraseology.expectAltitude === 'never') return nothing;
-  const clearedTo = clearedToFeet(altitude, sid);
+  const clearedTo = clearedToFeet(altitude, procedure);
   if (clearedTo !== undefined && clearedTo >= scenario.filedAltitude) return nothing;
-  if (
-    phraseology.expectAltitude === 'unless_chart_publishes_it' &&
-    sid.chartExpectFiledAltitudeMinutes !== null
-  ) {
+  const chartMinutes =
+    procedure.kind === 'sid' ? procedure.sid.chartExpectFiledAltitudeMinutes : null;
+  if (phraseology.expectAltitude === 'unless_chart_publishes_it' && chartMinutes !== null) {
     return {
       clause: null,
-      redundant: { feet: scenario.filedAltitude, minutes: sid.chartExpectFiledAltitudeMinutes },
+      redundant: { feet: scenario.filedAltitude, minutes: chartMinutes },
     };
   }
   return {
@@ -147,10 +176,12 @@ function expectClause(
  * The first interim-altitude row keyed to the plan, runway family, class, and SID family decides:
  * a SID whose published top altitude the row defers to is cleared "climb via SID", an interim
  * altitude is capped at the filed altitude and spoken as "climb via SID except maintain" where the
- * SID has crossing restrictions off that runway, and as "maintain" where it has none.
+ * SID has crossing restrictions off that runway, and as "maintain" where it has none. A flight
+ * cleared on the runway heading is keyed to the first row written for every procedure, and is
+ * always told to maintain that row's altitude.
  *
  * @param ctx The classified flight.
- * @param sid The selected SID.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param scenario The filed flight plan.
  * @param airport The airport data.
  * @returns The altitude element, the expect clause and the clause the chart already publishes, or
@@ -158,19 +189,22 @@ function expectClause(
  */
 export function resolveAltitude(
   ctx: Classification,
-  sid: Sid,
+  procedure: SelectedProcedure,
   scenario: Scenario,
   airport: AirportData,
 ): ResolvedAltitude | Unresolved {
-  const row = airport.altitudeRules.find((entry) => rowMatches(entry, ctx, sid));
+  const row = airport.altitudeRules.find((entry) => rowMatches(entry, ctx, procedure));
   if (row === undefined) {
+    const on = procedure.kind === 'sid' ? procedure.sid.family : 'the runway heading';
     return unresolved(
       'A.phrase',
-      `no altitude rule for ${ctx.plan} runway ${ctx.runwayFamily} class ${ctx.aircraftClass} on ${sid.family}`,
+      `no altitude rule for ${ctx.plan} runway ${ctx.runwayFamily} class ${ctx.aircraftClass} on ${on}`,
     );
   }
-  const { value, ruleId } = altitudeValue(row, sid, ctx, scenario);
-  const { clause, redundant } = expectClause(row, value, sid, scenario, airport.phraseology);
+  const resolved = altitudeValue(row, procedure, ctx, scenario);
+  if (isUnresolved(resolved)) return resolved;
+  const { value, ruleId } = resolved;
+  const { clause, redundant } = expectClause(row, value, procedure, scenario, airport.phraseology);
   return {
     altitude: { value, citations: [...citePhraseology(airport, ruleId), toCitation(row)] },
     expect: { value: clause, citations: citePhraseology(airport, 'A-EXPECT') },

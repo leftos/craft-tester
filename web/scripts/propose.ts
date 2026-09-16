@@ -255,6 +255,24 @@ function expectValue(clearance: ResolvedClearance): string {
   return `none (chart publishes ${redundant.minutes} minutes; speaking it is acceptable)`;
 }
 
+/** The procedure line: the spoken name and the identifier, or the heading where no DP is issued. */
+function procedureValue(clearance: ResolvedClearance): string {
+  const procedure = clearance.procedure.value;
+  return procedure.kind === 'sid'
+    ? `${procedure.spoken} departure (${procedure.id})`
+    : 'fly runway heading (no DP)';
+}
+
+/** The transitions of the issued procedure; a clearance with no DP publishes none. */
+function sidTransitionsOf(
+  clearance: ResolvedClearance,
+  airport: AirportData,
+): readonly { fix: string; spoken: string }[] {
+  const procedure = clearance.procedure.value;
+  if (procedure.kind !== 'sid') return [];
+  return airport.sids.find((sid) => sid.id === procedure.id)?.transitions ?? [];
+}
+
 /** The CRAFT elements of a resolved clearance, each with the rows that decided it. */
 function craftElements(clearance: ResolvedClearance, runtime: Runtime): ProposalElement[] {
   return [
@@ -265,8 +283,8 @@ function craftElements(clearance: ResolvedClearance, runtime: Runtime): Proposal
     },
     {
       label: 'R procedure',
-      value: `${clearance.sid.value.spoken} departure (${clearance.sid.value.id})`,
-      citations: clearance.sid.citations,
+      value: procedureValue(clearance),
+      citations: clearance.procedure.citations,
     },
     {
       label: 'R route',
@@ -393,8 +411,7 @@ function clearanceOutcome(
       squawk: scenario.squawk,
       telephony: airport.routeLibrary.telephony,
       fixSpoken: airport.fixSpoken,
-      sidTransitions:
-        airport.sids.find((sid) => sid.id === clearance.sid.value.id)?.transitions ?? [],
+      sidTransitions: sidTransitionsOf(clearance, airport),
     }),
     expected: runtime.toExpectedClearance(clearance),
   };

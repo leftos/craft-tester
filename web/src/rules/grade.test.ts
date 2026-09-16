@@ -33,8 +33,8 @@ const runwayCitation: RuleCitation = {
 const expected: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [] },
   runway: { value: '01R', citations: [runwayCitation] },
-  sid: {
-    value: { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
+  procedure: {
+    value: { kind: 'sid', id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
     citations: [assignmentCitation],
   },
   route: { value: { template: 'transition', fix: 'DEDHD' }, citations: [] },
@@ -391,8 +391,8 @@ describe('gradeProcedure', () => {
   it('accepts another version of the same family, because a cycle bumps the version', () => {
     const older: ResolvedClearance = {
       ...expected,
-      sid: {
-        value: { id: 'TRUKN1', family: 'TRUKN', spoken: 'Trukn One' },
+      procedure: {
+        value: { kind: 'sid', id: 'TRUKN1', family: 'TRUKN', spoken: 'Trukn One' },
         citations: [assignmentCitation],
       },
     };

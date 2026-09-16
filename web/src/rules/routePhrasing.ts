@@ -1,7 +1,7 @@
 import type { AirportData, RouteTemplate, Sid } from '@/data/schema.ts';
 import { citePhraseology } from '@/rules/cite.ts';
 import { isAirwayToken } from '@/rules/route.ts';
-import type { Cited } from '@/rules/types.ts';
+import type { Cited, SelectedProcedure } from '@/rules/types.ts';
 
 /** The phraseology row each route shape is spoken under. */
 const TEMPLATE_RULE: Record<RouteTemplate, string> = {
@@ -33,25 +33,38 @@ function routeTemplate(sid: Sid, exitFix: string, vectorTransitionsSpoken: boole
     : sid.routePhrasing;
 }
 
+/** The shape a clearance with no DP takes: the one the airport publishes for a flight without one. */
+function templateFor(
+  procedure: SelectedProcedure,
+  exitElement: string,
+  airport: AirportData,
+): RouteTemplate {
+  if (procedure.kind === 'heading') return airport.noSid.phrasing;
+  const { sid } = procedure;
+  return isAirwayToken(exitElement)
+    ? airwayTemplate(sid)
+    : routeTemplate(sid, exitElement, airport.phraseology.vectorHybridTransitionsSpoken);
+}
+
 /**
- * Phrases the route element of the clearance for a SID and the element the flight leaves on.
+ * Phrases the route element of the clearance for a procedure and the element the flight leaves on.
  *
  * Every shape names what the flight leaves the terminal on, "as filed" included: a fix that is no
- * published transition is still spoken, bare, before "then as filed".
+ * published transition is still spoken, bare, before "then as filed". A flight cleared on the
+ * runway heading has no chart to phrase from, so it takes the shape the airport's `noSid` row
+ * publishes for a departure without a procedure.
  *
- * @param sid The selected SID.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param exitElement The fix, or the airway, the flight leaves the terminal on.
  * @param airport The airport data, for the phraseology toggles and the quotable rows.
  * @returns The route shape and the element it speaks, with the phraseology row that decided it.
  */
 export function phraseRoute(
-  sid: Sid,
+  procedure: SelectedProcedure,
   exitElement: string,
   airport: AirportData,
 ): Cited<{ template: RouteTemplate; fix?: string }> {
-  const template = isAirwayToken(exitElement)
-    ? airwayTemplate(sid)
-    : routeTemplate(sid, exitElement, airport.phraseology.vectorHybridTransitionsSpoken);
+  const template = templateFor(procedure, exitElement, airport);
   return {
     value: { template, fix: exitElement },
     citations: citePhraseology(airport, TEMPLATE_RULE[template]),

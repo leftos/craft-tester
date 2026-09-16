@@ -109,10 +109,12 @@ function rnavAmendment(
   if (sid === undefined || !sid.rnavRequired) return undefined;
   const proposed = fleetSuffix(fleet, airport, (row) => row.rnav);
   if (proposed === undefined) return undefined;
+  const procedure = clearance.procedure.value;
+  const otherwise = procedure.kind === 'sid' ? procedure.id : 'the runway heading and no procedure';
   return {
     box: 'type',
     proposed: typeBox(scenario, proposed.suffix),
-    reason: `an RNAV suffix would keep the filed ${sid.id}, which the route check otherwise replaces with ${clearance.sid.value.id}`,
+    reason: `an RNAV suffix would keep the filed ${sid.id}, which the route check otherwise replaces with ${otherwise}`,
     alternativeTo: 'route',
     citations: [citeSuffix(proposed.row)],
   };

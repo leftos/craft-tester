@@ -26,7 +26,10 @@ const scenario: Scenario = {
 const clearance: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [] },
   runway: { value: '01R', citations: [] },
-  sid: { value: { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' }, citations: [] },
+  procedure: {
+    value: { kind: 'sid', id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
+    citations: [],
+  },
   route: { value: { template: 'transition', fix: 'DEDHD' }, citations: [] },
   altitude: { value: { phrase: 'climb_via_except', feet: 10000 }, citations: [] },
   expect: { value: { kind: 'filed', feet: 34000, minutes: 10 }, citations: [] },

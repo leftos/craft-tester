@@ -9,6 +9,7 @@ import type {
   Sid,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
+import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
@@ -18,6 +19,13 @@ function sid(id: string): Sid {
   const found = ksfo.sids.find((entry) => entry.id === id);
   if (found === undefined) throw new Error(`${id} is not in the data`);
   return found;
+}
+
+/** The SID a selection put the flight on; a selection that clears it on a heading has none. */
+function sidOf(selection: SidSelection): Sid {
+  const { procedure } = selection;
+  if (procedure.kind !== 'sid') throw new Error('the row cleared the flight without a procedure');
+  return procedure.sid;
 }
 
 const config: RunwayConfig = {
@@ -105,7 +113,7 @@ describe('selectSid', () => {
     );
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.row.id).toBe('FIRST');
-    expect(result.sid.id).toBe('TRUKN2');
+    expect(sidOf(result).id).toBe('TRUKN2');
     expect(result.sector).toBe('richmond');
     expect(result.notices).toEqual([]);
   });
@@ -145,7 +153,7 @@ describe('selectSid', () => {
     );
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.row.id).toBe('VECTORS');
-    expect(result.sid.kind).toBe('radar_vectors');
+    expect(sidOf(result).kind).toBe('radar_vectors');
   });
 
   it('has no SID at all when only pilot-nav rows apply to an airway', () => {
@@ -186,7 +194,7 @@ describe('selectSid', () => {
       airportWith([rule({ id: 'ANY', direction: 'any', sidFamily: 'SFO' })]),
     );
     if (isUnresolved(result)) throw new Error(result.reason);
-    expect(result.sid.id).toBe('SFO5');
+    expect(sidOf(result).id).toBe('SFO5');
   });
 
   it('skips a SID an active notice took out of use and cites the notice', () => {
@@ -220,7 +228,7 @@ describe('selectSid', () => {
       ),
     );
     if (isUnresolved(result)) throw new Error(result.reason);
-    expect(result.sid.id).toBe('SEGUL1');
+    expect(sidOf(result).id).toBe('SEGUL1');
     expect(result.notices).toEqual([]);
   });
 
@@ -244,19 +252,32 @@ describe('selectSid', () => {
       ),
     );
     if (isUnresolved(result)) throw new Error(result.reason);
-    expect(result.sid.id).toBe('SEGUL1');
+    expect(sidOf(result).id).toBe('SEGUL1');
   });
 
-  it('blocks the SID element on a row that clears the flight without a procedure', () => {
+  it('clears the flight on the runway heading on a row that assigns no procedure', () => {
     const noDp = rule({
       id: 'NO-DP',
       text: 'Noise abatement: runway 01, non-RNAV props -> runway heading (no DP)',
       sidFamily: null,
       nonDpHeading: 'runway heading',
     });
-    expect(selectSid(ctx({}), 'DEDHD', 'north', scenario({}), airportWith([noDp]))).toEqual({
+    const result = selectSid(ctx({}), 'DEDHD', 'north', scenario({}), airportWith([noDp]));
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.procedure).toEqual({ kind: 'heading' });
+    expect(result.row.id).toBe('NO-DP');
+    expect(result.sector).toBe('richmond');
+  });
+
+  it('blocks the SID element on a heading other than the runway heading', () => {
+    const turn = rule({
+      id: 'TURN-270',
+      sidFamily: null,
+      nonDpHeading: '270',
+    });
+    expect(selectSid(ctx({}), 'DEDHD', 'north', scenario({}), airportWith([turn]))).toEqual({
       element: 'R.sid',
-      reason: noDp.text,
+      reason: expect.stringContaining('270'),
     });
   });
 
@@ -303,7 +324,7 @@ describe('selectSid', () => {
       assignmentRules: [rule({})],
     });
     if (isUnresolved(result)) throw new Error(result.reason);
-    expect(result.sid.id).toBe('TRUKN2');
+    expect(sidOf(result).id).toBe('TRUKN2');
   });
 
   it('names the flight when no row applies at all', () => {

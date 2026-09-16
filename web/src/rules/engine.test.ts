@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, AltitudePhrase, RouteTemplate, Scenario } from '@/data/schema.ts';
 import { resolveClearance } from '@/rules/engine.ts';
-import type { ResolvedClearance } from '@/rules/types.ts';
+import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -28,6 +28,13 @@ function clearanceFor(flight: Scenario, airport: AirportData = ksfo): ResolvedCl
   const result = resolveClearance(flight, airport);
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   return result.clearance;
+}
+
+/** The SID a clearance assigns, for the cases the SOP answers with a procedure. */
+function assigned(clearance: ResolvedClearance): Extract<Procedure, { kind: 'sid' }> {
+  const procedure = clearance.procedure.value;
+  if (procedure.kind !== 'sid') throw new Error('the clearance assigns no procedure');
+  return procedure;
 }
 
 type Expectation = {
@@ -262,7 +269,7 @@ describe('resolveClearance on the generated KSFO data', () => {
   it.each(CASES)('%s', (_name, overrides, expected) => {
     const flight = scenario(overrides);
     const clearance = clearanceFor(flight);
-    expect(clearance.sid.value.id).toBe(expected.sidId);
+    expect(assigned(clearance).id).toBe(expected.sidId);
     expect(clearance.route.value).toEqual(expected.route);
     expect(clearance.altitude.value).toEqual(expected.altitude);
     expect(clearance.frequency.value.value).toBe(expected.frequency);
@@ -272,7 +279,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(clearance.expect.value).toEqual(expectClause);
     for (const element of [
       clearance.clearedTo,
-      clearance.sid,
+      clearance.procedure,
       clearance.route,
       clearance.altitude,
       clearance.expect,
@@ -285,7 +292,7 @@ describe('resolveClearance on the generated KSFO data', () => {
 
   it('cites the assignment row, and the notice that changed the outcome', () => {
     const clearance = clearanceFor(scenario({ ...SOUTHBOUND_SAN, departureRunway: '01L' }));
-    expect(clearance.sid.citations.map((citation) => citation.id)).toEqual([
+    expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
       'SFOW-S-SSTIK-01',
       'SFO-SEGUL-OFF',
     ]);
@@ -293,7 +300,9 @@ describe('resolveClearance on the generated KSFO data', () => {
 
   it('cites only the assignment row when no notice changed the outcome', () => {
     const clearance = clearanceFor(scenario({}));
-    expect(clearance.sid.citations.map((citation) => citation.id)).toEqual(['SFOW-N-TRUKN-01']);
+    expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
+      'SFOW-N-TRUKN-01',
+    ]);
   });
 
   const truknBaseFix = ksfo.sids.find((sid) => sid.id === 'TRUKN2')?.baseFix;
@@ -302,7 +311,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     'names the base fix and says "then as filed" when the flight leaves on it',
     () => {
       const clearance = clearanceFor(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }));
-      expect(clearance.sid.value.id).toBe('TRUKN2');
+      expect(assigned(clearance).id).toBe('TRUKN2');
       expect(clearance.route.value).toEqual({ template: 'as_filed', fix: 'TRUKN' });
     },
   );
@@ -319,7 +328,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     const clearance = clearanceFor(
       scenario({ filedRoute: 'SFO4 V6 SAC', destination: 'KSMF', filedAltitude: 11000 }),
     );
-    expect(clearance.sid.value.family).toBe('SFO');
+    expect(assigned(clearance).family).toBe('SFO');
     expect(clearance.route.value).toEqual({ template: 'radar_vectors_airway', fix: 'V6' });
     expect(clearance.route.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
   });
@@ -362,23 +371,41 @@ describe('resolveClearance on the generated KSFO data', () => {
     expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
   });
 
-  it('blocks the SID element for a non-RNAV prop sent off runway heading at night', () => {
-    const result = resolveClearance(
-      scenario({
-        aircraftType: 'C172',
-        equipmentSuffix: '/A',
-        runwayConfigId: '01/01',
-        departureRunway: '01L',
-        filedRoute: 'OAK V6 SAC',
-        destination: 'KSMF',
-        filedAltitude: 5000,
-        localTime: '2300',
-      }),
-      ksfo,
-    );
-    expect(result).toMatchObject({
-      ok: false,
-      unresolved: [{ element: 'R.sid', reason: expect.stringContaining('runway heading') }],
+  /** The noise-abatement case: a non-RNAV prop off the 01s at night, which the SOP sends off
+   * without a DP (SFO ATCT SOP 2-4 e). */
+  const NIGHT_PROP: Partial<Scenario> = {
+    aircraftType: 'C172',
+    equipmentSuffix: '/A',
+    departureRunway: '01L',
+    filedRoute: 'OAK V6 SAC',
+    destination: 'KMYV',
+    filedAltitude: 9000,
+    localTime: '2300',
+  };
+
+  it('clears a non-RNAV prop off the 01s at night on the runway heading', () => {
+    const clearance = clearanceFor(scenario(NIGHT_PROP));
+    expect(clearance.procedure.value).toEqual({
+      kind: 'heading',
+      heading: 'runway heading',
+      spoken: 'fly runway heading',
     });
+    expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
+      'SFOW-NOISE-P-RWY',
+      'R-HEADING',
+    ]);
+    expect(clearance.route.value).toEqual({ template: 'radar_vectors_fix', fix: 'OAK' });
+    expect(clearance.altitude.value).toEqual({ phrase: 'maintain', feet: 5000 });
+    expect(clearance.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-MAINTAIN',
+      'SFOW-PT-5000',
+    ]);
+    expect(clearance.expect.value).toEqual({ kind: 'filed', feet: 9000, minutes: 10 });
+    expect(clearance.frequency.value).toEqual({ value: '120.9', sectorId: 'richmond' });
+  });
+
+  it('gives the same prop a procedure outside the noise window', () => {
+    const clearance = clearanceFor(scenario({ ...NIGHT_PROP, localTime: '1400' }));
+    expect(assigned(clearance).family).toBe('SFO');
   });
 });

@@ -1,4 +1,4 @@
-import type { AltitudePhrase, ExpectedClearance, RouteTemplate } from '@/data/schema.ts';
+import type { AltitudePhrase, ExpectedClearance, RouteTemplate, Sid } from '@/data/schema.ts';
 
 /** One data row that decided an element of a clearance, quoted verbatim in the results view. */
 export type RuleCitation = {
@@ -12,6 +12,41 @@ export type Cited<T> = {
   value: T;
   citations: RuleCitation[];
 };
+
+/**
+ * What the clearance sends the flight out on: a published departure procedure, or the runway
+ * heading the SOP clears a flight on where it assigns no procedure at all.
+ *
+ * `spoken` is what the clearance reads: the chart's spoken name ("Trukn Two"), which the reading
+ * follows with "departure", or "fly runway heading", which stands on its own. `family` is what
+ * grading compares a SID by, because AIRAC cycles bump the version in `id`.
+ */
+export type Procedure =
+  | { kind: 'sid'; id: string; family: string; spoken: string }
+  | { kind: 'heading'; heading: 'runway heading'; spoken: 'fly runway heading' };
+
+/** What the form and the results view call a clearance the SOP issues without a procedure. */
+export const HEADING_PROCEDURE_LABEL = 'fly runway heading (no DP)';
+
+/**
+ * The same choice as the engine carries it while it resolves the rest of the clearance, which for a
+ * SID is the whole chart record the altitude and the route phrase are read off.
+ */
+export type SelectedProcedure = { kind: 'sid'; sid: Sid } | { kind: 'heading' };
+
+/**
+ * The clearance element a selected procedure becomes.
+ *
+ * @param selected The procedure the assignment row put the flight on.
+ * @returns The procedure as the clearance carries it, spoken form included.
+ */
+export function procedureOf(selected: SelectedProcedure): Procedure {
+  if (selected.kind === 'heading') {
+    return { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' };
+  }
+  const { sid } = selected;
+  return { kind: 'sid', id: sid.id, family: sid.family, spoken: sid.spoken };
+}
 
 /**
  * The clause the controller speaks after the altitude, in one of the three readings it has.
@@ -31,8 +66,8 @@ export type ExpectClause =
  * The clearance the engine resolved for a scenario, element by element.
  *
  * `runway` is the scenario's departure runway together with the configuration row and the mechanism
- * row that settled it. `sid.value.spoken` is the chart's spoken name ("Trukn Two");
- * `sid.value.family` is what grading compares, because AIRAC cycles bump the version in `id`.
+ * row that settled it. `procedure.value` is the SID the assignment row assigns, or the runway
+ * heading it clears the flight on where it assigns no procedure.
  * `expect.value.kind` says which of the three readings the clause takes. `redundantExpect` carries
  * the longer expect reading the rules still allow beside the one the clearance speaks: the clause
  * the chart already speaks for the pilot, which a controller may repeat without harm, and the
@@ -43,7 +78,7 @@ export type ExpectClause =
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
   runway: Cited<string>;
-  sid: Cited<{ id: string; family: string; spoken: string }>;
+  procedure: Cited<Procedure>;
   route: Cited<{ template: RouteTemplate; fix?: string }>;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
   expect: Cited<ExpectClause | null>;
@@ -124,9 +159,10 @@ function expectedExpect(expect: ExpectClause): NonNullable<ExpectedClearance['ex
  * Flattens a resolved clearance into the fixture schema's `ExpectedClearance` shape.
  *
  * Drops the citations and keeps the SID family rather than its versioned id, so a fixture runner
- * can compare an engine result with a checked-in expectation by deep equality. An expect clause
- * writes `amended` or `final` only where the reading is one of those, which leaves an ordinary
- * clause the shape it always had.
+ * can compare an engine result with a checked-in expectation by deep equality. A clearance flown on
+ * the runway heading has no procedure to name, so it writes a null family and the heading instead.
+ * An expect clause writes `amended` or `final` only where the reading is one of those, which leaves
+ * an ordinary clause the shape it always had.
  *
  * @param resolved The clearance the engine resolved.
  * @returns The same clearance in the shape a fixture stores.
@@ -135,9 +171,11 @@ export function toExpectedClearance(resolved: ResolvedClearance): ExpectedCleara
   const route = resolved.route.value;
   const altitude = resolved.altitude.value;
   const expect = resolved.expect.value;
+  const procedure = resolved.procedure.value;
   return {
     clearedTo: resolved.clearedTo.value,
-    sidFamily: resolved.sid.value.family,
+    sidFamily: procedure.kind === 'sid' ? procedure.family : null,
+    ...(procedure.kind === 'heading' ? { heading: procedure.heading } : {}),
     route:
       route.fix === undefined
         ? { template: route.template }

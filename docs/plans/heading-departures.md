@@ -22,11 +22,12 @@ radar vectors to the first filed fix (`sop.yaml` `no_sid.phrasing: radar_vectors
   heading. Only `runway heading` is supported: the generator loader restricts `non_dp_heading` to that
   literal until a numbered heading (OAK's 270°) brings the turn-direction data (CIFP `PG` runway
   headings), so nothing is half-built.
-- **Spoken**: "(callsign), cleared to (destination) airport, fly runway heading, radar vectors
-  (exit element), then as filed. Maintain (interim). Expect (filed) (minutes) minutes after departure.
-  Departure frequency …, squawk …. Expect runway …". No "via" (the OAK SOP writes it, the 7110.65
-  phraseology does not; the user decides on the first proposal). The full-route form reads the route
-  after the exit element as for any vector clearance.
+- **Spoken** (**user rule 2026-09-16**: the heading is introduced by "via"): "(callsign), cleared to
+  (destination) airport, via fly runway heading, radar vectors (exit element), then as filed. Maintain
+  (interim). Expect (filed) (minutes) minutes after departure. Departure frequency …, squawk ….
+  Expect runway …". Numbered headings, when they come with KOAK, read "via turn left heading (xxx)" /
+  "via turn right heading (xxx)". The full-route form reads the route after the exit element as for
+  any vector clearance.
 - **Altitude**: the interim rows match with no SID family (`rowMatches` treats a heading departure as
   matching rows without `sidFamilies`); the phrase is always `maintain` (no procedure, so no crossing
   restrictions); the expect clause follows the row (`expectAfterMinutes`) and is never chart-redundant.
@@ -52,7 +53,16 @@ radar vectors to the first filed fix (`sop.yaml` `no_sid.phrasing: radar_vectors
 
 ## Steps (after route building lands; implementer briefs)
 
-1. Types, engine, speak, altitude, propose: the `Procedure` union, `selectSid` returning a heading
+1. [x] Landed 2026-09-16: `ResolvedClearance.procedure: Cited<Procedure>` (`sid | heading`), `SidSelection.procedure`
+   (`SelectedProcedure` carries the chart record for the SID case), `selectSid` selects the heading for a
+   `sidFamily: null` row (only `runway heading`; the generator loader rejects any other value),
+   `resolveAltitude` keys a heading to the rows without `sidFamilies` and always says `maintain`,
+   `phraseRoute` takes `noSid.phrasing`, the speaker reads "via fly runway heading", the fixture schema
+   takes `sidFamily: null` + `heading`, shared row `R-HEADING`, `propose` prints "fly runway heading (no
+   DP)". Left to step 2: clearance-mode draws still discard heading clearances; amendment mode reports
+   the route box unresolved for one and lists no heading in the procedure dropdown. Finding: a heading
+   clearance whose exit element is an airway would phrase `radar_vectors_fix` on the airway; step 2
+   should use the airway shape there. Original spec: types, engine, speak, altitude, propose: the `Procedure` union, `selectSid` returning a heading
    selection for a `sidFamily: null` row (with its row and sector), `resolveAltitude` for no SID,
    `phraseRoute` on `no_sid.phrasing`, `speakClearance`, `toExpectedClearance`, `schema.ts` fixture
    change + export, the shared `R-HEADING` row + rebuild, generator literal check on `non_dp_heading`.

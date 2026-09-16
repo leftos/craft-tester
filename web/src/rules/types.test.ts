@@ -12,8 +12,8 @@ const citation: RuleCitation = {
 const resolved: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [citation] },
   runway: { value: '01R', citations: [citation] },
-  sid: {
-    value: { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
+  procedure: {
+    value: { kind: 'sid', id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
     citations: [citation],
   },
   route: { value: { template: 'transition', fix: 'DEDHD' }, citations: [citation] },
@@ -46,6 +46,22 @@ describe('toExpectedClearance', () => {
     expect(Object.keys(flattened.route)).toEqual(['template']);
     expect(Object.keys(flattened.altitude)).toEqual(['phrase']);
     expect(flattened.expect).toBeNull();
+  });
+
+  it('writes a null family and the heading for a clearance issued without a DP', () => {
+    const heading: ResolvedClearance = {
+      ...resolved,
+      procedure: {
+        value: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
+        citations: [citation],
+      },
+      route: { value: { template: 'radar_vectors_fix', fix: 'OAK' }, citations: [citation] },
+      altitude: { value: { phrase: 'maintain', feet: 5000 }, citations: [citation] },
+    };
+    const flattened = toExpectedClearance(heading);
+    expect(flattened.sidFamily).toBeNull();
+    expect(flattened.heading).toBe('runway heading');
+    expect(ExpectedClearanceSchema.parse(flattened)).toEqual(flattened);
   });
 
   it('produces a value the fixture schema accepts', () => {

@@ -129,7 +129,7 @@ describe('speakRouteToken', () => {
 });
 
 type ClearanceParts = {
-  sid?: ResolvedClearance['sid']['value'];
+  procedure?: ResolvedClearance['procedure']['value'];
   route?: ResolvedClearance['route']['value'];
   altitude?: ResolvedClearance['altitude']['value'];
   expect?: ResolvedClearance['expect']['value'];
@@ -139,8 +139,13 @@ function clearance(parts: ClearanceParts = {}): ResolvedClearance {
   return {
     clearedTo: { value: 'KSEA', citations: [] },
     runway: { value: '01R', citations: [] },
-    sid: {
-      value: parts.sid ?? { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
+    procedure: {
+      value: parts.procedure ?? {
+        kind: 'sid',
+        id: 'TRUKN2',
+        family: 'TRUKN',
+        spoken: 'Trukn Two',
+      },
       citations: [],
     },
     route: { value: parts.route ?? { template: 'transition', fix: 'DEDHD' }, citations: [] },
@@ -229,7 +234,7 @@ describe('speakClearance', () => {
     const vectored = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
+          procedure: { kind: 'sid', id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
           route: { template: 'radar_vectors_fix', fix: 'ENI' },
         }),
         filedRoute: 'MOLEN9 ENI',
@@ -239,7 +244,7 @@ describe('speakClearance', () => {
     const transitioned = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
+          procedure: { kind: 'sid', id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
           route: { template: 'transition', fix: 'ENI' },
         }),
         filedRoute: 'MOLEN9 ENI',
@@ -256,7 +261,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          procedure: { kind: 'sid', id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
           route: { template: 'radar_vectors_fix', fix: 'RBL' },
         }),
         filedRoute: 'SFO5 RBL J5 OED',
@@ -267,6 +272,33 @@ describe('speakClearance', () => {
     );
     expect(spoken.fullRoute).toContain(
       'San Francisco Five departure, radar vectors Red Bluff VOR, Jay five Rogue Valley VOR, direct.',
+    );
+  });
+
+  it('speaks a clearance with no DP as the runway heading and vectors to the first fix', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          procedure: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+          altitude: { phrase: 'maintain', feet: 5000 },
+          expect: { kind: 'filed', feet: 9000, minutes: 10 },
+        }),
+        callsign: 'N172SP',
+        destinationSpoken: 'Yuba County',
+        filedRoute: 'OAK V6 SAC',
+        sidTransitions: [],
+      }),
+    );
+    expect(spoken.abbreviated).toBe(
+      'November one seven two sierra papa, cleared to Yuba County airport, via fly runway heading, ' +
+        'radar vectors Oakland VOR, then as filed. Maintain five thousand. ' +
+        'Expect niner thousand one zero minutes after departure. ' +
+        'Departure frequency one two zero point niner, squawk three three four two. ' +
+        'Expect runway one right.',
+    );
+    expect(spoken.fullRoute).toContain(
+      'via fly runway heading, radar vectors Oakland VOR, Victor six Sacramento VOR, direct.',
     );
   });
 
@@ -285,7 +317,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
+          procedure: { kind: 'sid', id: 'MOLEN9', family: 'MOLEN', spoken: 'Molen Nine' },
           route: { template: 'as_filed', fix: 'CCR' },
         }),
         filedRoute: 'MOLEN9 CCR RBL',
@@ -378,7 +410,7 @@ describe('speakClearance', () => {
       input({
         callsign: 'N483KA',
         clearance: clearance({
-          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          procedure: { kind: 'sid', id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
           route: { template: 'radar_vectors_fix', fix: 'OAK' },
         }),
         filedRoute: 'GAPP7 OAK V244 ALTAM V392 SAC V6 SWR TRUCK',
@@ -409,7 +441,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          procedure: { kind: 'sid', id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
           route: { template: 'radar_vectors_airway', fix: 'V6' },
         }),
         filedRoute: 'SFO4 V6 SAC DEDHD',
@@ -428,7 +460,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
+          procedure: { kind: 'sid', id: 'SFO5', family: 'SFO', spoken: 'San Francisco Five' },
           route: { template: 'radar_vectors_airway', fix: 'V6' },
         }),
         filedRoute: 'SFO4 V6 SAC',
@@ -443,7 +475,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'OAK6', family: 'OAK', spoken: 'Oak Six' },
+          procedure: { kind: 'sid', id: 'OAK6', family: 'OAK', spoken: 'Oak Six' },
           route: { template: 'radar_vectors_fix', fix: 'SAC' },
         }),
         filedRoute: 'OAK6 SAC DEDHD FILMR2',
@@ -459,7 +491,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'OAK6', family: 'OAK', spoken: 'Oak Six' },
+          procedure: { kind: 'sid', id: 'OAK6', family: 'OAK', spoken: 'Oak Six' },
           route: { template: 'radar_vectors_fix', fix: 'SAC' },
         }),
         filedRoute: 'OAK6 SAC DEDHD',
@@ -476,7 +508,7 @@ describe('speakClearance', () => {
       input({
         callsign: 'N172SP',
         clearance: clearance({
-          sid: { id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          procedure: { kind: 'sid', id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
           route: { template: 'radar_vectors_fix', fix: 'EUGEN' },
         }),
         filedRoute: 'GAPP7 EUGEN',
@@ -490,7 +522,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'WESLA5', family: 'WESLA', spoken: 'Wesla Five' },
+          procedure: { kind: 'sid', id: 'WESLA5', family: 'WESLA', spoken: 'Wesla Five' },
           route: { template: 'transition', fix: 'NTELL' },
         }),
         filedRoute: 'WESLA5 NTELL',
@@ -508,7 +540,7 @@ describe('speakClearance', () => {
       input({
         callsign: 'N172SP',
         clearance: clearance({
-          sid: { id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          procedure: { kind: 'sid', id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
           route: { template: 'radar_vectors_fix', fix: 'OAK' },
         }),
         filedRoute: 'GAPP7 OAK V6 SAC',
@@ -526,7 +558,7 @@ describe('speakClearance', () => {
       input({
         callsign: 'N483KA',
         clearance: clearance({
-          sid: { id: 'SSTIK5', family: 'SSTIK', spoken: 'Sstik Five' },
+          procedure: { kind: 'sid', id: 'SSTIK5', family: 'SSTIK', spoken: 'Sstik Five' },
           route: { template: 'transition', fix: 'NTELL' },
         }),
         filedRoute: 'SSTIK5 NTELL Q162 ESSAA BTY SUNST4',
@@ -541,7 +573,7 @@ describe('speakClearance', () => {
     const spoken = speakClearance(
       input({
         clearance: clearance({
-          sid: { id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          procedure: { kind: 'sid', id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
           route: { template: 'radar_vectors_fix', fix: 'OAK' },
         }),
         filedRoute: 'GAPP7 OAK V6 SAC V23 YUBBA',

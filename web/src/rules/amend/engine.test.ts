@@ -4,6 +4,7 @@ import type { AirportData, Scenario } from '@/data/schema.ts';
 import { resolveAmendedClearance, resolveAmendments } from '@/rules/amend/engine.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { speakClearance } from '@/rules/speak.ts';
+import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -73,6 +74,13 @@ function cleared(flight: Scenario) {
   return result.clearance;
 }
 
+/** The SID a clearance assigns; every plan these tests amend is issued one. */
+function assigned(clearance: ResolvedClearance): Extract<Procedure, { kind: 'sid' }> {
+  const procedure = clearance.procedure.value;
+  if (procedure.kind !== 'sid') throw new Error('the clearance assigns no procedure');
+  return procedure;
+}
+
 /** Reads the corrected plan's clearance aloud, the way the reveal does (`ui/session.ts`). */
 function spoken(flight: Scenario) {
   const { corrected } = resolved(flight);
@@ -91,7 +99,7 @@ function spoken(flight: Scenario) {
     squawk: corrected.squawk,
     telephony: ksfo.routeLibrary.telephony,
     fixSpoken: ksfo.fixSpoken,
-    sidTransitions: ksfo.sids.find((sid) => sid.id === clearance.sid.value.id)?.transitions ?? [],
+    sidTransitions: ksfo.sids.find((sid) => sid.id === assigned(clearance).id)?.transitions ?? [],
   });
 }
 
@@ -181,9 +189,9 @@ describe('resolveAmendments forced transition', () => {
   it('clears the corrected plan on the southbound noise row, not the northbound one', () => {
     const { corrected } = resolved(nightSouth());
     const clearance = cleared(corrected);
-    expect(clearance.sid.value.id).toBe('NIITE4');
+    expect(assigned(clearance).id).toBe('NIITE4');
     expect(clearance.route.value).toMatchObject({ fix: 'GOBBS' });
-    expect(clearance.sid.citations.map((citation) => citation.id)).toEqual([
+    expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
       'SFOW-NOISE-S-NIITE-GOBBS',
     ]);
   });
@@ -280,8 +288,8 @@ describe('resolveAmendedClearance', () => {
     const { corrected } = resolved(original);
     const result = resolveAmendedClearance(original, corrected, ksfo);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-    expect(result.clearance.sid.value.family).toBe('TRUKN');
-    expect(corrected.filedRoute.startsWith(result.clearance.sid.value.id)).toBe(true);
+    expect(assigned(result.clearance).family).toBe('TRUKN');
+    expect(corrected.filedRoute.startsWith(assigned(result.clearance).id)).toBe(true);
   });
 
   it('cites the rule an amended route is read under on the route element', () => {
