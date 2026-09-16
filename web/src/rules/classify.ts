@@ -39,20 +39,49 @@ export type RuleAudience = {
 };
 
 /**
- * The groups a row names, looked up in the airport data.
+ * The group ids a row names, checked against the airport data.
  *
  * @param row The rule row.
  * @param airport The airport data.
- * @returns The group definitions, in the order the row names them.
+ * @returns The ids, in the order the row names them.
  * @throws Error When the row names a group the airport data does not define.
  */
-function groupsOf(row: RuleAudience, airport: AirportData): AircraftGroup[] {
+function groupIdsOf(row: RuleAudience, airport: AirportData): string[] {
   return (row.groups ?? []).map((id) => {
-    const group = airport.aircraftGroups[id];
-    if (group === undefined) {
+    if (airport.aircraftGroups[id] === undefined) {
       throw new Error(`rule ${row.id} names aircraft group ${id}, which the airport data has not`);
     }
-    return group;
+    return id;
+  });
+}
+
+/**
+ * Whether a flight belongs to any of the named aircraft groups.
+ *
+ * A group takes whole classes and adds individual type designators, so a flight is in it when its
+ * class is one of the group's `classes` or its type designator is one of the group's `types`. This
+ * is the membership an SOP row keyed on a group asks about, and the one a departure runway's
+ * `defaultForGroups` asks about.
+ *
+ * @param groupIds The `aircraftGroups` ids to test, in any order.
+ * @param aircraftClass The class the flight was classified into.
+ * @param aircraftType The filed type designator.
+ * @param airport The airport data, which defines the groups.
+ * @returns True when the flight is in at least one of the groups.
+ * @throws Error When an id is not an `aircraftGroups` id of the airport data.
+ */
+export function inAnyGroup(
+  groupIds: readonly string[],
+  aircraftClass: AircraftClass,
+  aircraftType: string,
+  airport: AirportData,
+): boolean {
+  return groupIds.some((id) => {
+    const group: AircraftGroup | undefined = airport.aircraftGroups[id];
+    if (group === undefined) {
+      throw new Error(`aircraft group ${id} is not in the airport data`);
+    }
+    return group.classes.includes(aircraftClass) || group.types.includes(aircraftType);
   });
 }
 
@@ -72,8 +101,11 @@ function groupsOf(row: RuleAudience, airport: AirportData): AircraftGroup[] {
  * @throws Error When the row names a group the airport data does not define.
  */
 export function addresses(row: RuleAudience, ctx: Classification, airport: AirportData): boolean {
-  const inGroup = groupsOf(row, airport).some(
-    (group) => group.classes.includes(ctx.aircraftClass) || group.types.includes(ctx.aircraftType),
+  const inGroup = inAnyGroup(
+    groupIdsOf(row, airport),
+    ctx.aircraftClass,
+    ctx.aircraftType,
+    airport,
   );
   if (!row.classes.includes(ctx.aircraftClass) && !inGroup) return false;
   if (row.approachCategories === undefined || row.approachCategories.length === 0) return true;

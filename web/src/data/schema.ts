@@ -132,8 +132,18 @@ export const RunwayAssignmentSchema = z.strictObject({
    */
   defaultForAirlines: z.array(z.string()),
   /**
+   * The `aircraftGroups` ids that depart this runway by default in this configuration, after the
+   * airline default and before the class default.
+   *
+   * A flight is in a group when the group lists its class or its type designator, and the row must
+   * also list the flight's class in `classes` for the default to apply: the OAK SOP keeps the
+   * turboprops over 17,000 lbs off the 28s by grouping the Dash 8 with the jets. An empty array
+   * means the row defaults no group.
+   */
+  defaultForGroups: z.array(z.string()),
+  /**
    * The aircraft classes that depart this runway by default in this configuration, after the
-   * airline default and before the direction-of-turn preference.
+   * airline and group defaults and before the direction-of-turn preference.
    *
    * Each class must also be in `classes`, and at most one row per configuration may default a
    * class. An empty array means the row is no default.

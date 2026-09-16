@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, NoiseWindow, Scenario } from '@/data/schema.ts';
 import type { Classification, RuleAudience } from '@/rules/classify.ts';
-import { addresses, classify, isNoiseWindowActive } from '@/rules/classify.ts';
+import { addresses, classify, inAnyGroup, isNoiseWindowActive } from '@/rules/classify.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -173,6 +173,28 @@ describe('classify', () => {
     const result = classify(scenario({ aircraftType: 'DH8D' }), noFleet);
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.approachCategory).toBeUndefined();
+  });
+});
+
+describe('inAnyGroup', () => {
+  it('holds a flight whose class a group takes whole', () => {
+    expect(inAnyGroup(['jets_and_dh8d'], 'J', 'B738', grouped)).toBe(true);
+  });
+
+  it('holds a flight whose type a group adds outside its classes', () => {
+    expect(inAnyGroup(['jets_and_dh8d'], 'T', 'DH8D', grouped)).toBe(true);
+  });
+
+  it('holds no flight a group names by neither class nor type', () => {
+    expect(inAnyGroup(['jets_and_dh8d'], 'T', 'SF34', grouped)).toBe(false);
+  });
+
+  it('holds nothing when no group is named', () => {
+    expect(inAnyGroup([], 'J', 'B738', grouped)).toBe(false);
+  });
+
+  it('throws when an id is not a group of the airport data', () => {
+    expect(() => inAnyGroup(['no_such_group'], 'J', 'B738', grouped)).toThrow(/no_such_group/);
   });
 });
 

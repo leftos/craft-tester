@@ -9,7 +9,7 @@ import pytest
 from craft_generator.cli import published_sid_runways
 from craft_generator.emit import dump, fixture_schema_path, validate, write_or_check
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
-from craft_generator.sop.model import AircraftClass, AirportInputs, RunwayConfig, Worksheet, WorksheetConfig
+from craft_generator.sop.model import AircraftClass, AircraftGroup, AirportInputs, RunwayConfig, SopData, Worksheet, WorksheetConfig
 from craft_generator.worksheets import (
     Fixture,
     PlanRow,
@@ -341,6 +341,50 @@ def test_airline_default_beats_the_class_default(by_title: dict[str, Worksheet],
 def test_a_prop_of_another_airline_keeps_the_class_default(importer: Importer) -> None:
     choice = _runway_in(importer, _pcm_default_config(importer), plan_row("SKW1234", "B350", "SFO5 PYE"))
     assert (choice.runway, choice.default_for_airline, choice.default_for_class) == ("28R", None, "T")
+
+
+def _group_default_sop(importer: Importer) -> SopData:
+    """Return the SOP whose 28/01 28L row is the prop default for the group the BE20 is in by type."""
+    sop = importer.inputs.sop
+    configs = []
+    for config in sop.runway_configs:
+        if config.id == "28/01":
+            runways = tuple(
+                replace(runway, classes=("P", "T"), default_for_groups=("jets_and_be20",), on_request_for=()) if runway.runway == "28L" else runway
+                for runway in config.departure_runways
+            )
+            config = replace(config, departure_runways=runways)
+        configs.append(config)
+    groups = {**sop.aircraft_groups, "jets_and_be20": AircraftGroup(classes=("J",), types=("BE20",))}
+    return replace(sop, runway_configs=tuple(configs), aircraft_groups=groups)
+
+
+def _runway_under(importer: Importer, sop: SopData, row: PlanRow) -> RunwayChoice:
+    config = next(entry for entry in sop.runway_configs if entry.id == "28/01")
+    return departure_runway(
+        row,
+        config,
+        sop,
+        aircraft_classes=importer.classes,
+        wake_categories=importer.wake_categories,
+        cargo_airlines=importer.inputs.routes.cargo_airlines,
+        sid_runways=importer.sid_runways,
+    )
+
+
+def test_group_default_beats_the_class_default(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    row = plan_row("SKW1234", "BE20", "SFO5 PYE")
+    choice = _runway_under(importer, _group_default_sop(importer), row)
+    assert (choice.runway, choice.default_for_group, choice.default_for_class) == ("28L", "jets_and_be20", None)
+    fixture = fixture_for(by_title["Phraseology Practice 1A"], row, 0, icao="ksfo", runway=choice, type_aliases={})
+    assert fixture["source"]["note"].endswith(
+        "so this is 28L, the runway configuration 28/01 defaults group jets_and_be20 to it (default_for_groups), pending validation"
+    )
+
+
+def test_a_prop_outside_the_group_keeps_the_class_default(importer: Importer) -> None:
+    choice = _runway_under(importer, _group_default_sop(importer), plan_row("SKW1234", "B350", "SFO5 PYE"))
+    assert (choice.runway, choice.default_for_group, choice.default_for_class) == ("28R", None, "T")
 
 
 def test_jet_in_28_01_still_follows_the_turn_direction(

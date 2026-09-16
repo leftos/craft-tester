@@ -43,6 +43,7 @@ describe('advertisedRunways', () => {
           runway: '01L',
           classes: ['J'],
           defaultForAirlines: [],
+          defaultForGroups: [],
           defaultForClasses: [],
           onRequestFor: [],
         },
@@ -50,6 +51,7 @@ describe('advertisedRunways', () => {
           runway: '01R',
           classes: ['P', 'T'],
           defaultForAirlines: [],
+          defaultForGroups: [],
           defaultForClasses: ['P', 'T'],
           onRequestFor: [],
         },
@@ -57,6 +59,7 @@ describe('advertisedRunways', () => {
           runway: '28L',
           classes: ['J'],
           defaultForAirlines: [],
+          defaultForGroups: [],
           defaultForClasses: [],
           onRequestFor: ['cargo'],
         },
@@ -64,6 +67,7 @@ describe('advertisedRunways', () => {
           runway: '01L',
           classes: ['P', 'T'],
           defaultForAirlines: [],
+          defaultForGroups: [],
           defaultForClasses: [],
           onRequestFor: [],
         },
@@ -85,6 +89,7 @@ describe('advertisedRunways', () => {
           runway: '28R',
           classes: ['P', 'T'],
           defaultForAirlines: [],
+          defaultForGroups: [],
           defaultForClasses: [],
           onRequestFor: [],
         },
@@ -92,6 +97,37 @@ describe('advertisedRunways', () => {
           runway: '28L',
           classes: ['P', 'T'],
           defaultForAirlines: ['PCM'],
+          defaultForGroups: [],
+          defaultForClasses: [],
+          onRequestFor: [],
+        },
+      ],
+    };
+    expect(advertisedRunways(config)).toEqual(['28R']);
+  });
+
+  it('leaves out a group default, which is no more in normal use than a class default', () => {
+    const config: RunwayConfig = {
+      id: 'TEST',
+      source: 'test data',
+      name: 'test configuration',
+      plan: 'SFOW',
+      trainingWeight: 1,
+      arrivalRunways: ['28L', '28R'],
+      departureRunways: [
+        {
+          runway: '28R',
+          classes: ['P', 'T'],
+          defaultForAirlines: [],
+          defaultForGroups: [],
+          defaultForClasses: [],
+          onRequestFor: [],
+        },
+        {
+          runway: '30',
+          classes: ['P', 'T'],
+          defaultForAirlines: [],
+          defaultForGroups: ['jets_and_dh8d'],
           defaultForClasses: [],
           onRequestFor: [],
         },

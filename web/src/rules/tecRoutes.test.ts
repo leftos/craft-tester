@@ -18,6 +18,7 @@ const config: RunwayConfig = {
       runway: '28L',
       classes: ['P', 'T', 'J'],
       defaultForAirlines: [],
+      defaultForGroups: [],
       defaultForClasses: [],
       onRequestFor: [],
     },

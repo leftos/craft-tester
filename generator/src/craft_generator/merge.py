@@ -225,6 +225,7 @@ def _departure_runway(runway: DepartureRunway) -> Document:
         "runway": runway.runway,
         "classes": list(runway.classes),
         "defaultForAirlines": list(runway.default_for_airlines),
+        "defaultForGroups": list(runway.default_for_groups),
         "defaultForClasses": list(runway.default_for_classes),
         "onRequestFor": list(runway.on_request_for),
     }
@@ -786,25 +787,30 @@ def _check_runways(document: Document, runways: Sequence[RunwayRecord]) -> None:
 
 
 _AIRLINE_DEFAULT_RULE = "RWY-AIRLINE-DEFAULT"
+_GROUP_DEFAULT_RULE = "RWY-GROUP-DEFAULT"
 
 
-def _check_runway_airline_defaults(document: Document) -> None:
-    """Check that every airline a departure runway defaults can be spoken and cited."""
+def _check_runway_defaults(document: Document) -> None:
+    """Check that every airline and group a departure runway defaults can be spoken and cited."""
     telephony = document["routeLibrary"]["telephony"]
     rules = {rule["id"] for rule in document["phraseologyRules"]}
     for config in document["runwayConfigs"]:
         for runway in config["departureRunways"]:
+            at = f"runwayConfigs[{config['id']}].departureRunways[{runway['runway']}]"
             codes = runway["defaultForAirlines"]
-            if not codes:
-                continue
-            at = f"runwayConfigs[{config['id']}].departureRunways[{runway['runway']}].defaultForAirlines"
-            for code in codes:
-                if code not in telephony:
-                    raise ValueError(f"{at}: {code!r} has no telephony entry in routes.yaml")
-            if _AIRLINE_DEFAULT_RULE not in rules:
+            if codes:
+                for code in codes:
+                    if code not in telephony:
+                        raise ValueError(f"{at}.defaultForAirlines: {code!r} has no telephony entry in routes.yaml")
+                if _AIRLINE_DEFAULT_RULE not in rules:
+                    raise ValueError(
+                        f"{at}.defaultForAirlines: the airport has no {_AIRLINE_DEFAULT_RULE} phraseology row, which the engine cites "
+                        f"when an airline default settles the runway; add a row with that id to sop.yaml phraseology_rules"
+                    )
+            if runway["defaultForGroups"] and _GROUP_DEFAULT_RULE not in rules:
                 raise ValueError(
-                    f"{at}: the airport has no {_AIRLINE_DEFAULT_RULE} phraseology row, which the engine cites when an "
-                    f"airline default settles the runway; add a row with that id to sop.yaml phraseology_rules"
+                    f"{at}.defaultForGroups: the airport has no {_GROUP_DEFAULT_RULE} phraseology row, which the engine cites when a "
+                    f"group default settles the runway; add a row with that id to sop.yaml phraseology_rules"
                 )
 
 
@@ -947,7 +953,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_conditions(document)
     _check_sectors(document)
     _check_runways(document, inputs.runways)
-    _check_runway_airline_defaults(document)
+    _check_runway_defaults(document)
     _check_fleet(document)
     _check_approach_categories(document)
     _check_destinations(document)

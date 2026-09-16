@@ -101,6 +101,7 @@ function withPcmOff28L(): AirportData {
                     ...row,
                     classes: PROP_CLASSES,
                     defaultForAirlines: ['PCM'],
+                    defaultForGroups: [],
                     onRequestFor: [],
                   },
             ),
@@ -112,6 +113,40 @@ function withPcmOff28L(): AirportData {
         id: 'RWY-AIRLINE-DEFAULT',
         source: 'OAK ATCT SOP 2-1',
         text: 'an airline whose ramp is on the other side of the field departs the runway it parks on',
+      },
+    ],
+  };
+}
+
+/** KSFO with a 30 added to 28/01 that the group holding the jets and the Dash 8 departs by default. */
+function withDash8Off30(): AirportData {
+  return {
+    ...ksfo,
+    aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
+    runwayConfigs: ksfo.runwayConfigs.map((config) =>
+      config.id !== '28/01'
+        ? config
+        : {
+            ...config,
+            departureRunways: [
+              ...config.departureRunways,
+              {
+                runway: '30',
+                classes: PROP_CLASSES,
+                defaultForAirlines: [],
+                defaultForGroups: ['jets_and_dh8d'],
+                defaultForClasses: [],
+                onRequestFor: [],
+              },
+            ],
+          },
+    ),
+    phraseologyRules: [
+      ...ksfo.phraseologyRules,
+      {
+        id: 'RWY-GROUP-DEFAULT',
+        source: 'OAK ATCT SOP 3-4',
+        text: 'the turboprops the SOP groups with the jets depart the runway the jets do',
       },
     ],
   };
@@ -181,6 +216,26 @@ describe('explainRunway on the generated KSFO data', () => {
     const cited = explainRunway(
       scenario({ callsign: 'SKW1234', aircraftType: 'B350', departureRunway: '28R' }),
       withPcmOff28L(),
+      'T',
+      'north',
+    );
+    expect(cited.citations.map((citation) => citation.id)).toEqual(['28/01', 'RWY-CLASS-DEFAULT']);
+  });
+
+  it('cites the group default for a type the group adds outside its classes', () => {
+    const cited = explainRunway(
+      scenario({ callsign: 'QXE2451', aircraftType: 'DH8D', departureRunway: '30' }),
+      withDash8Off30(),
+      'T',
+      'north',
+    );
+    expect(cited.citations.map((citation) => citation.id)).toEqual(['28/01', 'RWY-GROUP-DEFAULT']);
+  });
+
+  it('cites the class default for a prop outside the group in the same configuration', () => {
+    const cited = explainRunway(
+      scenario({ callsign: 'SKW1234', aircraftType: 'B350', departureRunway: '28R' }),
+      withDash8Off30(),
       'T',
       'north',
     );

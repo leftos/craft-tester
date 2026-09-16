@@ -411,6 +411,60 @@ def test_two_rows_defaulting_the_same_airline_are_rejected(tmp_path: Path, ksfo_
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
+def _with_jet_group(data: Any) -> None:
+    """Give the SOP the OAK group that takes the jets whole and adds the Dash 8 by type."""
+    data["aircraft_groups"] = {"jets_and_dh8d": {"classes": ["J"], "types": ["DH8D"]}}
+
+
+def test_default_for_groups_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        _with_jet_group(data)
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_groups"] = ["jets_and_dh8d"]
+
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+    config = next(row for row in sop.runway_configs if row.id == "28/01")
+    assert config.departure_runways[0].default_for_groups == ("jets_and_dh8d",)
+    assert config.departure_runways[1].default_for_groups == ()
+
+
+def test_default_for_an_unknown_group_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        _with_jet_group(data)
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_groups"] = ["heavies"]
+
+    match = (
+        r"runway_configs\[28/01\]\.departure_runways\[01L\]\.default_for_groups: 'heavies' is not an `aircraft_groups` id; "
+        r"use one of \['jets_and_dh8d'\]"
+    )
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_group_default_that_is_also_on_request_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        _with_jet_group(data)
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][2]["default_for_groups"] = ["jets_and_dh8d"]
+
+    match = r"runway '28L' is the default for group\(s\) \['jets_and_dh8d'\] and also on request for \['cargo', 'heavy', 'oceanic'\]"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_two_rows_defaulting_the_same_group_are_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        _with_jet_group(data)
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_groups"] = ["jets_and_dh8d"]
+        config["departure_runways"][1]["default_for_groups"] = ["jets_and_dh8d"]
+
+    match = r"departure_runways\[01R\]\.default_for_groups: group 'jets_and_dh8d' already defaults to runway '01L' in this configuration"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
 def test_non_positive_training_weight_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
         config = next(row for row in data["runway_configs"] if row["id"] == "28/01")

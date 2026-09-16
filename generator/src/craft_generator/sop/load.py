@@ -389,6 +389,7 @@ def _departure_runway(row: _Row) -> DepartureRunway:
         runway=row.text("runway"),
         classes=row.choices("classes", AIRCRAFT_CLASSES),
         default_for_airlines=_airline_codes(row, "default_for_airlines"),
+        default_for_groups=row.optional_texts("default_for_groups") or (),
         default_for_classes=row.optional_choices("default_for_classes", AIRCRAFT_CLASSES),
         on_request_for=row.optional_choices("on_request_for", ON_REQUEST_KINDS),
         note=row.optional_text("note"),
@@ -404,6 +405,12 @@ def _departure_runway(row: _Row) -> DepartureRunway:
         raise ValueError(
             f"{row.where}: runway {runway.runway!r} is the default for airline(s) {list(runway.default_for_airlines)} and also "
             f"on request for {list(runway.on_request_for)}; a runway is either the normal choice of an airline or an exception it is "
+            "asked for, so split the two into separate rows"
+        )
+    if runway.on_request_for and runway.default_for_groups:
+        raise ValueError(
+            f"{row.where}: runway {runway.runway!r} is the default for group(s) {list(runway.default_for_groups)} and also "
+            f"on request for {list(runway.on_request_for)}; a runway is either the normal choice of a group or an exception it is "
             "asked for, so split the two into separate rows"
         )
     return runway
@@ -698,8 +705,25 @@ def _check_runway_airlines(config: RunwayConfig, where: str) -> None:
             defaulted[code] = runway.runway
 
 
-def _check_runway_config(config: RunwayConfig, where: str) -> None:
+def _check_runway_groups(config: RunwayConfig, where: str, sop: SopData) -> None:
+    defaulted: dict[str, str] = {}
+    for runway in config.departure_runways:
+        at = f"{where} runway_configs[{config.id}].departure_runways[{runway.runway}].default_for_groups"
+        for group in runway.default_for_groups:
+            if group not in sop.aircraft_groups:
+                known = sorted(sop.aircraft_groups)
+                raise ValueError(f"{at}: {group!r} is not an `aircraft_groups` id; use one of {known} or add the group")
+            if group in defaulted:
+                raise ValueError(
+                    f"{at}: group {group!r} already defaults to runway {defaulted[group]!r} in this configuration; "
+                    "at most one departure runway per configuration may default a group"
+                )
+            defaulted[group] = runway.runway
+
+
+def _check_runway_config(config: RunwayConfig, where: str, sop: SopData) -> None:
     _check_runway_airlines(config, where)
+    _check_runway_groups(config, where, sop)
     defaulted: dict[AircraftClass, str] = {}
     for runway in config.departure_runways:
         at = f"{where} runway_configs[{config.id}].departure_runways[{runway.runway}].default_for_classes"
@@ -720,7 +744,7 @@ def _check_runway_config(config: RunwayConfig, where: str) -> None:
 def _check_sop(sop: SopData, where: str) -> None:
     families = _runway_families(sop.runways)
     for config in sop.runway_configs:
-        _check_runway_config(config, where)
+        _check_runway_config(config, where, sop)
     for rule in sop.assignment_rules:
         _check_assignment_rule(rule, where, sop, families)
     for altitude_rule in sop.altitude_rules:
@@ -746,9 +770,10 @@ def load_sop(path: Path) -> SopData:
         ValueError: The file is not a YAML mapping, carries an unknown or mistyped key, holds a rule
             whose sector, runway configuration, noise window, aircraft group or runway family does
             not exist, holds a rule that addresses no aircraft at all, holds an aircraft group that
-            names neither a class nor a type, holds a departure runway that is both a class or
-            airline default and on request, holds a malformed airline code, defaults one airline to
-            two runways of a configuration, or states one phraseology rule id twice.
+            names neither a class nor a type, holds a departure runway that is both a class, group
+            or airline default and on request, holds a malformed airline code, holds a departure
+            runway defaulting a group that is not an ``aircraft_groups`` id, defaults one airline or
+            one group to two runways of a configuration, or states one phraseology rule id twice.
     """
     where = _where(path)
     sop = _sop_data(_Row(where, _load_yaml_mapping(path, where)))

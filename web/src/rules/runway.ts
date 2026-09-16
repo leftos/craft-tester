@@ -6,6 +6,7 @@ import type {
   Scenario,
 } from '@/data/schema.ts';
 import { citePhraseology } from '@/rules/cite.ts';
+import { inAnyGroup } from '@/rules/classify.ts';
 import type { Cited, RuleCitation } from '@/rules/types.ts';
 
 /** An airline flight number: the three-letter ICAO code, the number, and an optional suffix. */
@@ -35,6 +36,21 @@ function isAirlineDefault(
       row.runway === runway &&
       row.classes.includes(aircraftClass) &&
       row.defaultForAirlines.includes(airline),
+  );
+}
+
+/** Whether the configuration departs this flight's aircraft group from this runway before any draw. */
+function isGroupDefault(
+  airport: AirportData,
+  config: RunwayConfig,
+  scenario: Scenario,
+  aircraftClass: AircraftClass,
+): boolean {
+  return config.departureRunways.some(
+    (row) =>
+      row.runway === scenario.departureRunway &&
+      row.classes.includes(aircraftClass) &&
+      inAnyGroup(row.defaultForGroups, aircraftClass, scenario.aircraftType, airport),
   );
 }
 
@@ -82,6 +98,7 @@ function mechanismId(
   if (isAirlineDefault(config, scenario.callsign, aircraftClass, runway)) {
     return 'RWY-AIRLINE-DEFAULT';
   }
+  if (isGroupDefault(airport, config, scenario, aircraftClass)) return 'RWY-GROUP-DEFAULT';
   if (isClassDefault(config, aircraftClass, runway)) return 'RWY-CLASS-DEFAULT';
   if (isOnRequest(config, aircraftClass, runway)) return 'RWY-ON-REQUEST';
   if (isDirectionPreference(airport, config, runway, direction)) return 'RWY-DIRECTION';
@@ -93,9 +110,9 @@ function mechanismId(
  *
  * The runway itself is the scenario's; what the engine adds is the configuration the field is on and
  * the mechanism that settled the runway within it, in the precedence the generator draws them: the
- * airline the configuration defaults to a runway, the class it defaults to a runway, the runway a
- * flight is issued on request, the direction-of-turn split of the family, and otherwise the single
- * runway of the family.
+ * airline the configuration defaults to a runway, the aircraft group it defaults to a runway, the
+ * class it defaults to a runway, the runway a flight is issued on request, the direction-of-turn
+ * split of the family, and otherwise the single runway of the family.
  *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data, whose phraseology rows carry the mechanisms.

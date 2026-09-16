@@ -112,16 +112,23 @@ class DepartureRunway:
     the class default: at OAK the props of an airline parked south of 28L depart it while the rest
     of the props depart 28R. It applies to a flight whose callsign carries one of the codes and
     whose class is in ``classes``; it is empty on a row that defaults no airline.
+    ``default_for_groups`` names the ``aircraft_groups`` ids this runway is the default for, after
+    the airline default and ahead of the class default: the OAK SOP keeps the turboprops over
+    17,000 lbs off the 28s by grouping the Dash 8 with the jets. It applies to a flight in one of
+    the groups - its class in the group's ``classes`` or its type in the group's ``types`` - whose
+    class is also in ``classes``; it is empty on a row that defaults no group.
     ``default_for_classes`` names the classes this runway is the default for in the configuration,
-    after the airline default and ahead of the direction-of-turn preference; it is empty on a row
-    that is no default. ``on_request_for`` names the kinds of flight the runway is issued to only on
-    request, after the class default and ahead of the direction preference; it is empty on a row
-    that is a normal choice, and a row that is a class or airline default may not carry it.
+    after the airline and group defaults and ahead of the direction-of-turn preference; it is empty
+    on a row that is no default. ``on_request_for`` names the kinds of flight the runway is issued
+    to only on request, after the class default and ahead of the direction preference; it is empty
+    on a row that is a normal choice, and a row that is a class, group or airline default may not
+    carry it.
     """
 
     runway: str
     classes: tuple[AircraftClass, ...]
     default_for_airlines: tuple[str, ...]
+    default_for_groups: tuple[str, ...]
     default_for_classes: tuple[AircraftClass, ...]
     on_request_for: tuple[OnRequestKind, ...]
     note: str | None

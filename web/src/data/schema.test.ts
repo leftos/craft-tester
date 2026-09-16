@@ -62,6 +62,7 @@ const minimalAirportData: AirportData = {
           runway: '01R',
           classes: ['P', 'T', 'J'],
           defaultForAirlines: [],
+          defaultForGroups: [],
           defaultForClasses: [],
           onRequestFor: [],
         },

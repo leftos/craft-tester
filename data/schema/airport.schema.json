@@ -1129,6 +1129,12 @@
                   },
                   "type": "array"
                 },
+                "defaultForGroups": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "note": {
                   "type": "string"
                 },
@@ -1151,6 +1157,7 @@
                 "runway",
                 "classes",
                 "defaultForAirlines",
+                "defaultForGroups",
                 "defaultForClasses",
                 "onRequestFor"
               ],

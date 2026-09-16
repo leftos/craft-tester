@@ -21,8 +21,8 @@ export function activeNotices(scenario: Scenario, airport: AirportData): Notice[
 /**
  * The runways a configuration departs in normal use, which is what its ATIS advertises.
  *
- * A runway a class or an airline departs by default, and one issued only to the flights that ask
- * for it, are all outside normal use: in 28/01 the ATIS advertises 1L and 1R, while 28R belongs to
+ * A runway a class, an aircraft group or an airline departs by default, and one issued only to the
+ * flights that ask for it, are all outside normal use: in 28/01 the ATIS advertises 1L and 1R, while 28R belongs to
  * the props it is the default for and the 28s belong to the oceanic, Far East and cargo flights
  * that request them. The exact runway a flight departs stays out of the ATIS, because picking it is
  * the student's job.
@@ -36,7 +36,8 @@ export function advertisedRunways(config: RunwayConfig): string[] {
     if (
       assignment.onRequestFor.length > 0 ||
       assignment.defaultForClasses.length > 0 ||
-      assignment.defaultForAirlines.length > 0
+      assignment.defaultForAirlines.length > 0 ||
+      assignment.defaultForGroups.length > 0
     ) {
       continue;
     }

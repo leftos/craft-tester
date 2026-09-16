@@ -395,6 +395,36 @@ function turbopropFleet(): FleetEntry {
   return entry;
 }
 
+/** KSFO with the group that takes the jets whole and adds the Dash 8 by type. */
+function groupedAirport(): AirportData {
+  return { ...ksfo, aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } } };
+}
+
+/** The 28/01 configuration with a 30 added that the jets-and-Dash-8 group departs by default. */
+function dash8Off30(): RunwayConfig {
+  const config = ksfo.runwayConfigs.find((row) => row.id === '28/01');
+  if (config === undefined) throw new Error('KSFO has no 28/01 configuration');
+  return {
+    ...config,
+    departureRunways: [
+      ...config.departureRunways,
+      {
+        runway: '30',
+        classes: PROP_CLASSES,
+        defaultForAirlines: [],
+        defaultForGroups: ['jets_and_dh8d'],
+        defaultForClasses: [],
+        onRequestFor: [],
+      },
+    ],
+  };
+}
+
+/** A fleet row of the Dash 8, the turboprop the group adds by type. */
+function dash8Fleet(): FleetEntry {
+  return { ...turbopropFleet(), type: 'DH8D' };
+}
+
 describe('pickRunway', () => {
   it('departs a defaulted airline off its own runway, ahead of the class default', () => {
     const picked = pickRunway(
@@ -413,6 +443,30 @@ describe('pickRunway', () => {
       createRng(1),
       ksfo,
       pcmOff28L(),
+      turbopropFleet(),
+      'SKW1234',
+      'north',
+    );
+    expect(picked).toStrictEqual({ runway: '28R', requested: false });
+  });
+
+  it('departs a type the group adds off the group runway, ahead of the class default', () => {
+    const picked = pickRunway(
+      createRng(1),
+      groupedAirport(),
+      dash8Off30(),
+      dash8Fleet(),
+      'QXE2451',
+      'north',
+    );
+    expect(picked).toStrictEqual({ runway: '30', requested: false });
+  });
+
+  it('departs a turboprop outside the group off the class default', () => {
+    const picked = pickRunway(
+      createRng(1),
+      groupedAirport(),
+      dash8Off30(),
       turbopropFleet(),
       'SKW1234',
       'north',

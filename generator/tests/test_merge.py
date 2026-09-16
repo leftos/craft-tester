@@ -290,6 +290,39 @@ def test_an_airline_default_is_emitted_on_the_departure_runway(ksfo_build_inputs
     assert defaults == [[], [], [], [], ["PCM"]]
 
 
+def _defaulting_the_jet_group(inputs: BuildInputs) -> BuildInputs:
+    """Make the 28/01 class-default row default the group the jets and the Dash 8 share."""
+    configs = []
+    for config in inputs.airport.sop.runway_configs:
+        if config.id == "28/01":
+            runways = tuple(
+                replace(runway, default_for_groups=("jets_and_dh8d",)) if runway.default_for_classes else runway
+                for runway in config.departure_runways
+            )
+            config = replace(config, departure_runways=runways)
+        configs.append(config)
+    groups = {**inputs.airport.sop.aircraft_groups, "jets_and_dh8d": AircraftGroup(classes=("J",), types=("DH8D",))}
+    return _with_sop(inputs, runway_configs=tuple(configs), aircraft_groups=groups)
+
+
+def _with_group_default_rule(inputs: BuildInputs) -> BuildInputs:
+    rule = PhraseologyRule(id="RWY-GROUP-DEFAULT", source="OAK ATCT SOP 3-4", text="the heavy turboprops depart with the jets")
+    return _with_sop(inputs, phraseology_rules=(*inputs.airport.sop.phraseology_rules, rule))
+
+
+def test_a_group_default_without_its_phraseology_row_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    match = r"runwayConfigs\[28/01\]\.departureRunways\[28R\]\.defaultForGroups: the airport has no RWY-GROUP-DEFAULT phraseology row"
+    with pytest.raises(ValueError, match=match):
+        build_airport(_defaulting_the_jet_group(ksfo_build_inputs))
+
+
+def test_a_group_default_is_emitted_on_the_departure_runway(ksfo_build_inputs: BuildInputs) -> None:
+    document = build_airport(_with_group_default_rule(_defaulting_the_jet_group(ksfo_build_inputs)))
+    config = next(row for row in document["runwayConfigs"] if row["id"] == "28/01")
+    defaults = [runway["defaultForGroups"] for runway in config["departureRunways"]]
+    assert defaults == [[], [], [], [], ["jets_and_dh8d"]]
+
+
 def test_a_rule_naming_an_unknown_dp_family_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
     rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
     rules[0] = replace(rules[0], sid_family="NOPE")

@@ -11,6 +11,7 @@ import type {
 } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
+import { inAnyGroup } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
 import { airlineOf } from '@/rules/runway.ts';
@@ -289,6 +290,19 @@ function airlineDefaultRunway(
   )?.runway;
 }
 
+/** The runway a configuration departs an aircraft group from by default, e.g. the Dash 8 with the jets. */
+function groupDefaultRunway(
+  config: RunwayConfig,
+  airport: AirportData,
+  fleet: FleetEntry,
+): string | undefined {
+  return config.departureRunways.find(
+    (assignment) =>
+      assignment.classes.includes(fleet.class) &&
+      inAnyGroup(assignment.defaultForGroups, fleet.class, fleet.type, airport),
+  )?.runway;
+}
+
 /** The runway a configuration departs a class from by default, e.g. the GA 28R in 28/01. */
 function classDefaultRunway(
   config: RunwayConfig,
@@ -303,7 +317,8 @@ function classDefaultRunway(
  * Draws the departure runway: a family the class may use, then the runway that direction departs.
  *
  * A configuration that defaults the flight's airline to a runway (`defaultForAirlines`) settles it
- * before any draw, and so does one that defaults its class (`defaultForClasses`), so those aircraft
+ * before any draw, and so do one that defaults an aircraft group the flight is in
+ * (`defaultForGroups`) and one that defaults its class (`defaultForClasses`), so those aircraft
  * never take the direction-of-turn split. A flight that may ask for an
  * `onRequestFor` runway is drawn as asking for it `ON_REQUEST_CHANCE` of the time, and takes the
  * runways in normal use the rest. Otherwise `directionRunwayPreference` holds the SOP's split, e.g.
@@ -328,6 +343,8 @@ export function pickRunway(
 ): { runway: string; requested: boolean } {
   const byAirline = airlineDefaultRunway(config, callsign, fleet.class);
   if (byAirline !== undefined) return { runway: byAirline, requested: false };
+  const byGroup = groupDefaultRunway(config, airport, fleet);
+  if (byGroup !== undefined) return { runway: byGroup, requested: false };
   const defaulted = classDefaultRunway(config, fleet.class);
   if (defaulted !== undefined) return { runway: defaulted, requested: false };
   const requested = onRequestRunway(airport, config, fleet, direction);
