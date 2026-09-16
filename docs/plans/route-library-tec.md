@@ -139,9 +139,16 @@ objects.
   (B738 in 19/10 filing `SFO5 CIITY FEVTA FEVTA1` at 42,000: route to `CIITY3 …` citing
   TEC-KSMF-SFOE-J, altitude to 41,000 citing FLEET-B738 and A-PARITY, CRAFT form chains in with "expect
   amended altitude"), KLVK amendment (stale `TRUKN1` to `TRUKN2 TRUKN ALTAM` citing TEC-KLVK-SFOW-JT).
-  No console errors at either viewport. **Found, pre-existing**: at 390px the configuration dropdown
-  is 616px wide (its longest label sizes it) and the page scrolls sideways; the 2026-09-15 phone
-  playtest predates the configuration filter. Fix is `max-width: 100%` on `select` in `styles.css`.
+  No console errors at either viewport. **Found and fixed 2026-09-16 (own commit)**: at 390px the page
+  scrolled sideways, 616px of content. Two causes: the configuration dropdown is as wide as its
+  longest label, and the CRAFT form's expect-clause and frequency dropdowns (about 370px) set the
+  automatic minimum of the phone layout's `1fr` column, so the column itself grew to 401px.
+  `max-width: 100%` on `select` alone did nothing, because the `.field` around it is a content-sized
+  flex item. Fix: `.field { max-width: 100% }` everywhere and the phone column `minmax(0, 1fr)`; all
+  five pages checked at 390px fit. The 2026-09-15 phone playtest predates the configuration filter.
+  The driver now lives at `web/scripts/browser-check.ts` (`pnpm -C web check:browser`, hash written
+  with commas because a literal `&` does not survive pnpm on Windows), Playwright 1.63.0 is an exact
+  pinned web dev dependency, and CLAUDE.md records the convention.
   Also noticed: the KLVK reveal cites `SFOW-J-10000` ("when no top altitude is published") for a
   filed-below-top climb-via-except on TRUKN2, which has a published top; that is the open "filed below
   the published top" item in MAIN.md step 17

@@ -18,6 +18,8 @@ pnpm -C web test rules/engine                 # one test file (vitest path filte
 pnpm -C web test -t "climb via"               # tests whose name matches
 pnpm -C web schema:export                     # regenerate data/schema/*.json from web/src/data/schema.ts
 pnpm -C web propose <fixture-id> | --pending  # engine's clearance for a fixture, with citations
+pnpm -C web exec playwright install chromium  # once per machine, for the browser check
+pnpm -C web check:browser <name> s=1,d=KLVK phone|desktop ["select:4=(no prefix)" "fill:2=…" "click:Submit clearance"]
 
 # generator (uv, Python 3.13)
 cd generator && uv sync
@@ -37,6 +39,14 @@ prek install && prek run --all-files
 Downloads cache under `generator/cache/` (gitignored) or `$CRAFT_GEN_CACHE`. CI runs the web and generator
 gates, fails if `data/schema/` differs from a fresh `schema:export`, and runs `import-worksheets --check` with
 network. CI does not run `craft-gen build`; `build --check` is a local step before committing data.
+
+**Browser checks run under Playwright, not the Claude in Chrome extension** (user decision 2026-09-16), so the
+viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
+then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
+survive pnpm on Windows), runs the actions, and writes the page text, selects, buttons, console errors, whether
+the page scrolls sideways and a full-page screenshot to `.tmp/browser-check/`. The hash takes an undocumented
+`d=<ICAO>` part that forces the drawn destination in both modes (`s=4,d=KSMF,m=amend`), so a destination is
+checked directly instead of drawing until the RNG lands on it; it is never shown in the UI or remembered.
 
 ## Layout notes not in the architecture doc
 
