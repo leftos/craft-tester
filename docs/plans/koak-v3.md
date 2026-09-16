@@ -105,27 +105,63 @@ J & DH8D QUAKE# or 270° 5,000. SFOE: P/T 090° 3,000; J & DH8D 140°.
 
 ## New rule concepts OAK needs (add to the schema and engine before transcribing)
 
+**User decisions 2026-09-16** (AskUserQuestion round): aircraft groups in the SOP YAML; turn direction derived as
+the shorter turn from the runway's magnetic heading; Appendix B noise rows always active inside their window, as at
+SFO (no activation toggle); approach category per fleet type.
+
 - [ ] **Type-specific class**: "J & DH8D" rows treat the Dash 8-400 as a jet for SID assignment but give it its own
-  altitude (CVS x 10,000 vs FL190). Proposal: `aircraft_groups` in the airport YAML mapping a group id to classes
-  and/or types (`jets_and_dh8d: {classes: [J], types: [DH8D]}`), and rows reference groups instead of classes.
-- [ ] **Heading departures as a first-class clearance**: OAK issues 090°/270°/315°/runway heading routinely; the
-  route element becomes "via turn left/right heading (xxx), radar vectors (fix/airway)" with the turn direction
-  derived from runway heading vs assigned heading (data: runway true/magnetic headings from CIFP `PG` records).
-  Altitude "maintain (feet)", expect clause spoken (no chart note).
+  altitude (CVS x 10,000 vs FL190). **Decided**: `aircraft_groups` in the airport YAML mapping a group id to classes
+  and/or types (`jets_and_dh8d: {classes: [J], types: [DH8D]}`); assignment and altitude rows may reference a group
+  (`groups: [jets_and_dh8d]`) beside or instead of `classes`; KSFO data unchanged.
+- [ ] **Heading departures as a first-class clearance**: OAK issues 090°/270°/315°/runway heading routinely. The
+  runway-heading half landed 2026-09-16 for KSFO (`Procedure.kind === 'heading'`, "via fly runway heading, radar
+  vectors (first fix)", [archive/heading-departures.md](./archive/heading-departures.md)). **Decided** for the
+  numbered half: `non_dp_heading: 270` on the row; the turn direction is the shorter turn from the departure
+  runway's magnetic heading (CIFP `PG` records, emitted per runway), read "via turn left heading two seven zero,
+  radar vectors (fix/airway)"; a 180° split fails the build. Altitude "maintain (feet)", expect clause spoken (no
+  chart note).
 - [ ] **Plain "climb via SID"** for CNDEL# and HUSSH# (row outcome `climb_via`): already supported by the engine.
 - [ ] **CVS x FL190**: an interim expressed as a flight level; check `speakAltitude` and the altitude row schema.
 - [ ] **Continuation charts**: the chart parser must merge `NAME, CONT.1` text into `NAME` (6 of 17 OAK charts).
-- [ ] **Approach category** ("P, Cat A/B → SALAD#"): a per-type approach category in the fleet, or treat as props.
+- [ ] **Approach category** ("P, Cat A/B → SALAD#"). **Decided**: `approach_category: A|B|C|D` on fleet rows (from
+  the published Vref), and rows may say `approach_categories: [A, B]`.
 - [ ] **Three departure sectors** (Richmond, Sutro, Grove) and "varies" rows resolved by direction: already
   expressible (`direction` on the row).
-- [ ] **Optional noise abatement**: appendix rows are "may be activated"; model as a notice-like toggle that turns
-  the noise rows on, default off, rather than as time windows alone.
+- [ ] **Noise abatement**: Appendix B rows are "may be activated". **Decided**: model them as SFO's are, time
+  windows always active (`noise_windows` + `when: {noise_window: …}`); no activation toggle.
 
-## Steps
+## CIFP inventory (read 2026-09-16 from cycle 2609)
 
-- [ ] Pull S1-OAK-2 and S1-OAK-5 worksheets (Chrome), add to `generator/airports/koak/worksheets.yaml`
-- [ ] Inspect KOAK CIFP SID records; classify the 11 procedures; check for radar-vector SIDs with no CIFP body
-- [ ] Land the new rule concepts above (schema first, KSFO data unchanged, tests)
-- [ ] Transcribe `sop.yaml` (v1.7, sentinels), `overrides.yaml`, `routes.yaml`, `tec.yaml`; `verify-sop`; build
-- [ ] `data/airports.json` gains KOAK; widen the KSFO-only web tests
-- [ ] Validation loop with the user
+Runways (PG rows, magnetic bearing in columns 28–31 of the record, tenths of a degree): 10L 098°, 10R 098°, 12
+116°, 15 150°, 28L 278°, 28R 278°, 30 296°, 33 330°. Procedures: CNDEL5 RNAV (28B/30; KAYEX KTINA NTELL SUSEY
+YYUNG; restrictions), COAST9 conventional (28B/30; FLW GVO RZS SXC), HUSSH2 RNAV (30 only; DEDHD GOBBS GRTFL
+MOGEE ORRCA SYRAH TIPRE; restrictions), KATFH3 RNAV (10B/12; KAYEX KTINA NTELL SUSEY; restrictions), NUEVO8
+conventional (28B/30; SHOEY SNS), OAK6 vector (all runways; no CIFP transitions), QUAKE2 vector (all runways),
+SALAD5 conventional (28B only; ALTAM; restrictions), SKYL1 conventional (all runways; AVE FLW PXN; restrictions),
+SLNT3 conventional (30 only; ENI LIN RBL SAC; restrictions), SUNNE1 conventional (28B/30; no transitions).
+**NIMITZ6 has no CIFP records**: a radar-vector SID like SFO5, every fact from `overrides.yaml`. `RW28B` is
+handled by the grouper. OAK6 is "CVS x FL190" in SOP 2-2 a and the S1-OAK-1 module although it is a vector SID,
+so `climb_via_eligible` becomes an override field rather than a change to the KSFO rule (GAPP7 stays not eligible).
+
+## Steps (implementer briefs; the orchestrator does docs, data review and commits)
+
+- [x] Inspect KOAK CIFP SID records (above)
+- [ ] **Brief 1, schema + generator concepts** (worktree `wt/koak-concepts`): `aircraftGroups` on the airport
+  document and `groups` on assignment and altitude rows; `approachCategory` on fleet rows and `approachCategories`
+  on assignment rows (the build requires every fleet row to carry a category once any row names one);
+  `nonDpHeading` as `runway heading` or an integer 1–360; `runways[]` with `magneticBearing` from the PG rows;
+  `climb_via_eligible` override on a SID; continuation charts (`NAME, CONT.1`) merged into their procedure's
+  text before the facts are parsed; schema export; KSFO rebuilt (new fields only) and `--check` clean.
+- [ ] **Brief 2, web engine**: group and approach-category matching in `sidSelection`, `altitude` and the TEC rows;
+  numbered headings as `Procedure.kind === 'heading'` with the turn direction from the departure runway's bearing
+  (shorter turn), spoken "via turn left heading two seven zero, radar vectors (fix/airway)"; the procedure
+  dropdown offers every heading the airport's rows use; fixture `heading` takes a number; `propose` prints it;
+  `CVS x FL190` spoken as a flight level.
+- [ ] **Brief 3, transcription**: `sop.yaml` (v1.7, sentinels; SFOW, OAKE, SFOE; 2-2 b headings; Appendix B
+  windows), `overrides.yaml` (12 charts incl. NIMITZ6 radar-vector facts, OAK6 `climb_via_eligible: true`),
+  `routes.yaml` seeded from the user's common routes, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC rows from the notes),
+  `worksheets.yaml`; `verify-sop`; build clean.
+- [ ] `tec.yaml`: transcribe `reference.oakartcc.org/routes?dep=OAK&dest=…` for each NCT destination (Blazor page,
+  browser needed)
+- [ ] `data/airports.json` gains KOAK; widen the KSFO-only web tests to loop over the index; airport switch in the UI
+- [ ] `import-worksheets --airport KOAK`; validation loop with the user
