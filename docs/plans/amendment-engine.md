@@ -84,14 +84,14 @@ the engine must still resolve the clearance a dirty plan gets after amendment.
 
 ## Steps (each a brief; all in the gen worktree, sequential)
 
-- [ ] 1. Suffix on the scenario, fixture `mode`, amendment union (web half): schema + export; `classify`
+- [x] 1. (landed `77f14a3` with step 2) Suffix on the scenario, fixture `mode`, amendment union (web half): schema + export; `classify`
   derives `rnavCapable` into the context and `sidSelection` reads it there; `generate.ts` puts the
   suffix in the scenario; strip, labels, `propose.ts`, every test literal, the exhaustive test loops
   `/L` and `/A`; 28 synthetic fixtures gain `mode: clearance` and `equipmentSuffix` (`/A` when
   `rnavCapable` was false, `/L` for jets, `/G` for props and turboprops) and lose `rnavCapable`.
   Proving: `pnpm -C web typecheck && lint && fmt:check && test` (the generator's fixture validation
   goes red until step 2)
-- [ ] 2. Generator half: importer emits `equipmentSuffix` (null when the sheet filed none) and `mode`;
+- [x] 2. (landed `77f14a3`; A-RVSM cites 14 CFR 91.180, part 91 appendix G, AIM 4-6-1 and 7110.65 4-5-1 b, since the .65's 4-6 is holding) Generator half: importer emits `equipmentSuffix` (null when the sheet filed none) and `mode`;
   re-import the 70 worksheet fixtures with `--overwrite-settled`, then restore `expected` and
   `status: settled` on the 18 settled ones from `git show HEAD:<path>`; `airports.py` parses the
   magnetic variation and `merge.py` emits `airport.magneticVariation`; `A-PARITY` and `A-RVSM`

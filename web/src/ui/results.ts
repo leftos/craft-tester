@@ -15,7 +15,7 @@ export type ResultsProps = {
  * The line that says how many elements were right.
  *
  * @param grades The verdict for every element.
- * @returns The score, e.g. `4 of 6 elements correct`.
+ * @returns The score, e.g. `4 of 5 elements correct`.
  */
 export function scoreLine(grades: readonly Grade[]): string {
   const correct = grades.filter((verdict) => verdict.ok).length;

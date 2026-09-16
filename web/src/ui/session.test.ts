@@ -31,7 +31,6 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
   const expectValue = clearance.expect.value;
   const feet = clearance.altitude.value.feet;
   const answers: [PickKey, string][] = [
-    ['sidId', clearance.sid.value.id],
     ['routeTemplate', clearance.route.value.template],
     ['routeFix', clearance.route.value.fix ?? ''],
     ['altitudePhrase', clearance.altitude.value.phrase],
@@ -49,7 +48,7 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
 /** Every dropdown of the form, flattened out of its CRAFT groups. */
 function fieldsOf(state: AppState): CraftField[] {
   if (state.view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
-  return craftGroups(state.view.generated.scenario, state.airport, state.picks).flatMap((group) => [
+  return craftGroups(state.view.generated, state.airport, state.picks).flatMap((group) => [
     ...group.fields,
   ]);
 }
@@ -81,8 +80,8 @@ describe(`the scenario of seed ${SEED}`, () => {
 
   it('fills the strip and the ATIS from the scenario', () => {
     if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
-    const { scenario } = view.generated;
-    const strip = new Map(stripRows(view.generated).map(([label, value]) => [label, value]));
+    const scenario = view.generated;
+    const strip = new Map(stripRows(scenario).map(([label, value]) => [label, value]));
     expect(strip.get('callsign')).toBe(scenario.callsign);
     expect(strip.get('type')).toBe(`${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`);
     expect(strip.get('route')).toBe(scenario.filedRoute);
@@ -96,7 +95,7 @@ describe(`the scenario of seed ${SEED}`, () => {
 
   it('is read back as a spoken clearance', () => {
     if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
-    const spoken = spokenFor(view.generated.scenario, view.clearance, airport);
+    const spoken = spokenFor(view.generated, view.clearance, airport);
     console.log(`[seed ${SEED}] abbreviated: ${spoken.abbreviated}`);
     console.log(`[seed ${SEED}] full route:  ${spoken.fullRoute}`);
     expect(spoken.abbreviated).toContain('cleared to');
@@ -114,7 +113,7 @@ describe('the CRAFT form', () => {
     );
     expect(fields.get('routeFix')?.disabled).toBe(true);
     expect(fields.get('altitudeFeet')?.disabled).toBe(true);
-    expect(fields.get('sidId')?.disabled).toBe(false);
+    expect(fields.get('routeTemplate')?.disabled).toBe(false);
   });
 
   it('offers the clearance the engine resolved, and grades it green', () => {
@@ -130,7 +129,7 @@ describe('the CRAFT form', () => {
     }
     const submitted = withSubmitted(state);
     expect(submitted.submitted).toBe(true);
-    for (const verdict of grade(picks, clearance, airport.sids)) {
+    for (const verdict of grade(picks, clearance)) {
       expect(verdict.ok, `${verdict.element}: ${verdict.actualLabel}`).toBe(true);
     }
   });

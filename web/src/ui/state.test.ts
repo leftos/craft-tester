@@ -17,7 +17,6 @@ import {
 } from '@/ui/state.ts';
 
 const full: DraftPicks = {
-  sidId: 'TRUKN2',
   routeTemplate: 'transition',
   routeFix: 'DEDHD',
   altitudePhrase: 'maintain',
@@ -28,10 +27,8 @@ const full: DraftPicks = {
 };
 
 describe('applyPick', () => {
-  it('clears the route element when the procedure changes, because its transitions change', () => {
-    const next = applyPick(full, 'sidId', 'GAPP7');
-    expect(next.sidId).toBe('GAPP7');
-    expect(next.routeFix).toBeUndefined();
+  it('reads the route element the player picked', () => {
+    expect(applyPick(full, 'routeFix', 'SSTIK').routeFix).toBe('SSTIK');
   });
 
   it('clears the altitude when the phrase speaks none', () => {
@@ -80,7 +77,6 @@ describe('toPlayerPicks', () => {
 
   it('carries every pick through to grading', () => {
     expect(toPlayerPicks(full)).toStrictEqual({
-      sidId: 'TRUKN2',
       routeTemplate: 'transition',
       routeFix: 'DEDHD',
       altitudePhrase: 'maintain',
@@ -95,7 +91,6 @@ describe('toPlayerPicks', () => {
 describe('revisiting a solved scenario', () => {
   const SEED = 1;
   const previous: PlayerPicks = {
-    sidId: 'TRUKN2',
     routeTemplate: 'transition',
     routeFix: 'DEDHD',
     altitudePhrase: 'maintain',

@@ -6,10 +6,9 @@ import type { PlayerPicks } from '@/rules/types.ts';
  * The shape a remembered attempt has to have to be loaded back.
  *
  * A value this browser stored under an older version of the form is missing the picks the form has
- * gained since, so it is rejected rather than replayed with holes in it.
+ * gained since, or carries one it has dropped, so it is rejected rather than replayed as it stands.
  */
 export const PlayerPicksSchema = z.strictObject({
-  sidId: z.string(),
   routeTemplate: RouteTemplateSchema,
   routeFix: z.string().optional(),
   altitudePhrase: AltitudePhraseSchema,

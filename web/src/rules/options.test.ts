@@ -24,12 +24,6 @@ function scenario(overrides: Partial<Scenario>): Scenario {
 }
 
 describe('buildOptions', () => {
-  it('offers every published SID by its chart name', () => {
-    const { sids } = buildOptions(scenario({}), ksfo);
-    expect(sids).toHaveLength(ksfo.sids.length);
-    expect(sids).toContainEqual({ id: 'TRUKN2', label: 'TRUKN TWO (RNAV)' });
-  });
-
   it('offers every route shape, altitude phrase, and expect clause', () => {
     const options = buildOptions(scenario({}), ksfo);
     expect(options.routeTemplates).toEqual([
@@ -42,8 +36,8 @@ describe('buildOptions', () => {
     expect(options.expect).toEqual(['ten_minutes', 'three_minutes', 'none']);
   });
 
-  it('offers the picked SID transitions and the head of the filed route as route fixes', () => {
-    const { routeFixes } = buildOptions(scenario({}), ksfo, 'TRUKN2');
+  it('offers the filed SID transitions and the head of the filed route as route fixes', () => {
+    const { routeFixes } = buildOptions(scenario({ filedRoute: 'TRUKN2 DEDHD RBL LMT' }), ksfo);
     expect(routeFixes).toEqual([
       'DEDHD',
       'GRTFL',
@@ -56,8 +50,10 @@ describe('buildOptions', () => {
     ]);
   });
 
-  it('offers only the filed fixes when no SID is picked yet', () => {
-    expect(buildOptions(scenario({}), ksfo).routeFixes).toEqual(['DEDHD', 'RBL', 'LMT']);
+  it('offers only the filed fixes when the filed SID is not published', () => {
+    expect(buildOptions(scenario({ filedRoute: 'TRUKN9 DEDHD RBL LMT' }), ksfo).routeFixes).toEqual(
+      ['DEDHD', 'RBL', 'LMT'],
+    );
   });
 
   it('keeps a filed route that has no procedure token', () => {
@@ -99,8 +95,6 @@ describe('buildOptions', () => {
   });
 
   it('is deterministic', () => {
-    expect(buildOptions(scenario({}), ksfo, 'TRUKN2')).toEqual(
-      buildOptions(scenario({}), ksfo, 'TRUKN2'),
-    );
+    expect(buildOptions(scenario({}), ksfo)).toEqual(buildOptions(scenario({}), ksfo));
   });
 });

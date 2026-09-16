@@ -48,8 +48,9 @@ network. CI does not run `craft-gen build`; `build --check` is a local step befo
   of each `pending` one.
 - **Data depends on fixtures.** `craft-gen build` reads navaid names for every route filed in
   `fixtures/<icao>/**`, so re-run the build after an import.
-- **Graded elements** are `R.sid`, `R.route`, `A.phrase`, `A.expect`, `F`, and `RWY`. The clearance limit
-  and squawk are resolved and spoken but not graded.
+- **Graded elements** are `R.route`, `A.phrase`, `A.expect`, `F`, and `RWY`. The procedure, the clearance
+  limit and the squawk are resolved and spoken but not graded: a clean clearance is read exactly as
+  filed, so clearance mode draws only plans whose route already carries the assigned SID.
 
 ## Rules of the repo
 

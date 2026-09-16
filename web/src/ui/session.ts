@@ -7,7 +7,6 @@ import type { SpokenClearance } from '@/rules/speak.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
-import type { GeneratedScenario } from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
 
 /**
@@ -24,7 +23,7 @@ const airportFiles = import.meta.glob<{ default: unknown }>([
 
 /** What one seed produced: a clearance to grade, or the reasons the engine could not issue one. */
 export type ScenarioView =
-  | { kind: 'clearance'; generated: GeneratedScenario; clearance: ResolvedClearance }
+  | { kind: 'clearance'; generated: Scenario; clearance: ResolvedClearance }
   | { kind: 'unresolved'; reasons: string[] };
 
 /**
@@ -76,13 +75,13 @@ export function buildScenario(
   seed: number,
   filter: ScenarioFilter,
 ): ScenarioView {
-  let generated: GeneratedScenario;
+  let generated: Scenario;
   try {
     generated = generateScenario(createRng(seed), airport, filter);
   } catch (error) {
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }
-  const result = resolveClearance(generated.scenario, airport);
+  const result = resolveClearance(generated, airport);
   if (!result.ok) {
     return {
       kind: 'unresolved',

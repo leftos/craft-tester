@@ -11,7 +11,6 @@ const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = ['ten_minutes', 'three_
 
 /** One dropdown of the CRAFT form, named by the pick it sets. */
 export type PickKey =
-  | 'sidId'
   | 'routeTemplate'
   | 'routeFix'
   | 'altitudePhrase'
@@ -22,7 +21,6 @@ export type PickKey =
 
 /** What the player has picked so far; a dropdown nobody has touched is `undefined`. */
 export type DraftPicks = {
-  sidId: string | undefined;
   routeTemplate: RouteTemplate | undefined;
   routeFix: string | undefined;
   altitudePhrase: AltitudePhrase | undefined;
@@ -34,7 +32,6 @@ export type DraftPicks = {
 
 /** A form nobody has touched yet. */
 export const EMPTY_PICKS: DraftPicks = {
-  sidId: undefined,
   routeTemplate: undefined,
   routeFix: undefined,
   altitudePhrase: undefined,
@@ -88,11 +85,9 @@ function expect(raw: string): PlayerPicks['expect'] | undefined {
 /**
  * How each dropdown changes the picks, including the picks its change invalidates.
  *
- * Changing the procedure clears the route element, because the elements on offer are that
- * procedure's transitions; picking "climb via SID" clears the feet, because that phrase speaks none.
+ * Picking "climb via SID" clears the feet, because that phrase speaks none.
  */
 const SETTERS: Record<PickKey, (picks: DraftPicks, raw: string) => DraftPicks> = {
-  sidId: (picks, raw) => ({ ...picks, sidId: text(raw), routeFix: undefined }),
   routeTemplate: (picks, raw) => ({ ...picks, routeTemplate: routeTemplate(raw) }),
   routeFix: (picks, raw) => ({ ...picks, routeFix: text(raw) }),
   altitudePhrase: (picks, raw) => {
@@ -123,7 +118,6 @@ export function applyPick(picks: DraftPicks, key: PickKey, raw: string): DraftPi
 
 /** The dropdowns every clearance needs, whatever the route shape and the altitude phrase. */
 const ALWAYS_REQUIRED = [
-  'sidId',
   'routeTemplate',
   'routeFix',
   'altitudePhrase',
@@ -156,7 +150,6 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
   const altitudeFeet = picks.altitudePhrase === 'climb_via' ? undefined : picks.altitudeFeet;
   if (picks.altitudePhrase !== 'climb_via' && altitudeFeet === undefined) return undefined;
   return {
-    sidId: picks.sidId,
     routeTemplate: picks.routeTemplate,
     routeFix: picks.routeFix,
     altitudePhrase: picks.altitudePhrase,

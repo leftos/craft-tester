@@ -1,6 +1,5 @@
-import type { RouteTemplate, Sid } from '@/data/schema.ts';
+import type { RouteTemplate } from '@/data/schema.ts';
 import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
-import { NO_SID } from '@/rules/types.ts';
 
 /** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
 const EXPECT_MINUTES: Record<PlayerPicks['expect'], number | null> = {
@@ -87,20 +86,6 @@ function altitudeOk(picks: PlayerPicks, altitude: ResolvedClearance['altitude'][
   return picks.altitudeFeet === altitude.feet;
 }
 
-/** Grades the SID by family, because AIRAC cycles bump the version in the id. */
-function gradeSid(picks: PlayerPicks, expected: ResolvedClearance, sids: readonly Sid[]): Grade {
-  const wanted = expected.sid.value;
-  const picked = sids.find((sid) => sid.id === picks.sidId);
-  const wantedSid = sids.find((sid) => sid.id === wanted.id);
-  return {
-    element: 'R.sid',
-    ok: picked !== undefined && picked.family === wanted.family,
-    expectedLabel: wantedSid?.chartName ?? wanted.id,
-    actualLabel: picks.sidId === NO_SID ? 'no SID' : (picked?.chartName ?? 'unknown SID'),
-    citations: expected.sid.citations,
-  };
-}
-
 /** Grades the expect clause on its delay alone; the altitude in it is the filed one, not a pick. */
 function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   const picked = EXPECT_MINUTES[picks.expect];
@@ -130,14 +115,9 @@ function gradeRunway(picks: PlayerPicks, expected: ResolvedClearance): Grade {
  *
  * @param picks What the player entered in the form.
  * @param expected The clearance the engine resolved for the same scenario.
- * @param sids Every published SID of the airport, used to map a picked id to its family and chart name.
- * @returns Exactly six verdicts, in the order R.sid, R.route, A.phrase, A.expect, F, RWY.
+ * @returns Exactly five verdicts, in the order R.route, A.phrase, A.expect, F, RWY.
  */
-export function grade(
-  picks: PlayerPicks,
-  expected: ResolvedClearance,
-  sids: readonly Sid[],
-): Grade[] {
+export function grade(picks: PlayerPicks, expected: ResolvedClearance): Grade[] {
   const route = expected.route.value;
   const altitude = expected.altitude.value;
   const actualRoute =
@@ -149,7 +129,6 @@ export function grade(
       ? { phrase: picks.altitudePhrase }
       : { phrase: picks.altitudePhrase, feet: picks.altitudeFeet };
   return [
-    gradeSid(picks, expected, sids),
     {
       element: 'R.route',
       ok: routeOk(picks, route),

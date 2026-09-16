@@ -3,7 +3,6 @@ import { altitudeLabel, expectChoiceLabel, formatFeet, routeLabel } from '@/rule
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
 import type { ClearanceElement } from '@/rules/types.ts';
-import { NO_SID } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -33,29 +32,11 @@ function plainOptions(values: readonly string[]): SelectOption[] {
   return values.map((value) => ({ value, label: value }));
 }
 
-/** The procedure: every published SID of the field, and the choice to issue none. */
-function procedureGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
-  const sids = options.sids.map((sid) => ({ value: sid.id, label: sid.label }));
-  return {
-    element: 'R.sid',
-    fields: [
-      {
-        key: 'sidId',
-        label: 'departure procedure',
-        options: [...sids, { value: NO_SID, label: 'no SID' }],
-        value: picks.sidId,
-        disabled: false,
-        placeholder: PLACEHOLDER,
-      },
-    ],
-  };
-}
-
 /**
  * The route: the shape of the element, and the fix or airway the shape names.
  *
- * The element dropdown stays disabled until a procedure is picked, because the elements on offer
- * are that procedure's transitions together with the first fixes of the filed route.
+ * The element dropdown stays disabled until the shape is picked; the elements on offer are the
+ * transitions of the filed procedure together with the first fixes of the filed route.
  */
 function routeGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
   return {
@@ -77,7 +58,7 @@ function routeGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
         label: 'fix or airway',
         options: plainOptions(options.routeFixes),
         value: picks.routeFix,
-        disabled: picks.sidId === undefined || picks.routeTemplate === undefined,
+        disabled: picks.routeTemplate === undefined,
         placeholder: PLACEHOLDER,
       },
     ],
@@ -177,7 +158,7 @@ function runwayGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
 }
 
 /**
- * Builds the six groups of dropdowns the player answers the clearance with.
+ * Builds the five groups of dropdowns the player answers the clearance with.
  *
  * @param scenario The scenario being cleared, which contributes the filed route and altitude.
  * @param airport The airport data.
@@ -189,9 +170,8 @@ export function craftGroups(
   airport: AirportData,
   picks: DraftPicks,
 ): readonly CraftGroup[] {
-  const options = buildOptions(scenario, airport, picks.sidId);
+  const options = buildOptions(scenario, airport);
   return [
-    procedureGroup(options, picks),
     routeGroup(options, picks),
     altitudeGroup(options, picks),
     expectGroup(options, picks),

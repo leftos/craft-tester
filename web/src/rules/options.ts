@@ -21,7 +21,6 @@ const FILED_FIXES_OFFERED = 3;
 
 /** The deterministic dropdown lists the CRAFT form is built from. */
 export type ClearanceOptions = {
-  sids: { id: string; label: string }[];
   routeTemplates: RouteTemplate[];
   routeFixes: string[];
   altitudePhrases: AltitudePhrase[];
@@ -36,6 +35,14 @@ function unique<T>(values: readonly T[]): T[] {
   return [...new Set(values)];
 }
 
+/** The filed route split into its tokens, with the empty strings of any stray spacing dropped. */
+function routeTokens(scenario: Scenario): string[] {
+  return scenario.filedRoute
+    .trim()
+    .split(/\s+/)
+    .filter((token) => token.length > 0);
+}
+
 /**
  * The first few elements of the filed route after the procedure token, as route-fix distractors.
  *
@@ -43,13 +50,23 @@ function unique<T>(values: readonly T[]): T[] {
  * and the form has to offer it as the element to pick.
  */
 function filedFixes(scenario: Scenario): string[] {
-  const tokens = scenario.filedRoute
-    .trim()
-    .split(/\s+/)
-    .filter((token) => token.length > 0);
+  const tokens = routeTokens(scenario);
   const first = tokens[0];
   const afterSid = first !== undefined && isSidToken(first) ? tokens.slice(1) : tokens;
   return afterSid.slice(0, FILED_FIXES_OFFERED);
+}
+
+/**
+ * The transitions of the procedure the filed route names, which are the route elements on offer.
+ *
+ * A flight plan files the procedure the SOP assigns, so the leading token names it; a plan that
+ * files no procedure token, or one the airport does not publish, contributes no transitions.
+ */
+function filedSidTransitions(scenario: Scenario, airport: AirportData): string[] {
+  const first = routeTokens(scenario)[0];
+  if (first === undefined || !isSidToken(first)) return [];
+  const filed = airport.sids.find((sid) => sid.id === first);
+  return (filed?.transitions ?? []).map((transition) => transition.fix);
 }
 
 /** Every altitude the field can issue: the interim rows, the published tops, and the filed one. */
@@ -76,22 +93,12 @@ function configuredRunways(scenario: Scenario, airport: AirportData): string[] {
  *
  * @param scenario The filed flight plan, which contributes the filed route and altitude.
  * @param airport The airport data.
- * @param sidId The SID the player has picked, whose transitions become the route-fix choices.
  * @returns The options for every element of the CRAFT form.
  */
-export function buildOptions(
-  scenario: Scenario,
-  airport: AirportData,
-  sidId?: string,
-): ClearanceOptions {
-  const picked = airport.sids.find((sid) => sid.id === sidId);
+export function buildOptions(scenario: Scenario, airport: AirportData): ClearanceOptions {
   return {
-    sids: airport.sids.map((sid) => ({ id: sid.id, label: sid.chartName })),
     routeTemplates: [...ROUTE_TEMPLATES],
-    routeFixes: unique([
-      ...(picked?.transitions ?? []).map((transition) => transition.fix),
-      ...filedFixes(scenario),
-    ]),
+    routeFixes: unique([...filedSidTransitions(scenario, airport), ...filedFixes(scenario)]),
     altitudePhrases: [...ALTITUDE_PHRASES],
     altitudeFeet: altitudeFeet(scenario, airport),
     expect: [...EXPECT_CHOICES],

@@ -30,7 +30,12 @@ export type ResolvedClearance = {
   frequency: Cited<{ value: string; sectorId: string }>;
 };
 
-/** The graded elements of a clearance, in the order CRAFT speaks them, with the runway last. */
+/**
+ * The elements of a clearance the engine resolves, in the order CRAFT speaks them.
+ *
+ * Grading covers all of them but `R.sid`: the flight plan always files the procedure the SOP
+ * assigns, so the element is resolved, spoken and reported unresolved under this key, never graded.
+ */
 export type ClearanceElement = 'R.sid' | 'R.route' | 'A.phrase' | 'A.expect' | 'F' | 'RWY';
 
 /** An element the engine could not resolve, with the reason to show the player. */
@@ -44,12 +49,8 @@ export type EngineResult =
   | { ok: true; clearance: ResolvedClearance }
   | { ok: false; unresolved: Unresolved[] };
 
-/** The SID pick that means the controller issues no departure procedure. */
-export const NO_SID = 'no-sid';
-
 /** What the player entered in the CRAFT form, before grading. */
 export type PlayerPicks = {
-  sidId: string;
   routeTemplate: RouteTemplate;
   routeFix?: string;
   altitudePhrase: AltitudePhrase;

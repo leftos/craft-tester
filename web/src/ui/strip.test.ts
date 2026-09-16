@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData } from '@/data/schema.ts';
-import type { GeneratedScenario } from '@/scenario/generate.ts';
+import type { AirportData, Scenario } from '@/data/schema.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import { createRng } from '@/scenario/rng.ts';
@@ -11,15 +10,15 @@ const ksfo = ksfoJson as unknown as AirportData;
 const drawn = generateScenario(createRng(3), ksfo, ANY_SCENARIO);
 
 /** The drawn scenario with the given remarks filed, or with the remarks box left empty. */
-function withRemarks(remarks: string | undefined): GeneratedScenario {
-  const scenario = { ...drawn.scenario };
+function withRemarks(remarks: string | undefined): Scenario {
+  const scenario = { ...drawn };
   delete scenario.remarks;
-  return { ...drawn, scenario: { ...scenario, ...(remarks === undefined ? {} : { remarks }) } };
+  return { ...scenario, ...(remarks === undefined ? {} : { remarks }) };
 }
 
 /** The labels of the strip boxes, in the order the strip prints them. */
-function labelsOf(generated: GeneratedScenario): string[] {
-  return stripRows(generated).map(([label]) => label);
+function labelsOf(scenario: Scenario): string[] {
+  return stripRows(scenario).map(([label]) => label);
 }
 
 describe('stripRows', () => {

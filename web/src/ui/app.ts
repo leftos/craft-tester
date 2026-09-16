@@ -159,12 +159,12 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
     return [renderUnresolved(state.view.reasons, actions.onNewScenario)];
   }
   const { generated, clearance } = state.view;
-  const panels = [renderStrip(generated), renderAtis(generated.scenario, state.airport)];
+  const panels = [renderStrip(generated), renderAtis(generated, state.airport)];
   if (state.revisit !== undefined && !state.submitted) {
     panels.push(
       renderRevisit({
-        grades: grade(state.revisit, clearance, state.airport.sids),
-        spoken: spokenFor(generated.scenario, clearance, state.airport),
+        grades: grade(state.revisit, clearance),
+        spoken: spokenFor(generated, clearance, state.airport),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
@@ -175,8 +175,8 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
   if (state.submitted && picks !== undefined) {
     panels.push(
       renderResults({
-        grades: grade(picks, clearance, state.airport.sids),
-        spoken: spokenFor(generated.scenario, clearance, state.airport),
+        grades: grade(picks, clearance),
+        spoken: spokenFor(generated, clearance, state.airport),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
@@ -185,7 +185,7 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
   }
   panels.push(
     renderCraftForm({
-      scenario: generated.scenario,
+      scenario: generated,
       airport: state.airport,
       picks: state.picks,
       onPick: actions.onPick,

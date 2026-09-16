@@ -51,16 +51,6 @@ const TIME_BUCKETS: readonly Weighted<readonly MinuteRange[]>[] = [
   ...NIGHT_BUCKETS,
 ];
 
-/** How the filed route presents the procedure: the assigned one, none at all, or a wrong one. */
-type SidTokenChoice = 'correct' | 'none' | 'wrong';
-
-/** The filed-SID mix the trainer drills: half correct, a third missing, the rest wrong. */
-const SID_TOKEN_MIX: readonly Weighted<SidTokenChoice>[] = [
-  { item: 'correct', weight: 50 },
-  { item: 'none', weight: 30 },
-  { item: 'wrong', weight: 20 },
-];
-
 const DAYS_OF_WEEK: readonly DayOfWeek[] = [
   'sunday',
   'monday',
@@ -91,16 +81,6 @@ const ON_REQUEST_CHANCE = 0.5;
 
 /** How many scenarios may be drawn before the generator gives up on the airport data. */
 const MAX_ATTEMPTS = 50;
-
-/**
- * A drawn scenario plus the one fact the strip does not carry.
- *
- * `correctSidId` is the procedure the SOP assigns, which the filed route may or may not name.
- */
-export type GeneratedScenario = {
-  scenario: Scenario;
-  correctSidId: string;
-};
 
 /** Names a configuration filter the way the error that nothing matches it reads. */
 function describeConfigFilter(filter: ConfigFilter): string {
@@ -310,53 +290,25 @@ function pickRunway(
   return { runway, requested: false };
 }
 
-/** The same procedure one version back, e.g. `TRUKN1` for `TRUKN2`; undefined at version one. */
-function staleToken(sidId: string): string | undefined {
-  const parsed = /^([A-Z]+)(\d)$/.exec(sidId);
-  const family = parsed?.[1];
-  const version = parsed?.[2];
-  if (family === undefined || version === undefined) return undefined;
-  const previous = Number(version) - 1;
-  return previous < 1 ? undefined : `${family}${previous}`;
-}
-
-/**
- * Draws a procedure token the SOP would not assign: a stale version, or another SID of the field.
- *
- * A procedure already at version one has no stale form, so those draw another SID's id instead.
- */
-function wrongToken(rng: Rng, airport: AirportData, correctSidId: string): string {
-  const stale = staleToken(correctSidId);
-  if (stale !== undefined && rng.next() < 0.5) return stale;
-  return rng.pick(airport.sids.map((sid) => sid.id).filter((id) => id !== correctSidId));
-}
-
-/** Draws the procedure token the route files: the assigned one, none, or a wrong one. */
-function pickSidToken(rng: Rng, airport: AirportData, correctSidId: string): string | undefined {
-  const choice = rng.weighted(SID_TOKEN_MIX);
-  if (choice === 'none') return undefined;
-  return choice === 'correct' ? correctSidId : wrongToken(rng, airport, correctSidId);
-}
-
 /**
  * Draws one candidate scenario and runs the engine over it.
  *
- * The filed route is assembled after the engine has spoken, because the procedure token depends on
- * the procedure the SOP assigns. That is sound because `parseFiledRoute` strips a leading procedure
- * token whatever it says, so the clearance the engine resolved here is the clearance of the
- * returned scenario as well.
+ * The filed route is assembled after the engine has spoken, because it names the procedure the SOP
+ * assigns: a clean flight plan is one the controller can read aloud as filed. That is sound because
+ * `parseFiledRoute` strips a leading procedure token whatever it says, so the clearance the engine
+ * resolved here is the clearance of the returned scenario as well.
  *
  * @param rng The seeded generator; every draw advances it.
  * @param airport The airport data the scenario is drawn from.
  * @param filter The time of day and the runway configurations the draw is narrowed to.
- * @returns The scenario and its assigned procedure, or the reason the engine could not clear it,
- *   which is the caller's cue to draw again.
+ * @returns The scenario, or the reason the engine could not clear it, which is the caller's cue to
+ *   draw again.
  */
 export function drawScenario(
   rng: Rng,
   airport: AirportData,
   filter: ScenarioFilter,
-): GeneratedScenario | Unresolved {
+): Scenario | Unresolved {
   const config = pickConfig(rng, airport, filter.config);
   const route = rng.pick(airport.routeLibrary.routes);
   const fleet = pickFleet(rng, airport, route);
@@ -383,10 +335,7 @@ export function drawScenario(
   if (!result.ok) {
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }
-  const correctSidId = result.clearance.sid.value.id;
-  const token = pickSidToken(rng, airport, correctSidId);
-  const scenario = token === undefined ? filed : { ...filed, filedRoute: `${token} ${route.tail}` };
-  return { scenario, correctSidId };
+  return { ...filed, filedRoute: `${result.clearance.sid.value.id} ${route.tail}` };
 }
 
 /**
@@ -399,14 +348,10 @@ export function drawScenario(
  * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the scenario is drawn from.
  * @param filter The time of day and the runway configurations the draw is narrowed to.
- * @returns The scenario and the procedure the SOP assigns it.
+ * @returns The scenario, whose filed route names the procedure the SOP assigns it.
  * @throws Error When `MAX_ATTEMPTS` draws in a row were all unclearable, naming the last reason.
  */
-export function generateScenario(
-  rng: Rng,
-  airport: AirportData,
-  filter: ScenarioFilter,
-): GeneratedScenario {
+export function generateScenario(rng: Rng, airport: AirportData, filter: ScenarioFilter): Scenario {
   let last: Unresolved | undefined;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const drawn = drawScenario(rng, airport, filter);
