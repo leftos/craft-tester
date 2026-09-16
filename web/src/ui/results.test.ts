@@ -46,6 +46,17 @@ describe('verdictLines', () => {
     expect(lines.verdict).toBe('acceptable');
     expect(lines.correction).toBe('shorter: no expect altitude');
   });
+
+  it('offers the final reading as the shorter one for the amended clause spoken beside it', () => {
+    const lines = verdictLines({
+      ...redundantExpect,
+      expectedLabel: '9,000 will be your final',
+      actualLabel: 'expect amended altitude 10 minutes after departure',
+    });
+    expect(lines.answer).toBe('you said: expect amended altitude 10 minutes after departure');
+    expect(lines.verdict).toBe('acceptable');
+    expect(lines.correction).toBe('shorter: 9,000 will be your final');
+  });
 });
 
 describe('scoreLine', () => {

@@ -178,18 +178,17 @@ function finalFeetOf(expected: ResolvedClearance): number | undefined {
  * Grades the expect clause on its shape alone; the altitude in it is the strip's, not a pick.
  *
  * A delay is right at the delay the clearance speaks, and "will be your final" only where the
- * clearance speaks that reading. Speaking a delay where the SID chart already publishes the note is
- * acceptable rather than wrong — it repeats what the pilot already has on the chart — but only at
- * the delay the chart publishes; any other answer is a miss, as is speaking a clause where the
- * clearance drops it for any other reason.
+ * clearance speaks that reading. A delay is acceptable rather than wrong wherever the clearance
+ * carries a longer reading the rules still allow at that same delay — the note the SID chart
+ * already publishes, or the amended clause beside "will be your final". Any other delay is a miss,
+ * as is speaking a clause where the clearance drops it for any other reason.
  */
 function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   const picked = EXPECT_ANSWERS[picks.expect];
   const clause = expected.expect.value;
   const wanted = expectAnswer(clause);
   const redundant = expected.redundantExpect.value;
-  const acceptable =
-    picked !== wanted && wanted === null && redundant !== null && picked === redundant.minutes;
+  const acceptable = picked !== wanted && redundant !== null && picked === redundant.minutes;
   return {
     element: 'A.expect',
     verdict: acceptable ? 'acceptable' : verdictOf(picked === wanted),

@@ -34,9 +34,11 @@ export type ExpectClause =
  * row that settled it. `sid.value.spoken` is the chart's spoken name ("Trukn Two");
  * `sid.value.family` is what grading compares, because AIRAC cycles bump the version in `id`.
  * `expect.value.kind` says which of the three readings the clause takes. `redundantExpect` carries
- * the expect clause the chart already speaks for the pilot, which a controller may repeat without
- * harm: it is null wherever the clause is spoken, wherever it was dropped for another reason, and
- * wherever the chart stays silent.
+ * the longer expect reading the rules still allow beside the one the clearance speaks: the clause
+ * the chart already speaks for the pilot, which a controller may repeat without harm, and the
+ * amended clause beside a `final` clause, which says at a delay what the final reading says
+ * outright. It is null wherever no longer reading is allowed — an amended or filed clause spoken on
+ * its own, a clause dropped for any other reason, a chart that publishes no note.
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
@@ -96,7 +98,8 @@ export type PlayerPicks = {
  * How one element was answered.
  *
  * `correct` matches the clearance the engine resolved. `acceptable` is a reading the rules allow but
- * that says more than it needs to — today only the expect clause the SID chart already publishes.
+ * that says more than it needs to — the expect clause the SID chart already publishes, or the
+ * amended clause where "will be your final" is the answer.
  * `wrong` is a miss.
  */
 export type Verdict = 'correct' | 'acceptable' | 'wrong';

@@ -179,7 +179,10 @@ function amendedExpect(
 /**
  * The clearance with the expect clause an amended final altitude calls for.
  *
- * Either reading is mandatory, so nothing in it is redundant.
+ * The amended reading is mandatory where it is the one spoken, so nothing stands beside it. Where
+ * the final reading is the one spoken, the amended clause is still a reading the rules allow, only
+ * longer than it needs to be: it names the same altitude at the delay that clause would have
+ * carried, so it is kept as the redundant reading for grading to accept.
  *
  * @param clearance The clearance resolved for the corrected plan.
  * @param corrected The plan with every amendment applied.
@@ -191,11 +194,15 @@ function withAmendedExpect(
   corrected: Scenario,
   airport: AirportData,
 ): ResolvedClearance {
-  return {
-    ...clearance,
-    expect: amendedExpect(clearance, corrected, airport),
-    redundantExpect: { value: null, citations: [] },
-  };
+  const expect = amendedExpect(clearance, corrected, airport);
+  const redundantExpect: ResolvedClearance['redundantExpect'] =
+    expect.value.kind === 'final'
+      ? {
+          value: { feet: corrected.filedAltitude, minutes: amendedMinutes(clearance, airport) },
+          citations: citePhraseology(airport, 'A-FINAL'),
+        }
+      : { value: null, citations: [] };
+  return { ...clearance, expect, redundantExpect };
 }
 
 /**

@@ -230,15 +230,22 @@ function stripLines(scenario: Scenario, airport: AirportData): (readonly [string
 }
 
 /**
- * The expect clause as the proposal reads it, naming the clause the chart publishes where the
- * clearance drops it for that reason, because speaking that one is acceptable rather than wrong.
+ * The expect clause as the proposal reads it, naming the longer reading the rules still allow
+ * beside it — the clause the chart publishes, or the amended clause beside the final reading —
+ * because speaking that one is acceptable rather than wrong.
  *
  * @param clearance The clearance the engine resolved.
  * @returns The line the `A expect` element reads.
  */
 function expectValue(clearance: ResolvedClearance): string {
   const expect = clearance.expect.value;
-  if (expect?.kind === 'final') return `${expect.feet} will be your final`;
+  if (expect?.kind === 'final') {
+    const final = `${expect.feet} will be your final`;
+    const beside = clearance.redundantExpect.value;
+    return beside === null
+      ? final
+      : `${final} (expect amended ${beside.minutes} minutes is acceptable)`;
+  }
   if (expect !== null) {
     const opening = expect.kind === 'amended' ? 'expect amended' : 'expect';
     return `${opening} ${expect.feet} ${expect.minutes} minutes after departure`;

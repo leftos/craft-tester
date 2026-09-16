@@ -60,6 +60,25 @@ const chartPublishes: ResolvedClearance = {
   redundantExpect: { value: { feet: 35000, minutes: 10 }, citations: [redundantCitation] },
 };
 
+const finalCitation: RuleCitation = {
+  id: 'A-FINAL',
+  source: 'ZOA practice via the user, 2026-09-16 (SKW2345 amendment plan)',
+  text: '(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause',
+};
+
+/** A clearance that climbs the flight straight to the amended altitude and speaks it. */
+const speaksFinal: ResolvedClearance = {
+  ...expected,
+  altitude: { value: { phrase: 'climb_via_except', feet: 9000 }, citations: [altitudeCitation] },
+  expect: { value: { kind: 'final', feet: 9000 }, citations: [altitudeCitation] },
+};
+
+/** The same clearance with the amended clause it allows beside the final reading. */
+const finalWithAmended: ResolvedClearance = {
+  ...speaksFinal,
+  redundantExpect: { value: { feet: 9000, minutes: 10 }, citations: [finalCitation] },
+};
+
 const correct: PlayerPicks = {
   routeTemplate: 'transition',
   routeFix: 'DEDHD',
@@ -228,23 +247,40 @@ describe('grade', () => {
     expect(dropped?.verdict).toBe('wrong');
   });
 
-  it('grades the final reading the clearance speaks, and a delay in its place as a miss', () => {
-    const final: ResolvedClearance = {
-      ...expected,
-      altitude: {
-        value: { phrase: 'climb_via_except', feet: 9000 },
-        citations: [altitudeCitation],
-      },
-      expect: { value: { kind: 'final', feet: 9000 }, citations: [altitudeCitation] },
-    };
+  it('grades the final reading the clearance speaks, and a delay it allows nothing for as a miss', () => {
     const picks: PlayerPicks = { ...correct, altitudeFeet: 9000 };
-    const [, , spoken] = grade({ ...picks, expect: 'final' }, final);
+    const [, , spoken] = grade({ ...picks, expect: 'final' }, speaksFinal);
     expect(spoken?.verdict).toBe('correct');
     expect(spoken?.expectedLabel).toBe('9,000 will be your final');
     expect(spoken?.actualLabel).toBe('9,000 will be your final');
-    const [, , delayed] = grade({ ...picks, expect: 'ten_minutes' }, final);
+    const [, , delayed] = grade({ ...picks, expect: 'ten_minutes' }, speaksFinal);
     expect(delayed?.verdict).toBe('wrong');
     expect(delayed?.actualLabel).toBe('expect amended altitude 10 minutes after departure');
+  });
+
+  it('accepts the amended clause beside the final reading, at the delay that clause would carry', () => {
+    const picks: PlayerPicks = { ...correct, altitudeFeet: 9000 };
+    const [, , clause] = grade({ ...picks, expect: 'ten_minutes' }, finalWithAmended);
+    expect(clause?.verdict).toBe('acceptable');
+    expect(clause?.expectedLabel).toBe('9,000 will be your final');
+    expect(clause?.actualLabel).toBe('expect amended altitude 10 minutes after departure');
+    expect(clause?.citations).toEqual([finalCitation]);
+  });
+
+  it('keeps the final reading itself correct where the amended clause is allowed beside it', () => {
+    const picks: PlayerPicks = { ...correct, altitudeFeet: 9000 };
+    const [, , clause] = grade({ ...picks, expect: 'final' }, finalWithAmended);
+    expect(clause?.verdict).toBe('correct');
+    expect(clause?.citations).toEqual([altitudeCitation]);
+  });
+
+  it('marks another delay and dropping the clause wrong beside the final reading', () => {
+    const picks: PlayerPicks = { ...correct, altitudeFeet: 9000 };
+    const [, , early] = grade({ ...picks, expect: 'three_minutes' }, finalWithAmended);
+    expect(early?.verdict).toBe('wrong');
+    expect(early?.citations).toEqual([altitudeCitation]);
+    const [, , dropped] = grade({ ...picks, expect: 'none' }, finalWithAmended);
+    expect(dropped?.verdict).toBe('wrong');
   });
 
   it('marks the final reading wrong where the clearance speaks a delay', () => {

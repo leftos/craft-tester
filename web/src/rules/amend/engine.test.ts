@@ -147,7 +147,17 @@ describe('resolveAmendedClearance', () => {
     expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 9000 });
     expect(result.clearance.expect.value).toEqual({ kind: 'final', feet: 9000 });
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual(['A-FINAL']);
-    expect(result.clearance.redundantExpect.value).toBeNull();
+  });
+
+  it('keeps the amended clause beside the final reading as the longer reading still allowed', () => {
+    const original = skw2345();
+    const { corrected } = resolved(original);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.redundantExpect.value).toEqual({ feet: 9000, minutes: 10 });
+    expect(result.clearance.redundantExpect.citations.map((citation) => citation.id)).toEqual([
+      'A-FINAL',
+    ]);
   });
 
   it('keeps the amended clause where the amended altitude is above the altitude cleared to', () => {
@@ -160,6 +170,8 @@ describe('resolveAmendedClearance', () => {
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
       'A-EXPECT-AMENDED',
     ]);
+    expect(result.clearance.redundantExpect.value).toBeNull();
+    expect(result.clearance.redundantExpect.citations).toEqual([]);
   });
 
   it('keeps the amended clause on a plain climb via SID, which speaks no altitude of its own', () => {
