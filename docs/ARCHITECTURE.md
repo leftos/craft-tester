@@ -27,7 +27,7 @@ Sections of `AirportData` (see the schema for fields): `airport`, `provenance`, 
 | `cli.py` | `craft-gen` subcommands: `build`, `verify-sop`, `import-worksheets` |
 | `http.py` | cached GET (stdlib urllib), sha256 |
 | `charts_api.py`, `chart_text.py` | ZOA charts API → DP list; pypdf text → top altitude, transitions, departure frequencies |
-| `cifp/` | AIRAC cycle math, ARINC 424 SID record slicing, grouping into runways/transitions/restrictions/kind |
+| `cifp/` | AIRAC cycle math; ARINC 424 fixed-width slicing of SID legs and runways (`records.py`), STAR ids (`stars.py`), VHF/NDB navaids (`navaids.py`) and airport reference points (`airports.py`); grouping into runways/transitions/restrictions/kind (`sid.py`). Hand-rolled on purpose: audited 2026-09-16 against `cifparse` 2.0.9's width tables and `zoa-reference-cli` with zero column drift, and neither package fits as a dependency (GPL-3.0 and no tests; no runway/navaid-name coverage). The checked-in text fixtures under `tests/fixtures/cifp/` are the regression net for every column |
 | `sop/` | YAML models, loader with cross-reference validation, SOP PDF hash + sentinel verification |
 | `aircraft_classes.py` | vNAS `AircraftSpecs.json` EngineType → P/T/J |
 | `merge.py` | joins all sources, applies `overrides.yaml`, runs integrity checks |

@@ -62,7 +62,7 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   CCR2`, TEC says `TRUKN# TRUKN FEVTA FEVTA1`) and some library altitudes exceed the TEC cap, so
   those plans read as clean in clearance mode but always take a route amendment here; the nine
   library rows should probably carry the TEC route — taken up 2026-09-16 in
-  [route-library-tec.md](./route-library-tec.md): the draw now verifies every plan with this engine)
+  [route-library-tec.md](./archive/route-library-tec.md): the draw now verifies every plan with this engine)
   `scenario/amend.ts`: `generateAmendmentScenario(rng, airport, filter)` draws a clean plan
   with `generateScenario`, then injects 0/1/2 faults from: stale SID version, another published SID
   of the field, no SID, wrong route for a TEC destination (only when the library has one), parity
