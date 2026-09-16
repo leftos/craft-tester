@@ -51,7 +51,11 @@ Every engine output element carries `RuleCitation[]` pointing at the data rows t
 view shows them. The graded elements are `R.route`, `A.phrase`, `A.expect`, `F` and `RWY`, the
 departure runway: the scenario fixes the runway and the engine explains it (the configuration row plus the
 `RWY-*` mechanism row), so the ATIS can advertise the runways in normal use and the student must pick the
-parallel. The procedure, the clearance limit and the squawk are resolved but not graded. A clean
+parallel. The procedure, the clearance limit and the squawk are resolved but not graded. A verdict is
+`correct`, `wrong`, or `acceptable`: a reading the rules allow that says more than it needs to, counted
+as correct in the score line but shown in its own colour. Today the only acceptable reading is the expect
+clause a SID chart already publishes, which the engine reports as `redundantExpect` next to the dropped
+clause and the grader accepts at the chart's delay, citing `A-EXPECT-REDUNDANT`. A clean
 clearance is read exactly as filed, so clearance mode draws only plans whose route already carries the
 assigned SID; a missing, stale or wrong SID is amendment-mode material. The spoken transmission ends
 "expect runway (designator)".

@@ -30,6 +30,7 @@ const clearance: ResolvedClearance = {
   route: { value: { template: 'transition', fix: 'DEDHD' }, citations: [] },
   altitude: { value: { phrase: 'climb_via_except', feet: 10000 }, citations: [] },
   expect: { value: { feet: 34000, minutes: 10, amended: false }, citations: [] },
+  redundantExpect: { value: null, citations: [] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [] },
 };
 

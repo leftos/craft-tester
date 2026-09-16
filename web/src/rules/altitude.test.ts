@@ -207,6 +207,7 @@ describe('the expect clause', () => {
     const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), withExpectAltitude('always'));
     expect(result.expect.value).toEqual({ feet: 34000, minutes: 10, amended: false });
     expect(result.expect.citations.map((citation) => citation.id)).toEqual(['A-EXPECT']);
+    expect(result.redundantExpect.value).toBeNull();
   });
 
   it('is never spoken while the toggle says never', () => {
@@ -257,5 +258,44 @@ describe('the expect clause', () => {
     expect(sid('TRUKN2').chartExpectFiledAltitudeMinutes).toBe(10);
     const airport = withExpectAltitude('unless_chart_publishes_it');
     expect(resolve(ctx({}), sid('TRUKN2'), scenario({}), airport).expect.value).toBeNull();
+  });
+
+  it('reports the clause the chart publishes as the redundant one, at the chart delay', () => {
+    const airport = withExpectAltitude('unless_chart_publishes_it');
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), airport);
+    expect(result.expect.value).toBeNull();
+    expect(result.redundantExpect.value).toEqual({ feet: 34000, minutes: 10 });
+    expect(result.redundantExpect.citations.map((citation) => citation.id)).toEqual([
+      'A-EXPECT-REDUNDANT',
+    ]);
+  });
+
+  it('reports nothing redundant under always, where the clause is spoken', () => {
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), withExpectAltitude('always'));
+    expect(result.expect.value).not.toBeNull();
+    expect(result.redundantExpect.value).toBeNull();
+    expect(result.redundantExpect.citations).toEqual([]);
+  });
+
+  it('reports nothing redundant under never, where no clause is ever spoken', () => {
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), withExpectAltitude('never'));
+    expect(result.expect.value).toBeNull();
+    expect(result.redundantExpect.value).toBeNull();
+  });
+
+  it('reports nothing redundant when the flight is cleared to the altitude it filed', () => {
+    const airport = withExpectAltitude('unless_chart_publishes_it');
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 10000 }), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 10000 });
+    expect(result.expect.value).toBeNull();
+    expect(result.redundantExpect.value).toBeNull();
+  });
+
+  it('reports nothing redundant for a flight filed at the published top altitude', () => {
+    const airport = withDeferringRow(withExpectAltitude('unless_chart_publishes_it'));
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario({ filedAltitude: 19000 }), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.expect.value).toBeNull();
+    expect(result.redundantExpect.value).toBeNull();
   });
 });

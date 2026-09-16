@@ -15,6 +15,7 @@ import { unresolved } from '@/rules/unresolved.ts';
 export type ResolvedAltitude = {
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
   expect: Cited<{ feet: number; minutes: number; amended: boolean } | null>;
+  redundantExpect: Cited<{ feet: number; minutes: number } | null>;
 };
 
 /** The altitude phrase and, where one is spoken, the feet it carries. */
@@ -98,15 +99,18 @@ function clearedToFeet(altitude: AltitudeValue, sid: Sid): number | undefined {
  *
  * `unless_chart_publishes_it` drops it on top of that wherever the SID's chart carries the "expect
  * filed altitude N minutes after departure" note itself, which leaves the clause for the charts
- * that stay silent.
+ * that stay silent. A clause dropped that way is the one a controller may still speak without being
+ * wrong, so it comes back as `redundant` rather than as nothing at all; a clause dropped because the
+ * flight is cleared to the altitude it filed says something untrue, and comes back as nothing.
  *
  * @param row The interim-altitude row the flight matched.
  * @param altitude The resolved altitude phrase and its feet.
  * @param sid The selected SID.
  * @param scenario The filed flight plan.
  * @param phraseology The airport's phraseology toggles.
- * @returns The expect clause, or null where none is spoken. The clause names the filed altitude, so
- *   it is never the amended one; `resolveAmendedClearance` writes that clause instead.
+ * @returns The expect clause to speak, or null where none is; and the clause the chart already
+ *   publishes, or null where nothing is redundant. The clause names the filed altitude, so it is
+ *   never the amended one; `resolveAmendedClearance` writes that clause instead.
  */
 function expectClause(
   row: AltitudeRule,
@@ -114,17 +118,27 @@ function expectClause(
   sid: Sid,
   scenario: Scenario,
   phraseology: Phraseology,
-): { feet: number; minutes: number; amended: boolean } | null {
-  if (phraseology.expectAltitude === 'never') return null;
+): {
+  clause: { feet: number; minutes: number; amended: boolean } | null;
+  redundant: { feet: number; minutes: number } | null;
+} {
+  const nothing = { clause: null, redundant: null };
+  if (phraseology.expectAltitude === 'never') return nothing;
+  const clearedTo = clearedToFeet(altitude, sid);
+  if (clearedTo !== undefined && clearedTo >= scenario.filedAltitude) return nothing;
   if (
     phraseology.expectAltitude === 'unless_chart_publishes_it' &&
     sid.chartExpectFiledAltitudeMinutes !== null
   ) {
-    return null;
+    return {
+      clause: null,
+      redundant: { feet: scenario.filedAltitude, minutes: sid.chartExpectFiledAltitudeMinutes },
+    };
   }
-  const clearedTo = clearedToFeet(altitude, sid);
-  if (clearedTo !== undefined && clearedTo >= scenario.filedAltitude) return null;
-  return { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes, amended: false };
+  return {
+    clause: { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes, amended: false },
+    redundant: null,
+  };
 }
 
 /**
@@ -139,7 +153,8 @@ function expectClause(
  * @param sid The selected SID.
  * @param scenario The filed flight plan.
  * @param airport The airport data.
- * @returns The altitude and expect elements, or `Unresolved` when no row is keyed to the flight.
+ * @returns The altitude element, the expect clause and the clause the chart already publishes, or
+ *   `Unresolved` when no row is keyed to the flight.
  */
 export function resolveAltitude(
   ctx: Classification,
@@ -155,11 +170,13 @@ export function resolveAltitude(
     );
   }
   const { value, ruleId } = altitudeValue(row, sid, ctx, scenario);
+  const { clause, redundant } = expectClause(row, value, sid, scenario, airport.phraseology);
   return {
     altitude: { value, citations: [...citePhraseology(airport, ruleId), toCitation(row)] },
-    expect: {
-      value: expectClause(row, value, sid, scenario, airport.phraseology),
-      citations: citePhraseology(airport, 'A-EXPECT'),
+    expect: { value: clause, citations: citePhraseology(airport, 'A-EXPECT') },
+    redundantExpect: {
+      value: redundant,
+      citations: redundant === null ? [] : citePhraseology(airport, 'A-EXPECT-REDUNDANT'),
     },
   };
 }

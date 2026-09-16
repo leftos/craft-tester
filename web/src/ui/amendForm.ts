@@ -5,7 +5,7 @@ import type { Grade } from '@/rules/types.ts';
 import type { SelectOption } from '@/ui/dom.ts';
 import { button, el, rowList, selectControl, textControl } from '@/ui/dom.ts';
 import { aircraftLabel } from '@/ui/labels.ts';
-import { renderVerdict } from '@/ui/results.ts';
+import { renderVerdict, scoreLine } from '@/ui/results.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { toBoxAnswers } from '@/ui/state.ts';
 import { stripRows } from '@/ui/strip.ts';
@@ -168,11 +168,10 @@ export function renderAmendForm(props: AmendFormProps): HTMLElement {
  */
 export function renderBoxVerdicts(grades: readonly Grade[]): HTMLElement {
   const panel = el('section', 'panel results');
-  const correct = grades.filter((verdict) => verdict.ok).length;
   panel.append(
     el('h2', '', 'Amendments'),
     ...grades.map((verdict) => renderVerdict(verdict)),
-    el('p', 'score', `${correct} of ${grades.length} boxes correct`),
+    el('p', 'score', scoreLine(grades, 'boxes')),
   );
   return panel;
 }

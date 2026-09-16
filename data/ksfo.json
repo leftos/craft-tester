@@ -1087,6 +1087,11 @@
       "text": "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one"
     },
     {
+      "id": "A-EXPECT-REDUNDANT",
+      "source": "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3",
+      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise"
+    },
+    {
       "id": "C-DEST",
       "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
       "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"

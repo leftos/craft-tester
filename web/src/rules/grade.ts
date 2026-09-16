@@ -1,5 +1,5 @@
 import type { AirportData, RouteTemplate } from '@/data/schema.ts';
-import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
+import type { Grade, PlayerPicks, ResolvedClearance, Verdict } from '@/rules/types.ts';
 
 /** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
 const EXPECT_MINUTES: Record<PlayerPicks['expect'], number | null> = {
@@ -96,18 +96,37 @@ function altitudeOk(picks: PlayerPicks, altitude: ResolvedClearance['altitude'][
   return picks.altitudeFeet === altitude.feet;
 }
 
-/** Grades the expect clause on its delay alone; the altitude in it is the filed one, not a pick. */
+/**
+ * The verdict for an element that is either right or wrong, with nothing in between.
+ *
+ * @param ok Whether the answer matched what the engine resolved.
+ * @returns `correct` or `wrong`.
+ */
+export function verdictOf(ok: boolean): Verdict {
+  return ok ? 'correct' : 'wrong';
+}
+
+/**
+ * Grades the expect clause on its delay alone; the altitude in it is the filed one, not a pick.
+ *
+ * Speaking the clause where the SID chart already publishes it is acceptable rather than wrong — it
+ * repeats what the pilot already has on the chart — but only at the delay the chart publishes; any other
+ * delay is a miss, as is speaking it where the clearance drops it for any other reason.
+ */
 function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   const picked = EXPECT_MINUTES[picks.expect];
   const clause = expected.expect.value;
   const wanted = clause === null ? null : clause.minutes;
   const amended = clause?.amended ?? false;
+  const redundant = expected.redundantExpect.value;
+  const acceptable =
+    picked !== wanted && wanted === null && redundant !== null && picked === redundant.minutes;
   return {
     element: 'A.expect',
-    ok: picked === wanted,
+    verdict: acceptable ? 'acceptable' : verdictOf(picked === wanted),
     expectedLabel: expectLabel(wanted, amended),
     actualLabel: expectLabel(picked, amended),
-    citations: expected.expect.citations,
+    citations: acceptable ? expected.redundantExpect.citations : expected.expect.citations,
   };
 }
 
@@ -135,7 +154,7 @@ export function gradeProcedure(
   const family = airport.sids.find((sid) => sid.id === procedureId)?.family;
   return {
     element: 'R.sid',
-    ok: family !== undefined && family === expected.sid.value.family,
+    verdict: verdictOf(family !== undefined && family === expected.sid.value.family),
     expectedLabel: procedureLabel(expected.sid.value.id, airport),
     actualLabel: procedureLabel(procedureId, airport),
     citations: expected.sid.citations,
@@ -146,7 +165,7 @@ export function gradeProcedure(
 function gradeRunway(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   return {
     element: 'RWY',
-    ok: picks.runway === expected.runway.value,
+    verdict: verdictOf(picks.runway === expected.runway.value),
     expectedLabel: expected.runway.value,
     actualLabel: picks.runway,
     citations: expected.runway.citations,
@@ -155,6 +174,9 @@ function gradeRunway(picks: PlayerPicks, expected: ResolvedClearance): Grade {
 
 /**
  * Grades a player's CRAFT entry element by element against the engine's clearance.
+ *
+ * Every element but the expect clause is either correct or wrong; the expect clause can also come
+ * back acceptable, where the reading is longer than it needs to be without being a miss.
  *
  * @param picks What the player entered in the form.
  * @param expected The clearance the engine resolved for the same scenario.
@@ -174,14 +196,14 @@ export function grade(picks: PlayerPicks, expected: ResolvedClearance): Grade[] 
   return [
     {
       element: 'R.route',
-      ok: routeOk(picks, route),
+      verdict: verdictOf(routeOk(picks, route)),
       expectedLabel: routeLabel(route),
       actualLabel: routeLabel(actualRoute),
       citations: expected.route.citations,
     },
     {
       element: 'A.phrase',
-      ok: altitudeOk(picks, altitude),
+      verdict: verdictOf(altitudeOk(picks, altitude)),
       expectedLabel: altitudeLabel(altitude),
       actualLabel: altitudeLabel(actualAltitude),
       citations: expected.altitude.citations,
@@ -189,7 +211,7 @@ export function grade(picks: PlayerPicks, expected: ResolvedClearance): Grade[] 
     gradeExpect(picks, expected),
     {
       element: 'F',
-      ok: picks.frequency === expected.frequency.value.value,
+      verdict: verdictOf(picks.frequency === expected.frequency.value.value),
       expectedLabel: expected.frequency.value.value,
       actualLabel: picks.frequency,
       citations: expected.frequency.citations,

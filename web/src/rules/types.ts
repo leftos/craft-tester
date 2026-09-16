@@ -20,7 +20,10 @@ export type Cited<T> = {
  * row that settled it. `sid.value.spoken` is the chart's spoken name ("Trukn Two");
  * `sid.value.family` is what grading compares, because AIRAC cycles bump the version in `id`.
  * `expect.value.amended` marks the clause the controller speaks after amending the final altitude,
- * which names the amended altitude rather than the filed one.
+ * which names the amended altitude rather than the filed one. `redundantExpect` carries the expect
+ * clause the chart already speaks for the pilot, which a controller may repeat without harm: it is
+ * null wherever the clause is spoken, wherever it was dropped for another reason, and wherever the
+ * chart stays silent.
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
@@ -29,6 +32,7 @@ export type ResolvedClearance = {
   route: Cited<{ template: RouteTemplate; fix?: string }>;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
   expect: Cited<{ feet: number; minutes: number; amended: boolean } | null>;
+  redundantExpect: Cited<{ feet: number; minutes: number } | null>;
   frequency: Cited<{ value: string; sectorId: string }>;
 };
 
@@ -75,10 +79,19 @@ export type PlayerPicks = {
   runway: string;
 };
 
-/** The verdict for one element: whether it matched, both labels, and the rows that decided it. */
+/**
+ * How one element was answered.
+ *
+ * `correct` matches the clearance the engine resolved. `acceptable` is a reading the rules allow but
+ * that says more than it needs to — today only the expect clause the SID chart already publishes.
+ * `wrong` is a miss.
+ */
+export type Verdict = 'correct' | 'acceptable' | 'wrong';
+
+/** The verdict for one element: how it was answered, both labels, and the rows that decided it. */
 export type Grade = {
   element: ClearanceElement;
-  ok: boolean;
+  verdict: Verdict;
   expectedLabel: string;
   actualLabel: string;
   citations: RuleCitation[];

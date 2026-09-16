@@ -180,7 +180,7 @@ describe('the CRAFT form', () => {
     const submitted = withSubmitted(state);
     expect(submitted.submitted).toBe(true);
     for (const verdict of grade(picks, clearance)) {
-      expect(verdict.ok, `${verdict.element}: ${verdict.actualLabel}`).toBe(true);
+      expect(verdict.verdict, `${verdict.element}: ${verdict.actualLabel}`).toBe('correct');
     }
   });
 

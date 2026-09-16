@@ -8,6 +8,7 @@
   --accent: #1c4fd8;
   --ok: #1a7f37;
   --bad: #b42318;
+  --warn: #b45309;
   font-family:
     system-ui,
     -apple-system,
@@ -298,17 +299,26 @@ button.primary:disabled {
   background: #fbfcfd;
 }
 
-.verdict.ok {
+.verdict.correct {
   border-left-color: var(--ok);
 }
 
-.verdict.bad {
+.verdict.wrong {
   border-left-color: var(--bad);
 }
 
-.verdict.ok h3,
-.verdict.ok .mark {
+.verdict.acceptable {
+  border-left-color: var(--warn);
+}
+
+.verdict.correct h3,
+.verdict.correct .mark {
   color: var(--ok);
+}
+
+.verdict.acceptable h3,
+.verdict.acceptable .mark {
+  color: var(--warn);
 }
 
 .verdict .mark {
@@ -316,7 +326,7 @@ button.primary:disabled {
   font-weight: 600;
 }
 
-.verdict.bad h3 {
+.verdict.wrong h3 {
   color: var(--bad);
 }
 

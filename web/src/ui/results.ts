@@ -1,5 +1,5 @@
 import type { SpokenClearance } from '@/rules/speak.ts';
-import type { Grade, RuleCitation } from '@/rules/types.ts';
+import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 import { button, el } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 
@@ -12,14 +12,20 @@ export type ResultsProps = {
 };
 
 /**
- * The line that says how many elements were right.
+ * The line that says how many answers were right.
  *
- * @param grades The verdict for every element.
- * @returns The score, e.g. `4 of 5 elements correct`.
+ * An acceptable answer counts as correct, because it is one: the score line then says how many of
+ * them were longer than they needed to be.
+ *
+ * @param grades The verdict for every element, or for every box of the strip.
+ * @param noun What the verdicts are of, `elements` or `boxes`.
+ * @returns The score, e.g. `4 of 5 elements correct, 1 acceptable but inefficient`.
  */
-export function scoreLine(grades: readonly Grade[]): string {
-  const correct = grades.filter((verdict) => verdict.ok).length;
-  return `${correct} of ${grades.length} elements correct`;
+export function scoreLine(grades: readonly Grade[], noun: 'elements' | 'boxes'): string {
+  const correct = grades.filter((grade) => grade.verdict !== 'wrong').length;
+  const acceptable = grades.filter((grade) => grade.verdict === 'acceptable').length;
+  const score = `${correct} of ${grades.length} ${noun} correct`;
+  return acceptable === 0 ? score : `${score}, ${acceptable} acceptable but inefficient`;
 }
 
 /** The rows that decided one element, quoted the way the proposal script quotes them. */
@@ -32,20 +38,30 @@ function citationList(citations: readonly RuleCitation[]): HTMLElement {
 }
 
 /**
- * The lines one verdict reads as: the player's answer, and the correction a wrong answer earns.
+ * The second line a verdict reads: a correction where it was wrong, the shorter reading where it was
+ * acceptable, and nothing at all where it was correct.
+ */
+function correctionLine(verdict: Grade): string | undefined {
+  if (verdict.verdict === 'wrong') return `correction: ${verdict.expectedLabel}`;
+  if (verdict.verdict === 'acceptable') return `shorter: ${verdict.expectedLabel}`;
+  return undefined;
+}
+
+/**
+ * The lines one verdict reads as: the player's answer, and the second line their answer earns.
  *
  * @param verdict The verdict for one element.
- * @returns The answer line, whether it was right, and the correction line when it was not.
+ * @returns The answer line, how it was answered, and the correction or the shorter reading.
  */
 export function verdictLines(verdict: Grade): {
   answer: string;
-  correct: boolean;
+  verdict: Verdict;
   correction: string | undefined;
 } {
   return {
     answer: `you said: ${verdict.actualLabel}`,
-    correct: verdict.ok,
-    correction: verdict.ok ? undefined : `correction: ${verdict.expectedLabel}`,
+    verdict: verdict.verdict,
+    correction: correctionLine(verdict),
   };
 }
 
@@ -57,9 +73,9 @@ export function verdictLines(verdict: Grade): {
  */
 export function renderVerdict(verdict: Grade): HTMLElement {
   const lines = verdictLines(verdict);
-  const row = el('div', `verdict ${verdict.ok ? 'ok' : 'bad'}`);
+  const row = el('div', `verdict ${lines.verdict}`);
   const answer = el('p', 'answer', lines.answer);
-  if (lines.correct) answer.append(el('span', 'mark', '✓'));
+  if (lines.verdict !== 'wrong') answer.append(el('span', 'mark', '✓'));
   row.append(el('h3', '', elementLabel(verdict.element)), answer);
   if (lines.correction !== undefined) row.append(el('p', 'expected', lines.correction));
   row.append(citationList(verdict.citations));
@@ -81,7 +97,7 @@ function revealPanel(spoken: SpokenClearance): HTMLElement {
 /** The score, a verdict per element with its citations, and the spoken reveal. */
 function resultsBody(props: ResultsProps): HTMLElement[] {
   return [
-    el('p', 'score', scoreLine(props.grades)),
+    el('p', 'score', scoreLine(props.grades, 'elements')),
     ...props.grades.map((verdict) => renderVerdict(verdict)),
     revealPanel(props.spoken),
   ];

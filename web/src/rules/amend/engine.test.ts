@@ -116,6 +116,15 @@ describe('resolveAmendedClearance', () => {
     ]);
   });
 
+  it('holds nothing redundant, because the amended clause is mandatory', () => {
+    const original = ual313();
+    const { corrected } = resolved(original);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.redundantExpect.value).toBeNull();
+    expect(result.clearance.redundantExpect.citations).toEqual([]);
+  });
+
   it('reads the filed RNAV procedure of a plan whose type box carried the RNAV fix', () => {
     const original = ual313();
     const { corrected } = resolved(original);

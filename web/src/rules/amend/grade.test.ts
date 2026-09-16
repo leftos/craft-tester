@@ -9,6 +9,7 @@ import {
   parseAltitude,
 } from '@/rules/amend/grade.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
+import { verdictOf } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
 const citation: RuleCitation = {
@@ -158,7 +159,7 @@ describe('gradeBoxes', () => {
     it(`grades ${testCase.name}`, () => {
       const grades = gradeBoxes(testCase.answers, testCase.result);
       expect(grades.map((grade) => grade.box)).toEqual(['type', 'altitude', 'route']);
-      expect(grades.map((grade) => grade.ok)).toEqual(testCase.ok);
+      expect(grades.map((grade) => grade.verdict)).toEqual(testCase.ok.map(verdictOf));
     });
   }
 
@@ -208,14 +209,14 @@ describe('boxGradeAsGrade', () => {
   it('reports a box under the element the results view names it by', () => {
     const verdict = boxGradeAsGrade({
       box: 'altitude',
-      ok: false,
+      verdict: 'wrong',
       expectedLabel: '27,000',
       actualLabel: 'correct as filed',
       citations: [citation],
     });
     expect(verdict).toStrictEqual({
       element: 'BOX.altitude',
-      ok: false,
+      verdict: 'wrong',
       expectedLabel: '27,000',
       actualLabel: 'correct as filed',
       citations: [citation],
@@ -225,8 +226,13 @@ describe('boxGradeAsGrade', () => {
   it('names every box', () => {
     const elements = (['type', 'altitude', 'route'] as const).map(
       (box) =>
-        boxGradeAsGrade({ box, ok: true, expectedLabel: '', actualLabel: '', citations: [] })
-          .element,
+        boxGradeAsGrade({
+          box,
+          verdict: 'correct',
+          expectedLabel: '',
+          actualLabel: '',
+          citations: [],
+        }).element,
     );
     expect(elements).toStrictEqual(['BOX.type', 'BOX.altitude', 'BOX.route']);
   });

@@ -55,6 +55,7 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
       route: phraseRoute(sid, route.exitElement, airport),
       altitude: altitude.altitude,
       expect: altitude.expect,
+      redundantExpect: altitude.redundantExpect,
       frequency,
     },
   };

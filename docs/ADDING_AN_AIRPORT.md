@@ -129,7 +129,10 @@ the hooks rejects the file.
     disagree with a default, during validation. The four `RWY-*` rows (`RWY-CLASS-DEFAULT`,
     `RWY-ON-REQUEST`, `RWY-DIRECTION`, `RWY-FIRST`) are the exception: the engine cites them by id to
     explain the departure runway, so keep the ids and rewrite the `source` and `text` for the airport's
-    own runway-assignment practice (or make the text say the mechanism does not apply).
+    own runway-assignment practice (or make the text say the mechanism does not apply). `A-EXPECT-REDUNDANT`
+    is cited when a student speaks the expect clause a SID chart already publishes: the grader marks that
+    reading acceptable rather than wrong (ZOA staff, 2026-09-16), so keep the id and rewrite the source
+    if the airport's trainers grade it differently.
 
 Prove it: `uv run craft-gen verify-sop --airport <ICAO>` passes and the loader accepts the file (the build
 in step 6 reports loader errors by field).

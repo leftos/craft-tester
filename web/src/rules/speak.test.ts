@@ -145,6 +145,7 @@ function clearance(parts: ClearanceParts = {}): ResolvedClearance {
     route: { value: parts.route ?? { template: 'transition', fix: 'DEDHD' }, citations: [] },
     altitude: { value: parts.altitude ?? { phrase: 'climb_via' }, citations: [] },
     expect: { value: parts.expect ?? null, citations: [] },
+    redundantExpect: { value: null, citations: [] },
     frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [] },
   };
 }

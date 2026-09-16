@@ -138,7 +138,8 @@ function amendedMinutes(clearance: ResolvedClearance, airport: AirportData): num
  *
  * A flight whose final altitude was amended is told what to expect and when, whatever the SID chart
  * publishes: the chart's note covers the altitude the pilot filed, not the one the strip now reads.
- * Every other element is the corrected plan's, so the reading never mixes the two plans.
+ * The amended reading is mandatory, so nothing in it is redundant. Every other element is the
+ * corrected plan's, so the reading never mixes the two plans.
  *
  * @param original The plan as filed.
  * @param corrected The plan with every amendment applied.
@@ -165,6 +166,7 @@ export function resolveAmendedClearance(
         },
         citations: citePhraseology(airport, 'A-EXPECT-AMENDED'),
       },
+      redundantExpect: { value: null, citations: [] },
     },
   };
 }

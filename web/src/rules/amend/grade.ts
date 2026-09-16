@@ -1,6 +1,6 @@
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
-import { formatFeet } from '@/rules/grade.ts';
-import type { Grade, RuleCitation } from '@/rules/types.ts';
+import { formatFeet, verdictOf } from '@/rules/grade.ts';
+import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 
 /** One box of the flight progress strip the student answers. */
 export type Box = 'type' | 'altitude' | 'route';
@@ -11,17 +11,21 @@ export type BoxAnswer = { kind: 'as_filed' } | { kind: 'amended'; value: string 
 /** The student's answer for every box of the strip. */
 export type BoxAnswers = Record<Box, BoxAnswer>;
 
-/** The verdict for one box: whether it was answered right, both labels, and the rows that decided it. */
+/**
+ * The verdict for one box: how it was answered, both labels, and the rows that decided it.
+ *
+ * A box is either answered right or not, so a box verdict is only ever `correct` or `wrong`.
+ */
 export type BoxGrade = {
   box: Box;
-  ok: boolean;
+  verdict: Verdict;
   expectedLabel: string;
   actualLabel: string;
   citations: RuleCitation[];
 };
 
-/** Whether a box was answered right, and what the answer should have been. */
-type Verdict = { ok: boolean; expectedLabel: string };
+/** How a box was answered, and what the answer should have been. */
+type BoxVerdict = { verdict: Verdict; expectedLabel: string };
 
 /** The boxes in the order they read across the strip, which is the order the verdicts come back in. */
 const STRIP_ORDER: readonly Box[] = ['type', 'altitude', 'route'];
@@ -143,12 +147,12 @@ function gradePair(
   amendment: ResolvedAmendment,
   other: Box,
   fixed: Record<Box, boolean>,
-): Verdict {
+): BoxVerdict {
   const otherFirst = STRIP_ORDER.indexOf(other) < STRIP_ORDER.indexOf(box);
   if (fixed[other] && (otherFirst || !fixed[box])) {
-    return { ok: answer.kind === 'as_filed', expectedLabel: ALTERNATIVE_LABEL };
+    return { verdict: verdictOf(answer.kind === 'as_filed'), expectedLabel: ALTERNATIVE_LABEL };
   }
-  return { ok: fixed[box], expectedLabel: proposalLabel(amendment) };
+  return { verdict: verdictOf(fixed[box]), expectedLabel: proposalLabel(amendment) };
 }
 
 /** The verdict for one box: correct as filed, the proposal written in, or one half of a pair. */
@@ -161,16 +165,16 @@ function gradeBox(
   if (amendment === undefined) {
     return {
       box,
-      ok: answer.kind === 'as_filed',
+      verdict: verdictOf(answer.kind === 'as_filed'),
       expectedLabel: AS_FILED_LABEL,
       actualLabel: answerLabel(answer),
       citations: [],
     };
   }
   const other = amendment.alternativeTo;
-  const verdict =
+  const verdict: BoxVerdict =
     other === undefined
-      ? { ok: fixed[box], expectedLabel: proposalLabel(amendment) }
+      ? { verdict: verdictOf(fixed[box]), expectedLabel: proposalLabel(amendment) }
       : gradePair(box, answer, amendment, other, fixed);
   return { box, ...verdict, actualLabel: answerLabel(answer), citations: amendment.citations };
 }

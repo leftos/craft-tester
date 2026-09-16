@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
 import { expectChoiceLabel, grade, gradeProcedure } from '@/rules/grade.ts';
-import type { PlayerPicks, ResolvedClearance, RuleCitation } from '@/rules/types.ts';
+import type { PlayerPicks, ResolvedClearance, RuleCitation, Verdict } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -37,7 +37,21 @@ const expected: ResolvedClearance = {
     citations: [altitudeCitation],
   },
   expect: { value: { feet: 35000, minutes: 10, amended: false }, citations: [altitudeCitation] },
+  redundantExpect: { value: null, citations: [] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [assignmentCitation] },
+};
+
+const redundantCitation: RuleCitation = {
+  id: 'A-EXPECT-REDUNDANT',
+  source: 'ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3',
+  text: 'the chart publishes the expect note itself, so speaking it is longer than it needs to be',
+};
+
+/** A clearance whose expect clause the SID chart already publishes, so the engine drops it. */
+const chartPublishes: ResolvedClearance = {
+  ...expected,
+  expect: { value: null, citations: [altitudeCitation] },
+  redundantExpect: { value: { feet: 35000, minutes: 10 }, citations: [redundantCitation] },
 };
 
 const correct: PlayerPicks = {
@@ -50,49 +64,54 @@ const correct: PlayerPicks = {
   runway: '01R',
 };
 
-const allOk = [true, true, true, true, true];
+const allCorrect: Verdict[] = ['correct', 'correct', 'correct', 'correct', 'correct'];
 
-const cases: { name: string; picks: PlayerPicks; ok: boolean[] }[] = [
-  { name: 'a fully correct entry', picks: correct, ok: allOk },
+/** The five verdicts with the one at `index` wrong, which is what a single bad pick earns. */
+function wrongAt(index: number): Verdict[] {
+  return allCorrect.map((verdict, position) => (position === index ? 'wrong' : verdict));
+}
+
+const cases: { name: string; picks: PlayerPicks; verdicts: Verdict[] }[] = [
+  { name: 'a fully correct entry', picks: correct, verdicts: allCorrect },
   {
     name: 'the wrong route template',
     picks: { ...correct, routeTemplate: 'as_filed' },
-    ok: [false, true, true, true, true],
+    verdicts: wrongAt(0),
   },
   {
     name: 'the right template with the wrong transition fix',
     picks: { ...correct, routeFix: 'SSTIK' },
-    ok: [false, true, true, true, true],
+    verdicts: wrongAt(0),
   },
   {
     name: 'the wrong altitude phrase',
     picks: { ...correct, altitudePhrase: 'maintain' },
-    ok: [true, false, true, true, true],
+    verdicts: wrongAt(1),
   },
   {
     name: 'the right phrase with the wrong feet',
     picks: { ...correct, altitudeFeet: 5000 },
-    ok: [true, false, true, true, true],
+    verdicts: wrongAt(1),
   },
   {
     name: 'the wrong expect delay',
     picks: { ...correct, expect: 'three_minutes' },
-    ok: [true, true, false, true, true],
+    verdicts: wrongAt(2),
   },
   {
     name: 'no expect clause where one is due',
     picks: { ...correct, expect: 'none' },
-    ok: [true, true, false, true, true],
+    verdicts: wrongAt(2),
   },
   {
     name: 'the wrong frequency',
     picks: { ...correct, frequency: '135.65' },
-    ok: [true, true, true, false, true],
+    verdicts: wrongAt(3),
   },
   {
     name: 'the other runway of the pair',
     picks: { ...correct, runway: '01L' },
-    ok: [true, true, true, true, false],
+    verdicts: wrongAt(4),
   },
 ];
 
@@ -109,18 +128,18 @@ describe('grade', () => {
 
   it('grades the runway pick against the runway the engine explained', () => {
     const [runway] = grade(correct, expected).slice(-1);
-    expect(runway?.ok).toBe(true);
+    expect(runway?.verdict).toBe('correct');
     expect(runway?.expectedLabel).toBe('01R');
     expect(runway?.actualLabel).toBe('01R');
     expect(runway?.citations).toEqual([runwayCitation]);
     const [wrong] = grade({ ...correct, runway: '28L' }, expected).slice(-1);
-    expect(wrong?.ok).toBe(false);
+    expect(wrong?.verdict).toBe('wrong');
     expect(wrong?.expectedLabel).toBe('01R');
     expect(wrong?.actualLabel).toBe('28L');
   });
 
-  it.each(cases)('marks $name', ({ picks, ok }) => {
-    expect(grade(picks, expected).map((entry) => entry.ok)).toEqual(ok);
+  it.each(cases)('marks $name', ({ picks, verdicts }) => {
+    expect(grade(picks, expected).map((entry) => entry.verdict)).toEqual(verdicts);
   });
 
   it('grades an as-filed route on the fix it hands over on', () => {
@@ -130,10 +149,10 @@ describe('grade', () => {
     };
     const picks: PlayerPicks = { ...correct, routeTemplate: 'as_filed', routeFix: 'TRUKN' };
     const [route] = grade(picks, asFiled);
-    expect(route?.ok).toBe(true);
+    expect(route?.verdict).toBe('correct');
     expect(route?.expectedLabel).toBe('TRUKN');
     const [wrongFix] = grade({ ...picks, routeFix: 'DEDHD' }, asFiled);
-    expect(wrongFix?.ok).toBe(false);
+    expect(wrongFix?.verdict).toBe('wrong');
     expect(wrongFix?.actualLabel).toBe('DEDHD');
   });
 
@@ -148,10 +167,10 @@ describe('grade', () => {
       routeFix: 'V6',
     };
     const [route] = grade(picks, airway);
-    expect(route?.ok).toBe(true);
+    expect(route?.verdict).toBe('correct');
     expect(route?.expectedLabel).toBe('radar vectors to join V6');
     const [wrongAirway] = grade({ ...picks, routeFix: 'V244' }, airway);
-    expect(wrongAirway?.ok).toBe(false);
+    expect(wrongAirway?.verdict).toBe('wrong');
     expect(wrongAirway?.actualLabel).toBe('radar vectors to join V244');
   });
 
@@ -161,7 +180,7 @@ describe('grade', () => {
       altitude: { value: { phrase: 'climb_via' }, citations: [altitudeCitation] },
     };
     const [, altitude] = grade({ ...correct, altitudePhrase: 'climb_via' }, climbVia);
-    expect(altitude?.ok).toBe(true);
+    expect(altitude?.verdict).toBe('correct');
     expect(altitude?.expectedLabel).toBe('climb via SID');
   });
 
@@ -171,7 +190,7 @@ describe('grade', () => {
       expect: { value: null, citations: [] },
     };
     const [, , clause] = grade({ ...correct, expect: 'none' }, noExpect);
-    expect(clause?.ok).toBe(true);
+    expect(clause?.verdict).toBe('correct');
     expect(clause?.expectedLabel).toBe('no expect altitude');
     expect(clause?.actualLabel).toBe('no expect altitude');
   });
@@ -182,9 +201,48 @@ describe('grade', () => {
       expect: { value: { feet: 27000, minutes: 10, amended: true }, citations: [] },
     };
     const [, , clause] = grade({ ...correct, expect: 'three_minutes' }, amended);
-    expect(clause?.ok).toBe(false);
+    expect(clause?.verdict).toBe('wrong');
     expect(clause?.expectedLabel).toBe('expect amended altitude 10 minutes after departure');
     expect(clause?.actualLabel).toBe('expect amended altitude 3 minutes after departure');
+  });
+
+  it('grades the amended clause as mandatory: speaking it is right, dropping it is not', () => {
+    const amended: ResolvedClearance = {
+      ...expected,
+      expect: { value: { feet: 27000, minutes: 10, amended: true }, citations: [] },
+    };
+    const [, , spoken] = grade({ ...correct, expect: 'ten_minutes' }, amended);
+    expect(spoken?.verdict).toBe('correct');
+    const [, , dropped] = grade({ ...correct, expect: 'none' }, amended);
+    expect(dropped?.verdict).toBe('wrong');
+  });
+
+  it('accepts the clause the chart publishes, at the delay the chart publishes', () => {
+    const [, , clause] = grade({ ...correct, expect: 'ten_minutes' }, chartPublishes);
+    expect(clause?.verdict).toBe('acceptable');
+    expect(clause?.expectedLabel).toBe('no expect altitude');
+    expect(clause?.actualLabel).toBe('expect filed altitude 10 minutes after departure');
+    expect(clause?.citations).toEqual([redundantCitation]);
+  });
+
+  it('marks another delay wrong even where the chart publishes the note', () => {
+    const [, , clause] = grade({ ...correct, expect: 'three_minutes' }, chartPublishes);
+    expect(clause?.verdict).toBe('wrong');
+    expect(clause?.citations).toEqual([altitudeCitation]);
+  });
+
+  it('marks dropping the clause correct where the chart publishes the note', () => {
+    const [, , clause] = grade({ ...correct, expect: 'none' }, chartPublishes);
+    expect(clause?.verdict).toBe('correct');
+  });
+
+  it('marks a clause dropped for any other reason wrong when it is spoken', () => {
+    const noExpect: ResolvedClearance = {
+      ...expected,
+      expect: { value: null, citations: [altitudeCitation] },
+    };
+    const [, , clause] = grade({ ...correct, expect: 'ten_minutes' }, noExpect);
+    expect(clause?.verdict).toBe('wrong');
   });
 
   it('labels every element the way the results view reads them', () => {
@@ -232,14 +290,14 @@ describe('gradeProcedure', () => {
 
   it('marks the assigned procedure right, named as its chart names it', () => {
     const verdict = gradeProcedure('TRUKN2', expected, ksfo);
-    expect(verdict.ok).toBe(true);
+    expect(verdict.verdict).toBe('correct');
     expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
     expect(verdict.actualLabel).toBe('TRUKN TWO (RNAV)');
   });
 
   it('marks a procedure of another family wrong', () => {
     const verdict = gradeProcedure('SSTIK5', expected, ksfo);
-    expect(verdict.ok).toBe(false);
+    expect(verdict.verdict).toBe('wrong');
     expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
     expect(verdict.actualLabel).toBe('SSTIK FIVE (RNAV)');
   });
@@ -253,13 +311,13 @@ describe('gradeProcedure', () => {
       },
     };
     const verdict = gradeProcedure('TRUKN2', older, ksfo);
-    expect(verdict.ok).toBe(true);
+    expect(verdict.verdict).toBe('correct');
     expect(verdict.expectedLabel).toBe('TRUKN1');
   });
 
   it('marks an identifier the airport does not publish wrong, and reads it back raw', () => {
     const verdict = gradeProcedure('BIGSUR4', expected, ksfo);
-    expect(verdict.ok).toBe(false);
+    expect(verdict.verdict).toBe('wrong');
     expect(verdict.actualLabel).toBe('BIGSUR4');
   });
 });

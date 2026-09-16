@@ -229,9 +229,23 @@ function stripLines(scenario: Scenario, airport: AirportData): (readonly [string
   ];
 }
 
+/**
+ * The expect clause as the proposal reads it, naming the clause the chart publishes where the
+ * clearance drops it for that reason, because speaking that one is acceptable rather than wrong.
+ *
+ * @param clearance The clearance the engine resolved.
+ * @returns The line the `A expect` element reads.
+ */
+function expectValue(clearance: ResolvedClearance): string {
+  const expect = clearance.expect.value;
+  if (expect !== null) return `expect ${expect.feet} ${expect.minutes} minutes after departure`;
+  const redundant = clearance.redundantExpect.value;
+  if (redundant === null) return 'none';
+  return `none (chart publishes ${redundant.minutes} minutes; speaking it is acceptable)`;
+}
+
 /** The CRAFT elements of a resolved clearance, each with the rows that decided it. */
 function craftElements(clearance: ResolvedClearance, runtime: Runtime): ProposalElement[] {
-  const expect = clearance.expect.value;
   return [
     {
       label: 'C cleared to',
@@ -255,10 +269,7 @@ function craftElements(clearance: ResolvedClearance, runtime: Runtime): Proposal
     },
     {
       label: 'A expect',
-      value:
-        expect === null
-          ? 'none'
-          : `expect ${expect.feet} ${expect.minutes} minutes after departure`,
+      value: expectValue(clearance),
       citations: clearance.expect.citations,
     },
     {
