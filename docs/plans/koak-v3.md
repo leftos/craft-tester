@@ -165,7 +165,11 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `heading`, `turn` and a `spoken` label; `selectSid` derives the turn from `airport.runways` (shorter turn; the
   reciprocal is a data error); speaker "via turn left heading two seven zero"; `headingLabel()` replaces the
   constant label; `R-HEADING` text covers both forms; `propose` prints the label.
-- [ ] **Brief 2c, TEC routes without a DP, and the amendment side**. SOP 2-1 c: "initial headings … shall only be
+- [x] **Brief 2c, TEC routes without a DP, and the amendment side**. Landed 2026-09-16 in two halves: `217c698`
+  (`when.tecRouteWithoutDp`, `rules/tecRoutes.ts` with `tecHead`/`keyedTecRoute`, the `H` head in `tecTokens` and
+  `issuable`, the heading-mismatch gap) and `d229e0c` (`headingPick`/`headingFromPick` in `rules/grade.ts`, the
+  dropdown lists every heading the rows name, `gradeProcedure` compares heading values, `headingReason` names the
+  row and the heading, `merge.py` `_check_tec_heads`). SOP 2-1 c: "initial headings … shall only be
   issued when a DP cannot be used or an applicable one does not exist (e.g. pilot is unable to accept DP, TEC
   route does not include DP)". The OAKE TEC rows are that case (`[OAKE] +H270 FEVTA FEVTA1+` for jets to SMF,
   `[OAKE] +EUGEN+` for jets to MRY), while 2-2 a assigns those jets QUAKE#. Concept: a new assignment condition
@@ -188,7 +192,22 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   common-fix notes), `overrides.yaml` (12 charts; NIMITZ6 radar-vector facts; OAK6 `climb_via_eligible: true`),
   a minimal `routes.yaml` (destinations, telephony, fleet reused from KSFO plus DH8D, `approach_category` on every
   type estimated from published Vref with a `note`, **for the user's review**, and the user's common routes),
-  `verify-sop`, build clean.
+  `verify-sop`, build clean. User steer 2026-09-16 on the parallels: **props default to 28R** because they park
+  north of it, **except PCM (airline), whose props default to 28L** because they park south of 28L. The first is
+  `default_for_classes: [props]` on the 28R row (relayed to the running 3a agent); the second is a new rule concept,
+  since `DepartureRunway` defaults are keyed on class only: brief 2d below.
+- [x] **Brief 2d, airline runway default**: landed 2026-09-16 (`257d8df`): `default_for_airlines: [PCM]` on a
+  `DepartureRunway` row (loader checks the code shape and one runway per airline per configuration; the build
+  checks each code against `routes.yaml` telephony and requires an `RWY-AIRLINE-DEFAULT` phraseology row),
+  emitted as `defaultForAirlines`, read ahead of the class default by the worksheet importer, the scenario draw
+  (`pickRunway` now takes the callsign, drawn before the runway, so **every seed draws differently than before**;
+  the heading-check seeds `s=41`/`s=3y` quoted earlier no longer apply) and the runway grader, and the ATIS treats
+  such a row as outside normal use. Data side for brief 3b: the SFOW 28L row `classes: [P]`,
+  `default_for_airlines: [PCM]` with the parking note (source "ZOA senior staff via the user, 2026-09-16"), the
+  `RWY-AIRLINE-DEFAULT` row, PCM in `telephony` as "PAC VALLEY" (West Air, a FedEx feeder flying C208B freighters
+  out of OAK to FAT/VIS/MRY) and in `cargo_airlines`, and C208 in the fleet as a prop flown by PCM. Observation
+  from the implementer, not done: nothing checks that a row defaulting an airline lists a class that airline
+  flies, so a mis-classed row is silently inert.
 - [ ] **Brief 3b, the rest of the data**: `tec.yaml` from `.tmp/oak-tec/*.txt`, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC
   rows from the notes), `worksheets.yaml`, `data/airports.json`, the KSFO-only web tests widened to the index, the
   airport switch in the UI checked in the browser.
