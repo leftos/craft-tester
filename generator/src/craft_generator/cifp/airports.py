@@ -28,6 +28,8 @@ LONGITUDE_COLUMNS = (41, 51)
 MAGNETIC_VARIATION_COLUMNS = (51, 56)
 
 _MINIMUM_LENGTH = MAGNETIC_VARIATION_COLUMNS[1]
+_CONTINUATION_COLUMN = 21
+_PRIMARY_CONTINUATION_NUMBERS = frozenset({"0", "1"})
 _DEGREE_DIGITS = {"latitude": 2, "longitude": 3}
 _COORDINATE_DIGITS = 6
 _HEMISPHERE_SIGNS = {"N": 1.0, "S": -1.0, "E": 1.0, "W": -1.0}
@@ -93,7 +95,9 @@ def parse_airport_record(line: str) -> AirportRecord | None:
         line: A single CIFP line, without its newline.
 
     Returns:
-        The record, or ``None`` when the line is not an airport reference-point row.
+        The record, or ``None`` when the line is not an airport reference-point row. Continuation
+        records are skipped, because the columns this reads as the coordinates carry other fields
+        there.
 
     Raises:
         ValueError: The line is an airport row whose coordinate fields are not hemisphere letters
@@ -101,6 +105,8 @@ def parse_airport_record(line: str) -> AirportRecord | None:
             digits, which means the record is misaligned.
     """
     if len(line) < _MINIMUM_LENGTH or line[0] != "S" or line[4] != "P" or line[12] != AIRPORT_RECORD_TYPE:
+        return None
+    if line[_CONTINUATION_COLUMN] not in _PRIMARY_CONTINUATION_NUMBERS:
         return None
     ident = line[6:10].strip()
     if not ident:

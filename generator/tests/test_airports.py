@@ -8,6 +8,18 @@ KSFO_TOLERANCE = 0.01
 KSFO_MAGNETIC_VARIATION = 14.0
 WESTERLY_VARIATION = -10.0
 
+CONTINUATION_COLUMN = 21
+PRIMARY_CONTINUATION_NUMBERS = frozenset({"0", "1"})
+LIMITATION_APPLICATION = "L"
+COORDINATE_COLUMNS = (32, 56)
+
+
+def _continuation_of(primary: str) -> str:
+    """Return the primary row rewritten as a limitation continuation record whose coordinate columns hold letters."""
+    letters = "X" * (COORDINATE_COLUMNS[1] - COORDINATE_COLUMNS[0])
+    head = primary[:CONTINUATION_COLUMN] + "2" + LIMITATION_APPLICATION
+    return head + primary[CONTINUATION_COLUMN + 2 : COORDINATE_COLUMNS[0]] + letters + primary[COORDINATE_COLUMNS[1] :]
+
 
 def test_ksfo_reference_point_is_where_the_airport_is(ksfo_airport_records: dict[str, AirportRecord]) -> None:
     record = ksfo_airport_records["KSFO"]
@@ -59,6 +71,21 @@ def test_a_misaligned_variation_field_is_named() -> None:
     misaligned = KSFO_RECORD[:51] + "X0140" + KSFO_RECORD[56:]
     with pytest.raises(ValueError, match="KSFO: magnetic variation field"):
         parse_airport_record(misaligned)
+
+
+def test_a_continuation_record_is_not_a_reference_point() -> None:
+    assert parse_airport_record(_continuation_of(KSFO_RECORD)) is None
+
+
+def test_a_continuation_record_does_not_overwrite_the_reference_point_it_continues() -> None:
+    record = parse_airport_records([KSFO_RECORD, _continuation_of(KSFO_RECORD)])["KSFO"]
+    assert (record.latitude, record.longitude) == (37.618806, -122.375417)
+    assert record.magnetic_variation == KSFO_MAGNETIC_VARIATION
+
+
+def test_every_checked_in_airport_row_is_a_primary_record(airport_record_lines: list[str]) -> None:
+    continuations = [line[:CONTINUATION_COLUMN] for line in airport_record_lines if line[CONTINUATION_COLUMN] not in PRIMARY_CONTINUATION_NUMBERS]
+    assert continuations == []
 
 
 def test_every_destination_without_hand_coordinates_has_a_record(ksfo_airport_records: dict[str, AirportRecord], ksfo_inputs: AirportInputs) -> None:

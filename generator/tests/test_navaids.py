@@ -1,4 +1,22 @@
-from craft_generator.cifp.navaids import Navaid, parse_navaid_record, parse_navaids
+from craft_generator.cifp.navaids import IDENT_COLUMNS, NAME_COLUMNS, Navaid, parse_navaid_record, parse_navaids
+
+CONTINUATION_COLUMN = 21
+PRIMARY_CONTINUATION_NUMBERS = frozenset({"0", "1"})
+LIMITATION_APPLICATION = "L"
+CONTINUATION_NAME = "LIMITATION"
+
+
+def _continuation_of(primary: str) -> str:
+    """Return the primary row rewritten as a limitation continuation record carrying another name."""
+    name = CONTINUATION_NAME.ljust(NAME_COLUMNS[1] - NAME_COLUMNS[0])
+    head = primary[:CONTINUATION_COLUMN] + "2" + LIMITATION_APPLICATION
+    return head + primary[CONTINUATION_COLUMN + 2 : NAME_COLUMNS[0]] + name + primary[NAME_COLUMNS[1] :]
+
+
+def _oakland_row(navaid_lines: list[str]) -> str:
+    rows = [line for line in navaid_lines if line[IDENT_COLUMNS[0] : IDENT_COLUMNS[1]].strip() == "OAK"]
+    assert len(rows) == 1
+    return rows[0]
 
 
 def test_the_class_field_names_the_facility(ksfo_navaids: dict[str, Navaid]) -> None:
@@ -48,3 +66,18 @@ def test_a_line_that_is_not_a_navaid_row_is_ignored(ksfo_lines: list[str]) -> No
     assert parse_navaid_record("") is None
     assert parse_navaid_record("S" + "X" * 131) is None
     assert parse_navaids(ksfo_lines) == {}
+
+
+def test_a_continuation_record_is_not_a_navaid(navaid_lines: list[str]) -> None:
+    assert parse_navaid_record(_continuation_of(_oakland_row(navaid_lines))) is None
+
+
+def test_a_continuation_record_does_not_drop_the_navaid_it_continues(navaid_lines: list[str]) -> None:
+    primary = _oakland_row(navaid_lines)
+    navaids = parse_navaids([primary, _continuation_of(primary)])
+    assert navaids["OAK"].spoken == "Oakland VOR"
+
+
+def test_every_checked_in_navaid_row_is_a_primary_record(navaid_lines: list[str]) -> None:
+    continuations = [line[: NAME_COLUMNS[0]] for line in navaid_lines if line[CONTINUATION_COLUMN] not in PRIMARY_CONTINUATION_NUMBERS]
+    assert continuations == []

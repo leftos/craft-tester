@@ -41,6 +41,8 @@ NAME_COLUMNS = (93, 123)
 
 NDB_KIND: NavaidKind = "NDB"
 
+_CONTINUATION_COLUMN = 21
+_PRIMARY_CONTINUATION_NUMBERS = frozenset({"0", "1"})
 _VHF_SUBSECTION = " "
 _NDB_SUBSECTION = "B"
 _VOR_FLAG = "V"
@@ -91,10 +93,13 @@ def parse_navaid_record(line: str) -> tuple[Navaid, str] | None:
 
     Returns:
         The navaid and its two-character region code, or ``None`` when the line is not a navaid row
-        or publishes no name or no facility the trainer can name. Any input is accepted; nothing
-        about a malformed line raises.
+        or publishes no name or no facility the trainer can name. Continuation records are skipped,
+        because the columns this reads as the class and the name carry other fields there. Any input
+        is accepted; nothing about a malformed line raises.
     """
     if len(line) < RECORD_LENGTH or line[0] != "S" or line[4] != SECTION_CODE:
+        return None
+    if line[_CONTINUATION_COLUMN] not in _PRIMARY_CONTINUATION_NUMBERS:
         return None
     subsection = line[5]
     if subsection == _NDB_SUBSECTION:
