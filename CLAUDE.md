@@ -76,9 +76,11 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   of each `pending` one.
 - **Data depends on fixtures.** `craft-gen build` reads navaid names for every route filed in
   `fixtures/<icao>/**`, so re-run the build after an import.
-- **Graded elements** are `R.route`, `A.phrase`, `A.expect`, `F`, and `RWY`. The procedure, the clearance
+- **Graded elements** are `R.route`, `A.phrase`, `A.expect`, `F`, and `RWY`, plus the three strip boxes
+  and the procedure pick (`R.sid`) in amendment mode. In clearance mode the procedure, the clearance
   limit and the squawk are resolved and spoken but not graded: a clean clearance is read exactly as
-  filed, so clearance mode draws only plans whose route already carries the assigned SID.
+  filed, so clearance mode draws only plans whose route already carries the assigned SID (or no
+  procedure token at all, for a flight the SOP sends off on the runway heading).
 
 ## Rules of the repo
 

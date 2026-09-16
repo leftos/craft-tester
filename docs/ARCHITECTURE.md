@@ -49,8 +49,9 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 |---|---|
 | `data/` | zod schema, loader |
 | `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/amend/` checks the three strip boxes; its `build.ts` route-builds before the vector-SID fallback (a filed SID whose transition connects onward to the filed route over `routeConnections`, or a row's forced transition) |
-| `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`), time-of-day and runway-configuration filters |
-| `ui/` | strip, ATIS panel, CRAFT form, results, solved-scenario store (`solved.ts`, localStorage, best effort) |
+| `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`; a draw is kept only when the amendment engine finds nothing to amend), amendment-scenario generator (`amend.ts`: up to two faults injected into a clean draw, kept only when the engine amends exactly the boxes they meant), time-of-day, runway-configuration and forced-destination filters in the URL hash |
+| `ui/` | header with the mode switch and filters, strip, ATIS panel, CRAFT form, the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort) |
+| `../scripts/` | Node scripts outside the bundle: `propose.ts` (the engine's clearance for a fixture, with citations), `export-schema.ts`, `browser-check.ts` (Playwright, forced viewport) |
 
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
 view shows them. The graded elements are `R.route`, `A.phrase`, `A.expect`, `F` and `RWY`, the
