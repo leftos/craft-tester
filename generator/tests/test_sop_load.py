@@ -368,6 +368,49 @@ def test_default_for_a_class_the_row_excludes_is_rejected(tmp_path: Path, ksfo_d
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
+def test_default_for_airlines_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][4]["default_for_airlines"] = ["PCM"]
+
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+    config = next(row for row in sop.runway_configs if row.id == "28/01")
+    assert config.departure_runways[4].default_for_airlines == ("PCM",)
+    assert config.departure_runways[0].default_for_airlines == ()
+
+
+@pytest.mark.parametrize("code", ["pcm", "PCMX"])
+def test_malformed_airline_code_is_named(tmp_path: Path, ksfo_dir: Path, code: str) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_airlines"] = [code]
+
+    match = rf"departure_runways\[0\]\.default_for_airlines\[0\]: '{code}' is not a three-letter upper-case ICAO airline code"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_airline_default_that_is_also_on_request_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][2]["default_for_airlines"] = ["PCM"]
+
+    match = r"runway '28L' is the default for airline\(s\) \['PCM'\] and also on request for \['cargo', 'heavy', 'oceanic'\]"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_two_rows_defaulting_the_same_airline_are_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "28/01")
+        config["departure_runways"][0]["default_for_airlines"] = ["PCM"]
+        config["departure_runways"][1]["default_for_airlines"] = ["PCM"]
+
+    match = r"departure_runways\[01R\]\.default_for_airlines: airline 'PCM' already defaults to runway '01L' in this configuration"
+    with pytest.raises(ValueError, match=match):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
 def test_non_positive_training_weight_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
         config = next(row for row in data["runway_configs"] if row["id"] == "28/01")

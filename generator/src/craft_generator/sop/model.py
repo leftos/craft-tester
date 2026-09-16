@@ -108,15 +108,20 @@ class AircraftGroup:
 class DepartureRunway:
     """One runway of a configuration and the aircraft classes that depart from it.
 
+    ``default_for_airlines`` names the ICAO airline codes this runway is the default for, ahead of
+    the class default: at OAK the props of an airline parked south of 28L depart it while the rest
+    of the props depart 28R. It applies to a flight whose callsign carries one of the codes and
+    whose class is in ``classes``; it is empty on a row that defaults no airline.
     ``default_for_classes`` names the classes this runway is the default for in the configuration,
-    ahead of the direction-of-turn preference; it is empty on a row that is no default.
-    ``on_request_for`` names the kinds of flight the runway is issued to only on request, after the
-    class default and ahead of the direction preference; it is empty on a row that is a normal
-    choice, and a row that is a class default may not carry it.
+    after the airline default and ahead of the direction-of-turn preference; it is empty on a row
+    that is no default. ``on_request_for`` names the kinds of flight the runway is issued to only on
+    request, after the class default and ahead of the direction preference; it is empty on a row
+    that is a normal choice, and a row that is a class or airline default may not carry it.
     """
 
     runway: str
     classes: tuple[AircraftClass, ...]
+    default_for_airlines: tuple[str, ...]
     default_for_classes: tuple[AircraftClass, ...]
     on_request_for: tuple[OnRequestKind, ...]
     note: str | None

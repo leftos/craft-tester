@@ -14,8 +14,9 @@ without ``expected``: the clearance half comes from the rules engine and is conf
 the validation loop (see ``docs/ARCHITECTURE.md``, fixture lifecycle). A fixture the user has
 settled is never overwritten by a later import; :func:`settled_fixture_at` is the guard. Two scenario fields the
 worksheets do not state are filled here and recorded in ``source.note``: the departure runway, which
-is the one the configuration defaults the plan's aircraft class to (``default_for_classes`` in
-``sop.yaml``), else the one the plan is taken to have requested (``on_request_for``), else the one
+is the one the configuration defaults the plan's airline to (``default_for_airlines`` in
+``sop.yaml``), else the one it defaults the plan's aircraft class to (``default_for_classes``),
+else the one the plan is taken to have requested (``on_request_for``), else the one
 the direction the filed route leaves on prefers (``direction_runway_preference``), and falls back to
 the first runway the configuration publishes; and - on the amendment sheets, which print no squawk -
 a code counted up from 4601 in octal.
@@ -448,10 +449,11 @@ class OnRequestRequest:
 class RunwayChoice:
     """The departure runway one plan's fixture carries and what chose it.
 
-    ``default_for_class`` is set when the class default chose the runway, ``on_request`` when the
+    ``default_for_airline`` is set when the airline default chose the runway,
+    ``default_for_class`` when the class default chose it, ``on_request`` when the
     plan asked for it, and ``direction`` when the direction preference chose it - which the request
     leaves in place, because the preference is what splits the requested family into one runway. All
-    three are ``None`` on the fallback to the configuration's first departure runway.
+    four are ``None`` on the fallback to the configuration's first departure runway.
     ``unclassified_designator`` names the filed type when the vNAS specs do not cover it, so the
     class and request steps were skipped.
     """
@@ -459,6 +461,7 @@ class RunwayChoice:
     config_id: str
     runway: str
     direction: GateDirection | None
+    default_for_airline: str | None = None
     default_for_class: AircraftClass | None = None
     unclassified_designator: str | None = None
     on_request: OnRequestRequest | None = None
@@ -533,6 +536,18 @@ def _gate_direction(fix: str | None, gates: Gates) -> GateDirection | None:
     for direction, fixes in (("north", gates.north), ("south", gates.south), ("oceanic", gates.oceanic)):
         if fix in fixes:
             return direction
+    return None
+
+
+def _airline_default(callsign: str, aircraft_class: AircraftClass, config: RunwayConfig) -> tuple[str, str] | None:
+    """Return the runway and airline code the configuration defaults this flight's airline to."""
+    found = _AIRLINE_CALLSIGN.match(callsign)
+    if found is None:
+        return None
+    code = found.group("code")
+    for runway in config.departure_runways:
+        if code in runway.default_for_airlines and aircraft_class in runway.classes:
+            return runway.runway, code
     return None
 
 
@@ -621,8 +636,10 @@ def departure_runway(
     """Return the departure runway one filed plan gets in the sheet's runway configuration.
 
     The worksheets state the configuration but not the runway, so the runway comes from the plan.
-    A configuration that defaults the plan's aircraft class to a runway (``default_for_classes`` in
-    ``sop.yaml``) settles it first, e.g. the GA departures off 28R in 28/01. Next comes the request
+    A configuration that defaults the plan's airline to a runway (``default_for_airlines`` in
+    ``sop.yaml``) settles it first, for the airline whose ramp sits on the other side of the field.
+    Next comes the class default (``default_for_classes``), e.g. the GA departures off 28R in
+    28/01, which those aircraft take unless their airline is defaulted. Next comes the request
     SOP 2-1 e allows: a cargo, heavy or oceanic plan that filed a procedure published for one runway
     family alone is read as asking for the configuration's ``on_request_for`` runway of that family,
     e.g. a freighter filing WESLA# in 28/01, where WESLA# is a 28-only procedure. Otherwise the
@@ -644,13 +661,16 @@ def departure_runway(
         sid_runways: The runways each procedure is published for, keyed by CIFP id.
 
     Returns:
-        The runway and what chose it: the defaulted class, the request, the gate direction, or none
-        of the three on the fallback.
+        The runway and what chose it: the defaulted airline, the defaulted class, the request, the
+        gate direction, or none of the four on the fallback.
     """
     first = config.departure_runways[0].runway
     aircraft_class = aircraft_classes.get(row.designator)
     direction = _gate_direction(exit_fix(row.route, sop.airport.faa), sop.gates)
     if aircraft_class is not None:
+        by_airline = _airline_default(row.callsign, aircraft_class, config)
+        if by_airline is not None:
+            return RunwayChoice(config.id, by_airline[0], None, default_for_airline=by_airline[1])
         default = _class_default(aircraft_class, config)
         if default is not None:
             return RunwayChoice(config.id, default, None, default_for_class=aircraft_class)
@@ -677,6 +697,8 @@ def _chose_the_runway(choice: RunwayChoice) -> str:
             f": a {request.kind} flight filing {request.sid}, published for the {request.family}s only, "
             "is treated as requesting them (SOP 2-1 e, on_request_for)"
         )
+    if choice.default_for_airline is not None:
+        return f", the runway configuration {choice.config_id} defaults airline {choice.default_for_airline} to it (default_for_airlines)"
     if choice.default_for_class is not None:
         return f", the runway configuration {choice.config_id} defaults class {choice.default_for_class} to it (default_for_classes)"
     if choice.direction is None:

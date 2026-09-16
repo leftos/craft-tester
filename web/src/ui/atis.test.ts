@@ -39,12 +39,64 @@ describe('advertisedRunways', () => {
       trainingWeight: 1,
       arrivalRunways: ['28L', '28R'],
       departureRunways: [
-        { runway: '01L', classes: ['J'], defaultForClasses: [], onRequestFor: [] },
-        { runway: '01R', classes: ['P', 'T'], defaultForClasses: ['P', 'T'], onRequestFor: [] },
-        { runway: '28L', classes: ['J'], defaultForClasses: [], onRequestFor: ['cargo'] },
-        { runway: '01L', classes: ['P', 'T'], defaultForClasses: [], onRequestFor: [] },
+        {
+          runway: '01L',
+          classes: ['J'],
+          defaultForAirlines: [],
+          defaultForClasses: [],
+          onRequestFor: [],
+        },
+        {
+          runway: '01R',
+          classes: ['P', 'T'],
+          defaultForAirlines: [],
+          defaultForClasses: ['P', 'T'],
+          onRequestFor: [],
+        },
+        {
+          runway: '28L',
+          classes: ['J'],
+          defaultForAirlines: [],
+          defaultForClasses: [],
+          onRequestFor: ['cargo'],
+        },
+        {
+          runway: '01L',
+          classes: ['P', 'T'],
+          defaultForAirlines: [],
+          defaultForClasses: [],
+          onRequestFor: [],
+        },
       ],
     };
     expect(advertisedRunways(config)).toEqual(['01L']);
+  });
+
+  it('leaves out an airline default, which is no more in normal use than a class default', () => {
+    const config: RunwayConfig = {
+      id: 'TEST',
+      source: 'test data',
+      name: 'test configuration',
+      plan: 'SFOW',
+      trainingWeight: 1,
+      arrivalRunways: ['28L', '28R'],
+      departureRunways: [
+        {
+          runway: '28R',
+          classes: ['P', 'T'],
+          defaultForAirlines: [],
+          defaultForClasses: [],
+          onRequestFor: [],
+        },
+        {
+          runway: '28L',
+          classes: ['P', 'T'],
+          defaultForAirlines: ['PCM'],
+          defaultForClasses: [],
+          onRequestFor: [],
+        },
+      ],
+    };
+    expect(advertisedRunways(config)).toEqual(['28R']);
   });
 });

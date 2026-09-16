@@ -2574,6 +2574,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "01L"
@@ -2584,6 +2585,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "01R"
@@ -2607,6 +2609,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "01L"
@@ -2617,6 +2620,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "01R"
@@ -2625,6 +2629,7 @@
           "classes": [
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)",
           "onRequestFor": [
@@ -2638,6 +2643,7 @@
           "classes": [
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "note": "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)",
           "onRequestFor": [
@@ -2652,6 +2658,7 @@
             "P",
             "T"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [
             "P",
             "T"
@@ -2679,6 +2686,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "28L"
@@ -2689,6 +2697,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "28R"
@@ -2712,6 +2721,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "28L"
@@ -2722,6 +2732,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "28R"
@@ -2745,6 +2756,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "10L"
@@ -2755,6 +2767,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "10R"
@@ -2778,6 +2791,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "10L"
@@ -2788,6 +2802,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "10R"
@@ -2811,6 +2826,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "19L"
@@ -2821,6 +2837,7 @@
             "T",
             "J"
           ],
+          "defaultForAirlines": [],
           "defaultForClasses": [],
           "onRequestFor": [],
           "runway": "19R"

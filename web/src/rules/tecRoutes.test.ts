@@ -14,7 +14,13 @@ const config: RunwayConfig = {
   trainingWeight: 20,
   arrivalRunways: ['28L', '28R'],
   departureRunways: [
-    { runway: '28L', classes: ['P', 'T', 'J'], defaultForClasses: [], onRequestFor: [] },
+    {
+      runway: '28L',
+      classes: ['P', 'T', 'J'],
+      defaultForAirlines: [],
+      defaultForClasses: [],
+      onRequestFor: [],
+    },
   ],
 };
 

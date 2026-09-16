@@ -122,8 +122,18 @@ export const RunwayAssignmentSchema = z.strictObject({
   runway: z.string(),
   classes: z.array(AircraftClassSchema),
   /**
-   * The aircraft classes that depart this runway by default in this configuration, before the
-   * direction-of-turn preference.
+   * The ICAO airline codes that depart this runway by default in this configuration, before the
+   * class default.
+   *
+   * Each code is the callsign prefix `routeLibrary.telephony` keys the airline by, and the row must
+   * also list the flight's class in `classes` for the default to apply: at OAK the props of the
+   * airline parked south of 28L depart it while the rest of the props depart 28R. An empty array
+   * means the row defaults no airline.
+   */
+  defaultForAirlines: z.array(z.string()),
+  /**
+   * The aircraft classes that depart this runway by default in this configuration, after the
+   * airline default and before the direction-of-turn preference.
    *
    * Each class must also be in `classes`, and at most one row per configuration may default a
    * class. An empty array means the row is no default.

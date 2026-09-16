@@ -1112,6 +1112,12 @@
                   },
                   "type": "array"
                 },
+                "defaultForAirlines": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
                 "defaultForClasses": {
                   "items": {
                     "enum": [
@@ -1144,6 +1150,7 @@
               "required": [
                 "runway",
                 "classes",
+                "defaultForAirlines",
                 "defaultForClasses",
                 "onRequestFor"
               ],

@@ -248,6 +248,48 @@ def test_a_rule_keyed_on_a_tec_route_without_a_dp_that_assigns_one_fails_the_bui
         build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
 
 
+def _defaulting_pcm(inputs: BuildInputs) -> BuildInputs:
+    """Make the 28/01 class-default row default the airline PCM as well."""
+    configs = []
+    for config in inputs.airport.sop.runway_configs:
+        if config.id == "28/01":
+            runways = tuple(
+                replace(runway, default_for_airlines=("PCM",)) if runway.default_for_classes else runway for runway in config.departure_runways
+            )
+            config = replace(config, departure_runways=runways)
+        configs.append(config)
+    return _with_sop(inputs, runway_configs=tuple(configs))
+
+
+def _with_pcm_telephony(inputs: BuildInputs) -> BuildInputs:
+    routes = replace(inputs.airport.routes, telephony={**inputs.airport.routes.telephony, "PCM": "Peninsula"})
+    return replace(inputs, airport=replace(inputs.airport, routes=routes))
+
+
+def _with_airline_default_rule(inputs: BuildInputs) -> BuildInputs:
+    rule = PhraseologyRule(id="RWY-AIRLINE-DEFAULT", source="OAK ATCT SOP 2-1", text="the airline's props depart the runway their ramp is on")
+    return _with_sop(inputs, phraseology_rules=(*inputs.airport.sop.phraseology_rules, rule))
+
+
+def test_an_airline_default_without_telephony_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    match = r"runwayConfigs\[28/01\]\.departureRunways\[28R\]\.defaultForAirlines: 'PCM' has no telephony entry in routes.yaml"
+    with pytest.raises(ValueError, match=match):
+        build_airport(_defaulting_pcm(ksfo_build_inputs))
+
+
+def test_an_airline_default_without_its_phraseology_row_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _defaulting_pcm(_with_pcm_telephony(ksfo_build_inputs))
+    with pytest.raises(ValueError, match=r"the airport has no RWY-AIRLINE-DEFAULT phraseology row"):
+        build_airport(inputs)
+
+
+def test_an_airline_default_is_emitted_on_the_departure_runway(ksfo_build_inputs: BuildInputs) -> None:
+    document = build_airport(_with_airline_default_rule(_defaulting_pcm(_with_pcm_telephony(ksfo_build_inputs))))
+    config = next(row for row in document["runwayConfigs"] if row["id"] == "28/01")
+    defaults = [runway["defaultForAirlines"] for runway in config["departureRunways"]]
+    assert defaults == [[], [], [], [], ["PCM"]]
+
+
 def test_a_rule_naming_an_unknown_dp_family_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
     rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
     rules[0] = replace(rules[0], sid_family="NOPE")

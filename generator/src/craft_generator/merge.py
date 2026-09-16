@@ -224,6 +224,7 @@ def _departure_runway(runway: DepartureRunway) -> Document:
     entry: Document = {
         "runway": runway.runway,
         "classes": list(runway.classes),
+        "defaultForAirlines": list(runway.default_for_airlines),
         "defaultForClasses": list(runway.default_for_classes),
         "onRequestFor": list(runway.on_request_for),
     }
@@ -784,6 +785,29 @@ def _check_runways(document: Document, runways: Sequence[RunwayRecord]) -> None:
             raise ValueError(f"{where}: runway {runway!r} has no CIFP runway record at this airport; it publishes {published}")
 
 
+_AIRLINE_DEFAULT_RULE = "RWY-AIRLINE-DEFAULT"
+
+
+def _check_runway_airline_defaults(document: Document) -> None:
+    """Check that every airline a departure runway defaults can be spoken and cited."""
+    telephony = document["routeLibrary"]["telephony"]
+    rules = {rule["id"] for rule in document["phraseologyRules"]}
+    for config in document["runwayConfigs"]:
+        for runway in config["departureRunways"]:
+            codes = runway["defaultForAirlines"]
+            if not codes:
+                continue
+            at = f"runwayConfigs[{config['id']}].departureRunways[{runway['runway']}].defaultForAirlines"
+            for code in codes:
+                if code not in telephony:
+                    raise ValueError(f"{at}: {code!r} has no telephony entry in routes.yaml")
+            if _AIRLINE_DEFAULT_RULE not in rules:
+                raise ValueError(
+                    f"{at}: the airport has no {_AIRLINE_DEFAULT_RULE} phraseology row, which the engine cites when an "
+                    f"airline default settles the runway; add a row with that id to sop.yaml phraseology_rules"
+                )
+
+
 def _check_fleet(document: Document) -> None:
     classes = document["aircraftClasses"]
     for entry in document["routeLibrary"]["fleet"]:
@@ -923,6 +947,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_conditions(document)
     _check_sectors(document)
     _check_runways(document, inputs.runways)
+    _check_runway_airline_defaults(document)
     _check_fleet(document)
     _check_approach_categories(document)
     _check_destinations(document)

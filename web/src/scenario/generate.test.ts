@@ -18,7 +18,7 @@ import { isUnresolved } from '@/rules/unresolved.ts';
 import { generateAmendmentScenario } from '@/scenario/amend.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
-import { drawScenario, generateScenario } from '@/scenario/generate.ts';
+import { drawScenario, generateScenario, pickRunway } from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -372,10 +372,64 @@ describe('generateScenario', () => {
   });
 });
 
+const PROP_CLASSES: AircraftClass[] = ['P', 'T'];
+
+/** The 28/01 configuration with its 28L row turned into the prop default for the airline PCM. */
+function pcmOff28L(): RunwayConfig {
+  const config = ksfo.runwayConfigs.find((row) => row.id === '28/01');
+  if (config === undefined) throw new Error('KSFO has no 28/01 configuration');
+  return {
+    ...config,
+    departureRunways: config.departureRunways.map((row) =>
+      row.runway !== '28L'
+        ? row
+        : { ...row, classes: PROP_CLASSES, defaultForAirlines: ['PCM'], onRequestFor: [] },
+    ),
+  };
+}
+
+/** A fleet row of the turboprop class, which both defaults in 28/01 address. */
+function turbopropFleet(): FleetEntry {
+  const entry = ksfo.routeLibrary.fleet.find((row) => row.class === 'T');
+  if (entry === undefined) throw new Error('KSFO has no turboprop fleet row');
+  return entry;
+}
+
+describe('pickRunway', () => {
+  it('departs a defaulted airline off its own runway, ahead of the class default', () => {
+    const picked = pickRunway(
+      createRng(1),
+      ksfo,
+      pcmOff28L(),
+      turbopropFleet(),
+      'PCM7679',
+      'north',
+    );
+    expect(picked).toStrictEqual({ runway: '28L', requested: false });
+  });
+
+  it('departs a prop of another airline off the class default', () => {
+    const picked = pickRunway(
+      createRng(1),
+      ksfo,
+      pcmOff28L(),
+      turbopropFleet(),
+      'SKW1234',
+      'north',
+    );
+    expect(picked).toStrictEqual({ runway: '28R', requested: false });
+  });
+
+  it('departs a registration off the class default, having no airline to default', () => {
+    const picked = pickRunway(createRng(1), ksfo, pcmOff28L(), turbopropFleet(), 'N483KA', 'north');
+    expect(picked).toStrictEqual({ runway: '28R', requested: false });
+  });
+});
+
 describe('the scenario filter', () => {
   it('draws the scenario the unfiltered seed always drew', () => {
     const first = generateScenario(createRng(1), ksfo, ANY_SCENARIO);
-    expect(first.callsign).toBe('QXE4553');
+    expect(first.callsign).toBe('QXE2811');
     expect(first.runwayConfigId).toBe('28 RT');
   });
 

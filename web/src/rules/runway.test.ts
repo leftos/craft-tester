@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AircraftClass, AirportData, Direction, Scenario } from '@/data/schema.ts';
-import { explainRunway } from '@/rules/runway.ts';
+import { airlineOf, explainRunway } from '@/rules/runway.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -83,6 +83,50 @@ const CASES: Case[] = [
   },
 ];
 
+const PROP_CLASSES: AircraftClass[] = ['P', 'T'];
+
+/** KSFO with the 28L row of 28/01 turned into the prop default for the airline PCM. */
+function withPcmOff28L(): AirportData {
+  return {
+    ...ksfo,
+    runwayConfigs: ksfo.runwayConfigs.map((config) =>
+      config.id !== '28/01'
+        ? config
+        : {
+            ...config,
+            departureRunways: config.departureRunways.map((row) =>
+              row.runway !== '28L'
+                ? row
+                : {
+                    ...row,
+                    classes: PROP_CLASSES,
+                    defaultForAirlines: ['PCM'],
+                    onRequestFor: [],
+                  },
+            ),
+          },
+    ),
+    phraseologyRules: [
+      ...ksfo.phraseologyRules,
+      {
+        id: 'RWY-AIRLINE-DEFAULT',
+        source: 'OAK ATCT SOP 2-1',
+        text: 'an airline whose ramp is on the other side of the field departs the runway it parks on',
+      },
+    ],
+  };
+}
+
+describe('airlineOf', () => {
+  it('reads the ICAO code off an airline callsign', () => {
+    expect(airlineOf('PCM7679')).toBe('PCM');
+  });
+
+  it('reads no code off a registration', () => {
+    expect(airlineOf('N483KA')).toBeUndefined();
+  });
+});
+
 describe('explainRunway on the generated KSFO data', () => {
   it.each(CASES)(
     'cites the configuration and the mechanism for $name',
@@ -118,6 +162,29 @@ describe('explainRunway on the generated KSFO data', () => {
     expect(mechanism?.id).toBe('RWY-CLASS-DEFAULT');
     expect(mechanism?.text.length).toBeGreaterThan(0);
     expect(mechanism?.source.length).toBeGreaterThan(0);
+  });
+
+  it('cites the airline default ahead of the class default for a defaulted airline', () => {
+    const cited = explainRunway(
+      scenario({ callsign: 'PCM7679', aircraftType: 'B350', departureRunway: '28L' }),
+      withPcmOff28L(),
+      'T',
+      'north',
+    );
+    expect(cited.citations.map((citation) => citation.id)).toEqual([
+      '28/01',
+      'RWY-AIRLINE-DEFAULT',
+    ]);
+  });
+
+  it('cites the class default for a prop of another airline in the same configuration', () => {
+    const cited = explainRunway(
+      scenario({ callsign: 'SKW1234', aircraftType: 'B350', departureRunway: '28R' }),
+      withPcmOff28L(),
+      'T',
+      'north',
+    );
+    expect(cited.citations.map((citation) => citation.id)).toEqual(['28/01', 'RWY-CLASS-DEFAULT']);
   });
 
   it('cites the mechanism alone when the configuration is not in the data', () => {

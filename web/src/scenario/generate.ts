@@ -13,6 +13,7 @@ import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
+import { airlineOf } from '@/rules/runway.ts';
 import type { ClearanceElement, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
@@ -274,6 +275,20 @@ function onRequestRunway(
   return preferred ?? assignment.runway;
 }
 
+/** The runway a configuration departs an airline from by default, e.g. the props off a south ramp. */
+function airlineDefaultRunway(
+  config: RunwayConfig,
+  callsign: string,
+  aircraftClass: AircraftClass,
+): string | undefined {
+  const airline = airlineOf(callsign);
+  if (airline === undefined) return undefined;
+  return config.departureRunways.find(
+    (assignment) =>
+      assignment.classes.includes(aircraftClass) && assignment.defaultForAirlines.includes(airline),
+  )?.runway;
+}
+
 /** The runway a configuration departs a class from by default, e.g. the GA 28R in 28/01. */
 function classDefaultRunway(
   config: RunwayConfig,
@@ -287,8 +302,9 @@ function classDefaultRunway(
 /**
  * Draws the departure runway: a family the class may use, then the runway that direction departs.
  *
- * A configuration that defaults the class to a runway (`defaultForClasses`) settles it before any
- * draw, so those aircraft never take the direction-of-turn split. A flight that may ask for an
+ * A configuration that defaults the flight's airline to a runway (`defaultForAirlines`) settles it
+ * before any draw, and so does one that defaults its class (`defaultForClasses`), so those aircraft
+ * never take the direction-of-turn split. A flight that may ask for an
  * `onRequestFor` runway is drawn as asking for it `ON_REQUEST_CHANCE` of the time, and takes the
  * runways in normal use the rest. Otherwise `directionRunwayPreference` holds the SOP's split, e.g.
  * SFOW northbound off the 01s departing 1R and southbound 1L; a family the table has no entry for
@@ -298,16 +314,20 @@ function classDefaultRunway(
  * @param airport The airport data, for the cargo airlines and the direction preference.
  * @param config The runway configuration in force.
  * @param fleet The fleet row of the type, for its class, wake category and airlines.
+ * @param callsign The drawn callsign, whose airline code a configuration may default to a runway.
  * @param direction The gate direction of the exit fix, or undefined when it has none.
  * @returns The runway, and whether the flight asked for it, which is what the strip remarks say.
  */
-function pickRunway(
+export function pickRunway(
   rng: Rng,
   airport: AirportData,
   config: RunwayConfig,
   fleet: FleetEntry,
+  callsign: string,
   direction: Direction | undefined,
 ): { runway: string; requested: boolean } {
+  const byAirline = airlineDefaultRunway(config, callsign, fleet.class);
+  if (byAirline !== undefined) return { runway: byAirline, requested: false };
   const defaulted = classDefaultRunway(config, fleet.class);
   if (defaulted !== undefined) return { runway: defaulted, requested: false };
   const requested = onRequestRunway(airport, config, fleet, direction);
@@ -411,11 +431,19 @@ export function drawScenario(
   const route = pickRoute(rng, airport, filter.destination);
   const fleet = pickFleet(rng, airport, route);
   const equipmentSuffix = rng.pick(fleet.suffixes);
-  const picked = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
+  const callsign = pickCallsign(rng, fleet);
+  const picked = pickRunway(
+    rng,
+    airport,
+    config,
+    fleet,
+    callsign,
+    directionOf(route.exitFix, airport.gates),
+  );
   const time = pickTime(rng, filter.time);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const filed: Scenario = {
-    callsign: pickCallsign(rng, fleet),
+    callsign,
     aircraftType: fleet.type,
     equipmentSuffix,
     destination: route.destination,

@@ -9,7 +9,7 @@ import pytest
 from craft_generator.cli import published_sid_runways
 from craft_generator.emit import dump, fixture_schema_path, validate, write_or_check
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
-from craft_generator.sop.model import AircraftClass, AirportInputs, Worksheet, WorksheetConfig
+from craft_generator.sop.model import AircraftClass, AirportInputs, RunwayConfig, Worksheet, WorksheetConfig
 from craft_generator.worksheets import (
     Fixture,
     PlanRow,
@@ -18,6 +18,7 @@ from craft_generator.worksheets import (
     designator_classes,
     designator_wtcs,
     fetch_worksheet_text,
+    fixture_for,
     parse_amendment_sheet,
     parse_phraseology_sheet,
     parse_worksheet,
@@ -303,6 +304,43 @@ def test_turboprop_in_28_01_defaults_to_28r_at_echo(
     assert fixture["source"]["note"].endswith(
         "so this is 28R, the runway configuration 28/01 defaults class T to it (default_for_classes), pending validation"
     )
+
+
+def _pcm_default_config(importer: Importer) -> RunwayConfig:
+    """Return 28/01 with its 28L row turned into the prop default for the airline PCM."""
+    config = next(entry for entry in importer.inputs.sop.runway_configs if entry.id == "28/01")
+    runways = tuple(
+        replace(runway, classes=("P", "T"), default_for_airlines=("PCM",), on_request_for=()) if runway.runway == "28L" else runway
+        for runway in config.departure_runways
+    )
+    return replace(config, departure_runways=runways)
+
+
+def _runway_in(importer: Importer, config: RunwayConfig, row: PlanRow) -> RunwayChoice:
+    return departure_runway(
+        row,
+        config,
+        importer.inputs.sop,
+        aircraft_classes=importer.classes,
+        wake_categories=importer.wake_categories,
+        cargo_airlines=importer.inputs.routes.cargo_airlines,
+        sid_runways=importer.sid_runways,
+    )
+
+
+def test_airline_default_beats_the_class_default(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    row = plan_row("PCM7679", "B350", "SFO5 PYE")
+    choice = _runway_in(importer, _pcm_default_config(importer), row)
+    assert (choice.runway, choice.default_for_airline, choice.default_for_class) == ("28L", "PCM", None)
+    fixture = fixture_for(by_title["Phraseology Practice 1A"], row, 0, icao="ksfo", runway=choice, type_aliases={})
+    assert fixture["source"]["note"].endswith(
+        "so this is 28L, the runway configuration 28/01 defaults airline PCM to it (default_for_airlines), pending validation"
+    )
+
+
+def test_a_prop_of_another_airline_keeps_the_class_default(importer: Importer) -> None:
+    choice = _runway_in(importer, _pcm_default_config(importer), plan_row("SKW1234", "B350", "SFO5 PYE"))
+    assert (choice.runway, choice.default_for_airline, choice.default_for_class) == ("28R", None, "T")
 
 
 def test_jet_in_28_01_still_follows_the_turn_direction(

@@ -8,6 +8,36 @@ import type {
 import { citePhraseology } from '@/rules/cite.ts';
 import type { Cited, RuleCitation } from '@/rules/types.ts';
 
+/** An airline flight number: the three-letter ICAO code, the number, and an optional suffix. */
+const AIRLINE_CALLSIGN = /^([A-Z]{3})(\d+)([A-Z]*)$/;
+
+/**
+ * The ICAO airline code a callsign carries, which is the prefix `routeLibrary.telephony` keys.
+ *
+ * @param callsign The flight's callsign.
+ * @returns The three-letter code, or undefined when the callsign is a registration such as N483KA.
+ */
+export function airlineOf(callsign: string): string | undefined {
+  return AIRLINE_CALLSIGN.exec(callsign)?.[1];
+}
+
+/** Whether the configuration departs this flight's airline from this runway before any draw. */
+function isAirlineDefault(
+  config: RunwayConfig,
+  callsign: string,
+  aircraftClass: AircraftClass,
+  runway: string,
+): boolean {
+  const airline = airlineOf(callsign);
+  if (airline === undefined) return false;
+  return config.departureRunways.some(
+    (row) =>
+      row.runway === runway &&
+      row.classes.includes(aircraftClass) &&
+      row.defaultForAirlines.includes(airline),
+  );
+}
+
 /** Whether the configuration departs this class from this runway before any draw. */
 function isClassDefault(
   config: RunwayConfig,
@@ -43,11 +73,15 @@ function isDirectionPreference(
 function mechanismId(
   airport: AirportData,
   config: RunwayConfig | undefined,
-  runway: string,
+  scenario: Scenario,
   aircraftClass: AircraftClass,
   direction: Direction | undefined,
 ): string {
+  const runway = scenario.departureRunway;
   if (config === undefined) return 'RWY-FIRST';
+  if (isAirlineDefault(config, scenario.callsign, aircraftClass, runway)) {
+    return 'RWY-AIRLINE-DEFAULT';
+  }
   if (isClassDefault(config, aircraftClass, runway)) return 'RWY-CLASS-DEFAULT';
   if (isOnRequest(config, aircraftClass, runway)) return 'RWY-ON-REQUEST';
   if (isDirectionPreference(airport, config, runway, direction)) return 'RWY-DIRECTION';
@@ -59,8 +93,9 @@ function mechanismId(
  *
  * The runway itself is the scenario's; what the engine adds is the configuration the field is on and
  * the mechanism that settled the runway within it, in the precedence the generator draws them: the
- * class the configuration defaults to a runway, the runway a flight is issued on request, the
- * direction-of-turn split of the family, and otherwise the single runway of the family.
+ * airline the configuration defaults to a runway, the class it defaults to a runway, the runway a
+ * flight is issued on request, the direction-of-turn split of the family, and otherwise the single
+ * runway of the family.
  *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data, whose phraseology rows carry the mechanisms.
@@ -82,7 +117,7 @@ export function explainRunway(
     value: runway,
     citations: [
       ...configCitations,
-      ...citePhraseology(airport, mechanismId(airport, config, runway, aircraftClass, direction)),
+      ...citePhraseology(airport, mechanismId(airport, config, scenario, aircraftClass, direction)),
     ],
   };
 }
