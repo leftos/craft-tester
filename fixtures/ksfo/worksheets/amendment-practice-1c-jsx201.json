@@ -1,5 +1,8 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": []
+  },
   "id": "ws-amendment-practice-1c-jsx201",
   "mode": "amendment",
   "scenario": {
@@ -19,5 +22,5 @@
     "kind": "worksheet",
     "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation"
   },
-  "status": "pending"
+  "status": "settled"
 }

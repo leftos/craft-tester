@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "GAPP7 RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
+        "reason": "the route files no departure procedure; the SOP assigns GAPP7 from 28L in 28 SO"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1c-kal65",
   "mode": "amendment",
   "scenario": {
@@ -19,5 +28,5 @@
     "kind": "worksheet",
     "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation"
   },
-  "status": "pending"
+  "status": "settled"
 }
