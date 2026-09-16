@@ -2,7 +2,7 @@ import type { AirportData, Scenario } from '@/data/schema.ts';
 import { altitudeLabel, expectChoiceLabel, formatFeet, routeLabel } from '@/rules/grade.ts';
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
-import type { ClearanceElement } from '@/rules/types.ts';
+import type { ClearanceElement, ResolvedClearance } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -15,13 +15,24 @@ const PLACEHOLDER = '—';
 /** One dropdown of the form, and the pick it sets. */
 export type CraftField = SelectSpec & { key: PickKey };
 
-/** One element of CRAFT, with the dropdowns the player answers it with. */
-export type CraftGroup = { element: ClearanceElement; fields: readonly CraftField[] };
+/**
+ * One row of the form: an element the player answers, or one the clearance already settles.
+ *
+ * A `given` row is shown so the student reads the whole clearance in CRAFT order; it is neither
+ * picked nor graded, because the engine resolves it and the reveal speaks it.
+ */
+export type CraftGroup =
+  | { kind: 'picked'; element: ClearanceElement; fields: readonly CraftField[] }
+  | { kind: 'given'; heading: string; value: string };
+
+/** A row of dropdowns, which is what every group builder here returns. */
+type PickedGroup = Extract<CraftGroup, { kind: 'picked' }>;
 
 /** Everything the form needs to render and to report back. */
 export type CraftFormProps = {
   scenario: Scenario;
   airport: AirportData;
+  clearance: ResolvedClearance;
   picks: DraftPicks;
   onPick: (key: PickKey, raw: string) => void;
   onSubmit: () => void;
@@ -38,8 +49,9 @@ function plainOptions(values: readonly string[]): SelectOption[] {
  * The element dropdown stays disabled until the shape is picked; the elements on offer are the
  * transitions of the filed procedure together with the first fixes of the filed route.
  */
-function routeGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
+function routeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
   return {
+    kind: 'picked',
     element: 'R.route',
     fields: [
       {
@@ -66,8 +78,9 @@ function routeGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
 }
 
 /** The altitude: the phrase, and the feet every phrase but "climb via SID" speaks. */
-function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
+function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
   return {
+    kind: 'picked',
     element: 'A.phrase',
     fields: [
       {
@@ -97,8 +110,9 @@ function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup
 }
 
 /** The expect clause, which the filed altitude fills in once the delay is picked. */
-function expectGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
+function expectGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
   return {
+    kind: 'picked',
     element: 'A.expect',
     fields: [
       {
@@ -121,8 +135,9 @@ function frequencyGroup(
   options: ClearanceOptions,
   airport: AirportData,
   picks: DraftPicks,
-): CraftGroup {
+): PickedGroup {
   return {
+    kind: 'picked',
     element: 'F',
     fields: [
       {
@@ -141,8 +156,9 @@ function frequencyGroup(
 }
 
 /** The runway the flight expects, which is every runway its configuration departs. */
-function runwayGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
+function runwayGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
   return {
+    kind: 'picked',
     element: 'RWY',
     fields: [
       {
@@ -157,49 +173,89 @@ function runwayGroup(options: ClearanceOptions, picks: DraftPicks): CraftGroup {
   };
 }
 
+/** The clearance limit: the destination's identifier, with its spoken name when the data has one. */
+function clearanceLimitRow(clearance: ResolvedClearance, airport: AirportData): CraftGroup {
+  const icao = clearance.clearedTo.value;
+  const spoken = airport.routeLibrary.destinations.find((row) => row.icao === icao)?.spoken;
+  return {
+    kind: 'given',
+    heading: 'C — clearance limit',
+    value: spoken === undefined ? icao : `${icao} — ${spoken}`,
+  };
+}
+
+/** The assigned procedure, named as the chart names it, falling back to its identifier. */
+function procedureRow(clearance: ResolvedClearance, airport: AirportData): CraftGroup {
+  const id = clearance.sid.value.id;
+  return {
+    kind: 'given',
+    heading: elementLabel('R.sid'),
+    value: airport.sids.find((sid) => sid.id === id)?.chartName ?? id,
+  };
+}
+
 /**
- * Builds the five groups of dropdowns the player answers the clearance with.
+ * Builds the eight rows of the form, the five of them the player answers the clearance with.
  *
- * @param scenario The scenario being cleared, which contributes the filed route and altitude.
+ * The clearance limit, the procedure and the squawk are given rows: the engine resolved them and
+ * the reveal speaks them, and they sit in their CRAFT positions so the whole clearance reads in
+ * order.
+ *
+ * @param scenario The scenario being cleared, which contributes the filed route, altitude and squawk.
  * @param airport The airport data.
+ * @param clearance The clearance the engine resolved, which fills the given rows.
  * @param picks What the player has picked so far, which settles the dependent dropdowns.
- * @returns The groups, in the order CRAFT speaks them.
+ * @returns The rows, in the order CRAFT speaks them.
  */
 export function craftGroups(
   scenario: Scenario,
   airport: AirportData,
+  clearance: ResolvedClearance,
   picks: DraftPicks,
 ): readonly CraftGroup[] {
   const options = buildOptions(scenario, airport);
   return [
+    clearanceLimitRow(clearance, airport),
+    procedureRow(clearance, airport),
     routeGroup(options, picks),
     altitudeGroup(options, picks),
     expectGroup(options, picks),
     frequencyGroup(options, airport, picks),
+    { kind: 'given', heading: 'T — transponder', value: scenario.squawk },
     runwayGroup(options, picks),
   ];
+}
+
+/** One row of the form: its heading, and then its dropdowns or the value the clearance settles. */
+function renderGroup(group: CraftGroup, onPick: CraftFormProps['onPick']): HTMLElement {
+  const row = el('div', 'craft-group');
+  if (group.kind === 'given') {
+    row.append(el('h3', '', group.heading), el('div', 'craft-given', group.value));
+    return row;
+  }
+  row.append(el('h3', '', elementLabel(group.element)));
+  for (const field of group.fields) {
+    row.append(
+      selectControl(field, (value) => {
+        onPick(field.key, value);
+      }),
+    );
+  }
+  return row;
 }
 
 /**
  * Renders the CRAFT form.
  *
- * @param props The scenario, the airport, the picks so far, and the handlers for change and submit.
+ * @param props The scenario, the airport, the resolved clearance, the picks so far, and the
+ *   handlers for change and submit.
  * @returns The form panel; its submit button is disabled while a required dropdown is blank.
  */
 export function renderCraftForm(props: CraftFormProps): HTMLElement {
   const panel = el('section', 'panel craft');
   panel.append(el('h2', '', 'Your clearance'));
-  for (const group of craftGroups(props.scenario, props.airport, props.picks)) {
-    const row = el('div', 'craft-group');
-    row.append(el('h3', '', elementLabel(group.element)));
-    for (const field of group.fields) {
-      row.append(
-        selectControl(field, (value) => {
-          props.onPick(field.key, value);
-        }),
-      );
-    }
-    panel.append(row);
+  for (const group of craftGroups(props.scenario, props.airport, props.clearance, props.picks)) {
+    panel.append(renderGroup(group, props.onPick));
   }
   const submit = button('Submit clearance', 'primary', props.onSubmit);
   submit.disabled = toPlayerPicks(props.picks) === undefined;

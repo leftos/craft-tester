@@ -210,6 +210,14 @@ button.primary:disabled {
   margin: 0;
 }
 
+.craft-given {
+  padding: 0.3rem 0.4rem;
+  border-radius: 4px;
+  background: #eceff3;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
 .panel.craft button.primary {
   margin-top: 0.9rem;
 }

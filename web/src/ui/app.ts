@@ -187,6 +187,7 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
     renderCraftForm({
       scenario: generated,
       airport: state.airport,
+      clearance,
       picks: state.picks,
       onPick: actions.onPick,
       onSubmit: actions.onSubmit,

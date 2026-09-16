@@ -5,7 +5,7 @@ import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import { activeNotices, atisRows } from '@/ui/atis.ts';
 import { craftGroups } from '@/ui/craftForm.ts';
-import type { CraftField } from '@/ui/craftForm.ts';
+import type { CraftField, CraftGroup } from '@/ui/craftForm.ts';
 import { buildScenario, listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import type { AppState, PickKey } from '@/ui/state.ts';
@@ -45,12 +45,15 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
   return [...answers, ['altitudeFeet', String(feet)]];
 }
 
+/** Every row of the form, in the order CRAFT speaks them. */
+function groupsOf(state: AppState): readonly CraftGroup[] {
+  if (state.view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+  return craftGroups(state.view.generated, state.airport, state.view.clearance, state.picks);
+}
+
 /** Every dropdown of the form, flattened out of its CRAFT groups. */
 function fieldsOf(state: AppState): CraftField[] {
-  if (state.view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
-  return craftGroups(state.view.generated, state.airport, state.picks).flatMap((group) => [
-    ...group.fields,
-  ]);
+  return groupsOf(state).flatMap((group) => (group.kind === 'picked' ? [...group.fields] : []));
 }
 
 beforeAll(async () => {
@@ -132,6 +135,40 @@ describe('the CRAFT form', () => {
     for (const verdict of grade(picks, clearance)) {
       expect(verdict.ok, `${verdict.element}: ${verdict.actualLabel}`).toBe(true);
     }
+  });
+
+  it('opens with the clearance limit and the procedure the engine resolved', () => {
+    if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+    const clearance = view.clearance;
+    const [limit, procedure] = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO));
+    if (limit?.kind !== 'given') throw new Error('the first row is not a given row');
+    const icao = clearance.clearedTo.value;
+    const spoken = airport.routeLibrary.destinations.find((row) => row.icao === icao)?.spoken;
+    expect(spoken).toBeDefined();
+    expect(limit.heading).toBe('C — clearance limit');
+    expect(limit.value).toBe(`${icao} — ${String(spoken)}`);
+    if (procedure?.kind !== 'given') throw new Error('the second row is not a given row');
+    const chartName = airport.sids.find((sid) => sid.id === clearance.sid.value.id)?.chartName;
+    expect(chartName).toBeDefined();
+    expect(procedure.heading).toBe('R — procedure');
+    expect(procedure.value).toBe(chartName);
+  });
+
+  it('shows the squawk as a given row just before the runway', () => {
+    if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+    const groups = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO));
+    const squawkAt = groups.findIndex(
+      (group) => group.kind === 'given' && group.heading.startsWith('T'),
+    );
+    const runwayAt = groups.findIndex(
+      (group) => group.kind === 'picked' && group.element === 'RWY',
+    );
+    expect(groups[squawkAt]).toEqual({
+      kind: 'given',
+      heading: 'T — transponder',
+      value: view.generated.squawk,
+    });
+    expect(runwayAt).toBe(squawkAt + 1);
   });
 
   it('refuses to submit a form with a dropdown still blank', () => {
