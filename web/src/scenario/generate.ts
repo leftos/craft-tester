@@ -126,6 +126,32 @@ function pickConfig(rng: Rng, airport: AirportData, filter: ConfigFilter): Runwa
   );
 }
 
+/**
+ * Draws a route library row, narrowed to the forced destination where the filter names one.
+ *
+ * @param rng The seeded generator; the draw advances it.
+ * @param airport The airport data, for its route library.
+ * @param destination The ICAO code the draw is forced onto, or undefined for the whole library.
+ * @returns The drawn row.
+ * @throws Error When no row files the forced destination, naming the ones the library files.
+ */
+function pickRoute(
+  rng: Rng,
+  airport: AirportData,
+  destination: string | undefined,
+): RouteLibraryEntry {
+  const routes = airport.routeLibrary.routes;
+  if (destination === undefined) return rng.pick(routes);
+  const candidates = routes.filter((route) => route.destination === destination);
+  if (candidates.length === 0) {
+    const known = [...new Set(routes.map((route) => route.destination))].sort().join(', ');
+    throw new Error(
+      `no route library row files ${destination}; ${airport.airport.icao} files ${known}`,
+    );
+  }
+  return rng.pick(candidates);
+}
+
 /** Draws a fleet type that may fly the route. */
 function pickFleet(rng: Rng, airport: AirportData, route: RouteLibraryEntry): FleetEntry {
   const candidates = airport.routeLibrary.fleet.filter((entry) =>
@@ -341,9 +367,12 @@ function amendmentGap(clean: Scenario, airport: AirportData): Unresolved | undef
  * route library row is drawn only in the configurations, classes and suffixes where its tail and
  * altitude are the correctly-filed plan, and a draw where they are not is thrown away.
  *
+ * A filter that names a destination narrows the route draw to the route library rows filed to it.
+ *
  * @param rng The seeded generator; every draw advances it.
  * @param airport The airport data the scenario is drawn from.
- * @param filter The time of day and the runway configurations the draw is narrowed to.
+ * @param filter The time of day, the runway configurations and the destination the draw is narrowed
+ *   to.
  * @returns The scenario, or the reason the engine could not clear it or would amend it, which is
  *   the caller's cue to draw again.
  */
@@ -353,7 +382,7 @@ export function drawScenario(
   filter: ScenarioFilter,
 ): Scenario | Unresolved {
   const config = pickConfig(rng, airport, filter.config);
-  const route = rng.pick(airport.routeLibrary.routes);
+  const route = pickRoute(rng, airport, filter.destination);
   const fleet = pickFleet(rng, airport, route);
   const equipmentSuffix = rng.pick(fleet.suffixes);
   const picked = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
@@ -395,11 +424,15 @@ export function drawScenario(
  * the amendment engine would amend: a route library row is written for the flights it is the
  * correct plan for, and the configuration, class and suffix are drawn independently of it.
  *
+ * A filter that names a destination draws only the route library rows filed to it.
+ *
  * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the scenario is drawn from.
- * @param filter The time of day and the runway configurations the draw is narrowed to.
+ * @param filter The time of day, the runway configurations and the destination the draw is narrowed
+ *   to.
  * @returns The scenario, whose filed route names the procedure the SOP assigns it.
- * @throws Error When `MAX_ATTEMPTS` draws in a row were all unclearable, naming the last reason.
+ * @throws Error When `MAX_ATTEMPTS` draws in a row were all unclearable, naming the last reason, or
+ *   when no route library row files the destination the filter names.
  */
 export function generateScenario(rng: Rng, airport: AirportData, filter: ScenarioFilter): Scenario {
   let last: Unresolved | undefined;

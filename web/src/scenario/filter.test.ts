@@ -115,6 +115,49 @@ describe('the mode in the hash', () => {
   });
 });
 
+describe('the forced destination', () => {
+  it('writes the d= part after the configuration and before the mode', () => {
+    expect(hashFor(1, { ...ANY_SCENARIO, destination: 'KLVK' }, 'clearance')).toBe('#s=1&d=KLVK');
+    expect(
+      hashFor(
+        1,
+        { time: 'night', config: { kind: 'id', id: '28/01' }, destination: 'KLVK' },
+        'amendment',
+      ),
+    ).toBe('#s=1&t=night&c=id:28%2F01&d=KLVK&m=amend');
+  });
+
+  it('reads the code back upper-cased', () => {
+    expect(filterFromHash('#s=1&d=klvk')).toStrictEqual({ ...ANY_SCENARIO, destination: 'KLVK' });
+    expect(filterFromHash('#s=1&d=KSMF')).toStrictEqual({ ...ANY_SCENARIO, destination: 'KSMF' });
+    expect(filterFromHash('#s=1&d=OAK')).toStrictEqual({ ...ANY_SCENARIO, destination: 'OAK' });
+  });
+
+  it('narrows nothing for a value that cannot be an ICAO code', () => {
+    expect(filterFromHash('#s=1&d=')).toStrictEqual(ANY_SCENARIO);
+    expect(filterFromHash('#s=1&d=%E0%A4%A')).toStrictEqual(ANY_SCENARIO);
+    expect(filterFromHash('#s=1&d=KLVKX')).toStrictEqual(ANY_SCENARIO);
+    expect(filterFromHash('#s=1&d=KL')).toStrictEqual(ANY_SCENARIO);
+    expect(filterFromHash('#s=1&d=K-LVK')).toStrictEqual(ANY_SCENARIO);
+  });
+
+  it('is a filter part like the ones the dropdowns write', () => {
+    expect(hasFilterParams('#s=1&d=KLVK')).toBe(true);
+    expect(hasFilterParams('#s=1&d=')).toBe(true);
+  });
+
+  it('round-trips beside the members the dropdowns narrow', () => {
+    for (const destination of ['KLVK', 'KSMF', 'OAK']) {
+      const filter: ScenarioFilter = {
+        time: 'day',
+        config: { kind: 'plan', plan: 'SFOW' },
+        destination,
+      };
+      expect(filterFromHash(hashFor(9, filter, 'clearance')), destination).toStrictEqual(filter);
+    }
+  });
+});
+
 describe('filterFromHash', () => {
   it('reads a hash that carries no filter parts as the unfiltered draw', () => {
     expect(filterFromHash('')).toStrictEqual(ANY_SCENARIO);

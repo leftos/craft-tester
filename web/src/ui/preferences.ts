@@ -35,7 +35,8 @@ function keyFor(icao: string): string {
  *
  * Remembering the filter is a convenience, so every failure the storage can raise — a refused read,
  * a full quota, a value another version wrote — reads as "nothing remembered", and the caller falls
- * back to the unfiltered draw.
+ * back to the unfiltered draw. Only the members the dropdowns offer are written: a destination
+ * forced by the hash is a testing aid for one session, not a preference to carry into the next.
  *
  * @param storage The storage to read and write, or `undefined` where the browser offers none.
  * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
@@ -62,7 +63,8 @@ export function createFilterStore(storage: FilterStorage | undefined): FilterSto
     },
     save: (icao, filter) => {
       try {
-        storage.setItem(keyFor(icao), JSON.stringify(filter));
+        const { time, config } = filter;
+        storage.setItem(keyFor(icao), JSON.stringify({ time, config }));
       } catch {
         // A storage that refuses the write costs the viewer the remembered filter, nothing more.
       }

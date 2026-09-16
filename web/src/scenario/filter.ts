@@ -21,8 +21,18 @@ export type ConfigFilter =
   | { kind: 'plan'; plan: string }
   | { kind: 'id'; id: string };
 
-/** What the player has narrowed the draw to; it rides in the URL hash beside the seed. */
-export type ScenarioFilter = { time: TimeFilter; config: ConfigFilter };
+/**
+ * What the player has narrowed the draw to; it rides in the URL hash beside the seed.
+ *
+ * `destination` is a testing aid rather than a player-facing choice: it forces the draw onto the
+ * route library rows filed to that airport, so a destination can be drilled without drawing until
+ * the generator happens to land on it. It is deliberately kept out of the dropdowns and out of the
+ * remembered filter, and rides in the hash alone so a share link still reproduces the draw.
+ */
+export type ScenarioFilter = { time: TimeFilter; config: ConfigFilter; destination?: string };
+
+/** The shape a `d=` part has to have to be read: an ICAO code, upper case. */
+const DESTINATION_PATTERN = /^[A-Z0-9]{3,4}$/;
 
 /** The filter that narrows nothing, which is what a hash without filter parts reads as. */
 export const ANY_SCENARIO: ScenarioFilter = { time: 'either', config: { kind: 'any' } };
@@ -39,7 +49,8 @@ function configParam(config: ConfigFilter): string | undefined {
  * Renders the URL hash that shares a filtered scenario.
  *
  * A filter member that narrows nothing writes no part at all, so an unfiltered scenario shares the
- * same hash it always did.
+ * same hash it always did. A forced destination writes its `d=` part like any other member, so the
+ * testing aid is shareable even though nothing in the UI offers it.
  *
  * @param seed The seed the link restores.
  * @param filter The filter the draw ran under.
@@ -51,6 +62,7 @@ export function hashFor(seed: number, filter: ScenarioFilter, mode: Mode): strin
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
   if (config !== undefined) parts.push(`c=${config}`);
+  if (filter.destination !== undefined) parts.push(`d=${filter.destination}`);
   if (mode === 'amendment') parts.push(AMENDMENT_PART);
   return `#${parts.join('&')}`;
 }
@@ -99,16 +111,34 @@ function configOf(raw: string | undefined): ConfigFilter {
 }
 
 /**
+ * Reads the `d=` part, which is absent for anything that is not an ICAO code.
+ *
+ * The testing aid narrows the draw to one destination, so a value that cannot be one narrows
+ * nothing, the way every other unreadable member does.
+ */
+function destinationOf(raw: string | undefined): string | undefined {
+  if (raw === undefined) return undefined;
+  const value = decode(raw)?.toUpperCase();
+  return value !== undefined && DESTINATION_PATTERN.test(value) ? value : undefined;
+}
+
+/**
  * Reads the filter back out of a URL hash.
  *
  * A value this app does not know narrows nothing rather than failing the load, so an old or
- * hand-edited link still opens on a scenario.
+ * hand-edited link still opens on a scenario. The `d=` part is the undocumented testing aid that
+ * forces the destination; a hash without one leaves the member absent.
  *
  * @param hash The hash, with or without its leading `#`.
  * @returns The filter the hash asks for; every unreadable member falls back to `ANY_SCENARIO`'s.
  */
 export function filterFromHash(hash: string): ScenarioFilter {
-  return { time: timeOf(valueOf(hash, 't')), config: configOf(valueOf(hash, 'c')) };
+  const destination = destinationOf(valueOf(hash, 'd'));
+  return {
+    time: timeOf(valueOf(hash, 't')),
+    config: configOf(valueOf(hash, 'c')),
+    ...(destination === undefined ? {} : { destination }),
+  };
 }
 
 /**
@@ -128,10 +158,12 @@ export function modeFromHash(hash: string): Mode {
  * Whether a hash asks for a filter at all, which a hash of nothing but a seed does not.
  *
  * @param hash The hash, with or without its leading `#`.
- * @returns True when the hash carries a `t=` or a `c=` part, whatever it says.
+ * @returns True when the hash carries a `t=`, a `c=` or a `d=` part, whatever it says.
  */
 export function hasFilterParams(hash: string): boolean {
-  return partsOf(hash).some((part) => part.startsWith('t=') || part.startsWith('c='));
+  return partsOf(hash).some(
+    (part) => part.startsWith('t=') || part.startsWith('c=') || part.startsWith('d='),
+  );
 }
 
 /**

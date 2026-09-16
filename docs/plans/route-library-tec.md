@@ -125,10 +125,26 @@ objects.
   TEC tails, one per tail the TEC rows issue), MAIN.md, the amendment-mode finding. `ARCHITECTURE.md`
   does not describe the draw. Browser check of a KLVK and a KSMF draw in both modes: not done, offered
   to the user with the commit
-- [ ] D. **User steer 2026-09-16**: run the browser check, but first add a dev cheat, an undocumented
-  URL argument that forces the drawn destination (e.g. `d=KLVK`), so testing a destination does not
-  mean drawing until the RNG lands on it. Rides in the URL next to the seed, not in the UI, not
-  remembered; the draw filters the library to that destination's rows and redraws as usual
+- [x] D. **User steer 2026-09-16** (landed 2026-09-16): run the browser check, but first add a dev
+  cheat, an undocumented URL argument that forces the drawn destination (`d=KLVK`), so testing a
+  destination does not mean drawing until the RNG lands on it. Rides in the hash next to the seed
+  (`#s=1&d=KLVK`, `#s=4&d=KSMF&m=amend`), not in the UI, not remembered (a dropdown change drops it);
+  `pickRoute` in `generate.ts` narrows the library to that destination's rows and the draw redraws as
+  usual; an unknown code throws naming the destinations the library files.
+  **User steer 2026-09-16**: drive the browser check with Playwright rather than Claude in Chrome, so
+  the viewport size is forced. Playwright 1.63 is installed globally with its Chromium; the driver is
+  `.tmp/pw/check.mjs` (untracked), run against `pnpm -C web preview`. **Checked 2026-09-16**: KLVK
+  clearance (E135 in 28 RT, `TRUKN2 TRUKN ALTAM` at 3,000: "Trukn Two departure, Trukn, then as filed,
+  climb via SID except maintain three thousand", 120.9, 28L; 5 of 5 with citations), KSMF amendment
+  (B738 in 19/10 filing `SFO5 CIITY FEVTA FEVTA1` at 42,000: route to `CIITY3 …` citing
+  TEC-KSMF-SFOE-J, altitude to 41,000 citing FLEET-B738 and A-PARITY, CRAFT form chains in with "expect
+  amended altitude"), KLVK amendment (stale `TRUKN1` to `TRUKN2 TRUKN ALTAM` citing TEC-KLVK-SFOW-JT).
+  No console errors at either viewport. **Found, pre-existing**: at 390px the configuration dropdown
+  is 616px wide (its longest label sizes it) and the page scrolls sideways; the 2026-09-15 phone
+  playtest predates the configuration filter. Fix is `max-width: 100%` on `select` in `styles.css`.
+  Also noticed: the KLVK reveal cites `SFOW-J-10000` ("when no top altitude is published") for a
+  filed-below-top climb-via-except on TRUKN2, which has a published top; that is the open "filed below
+  the published top" item in MAIN.md step 17
 
 ## Findings to carry
 

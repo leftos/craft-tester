@@ -34,6 +34,14 @@ describe('createFilterStore', () => {
     }
   });
 
+  it('leaves a forced destination out of what it stores', () => {
+    const entries = new Map<string, string>();
+    const store = createFilterStore(mapStorage(entries));
+    store.save('KSFO', { ...filter, destination: 'KLVK' });
+    expect(JSON.parse(entries.get('craft-tester:filter:KSFO') ?? 'null')).toStrictEqual(filter);
+    expect(store.load('KSFO')).toStrictEqual(filter);
+  });
+
   it('remembers nothing about an airport nobody has filtered', () => {
     const store = createFilterStore(mapStorage());
     store.save('KSFO', filter);

@@ -14,6 +14,7 @@ import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf, isSidToken } from '@/rules/route.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
+import { generateAmendmentScenario } from '@/scenario/amend.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import { drawScenario, generateScenario } from '@/scenario/generate.ts';
@@ -391,5 +392,37 @@ describe('the scenario filter', () => {
     expect(() =>
       generateScenario(createRng(1), ksfo, { time: 'either', config: { kind: 'id', id: '07/07' } }),
     ).toThrow('07/07');
+  });
+});
+
+describe('the forced destination', () => {
+  /** The seeds the forced destination is measured over, in both halves of the trainer. */
+  const DESTINATION_SEEDS = Array.from({ length: 50 }, (_value, index) => index);
+
+  it('files every clearance-mode draw to the destination it names', () => {
+    const drawn = DESTINATION_SEEDS.map((seed) =>
+      generateScenario(createRng(seed), ksfo, { ...ANY_SCENARIO, destination: 'KLVK' }),
+    );
+    expect(drawn).toHaveLength(DESTINATION_SEEDS.length);
+    expect(drawn.filter((entry) => entry.destination !== 'KLVK').map(label)).toEqual([]);
+  });
+
+  it('files every amendment-mode draw to the destination it names', () => {
+    const drawn = DESTINATION_SEEDS.map((seed) =>
+      generateAmendmentScenario(createRng(seed), ksfo, { ...ANY_SCENARIO, destination: 'KSMF' }),
+    );
+    expect(drawn).toHaveLength(DESTINATION_SEEDS.length);
+    expect(
+      drawn
+        .filter((entry) => entry.filed.destination !== 'KSMF')
+        .map((entry) => label(entry.filed)),
+    ).toEqual([]);
+  });
+
+  it('refuses a destination the route library files nothing to', () => {
+    const draw = (): Scenario =>
+      generateScenario(createRng(1), ksfo, { ...ANY_SCENARIO, destination: 'KZZZ' });
+    expect(draw).toThrow('KZZZ');
+    expect(draw).toThrow('KSMF');
   });
 });

@@ -43,6 +43,7 @@ type Actions = {
   onAirport: (icao: string) => void;
   onBox: (box: Box, answer: BoxAnswer) => void;
   onBoxesSubmit: () => void;
+  /** Narrows the draw to what the dropdowns say; a destination forced by the hash does not survive it. */
   onFilter: (filter: ScenarioFilter) => void;
   onMode: (mode: Mode) => void;
   onNewScenario: () => void;
@@ -323,8 +324,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       const corrected = state.view.drawn.result.corrected;
       update(withBoxesSubmitted(state, procedureOf(corrected, state.airport)));
     },
-    onFilter: (filter) => {
+    onFilter: ({ time, config }) => {
       const { icao } = state.airport.airport;
+      const filter: ScenarioFilter = { time, config };
       stores.filter.save(icao, filter);
       const seed = randomSeed();
       update(withFilter(state, filter, seed, store.load(icao, seed, state.mode)));
