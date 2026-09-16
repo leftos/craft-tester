@@ -28,6 +28,7 @@ uv run pytest -q tests/test_sid.py -k transitions   # one file / one test
 uv run pytest -q -m network                          # the fetching tests, deselected by default
 uv run craft-gen fetch-cifp --airport KSFO [--cycle 2609]
 uv run craft-gen fetch-charts --airport KSFO
+uv run craft-gen fetch-aircraft-characteristics [--from aircraft_data.xlsx]   # FAA table -> generator/shared/, no --airport
 uv run craft-gen build --airport KSFO [--cycle 2609] [--offline] [--check]
 uv run craft-gen verify-sop --airport KSFO
 uv run craft-gen import-worksheets --airport KSFO [--check]

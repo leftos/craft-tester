@@ -125,8 +125,8 @@ the hooks rejects the file.
     row lists `groups: [jets_and_dh8d]` beside or instead of `classes`; a row must address somebody.
     **`assignment_rules`**: the DP-by-direction table as ordered rows. Noise rows first, then the SOP
     table top to bottom, then CBT refinements. Fields: `plan`, `direction`, `runway_families`, `classes`
-    (and `groups`; `approach_categories: [A, B]` where the SOP says "Cat A/B", which then requires every
-    fleet row to carry `approach_category`),
+    (and `groups`; `approach_categories: [A, B]` where the SOP says "Cat A/B"; the fleet's categories come
+    from the shared FAA table),
     `sid_family` (or `null` plus `non_dp_heading` for a row that clears the flight with no DP:
     `runway heading`, read "via fly runway heading, radar vectors (first fix)", or a magnetic heading
     as an integer, read "via turn left heading two seven zero" with the turn derived as the shorter way
@@ -197,9 +197,12 @@ Scenarios are drawn from this file, so its breadth is the game's variety.
 - **`telephony`**: airline code → spoken callsign for the reveal.
 - **`fleet`**: type, class (checked against vNAS `AircraftSpecs.json` EngineType; the build fails on a
   disagreement), wake category, equipment suffixes it files, airlines that fly it. No service ceiling: a
-  controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16). Add
-  `approach_category: A|B|C|D` (from the published Vref) to every type once any assignment row names
-  categories. Use the ICAO type designators pilots actually file; worksheets
+  controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16). The approach
+  category is not written here: the build reads it by type from the shared
+  `generator/shared/faa_aircraft_characteristics.yaml` (the FAA Aircraft Characteristics Database, refreshed
+  with `craft-gen fetch-aircraft-characteristics`), and fails naming the type when the FAA states none; a
+  hand `approach_category` on a row, with a `note`, overrides the table for that one type. Use the ICAO
+  type designators pilots actually file; worksheets
   file `A32N`, which is `A20N` in vNAS, and that alias is still an open item.
 - **`routes`**: keyed by `exit_fix` (where the aircraft leaves the SID), with the `tail` from that fix,
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.

@@ -220,7 +220,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `generator/shared/faa_aircraft_characteristics.yaml` (source block with url and fetched date; one entry per ICAO
   code with aac, approach speed, engine class, MTOW, WTC), checked in; `routes.yaml` fleet `approach_category`
   becomes optional and the build fills it from that table by type, failing on a type the table lacks; a hand value
-  still wins. Dispatched 2026-09-16 into `wt/koak-faa` in parallel with 2e-i. **User steer 2026-09-16**: keep
+  still wins. Landed 2026-09-16 (`8bccab5`): `aircraft_characteristics.py`, the `fetch-aircraft-characteristics`
+  command (`--from` for a local workbook, `openpyxl` dependency), 388 rows in the shared YAML, every KSFO fleet entry
+  now emits `approachCategory` from the table. Follow-ups for 2e-iv: `merge._check_approach_categories` is now
+  unreachable (the fill either supplies a category or fails first); the schema's `approachCategory` can become
+  required; the FAA table carries category E (F15, P8) while the schema stops at D; the module imports `_Row`,
+  `_load_yaml_mapping` and `_where` from `sop/load.py`, which should be public if a third module needs them. **User
+  steer 2026-09-16**: keep
   airport-independent aircraft data in one shared place so airports do not copy it. Second half, brief 2e-iv: the
   type facts (class, wtc, suffixes) move to `generator/shared/aircraft_types.yaml`, the airline facts (telephony,
   cargo, the types each operates) to `generator/shared/airlines.yaml`, the destination facts (spoken name, artcc,
