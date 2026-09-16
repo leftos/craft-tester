@@ -315,7 +315,7 @@ describe('speakClearance', () => {
       input({
         clearance: clearance({
           altitude: { phrase: 'climb_via_except', feet: 10000 },
-          expect: { feet: 32000, minutes: 10, amended: false },
+          expect: { kind: 'filed', feet: 32000, minutes: 10 },
         }),
       }),
     );
@@ -328,7 +328,7 @@ describe('speakClearance', () => {
 
   it('speaks a non-standard three minute expect below the flight levels', () => {
     const spoken = speakClearance(
-      input({ clearance: clearance({ expect: { feet: 17000, minutes: 3, amended: false } }) }),
+      input({ clearance: clearance({ expect: { kind: 'filed', feet: 17000, minutes: 3 } }) }),
     );
     expect(spoken.abbreviated).toContain(
       'Expect one seven thousand three minutes after departure.',
@@ -337,10 +337,24 @@ describe('speakClearance', () => {
 
   it('speaks an amended expect clause as the amended altitude', () => {
     const spoken = speakClearance(
-      input({ clearance: clearance({ expect: { feet: 27000, minutes: 10, amended: true } }) }),
+      input({ clearance: clearance({ expect: { kind: 'amended', feet: 27000, minutes: 10 } }) }),
     );
     expect(spoken.abbreviated).toContain(
       'Expect amended flight level two seven zero one zero minutes after departure.',
+    );
+  });
+
+  it('speaks the final-altitude reading in place of the expect clause', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          altitude: { phrase: 'climb_via_except', feet: 9000 },
+          expect: { kind: 'final', feet: 9000 },
+        }),
+      }),
+    );
+    expect(spoken.abbreviated).toContain(
+      'Climb via SID except maintain niner thousand. Niner thousand will be your final.',
     );
   });
 

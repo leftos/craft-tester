@@ -27,6 +27,13 @@ function clearanceOf(scenarioView: ScenarioView): ResolvedClearance {
 }
 
 /** The dropdown values that spell out the clearance the engine resolved, in the order to pick them. */
+/** The expect pick that answers the clause the engine resolved. */
+function expectAnswer(clause: ResolvedClearance['expect']['value']): string {
+  if (clause === null) return 'none';
+  if (clause.kind === 'final') return 'final';
+  return clause.minutes === 10 ? 'ten_minutes' : 'three_minutes';
+}
+
 function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
   const expectValue = clearance.expect.value;
   const feet = clearance.altitude.value.feet;
@@ -34,10 +41,7 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
     ['routeTemplate', clearance.route.value.template],
     ['routeFix', clearance.route.value.fix ?? ''],
     ['altitudePhrase', clearance.altitude.value.phrase],
-    [
-      'expect',
-      expectValue === null ? 'none' : `${expectValue.minutes === 10 ? 'ten' : 'three'}_minutes`,
-    ],
+    ['expect', expectAnswer(expectValue)],
     ['frequency', clearance.frequency.value.value],
     ['runway', clearance.runway.value],
   ];
@@ -147,7 +151,7 @@ describe('an amendment scenario', () => {
     );
     expect(amended.length, 'no seed of 1 to 20 amends the altitude box').toBeGreaterThan(0);
     for (const drawn of amended) {
-      expect(drawn.clearance.expect.value?.amended).toBe(true);
+      expect(['amended', 'final']).toContain(drawn.clearance.expect.value?.kind);
       expect(drawn.clearance.expect.value?.feet).toBe(drawn.drawn.result.corrected.filedAltitude);
     }
   });

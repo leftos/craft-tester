@@ -14,16 +14,29 @@ export type Cited<T> = {
 };
 
 /**
+ * The clause the controller speaks after the altitude, in one of the three readings it has.
+ *
+ * `filed` names the altitude the pilot filed and the delay the rules give it. `amended` is the
+ * reading after the controller amended the final altitude, which names the amended altitude
+ * instead. `final` is the reading where the clearance climbs the flight straight to that amended
+ * altitude and speaks it: there is nothing further to expect, so the clause says the altitude just
+ * assigned is the final one and carries no delay.
+ */
+export type ExpectClause =
+  | { kind: 'filed'; feet: number; minutes: number }
+  | { kind: 'amended'; feet: number; minutes: number }
+  | { kind: 'final'; feet: number };
+
+/**
  * The clearance the engine resolved for a scenario, element by element.
  *
  * `runway` is the scenario's departure runway together with the configuration row and the mechanism
  * row that settled it. `sid.value.spoken` is the chart's spoken name ("Trukn Two");
  * `sid.value.family` is what grading compares, because AIRAC cycles bump the version in `id`.
- * `expect.value.amended` marks the clause the controller speaks after amending the final altitude,
- * which names the amended altitude rather than the filed one. `redundantExpect` carries the expect
- * clause the chart already speaks for the pilot, which a controller may repeat without harm: it is
- * null wherever the clause is spoken, wherever it was dropped for another reason, and wherever the
- * chart stays silent.
+ * `expect.value.kind` says which of the three readings the clause takes. `redundantExpect` carries
+ * the expect clause the chart already speaks for the pilot, which a controller may repeat without
+ * harm: it is null wherever the clause is spoken, wherever it was dropped for another reason, and
+ * wherever the chart stays silent.
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
@@ -31,7 +44,7 @@ export type ResolvedClearance = {
   sid: Cited<{ id: string; family: string; spoken: string }>;
   route: Cited<{ template: RouteTemplate; fix?: string }>;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
-  expect: Cited<{ feet: number; minutes: number; amended: boolean } | null>;
+  expect: Cited<ExpectClause | null>;
   redundantExpect: Cited<{ feet: number; minutes: number } | null>;
   frequency: Cited<{ value: string; sectorId: string }>;
 };
@@ -74,7 +87,7 @@ export type PlayerPicks = {
   routeFix?: string;
   altitudePhrase: AltitudePhrase;
   altitudeFeet?: number;
-  expect: 'ten_minutes' | 'five_minutes' | 'three_minutes' | 'none';
+  expect: 'ten_minutes' | 'five_minutes' | 'three_minutes' | 'final' | 'none';
   frequency: string;
   runway: string;
 };
@@ -97,12 +110,11 @@ export type Grade = {
   citations: RuleCitation[];
 };
 
-/** The expect clause as a fixture stores it, which carries `amended` only where it is set. */
-function expectedExpect(
-  expect: NonNullable<ResolvedClearance['expect']['value']>,
-): NonNullable<ExpectedClearance['expect']> {
+/** The expect clause as a fixture stores it, which marks the reading only where it is not the filed one. */
+function expectedExpect(expect: ExpectClause): NonNullable<ExpectedClearance['expect']> {
+  if (expect.kind === 'final') return { feet: expect.feet, final: true };
   const stored = { feet: expect.feet, minutes: expect.minutes };
-  return expect.amended ? { ...stored, amended: true } : stored;
+  return expect.kind === 'amended' ? { ...stored, amended: true } : stored;
 }
 
 /**
@@ -110,7 +122,8 @@ function expectedExpect(
  *
  * Drops the citations and keeps the SID family rather than its versioned id, so a fixture runner
  * can compare an engine result with a checked-in expectation by deep equality. An expect clause
- * writes `amended` only where it is set, which leaves an ordinary clause the shape it always had.
+ * writes `amended` or `final` only where the reading is one of those, which leaves an ordinary
+ * clause the shape it always had.
  *
  * @param resolved The clearance the engine resolved.
  * @returns The same clearance in the shape a fixture stores.

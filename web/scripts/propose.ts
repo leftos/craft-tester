@@ -238,7 +238,11 @@ function stripLines(scenario: Scenario, airport: AirportData): (readonly [string
  */
 function expectValue(clearance: ResolvedClearance): string {
   const expect = clearance.expect.value;
-  if (expect !== null) return `expect ${expect.feet} ${expect.minutes} minutes after departure`;
+  if (expect?.kind === 'final') return `${expect.feet} will be your final`;
+  if (expect !== null) {
+    const opening = expect.kind === 'amended' ? 'expect amended' : 'expect';
+    return `${opening} ${expect.feet} ${expect.minutes} minutes after departure`;
+  }
   const redundant = clearance.redundantExpect.value;
   if (redundant === null) return 'none';
   return `none (chart publishes ${redundant.minutes} minutes; speaking it is acceptable)`;

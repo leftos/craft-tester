@@ -38,27 +38,50 @@
             "expect": {
               "anyOf": [
                 {
-                  "additionalProperties": false,
-                  "properties": {
-                    "amended": {
-                      "type": "boolean"
+                  "anyOf": [
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "amended": {
+                          "type": "boolean"
+                        },
+                        "feet": {
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991,
+                          "type": "integer"
+                        },
+                        "minutes": {
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "feet",
+                        "minutes"
+                      ],
+                      "type": "object"
                     },
-                    "feet": {
-                      "exclusiveMinimum": 0,
-                      "maximum": 9007199254740991,
-                      "type": "integer"
-                    },
-                    "minutes": {
-                      "exclusiveMinimum": 0,
-                      "maximum": 9007199254740991,
-                      "type": "integer"
+                    {
+                      "additionalProperties": false,
+                      "properties": {
+                        "feet": {
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991,
+                          "type": "integer"
+                        },
+                        "final": {
+                          "const": true,
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "feet",
+                        "final"
+                      ],
+                      "type": "object"
                     }
-                  },
-                  "required": [
-                    "feet",
-                    "minutes"
-                  ],
-                  "type": "object"
+                  ]
                 },
                 {
                   "type": "null"

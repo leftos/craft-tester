@@ -8,13 +8,13 @@ import type {
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
-import type { Cited, Unresolved } from '@/rules/types.ts';
+import type { Cited, ExpectClause, Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
 /** The altitude element of a clearance and the expect clause that follows it. */
 export type ResolvedAltitude = {
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
-  expect: Cited<{ feet: number; minutes: number; amended: boolean } | null>;
+  expect: Cited<ExpectClause | null>;
   redundantExpect: Cited<{ feet: number; minutes: number } | null>;
 };
 
@@ -119,7 +119,7 @@ function expectClause(
   scenario: Scenario,
   phraseology: Phraseology,
 ): {
-  clause: { feet: number; minutes: number; amended: boolean } | null;
+  clause: ExpectClause | null;
   redundant: { feet: number; minutes: number } | null;
 } {
   const nothing = { clause: null, redundant: null };
@@ -136,7 +136,7 @@ function expectClause(
     };
   }
   return {
-    clause: { feet: scenario.filedAltitude, minutes: row.expectAfterMinutes, amended: false },
+    clause: { kind: 'filed', feet: scenario.filedAltitude, minutes: row.expectAfterMinutes },
     redundant: null,
   };
 }

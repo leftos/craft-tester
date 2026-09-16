@@ -29,7 +29,7 @@ const clearance: ResolvedClearance = {
   sid: { value: { id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' }, citations: [] },
   route: { value: { template: 'transition', fix: 'DEDHD' }, citations: [] },
   altitude: { value: { phrase: 'climb_via_except', feet: 10000 }, citations: [] },
-  expect: { value: { feet: 34000, minutes: 10, amended: false }, citations: [] },
+  expect: { value: { kind: 'filed', feet: 34000, minutes: 10 }, citations: [] },
   redundantExpect: { value: null, citations: [] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [] },
 };
@@ -96,6 +96,29 @@ describe('craftGroups', () => {
     expect(picked.filter((_, index) => index !== 1)).toStrictEqual(
       given.filter((_, index) => index !== 1),
     );
+  });
+});
+
+describe('the expect row', () => {
+  /** The labels of the expect dropdown, in the order the form offers them. */
+  function expectLabels(plan: Scenario, resolved: ResolvedClearance): string[] {
+    const row = craftGroups(plan, ksfo, resolved, full, 'given')[4];
+    if (row?.kind !== 'picked') throw new Error('the expect row is not a picked row');
+    return (row.fields[0]?.options ?? []).map((option) => option.label);
+  }
+
+  it('names the altitude on the strip in the final choice', () => {
+    expect(expectLabels(scenario, clearance)).toContain('34,000 will be your final');
+  });
+
+  it('names the amended altitude where the altitude box was amended', () => {
+    const amended: ResolvedClearance = {
+      ...clearance,
+      expect: { value: { kind: 'amended', feet: 32000, minutes: 10 }, citations: [] },
+    };
+    const labels = expectLabels({ ...scenario, filedAltitude: 32000 }, amended);
+    expect(labels).toContain('32,000 will be your final');
+    expect(labels).toContain('expect amended altitude 10 minutes after departure');
   });
 });
 

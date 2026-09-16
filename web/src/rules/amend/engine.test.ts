@@ -44,6 +44,28 @@ function ual313(): Scenario {
   });
 }
 
+/** The worksheet plan whose Sacramento route and altitude are both above what the TEC route allows. */
+function skw2345(): Scenario {
+  return scenario({
+    callsign: 'SKW2345',
+    aircraftType: 'E75L',
+    destination: 'KSMF',
+    filedRoute: 'SFO4 CCR CCR2',
+    filedAltitude: 19000,
+    squawk: '4615',
+  });
+}
+
+/** The worksheet plan filed at an odd flight level on a northbound course, amended one level down. */
+function swa126(): Scenario {
+  return scenario({
+    callsign: 'SWA126',
+    aircraftType: 'B737',
+    filedAltitude: 33000,
+    squawk: '4613',
+  });
+}
+
 function cleared(flight: Scenario) {
   const result = resolveClearance(flight, ksfo);
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
@@ -110,7 +132,55 @@ describe('resolveAmendedClearance', () => {
     expect(corrected.filedAltitude).toBe(27000);
     const result = resolveAmendedClearance(original, corrected, ksfo);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-    expect(result.clearance.expect.value).toEqual({ feet: 27000, minutes: 10, amended: true });
+    expect(result.clearance.expect.value).toEqual({ kind: 'amended', feet: 27000, minutes: 10 });
+    expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
+      'A-EXPECT-AMENDED',
+    ]);
+  });
+
+  it('says the amended altitude is the final one where the clearance climbs straight to it', () => {
+    const original = skw2345();
+    const { corrected } = resolved(original);
+    expect(corrected.filedAltitude).toBe(9000);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 9000 });
+    expect(result.clearance.expect.value).toEqual({ kind: 'final', feet: 9000 });
+    expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual(['A-FINAL']);
+    expect(result.clearance.redundantExpect.value).toBeNull();
+  });
+
+  it('keeps the amended clause where the amended altitude is above the altitude cleared to', () => {
+    const original = swa126();
+    const { corrected } = resolved(original);
+    expect(corrected.filedAltitude).toBe(32000);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.expect.value).toEqual({ kind: 'amended', feet: 32000, minutes: 10 });
+    expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
+      'A-EXPECT-AMENDED',
+    ]);
+  });
+
+  it('keeps the amended clause on a plain climb via SID, which speaks no altitude of its own', () => {
+    const original = swa126();
+    const { corrected } = resolved(original);
+    const airport: AirportData = {
+      ...ksfo,
+      altitudeRules: ksfo.altitudeRules.map((row) => ({
+        ...row,
+        whenTopAltitudePublished: 'climb_via' as const,
+      })),
+      sids: ksfo.sids.map((sid) =>
+        sid.family === 'TRUKN'
+          ? { ...sid, topAltitude: { kind: 'published' as const, feet: corrected.filedAltitude } }
+          : sid,
+      ),
+    };
+    const result = resolveAmendedClearance(original, corrected, airport);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.clearance.expect.value).toEqual({ kind: 'amended', feet: 32000, minutes: 10 });
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
       'A-EXPECT-AMENDED',
     ]);

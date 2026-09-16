@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
 import { expectChoiceLabel, grade, gradeProcedure } from '@/rules/grade.ts';
-import type { PlayerPicks, ResolvedClearance, RuleCitation, Verdict } from '@/rules/types.ts';
+import type {
+  ExpectClause,
+  PlayerPicks,
+  ResolvedClearance,
+  RuleCitation,
+  Verdict,
+} from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 
@@ -36,7 +42,7 @@ const expected: ResolvedClearance = {
     value: { phrase: 'climb_via_except', feet: 10000 },
     citations: [altitudeCitation],
   },
-  expect: { value: { feet: 35000, minutes: 10, amended: false }, citations: [altitudeCitation] },
+  expect: { value: { kind: 'filed', feet: 35000, minutes: 10 }, citations: [altitudeCitation] },
   redundantExpect: { value: null, citations: [] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [assignmentCitation] },
 };
@@ -203,7 +209,7 @@ describe('grade', () => {
   it('names the amended altitude in both labels where the altitude box was amended', () => {
     const amended: ResolvedClearance = {
       ...expected,
-      expect: { value: { feet: 27000, minutes: 10, amended: true }, citations: [] },
+      expect: { value: { kind: 'amended', feet: 27000, minutes: 10 }, citations: [] },
     };
     const [, , clause] = grade({ ...correct, expect: 'three_minutes' }, amended);
     expect(clause?.verdict).toBe('wrong');
@@ -214,12 +220,45 @@ describe('grade', () => {
   it('grades the amended clause as mandatory: speaking it is right, dropping it is not', () => {
     const amended: ResolvedClearance = {
       ...expected,
-      expect: { value: { feet: 27000, minutes: 10, amended: true }, citations: [] },
+      expect: { value: { kind: 'amended', feet: 27000, minutes: 10 }, citations: [] },
     };
     const [, , spoken] = grade({ ...correct, expect: 'ten_minutes' }, amended);
     expect(spoken?.verdict).toBe('correct');
     const [, , dropped] = grade({ ...correct, expect: 'none' }, amended);
     expect(dropped?.verdict).toBe('wrong');
+  });
+
+  it('grades the final reading the clearance speaks, and a delay in its place as a miss', () => {
+    const final: ResolvedClearance = {
+      ...expected,
+      altitude: {
+        value: { phrase: 'climb_via_except', feet: 9000 },
+        citations: [altitudeCitation],
+      },
+      expect: { value: { kind: 'final', feet: 9000 }, citations: [altitudeCitation] },
+    };
+    const picks: PlayerPicks = { ...correct, altitudeFeet: 9000 };
+    const [, , spoken] = grade({ ...picks, expect: 'final' }, final);
+    expect(spoken?.verdict).toBe('correct');
+    expect(spoken?.expectedLabel).toBe('9,000 will be your final');
+    expect(spoken?.actualLabel).toBe('9,000 will be your final');
+    const [, , delayed] = grade({ ...picks, expect: 'ten_minutes' }, final);
+    expect(delayed?.verdict).toBe('wrong');
+    expect(delayed?.actualLabel).toBe('expect amended altitude 10 minutes after departure');
+  });
+
+  it('marks the final reading wrong where the clearance speaks a delay', () => {
+    const [, , clause] = grade({ ...correct, expect: 'final' }, expected);
+    expect(clause?.verdict).toBe('wrong');
+    expect(clause?.expectedLabel).toBe('expect filed altitude 10 minutes after departure');
+    expect(clause?.actualLabel).toBe('35,000 will be your final');
+  });
+
+  it('marks the final reading wrong where the clearance speaks no clause at all', () => {
+    const noExpect: ResolvedClearance = { ...expected, expect: { value: null, citations: [] } };
+    const [, , clause] = grade({ ...correct, expect: 'final' }, noExpect);
+    expect(clause?.verdict).toBe('wrong');
+    expect(clause?.expectedLabel).toBe('no expect altitude');
   });
 
   it('accepts the clause the chart publishes, at the delay the chart publishes', () => {
@@ -334,19 +373,35 @@ describe('gradeProcedure', () => {
 });
 
 describe('expectChoiceLabel', () => {
+  const filedClause: ExpectClause = { kind: 'filed', feet: 35000, minutes: 10 };
+  const amendedClause: ExpectClause = { kind: 'amended', feet: 27000, minutes: 10 };
+
   it('names the filed altitude on a clearance and the amended one after an amendment', () => {
-    expect(expectChoiceLabel('ten_minutes', false)).toBe(
+    expect(expectChoiceLabel('ten_minutes', filedClause, 35000)).toBe(
       'expect filed altitude 10 minutes after departure',
     );
-    expect(expectChoiceLabel('ten_minutes', true)).toBe(
+    expect(expectChoiceLabel('ten_minutes', amendedClause, 27000)).toBe(
       'expect amended altitude 10 minutes after departure',
     );
-    expect(expectChoiceLabel('none', true)).toBe('no expect altitude');
+    expect(expectChoiceLabel('none', amendedClause, 27000)).toBe('no expect altitude');
   });
 
   it('names the five-minute distractor at its own delay', () => {
-    expect(expectChoiceLabel('five_minutes', false)).toBe(
+    expect(expectChoiceLabel('five_minutes', filedClause, 35000)).toBe(
       'expect filed altitude 5 minutes after departure',
+    );
+  });
+
+  it('names the altitude itself in the final choice', () => {
+    expect(expectChoiceLabel('final', { kind: 'final', feet: 9000 }, 9000)).toBe(
+      '9,000 will be your final',
+    );
+    expect(expectChoiceLabel('final', amendedClause, 32000)).toBe('32,000 will be your final');
+  });
+
+  it('names the amended altitude in a delay where the clause is the final reading', () => {
+    expect(expectChoiceLabel('three_minutes', { kind: 'final', feet: 9000 }, 9000)).toBe(
+      'expect amended altitude 3 minutes after departure',
     );
   });
 });

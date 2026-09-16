@@ -1,13 +1,34 @@
 import type { AirportData, RouteTemplate } from '@/data/schema.ts';
-import type { Grade, PlayerPicks, ResolvedClearance, Verdict } from '@/rules/types.ts';
+import type {
+  ExpectClause,
+  Grade,
+  PlayerPicks,
+  ResolvedClearance,
+  Verdict,
+} from '@/rules/types.ts';
 
-/** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
-const EXPECT_MINUTES: Record<PlayerPicks['expect'], number | null> = {
+/**
+ * What an expect clause answers: the delay in minutes, the final-altitude reading, or no clause.
+ *
+ * The altitude in the clause is never a pick — it is the one the strip reads — so the answer is the
+ * shape of the clause alone, which is what a pick and a resolved clause are compared on.
+ */
+type ExpectAnswer = number | 'final' | null;
+
+/** What each expect-clause pick answers; `none` means no expect clause at all. */
+const EXPECT_ANSWERS: Record<PlayerPicks['expect'], ExpectAnswer> = {
   ten_minutes: 10,
   five_minutes: 5,
   three_minutes: 3,
+  final: 'final',
   none: null,
 };
+
+/** What the clause the engine resolved answers, which is what a pick has to match. */
+function expectAnswer(clause: ExpectClause | null): ExpectAnswer {
+  if (clause === null) return null;
+  return clause.kind === 'final' ? 'final' : clause.minutes;
+}
 
 /**
  * Renders feet with thousands separators, e.g. `10000` as `10,000`.
@@ -60,25 +81,55 @@ export function altitudeLabel(altitude: ResolvedClearance['altitude']['value']):
 }
 
 /**
- * Renders an expect clause by its delay, or names its absence.
+ * Renders a clause spoken at a delay, which names the filed altitude or the amended one.
  *
- * The clause names the filed altitude on an ordinary clearance and the amended one where the
- * controller amended the altitude box, so the label follows the scenario rather than the pick.
+ * The altitude in the clause is the one the strip reads rather than a pick, so the label names
+ * which of the two it is and leaves the feet to the reading itself.
  */
-function expectLabel(minutes: number | null, amended: boolean): string {
-  if (minutes === null) return 'no expect altitude';
+function delayLabel(minutes: number, amended: boolean): string {
   return `expect ${amended ? 'amended' : 'filed'} altitude ${minutes} minutes after departure`;
+}
+
+/** Renders the clause that says the altitude just spoken is the one the flight tops out at. */
+function finalLabel(feet: number | undefined): string {
+  return feet === undefined
+    ? 'the filed altitude will be your final'
+    : `${formatFeet(feet)} will be your final`;
+}
+
+/**
+ * Renders the expect clause the engine resolved, the way the results view names it.
+ *
+ * @param clause The clause the clearance speaks, or null where it speaks none.
+ * @returns The label, e.g. `expect filed altitude 10 minutes after departure`.
+ */
+export function expectLabel(clause: ExpectClause | null): string {
+  if (clause === null) return 'no expect altitude';
+  if (clause.kind === 'final') return finalLabel(clause.feet);
+  return delayLabel(clause.minutes, clause.kind === 'amended');
 }
 
 /**
  * Renders an expect-clause choice the way the form and the results view name it.
  *
+ * A delay names the amended altitude wherever the altitude box was amended, which is either
+ * reading the amendment engine writes; `final` names the altitude itself.
+ *
  * @param choice The expect clause the player picked, or `none` for no expect clause at all.
- * @param amended Whether the altitude the flight filed was amended, which the clause names instead.
+ * @param clause The clause the clearance speaks, or null where it speaks none.
+ * @param finalFeet The altitude the `final` choice names: the amended altitude where the altitude
+ *   box was amended, else the filed one.
  * @returns The label, e.g. `expect filed altitude 10 minutes after departure`.
  */
-export function expectChoiceLabel(choice: PlayerPicks['expect'], amended: boolean): string {
-  return expectLabel(EXPECT_MINUTES[choice], amended);
+export function expectChoiceLabel(
+  choice: PlayerPicks['expect'],
+  clause: ExpectClause | null,
+  finalFeet: number | undefined,
+): string {
+  const answer = EXPECT_ANSWERS[choice];
+  if (answer === null) return 'no expect altitude';
+  if (answer === 'final') return finalLabel(finalFeet);
+  return delayLabel(answer, clause !== null && clause.kind !== 'filed');
 }
 
 /**
@@ -108,25 +159,42 @@ export function verdictOf(ok: boolean): Verdict {
 }
 
 /**
- * Grades the expect clause on its delay alone; the altitude in it is the filed one, not a pick.
+ * The altitude a "will be your final" label names, which the clearance already carries.
  *
- * Speaking the clause where the SID chart already publishes it is acceptable rather than wrong — it
- * repeats what the pilot already has on the chart — but only at the delay the chart publishes; any other
- * delay is a miss, as is speaking it where the clearance drops it for any other reason.
+ * The clause names the amended altitude wherever the altitude box was amended and the filed one
+ * otherwise; where the clearance speaks no clause at all, the flight is cleared to the altitude it
+ * filed, which the altitude element names wherever the phrase speaks feet and the clause the chart
+ * publishes names wherever it does not.
+ */
+function finalFeetOf(expected: ResolvedClearance): number | undefined {
+  return (
+    expected.expect.value?.feet ??
+    expected.altitude.value.feet ??
+    expected.redundantExpect.value?.feet
+  );
+}
+
+/**
+ * Grades the expect clause on its shape alone; the altitude in it is the strip's, not a pick.
+ *
+ * A delay is right at the delay the clearance speaks, and "will be your final" only where the
+ * clearance speaks that reading. Speaking a delay where the SID chart already publishes the note is
+ * acceptable rather than wrong — it repeats what the pilot already has on the chart — but only at
+ * the delay the chart publishes; any other answer is a miss, as is speaking a clause where the
+ * clearance drops it for any other reason.
  */
 function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
-  const picked = EXPECT_MINUTES[picks.expect];
+  const picked = EXPECT_ANSWERS[picks.expect];
   const clause = expected.expect.value;
-  const wanted = clause === null ? null : clause.minutes;
-  const amended = clause?.amended ?? false;
+  const wanted = expectAnswer(clause);
   const redundant = expected.redundantExpect.value;
   const acceptable =
     picked !== wanted && wanted === null && redundant !== null && picked === redundant.minutes;
   return {
     element: 'A.expect',
     verdict: acceptable ? 'acceptable' : verdictOf(picked === wanted),
-    expectedLabel: expectLabel(wanted, amended),
-    actualLabel: expectLabel(picked, amended),
+    expectedLabel: expectLabel(clause),
+    actualLabel: expectChoiceLabel(picks.expect, clause, finalFeetOf(expected)),
     citations: acceptable ? expected.redundantExpect.citations : expected.expect.citations,
   };
 }

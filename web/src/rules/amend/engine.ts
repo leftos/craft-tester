@@ -6,7 +6,13 @@ import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts'
 import { citePhraseology } from '@/rules/cite.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
-import type { EngineResult, ResolvedClearance, Unresolved } from '@/rules/types.ts';
+import type {
+  Cited,
+  EngineResult,
+  ExpectClause,
+  ResolvedClearance,
+  Unresolved,
+} from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 /** The suffix at the tail of a type box, e.g. `/L` of `B752/L`. */
@@ -127,17 +133,53 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
  */
 function amendedMinutes(clearance: ResolvedClearance, airport: AirportData): number {
   const clause = clearance.expect.value;
-  if (clause !== null) return clause.minutes;
+  if (clause !== null && clause.kind !== 'final') return clause.minutes;
   const sid = airport.sids.find((entry) => entry.id === clearance.sid.value.id);
   return sid?.chartExpectFiledAltitudeMinutes ?? DEFAULT_EXPECT_MINUTES;
 }
 
 /**
- * The clearance with the expect clause an amended final altitude calls for.
+ * The expect clause an amended final altitude calls for, with the rule row that speaks it.
  *
  * A flight whose final altitude was amended is told what to expect and when, whatever the SID chart
  * publishes: the chart's note covers the altitude the pilot filed, not the one the strip now reads.
- * The amended reading is mandatory, so nothing in it is redundant.
+ * Where the clearance climbs the flight straight to the amended altitude and speaks it — "maintain
+ * niner thousand", "climb via SID except maintain niner thousand" — there is nothing further to
+ * expect, so the clause says that the altitude just spoken is the final one. A plain "climb via
+ * SID" speaks no altitude of its own, so it keeps the amended reading even where the SID's
+ * published top altitude is the amended one.
+ *
+ * @param clearance The clearance resolved for the corrected plan.
+ * @param corrected The plan with every amendment applied.
+ * @param airport The airport data.
+ * @returns The clause to speak, with its citation.
+ */
+function amendedExpect(
+  clearance: ResolvedClearance,
+  corrected: Scenario,
+  airport: AirportData,
+): Cited<ExpectClause> {
+  const spokenFeet = clearance.altitude.value.feet;
+  if (spokenFeet !== undefined && spokenFeet >= corrected.filedAltitude) {
+    return {
+      value: { kind: 'final', feet: corrected.filedAltitude },
+      citations: citePhraseology(airport, 'A-FINAL'),
+    };
+  }
+  return {
+    value: {
+      kind: 'amended',
+      feet: corrected.filedAltitude,
+      minutes: amendedMinutes(clearance, airport),
+    },
+    citations: citePhraseology(airport, 'A-EXPECT-AMENDED'),
+  };
+}
+
+/**
+ * The clearance with the expect clause an amended final altitude calls for.
+ *
+ * Either reading is mandatory, so nothing in it is redundant.
  *
  * @param clearance The clearance resolved for the corrected plan.
  * @param corrected The plan with every amendment applied.
@@ -151,14 +193,7 @@ function withAmendedExpect(
 ): ResolvedClearance {
   return {
     ...clearance,
-    expect: {
-      value: {
-        feet: corrected.filedAltitude,
-        minutes: amendedMinutes(clearance, airport),
-        amended: true,
-      },
-      citations: citePhraseology(airport, 'A-EXPECT-AMENDED'),
-    },
+    expect: amendedExpect(clearance, corrected, airport),
     redundantExpect: { value: null, citations: [] },
   };
 }

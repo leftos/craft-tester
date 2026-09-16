@@ -2,7 +2,7 @@ import type { AirportData, Scenario } from '@/data/schema.ts';
 import { altitudeLabel, expectChoiceLabel, formatFeet, routeLabel } from '@/rules/grade.ts';
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
-import type { ClearanceElement, ResolvedClearance } from '@/rules/types.ts';
+import type { ClearanceElement, ExpectClause, ResolvedClearance } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -122,10 +122,16 @@ function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGrou
 /**
  * The expect clause, which the altitude on the strip fills in once the delay is picked.
  *
- * `amended` says whether that altitude is the amended one rather than the filed one, which is what
- * the choices are named after.
+ * The clause the engine resolved says whether that altitude is the amended one rather than the
+ * filed one, which is what the delays are named after; `finalFeet` is the altitude the "will be
+ * your final" choice names, which is the altitude the strip in front of the player reads.
  */
-function expectGroup(options: ClearanceOptions, picks: DraftPicks, amended: boolean): PickedGroup {
+function expectGroup(
+  options: ClearanceOptions,
+  picks: DraftPicks,
+  clause: ExpectClause | null,
+  finalFeet: number,
+): PickedGroup {
   return {
     kind: 'picked',
     element: 'A.expect',
@@ -135,7 +141,7 @@ function expectGroup(options: ClearanceOptions, picks: DraftPicks, amended: bool
         label: 'expect clause',
         options: options.expect.map((choice) => ({
           value: choice,
-          label: expectChoiceLabel(choice, amended),
+          label: expectChoiceLabel(choice, clause, finalFeet),
         })),
         value: picks.expect,
         disabled: false,
@@ -255,7 +261,7 @@ export function craftGroups(
     procedure === 'given' ? procedureRow(clearance, airport) : procedureGroup(airport, picks),
     routeGroup(options, picks),
     altitudeGroup(options, picks),
-    expectGroup(options, picks, clearance.expect.value?.amended ?? false),
+    expectGroup(options, picks, clearance.expect.value, scenario.filedAltitude),
     frequencyGroup(options, airport, picks),
     { kind: 'given', heading: 'T — transponder', value: scenario.squawk },
     runwayGroup(options, picks),

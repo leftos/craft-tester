@@ -39,6 +39,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "A-EXPECT",
     "A-EXPECT-AMENDED",
     "A-EXPECT-REDUNDANT",
+    "A-FINAL",
     "C-DEST",
     "A-PARITY",
     "A-RVSM",

@@ -343,8 +343,9 @@ function altitudeSentence(clearance: ResolvedClearance): string {
 function expectSentence(clearance: ResolvedClearance): string {
   const expect = clearance.expect.value;
   if (expect === null) return '';
+  if (expect.kind === 'final') return `${speakAltitude(expect.feet)} will be your final`;
   const minutes = speakDigits(String(expect.minutes));
-  const opening = expect.amended ? 'expect amended' : 'expect';
+  const opening = expect.kind === 'amended' ? 'expect amended' : 'expect';
   return `${opening} ${speakAltitude(expect.feet)} ${minutes} minutes after departure`;
 }
 

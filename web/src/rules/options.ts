@@ -18,6 +18,7 @@ export const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = [
   'ten_minutes',
   'five_minutes',
   'three_minutes',
+  'final',
   'none',
 ];
 

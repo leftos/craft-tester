@@ -44,6 +44,9 @@ phraseology_rules:
   - id: A-EXPECT-REDUNDANT
     source: "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3"
     text: "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise"
+  - id: A-FINAL
+    source: "ZOA practice via the user, 2026-09-16 (SKW2345 amendment plan)"
+    text: "(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause when the controller amended the final altitude and the clearance climbs the flight straight to it, speaking that altitude (CLIMB VIA SID EXCEPT MAINTAIN or MAINTAIN at the amended altitude): there is nothing further to expect, so the pilot is told the altitude just assigned is the final one. A plain CLIMB VIA SID speaks no altitude of its own, so the amended expect clause is spoken there instead, even where the published top altitude is the amended one"
   - id: C-DEST
     source: "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference"
     text: "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"

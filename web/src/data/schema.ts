@@ -526,15 +526,25 @@ export const ExpectedClearanceSchema = z.strictObject({
     feet: feet.optional(),
   }),
   expect: z
-    .strictObject({
-      feet,
-      minutes: z.number().int().positive(),
-      /**
-       * Set on the clause the controller speaks after amending the final altitude, which names the
-       * amended altitude rather than the filed one; absent on an ordinary expect clause.
-       */
-      amended: z.boolean().optional(),
-    })
+    .union([
+      z.strictObject({
+        feet,
+        minutes: z.number().int().positive(),
+        /**
+         * Set on the clause the controller speaks after amending the final altitude, which names the
+         * amended altitude rather than the filed one; absent on an ordinary expect clause.
+         */
+        amended: z.boolean().optional(),
+      }),
+      z.strictObject({
+        feet,
+        /**
+         * Set on the clause spoken when the amended altitude is the one the flight is cleared
+         * straight to: the altitude just spoken is the final one, so the clause carries no delay.
+         */
+        final: z.literal(true),
+      }),
+    ])
     .nullable(),
   frequency: z.string(),
   spoken: z.string().optional(),

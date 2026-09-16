@@ -335,9 +335,9 @@ describe('resolveClearance on the generated KSFO data', () => {
       sids: ksfo.sids.map((sid) => ({ ...sid, chartExpectFiledAltitudeMinutes: null })),
     };
     expect(clearanceFor(scenario({}), airport).expect.value).toEqual({
+      kind: 'filed',
       feet: scenario({}).filedAltitude,
       minutes: 10,
-      amended: false,
     });
   });
 
