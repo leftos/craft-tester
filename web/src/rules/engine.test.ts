@@ -56,12 +56,14 @@ const SOUTHBOUND_SAN = {
 
 const CASES: [string, Partial<Scenario>, Expectation][] = [
   [
+    // TRUKN2 publishes a top altitude and the flight files above it, so the SOP interim table does
+    // not apply and the altitude is a plain climb via SID (SFO ATCT SOP 2-2 c (1)).
     'a jet north via DEDHD off 01R in 28/01 gets TRUKN and the DEDHD transition',
     {},
     {
       sidId: 'TRUKN2',
       route: { template: 'transition', fix: 'DEDHD' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '120.9',
     },
   ],
@@ -71,7 +73,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'TRUKN2',
       route: { template: 'transition', fix: 'DEDHD' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '120.9',
     },
   ],
@@ -81,7 +83,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'SNTNA2',
       route: { template: 'transition', fix: 'DEDHD' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '120.9',
     },
   ],
@@ -91,7 +93,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'NIITE4',
       route: { template: 'transition', fix: 'DEDHD' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '120.9',
     },
   ],
@@ -101,7 +103,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'SSTIK5',
       route: { template: 'transition', fix: 'SUSEY' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '135.1',
     },
   ],
@@ -111,7 +113,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'SSTIK5',
       route: { template: 'transition', fix: 'YYUNG' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '135.1',
     },
   ],
@@ -163,7 +165,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'GNNRR3',
       route: { template: 'transition', fix: 'BEBOP' },
-      altitude: { phrase: 'climb_via_except', feet: 10000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '135.1',
     },
   ],
@@ -235,7 +237,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'CIITY3',
       route: { template: 'transition', fix: 'DEDHD' },
-      altitude: { phrase: 'climb_via_except', feet: 15000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '120.9',
     },
   ],
@@ -250,7 +252,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     {
       sidId: 'SAHEY4',
       route: { template: 'transition', fix: 'SUSEY' },
-      altitude: { phrase: 'climb_via_except', feet: 15000 },
+      altitude: { phrase: 'climb_via' },
       frequency: '135.1',
     },
   ],

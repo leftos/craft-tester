@@ -2,8 +2,7 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "feet": 10000,
-      "phrase": "climb_via_except"
+      "phrase": "climb_via"
     },
     "clearedTo": "CYVR",
     "expect": null,

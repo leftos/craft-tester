@@ -1,0 +1,36 @@
+{
+  "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KRNO",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "ORRCA",
+      "template": "transition"
+    },
+    "sidFamily": "NIITE"
+  },
+  "id": "syn-niite4-orrca-01r-krno-top-published",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "A20N",
+    "callsign": "JBU223",
+    "dayOfWeek": "friday",
+    "departureRunway": "01R",
+    "destination": "KRNO",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 21000,
+    "filedRoute": "NIITE4 ORRCA TARVR SPOON",
+    "localTime": "0049",
+    "runwayConfigId": "28/01",
+    "squawk": "2520"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "user example 2026-09-15, seed etebh9 in 28/01: NIITE4 publishes FL190 and the plan files 21,000, so the altitude is plain climb via SID (SFO ATCT SOP 2-2 c (1))"
+  },
+  "status": "settled"
+}

@@ -2,7 +2,7 @@
   "airport": "KSFO",
   "expected": {
     "altitude": {
-      "feet": 5000,
+      "feet": 11000,
       "phrase": "climb_via_except"
     },
     "clearedTo": "KSMF",
