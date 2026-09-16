@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "ws-phraseology-practice-2-cmd70",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "BE20",
     "callsign": "CMD70",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KACV",
+    "equipmentSuffix": "/G",
     "filedAltitude": 18000,
     "filedRoute": "GAPP7 SGD YAGER",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3371"
   },

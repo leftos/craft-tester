@@ -22,7 +22,7 @@ from craft_generator.charts_api import (
     parse_departure_charts,
     pdf_cache_path,
 )
-from craft_generator.cifp.airports import parse_airport_coordinates
+from craft_generator.cifp.airports import parse_airport_records
 from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effective_date_for, effective_date_for_cycle
 from craft_generator.cifp.navaids import parse_navaids
 from craft_generator.cifp.records import parse_records
@@ -50,7 +50,6 @@ from craft_generator.worksheets import (
     designator_wtcs,
     fetch_worksheet_text,
     fixture_dir,
-    rnav_suffixes,
     settled_fixture_at,
     sheet_fixtures,
 )
@@ -356,7 +355,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             navaids=parse_navaids(lines),
             charts=charts,
             aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),
-            coordinates=parse_airport_coordinates(lines),
+            airport_records=parse_airport_records(lines),
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
             fixture_routes=fixture_filed_routes(airport),
             provenance=Provenance(
@@ -472,7 +471,6 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
     directory = airport_dir(airport)
     config = load_worksheets(directory / WORKSHEETS_FILE)
     inputs = load_airport(directory)
-    rnav = rnav_suffixes(load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE))
     cache = cache_dir()
     specs = fetch_aircraft_specs(cache, force=force)
     classes = designator_classes(specs, config.type_aliases)
@@ -488,7 +486,6 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
             text,
             icao=airport,
             sop=inputs.sop,
-            rnav=rnav,
             type_aliases=config.type_aliases,
             aircraft_classes=classes,
             wake_categories=wake_categories,

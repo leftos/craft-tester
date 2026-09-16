@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-jsx201",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "E135",
     "callsign": "JSX201",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KLAS",
+    "equipmentSuffix": "/L",
     "filedAltitude": 35000,
     "filedRoute": "WESLA5 NTELL Q162 ESSAA BTY SUNST4",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4604"
   },

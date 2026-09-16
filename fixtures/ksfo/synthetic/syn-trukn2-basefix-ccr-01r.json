@@ -15,16 +15,17 @@
     "sidFamily": "TRUKN"
   },
   "id": "syn-trukn2-basefix-ccr-01r",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "TBM9",
     "callsign": "N221TB",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSMF",
+    "equipmentSuffix": "/G",
     "filedAltitude": 11000,
     "filedRoute": "TRUKN2 TRUKN CCR CCR2",
     "localTime": "1230",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4117"
   },

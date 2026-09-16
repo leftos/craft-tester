@@ -15,16 +15,17 @@
     "sidFamily": "SSTIK"
   },
   "id": "syn-sstik5-susey-01l",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "NKS642",
     "dayOfWeek": "friday",
     "departureRunway": "01L",
     "destination": "KLAX",
+    "equipmentSuffix": "/L",
     "filedAltitude": 35000,
     "filedRoute": "SSTIK5 SUSEY EBAYE BURGL IRNMN2",
     "localTime": "1615",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4406"
   },

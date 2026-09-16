@@ -45,6 +45,7 @@ from datetime import date
 from typing import Any
 
 from craft_generator.chart_text import ChartFacts, TopAltitude
+from craft_generator.cifp.airports import AirportRecord
 from craft_generator.cifp.navaids import Navaid
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
 from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
@@ -111,8 +112,8 @@ class Provenance:
 class BuildInputs:
     """Every source :func:`build_airport` joins, already parsed.
 
-    ``sids``, ``runways``, ``navaids`` and ``coordinates`` come from the CIFP - the navaids keyed by
-    identifier, the coordinates by ICAO identifier - ``charts`` from the charts API and the chart
+    ``sids``, ``runways``, ``navaids`` and ``airport_records`` come from the CIFP - the navaids keyed
+    by identifier, the airport records by ICAO identifier - ``charts`` from the charts API and the chart
     PDFs (keyed by chart name, in the order the API lists them), ``aircraft_classes`` from the vNAS
     specs, and ``fixture_routes`` from the filed route of every checked-in fixture of the airport,
     which name navaids the airport data itself never mentions.
@@ -124,7 +125,7 @@ class BuildInputs:
     navaids: dict[str, Navaid]
     charts: dict[str, ChartInput]
     aircraft_classes: dict[str, AircraftClass]
-    coordinates: dict[str, tuple[float, float]]
+    airport_records: dict[str, AirportRecord]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
     fixture_routes: tuple[str, ...]
     provenance: Provenance
@@ -152,21 +153,21 @@ def _clock(value: str, where: str) -> str:
     return f"{match.group('hours')}{match.group('minutes')}"
 
 
-def _airport(info: AirportInfo, coordinates: Mapping[str, tuple[float, float]]) -> Document:
-    found = coordinates.get(info.icao)
+def _airport(info: AirportInfo, airport_records: Mapping[str, AirportRecord]) -> Document:
+    found = airport_records.get(info.icao)
     if found is None:
         raise ValueError(
             f"sop.yaml airport.icao {info.icao!r}: the CIFP carries no airport record for it, so the document has no reference point; "
             "correct the identifier, as the direction-of-flight rules measure the course from it"
         )
-    latitude, longitude = found
     return {
         "icao": info.icao,
         "faa": info.faa,
         "spoken": info.spoken,
         "clearanceDelivery": info.clearance_delivery,
-        "lat": latitude,
-        "lon": longitude,
+        "lat": found.latitude,
+        "lon": found.longitude,
+        "magneticVariation": found.magnetic_variation,
     }
 
 
@@ -294,16 +295,16 @@ def _equipment_suffix(suffix: EquipmentSuffix) -> Document:
     }
 
 
-def _destination(destination: Destination, coordinates: Mapping[str, tuple[float, float]]) -> Document:
+def _destination(destination: Destination, airport_records: Mapping[str, AirportRecord]) -> Document:
     latitude, longitude = destination.lat, destination.lon
     if latitude is None or longitude is None:
-        found = coordinates.get(destination.icao)
+        found = airport_records.get(destination.icao)
         if found is None:
             raise ValueError(
                 f"routes.yaml destinations[{destination.icao}]: the CIFP has no airport record for {destination.icao!r} and the row gives no "
                 "lat/lon; add hand coordinates to that row, as the FAA file carries US airports only"
             )
-        latitude, longitude = found
+        latitude, longitude = found.latitude, found.longitude
     return {
         "icao": destination.icao,
         "spoken": destination.spoken,
@@ -380,7 +381,7 @@ def _loa_rules(inputs: BuildInputs) -> list[Document]:
 def _route_library(inputs: BuildInputs) -> Document:
     routes = inputs.airport.routes
     return {
-        "destinations": [_destination(destination, inputs.coordinates) for destination in routes.destinations],
+        "destinations": [_destination(destination, inputs.airport_records) for destination in routes.destinations],
         "telephony": dict(routes.telephony),
         "cargoAirlines": list(routes.cargo_airlines),
         "fleet": [_fleet_entry(entry) for entry in routes.fleet],
@@ -791,7 +792,7 @@ def build_airport(inputs: BuildInputs) -> Document:
     """
     sop = inputs.airport.sop
     document: Document = {
-        "airport": _airport(sop.airport, inputs.coordinates),
+        "airport": _airport(sop.airport, inputs.airport_records),
         "provenance": _provenance(sop, inputs.provenance),
         "runwayConfigs": [_runway_config(config) for config in sop.runway_configs],
         "departureSectors": [_sector(sector) for sector in sop.departure_sectors],

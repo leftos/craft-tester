@@ -93,15 +93,12 @@ const ON_REQUEST_CHANCE = 0.5;
 const MAX_ATTEMPTS = 50;
 
 /**
- * A drawn scenario plus the two facts the strip does not carry.
+ * A drawn scenario plus the one fact the strip does not carry.
  *
- * `suffix` is the equipment suffix the type filed, which the strip shows next to the type but the
- * `Scenario` schema does not hold; `correctSidId` is the procedure the SOP assigns, which the
- * filed route may or may not name.
+ * `correctSidId` is the procedure the SOP assigns, which the filed route may or may not name.
  */
 export type GeneratedScenario = {
   scenario: Scenario;
-  suffix: string;
   correctSidId: string;
 };
 
@@ -352,8 +349,8 @@ function pickSidToken(rng: Rng, airport: AirportData, correctSidId: string): str
  * @param rng The seeded generator; every draw advances it.
  * @param airport The airport data the scenario is drawn from.
  * @param filter The time of day and the runway configurations the draw is narrowed to.
- * @returns The scenario with its suffix and assigned procedure, or the reason the engine could not
- *   clear it, which is the caller's cue to draw again.
+ * @returns The scenario and its assigned procedure, or the reason the engine could not clear it,
+ *   which is the caller's cue to draw again.
  */
 export function drawScenario(
   rng: Rng,
@@ -363,14 +360,14 @@ export function drawScenario(
   const config = pickConfig(rng, airport, filter.config);
   const route = rng.pick(airport.routeLibrary.routes);
   const fleet = pickFleet(rng, airport, route);
-  const suffix = rng.pick(fleet.suffixes);
+  const equipmentSuffix = rng.pick(fleet.suffixes);
   const picked = pickRunway(rng, airport, config, fleet, directionOf(route.exitFix, airport.gates));
   const time = pickTime(rng, filter.time);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const filed: Scenario = {
     callsign: pickCallsign(rng, fleet),
     aircraftType: fleet.type,
-    rnavCapable: airport.equipmentSuffixes.find((entry) => entry.suffix === suffix)?.rnav ?? false,
+    equipmentSuffix,
     destination: route.destination,
     filedRoute: route.tail,
     filedAltitude: rng.pick(route.altitudes),
@@ -389,7 +386,7 @@ export function drawScenario(
   const correctSidId = result.clearance.sid.value.id;
   const token = pickSidToken(rng, airport, correctSidId);
   const scenario = token === undefined ? filed : { ...filed, filedRoute: `${token} ${route.tail}` };
-  return { scenario, suffix, correctSidId };
+  return { scenario, correctSidId };
 }
 
 /**
@@ -402,7 +399,7 @@ export function drawScenario(
  * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the scenario is drawn from.
  * @param filter The time of day and the runway configurations the draw is narrowed to.
- * @returns The scenario with its equipment suffix and the procedure the SOP assigns it.
+ * @returns The scenario and the procedure the SOP assigns it.
  * @throws Error When `MAX_ATTEMPTS` draws in a row were all unclearable, naming the last reason.
  */
 export function generateScenario(

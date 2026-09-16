@@ -15,16 +15,17 @@
     "sidFamily": "MOLEN"
   },
   "id": "syn-molen9-molen-28l",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "MD11",
     "callsign": "UPS2891",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "PHNL",
+    "equipmentSuffix": "/L",
     "filedAltitude": 34000,
     "filedRoute": "MOLEN9 MOLEN ALLBE R465 CLUTS MAGGI3",
     "localTime": "1250",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "2622"
   },

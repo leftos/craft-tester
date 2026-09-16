@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-swa1922",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA1922",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KONT",
+    "equipmentSuffix": null,
     "filedAltitude": 28000,
     "filedRoute": "GAPP7 AVE J6 PMD",
     "localTime": "1400",
-    "rnavCapable": false,
     "runwayConfigId": "28 RT",
     "squawk": "4615"
   },

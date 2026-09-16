@@ -15,16 +15,17 @@
     "sidFamily": "CIITY"
   },
   "id": "syn-ciity3-dedhd-10l-1910",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "UAL2104",
     "dayOfWeek": "tuesday",
     "departureRunway": "10L",
     "destination": "KSEA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 34000,
     "filedRoute": "CIITY3 DEDHD RBL LMT HAWKZ7",
     "localTime": "1145",
-    "rnavCapable": true,
     "runwayConfigId": "19/10",
     "squawk": "6402"
   },

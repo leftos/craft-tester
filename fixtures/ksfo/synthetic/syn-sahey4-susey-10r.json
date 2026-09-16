@@ -15,16 +15,17 @@
     "sidFamily": "SAHEY"
   },
   "id": "syn-sahey4-susey-10r",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "NKS655",
     "dayOfWeek": "tuesday",
     "departureRunway": "10R",
     "destination": "KLAX",
+    "equipmentSuffix": "/L",
     "filedAltitude": 33000,
     "filedRoute": "SAHEY4 SUSEY EBAYE BURGL IRNMN2",
     "localTime": "1620",
-    "rnavCapable": true,
     "runwayConfigId": "10/10",
     "squawk": "6411"
   },

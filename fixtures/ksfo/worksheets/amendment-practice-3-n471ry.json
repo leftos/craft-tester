@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-n471ry",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "SR22",
     "callsign": "N471RY",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KAPC",
+    "equipmentSuffix": "/G",
     "filedAltitude": 4000,
     "filedRoute": "SGD",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4607"
   },

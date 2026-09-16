@@ -29,13 +29,12 @@ function conditionsHold(
   when: AssignmentCondition,
   ctx: Classification,
   exitElement: string,
-  scenario: Scenario,
 ): boolean {
   return [
     when.configs === undefined || when.configs.includes(ctx.config.id),
     when.notConfigs === undefined || !when.notConfigs.includes(ctx.config.id),
     when.noiseWindow === undefined || ctx.activeNoiseWindows.includes(when.noiseWindow),
-    when.rnav === undefined || when.rnav === scenario.rnavCapable,
+    when.rnav === undefined || when.rnav === ctx.rnavCapable,
     when.exitFixes === undefined || when.exitFixes.includes(exitElement),
   ].every(Boolean);
 }
@@ -46,13 +45,12 @@ function rowApplies(
   ctx: Classification,
   exitElement: string,
   direction: Direction | undefined,
-  scenario: Scenario,
 ): boolean {
   if (row.plan !== ctx.plan) return false;
   if (row.direction !== 'any' && row.direction !== direction) return false;
   if (!row.runwayFamilies.includes(ctx.runwayFamily)) return false;
   if (!row.classes.includes(ctx.aircraftClass)) return false;
-  return row.when === undefined || conditionsHold(row.when, ctx, exitElement, scenario);
+  return row.when === undefined || conditionsHold(row.when, ctx, exitElement);
 }
 
 /** The active notice, if any, that takes a row's SID family out of use. */
@@ -84,10 +82,15 @@ function servesExitElement(sid: Sid, exitElement: string): boolean {
 }
 
 /** Whether the flight can fly the SID from its runway with its equipment to its exit element. */
-function isCompatible(sid: Sid, exitElement: string, scenario: Scenario): boolean {
+function isCompatible(
+  sid: Sid,
+  exitElement: string,
+  scenario: Scenario,
+  ctx: Classification,
+): boolean {
   return (
     sid.runways.includes(scenario.departureRunway) &&
-    (!sid.rnavRequired || scenario.rnavCapable) &&
+    (!sid.rnavRequired || ctx.rnavCapable) &&
     servesExitElement(sid, exitElement)
   );
 }
@@ -128,7 +131,7 @@ export function selectSid(
   const incompatible: string[] = [];
   const notices: Notice[] = [];
   for (const row of airport.assignmentRules) {
-    if (!rowApplies(row, ctx, exitElement, direction, scenario)) continue;
+    if (!rowApplies(row, ctx, exitElement, direction)) continue;
     const notice = sidOffNotice(row.sidFamily, ctx, airport);
     if (notice !== undefined) {
       notices.push(notice);
@@ -136,7 +139,7 @@ export function selectSid(
     }
     if (row.sidFamily === null) return unresolved('R.sid', row.text);
     const sid = airport.sids.find(
-      (entry) => entry.family === row.sidFamily && isCompatible(entry, exitElement, scenario),
+      (entry) => entry.family === row.sidFamily && isCompatible(entry, exitElement, scenario, ctx),
     );
     if (sid === undefined) {
       incompatible.push(row.id);

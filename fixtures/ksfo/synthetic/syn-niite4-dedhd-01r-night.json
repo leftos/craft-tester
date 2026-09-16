@@ -15,16 +15,17 @@
     "sidFamily": "NIITE"
   },
   "id": "syn-niite4-dedhd-01r-night",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B738",
     "callsign": "DAL1930",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSEA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 34000,
     "filedRoute": "NIITE4 DEDHD RBL LMT HAWKZ7",
     "localTime": "2300",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "6231"
   },

@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-twy313",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "CL30",
     "callsign": "TWY313",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSLC",
+    "equipmentSuffix": "/L",
     "filedAltitude": 41000,
     "filedRoute": "SNTNA2 TIPRE Q126 KREYK BVL WAATS5",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4614"
   },

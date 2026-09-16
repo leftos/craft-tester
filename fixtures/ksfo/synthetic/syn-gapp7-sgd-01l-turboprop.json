@@ -15,16 +15,17 @@
     "sidFamily": "SFO"
   },
   "id": "syn-gapp7-sgd-01l-turboprop",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B350",
     "callsign": "N480KB",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KACV",
+    "equipmentSuffix": "/G",
     "filedAltitude": 16000,
     "filedRoute": "GAPP7 SGD YAGER",
     "localTime": "1340",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4231"
   },

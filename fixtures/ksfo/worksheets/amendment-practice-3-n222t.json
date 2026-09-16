@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-n222t",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "M20T",
     "callsign": "N222T",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KWVI",
+    "equipmentSuffix": "/A",
     "filedAltitude": 7000,
     "filedRoute": "OAK V107 CATHE V111 SNS",
     "localTime": "1400",
-    "rnavCapable": false,
     "runwayConfigId": "28/01",
     "squawk": "4613"
   },

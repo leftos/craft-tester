@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "ws-phraseology-practice-1a-n483ka",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B350",
     "callsign": "N483KA",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KTRK",
+    "equipmentSuffix": "/G",
     "filedAltitude": 17000,
     "filedRoute": "GAPP7 OAK V244 ALTAM V392 SAC V6 SWR TRUCK",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3355"
   },

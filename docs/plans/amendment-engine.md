@@ -36,7 +36,10 @@ Design source: [craft-trainer-v1.md, "Amendment mode"](./craft-trainer-v1.md#ame
   `citations: RuleCitation[]`; `toExpectedAmendments` strips them, like `toExpectedClearance`.
 - `AmendmentResult = { ok: true; amendments: ResolvedAmendment[] } | { ok: false; unresolved: Unresolved[] }`
   with `ClearanceElement` widened by `'BOX.type' | 'BOX.altitude' | 'BOX.route'`. Zero amendments means
-  the plan is correct as filed.
+  the plan is correct as filed, which is a first-class outcome (user steer 2026-09-15: amendment
+  practice includes already-correct plans, because knowing when nothing is wrong is half the skill).
+  A fixture settles with `expected: { amendments: [] }` for such a plan, and the runner treats an empty
+  list as an expectation to match, never as "no expectation yet".
 - `airport.magneticVariation: number` (degrees, east positive), from the CIFP `PA` row columns
   `[51:56]` (`E0140` on the KSFO row = 14.0°E). The parity check uses the magnetic initial great-circle
   course from the airport to the destination's `lat`/`lon`.
@@ -65,7 +68,19 @@ Design source: [craft-trainer-v1.md, "Amendment mode"](./craft-trainer-v1.md#ame
   "an RNAV suffix would keep the filed SID" when the filed SID is RNAV and valid otherwise. Both
   amendments are returned; step 21 settles which the sheet meant.
 - **engine.ts**: `resolveAmendments(scenario, airport)` runs type, altitude, route in that order and
-  concatenates; any unresolved box fails the whole result.
+  concatenates; any unresolved box fails the whole result. The `ok` result also carries `corrected`,
+  the scenario with every proposed value applied (user decision 2026-09-15: a session is *amend, then
+  read the clearance for the amended plan*, so step 20 feeds `corrected` into the CRAFT form and the
+  clearance engine, and the altitude clause reads "expect amended" where the altitude box changed).
+
+## Clean clearances (user rule 2026-09-15)
+
+Training defines a clean clearance as one read aloud exactly as filed, and the SID is part of the
+flight plan. Clearance mode therefore draws only plans whose route already carries the assigned SID
+(current version), and the procedure is no longer a graded element there. A missing, stale or wrong
+SID is amendment material: the route check above proposes the assigned one. The dirty synthetic
+fixtures (`syn-no-sid-*`, `syn-stale-*`, the SEGUL-off case) stay as clearance-engine fixtures because
+the engine must still resolve the clearance a dirty plan gets after amendment.
 
 ## Steps (each a brief; all in the gen worktree, sequential)
 

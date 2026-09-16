@@ -84,7 +84,7 @@ describe(`the scenario of seed ${SEED}`, () => {
     const { scenario } = view.generated;
     const strip = new Map(stripRows(view.generated).map(([label, value]) => [label, value]));
     expect(strip.get('callsign')).toBe(scenario.callsign);
-    expect(strip.get('type')).toBe(`${scenario.aircraftType}${view.generated.suffix}`);
+    expect(strip.get('type')).toBe(`${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`);
     expect(strip.get('route')).toBe(scenario.filedRoute);
     const atis = new Map(atisRows(scenario, airport).map(([label, value]) => [label, value]));
     expect(atis.get('departing')).toBe('28L, 28R');

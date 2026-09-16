@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-nks510",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "NKS510",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KLAX",
+    "equipmentSuffix": "/A",
     "filedAltitude": 35000,
     "filedRoute": "SSTIK5 EBAYE BURGL IRNMN2",
     "localTime": "1400",
-    "rnavCapable": false,
     "runwayConfigId": "28/01",
     "squawk": "4611"
   },

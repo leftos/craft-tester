@@ -15,16 +15,17 @@
     "sidFamily": "WESLA"
   },
   "id": "ws-phraseology-practice-3-swa2096",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA2096",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KBUR",
+    "equipmentSuffix": "/L",
     "filedAltitude": 31000,
     "filedRoute": "WESLA5 KTINA CISKO RDHOT ROKKR2",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "3357"
   },

@@ -15,16 +15,17 @@
     "sidFamily": "SFO"
   },
   "id": "syn-sfo5-sac-01r-nonrnav-jet",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "ASA741",
     "dayOfWeek": "thursday",
     "departureRunway": "01R",
     "destination": "KBOI",
+    "equipmentSuffix": "/A",
     "filedAltitude": 39000,
     "filedRoute": "SFO5 SAC ANAHO",
     "localTime": "0950",
-    "rnavCapable": false,
     "runwayConfigId": "28/01",
     "squawk": "5051"
   },

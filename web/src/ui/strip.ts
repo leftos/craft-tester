@@ -10,7 +10,7 @@ import { aircraftLabel, timeLabel } from '@/ui/labels.ts';
  * ATIS advertises the 01s, gets a remarks box under the beacon code; one that filed none has no
  * such box at all.
  *
- * @param generated The drawn scenario and the equipment suffix it filed.
+ * @param generated The drawn scenario and the procedure the SOP assigns it.
  * @returns The label and value of every box.
  */
 export function stripRows(generated: GeneratedScenario): readonly (readonly [string, string])[] {
@@ -20,7 +20,7 @@ export function stripRows(generated: GeneratedScenario): readonly (readonly [str
     remarks === undefined || remarks.length === 0 ? [] : [['remarks', remarks]];
   return [
     ['callsign', scenario.callsign],
-    ['type', aircraftLabel(scenario.aircraftType, generated.suffix)],
+    ['type', aircraftLabel(scenario.aircraftType, scenario.equipmentSuffix)],
     ['destination', scenario.destination],
     ['altitude', formatFeet(scenario.filedAltitude)],
     ['route', scenario.filedRoute],
@@ -33,7 +33,7 @@ export function stripRows(generated: GeneratedScenario): readonly (readonly [str
 /**
  * Renders the flight progress strip.
  *
- * @param generated The drawn scenario and the equipment suffix it filed.
+ * @param generated The drawn scenario and the procedure the SOP assigns it.
  * @returns The strip panel.
  */
 export function renderStrip(generated: GeneratedScenario): HTMLElement {

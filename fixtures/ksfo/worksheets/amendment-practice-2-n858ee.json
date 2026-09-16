@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-n858ee",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "E55P",
     "callsign": "N858EE",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KCRQ",
+    "equipmentSuffix": "/Z",
     "filedAltitude": 37000,
     "filedRoute": "SEGUL1 YYUNG LEGOZ LEGOZ1",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4610"
   },

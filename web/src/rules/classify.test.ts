@@ -9,7 +9,7 @@ const ksfo = ksfoJson as unknown as AirportData;
 const BASE: Scenario = {
   callsign: 'UAL1',
   aircraftType: 'B738',
-  rnavCapable: true,
+  equipmentSuffix: '/L',
   destination: 'KSEA',
   filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7',
   filedAltitude: 34000,
@@ -83,6 +83,16 @@ describe('classify', () => {
     const result = classify(scenario({ activeNotices: [] }), ksfo);
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.activeNotices).toEqual([]);
+  });
+
+  it.each([
+    ['/L', true],
+    [null, false],
+    ['/Q', false],
+  ] as const)('reads RNAV capability from the equipment suffix %s: %s', (suffix, expected) => {
+    const result = classify(scenario({ equipmentSuffix: suffix }), ksfo);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.rnavCapable).toBe(expected);
   });
 
   it('blocks the SID element on an aircraft type with no class', () => {

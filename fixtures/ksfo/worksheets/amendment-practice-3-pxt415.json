@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-pxt415",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "C25B",
     "callsign": "PXT415",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KUDD",
+    "equipmentSuffix": "/A",
     "filedAltitude": 32000,
     "filedRoute": "NIITE3 LOSHN PMD V137 PSP",
     "localTime": "1400",
-    "rnavCapable": false,
     "runwayConfigId": "28/01",
     "squawk": "4605"
   },

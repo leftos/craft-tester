@@ -15,16 +15,17 @@
     "sidFamily": "TRUKN"
   },
   "id": "ws-phraseology-practice-1a-dal653",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B738",
     "callsign": "DAL653",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSLC",
+    "equipmentSuffix": "/L",
     "filedAltitude": 39000,
     "filedRoute": "TRUKN2 MOGEE Q124 BVL WAATS5",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3332"
   },

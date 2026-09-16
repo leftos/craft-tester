@@ -9,7 +9,7 @@ import pytest
 from craft_generator.aircraft_classes import classes_for_fleet
 from craft_generator.chart_text import parse_chart_facts
 from craft_generator.charts_api import ChartRef, charts_api_url, parse_departure_charts
-from craft_generator.cifp.airports import parse_airport_coordinates
+from craft_generator.cifp.airports import AirportRecord, parse_airport_records
 from craft_generator.cifp.navaids import Navaid, parse_navaids
 from craft_generator.cifp.records import RunwayRecord, SidRecord, parse_records
 from craft_generator.cifp.sid import CifpSid, group_sids
@@ -105,8 +105,8 @@ def airport_record_lines() -> list[str]:
 
 
 @pytest.fixture(scope="session")
-def ksfo_coordinates(airport_record_lines: list[str]) -> dict[str, tuple[float, float]]:
-    return parse_airport_coordinates(airport_record_lines)
+def ksfo_airport_records(airport_record_lines: list[str]) -> dict[str, AirportRecord]:
+    return parse_airport_records(airport_record_lines)
 
 
 @pytest.fixture(scope="session")
@@ -152,7 +152,7 @@ def ksfo_build_inputs(
         navaids=ksfo_navaids,
         charts=ksfo_chart_inputs,
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),
-        coordinates=parse_airport_coordinates(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
+        airport_records=parse_airport_records(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
         fixture_routes=fixture_filed_routes("KSFO"),
         provenance=Provenance(

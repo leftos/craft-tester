@@ -15,16 +15,17 @@
     "sidFamily": "TRUKN"
   },
   "id": "syn-stale-trukn1-grtfl-01r",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "UAL1877",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KPDX",
+    "equipmentSuffix": "/L",
     "filedAltitude": 34000,
     "filedRoute": "TRUKN1 GRTFL MACHU TMBRS2",
     "localTime": "1500",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4261"
   },

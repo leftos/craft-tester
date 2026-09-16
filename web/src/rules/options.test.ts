@@ -8,7 +8,7 @@ const ksfo = ksfoJson as unknown as AirportData;
 const BASE: Scenario = {
   callsign: 'UAL1',
   aircraftType: 'B738',
-  rnavCapable: true,
+  equipmentSuffix: '/L',
   destination: 'KSEA',
   filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7',
   filedAltitude: 34000,

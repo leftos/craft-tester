@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-aay1002",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "A319",
     "callsign": "AAY1002",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KBLI",
+    "equipmentSuffix": "/L",
     "filedAltitude": 36000,
     "filedRoute": "SNTNA2 GRTFL OED J1 SEA PAE MADEE4",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4603"
   },

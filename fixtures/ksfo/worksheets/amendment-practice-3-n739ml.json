@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-n739ml",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B350",
     "callsign": "N739ML",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KOVE",
+    "equipmentSuffix": "/G",
     "filedAltitude": 19000,
     "filedRoute": "OAK V6 SAC V23 YUBBA",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4615"
   },

@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "syn-gapp7-oak-10l-prop-sfoe",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "C172",
     "callsign": "N578JC",
     "dayOfWeek": "tuesday",
     "departureRunway": "10L",
     "destination": "KSMF",
+    "equipmentSuffix": "/G",
     "filedAltitude": 6000,
     "filedRoute": "GAPP7 OAK V6 SAC",
     "localTime": "1210",
-    "rnavCapable": true,
     "runwayConfigId": "10/10",
     "squawk": "6421"
   },

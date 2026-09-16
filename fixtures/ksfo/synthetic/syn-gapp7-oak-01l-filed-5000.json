@@ -15,16 +15,17 @@
     "sidFamily": "SFO"
   },
   "id": "syn-gapp7-oak-01l-filed-5000",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "C172",
     "callsign": "N9184C",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KSMF",
+    "equipmentSuffix": "/G",
     "filedAltitude": 5000,
     "filedRoute": "GAPP7 OAK V6 SAC",
     "localTime": "1415",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4225"
   },

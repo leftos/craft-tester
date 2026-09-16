@@ -15,16 +15,17 @@
     "sidFamily": "TRUKN"
   },
   "id": "ws-phraseology-practice-1a-ual320",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "UAL320",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSEA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 32000,
     "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3342"
   },

@@ -137,9 +137,12 @@ function noticeLine(scenario: Scenario, airport: AirportData): string {
 /** The strip as label/value pairs. */
 function stripLines(scenario: Scenario, airport: AirportData): (readonly [string, string])[] {
   const config = airport.runwayConfigs.find((row) => row.id === scenario.runwayConfigId);
+  const rnav =
+    airport.equipmentSuffixes.find((row) => row.suffix === scenario.equipmentSuffix)?.rnav ?? false;
+  const type = `${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`;
   return [
     ['callsign', scenario.callsign],
-    ['type', `${scenario.aircraftType} (${scenario.rnavCapable ? 'RNAV' : 'non-RNAV'})`],
+    ['type', `${type} (${rnav ? 'RNAV' : 'non-RNAV'})`],
     ['destination', scenario.destination],
     ['filed route', scenario.filedRoute],
     ['altitude', String(scenario.filedAltitude)],

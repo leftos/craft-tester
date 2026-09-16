@@ -15,16 +15,17 @@
     "sidFamily": "SSTIK"
   },
   "id": "ws-phraseology-practice-1a-nks188",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "NKS188",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KLAS",
+    "equipmentSuffix": "/L",
     "filedAltitude": 33000,
     "filedRoute": "SSTIK5 NTELL Q174 FLCHR COKTL3",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3371"
   },

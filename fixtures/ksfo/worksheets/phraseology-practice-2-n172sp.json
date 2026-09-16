@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "ws-phraseology-practice-2-n172sp",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "C172",
     "callsign": "N172SP",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KMRY",
+    "equipmentSuffix": "/G",
     "filedAltitude": 7000,
     "filedRoute": "GAPP7 EUGEN",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3331"
   },

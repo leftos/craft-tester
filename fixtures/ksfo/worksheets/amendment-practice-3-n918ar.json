@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-n918ar",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "SR22",
     "callsign": "N918AR",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KSMO",
+    "equipmentSuffix": "/G",
     "filedAltitude": 9000,
     "filedRoute": "AVE",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4606"
   },

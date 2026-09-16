@@ -15,16 +15,17 @@
     "sidFamily": "WESLA"
   },
   "id": "ws-phraseology-practice-3-swa436",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA436",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KSAN",
+    "equipmentSuffix": "/L",
     "filedAltitude": 37000,
     "filedRoute": "SEGUL1 YYUNG LAX COMIX2",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "3355"
   },

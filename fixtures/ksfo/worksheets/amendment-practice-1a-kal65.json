@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-kal65",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B77L",
     "callsign": "KAL65",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "RKSI",
+    "equipmentSuffix": "/L",
     "filedAltitude": 30000,
     "filedRoute": "RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4610"
   },

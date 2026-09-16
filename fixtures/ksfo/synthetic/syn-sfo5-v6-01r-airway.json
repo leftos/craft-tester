@@ -15,16 +15,17 @@
     "sidFamily": "SFO"
   },
   "id": "syn-sfo5-v6-01r-airway",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B738",
     "callsign": "SKW5412",
     "dayOfWeek": "wednesday",
     "departureRunway": "01R",
     "destination": "KSMF",
+    "equipmentSuffix": "/L",
     "filedAltitude": 11000,
     "filedRoute": "SFO4 V6 SAC",
     "localTime": "1315",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3145"
   },

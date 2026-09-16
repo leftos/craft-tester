@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-eja115",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "GL5T",
     "callsign": "EJA115",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KBFI",
+    "equipmentSuffix": "/G",
     "filedAltitude": 45000,
     "filedRoute": "RBL J1 BTG OLM2",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4603"
   },

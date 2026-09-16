@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-swa888",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA888",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KBUR",
+    "equipmentSuffix": "/L",
     "filedAltitude": 23000,
     "filedRoute": "CISKO LHS LYNXX8",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4601"
   },

@@ -46,9 +46,10 @@ export function timeLabel(localTime: string, day: DayOfWeek): string {
  * Writes an aircraft type with the equipment suffix it filed.
  *
  * @param aircraftType The ICAO type designator, e.g. `B738`.
- * @param suffix The equipment suffix, which the data writes with its slash, e.g. `/L`.
- * @returns The type as the strip writes it, e.g. `B738/L`.
+ * @param suffix The equipment suffix, which the data writes with its slash, e.g. `/L`, or `null`
+ *   when the pilot filed none.
+ * @returns The type as the strip writes it, e.g. `B738/L`, or the bare designator without a suffix.
  */
-export function aircraftLabel(aircraftType: string, suffix: string): string {
-  return `${aircraftType}${suffix}`;
+export function aircraftLabel(aircraftType: string, suffix: string | null): string {
+  return suffix === null ? aircraftType : `${aircraftType}${suffix}`;
 }

@@ -15,6 +15,8 @@ export type Classification = {
   plan: string;
   runwayFamily: string;
   config: RunwayConfig;
+  /** Whether the filed equipment suffix is an RNAV one in `equipmentSuffixes`; no suffix is not. */
+  rnavCapable: boolean;
   activeNoiseWindows: string[];
   activeNotices: string[];
 };
@@ -75,6 +77,9 @@ export function classify(scenario: Scenario, airport: AirportData): Classificati
     plan: config.plan,
     runwayFamily: scenario.departureRunway.slice(0, 2),
     config,
+    rnavCapable:
+      airport.equipmentSuffixes.find((entry) => entry.suffix === scenario.equipmentSuffix)?.rnav ??
+      false,
     activeNoiseWindows: airport.noiseWindows
       .filter((window) => isNoiseWindowActive(window, scenario.localTime, scenario.dayOfWeek))
       .map((window) => window.id),

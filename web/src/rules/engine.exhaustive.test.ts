@@ -69,13 +69,13 @@ function enumerateCombinations(): Combination[] {
     for (const assignment of config.departureRunways) {
       for (const aircraftClass of CLASSES) {
         for (const route of routesOfClass(aircraftClass)) {
-          for (const rnavCapable of [true, false]) {
+          for (const equipmentSuffix of ['/L', '/A'] as const) {
             for (const time of TIME_BUCKETS) {
               for (const notices of NOTICE_SETS) {
                 const base: Scenario = {
                   callsign: 'TST123',
                   aircraftType: typeOfClass(aircraftClass),
-                  rnavCapable,
+                  equipmentSuffix,
                   destination: route.destination,
                   filedRoute: route.tail,
                   filedAltitude: route.altitudes[0] ?? 10000,
@@ -97,7 +97,7 @@ function enumerateCombinations(): Combination[] {
                   plan: config.plan,
                   runwayFamily: assignment.runway.slice(0, 2),
                   label: `${config.id} ${assignment.runway} ${aircraftClass} ${
-                    rnavCapable ? 'RNAV' : 'non-RNAV'
+                    equipmentSuffix === '/L' ? 'RNAV' : 'non-RNAV'
                   } via ${route.exitFix} at ${time.localTime} ${time.dayOfWeek}, ${notices.label}`,
                 });
               }

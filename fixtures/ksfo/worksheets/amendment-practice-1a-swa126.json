@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-swa126",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA126",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSEA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 33000,
     "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4613"
   },

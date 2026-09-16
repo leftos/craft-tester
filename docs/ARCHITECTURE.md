@@ -57,7 +57,8 @@ transmission, which ends "expect runway (designator)".
 ## Fixture lifecycle
 
 1. `craft-gen import-worksheets` writes worksheet plans to `fixtures/<icao>/worksheets/` as `pending`
-   with no `expected`.
+   with no `expected`; `mode` (`clearance` or `amendment`) comes from the sheet kind and says which
+   engine the runner exercises.
 2. `pnpm -C web propose <id>` prints the engine's clearance with citations.
 3. The user confirms or corrects; a correction is a YAML edit plus `craft-gen build`.
 4. The fixture gains `expected` and becomes `settled`. Settled fixtures fail the suite when they break.

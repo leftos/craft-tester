@@ -15,16 +15,17 @@
     "sidFamily": "TRUKN"
   },
   "id": "syn-trukn2-dedhd-01r-2801",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "UAL418",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSEA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 34000,
     "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
     "localTime": "1430",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4271"
   },

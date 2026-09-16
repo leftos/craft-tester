@@ -15,16 +15,17 @@
     "sidFamily": "WESLA"
   },
   "id": "syn-wesla5-susey-28l",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "JBU918",
     "dayOfWeek": "saturday",
     "departureRunway": "28L",
     "destination": "KLAX",
+    "equipmentSuffix": "/L",
     "filedAltitude": 35000,
     "filedRoute": "WESLA5 SUSEY EBAYE BURGL IRNMN2",
     "localTime": "1305",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "4411"
   },

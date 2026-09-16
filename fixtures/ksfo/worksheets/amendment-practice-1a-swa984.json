@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-swa984",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA984",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KLAX",
+    "equipmentSuffix": "/L",
     "filedAltitude": 35000,
     "filedRoute": "SSTIK5 EBAYE AVE SADDE8",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4602"
   },

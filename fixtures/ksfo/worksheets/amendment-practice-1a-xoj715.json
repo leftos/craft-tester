@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-xoj715",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "C750",
     "callsign": "XOJ715",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KDEN",
+    "equipmentSuffix": "/L",
     "filedAltitude": 43000,
     "filedRoute": "OAK6 SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4606"
   },

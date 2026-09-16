@@ -15,16 +15,17 @@
     "sidFamily": "NIITE"
   },
   "id": "syn-niite4-mogee-01r-sunday",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B738",
     "callsign": "ASA612",
     "dayOfWeek": "sunday",
     "departureRunway": "01R",
     "destination": "KSLC",
+    "equipmentSuffix": "/L",
     "filedAltitude": 39000,
     "filedRoute": "NIITE4 MOGEE Q124 BVL WAATS5",
     "localTime": "0730",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "5170"
   },

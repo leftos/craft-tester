@@ -15,16 +15,17 @@
     "sidFamily": "SFO"
   },
   "id": "syn-gapp7-oak-01l-prop",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "M20T",
     "callsign": "N724RM",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KTRK",
+    "equipmentSuffix": "/G",
     "filedAltitude": 15000,
     "filedRoute": "GAPP7 OAK V244 ALTAM V392 SAC V6 SWR TRUCK",
     "localTime": "1105",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4223"
   },

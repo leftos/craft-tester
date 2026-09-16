@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-n172sp",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "C172",
     "callsign": "N172SP",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KMYV",
+    "equipmentSuffix": "/G",
     "filedAltitude": 5000,
     "filedRoute": "SGD SAC",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4614"
   },

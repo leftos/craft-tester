@@ -15,16 +15,17 @@
     "sidFamily": "SNTNA"
   },
   "id": "ws-phraseology-practice-2-ups2896",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A306",
     "callsign": "UPS2896",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KRNO",
+    "equipmentSuffix": "/L",
     "filedAltitude": 21000,
     "filedRoute": "SNTNA2 ORRCA TARVR SPOON",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3357"
   },

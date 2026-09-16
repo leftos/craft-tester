@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "ws-phraseology-practice-2-n436ms",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "TBM9",
     "callsign": "N436MS",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KSMF",
+    "equipmentSuffix": "/L",
     "filedAltitude": 11000,
     "filedRoute": "TRUKN2 TRUKN CCR CCR2",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3342"
   },

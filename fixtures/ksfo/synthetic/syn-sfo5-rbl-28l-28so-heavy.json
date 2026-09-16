@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "syn-sfo5-rbl-28l-28so-heavy",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B77L",
     "callsign": "KAL214",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "RKSI",
+    "equipmentSuffix": "/L",
     "filedAltitude": 28000,
     "filedRoute": "SFO4 RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO J179 SMA B932 KIVAK G349 MARCC",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "2431"
   },

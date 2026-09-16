@@ -15,16 +15,17 @@
     "sidFamily": "SSTIK"
   },
   "id": "ws-phraseology-practice-2-n903jp",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "C510",
     "callsign": "N903JP",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KSBA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 33000,
     "filedRoute": "SEGUL1 YYUNG GVO HABUT",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3355"
   },

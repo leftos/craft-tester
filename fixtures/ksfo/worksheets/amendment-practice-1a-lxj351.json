@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-lxj351",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "E55P",
     "callsign": "LXJ351",
     "dayOfWeek": "tuesday",
     "departureRunway": "01L",
     "destination": "KCRQ",
+    "equipmentSuffix": "/L",
     "filedAltitude": 39000,
     "filedRoute": "GAPP7 EHF LHS V459 SLI V23 OCN",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4611"
   },

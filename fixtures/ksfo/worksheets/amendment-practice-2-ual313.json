@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-ual313",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B752",
     "callsign": "UAL313",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KSLC",
+    "equipmentSuffix": "/Q",
     "filedAltitude": 33000,
     "filedRoute": "TRUKN2 MOGEE BVLQ124 BVL WAATS5",
     "localTime": "1400",
-    "rnavCapable": false,
     "runwayConfigId": "28 RT",
     "squawk": "4614"
   },

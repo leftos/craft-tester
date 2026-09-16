@@ -9,7 +9,7 @@ const ksfo = ksfoJson as unknown as AirportData;
 const BASE: Scenario = {
   callsign: 'UAL1',
   aircraftType: 'B738',
-  rnavCapable: true,
+  equipmentSuffix: '/L',
   destination: 'KSEA',
   filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7',
   filedAltitude: 34000,
@@ -173,7 +173,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
       filedRoute: 'MOLEN9 ENI',
       destination: 'CYVR',
       filedAltitude: 33000,
-      rnavCapable: false,
+      equipmentSuffix: '/A',
       runwayConfigId: '28 SO',
       departureRunway: '28L',
     },
@@ -189,7 +189,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
     'a prop via OAK off 01L gets SFO with radar vectors and a 5,000 interim',
     {
       aircraftType: 'C172',
-      rnavCapable: false,
+      equipmentSuffix: '/A',
       runwayConfigId: '01/01',
       departureRunway: '01L',
       filedRoute: 'OAK V6 SAC',
@@ -207,7 +207,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
   [
     'a non-RNAV jet north via RBL off 01R gets the San Francisco departure',
     {
-      rnavCapable: false,
+      equipmentSuffix: '/A',
       filedRoute: 'SFO5 RBL J1 OED',
       destination: 'RKSI',
       filedAltitude: 30000,
@@ -221,7 +221,7 @@ const CASES: [string, Partial<Scenario>, Expectation][] = [
   ],
   [
     'a non-RNAV jet north off 28L gets GAP and a 3,000 maintain',
-    { rnavCapable: false, runwayConfigId: '28 SO', departureRunway: '28L' },
+    { equipmentSuffix: '/A', runwayConfigId: '28 SO', departureRunway: '28L' },
     {
       sidId: 'GAPP7',
       route: { template: 'radar_vectors_fix', fix: 'DEDHD' },
@@ -363,7 +363,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     const result = resolveClearance(
       scenario({
         aircraftType: 'C172',
-        rnavCapable: false,
+        equipmentSuffix: '/A',
         runwayConfigId: '01/01',
         departureRunway: '01L',
         filedRoute: 'OAK V6 SAC',

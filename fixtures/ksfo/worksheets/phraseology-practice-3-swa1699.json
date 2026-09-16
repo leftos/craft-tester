@@ -15,16 +15,17 @@
     "sidFamily": "SNTNA"
   },
   "id": "ws-phraseology-practice-3-swa1699",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA1699",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KBOI",
+    "equipmentSuffix": "/L",
     "filedAltitude": 41000,
     "filedRoute": "SNTNA2 ORRCA ANAHO PRNCS SADYL3",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "3331"
   },

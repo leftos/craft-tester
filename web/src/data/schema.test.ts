@@ -6,6 +6,7 @@ import fixtureJsonSchema from '@data/schema/fixture.schema.json';
 import {
   AirportDataSchema,
   AirportsIndexSchema,
+  AmendmentSchema,
   AssignmentRuleSchema,
   FixtureSchema,
 } from '@/data/schema.ts';
@@ -31,6 +32,7 @@ const minimalAirportData: AirportData = {
     clearanceDelivery: '118.2',
     lat: 37.618806,
     lon: -122.375417,
+    magneticVariation: 14,
   },
   provenance: {
     airac: { cycle: '2609', effective: '2026-09-03', cifpSha256: 'a'.repeat(64) },
@@ -123,11 +125,12 @@ const minimalFixture: Fixture = {
   id: 'ksfo-synthetic-trukn2-jet-01r',
   source: { kind: 'synthetic' },
   status: 'pending',
+  mode: 'clearance',
   airport: 'KSFO',
   scenario: {
     callsign: 'UAL123',
     aircraftType: 'B738/L',
-    rnavCapable: true,
+    equipmentSuffix: '/L',
     destination: 'KSEA',
     filedRoute: 'TRUKN2 DEDHD',
     filedAltitude: 35000,
@@ -184,7 +187,27 @@ describe('FixtureSchema', () => {
   });
 
   it('rejects an unknown key', () => {
-    const withUnknownKey = { ...minimalFixture, mode: 'clearance' };
+    const withUnknownKey = { ...minimalFixture, trainer: 'someone' };
     expect(FixtureSchema.safeParse(withUnknownKey).success).toBe(false);
+  });
+
+  it('rejects a fixture that does not say which mode it belongs to', () => {
+    const { mode, ...withoutMode } = minimalFixture;
+    expect(mode).toBe('clearance');
+    expect(FixtureSchema.safeParse(withoutMode).success).toBe(false);
+  });
+});
+
+describe('AmendmentSchema', () => {
+  it.each([
+    { box: 'route', proposed: 'TRUKN3 DEDHD RBL', reason: 'the SID version is stale' },
+    { box: 'altitude', proposedFeet: 33000, reason: 'FL340 is the wrong parity eastbound' },
+    { box: 'type', proposed: 'B752/L', reason: 'the plan filed no equipment suffix' },
+  ])('accepts the $box amendment', (amendment) => {
+    expect(AmendmentSchema.parse(amendment)).toEqual(amendment);
+  });
+
+  it('rejects an altitude amendment that proposes text instead of feet', () => {
+    expect(AmendmentSchema.safeParse({ box: 'altitude', proposed: '10000' }).success).toBe(false);
   });
 });

@@ -15,16 +15,17 @@
     "sidFamily": "GNNRR"
   },
   "id": "syn-gnnrr3-bebop-28l",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B788",
     "callsign": "UAL867",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "PHNL",
+    "equipmentSuffix": "/L",
     "filedAltitude": 35000,
     "filedRoute": "GNNRR3 BEBOP R464 BILLO R464 BITTA MAGGI3",
     "localTime": "1340",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "2617"
   },

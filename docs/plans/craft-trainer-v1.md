@@ -200,7 +200,7 @@ X:\dev\craft-tester\
 
 ### Airport data model (`data/ksfo.json`, zod in `web/src/data/schema.ts`)
 
-- `airport {icao, faa, spoken, clearanceDelivery}`, `provenance {airac {cycle, effective, cifpSha256}, chartsApi, sop {url, sha256, transcribedAt}}`
+- `airport {icao, faa, spoken, clearanceDelivery, lat, lon, magneticVariation}`, `provenance {airac {cycle, effective, cifpSha256}, chartsApi, sop {url, sha256, transcribedAt}}`
 - `runwayConfigs[] {id ("28/01"), plan "SFOW"|"SFOE", arrivalRunways, departureRunways[{runway, classes}]}`
 - `departureSectors[] {id "richmond"|"sutro", name, frequency}`, `frequencies[]` (distractor pool)
 - `gates {north: [fix], south: [...], oceanic: [...]}` — exit fix → SOP direction, hand-curated
@@ -213,7 +213,7 @@ X:\dev\craft-tester\
 
 ### Fixture schema (`fixtures/**/*.json`)
 
-`{id, source {kind: worksheet|synthetic, trainer?, date?, note?}, status: settled|pending, airport, scenario {callsign, aircraftType, rnavCapable, destination, filedRoute, filedAltitude, runwayConfigId, departureRunway, localTime, dayOfWeek, squawk}, expected {clearedTo, sidFamily, route {template: transition|radar_vectors_fix|as_filed, fix?}, altitude {phrase: climb_via|climb_via_except|maintain, feet?}, expect {feet, minutes}|null, frequency, spoken?}}`.
+`{id, source {kind: worksheet|synthetic, trainer?, date?, note?}, status: settled|pending, mode: clearance|amendment, airport, scenario {callsign, aircraftType, equipmentSuffix ("/L" | null), destination, filedRoute, filedAltitude, runwayConfigId, departureRunway, localTime, dayOfWeek, squawk}, expected {clearedTo, sidFamily, route {template: transition|radar_vectors_fix|as_filed, fix?}, altitude {phrase: climb_via|climb_via_except|maintain, feet?}, expect {feet, minutes}|null, frequency, spoken?}}`.
 `pending` fixtures run but do not fail the suite (vitest `test.fails`), so open phraseology questions are recorded from day one. The same `scenario` shape is what the runtime generator produces.
 
 ### Rules engine pipeline (`web/src/rules/engine.ts`, each helper ≤100 lines)

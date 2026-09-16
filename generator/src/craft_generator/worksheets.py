@@ -40,13 +40,13 @@ from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH
 from craft_generator.sop.model import (
     AircraftClass,
     DepartureRunway,
-    EquipmentSuffix,
     GateDirection,
     Gates,
     OnRequestKind,
     RunwayConfig,
     SopData,
     Worksheet,
+    WorksheetKind,
 )
 
 Fixture = dict[str, Any]
@@ -56,6 +56,7 @@ EXPORT_URL = "https://docs.google.com/document/d/{document_id}/export?format=txt
 LOCAL_TIME = "1400"
 DAY_OF_WEEK = "tuesday"
 SETTLED_STATUS = "settled"
+FIXTURE_MODES: Mapping[WorksheetKind, str] = {"phraseology": "clearance", "amendment": "amendment"}
 FIRST_SQUAWK = 0o4601
 TRUNCATION_MARKER = "(continued)"
 
@@ -371,18 +372,6 @@ def parse_worksheet(worksheet: Worksheet, text: str) -> list[PlanRow]:
     if worksheet.kind == "phraseology":
         return parse_phraseology_sheet(text, worksheet.title)
     return parse_amendment_sheet(text, worksheet.title)
-
-
-def rnav_suffixes(suffixes: Sequence[EquipmentSuffix]) -> frozenset[str]:
-    """Return the equipment suffixes that make an aircraft RNAV capable.
-
-    Args:
-        suffixes: The rows of ``shared/equipment_suffixes.yaml``.
-
-    Returns:
-        The suffixes whose row sets ``rnav``.
-    """
-    return frozenset(entry.suffix for entry in suffixes if entry.rnav)
 
 
 def designator_classes(specs: Sequence[Mapping[str, Any]], type_aliases: Mapping[str, str]) -> dict[str, AircraftClass]:
@@ -702,9 +691,7 @@ def _note(worksheet: Worksheet, choice: RunwayChoice) -> str:
     return note
 
 
-def fixture_for(
-    worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, runway: RunwayChoice, rnav: frozenset[str], type_aliases: Mapping[str, str]
-) -> Fixture:
+def fixture_for(worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, runway: RunwayChoice, type_aliases: Mapping[str, str]) -> Fixture:
     """Build the pending fixture of one worksheet flight plan.
 
     Args:
@@ -713,7 +700,6 @@ def fixture_for(
         index: The plan's position in the sheet, which numbers the squawk when the sheet prints none.
         icao: The departure airport the fixtures belong to.
         runway: The runway configuration and departure runway from :func:`departure_runway`.
-        rnav: The equipment suffixes that make an aircraft RNAV capable.
         type_aliases: The aircraft types the sheets file under a non-ICAO designator, out of
             ``worksheets.yaml``, mapped to the designator the fixture carries.
 
@@ -729,11 +715,12 @@ def fixture_for(
         "id": f"ws-{slug(worksheet.title)}-{row.callsign.lower()}",
         "source": {"kind": "worksheet", "note": note},
         "status": "pending",
+        "mode": FIXTURE_MODES[worksheet.kind],
         "airport": icao,
         "scenario": {
             "callsign": row.callsign,
             "aircraftType": row.designator if read_as is None else read_as,
-            "rnavCapable": row.suffix in rnav,
+            "equipmentSuffix": row.suffix,
             "destination": row.destination,
             "filedRoute": row.route,
             "filedAltitude": row.altitude_feet,
@@ -825,7 +812,6 @@ def sheet_fixtures(
     *,
     icao: str,
     sop: SopData,
-    rnav: frozenset[str],
     type_aliases: Mapping[str, str],
     aircraft_classes: Mapping[str, AircraftClass],
     wake_categories: Mapping[str, str],
@@ -839,7 +825,6 @@ def sheet_fixtures(
         text: The document's exported text.
         icao: The departure airport the fixtures belong to.
         sop: The transcribed SOP, for the runway configurations, the gates and the preference table.
-        rnav: The equipment suffixes that make an aircraft RNAV capable.
         type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
         aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
         wake_categories: The wake turbulence category of each designator, from
@@ -873,5 +858,5 @@ def sheet_fixtures(
             cargo_airlines=cargo_airlines,
             sid_runways=sid_runways,
         )
-        fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, rnav=rnav, type_aliases=type_aliases)
+        fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, type_aliases=type_aliases)
     return fixtures

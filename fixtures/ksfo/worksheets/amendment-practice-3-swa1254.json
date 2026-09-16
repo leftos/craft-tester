@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-swa1254",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA1254",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KBOI",
+    "equipmentSuffix": "/L",
     "filedAltitude": 43000,
     "filedRoute": "SFO4 SAC ANAHO",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4610"
   },

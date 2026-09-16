@@ -15,16 +15,17 @@
     "sidFamily": "WESLA"
   },
   "id": "ws-phraseology-practice-3-fft425",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "FFT425",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KLAS",
+    "equipmentSuffix": "/L",
     "filedAltitude": 33000,
     "filedRoute": "WESLA5 NTELL Q174 FLCHR COKTL2",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "3342"
   },

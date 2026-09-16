@@ -30,6 +30,7 @@ const BASE_CTX: Classification = {
   plan: 'SFOW',
   runwayFamily: '01',
   config,
+  rnavCapable: true,
   activeNoiseWindows: [],
   activeNotices: [],
 };
@@ -37,7 +38,7 @@ const BASE_CTX: Classification = {
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
   aircraftType: 'B738',
-  rnavCapable: true,
+  equipmentSuffix: '/L',
   destination: 'KSEA',
   filedRoute: 'TRUKN2 DEDHD',
   filedAltitude: 34000,

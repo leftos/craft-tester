@@ -9,7 +9,7 @@ import pytest
 from craft_generator.cli import published_sid_runways
 from craft_generator.emit import dump, fixture_schema_path, validate, write_or_check
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
-from craft_generator.sop.model import AircraftClass, AirportInputs, EquipmentSuffix, Worksheet, WorksheetConfig
+from craft_generator.sop.model import AircraftClass, AirportInputs, Worksheet, WorksheetConfig
 from craft_generator.worksheets import (
     Fixture,
     PlanRow,
@@ -21,7 +21,6 @@ from craft_generator.worksheets import (
     parse_amendment_sheet,
     parse_phraseology_sheet,
     parse_worksheet,
-    rnav_suffixes,
     settled_fixture_at,
     sheet_fixtures,
     slug,
@@ -60,11 +59,12 @@ FIRST_FIXTURE = {
         "the runway configuration 28/01 departs north per direction_runway_preference, pending validation",
     },
     "status": "pending",
+    "mode": "clearance",
     "airport": "KSFO",
     "scenario": {
         "callsign": "UAL320",
         "aircraftType": "A320",
-        "rnavCapable": True,
+        "equipmentSuffix": "/L",
         "destination": "KSEA",
         "filedRoute": "TRUKN2 DEDHD RBL LMT HAWKZ7",
         "filedAltitude": 32000,
@@ -103,7 +103,6 @@ class Importer:
     """Everything one import run resolves about the airport before it reads a sheet."""
 
     inputs: AirportInputs
-    rnav: frozenset[str]
     classes: Mapping[str, AircraftClass]
     wake_categories: Mapping[str, str]
     sid_runways: Mapping[str, Sequence[str]]
@@ -112,14 +111,12 @@ class Importer:
 @pytest.fixture(scope="module")
 def importer(
     ksfo_inputs: AirportInputs,
-    equipment_suffixes: tuple[EquipmentSuffix, ...],
     aircraft_specs_subset: list[dict[str, Any]],
     worksheet_config: WorksheetConfig,
     aircraft_classes: dict[str, AircraftClass],
 ) -> Importer:
     return Importer(
         inputs=ksfo_inputs,
-        rnav=rnav_suffixes(equipment_suffixes),
         classes=aircraft_classes,
         wake_categories=designator_wtcs(aircraft_specs_subset, worksheet_config.type_aliases),
         sid_runways=published_sid_runways(ksfo_inputs.icao, ksfo_inputs.overrides),
@@ -168,7 +165,6 @@ def sheet_of(worksheet: Worksheet, importer: Importer, aliases: Mapping[str, str
         sheet_text(worksheet),
         icao=importer.inputs.icao,
         sop=importer.inputs.sop,
-        rnav=importer.rnav,
         type_aliases=aliases,
         aircraft_classes=importer.classes,
         wake_categories=importer.wake_categories,
@@ -256,11 +252,18 @@ def test_a_plan_keeps_its_suffix_and_its_altitude_in_feet(by_title: dict[str, Wo
     assert row_of(by_title, "Amendment Practice 1A", "SKW2345").altitude_feet == PLAIN_ALTITUDE_FEET
 
 
-def test_a_plan_filed_without_a_suffix_is_not_rnav_capable(by_title: dict[str, Worksheet], importer: Importer) -> None:
+def test_a_plan_filed_without_a_suffix_carries_a_null_equipment_suffix(by_title: dict[str, Worksheet], importer: Importer) -> None:
     fixtures = sheet_of(by_title["Amendment Practice 2"], importer, {})
     scenario = fixture_of(fixtures, "JSX203")["scenario"]
-    assert (scenario["aircraftType"], scenario["rnavCapable"]) == ("E135", False)
+    assert (scenario["aircraftType"], scenario["equipmentSuffix"]) == ("E135", None)
     assert row_of(by_title, "Amendment Practice 2", "JSX203").suffix is None
+
+
+def test_the_sheet_kind_sets_the_fixture_mode(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    phraseology = sheet_of(by_title["Phraseology Practice 1A"], importer, {})
+    amendment = sheet_of(by_title["Amendment Practice 2"], importer, {})
+    assert {fixture["mode"] for fixture in phraseology.values()} == {"clearance"}
+    assert {fixture["mode"] for fixture in amendment.values()} == {"amendment"}
 
 
 def test_a_sheet_that_prints_no_squawk_numbers_them_in_octal(by_title: dict[str, Worksheet], importer: Importer) -> None:

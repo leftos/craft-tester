@@ -100,9 +100,9 @@ def test_the_airport_carries_its_cifp_reference_point(ksfo_document: Document) -
 
 
 def test_an_airport_the_cifp_does_not_carry_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
-    coordinates = {key: value for key, value in ksfo_build_inputs.coordinates.items() if key != "KSFO"}
+    records = {key: value for key, value in ksfo_build_inputs.airport_records.items() if key != "KSFO"}
     with pytest.raises(ValueError, match=r"airport.icao 'KSFO': the CIFP carries no airport record"):
-        build_airport(replace(ksfo_build_inputs, coordinates=coordinates))
+        build_airport(replace(ksfo_build_inputs, airport_records=records))
 
 
 def test_the_base_fix_is_where_the_transitions_begin(ksfo_document: Document) -> None:
@@ -233,9 +233,9 @@ def test_a_fleet_type_without_a_class_fails_the_build(ksfo_build_inputs: BuildIn
 
 
 def test_a_destination_without_coordinates_names_the_airport(ksfo_build_inputs: BuildInputs) -> None:
-    coordinates = {key: value for key, value in ksfo_build_inputs.coordinates.items() if key != "KSEA"}
+    records = {key: value for key, value in ksfo_build_inputs.airport_records.items() if key != "KSEA"}
     with pytest.raises(ValueError, match=r"destinations\[KSEA\]: the CIFP has no airport record"):
-        build_airport(replace(ksfo_build_inputs, coordinates=coordinates))
+        build_airport(replace(ksfo_build_inputs, airport_records=records))
 
 
 def test_a_runway_no_runway_record_lists_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:

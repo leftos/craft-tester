@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-3-n436ms",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "TBM9",
     "callsign": "N436MS",
     "dayOfWeek": "tuesday",
     "departureRunway": "28R",
     "destination": "KLVK",
+    "equipmentSuffix": "/L",
     "filedAltitude": 7000,
     "filedRoute": "OAK V244 ECA",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4604"
   },

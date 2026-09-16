@@ -108,29 +108,73 @@
           "properties": {
             "amendments": {
               "items": {
-                "additionalProperties": false,
-                "properties": {
-                  "box": {
-                    "enum": [
-                      "type",
-                      "altitude",
-                      "route"
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "box": {
+                        "const": "route",
+                        "type": "string"
+                      },
+                      "proposed": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "box",
+                      "proposed",
+                      "reason"
                     ],
-                    "type": "string"
+                    "type": "object"
                   },
-                  "proposed": {
-                    "type": "string"
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "box": {
+                        "const": "altitude",
+                        "type": "string"
+                      },
+                      "proposedFeet": {
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991,
+                        "type": "integer"
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "box",
+                      "proposedFeet",
+                      "reason"
+                    ],
+                    "type": "object"
                   },
-                  "reason": {
-                    "type": "string"
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "box": {
+                        "const": "type",
+                        "type": "string"
+                      },
+                      "proposed": {
+                        "type": "string"
+                      },
+                      "reason": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "box",
+                      "proposed",
+                      "reason"
+                    ],
+                    "type": "object"
                   }
-                },
-                "required": [
-                  "box",
-                  "proposed",
-                  "reason"
-                ],
-                "type": "object"
+                ]
               },
               "type": "array"
             }
@@ -143,6 +187,13 @@
       ]
     },
     "id": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "clearance",
+        "amendment"
+      ],
       "type": "string"
     },
     "scenario": {
@@ -178,6 +229,17 @@
         "destination": {
           "type": "string"
         },
+        "equipmentSuffix": {
+          "anyOf": [
+            {
+              "pattern": "^\\/[A-Z]$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "filedAltitude": {
           "exclusiveMinimum": 0,
           "maximum": 9007199254740991,
@@ -193,9 +255,6 @@
         "remarks": {
           "type": "string"
         },
-        "rnavCapable": {
-          "type": "boolean"
-        },
         "runwayConfigId": {
           "type": "string"
         },
@@ -207,7 +266,7 @@
       "required": [
         "callsign",
         "aircraftType",
-        "rnavCapable",
+        "equipmentSuffix",
         "destination",
         "filedRoute",
         "filedAltitude",
@@ -256,6 +315,7 @@
     "id",
     "source",
     "status",
+    "mode",
     "airport",
     "scenario"
   ],

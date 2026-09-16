@@ -118,7 +118,7 @@ function drawnIn(configId: string, classes: readonly AircraftClass[]): Generated
 function label(entry: GeneratedScenario): string {
   const { scenario } = entry;
   return [
-    `${scenario.callsign} ${scenario.aircraftType}${entry.suffix}`,
+    `${scenario.callsign} ${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`,
     `${scenario.runwayConfigId} ${scenario.departureRunway}`,
     `${scenario.localTime} ${scenario.dayOfWeek}`,
     `"${scenario.filedRoute}" (assigned ${entry.correctSidId})`,
@@ -308,7 +308,10 @@ describe('generateScenario', () => {
           config?.plan === 'SFOW' &&
           scenario.departureRunway.startsWith('01') &&
           ksfo.aircraftClasses[scenario.aircraftType] === 'P' &&
-          !scenario.rnavCapable &&
+          !(
+            ksfo.equipmentSuffixes.find((row) => row.suffix === scenario.equipmentSuffix)?.rnav ??
+            false
+          ) &&
           night !== undefined &&
           isNoiseWindowActive(night, scenario.localTime, scenario.dayOfWeek)
         );

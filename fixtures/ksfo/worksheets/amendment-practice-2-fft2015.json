@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-fft2015",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "A20N",
     "callsign": "FFT2015",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KLAX",
+    "equipmentSuffix": "/L",
     "filedAltitude": 29000,
     "filedRoute": "PORTE8 PORTE SUSEY EBAYE BURGL",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4612"
   },

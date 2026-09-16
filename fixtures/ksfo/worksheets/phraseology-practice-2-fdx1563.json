@@ -15,16 +15,17 @@
     "sidFamily": "WESLA"
   },
   "id": "ws-phraseology-practice-2-fdx1563",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B752",
     "callsign": "FDX1563",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KFAT",
+    "equipmentSuffix": "/L",
     "filedAltitude": 19000,
     "filedRoute": "WESLA5 NTELL",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3332"
   },

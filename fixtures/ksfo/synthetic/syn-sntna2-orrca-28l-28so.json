@@ -15,16 +15,17 @@
     "sidFamily": "SNTNA"
   },
   "id": "syn-sntna2-orrca-28l-28so",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA2210",
     "dayOfWeek": "thursday",
     "departureRunway": "28L",
     "destination": "KBOI",
+    "equipmentSuffix": "/L",
     "filedAltitude": 41000,
     "filedRoute": "SNTNA2 ORRCA ANAHO PRNCS SADYL3",
     "localTime": "1145",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "5123"
   },

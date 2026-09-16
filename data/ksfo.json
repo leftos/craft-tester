@@ -32,6 +32,7 @@
     "icao": "KSFO",
     "lat": 37.618806,
     "lon": -122.375417,
+    "magneticVariation": 14.0,
     "spoken": "San Francisco"
   },
   "altitudeRules": [
@@ -1107,6 +1108,16 @@
       "id": "C-DEST",
       "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
       "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
+    },
+    {
+      "id": "A-PARITY",
+      "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1); 14 CFR 91.179",
+      "text": "Below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359"
+    },
+    {
+      "id": "A-RVSM",
+      "source": "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 4-5-1 b",
+      "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band"
     }
   ],
   "provenance": {

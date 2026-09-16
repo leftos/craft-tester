@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-fdx3859",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B752",
     "callsign": "FDX3859",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KDEN",
+    "equipmentSuffix": "/A",
     "filedAltitude": 34000,
     "filedRoute": "NIITE3 MOGEE Q124 BVL TCH KAMPR LONGZ1",
     "localTime": "1400",
-    "rnavCapable": false,
     "runwayConfigId": "28 RT",
     "squawk": "4602"
   },

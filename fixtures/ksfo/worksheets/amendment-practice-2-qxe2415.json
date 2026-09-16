@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-qxe2415",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "E75L",
     "callsign": "QXE2415",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KSEA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 34000,
     "filedRoute": "TRUKN2 DEDHD LMT HAWKZ7",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4607"
   },

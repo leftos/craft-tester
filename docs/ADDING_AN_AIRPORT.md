@@ -71,7 +71,9 @@ the hooks rejects the file.
 2. **`secondary_sources`**: the CBT deck and anything else rows cite. Record its date. Where it and the SOP
    disagree, the SOP wins, and the row cites both. The KSFO CBT was three years older than the SOP and
    still described a SID that no longer exists; that is why the date matters.
-3. **`airport`**: `icao`, `faa`, spoken name, clearance delivery frequency. Coordinates come from CIFP.
+3. **`airport`**: `icao`, `faa`, spoken name, clearance delivery frequency. Coordinates and the magnetic
+   variation (which the direction-of-flight altitude checks subtract from the true course) come from the
+   CIFP airport row.
 4. **`runways`**: every runway the CIFP `PG` records list; the build rejects a runway CIFP does not know.
 5. **`runway_configs`**: one per configuration in the SOP, with the plan (`SFOW`/`SFOE`, the SOP's flow
    name), arrival runways, and departure runways with the aircraft classes allowed on each and a `note`
@@ -216,7 +218,8 @@ Then:
 1. `worksheets.yaml`: one row per trainer worksheet with the Google Doc id, `kind` (`phraseology` or
    `amendment`), the runway config the sheet declares, and which reading it drills.
 2. `uv run craft-gen import-worksheets --airport <ICAO>` writes `fixtures/<icao>/worksheets/*.json` with
-   `status: pending` and no `expected`. Expect stale SID versions (valid distractors), typos, and
+   `status: pending`, `mode` from the sheet kind, the equipment suffix the sheet filed (`null` when it
+   filed none) and no `expected`. Expect stale SID versions (valid distractors), typos, and
    truncated rows in the source; record them in the plan rather than editing the fixtures. A re-import
    never overwrites a fixture you have settled: one whose scenario is unchanged is counted `kept
    (settled)`, and one whose scenario would change is left on disk and named in a non-zero exit, so

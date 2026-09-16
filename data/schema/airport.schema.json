@@ -38,6 +38,11 @@
           "minimum": -180,
           "type": "number"
         },
+        "magneticVariation": {
+          "maximum": 180,
+          "minimum": -180,
+          "type": "number"
+        },
         "spoken": {
           "type": "string"
         }
@@ -48,7 +53,8 @@
         "spoken",
         "clearanceDelivery",
         "lat",
-        "lon"
+        "lon",
+        "magneticVariation"
       ],
       "type": "object"
     },

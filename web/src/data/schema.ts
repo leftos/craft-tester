@@ -45,6 +45,11 @@ export const AirportIdentitySchema = z.strictObject({
   clearanceDelivery: z.string(),
   lat: z.number().min(-90).max(90),
   lon: z.number().min(-180).max(180),
+  /**
+   * Degrees, east positive, from the CIFP airport row; the direction-of-flight checks subtract it
+   * from the true course to get the magnetic course the parity rule is read against.
+   */
+  magneticVariation: z.number().min(-180).max(180),
 });
 
 /**
@@ -469,7 +474,15 @@ export const AirportDataSchema = z.strictObject({
 export const ScenarioSchema = z.strictObject({
   callsign: z.string(),
   aircraftType: z.string(),
-  rnavCapable: z.boolean(),
+  /**
+   * The FAA equipment suffix the pilot filed with the type (`/L`), or `null` when none was filed.
+   * RNAV and RVSM capability are read from `equipmentSuffixes`, and a suffix not in that table
+   * reads as neither.
+   */
+  equipmentSuffix: z
+    .string()
+    .regex(/^\/[A-Z]$/)
+    .nullable(),
   destination: z.string(),
   filedRoute: z.string(),
   filedAltitude: feet,
@@ -509,11 +522,28 @@ export const ExpectedClearanceSchema = z.strictObject({
 });
 
 /** One box of the strip that amendment mode expects the player to correct. */
-export const AmendmentSchema = z.strictObject({
-  box: z.enum(['type', 'altitude', 'route']),
-  proposed: z.string(),
-  reason: z.string(),
-});
+export const AmendmentSchema = z.discriminatedUnion('box', [
+  z.strictObject({
+    box: z.literal('route'),
+    /** The whole route box text as the strip should read it once amended. */
+    proposed: z.string(),
+    /** One sentence for the player, saying why the box is wrong. */
+    reason: z.string(),
+  }),
+  z.strictObject({
+    box: z.literal('altitude'),
+    proposedFeet: feet,
+    /** One sentence for the player, saying why the box is wrong. */
+    reason: z.string(),
+  }),
+  z.strictObject({
+    box: z.literal('type'),
+    /** The designator plus the equipment suffix, e.g. `B752/L`. */
+    proposed: z.string(),
+    /** One sentence for the player, saying why the box is wrong. */
+    reason: z.string(),
+  }),
+]);
 
 /** What an amendment-mode fixture expects: every box that needs changing, in any order. */
 export const ExpectedAmendmentsSchema = z.strictObject({
@@ -541,6 +571,11 @@ export const FixtureSchema = z.strictObject({
   id: z.string(),
   source: FixtureSourceSchema,
   status: z.enum(['settled', 'pending']),
+  /**
+   * Which engine the fixture exercises; a fixture with no `expected` yet still says which mode it
+   * belongs to.
+   */
+  mode: z.enum(['clearance', 'amendment']),
   airport: z.string(),
   scenario: ScenarioSchema,
   expected: ExpectedSchema.optional(),
@@ -597,5 +632,6 @@ export type ExpectedAmendments = z.infer<typeof ExpectedAmendmentsSchema>;
 export type Expected = z.infer<typeof ExpectedSchema>;
 export type FixtureSource = z.infer<typeof FixtureSourceSchema>;
 export type Fixture = z.infer<typeof FixtureSchema>;
+export type FixtureMode = Fixture['mode'];
 export type AirportsIndexEntry = z.infer<typeof AirportsIndexEntrySchema>;
 export type AirportsIndex = z.infer<typeof AirportsIndexSchema>;

@@ -37,6 +37,7 @@ const BASE_CTX: Classification = {
   plan: 'SFOW',
   runwayFamily: '01',
   config,
+  rnavCapable: true,
   activeNoiseWindows: [],
   activeNotices: [],
 };
@@ -44,7 +45,7 @@ const BASE_CTX: Classification = {
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
   aircraftType: 'B738',
-  rnavCapable: true,
+  equipmentSuffix: '/L',
   destination: 'KSEA',
   filedRoute: 'TRUKN2 DEDHD',
   filedAltitude: 34000,
@@ -275,10 +276,10 @@ describe('selectSid', () => {
 
   it('rejects an RNAV SID for a flight without RNAV', () => {
     const result = selectSid(
-      ctx({}),
+      ctx({ rnavCapable: false }),
       'DEDHD',
       'north',
-      scenario({ rnavCapable: false }),
+      scenario({ equipmentSuffix: '/A' }),
       airportWith([rule({ id: 'TRUKN-ROW' })]),
     );
     expect(result).toMatchObject({ element: 'R.sid' });

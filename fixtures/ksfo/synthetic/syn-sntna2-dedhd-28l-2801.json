@@ -15,16 +15,17 @@
     "sidFamily": "SNTNA"
   },
   "id": "syn-sntna2-dedhd-28l-2801",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A306",
     "callsign": "UPS2749",
     "dayOfWeek": "monday",
     "departureRunway": "28L",
     "destination": "CYVR",
+    "equipmentSuffix": "/L",
     "filedAltitude": 36000,
     "filedRoute": "SNTNA2 DEDHD LMT BTG HAWKZ7",
     "localTime": "0915",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3104"
   },

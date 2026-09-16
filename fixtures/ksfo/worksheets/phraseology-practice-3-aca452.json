@@ -15,16 +15,17 @@
     "sidFamily": "SNTNA"
   },
   "id": "ws-phraseology-practice-3-aca452",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A320",
     "callsign": "ACA452",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "CYVR",
+    "equipmentSuffix": "/L",
     "filedAltitude": 36000,
     "filedRoute": "SNTNA2 DEDHD LMT BTG HAWKZ7",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 SO",
     "squawk": "3371"
   },

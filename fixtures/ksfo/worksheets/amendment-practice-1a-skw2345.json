@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-skw2345",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "E75L",
     "callsign": "SKW2345",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSMF",
+    "equipmentSuffix": "/L",
     "filedAltitude": 19000,
     "filedRoute": "SFO4 CCR CCR2",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4615"
   },

@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "syn-gapp7-eugen-10r-prop-sfoe",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "SR22",
     "callsign": "N612RS",
     "dayOfWeek": "tuesday",
     "departureRunway": "10R",
     "destination": "KMRY",
+    "equipmentSuffix": "/G",
     "filedAltitude": 7000,
     "filedRoute": "GAPP7 EUGEN",
     "localTime": "1310",
-    "rnavCapable": true,
     "runwayConfigId": "10/10",
     "squawk": "6425"
   },

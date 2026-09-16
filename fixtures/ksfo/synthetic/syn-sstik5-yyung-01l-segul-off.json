@@ -15,16 +15,17 @@
     "sidFamily": "SSTIK"
   },
   "id": "syn-sstik5-yyung-01l-segul-off",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B737",
     "callsign": "SWA1188",
     "dayOfWeek": "monday",
     "departureRunway": "01L",
     "destination": "KSAN",
+    "equipmentSuffix": "/L",
     "filedAltitude": 41000,
     "filedRoute": "SEGUL1 YYUNG LAX COMIX2",
     "localTime": "1020",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "3345"
   },

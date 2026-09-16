@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-1a-aay218",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "A319",
     "callsign": "AAY218",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KGPZ",
+    "equipmentSuffix": "/L",
     "filedAltitude": 36000,
     "filedRoute": "TRUKN2 ORRCA Q120 GALLI BAM J32 ABR FAR",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "4605"
   },

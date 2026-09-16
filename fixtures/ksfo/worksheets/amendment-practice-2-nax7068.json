@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-nax7068",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B788",
     "callsign": "NAX7068",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "ESSA",
+    "equipmentSuffix": "/L",
     "filedAltitude": 39000,
     "filedRoute": "SFO4 DEDHD LKV J3 GEG J517 YXC ADVOX… (continued)",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4611"
   },

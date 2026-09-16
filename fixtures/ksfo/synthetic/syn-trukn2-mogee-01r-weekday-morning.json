@@ -15,16 +15,17 @@
     "sidFamily": "TRUKN"
   },
   "id": "syn-trukn2-mogee-01r-weekday-morning",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "A319",
     "callsign": "UAL1652",
     "dayOfWeek": "tuesday",
     "departureRunway": "01R",
     "destination": "KSLC",
+    "equipmentSuffix": "/L",
     "filedAltitude": 37000,
     "filedRoute": "TRUKN2 MOGEE Q124 BVL WAATS5",
     "localTime": "0730",
-    "rnavCapable": true,
     "runwayConfigId": "28/01",
     "squawk": "5172"
   },

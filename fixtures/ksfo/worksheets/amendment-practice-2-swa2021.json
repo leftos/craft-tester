@@ -1,16 +1,17 @@
 {
   "airport": "KSFO",
   "id": "ws-amendment-practice-2-swa2021",
+  "mode": "amendment",
   "scenario": {
     "aircraftType": "B738",
     "callsign": "SWA2021",
     "dayOfWeek": "tuesday",
     "departureRunway": "28L",
     "destination": "KPDX",
+    "equipmentSuffix": "/G",
     "filedAltitude": 35000,
     "filedRoute": "TRUKN2 DEDHD LMT OCITY7",
     "localTime": "1400",
-    "rnavCapable": true,
     "runwayConfigId": "28 RT",
     "squawk": "4604"
   },

@@ -15,16 +15,17 @@
     "sidFamily": "GAPP"
   },
   "id": "syn-gapp7-sac-28l-nonrnav-jet",
+  "mode": "clearance",
   "scenario": {
     "aircraftType": "B752",
     "callsign": "FDX1420",
     "dayOfWeek": "monday",
     "departureRunway": "28L",
     "destination": "KBOI",
+    "equipmentSuffix": "/A",
     "filedAltitude": 39000,
     "filedRoute": "GAPP7 SAC ANAHO",
     "localTime": "1520",
-    "rnavCapable": false,
     "runwayConfigId": "28 SO",
     "squawk": "5044"
   },
