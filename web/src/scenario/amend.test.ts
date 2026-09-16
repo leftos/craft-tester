@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData } from '@/data/schema.ts';
+import type { AirportData, Scenario } from '@/data/schema.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { isSidToken } from '@/rules/route.ts';
 import type { AmendmentScenario, FaultKind } from '@/scenario/amend.ts';
-import { FAULT_BOXES, drawAmendmentScenario, generateAmendmentScenario } from '@/scenario/amend.ts';
+import {
+  FAULT_BOXES,
+  drawAmendmentScenario,
+  droppedTransition,
+  generateAmendmentScenario,
+} from '@/scenario/amend.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import { createRng } from '@/scenario/rng.ts';
 
@@ -74,6 +79,29 @@ function tokensOf(entry: AmendmentScenario): string[] {
 /** The procedure token the route box files, which every fault but `no_sid` leaves in place. */
 function headOf(entry: AmendmentScenario): string {
   return tokensOf(entry)[0] ?? '';
+}
+
+/** The tokens of a route box, without the empty strings a doubled space would produce. */
+function tokensIn(filedRoute: string): string[] {
+  return filedRoute.split(' ').filter((token) => token.length > 0);
+}
+
+/** A hand-built plan, for driving one injector at a route the seeds do not draw. */
+function plan(overrides: Partial<Scenario>): Scenario {
+  return {
+    callsign: 'UAL1',
+    aircraftType: 'B738',
+    equipmentSuffix: '/L',
+    destination: 'KSEA',
+    filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ8',
+    filedAltitude: 34000,
+    runwayConfigId: '28/01',
+    departureRunway: '01R',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '1234',
+    ...overrides,
+  };
 }
 
 /** How many draws one seed threw away before the generator accepted one. */
@@ -200,6 +228,32 @@ describe('fault injection', () => {
       filedTail.some((row) => row.destination !== entry.filed.destination),
       label(entry),
     ).toBe(true);
+  });
+
+  it('files a route with the transition after the procedure dropped', () => {
+    const entry = firstWith('dropped_transition');
+    const filed = tokensOf(entry);
+    const corrected = tokensIn(entry.result.corrected.filedRoute);
+    const restored = corrected[1];
+    expect(restored, label(entry)).toBeDefined();
+    expect(filed, label(entry)).not.toContain(restored);
+    expect(amendmentFor(entry, 'route'), label(entry)).toBeDefined();
+    expect(
+      corrected.filter((_token, index) => index !== 1),
+      label(entry),
+    ).toEqual(filed);
+    const family = headOf(entry).slice(0, -1);
+    const forced = ksfo.assignmentRules.some(
+      (row) => row.sidFamily === family && row.when?.forcedTransition === restored,
+    );
+    const connects = ksfo.routeConnections.some(
+      (row) => row.from === restored && row.to === filed[1],
+    );
+    expect(forced || connects, label(entry)).toBe(true);
+  });
+
+  it('drops nothing where the second token is neither forced nor a connecting fix', () => {
+    expect(droppedTransition(plan({ filedRoute: 'TRUKN2 DEDHD ENI' }), ksfo)).toBeUndefined();
   });
 
   it('files an altitude on the wrong half of the parity table', () => {

@@ -13,6 +13,7 @@ export type FaultKind =
   | 'other_sid'
   | 'no_sid'
   | 'wrong_tec_route'
+  | 'dropped_transition'
   | 'parity_flip'
   | 'non_rvsm_in_band'
   | 'missing_suffix'
@@ -30,6 +31,7 @@ export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   other_sid: ['route'],
   no_sid: ['route'],
   wrong_tec_route: ['route'],
+  dropped_transition: ['route'],
   parity_flip: ['altitude'],
   non_rvsm_in_band: ['altitude'],
   missing_suffix: ['type'],
@@ -186,6 +188,36 @@ function wrongTecRoute(scenario: Scenario, airport: AirportData, rng: Rng): Faul
   return { field: 'filedRoute', route: head === undefined ? tail : `${head} ${tail}` };
 }
 
+/**
+ * The route box with the transition after its procedure token dropped.
+ *
+ * Only a transition the route builder puts back is worth dropping: the one the SOP's assignment row
+ * forces for the hour, or the one the ZOA cheat sheet connects onward to the next fix filed. Either
+ * way the box still reads as an ordinary route without it, and what the student has to see is that
+ * the SOP's route for the hour, or the sheet's connection, belongs back in it.
+ *
+ * @param scenario The clean plan the fault is measured against.
+ * @param airport The airport data, for its assignment rows and the cheat sheet's connections.
+ * @returns The route box without its second token, or undefined when that token is neither a forced
+ *   transition of the filed family nor a fix that connects onward to the next one filed.
+ */
+export function droppedTransition(
+  scenario: Scenario,
+  airport: AirportData,
+): FaultPatch | undefined {
+  const head = headOf(scenario);
+  const tokens = tokensOf(scenario);
+  const [, second, third] = tokens;
+  if (head === undefined || second === undefined) return undefined;
+  const family = head.slice(0, -1);
+  const forced = airport.assignmentRules.some(
+    (row) => row.sidFamily === family && row.when?.forcedTransition === second,
+  );
+  const connected = airport.routeConnections.some((row) => row.from === second && row.to === third);
+  if (!forced && !connected) return undefined;
+  return { field: 'filedRoute', route: [...tokens.slice(0, 1), ...tokens.slice(2)].join(' ') };
+}
+
 /** The filed altitude a thousand feet up, which reads the other half of the parity table. */
 function parityFlip(scenario: Scenario): FaultPatch {
   return { field: 'filedAltitude', feet: scenario.filedAltitude + STEP_FEET };
@@ -240,6 +272,7 @@ const INJECTORS: Record<FaultKind, Injector> = {
   other_sid: otherSid,
   no_sid: noSid,
   wrong_tec_route: wrongTecRoute,
+  dropped_transition: droppedTransition,
   parity_flip: parityFlip,
   non_rvsm_in_band: nonRvsmInBand,
   missing_suffix: missingSuffix,

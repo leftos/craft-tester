@@ -144,14 +144,15 @@ the forced transition after the SID token when the selected row carries one (the
 not on `ResolvedClearance`; expose it, or re-read the row by the clearance's SID citations), and the
 draw's amendment-engine verification then passes.
 
-## Drill (user decision 2026-09-16: inject the fault)
+## Drill (user decision 2026-09-16: inject the fault) — landed 2026-09-16
 
 Amendment-scenario fault `dropped_transition` (`scenario/amend.ts`): for a drawn plan whose route reads
 `<SID> <transition> <fix> …` where `<transition> → <fix>` is a connection row, or where `<transition>`
-is the row's forced transition, drop the transition so the plan files `<SID> <fix> …`; the engine must
-rebuild it back. Only where the library draws such a route (after the rows land, check whether any
-library tail starts on a connection target or a forced-transition draw exists; if neither does, the
-fault is dead data, left out and recorded here for the user).
+is the row's forced transition, drop the transition so the plan files `<SID> <fix> …`; the engine
+rebuilds it back. Drawable under the default filter: 13 library tails start on a connection pair
+(`SUSEY EBAYE`, `YYUNG LAX`, `KTINA CISKO`, `DEDHD RBL`, `ORRCA Q120`, …), so the fault is about 1.3% of
+draws; the forced-transition branch needs the 0100L–0500L window and is covered by code rather than
+by a drawn plan in the seed sweep.
 
 ## Steps (implementer briefs after the will-be-your-final brief lands, since both touch `speak.ts`
 tests, `schema.ts` and the data)
@@ -174,6 +175,5 @@ tests, `schema.ts` and the data)
    still falls back to GAPP#; a `usually` chain beats the fallback; `always` chain preferred over a shorter
    `usually` one? — no: fewest hops within the `always` search first, then all edges, as decided.
    `speak.test.ts`: the SWA984 abbreviated reading. Proving: `pnpm -C web test rules`, then the full gate.
-3. Settle SWA984 (`fixtures/ksfo/worksheets/amendment-practice-1a-swa984.json`) with the proposal; the
-   drill fault if the library draws it; docs (`ARCHITECTURE.md` rules table, `ADDING_AN_AIRPORT.md`
-   shared files, `CLAUDE.md` "Rules are data").
+3. [x] SWA984 settled, the drill fault landed, docs updated (`ARCHITECTURE.md` rules table and shared
+   directory, `CLAUDE.md` "Rules are data") — 2026-09-16. This plan is complete; archive it.
