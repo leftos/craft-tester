@@ -83,6 +83,26 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   verdicts; then the corrected strip, the ATIS and the CRAFT form with the picked procedure row and
   given C and T; combined results (box verdicts as `BOX.*` grades, then `R.sid` and the five) with
   one score line; spoiler and retry as in clean mode; phone width.
-- [ ] D. Browser playtest (Claude in Chrome against `pnpm -C web preview`): a no-fault draw answered
+- [x] D. (played 2026-09-15; two fixes landed, see below; after `db7585b` seed 83 answered on the
+  route box alone also scores 3 of 3 and the corrected strip shows the engine's type-side fix,
+  `E75L/L` with the filed TRUKN2 route, which a student who fixed the route may find surprising —
+  ask the user whether the corrected strip should follow the student's box when it was right)
+  Browser playtest (Claude in Chrome against `pnpm -C web preview`): a no-fault draw answered
   "as filed" everywhere scores full; a stale-SID draw; an RNAV-clash draw answered on one box only;
   hash reload; then the observations go to the user.
+  - Played 2026-09-15 on seeds 1 (parity, full 9 of 9 with "expect amended flight level three four
+    zero"), 2 (no SID + /Y in the band; typed route and `FL270` accepted), 6 (no fault: 3 of 3 as
+    filed, corrected strip equals the filed one, expect labels say "filed"), 22 = `#s=m` (stale
+    NIITE3 → correction NIITE4 with the noise row cited), 83 = `#s=2b` (RNAV clash: type fix alone
+    scores 3 of 3, route reads "correct as filed"). Revisit spoiler, retry, and the header mode
+    switch (fresh seed, `m=amend` written and dropped) all work.
+  - Fixed during the playtest: typing in a "new value" box lost focus after one character
+    (`f5b720d`); the corrected plan applied both halves of the RNAV pair, so the corrected strip
+    said GAPP7 while the clearance re-assigned TRUKN2 and the pre-filled procedure would have been
+    graded wrong (fix: `corrected` applies the first box of a pair in strip order).
+  - Not verified: phone width. The Chrome tool's window resize did not change the viewport; the
+    stylesheet's single-column breakpoint is 700px (agent's reading). Cosmetic: in the
+    boxes-submitted view the "Flight plan as filed" strip sits alone in the left grid column with an
+    empty right column, because the strip and ATIS are pinned to columns 1 and 2.
+  - Seeds in the hash are base 36 (`#s=m` is seed 22), and the hash is read only on load: editing
+    it in the address bar needs a reload (pre-existing behaviour in clean mode too).

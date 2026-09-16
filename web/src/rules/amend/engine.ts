@@ -15,6 +15,9 @@ const SUFFIX_TAIL = /\/[A-Z]$/;
 /** The delay an amended expect clause is spoken with when neither the plan nor the chart names one. */
 const DEFAULT_EXPECT_MINUTES = 10;
 
+/** The boxes in the order they read across the strip, which is the order the checks run in. */
+const STRIP_ORDER: readonly ResolvedAmendment['box'][] = ['type', 'altitude', 'route'];
+
 /** What one check produced: the amendments it raised, or the gap that blocked its box. */
 type CheckOutcome = ResolvedAmendment[] | Unresolved;
 
@@ -36,6 +39,21 @@ function apply(scenario: Scenario, amendment: ResolvedAmendment): Scenario {
   if (amendment.box === 'route') return { ...scenario, filedRoute: amendment.proposed };
   const suffix = SUFFIX_TAIL.exec(amendment.proposed)?.[0];
   return suffix === undefined ? scenario : { ...scenario, equipmentSuffix: suffix };
+}
+
+/**
+ * Whether the corrected plan carries this amendment, which is one side only of an alternative pair.
+ *
+ * Either box of a pair alone fixes the fault, so applying both would leave a plan that fixed it
+ * twice — an RNAV suffix together with the non-RNAV route the suffix made unnecessary. The box
+ * earlier in strip order carries the fix, the same tie-break the pair is graded with.
+ *
+ * @param amendment One amendment the checks raised.
+ * @returns Whether it is applied to the corrected plan.
+ */
+function applies(amendment: ResolvedAmendment): boolean {
+  const other = amendment.alternativeTo;
+  return other === undefined || STRIP_ORDER.indexOf(other) > STRIP_ORDER.indexOf(amendment.box);
 }
 
 /**
@@ -66,7 +84,9 @@ function pairAlternatives(amendments: ResolvedAmendment[]): ResolvedAmendment[] 
  * earlier one for it: a non-RNAV flight filing an RNAV procedure can raise two type amendments where
  * the suffix gap and the RNAV clash propose different suffixes, and `corrected` therefore carries
  * the RNAV suffix of the second. Where the RNAV clash raised a type amendment and the route box was
- * amended too, the two are marked as alternatives: either one alone fixes the clash.
+ * amended too, the two are marked as alternatives: either one alone fixes the clash, so `corrected`
+ * applies the box earlier in strip order and skips the other, the tie-break the two are graded with.
+ * Both are still reported, because writing either box is a full answer.
  *
  * @param scenario The filed flight plan.
  * @param airport The airport data.
@@ -91,7 +111,7 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   }
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
   const amendments = pairAlternatives(raised);
-  return { ok: true, amendments, corrected: amendments.reduce(apply, scenario) };
+  return { ok: true, amendments, corrected: amendments.filter(applies).reduce(apply, scenario) };
 }
 
 /**

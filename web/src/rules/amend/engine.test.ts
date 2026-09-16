@@ -85,6 +85,16 @@ describe('resolveAmendments', () => {
     expect(type.citations.map((citation) => citation.id)).toEqual(['EQUIP/L']);
   });
 
+  it('corrects one side only of the RNAV pair, the type box the strip reads first', () => {
+    const flight = ual313();
+    const result = resolved(flight);
+    expect(result.corrected.equipmentSuffix).toBe('/L');
+    expect(result.corrected.filedRoute).toBe(flight.filedRoute);
+    const route = result.amendments.find((amendment) => amendment.box === 'route');
+    if (route?.box !== 'route') throw new Error('the route amendment is missing');
+    expect(route.proposed).not.toBe(flight.filedRoute);
+  });
+
   it('fails the whole result when a box the data cannot answer blocks one check', () => {
     const result = resolveAmendments(scenario({ destination: 'KZZZ' }), ksfo);
     expect(result.ok).toBe(false);
@@ -104,6 +114,15 @@ describe('resolveAmendedClearance', () => {
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
       'A-EXPECT-AMENDED',
     ]);
+  });
+
+  it('reads the filed RNAV procedure of a plan whose type box carried the RNAV fix', () => {
+    const original = ual313();
+    const { corrected } = resolved(original);
+    const result = resolveAmendedClearance(original, corrected, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.sid.value.family).toBe('TRUKN');
+    expect(corrected.filedRoute.startsWith(result.clearance.sid.value.id)).toBe(true);
   });
 
   it('leaves the expect clause of a plan whose altitude was not amended alone', () => {

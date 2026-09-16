@@ -118,3 +118,8 @@ the engine must still resolve the clearance a dirty plan gets after amendment.
   re-assigns TRUKN2. Policy to settle: collapse same-value type proposals into one, and decide which
   box wins when the type fix would make the route fix unnecessary.
 - Whether SWA2021 (KPDX via LMT, no MACHU/MOXEE/OED) is a route fault, and to what.
+- The checks see the filed plan, `corrected` sees the applied set: a null or unknown suffix reads
+  as non-RVSM, so a plan filed at FL330 with `/Q` raises an altitude amendment (to 27,000) that the
+  corrected `/L` suffix no longer needs. UAL313 is the concrete case. Settle with the sheets whether
+  the altitude box is amended when the type fix alone restores RVSM; the fault injector avoids the
+  case meanwhile (suffix faults only outside the band).
