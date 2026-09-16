@@ -27,9 +27,10 @@ from craft_generator.sop.load import (
     load_equipment_suffixes,
     load_phraseology_rules,
     load_route_connections,
+    load_shared_route_facts,
     shared_dir,
 )
-from craft_generator.sop.model import AirportInputs, EquipmentSuffix
+from craft_generator.sop.model import AirportInputs, EquipmentSuffix, SharedRouteFacts
 
 FIXTURES = Path(__file__).parent / "fixtures"
 KSFO_RECORDS = FIXTURES / "cifp" / "ksfo_records.txt"
@@ -96,8 +97,14 @@ def ksfo_dir() -> Path:
 
 
 @pytest.fixture(scope="session")
-def ksfo_inputs(ksfo_dir: Path) -> AirportInputs:
-    return load_airport(ksfo_dir)
+def shared_route_facts() -> SharedRouteFacts:
+    """Return the checked-in destination, airline and aircraft-type tables of ``generator/shared``."""
+    return load_shared_route_facts(shared_dir())
+
+
+@pytest.fixture(scope="session")
+def ksfo_inputs(ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> AirportInputs:
+    return load_airport(ksfo_dir, shared_route_facts)
 
 
 @pytest.fixture(scope="session")

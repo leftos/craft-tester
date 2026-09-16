@@ -485,7 +485,7 @@ describe('pickRunway', () => {
 describe('the scenario filter', () => {
   it('draws the scenario the unfiltered seed always drew', () => {
     const first = generateScenario(createRng(1), ksfo, ANY_SCENARIO);
-    expect(first.callsign).toBe('QXE2811');
+    expect(first.callsign).toBe('SKW2811');
     expect(first.runwayConfigId).toBe('28 RT');
   });
 

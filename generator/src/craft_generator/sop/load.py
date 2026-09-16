@@ -8,7 +8,9 @@ of the clearance. Every message names the file, the row id and the key it came f
 
 Each file is loaded separately (:func:`load_sop`, :func:`load_overrides`, :func:`load_routes`,
 :func:`load_tec`, :func:`load_loa`), checking what it can see on its own; :func:`load_airport` loads
-them all and adds the checks that span files. ``tec.yaml`` and ``loa.yaml`` are optional - an airport
+them all and adds the checks that span files. The facts of a destination, an airline and an aircraft
+type hold at every airport, so they live in ``generator/shared/`` (:func:`load_shared_route_facts`)
+and ``routes.yaml`` lists only codes into them. ``tec.yaml`` and ``loa.yaml`` are optional - an airport
 without them has no TEC route and no letter-of-agreement rule - and are checked when present.
 """
 
@@ -42,6 +44,8 @@ from craft_generator.sop.model import (
     WORKSHEET_KINDS,
     AircraftClass,
     AircraftGroup,
+    AircraftType,
+    Airline,
     AirportInfo,
     AirportInputs,
     AltitudeOutcome,
@@ -78,6 +82,7 @@ from craft_generator.sop.model import (
     RouteTokenRule,
     RunwayConfig,
     SecondarySource,
+    SharedRouteFacts,
     SidOverride,
     SidTopAltitude,
     SopData,
@@ -99,6 +104,9 @@ EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
 AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
+DESTINATIONS_FILE = "destinations.yaml"
+AIRLINES_FILE = "airlines.yaml"
+AIRCRAFT_TYPES_FILE = "aircraft_types.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
 SID_PLACEHOLDER = "#"
@@ -887,9 +895,9 @@ def load_overrides(path: Path) -> Overrides:
     return overrides
 
 
-def _destination(row: _Row) -> Destination:
+def _destination(icao: str, row: _Row) -> Destination:
     destination = Destination(
-        icao=row.text("icao"),
+        icao=icao,
         spoken=row.text("spoken"),
         artcc=row.text("artcc"),
         nct=bool(row.optional_flag("nct", default=False)),
@@ -900,20 +908,115 @@ def _destination(row: _Row) -> Destination:
     return destination
 
 
-def _fleet_entry(row: _Row) -> FleetEntry:
-    entry = FleetEntry(
-        type=row.text("type"),
+def load_shared_destinations(path: Path) -> dict[str, Destination]:
+    """Load the destination facts every airport shares.
+
+    Args:
+        path: Path to ``generator/shared/destinations.yaml``.
+
+    Returns:
+        One row per destination, keyed by its code.
+
+    Raises:
+        ValueError: The file is not a YAML mapping or carries an unknown key.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    table = root.table("destinations")
+    destinations = {icao: _destination(icao, _Row(f"{where}.destinations[{icao}]", value)) for icao, value in table.items()}
+    root.finish()
+    return destinations
+
+
+def _airline(code: str, row: _Row) -> Airline:
+    airline = Airline(
+        code=code,
+        telephony=row.text("telephony"),
+        cargo=bool(row.optional_flag("cargo", default=False)),
+        types=row.texts("types"),
+    )
+    row.finish()
+    return airline
+
+
+def load_airlines(path: Path) -> dict[str, Airline]:
+    """Load the airline facts every airport shares.
+
+    Args:
+        path: Path to ``generator/shared/airlines.yaml``.
+
+    Returns:
+        One row per airline, keyed by its ICAO code.
+
+    Raises:
+        ValueError: The file is not a YAML mapping or carries an unknown key.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    table = root.table("airlines")
+    airlines = {code: _airline(code, _Row(f"{where}.airlines[{code}]", value)) for code, value in table.items()}
+    root.finish()
+    return airlines
+
+
+def _aircraft_type(designator: str, row: _Row) -> AircraftType:
+    aircraft = AircraftType(
+        designator=designator,
         aircraft_class=row.choice("class", AIRCRAFT_CLASSES),
         wtc=row.choice("wtc", WAKE_CATEGORIES),
         suffixes=row.texts("suffixes"),
-        airlines=row.texts("airlines"),
         approach_category=row.optional_choice("approach_category", APPROACH_CATEGORIES),
+        note=row.optional_text("note"),
     )
     row.finish()
-    for suffix in entry.suffixes:
+    for suffix in aircraft.suffixes:
         if _SUFFIX_PATTERN.fullmatch(suffix) is None:
             raise ValueError(f"{row.where}: suffix {suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 table 5-4-1")
-    return entry
+    return aircraft
+
+
+def load_aircraft_types(path: Path) -> dict[str, AircraftType]:
+    """Load the aircraft-type facts every airport shares.
+
+    Args:
+        path: Path to ``generator/shared/aircraft_types.yaml``.
+
+    Returns:
+        One row per type, keyed by its designator.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, names an aircraft class
+            outside P/T/J or a wake category outside L/M/H/J, or holds a malformed equipment suffix.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    table = root.table("types")
+    types = {designator: _aircraft_type(designator, _Row(f"{where}.types[{designator}]", value)) for designator, value in table.items()}
+    root.finish()
+    return types
+
+
+def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
+    """Load the destination, airline and aircraft-type tables every airport shares.
+
+    Args:
+        shared: The ``generator/shared`` directory, i.e. :func:`shared_dir`.
+
+    Returns:
+        The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into.
+
+    Raises:
+        ValueError: One of the three files fails its own checks.
+        OSError: One of the three files is missing.
+    """
+    return SharedRouteFacts(
+        destinations=load_shared_destinations(shared / DESTINATIONS_FILE),
+        airlines=load_airlines(shared / AIRLINES_FILE),
+        aircraft_types=load_aircraft_types(shared / AIRCRAFT_TYPES_FILE),
+    )
 
 
 def _route_entry(row: _Row) -> RouteEntry:
@@ -934,38 +1037,77 @@ def _check_routes(routes: RouteLibrary, where: str) -> None:
         if route.destination not in known:
             at = f"{where} routes[{route.exit_fix} -> {route.destination}]"
             raise ValueError(f"{at}: destination {route.destination!r} is not in `destinations`; add it there first")
-    for code in routes.cargo_airlines:
-        if code not in routes.telephony:
+
+
+def _listed_codes(root: _Row, key: str, where: str) -> tuple[str, ...]:
+    codes = root.texts(key)
+    seen: set[str] = set()
+    for code in codes:
+        if code in seen:
+            raise ValueError(f"{where}.{key}: {code!r} is listed twice; an airport names each code once")
+        seen.add(code)
+    return codes
+
+
+def _shared_rows[Row](codes: Sequence[str], table: Mapping[str, Row], key: str, where: str, shared_file: str) -> tuple[Row, ...]:
+    rows: list[Row] = []
+    for code in codes:
+        row = table.get(code)
+        if row is None:
             raise ValueError(
-                f"{where} cargo_airlines: airline {code!r} is not in `telephony`, so nothing can read its callsign; "
-                f"add it there with its spoken name, or drop it here (telephony holds {sorted(routes.telephony)})"
+                f"{where}.{key}: {code!r} is not in generator/shared/{shared_file}; add it there first, "
+                "an airport lists codes and the shared file states the facts"
             )
+        rows.append(row)
+    return tuple(rows)
 
 
-def load_routes(path: Path) -> RouteLibrary:
-    """Load and check one airport's ``routes.yaml``.
+def _composed_fleet_entry(aircraft: AircraftType, airlines: Sequence[Airline]) -> FleetEntry:
+    return FleetEntry(
+        type=aircraft.designator,
+        aircraft_class=aircraft.aircraft_class,
+        wtc=aircraft.wtc,
+        suffixes=aircraft.suffixes,
+        airlines=tuple(airline.code for airline in airlines if aircraft.designator in airline.types),
+        approach_category=aircraft.approach_category,
+    )
+
+
+def load_routes(path: Path, shared: SharedRouteFacts) -> RouteLibrary:
+    """Load and check one airport's ``routes.yaml``, composing it against the shared facts.
+
+    The file lists destination codes, airline codes and type designators; every fact behind them is
+    read from ``shared``, so an airport states which of them it flies and never what they are.
 
     Args:
         path: Path to the file.
+        shared: The destination, airline and aircraft-type tables of ``generator/shared``.
 
     Returns:
-        The destinations, airline telephony, fleet and filed routes.
+        The destinations, airline telephony, cargo airlines, fleet and filed routes, each in the
+        order the file lists its codes.
 
     Raises:
-        ValueError: The file carries an unknown key, a malformed equipment suffix, an aircraft class
-            outside P/T/J, a route filed to a destination the file does not list, or a cargo airline
-            code `telephony` has no entry for.
+        ValueError: The file carries an unknown key, an aircraft class outside P/T/J, a destination,
+            airline or type code the shared files do not state, a code listed twice, or a route filed
+            to a destination the file does not list.
     """
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))
-    routes = RouteLibrary(
-        destinations=tuple(_destination(child) for child in root.children("destinations")),
-        telephony=_text_table(root.table("telephony"), f"{where}.telephony"),
-        cargo_airlines=root.optional_texts("cargo_airlines") or (),
-        fleet=tuple(_fleet_entry(child) for child in root.children("fleet")),
-        routes=tuple(_route_entry(child) for child in root.children("routes")),
-    )
+    destination_codes = _listed_codes(root, "destinations", where)
+    airline_codes = _listed_codes(root, "airlines", where)
+    fleet_codes = _listed_codes(root, "fleet", where)
+    filed = tuple(_route_entry(child) for child in root.children("routes"))
     root.finish()
+    airlines = _shared_rows(airline_codes, shared.airlines, "airlines", where, AIRLINES_FILE)
+    types = _shared_rows(fleet_codes, shared.aircraft_types, "fleet", where, AIRCRAFT_TYPES_FILE)
+    routes = RouteLibrary(
+        destinations=_shared_rows(destination_codes, shared.destinations, "destinations", where, DESTINATIONS_FILE),
+        telephony={airline.code: airline.telephony for airline in airlines},
+        cargo_airlines=tuple(airline.code for airline in airlines if airline.cargo),
+        fleet=tuple(_composed_fleet_entry(aircraft, airlines) for aircraft in types),
+        routes=filed,
+    )
     _check_routes(routes, where)
     return routes
 
@@ -1339,7 +1481,7 @@ def _optional_loa(path: Path, known: _Known) -> LoaData | None:
     return loa
 
 
-def load_airport(directory: Path) -> AirportInputs:
+def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
     """Load the YAML files of one airport and check them against each other.
 
     ``sop.yaml``, ``overrides.yaml`` and ``routes.yaml`` are required; ``tec.yaml`` and ``loa.yaml``
@@ -1347,6 +1489,8 @@ def load_airport(directory: Path) -> AirportInputs:
 
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
+        shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into,
+            from :func:`load_shared_route_facts`.
 
     Returns:
         The loaded and cross-checked inputs.
@@ -1362,7 +1506,7 @@ def load_airport(directory: Path) -> AirportInputs:
     routes_path = directory / ROUTES_FILE
     sop = load_sop(sop_path)
     overrides = load_overrides(overrides_path)
-    routes = load_routes(routes_path)
+    routes = load_routes(routes_path, shared)
     _check_sid_families(sop, overrides, _where(sop_path), _where(overrides_path))
     _check_route_exit_fixes(sop, routes, _where(sop_path), _where(routes_path))
     known = _known_names(sop, overrides, routes, _where(overrides_path))

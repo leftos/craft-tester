@@ -1,0 +1,49 @@
+# The destinations an airport's scenarios can file to: the spoken name, the center whose LOA rules apply
+# to the flight, whether the field is inside NCT, and the coordinates of a field outside the FAA CIFP.
+# None of that depends on the departure airport, so a destination is stated once here and an airport's
+# `routes.yaml` lists only the codes its scenarios file to. US coordinates are filled from CIFP by the
+# generator; a foreign field has nothing to resolve against and gives `lat` and `lon` here.
+destinations:
+  CYVR: { spoken: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
+  ESSA: { spoken: Stockholm Arlanda, artcc: ZAK, lat: 59.652, lon: 17.919 }
+  KACV: { spoken: Arcata, artcc: ZOA }
+  KAPC: { spoken: Napa, artcc: ZOA, nct: true }
+  KBFI: { spoken: Boeing Field, artcc: ZSE }
+  KBLI: { spoken: Bellingham, artcc: ZSE }
+  KBOI: { spoken: Boise, artcc: ZLC }
+  KBUR: { spoken: Burbank, artcc: ZLA }
+  KCRQ: { spoken: Carlsbad, artcc: ZLA }
+  KDEN: { spoken: Denver, artcc: ZDV }
+  KFAT: { spoken: Fresno, artcc: ZOA }
+  KGPZ: { spoken: Grand Rapids Minnesota, artcc: ZMP }
+  KJAC: { spoken: Jackson Hole, artcc: ZLC }
+  KLAS: { spoken: Las Vegas, artcc: ZLA }
+  KLAX: { spoken: Los Angeles, artcc: ZLA }
+  KLGB: { spoken: Long Beach, artcc: ZLA }
+  KLVK: { spoken: Livermore, artcc: ZOA, nct: true }
+  KMCI: { spoken: Kansas City, artcc: ZKC }
+  KMRY: { spoken: Monterey, artcc: ZOA, nct: true }
+  KMYV: { spoken: Marysville, artcc: ZOA, nct: true }
+  KOAK: { spoken: Oakland, artcc: ZOA, nct: true }
+  KONT: { spoken: Ontario, artcc: ZLA }
+  KOVE: { spoken: Oroville, artcc: ZOA, nct: true }
+  KPDX: { spoken: Portland, artcc: ZSE }
+  KPHX: { spoken: Phoenix, artcc: ZAB }
+  KRNO: { spoken: Reno, artcc: ZOA }
+  KSAC: { spoken: Sacramento Executive, artcc: ZOA, nct: true }
+  KSAN: { spoken: San Diego, artcc: ZLA }
+  KSBA: { spoken: Santa Barbara, artcc: ZLA }
+  KSEA: { spoken: Seattle, artcc: ZSE }
+  KSJC: { spoken: San Jose, artcc: ZOA, nct: true }
+  KSLC: { spoken: Salt Lake City, artcc: ZLC }
+  KSMF: { spoken: Sacramento, artcc: ZOA, nct: true }
+  KSMO: { spoken: Santa Monica, artcc: ZLA }
+  KSNA: { spoken: John Wayne, artcc: ZLA }
+  KTRK: { spoken: Truckee, artcc: ZOA }
+  KUDD: { spoken: Bermuda Dunes, artcc: ZLA }
+  KVNY: { spoken: Van Nuys, artcc: ZLA }
+  KWVI: { spoken: Watsonville, artcc: ZOA, nct: true }
+  MMMX: { spoken: Mexico City, artcc: ZLA, lat: 19.436, lon: -99.072 }
+  O88: { spoken: Rio Vista, artcc: ZOA, nct: true }
+  PHNL: { spoken: Honolulu, artcc: ZAK }
+  RKSI: { spoken: Seoul Incheon, artcc: ZAK, lat: 37.469, lon: 126.451 }

@@ -8,6 +8,9 @@ import pytest
 import yaml
 
 from craft_generator.sop.load import (
+    AIRCRAFT_TYPES_FILE,
+    AIRLINES_FILE,
+    DESTINATIONS_FILE,
     OVERRIDES_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
@@ -18,11 +21,12 @@ from craft_generator.sop.load import (
     load_phraseology_rules,
     load_route_connections,
     load_routes,
+    load_shared_route_facts,
     load_sop,
     shared_dir,
     sid_family_of,
 )
-from craft_generator.sop.model import AirportInputs
+from craft_generator.sop.model import AirportInputs, SharedRouteFacts
 
 Mutation = Callable[[Any], None]
 
@@ -50,6 +54,51 @@ SHARED_PHRASEOLOGY_IDS = [
 KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
 ROUTE_CONNECTION_COUNT = 26
 ROUTE_CONNECTION_SOURCE = "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16"
+KSFO_TELEPHONY_COUNT = 28
+KSFO_CARGO_AIRLINES = {"FDX", "UPS", "GTI", "ABX", "ATN", "CLX", "CKS", "NCA"}
+# The airlines of each KSFO fleet type, as `routes.yaml` stated them before the facts moved to
+# `generator/shared/`: the composition reproduces these sets, in the airport's own airline order.
+KSFO_FLEET_AIRLINES = {
+    "A320": {"UAL", "FFT", "NKS", "ACA", "AAY", "VOI", "JBU"},
+    "A20N": {"FFT", "VOI", "JBU"},
+    "A319": {"AAY", "UAL"},
+    "B737": {"SWA", "ASA"},
+    "B738": {"DAL", "SWA", "UAL", "ASA"},
+    "B752": {"FDX", "UPS", "DAL", "UAL"},
+    "B77L": {"FDX", "KAL"},
+    "B788": {"NAX", "UAL"},
+    "A306": {"UPS", "FDX"},
+    "MD11": {"FDX", "UPS"},
+    "E75L": {"SKW", "QXE"},
+    "E135": {"JSX"},
+    "CL30": {"TWY", "EJA"},
+    "GL5T": {"EJA"},
+    "C750": {"XOJ"},
+    "C55B": set[str](),
+    "C25B": set[str](),
+    "C510": set[str](),
+    "E55P": {"LXJ"},
+    "B350": set[str](),
+    "BE20": set[str](),
+    "TBM9": set[str](),
+    "C172": set[str](),
+    "SR22": set[str](),
+    "M20T": set[str](),
+}
+SHARED_FILES = (("destinations", DESTINATIONS_FILE), ("airlines", AIRLINES_FILE), ("aircraft_types", AIRCRAFT_TYPES_FILE))
+
+
+def shared_copy(tmp_path: Path, **mutations: Mutation) -> SharedRouteFacts:
+    """Copy the shared route facts into ``tmp_path``, applying one mutation per file before loading them."""
+    target = tmp_path / "shared"
+    target.mkdir(exist_ok=True)
+    for key, name in SHARED_FILES:
+        data = yaml.safe_load((shared_dir() / name).read_text(encoding="utf-8"))
+        mutate = mutations.get(key)
+        if mutate is not None:
+            mutate(data)
+        (target / name).write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    return load_shared_route_facts(target)
 
 
 def airport_copy(tmp_path: Path, ksfo_dir: Path, **mutations: Mutation) -> Path:
@@ -252,6 +301,26 @@ def test_routes_destinations_and_fleet(ksfo_inputs: AirportInputs) -> None:
     assert fleet["C55B"].airlines == ()
     first = routes.routes[0]
     assert (first.exit_fix, first.destination, first.classes, first.altitudes) == ("DEDHD", "KSEA", ("J",), (32000, 34000, 36000))
+
+
+def test_the_composed_fleet_and_airlines_match_the_curated_library(ksfo_inputs: AirportInputs) -> None:
+    routes = ksfo_inputs.routes
+    assert {entry.type: set(entry.airlines) for entry in routes.fleet} == KSFO_FLEET_AIRLINES
+    assert len(routes.telephony) == KSFO_TELEPHONY_COUNT
+    assert routes.telephony["UAL"] == "United"
+    assert set(routes.cargo_airlines) == KSFO_CARGO_AIRLINES
+    assert set(routes.telephony) >= set(routes.cargo_airlines)
+
+
+def test_the_shared_route_facts_load_and_agree(shared_route_facts: SharedRouteFacts) -> None:
+    assert shared_route_facts.destinations["KSMF"].nct is True
+    assert shared_route_facts.destinations["KPHX"].artcc == "ZAB"
+    assert shared_route_facts.airlines["PCM"].cargo is True
+    assert shared_route_facts.airlines["UAL"].cargo is False
+    assert shared_route_facts.aircraft_types["C208"].suffixes == ("/G", "/A")
+    for airline in shared_route_facts.airlines.values():
+        unknown = [designator for designator in airline.types if designator not in shared_route_facts.aircraft_types]
+        assert unknown == [], f"{airline.code} flies {unknown}, which {AIRCRAFT_TYPES_FILE} does not state"
 
 
 def test_sid_family_of_rejects_an_unversioned_id() -> None:
@@ -579,62 +648,95 @@ def test_duplicate_override_procedure_id_is_named(tmp_path: Path, ksfo_dir: Path
         load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
 
 
-def test_unknown_route_destination_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_unknown_route_destination_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["routes"][0]["destination"] = "KZZZ"
 
     with pytest.raises(ValueError, match=r"routes\[DEDHD -> KZZZ\]: destination 'KZZZ' is not in `destinations`"):
-        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE)
+        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE, shared_route_facts)
 
 
-def test_unknown_aircraft_class_in_a_route_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_unknown_aircraft_class_in_a_route_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["routes"][0]["classes"] = ["J", "X"]
 
     with pytest.raises(ValueError, match=r"routes\[0\].classes\[1\]: 'X' is not one of \['P', 'T', 'J'\]"):
-        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE)
+        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE, shared_route_facts)
 
 
-def test_malformed_equipment_suffix_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_malformed_equipment_suffix_is_named(tmp_path: Path) -> None:
     def mutate(data: Any) -> None:
-        data["fleet"][0]["suffixes"] = ["/L", "LL"]
+        data["types"]["A320"]["suffixes"] = ["/L", "LL"]
 
     with pytest.raises(ValueError, match="suffix 'LL' is not a slash and one upper-case letter"):
-        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE)
+        shared_copy(tmp_path, aircraft_types=mutate)
 
 
-def test_rule_sid_family_without_an_override_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_destination_code_outside_the_shared_file_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"][0] = "KZZZ"
+
+    with pytest.raises(ValueError, match=r"routes\.yaml\.destinations: 'KZZZ' is not in generator/shared/destinations\.yaml; add it there first"):
+        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE, shared_route_facts)
+
+
+def test_an_airline_code_outside_the_shared_file_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    def mutate(data: Any) -> None:
+        data["airlines"][0] = "ZZZ"
+
+    with pytest.raises(ValueError, match=r"routes\.yaml\.airlines: 'ZZZ' is not in generator/shared/airlines\.yaml; add it there first"):
+        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE, shared_route_facts)
+
+
+def test_a_fleet_type_outside_the_shared_file_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    def mutate(data: Any) -> None:
+        data["fleet"][0] = "ZZZZ"
+
+    with pytest.raises(ValueError, match=r"routes\.yaml\.fleet: 'ZZZZ' is not in generator/shared/aircraft_types\.yaml; add it there first"):
+        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE, shared_route_facts)
+
+
+@pytest.mark.parametrize(("key", "code"), [("destinations", "KSEA"), ("airlines", "UAL"), ("fleet", "A320")])
+def test_a_code_listed_twice_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts, key: str, code: str) -> None:
+    def mutate(data: Any) -> None:
+        data[key].append(code)
+
+    with pytest.raises(ValueError, match=rf"routes\.yaml\.{key}: '{code}' is listed twice; an airport names each code once"):
+        load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE, shared_route_facts)
+
+
+def test_rule_sid_family_without_an_override_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["assignment_rules"][0]["sid_family"] = "NITE"
 
     with pytest.raises(
         ValueError, match=r"assignment_rules\[SFOW-NOISE-N-NIITE\].sid_family: DP family 'NITE' has no procedure in ksfo/overrides.yaml"
     ):
-        load_airport(airport_copy(tmp_path, ksfo_dir, sop=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, sop=mutate), shared_route_facts)
 
 
-def test_altitude_rule_sid_family_without_an_override_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_altitude_rule_sid_family_without_an_override_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["altitude_rules"][0]["sid_families"] = ["GAPP", "OFFSH"]
 
     with pytest.raises(ValueError, match=r"altitude_rules\[SFOW-28-3000\].sid_families: DP family 'OFFSH' has no procedure"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, sop=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, sop=mutate), shared_route_facts)
 
 
-def test_notice_sid_family_without_an_override_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_notice_sid_family_without_an_override_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["notices"][0]["effect"]["sid_family"] = "COAST"
 
     with pytest.raises(ValueError, match=r"notices\[SFO-SEGUL-OFF\].effect.sid_family: DP family 'COAST' has no procedure"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, sop=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, sop=mutate), shared_route_facts)
 
 
-def test_route_exit_fix_outside_every_gate_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_route_exit_fix_outside_every_gate_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["routes"][0]["exit_fix"] = "DEDHX"
 
     with pytest.raises(ValueError, match=r"routes\[DEDHX -> KSEA\]: exit_fix 'DEDHX' is in no gate of ksfo/sop.yaml"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, routes=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, routes=mutate), shared_route_facts)
 
 
 def test_unquoted_runway_family_key_is_reported(tmp_path: Path, ksfo_dir: Path) -> None:
@@ -709,12 +811,15 @@ def test_a_rule_naming_an_unknown_approach_category_is_rejected(tmp_path: Path, 
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 
-def test_a_fleet_approach_category_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_shared_approach_category_override_reaches_the_fleet(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
-        data["fleet"][0]["approach_category"] = "C"
+        data["types"]["A320"]["approach_category"] = "C"
+        data["types"]["A320"]["note"] = "flown at category C speeds here"
 
-    routes = load_routes(airport_copy(tmp_path, ksfo_dir, routes=mutate) / ROUTES_FILE)
-    assert routes.fleet[0].approach_category == "C"
+    routes = load_routes(ksfo_dir / ROUTES_FILE, shared_copy(tmp_path, aircraft_types=mutate))
+    fleet = {entry.type: entry for entry in routes.fleet}
+    assert fleet["A320"].approach_category == "C"
+    assert fleet["A319"].approach_category is None
 
 
 def test_a_climb_via_eligible_override_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:

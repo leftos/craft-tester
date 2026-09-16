@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from craft_generator.sop.load import LOA_FILE, OVERRIDES_FILE, ROUTES_FILE, SOP_FILE, TEC_FILE, load_airport, load_tec
-from craft_generator.sop.model import AirportInputs, LoaData, LoaRule, ParityRotatedRule, RouteTokenRule, TecData, TecRoute
+from craft_generator.sop.model import AirportInputs, LoaData, LoaRule, ParityRotatedRule, RouteTokenRule, SharedRouteFacts, TecData, TecRoute
 
 Mutation = Callable[[Any], None]
 
@@ -98,36 +98,36 @@ def test_a_route_rule_carries_its_tokens_and_destinations(ksfo_inputs: AirportIn
     assert (portland.artcc, portland.destinations) == (None, ("KPDX",))
 
 
-def test_an_airport_without_the_optional_files_carries_no_tec_or_loa(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_an_airport_without_the_optional_files_carries_no_tec_or_loa(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     directory = airport_copy(tmp_path, ksfo_dir)
     (directory / TEC_FILE).unlink()
     (directory / LOA_FILE).unlink()
-    inputs = load_airport(directory)
+    inputs = load_airport(directory, shared_route_facts)
     assert (inputs.tec, inputs.loa) == (None, None)
 
 
-def test_a_tec_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_tec_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["routes"][0]["destination"] = "KZZZ"
 
     with pytest.raises(ValueError, match=r"tec\.yaml routes\[TEC-KSMF-SFOW-J\]: destination 'KZZZ' is in no `destinations` row of routes\.yaml"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, tec=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, tec=mutate), shared_route_facts)
 
 
-def test_a_tec_plan_no_runway_config_declares_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_tec_plan_no_runway_config_declares_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["routes"][0]["plan"] = "SFOX"
 
     with pytest.raises(ValueError, match=r"tec\.yaml routes\[TEC-KSMF-SFOW-J\]: plan 'SFOX' is no `runway_configs` plan of sop\.yaml"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, tec=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, tec=mutate), shared_route_facts)
 
 
-def test_a_tec_route_naming_an_unknown_dp_family_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_tec_route_naming_an_unknown_dp_family_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["routes"][0]["route"] = "TRUKEN# TRUKN FEVTA FEVTA1"
 
     with pytest.raises(ValueError, match=r"routes\[TEC-KSMF-SFOW-J\]: route names DP family 'TRUKEN', which has no procedure in overrides\.yaml"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, tec=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, tec=mutate), shared_route_facts)
 
 
 def test_an_unknown_aircraft_class_in_a_tec_row_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
@@ -138,17 +138,17 @@ def test_an_unknown_aircraft_class_in_a_tec_row_is_named(tmp_path: Path, ksfo_di
         load_tec(airport_copy(tmp_path, ksfo_dir, tec=mutate) / TEC_FILE)
 
 
-def test_a_loa_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_loa_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["rules"][1]["destinations"] = ["KSEA", "KZZZ"]
 
     with pytest.raises(ValueError, match=r"loa\.yaml rules\[LOA-ZSE-SEA-ROUTE\]: destination 'KZZZ' is in no `destinations` row of routes\.yaml"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, loa=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, loa=mutate), shared_route_facts)
 
 
-def test_a_rotated_parity_course_outside_the_compass_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+def test_a_rotated_parity_course_outside_the_compass_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     def mutate(data: Any) -> None:
         data["rules"][0]["rule"]["odd_course_to"] = OUT_OF_RANGE_COURSE
 
     with pytest.raises(ValueError, match=r"rules\[LOA-ZSE-PARITY\].rule.odd_course_to: course 360 is not a magnetic course between 0 and 359"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, loa=mutate))
+        load_airport(airport_copy(tmp_path, ksfo_dir, loa=mutate), shared_route_facts)

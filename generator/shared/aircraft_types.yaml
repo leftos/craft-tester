@@ -1,0 +1,34 @@
+# The aircraft types an airport's fleet can be built from: the type's class, its wake turbulence category
+# and the equipment suffixes it normally files. None of that depends on the airport, so a type is stated
+# once here and an airport's `routes.yaml` lists only the designators it flies. `class` is asserted against
+# vNAS EngineType at build time. `approach_category` overrides the FAA table in
+# faa_aircraft_characteristics.yaml for one type and carries a `note` saying why; without it the build
+# reads the category from that table.
+types:
+  A20N: { class: J, wtc: M, suffixes: [/L] }
+  A306: { class: J, wtc: H, suffixes: [/L] }
+  A319: { class: J, wtc: M, suffixes: [/L] }
+  A320: { class: J, wtc: M, suffixes: [/L] }
+  B350: { class: T, wtc: L, suffixes: [/G, /L] }
+  B737: { class: J, wtc: M, suffixes: [/L] }
+  B738: { class: J, wtc: M, suffixes: [/L] }
+  B752: { class: J, wtc: M, suffixes: [/L] }
+  B77L: { class: J, wtc: H, suffixes: [/L] }
+  B788: { class: J, wtc: H, suffixes: [/L] }
+  BE20: { class: T, wtc: L, suffixes: [/G, /A] }
+  C172: { class: P, wtc: L, suffixes: [/G, /A, /U] }
+  C208: { class: T, wtc: L, suffixes: [/G, /A] }
+  C25B: { class: J, wtc: L, suffixes: [/L] }
+  C510: { class: J, wtc: L, suffixes: [/L] }
+  C55B: { class: J, wtc: M, suffixes: [/L] }
+  C750: { class: J, wtc: M, suffixes: [/L] }
+  CL30: { class: J, wtc: M, suffixes: [/L] }
+  DH8D: { class: T, wtc: M, suffixes: [/L] }
+  E135: { class: J, wtc: M, suffixes: [/L] }
+  E55P: { class: J, wtc: L, suffixes: [/L] }
+  E75L: { class: J, wtc: M, suffixes: [/L] }
+  GL5T: { class: J, wtc: M, suffixes: [/L] }
+  M20T: { class: P, wtc: L, suffixes: [/G, /A] }
+  MD11: { class: J, wtc: H, suffixes: [/L] }
+  SR22: { class: P, wtc: L, suffixes: [/G] }
+  TBM9: { class: T, wtc: L, suffixes: [/L, /G] }

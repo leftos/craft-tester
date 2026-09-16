@@ -407,6 +407,45 @@ class FleetEntry:
 
 
 @dataclass(frozen=True, slots=True)
+class AircraftType:
+    """One aircraft type of ``generator/shared/aircraft_types.yaml``; ``aircraft_class`` is the YAML ``class`` key.
+
+    ``approach_category`` overrides the FAA characteristics table for this type and ``note`` says why;
+    both are ``None`` for a type whose category the FAA table states.
+    """
+
+    designator: str
+    aircraft_class: AircraftClass
+    wtc: WakeCategory
+    suffixes: tuple[str, ...]
+    approach_category: ApproachCategory | None
+    note: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class Airline:
+    """One airline of ``generator/shared/airlines.yaml``: its telephony, cargo status and the types it flies."""
+
+    code: str
+    telephony: str
+    cargo: bool
+    types: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class SharedRouteFacts:
+    """The facts of a destination, an airline and an aircraft type, which hold at every airport.
+
+    They live in ``generator/shared/`` and an airport's ``routes.yaml`` lists only codes into them, so
+    no fact is copied between airports.
+    """
+
+    destinations: dict[str, Destination]
+    airlines: dict[str, Airline]
+    aircraft_types: dict[str, AircraftType]
+
+
+@dataclass(frozen=True, slots=True)
 class RouteEntry:
     """One filed route, keyed by the fix where the aircraft leaves the DP."""
 
@@ -422,7 +461,8 @@ class RouteLibrary:
     """``routes.yaml``: the destinations, fleet, telephony and filed routes scenarios are built from.
 
     ``cargo_airlines`` are the ICAO codes of ``telephony`` that fly all-cargo, which is what makes a
-    flight of theirs a cargo flight for the runway rules.
+    flight of theirs a cargo flight for the runway rules. Every field but ``routes`` is composed from
+    :class:`SharedRouteFacts` and the codes ``routes.yaml`` lists, in the order it lists them.
     """
 
     destinations: tuple[Destination, ...]

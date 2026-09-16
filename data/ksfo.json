@@ -1368,14 +1368,14 @@
   ],
   "routeLibrary": {
     "cargoAirlines": [
-      "FDX",
-      "UPS",
-      "GTI",
       "ABX",
       "ATN",
-      "CLX",
       "CKS",
-      "NCA"
+      "CLX",
+      "FDX",
+      "GTI",
+      "NCA",
+      "UPS"
     ],
     "destinations": [
       {
@@ -1718,13 +1718,13 @@
     "fleet": [
       {
         "airlines": [
-          "UAL",
-          "FFT",
-          "NKS",
-          "ACA",
           "AAY",
-          "VOI",
-          "JBU"
+          "ACA",
+          "FFT",
+          "JBU",
+          "NKS",
+          "UAL",
+          "VOI"
         ],
         "approachCategory": "C",
         "class": "J",
@@ -1737,8 +1737,8 @@
       {
         "airlines": [
           "FFT",
-          "VOI",
-          "JBU"
+          "JBU",
+          "VOI"
         ],
         "approachCategory": "C",
         "class": "J",
@@ -1763,8 +1763,8 @@
       },
       {
         "airlines": [
-          "SWA",
-          "ASA"
+          "ASA",
+          "SWA"
         ],
         "approachCategory": "C",
         "class": "J",
@@ -1776,10 +1776,10 @@
       },
       {
         "airlines": [
+          "ASA",
           "DAL",
           "SWA",
-          "UAL",
-          "ASA"
+          "UAL"
         ],
         "approachCategory": "D",
         "class": "J",
@@ -1791,10 +1791,10 @@
       },
       {
         "airlines": [
-          "FDX",
-          "UPS",
           "DAL",
-          "UAL"
+          "FDX",
+          "UAL",
+          "UPS"
         ],
         "approachCategory": "C",
         "class": "J",
@@ -1832,8 +1832,8 @@
       },
       {
         "airlines": [
-          "UPS",
-          "FDX"
+          "FDX",
+          "UPS"
         ],
         "approachCategory": "C",
         "class": "J",
@@ -1858,8 +1858,8 @@
       },
       {
         "airlines": [
-          "SKW",
-          "QXE"
+          "QXE",
+          "SKW"
         ],
         "approachCategory": "C",
         "class": "J",
@@ -1883,8 +1883,8 @@
       },
       {
         "airlines": [
-          "TWY",
-          "EJA"
+          "EJA",
+          "TWY"
         ],
         "approachCategory": "C",
         "class": "J",

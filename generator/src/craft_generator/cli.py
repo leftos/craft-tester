@@ -52,6 +52,7 @@ from craft_generator.sop.load import (
     load_equipment_suffixes,
     load_phraseology_rules,
     load_route_connections,
+    load_shared_route_facts,
     load_sop,
     load_worksheets,
     shared_dir,
@@ -393,7 +394,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
     cycle_id = cycle_id_for(effective)
     cache = cache_dir()
     airport_faa = faa_code(airport)
-    inputs = load_airport(airport_dir(airport))
+    inputs = load_airport(airport_dir(airport), load_shared_route_facts(shared_dir()))
     if offline:
         _require_cached(cache, airport_faa, cycle_id, inputs.sop.source)
     charts = _chart_inputs(airport_faa, cache, force=force)
@@ -528,7 +529,7 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
     """
     directory = airport_dir(airport)
     config = load_worksheets(directory / WORKSHEETS_FILE)
-    inputs = load_airport(directory)
+    inputs = load_airport(directory, load_shared_route_facts(shared_dir()))
     cache = cache_dir()
     specs = fetch_aircraft_specs(cache, force=force)
     classes = designator_classes(specs, config.type_aliases)

@@ -1,0 +1,39 @@
+# The airlines an airport's scenarios can draw a callsign from: the radio telephony of the ICAO code,
+# whether the carrier is all-cargo, and every aircraft type the airline operates. None of that depends on
+# the airport, so an airline is stated once here and an airport's `routes.yaml` lists only the codes that
+# fly there; a fleet entry's airlines are the codes that airport lists whose `types` hold the designator.
+# Telephony comes from the vZOA S1-SFO-0 CBT airline table and FAA JO 7340.2.
+#
+# `cargo: true` marks an all-cargo carrier: a flight of one of these is a cargo flight, which is what
+# KSFO SOP 2-1 e sends off the 28s for performance when runway 01 is the advertised departure runway.
+# Cargo callsigns from FAA JO 7340.2 chapter 3: Giant, Abex, Air Transport, Cargolux, Connie, Nippon Cargo.
+airlines:
+  AAL: { telephony: American, types: [] }
+  AAY: { telephony: Allegiant, types: [A320, A319] }
+  ABX: { telephony: Abex, cargo: true, types: [] }
+  ACA: { telephony: Air Canada, types: [A320] }
+  ASA: { telephony: Alaska, types: [B737, B738] }
+  ATN: { telephony: Air Transport, cargo: true, types: [] }
+  CKS: { telephony: Connie, cargo: true, types: [] }
+  CLX: { telephony: Cargolux, cargo: true, types: [] }
+  DAL: { telephony: Delta, types: [B738, B752] }
+  EJA: { telephony: ExecJet, types: [CL30, GL5T] }
+  FDX: { telephony: FedEx, cargo: true, types: [B752, B77L, A306, MD11] }
+  FFT: { telephony: Frontier Flight, types: [A320, A20N] }
+  GTI: { telephony: Giant, cargo: true, types: [] }
+  JBU: { telephony: JetBlue, types: [A320, A20N] }
+  JSX: { telephony: BigStripe, types: [E135] }
+  KAL: { telephony: Korean Air, types: [B77L] }
+  LXJ: { telephony: Flexjet, types: [E55P] }
+  NAX: { telephony: Nor Shuttle, types: [B788] }
+  NCA: { telephony: Nippon Cargo, cargo: true, types: [] }
+  NKS: { telephony: Spirit Wings, types: [A320] }
+  PCM: { telephony: PAC VALLEY, cargo: true, types: [C208] }
+  QXE: { telephony: Horizon, types: [E75L, DH8D] }
+  SKW: { telephony: SkyWest, types: [E75L] }
+  SWA: { telephony: Southwest, types: [B737, B738] }
+  TWY: { telephony: Twilight, types: [CL30] }
+  UAL: { telephony: United, types: [A320, A319, B738, B752, B788] }
+  UPS: { telephony: UPS, cargo: true, types: [B752, A306, MD11] }
+  VOI: { telephony: Volaris, types: [A320, A20N] }
+  XOJ: { telephony: XOJet, types: [C750] }
