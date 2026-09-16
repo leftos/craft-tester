@@ -6,7 +6,8 @@ import {
   formatAltitude,
   grade,
   gradeProcedure,
-  HEADING_PROCEDURE_PICK,
+  headingFromPick,
+  headingPick,
 } from '@/rules/grade.ts';
 import type {
   ExpectClause,
@@ -72,6 +73,15 @@ const onTheHeading: ResolvedClearance = {
     citations: [headingCitation],
   },
   route: { value: { template: 'radar_vectors_fix', fix: 'OAK' }, citations: [] },
+};
+
+/** The clearance a row that names a heading in degrees issues: 270, turned the shorter way. */
+const onHeading270: ResolvedClearance = {
+  ...onTheHeading,
+  procedure: {
+    value: { kind: 'heading', heading: 270, turn: 'left', spoken: 'turn left heading 270' },
+    citations: [headingCitation],
+  },
 };
 
 const redundantCitation: RuleCitation = {
@@ -429,7 +439,7 @@ describe('gradeProcedure', () => {
   });
 
   it('marks the runway heading right for a clearance the SOP issues without a procedure', () => {
-    const verdict = gradeProcedure(HEADING_PROCEDURE_PICK, onTheHeading, ksfo);
+    const verdict = gradeProcedure(headingPick('runway heading'), onTheHeading, ksfo);
     expect(verdict.verdict).toBe('correct');
     expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
     expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
@@ -444,9 +454,38 @@ describe('gradeProcedure', () => {
   });
 
   it('marks the runway heading wrong against a clearance that assigns a procedure', () => {
-    const verdict = gradeProcedure(HEADING_PROCEDURE_PICK, expected, ksfo);
+    const verdict = gradeProcedure(headingPick('runway heading'), expected, ksfo);
     expect(verdict.verdict).toBe('wrong');
     expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
+    expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
+  });
+
+  it('marks a heading in degrees right against the clearance that issues that heading', () => {
+    const verdict = gradeProcedure(headingPick(270), onHeading270, ksfo);
+    expect(verdict.verdict).toBe('correct');
+    expect(verdict.expectedLabel).toBe('heading 270 (no DP)');
+    expect(verdict.actualLabel).toBe('heading 270 (no DP)');
+    expect(verdict.citations).toEqual([headingCitation]);
+  });
+
+  it('marks a heading in degrees wrong against a clearance on the runway heading', () => {
+    const verdict = gradeProcedure(headingPick(270), onTheHeading, ksfo);
+    expect(verdict.verdict).toBe('wrong');
+    expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.actualLabel).toBe('heading 270 (no DP)');
+  });
+
+  it('marks a heading in degrees wrong against a clearance that assigns a procedure', () => {
+    const verdict = gradeProcedure(headingPick(270), expected, ksfo);
+    expect(verdict.verdict).toBe('wrong');
+    expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
+    expect(verdict.actualLabel).toBe('heading 270 (no DP)');
+  });
+
+  it('marks the runway heading wrong against a clearance on a heading in degrees', () => {
+    const verdict = gradeProcedure(headingPick('runway heading'), onHeading270, ksfo);
+    expect(verdict.verdict).toBe('wrong');
+    expect(verdict.expectedLabel).toBe('heading 270 (no DP)');
     expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
   });
 
@@ -454,6 +493,30 @@ describe('gradeProcedure', () => {
     const verdict = gradeProcedure('BIGSUR4', expected, ksfo);
     expect(verdict.verdict).toBe('wrong');
     expect(verdict.actualLabel).toBe('BIGSUR4');
+  });
+});
+
+describe('headingPick', () => {
+  it('writes the runway heading and a heading in degrees as different picks', () => {
+    expect(headingPick('runway heading')).toBe('heading:runway');
+    expect(headingPick(270)).toBe('heading:270');
+  });
+
+  it('reads back every pick it writes', () => {
+    expect(headingFromPick(headingPick('runway heading'))).toBe('runway heading');
+    expect(headingFromPick(headingPick(270))).toBe(270);
+  });
+
+  it('reads a published procedure as no heading at all', () => {
+    expect(headingFromPick('TRUKN2')).toBeUndefined();
+  });
+
+  it('reads back nothing it did not write', () => {
+    expect(headingFromPick('runway heading')).toBeUndefined();
+    expect(headingFromPick('heading:')).toBeUndefined();
+    expect(headingFromPick('heading:north')).toBeUndefined();
+    expect(headingFromPick('heading:0')).toBeUndefined();
+    expect(headingFromPick('heading:361')).toBeUndefined();
   });
 });
 

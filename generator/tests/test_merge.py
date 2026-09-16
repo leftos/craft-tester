@@ -219,6 +219,35 @@ def test_a_tec_row_on_a_dp_its_runways_do_not_publish_fails_the_build(ksfo_build
         build_airport(inputs)
 
 
+def _with_tec_route(inputs: BuildInputs, row_id: str, route: str) -> BuildInputs:
+    tec = inputs.airport.tec
+    assert tec is not None
+    routes = tuple(replace(row, route=route) if row.id == row_id else row for row in tec.routes)
+    return replace(inputs, airport=replace(inputs.airport, tec=replace(tec, routes=routes)))
+
+
+def test_a_tec_row_on_an_initial_heading_keeps_the_token(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_tec_route(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "H270 OAK V6 SAC")
+    rows = {row["id"]: row for row in build_airport(inputs)["tecRoutes"]}
+    assert rows["TEC-KSMF-SFOW-P-28"]["route"] == "H270 OAK V6 SAC"
+
+
+def test_a_tec_row_on_a_heading_no_aircraft_can_fly_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_tec_route(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "H000 OAK V6 SAC")
+    with pytest.raises(ValueError, match=r"tecRoutes\[TEC-KSMF-SFOW-P-28\]: route begins on 'H000'.*write H001 through H360"):
+        build_airport(inputs)
+
+
+def test_a_rule_keyed_on_a_tec_route_without_a_dp_that_assigns_one_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
+    index, rule = next((index, rule) for index, rule in enumerate(rules) if rule.when is not None and rule.sid_family is not None)
+    when = rule.when
+    assert when is not None
+    rules[index] = replace(rule, when=replace(when, tec_route_without_dp=True))
+    with pytest.raises(ValueError, match=rf"assignmentRules\[{rule.id}\]: the row is keyed on a TEC route without a DP"):
+        build_airport(_with_sop(ksfo_build_inputs, assignment_rules=tuple(rules)))
+
+
 def test_a_rule_naming_an_unknown_dp_family_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
     rules = list(ksfo_build_inputs.airport.sop.assignment_rules)
     rules[0] = replace(rules[0], sid_family="NOPE")

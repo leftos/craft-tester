@@ -106,6 +106,8 @@ _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
 _NAVAID_TOKEN = re.compile(r"[A-Z]{2,3}")
 _PROCEDURE_TOKEN = re.compile(r"(?P<family>[A-Z]{3,5})\d+")
 _PROCEDURE_FAMILY_TOKEN = re.compile(rf"(?P<family>[A-Z]{{3,5}}){re.escape(SID_PLACEHOLDER)}")
+_HEADING_TOKEN = re.compile(r"H\d{3}")
+_HEADING_DEGREES = range(1, 361)
 
 
 @dataclass(frozen=True, slots=True)
@@ -850,6 +852,26 @@ def _check_tec_routes(document: Document) -> None:
         _check_tec_route_runways(row, sids, plans)
 
 
+def _leading_token(route: str) -> str:
+    tokens = route.split()
+    return tokens[0] if tokens else ""
+
+
+def _check_tec_heads(document: Document) -> None:
+    """Check the initial heading a TEC row begins on, and the rules keyed on such a row."""
+    for row in document["tecRoutes"]:
+        token = _leading_token(str(row["route"]))
+        if _HEADING_TOKEN.fullmatch(token) and int(token[1:]) not in _HEADING_DEGREES:
+            raise ValueError(f"tecRoutes[{row['id']}]: route begins on {token!r}, which is no magnetic heading; write H001 through H360")
+    for rule in document["assignmentRules"]:
+        if rule.get("when", {}).get("tecRouteWithoutDp") is not True or rule["sidFamily"] is None:
+            continue
+        raise ValueError(
+            f"assignmentRules[{rule['id']}]: the row is keyed on a TEC route without a DP, so it clears the flight on a heading and assigns no "
+            f"DP family, but it names {rule['sidFamily']!r}; write `sid_family: null` with a `non_dp_heading` in sop.yaml"
+        )
+
+
 def _route_navaid_tokens(document: Document) -> list[tuple[str, str]]:
     wanted: list[tuple[str, str]] = []
     for route in _routes(document):
@@ -905,6 +927,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_approach_categories(document)
     _check_destinations(document)
     _check_tec_routes(document)
+    _check_tec_heads(document)
     _check_fix_spoken(document)
 
 

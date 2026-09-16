@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData, Scenario } from '@/data/schema.ts';
+import type { AirportData, AssignmentRule, Scenario } from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
@@ -26,20 +26,28 @@ function scenario(overrides: Partial<Scenario>): Scenario {
   return Object.assign({ ...BASE_SCENARIO }, overrides);
 }
 
-function check(flight: Scenario) {
-  const ctx = classify(flight, ksfo);
+function checkAt(flight: Scenario, airport: AirportData) {
+  const ctx = classify(flight, airport);
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
-  const result = resolveClearance(flight, ksfo);
+  const result = resolveClearance(flight, airport);
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-  return checkRoute(flight, ctx, result.clearance, ksfo);
+  return checkRoute(flight, ctx, result.clearance, airport);
 }
 
-function amendment(flight: Scenario) {
-  const result = check(flight);
+function check(flight: Scenario) {
+  return checkAt(flight, ksfo);
+}
+
+function amendmentAt(flight: Scenario, airport: AirportData) {
+  const result = checkAt(flight, airport);
   if (result === undefined) throw new Error('the filed route is the one the SOP assigns');
   if (isUnresolved(result)) throw new Error(result.reason);
   if (result.box !== 'route') throw new Error(`the check amended the ${result.box} box`);
   return result;
+}
+
+function amendment(flight: Scenario) {
+  return amendmentAt(flight, ksfo);
 }
 
 function citations(flight: Scenario): string[] {
@@ -257,10 +265,40 @@ describe('checkRoute on the runway heading', () => {
     const flight = c172();
     expect(amendment(flight).proposed).toBe('OAK V6 SAC');
     expect(amendment(flight).reason).toBe(
-      'the SOP sends a non-RNAV piston off 01L in the noise window on the runway heading with no ' +
-        'departure procedure',
+      'SFOW-NOISE-P-RWY sends a non-RNAV piston off 01L on the runway heading with no departure ' +
+        'procedure',
     );
     expect(citations(flight)).toEqual(['SFOW-NOISE-P-RWY', 'R-HEADING']);
+  });
+
+  it('names the row and the heading in degrees where the row assigns one', () => {
+    const numbered: AssignmentRule = {
+      id: 'SFOW-28-270',
+      source: 'test row',
+      text: 'SFOW: props off the 28s -> turn onto 270, no DP',
+      plan: 'SFOW',
+      direction: 'any',
+      runwayFamilies: ['28'],
+      classes: ['P'],
+      sidFamily: null,
+      nonDpHeading: 270,
+      sector: 'richmond',
+    };
+    const airport: AirportData = {
+      ...ksfo,
+      assignmentRules: [numbered, ...ksfo.assignmentRules],
+    };
+    const flight = c172({
+      destination: 'KSMF',
+      departureRunway: '28L',
+      runwayConfigId: '28 RT',
+      localTime: '1400',
+    });
+    const result = amendmentAt(flight, airport);
+    expect(result.proposed).toBe('OAK V6 SAC');
+    expect(result.reason).toBe(
+      'SFOW-28-270 sends a non-RNAV piston off 28L on heading 270 with no departure procedure',
+    );
   });
 
   it('leaves a plan that files no procedure alone', () => {

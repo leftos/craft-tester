@@ -1,9 +1,9 @@
-import type { AirportData, Scenario } from '@/data/schema.ts';
+import type { AirportData, NonDpHeading, Scenario } from '@/data/schema.ts';
 import {
   altitudeLabel,
   expectChoiceLabel,
   formatFeet,
-  HEADING_PROCEDURE_PICK,
+  headingPick,
   routeLabel,
 } from '@/rules/grade.ts';
 import { buildOptions } from '@/rules/options.ts';
@@ -227,8 +227,23 @@ function procedureRow(clearance: ResolvedClearance, airport: AirportData): Craft
 }
 
 /**
+ * Every heading the assignment table clears a flight on, the runway heading first and the
+ * numbered headings after it in ascending order, each listed once however many rows name it.
+ */
+function nonDpHeadings(airport: AirportData): NonDpHeading[] {
+  const named = new Set<NonDpHeading>();
+  for (const rule of airport.assignmentRules) {
+    if (rule.nonDpHeading !== undefined) named.add(rule.nonDpHeading);
+  }
+  const degrees = [...named]
+    .filter((heading): heading is number => heading !== 'runway heading')
+    .sort((a, b) => a - b);
+  return named.has('runway heading') ? ['runway heading', ...degrees] : degrees;
+}
+
+/**
  * The procedure as a pick: every procedure the airport publishes, named as its chart names it,
- * and last the runway heading, for the plans the SOP sends off without a procedure at all.
+ * and after them the headings the SOP sends flights off on without a procedure at all.
  */
 function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
   return {
@@ -240,7 +255,10 @@ function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
         label: 'procedure',
         options: [
           ...airport.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
-          { value: HEADING_PROCEDURE_PICK, label: headingLabel(HEADING_PROCEDURE_PICK) },
+          ...nonDpHeadings(airport).map((heading) => ({
+            value: headingPick(heading),
+            label: headingLabel(heading),
+          })),
         ],
         value: picks.procedure,
         disabled: false,

@@ -15,7 +15,7 @@ import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { flightDirection, isSidToken, parseFiledRoute } from '@/rules/route.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
-import type { ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
+import type { Procedure, ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** A procedure token split into the family and the version digit the AIRAC cycle bumps. */
@@ -143,11 +143,45 @@ function flightWords(ctx: Classification): string {
   return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.aircraftClass]}`;
 }
 
-/** The reason the box names no procedure at all: the SOP sends this flight off without one. */
-function headingReason(scenario: Scenario, ctx: Classification): string {
+/** The phraseology row that says a clearance without a procedure is spoken as a heading. */
+const HEADING_PHRASEOLOGY_ROW = 'R-HEADING';
+
+/**
+ * The assignment row that sent the flight off without a procedure, named for the reason.
+ *
+ * The clearance cites the row that answered the assignment table first and the phraseology row
+ * that says how it is spoken after it, so the first citation that is not the phraseology row is the
+ * row to name; a clearance citing nothing else falls back to the SOP as a whole.
+ */
+function headingRowId(clearance: ResolvedClearance): string {
+  const row = clearance.procedure.citations.find(
+    (citation) => citation.id !== HEADING_PHRASEOLOGY_ROW,
+  );
+  return row?.id ?? 'the SOP';
+}
+
+/**
+ * How a reason names the heading the flight is sent off on.
+ *
+ * Only a clearance flown on a heading reaches a reason at all, so a procedure names the runway
+ * heading, the heading every airport with such a row has.
+ */
+function headingWords(procedure: Procedure): string {
+  if (procedure.kind !== 'heading' || procedure.heading === 'runway heading') {
+    return 'the runway heading';
+  }
+  return `heading ${procedure.heading}`;
+}
+
+/** The reason the box names no procedure at all: the row that clears this flight assigns none. */
+function headingReason(
+  scenario: Scenario,
+  ctx: Classification,
+  clearance: ResolvedClearance,
+): string {
   return (
-    `the SOP sends ${flightWords(ctx)} off ${scenario.departureRunway} in the noise window on the ` +
-    'runway heading with no departure procedure'
+    `${headingRowId(clearance)} sends ${flightWords(ctx)} off ${scenario.departureRunway} on ` +
+    `${headingWords(clearance.procedure.value)} with no departure procedure`
   );
 }
 
@@ -265,10 +299,11 @@ export function loaRouteGap(
  * The box is the tail the pilot filed, so a plan that files a departure procedure is amended down
  * to that tail and a plan that files none is left alone. A TEC route still wins where one applies,
  * but a row whose route begins on a departure family never applies to such a flight: `tecRouteFor`
- * puts the row's own route to the clearance engine, which answers this flight with the runway
- * heading rather than with the family the row begins on, so only a row that begins on a fix or an
- * airway is reached here. A box that already reads right is held against the LOA routing rows, over
- * its whole length, because there is no procedure token at its head to skip.
+ * puts the row's own route to the clearance engine, which answers this flight with a heading rather
+ * than with the family the row begins on. A row that begins on an initial heading token is reached
+ * where the flight is issued that same heading, and its route, the token dropped, is the box. A box
+ * that already reads right is held against the LOA routing rows, over its whole length, because
+ * there is no procedure token at its head to skip.
  *
  * @param filed The route box as filed, split on a leading procedure token.
  * @param scenario The filed flight plan.
@@ -297,7 +332,7 @@ function checkHeadingRoute(
     proposed: tokens.join(' '),
     reason:
       tec === undefined
-        ? headingReason(scenario, ctx)
+        ? headingReason(scenario, ctx, clearance)
         : tecReason(ctx, { tokens, tec }, scenario.destination),
     citations: [...clearance.procedure.citations, ...(tec === undefined ? [] : [citeTec(tec)])],
   };

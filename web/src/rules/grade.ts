@@ -1,4 +1,4 @@
-import type { AirportData, RouteTemplate } from '@/data/schema.ts';
+import type { AirportData, NonDpHeading, RouteTemplate } from '@/data/schema.ts';
 import type {
   ExpectClause,
   Grade,
@@ -213,8 +213,45 @@ function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   };
 }
 
-/** What the procedure dropdown carries for a clearance the SOP issues without a procedure. */
-export const HEADING_PROCEDURE_PICK = 'runway heading';
+/** What every procedure pick that names a heading rather than a published procedure begins with. */
+const HEADING_PICK_PREFIX = 'heading:';
+
+/** What the runway-heading pick writes where a numbered heading writes its degrees. */
+const RUNWAY_HEADING_PICK = 'runway';
+
+/** The magnetic headings a rule may clear a flight on, as the schema bounds them. */
+const LOWEST_HEADING = 1;
+const HIGHEST_HEADING = 360;
+
+/**
+ * What the procedure dropdown carries for a clearance the SOP issues without a procedure.
+ *
+ * A published procedure is picked by its identifier, so a heading is prefixed to keep the two
+ * apart: `heading:runway` for the runway heading, `heading:270` for a heading in degrees.
+ *
+ * @param heading The runway heading, or the assigned magnetic heading in degrees.
+ * @returns The dropdown value, e.g. `heading:270`.
+ */
+export function headingPick(heading: NonDpHeading): string {
+  const written = heading === 'runway heading' ? RUNWAY_HEADING_PICK : String(heading);
+  return `${HEADING_PICK_PREFIX}${written}`;
+}
+
+/**
+ * The heading a procedure pick names, which is the inverse of {@link headingPick}.
+ *
+ * @param value A procedure pick, which is either a published procedure's identifier or a heading.
+ * @returns The heading, or `undefined` for anything `headingPick` does not write, a procedure
+ *   identifier included.
+ */
+export function headingFromPick(value: string): NonDpHeading | undefined {
+  if (!value.startsWith(HEADING_PICK_PREFIX)) return undefined;
+  const written = value.slice(HEADING_PICK_PREFIX.length);
+  if (written === RUNWAY_HEADING_PICK) return 'runway heading';
+  if (!/^\d+$/.test(written)) return undefined;
+  const degrees = Number(written);
+  return degrees >= LOWEST_HEADING && degrees <= HIGHEST_HEADING ? degrees : undefined;
+}
 
 /** Names one procedure as its chart does, falling back to the identifier where none is published. */
 function procedureLabel(id: string, airport: AirportData): string {
@@ -234,12 +271,13 @@ function expectedProcedureLabel(expected: ResolvedClearance, airport: AirportDat
  *
  * The comparison is by family rather than by identifier, because an AIRAC cycle bumps the version
  * in the identifier without changing the procedure the controller assigns. A clearance the SOP
- * sends off on the runway heading names no procedure, so every published procedure is wrong for it
- * and the runway heading itself is the right answer; that same heading is wrong for a clearance
- * that does assign a procedure.
+ * sends off on a heading names no procedure, so every published procedure is wrong for it and the
+ * heading it clears the flight on is the right answer, that heading alone: the runway heading and a
+ * heading in degrees are different answers. A heading is wrong for a clearance that does assign a
+ * procedure.
  *
- * @param procedureId The identifier of the SID the player picked, e.g. `TRUKN2`, or
- *   `HEADING_PROCEDURE_PICK` where the player answered with the runway heading.
+ * @param procedureId The identifier of the SID the player picked, e.g. `TRUKN2`, or what
+ *   {@link headingPick} writes where the player answered with a heading.
  * @param expected The clearance the engine resolved for the same scenario.
  * @param airport The airport data, which names the published procedures.
  * @returns The verdict for `R.sid`, labelled as the charts name the two procedures.
@@ -250,19 +288,18 @@ export function gradeProcedure(
   airport: AirportData,
 ): Grade {
   const procedure = expected.procedure.value;
-  const heading = procedureId === HEADING_PROCEDURE_PICK;
+  const heading = headingFromPick(procedureId);
   const family = airport.sids.find((sid) => sid.id === procedureId)?.family;
   return {
     element: 'R.sid',
     verdict: verdictOf(
-      heading
-        ? procedure.kind === 'heading'
-        : procedure.kind === 'sid' && family !== undefined && family === procedure.family,
+      heading === undefined
+        ? procedure.kind === 'sid' && family !== undefined && family === procedure.family
+        : procedure.kind === 'heading' && procedure.heading === heading,
     ),
     expectedLabel: expectedProcedureLabel(expected, airport),
-    actualLabel: heading
-      ? headingLabel(HEADING_PROCEDURE_PICK)
-      : procedureLabel(procedureId, airport),
+    actualLabel:
+      heading === undefined ? procedureLabel(procedureId, airport) : headingLabel(heading),
     citations: expected.procedure.citations,
   };
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
-import { HEADING_PROCEDURE_PICK } from '@/rules/grade.ts';
+import { headingPick } from '@/rules/grade.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import type { CraftGroup } from '@/ui/craftForm.ts';
 import { craftGroups, submitDisabled } from '@/ui/craftForm.ts';
@@ -80,7 +80,7 @@ describe('craftGroups', () => {
     if (row.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.fields[0]?.options).toStrictEqual([
       ...ksfo.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
-      { value: 'runway heading', label: 'fly runway heading (no DP)' },
+      { value: 'heading:runway', label: 'fly runway heading (no DP)' },
     ]);
   });
 
@@ -88,9 +88,31 @@ describe('craftGroups', () => {
     const row = procedureRowOf(EMPTY_PICKS, 'picked');
     if (row.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.fields[0]?.options.at(-1)).toStrictEqual({
-      value: HEADING_PROCEDURE_PICK,
+      value: headingPick('runway heading'),
       label: 'fly runway heading (no DP)',
     });
+  });
+
+  it('offers every heading its rules name once, the runway heading first then the degrees', () => {
+    const headingRule = ksfo.assignmentRules.find((rule) => rule.nonDpHeading !== undefined);
+    if (headingRule === undefined) throw new Error('KSFO has no heading rule to spread');
+    const airport: AirportData = {
+      ...ksfo,
+      assignmentRules: [
+        ...ksfo.assignmentRules,
+        { ...headingRule, id: 'TEST-315', nonDpHeading: 315 },
+        { ...headingRule, id: 'TEST-270', nonDpHeading: 270 },
+        { ...headingRule, id: 'TEST-270-AGAIN', nonDpHeading: 270 },
+      ],
+    };
+    const row = craftGroups(scenario, airport, clearance, EMPTY_PICKS, 'picked')[1];
+    if (row?.kind !== 'picked') throw new Error('the procedure row is not a picked row');
+    expect(row.fields[0]?.options.slice(-3)).toStrictEqual([
+      { value: 'heading:runway', label: 'fly runway heading (no DP)' },
+      { value: 'heading:270', label: 'heading 270 (no DP)' },
+      { value: 'heading:315', label: 'heading 315 (no DP)' },
+    ]);
+    expect(row.fields[0]?.options).toHaveLength(airport.sids.length + 3);
   });
 
   it('shows the runway heading in the given row of a clearance issued without a procedure', () => {
@@ -168,7 +190,9 @@ describe('submitDisabled', () => {
   });
 
   it('takes the runway heading as the procedure pick of a corrected plan', () => {
-    expect(submitDisabled({ ...full, procedure: HEADING_PROCEDURE_PICK }, 'picked')).toBe(false);
+    expect(submitDisabled({ ...full, procedure: headingPick('runway heading') }, 'picked')).toBe(
+      false,
+    );
   });
 
   it('holds either form back while a CRAFT dropdown is blank', () => {
