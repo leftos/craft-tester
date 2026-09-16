@@ -127,10 +127,10 @@ describe('grade', () => {
     const picks: PlayerPicks = { ...correct, routeTemplate: 'as_filed', routeFix: 'TRUKN' };
     const [route] = grade(picks, asFiled);
     expect(route?.ok).toBe(true);
-    expect(route?.expectedLabel).toBe('TRUKN, then as filed');
+    expect(route?.expectedLabel).toBe('TRUKN');
     const [wrongFix] = grade({ ...picks, routeFix: 'DEDHD' }, asFiled);
     expect(wrongFix?.ok).toBe(false);
-    expect(wrongFix?.actualLabel).toBe('DEDHD, then as filed');
+    expect(wrongFix?.actualLabel).toBe('DEDHD');
   });
 
   it('grades an airway route on the airway the vectors join', () => {

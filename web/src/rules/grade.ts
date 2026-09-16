@@ -18,12 +18,17 @@ export function formatFeet(feet: number): string {
   return String(feet).replace(/\B(?=(?:\d{3})+$)/g, ',');
 }
 
-/** How the results view names each route shape on its own, when the pick names no element. */
+/**
+ * How the form and the results view name each route shape on its own, when the pick names no element.
+ *
+ * "Then as filed" is not a shape: it follows the SID and the transition or exit fix whatever the
+ * shape, so the shape for a bare exit fix is the fix with nothing in front of it.
+ */
 const ROUTE_PHRASES: Record<RouteTemplate, string> = {
   transition: 'transition',
   radar_vectors_fix: 'radar vectors',
   radar_vectors_airway: 'radar vectors to join',
-  as_filed: 'then as filed',
+  as_filed: '(no prefix)',
 };
 
 /**
@@ -36,7 +41,7 @@ export function routeLabel(route: ResolvedClearance['route']['value']): string {
   const { template, fix } = route;
   if (fix === undefined) return ROUTE_PHRASES[template];
   if (template === 'transition') return `${fix} transition`;
-  if (template === 'as_filed') return `${fix}, then as filed`;
+  if (template === 'as_filed') return fix;
   return `${ROUTE_PHRASES[template]} ${fix}`;
 }
 
