@@ -184,6 +184,55 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `heading:runway`, `heading:270`) and `gradeProcedure` compares headings; the route-box reason for a heading
   clearance comes from the row instead of the hard-coded "in the noise window"; `CVS x FL190` spoken as a flight
   level (check `speakAltitude`).
+- [ ] **Brief 3a status 2026-09-16**: the five files are written in `wt/koak-data` (uncommitted; `verify-sop` and
+  every loader pass, KSFO unchanged) and the build was blocked only by the FAA's "TRANSITON" misspelling on
+  SKYLINE ONE CONT.1 (parser tolerance dispatched to `wt/koak-engine`; a dry run with it patched builds KOAK: 12
+  SIDs, 59 assignment rows, 20 altitude rows, 2 notices, 45 routes). Review findings beyond the implementer's
+  guesses: (1) SOP 3-4 a asks turboprops over 17,000 lbs off 28L/28R, so the DH8D belongs on 30/12 with the
+  jets, which a class-keyed default cannot say; (2) SFOW P/T on a heading take 3,000 (315) or 10,000 (runway
+  heading, 270) by heading, but altitude rows key on plan/runway/class/SID only, so every such prop gets 3,000;
+  (3) the SFOW 2-2 b prop rows (315/runway heading) sit behind the NIMI# row (direction any) and are reachable
+  only through a TEC-without-DP condition they do not carry, to be settled once `tec.yaml` shows which prop TEC
+  rows omit NIMI#; (4) a non-RNAV jet between 0100L and 0500L falls to the SLNT#/270 rows the footnote forbids
+  then (needs a "not in window" condition; rare, validation loop); (5) `non_standard_interim_expect_minutes: 3`
+  copied from KSFO where SOP 2-2 b i says ten (unused by the engine; set to 10 in 3b). Guesses put to the user
+  2026-09-16: east-flow prop parallel, DH8D runway, SUNNE notice heading, heading-keyed altitudes, spoken names,
+  DH8D approach category, NUEVO# blanks, Sacramento jet altitude. **Answers 2026-09-16**: east-flow props default
+  to 10L (same pavement as 28R; PCM to 10R); the DH8D goes with the jets through a group-keyed runway default
+  (brief 2e-i); with SUNNE# off the engine issues the notice's 120 heading, not the SOP's 270 (a `sid_off` notice
+  may carry the heading it issues instead: brief 2e-ii; the QUAKE notice carries 270 the same way); altitude rows
+  may key on the heading (brief 2e-ii); Hush Two, Katfish Three and Sunne One are right; the DH8D approach
+  category is to be read off the FAA Aircraft Characteristics Database (faa.gov/airports/engineering/
+  aircraft_char_database), as should every other estimate; the NUEVO# row is not blank, its sector and altitude
+  cells are merged with the southbound row's (Sutro, CVS x 10,000: rewrite the note); Sacramento jets file
+  10,000 as the tool says (TEC altitudes ignore parity). **FAA AAC column read 2026-09-16** (the database's
+  `aircraft_data` URL serves the xlsx; rows saved to `.tmp/faa-aac.txt`): A320 C, A20N C, A319 C, B737 C, B738 D,
+  B752 C, B77L C, B788 D, A306 C, MD11 D, E75L C, E135 C, CL30 C, GL5T C, C750 C, C55B B, C25B B, C510 B, E55P B,
+  DH8D C, B350 B, BE20 B, TBM9 A, C172 A, SR22 A, M20T A, C208 A. Eight estimates change (A306, B77L, B738, CL30,
+  TBM9, M20T, plus C208 new); the fleet `approach_category` source becomes "FAA Aircraft Characteristics Database,
+  AAC, 2026-09-16" and the review note comes off.
+- [ ] **Brief 2e-i, group runway default**: `default_for_groups` on a departure-runway row, read between the airline
+  and the class default, `RWY-GROUP-DEFAULT` row required; mirrors 2d in the loader, emitter, importer, draw, grader
+  and ATIS. Dispatched 2026-09-16 into `wt/koak-engine`.
+- [ ] **Brief 2e-iii, FAA approach categories as shared data** (user 2026-09-16: "cache that in the repo parsed or
+  raw"): `craft-gen fetch-aircraft-characteristics` downloads the FAA xlsx (the `aircraft_data` URL) and writes
+  `generator/shared/faa_aircraft_characteristics.yaml` (source block with url and fetched date; one entry per ICAO
+  code with aac, approach speed, engine class, MTOW, WTC), checked in; `routes.yaml` fleet `approach_category`
+  becomes optional and the build fills it from that table by type, failing on a type the table lacks; a hand value
+  still wins. Dispatched 2026-09-16 into `wt/koak-faa` in parallel with 2e-i. **User steer 2026-09-16**: keep
+  airport-independent aircraft data in one shared place so airports do not copy it. Second half, brief 2e-iv: the
+  type facts (class, wtc, suffixes) move to `generator/shared/aircraft_types.yaml`, the airline facts (telephony,
+  cargo, the types each operates) to `generator/shared/airlines.yaml`, the destination facts (spoken name, artcc,
+  foreign coordinates) to `generator/shared/destinations.yaml`; an airport's `routes.yaml` lists the type codes,
+  airline codes and destination codes it draws plus its routes, and the build composes the same `routeLibrary`
+  JSON as today, so the web app does not change. KSFO converts in that brief; KOAK's `routes.yaml` converts in 3b.
+- [ ] **Brief 2e-ii, heading-keyed altitudes and notice headings**: (1) an altitude row may list `non_dp_headings`
+  (`[315]`, `[runway heading]`) the way it lists `sid_families`, matching only a flight cleared on one of those
+  headings; the two keys are exclusive. (2) A `sid_off` notice effect may carry `heading: 120`: while the notice is
+  active, a row of that family clears the flight on that heading instead of being skipped (the row's sector and
+  conditions stand; citations are the row and the notice; `unservedSids` ends its walk there). Data in 3b: SFOW P/T
+  altitude rows split by heading (315 → 3,000; runway heading and 270 → 10,000), `heading: 120` on the SUNNE
+  notice and `heading: 270` on the QUAKE notice.
 - [ ] **Brief 3a, SOP transcription**: `sop.yaml` (v1.7, sentinels; configurations `SFOW`, `OAKE`, `SFOE` as both id
   and plan, since the TEC tool tags rows `[SFOW]`/`[OAKE]`/`[SFOE]`; training weights 70/20/10; departure runways
   and class defaults from SOP 1-6/2-2 with a `note` and a report question wherever the SOP is silent on which
