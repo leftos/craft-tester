@@ -23,8 +23,3 @@ rules:
     text: "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
     destinations: [KPDX]
     rule: { kind: route, tokens: [MACHU, MOXEE, OED] }
-  - id: LOA-ZSE-LA-BASIN-DIRECT
-    source: "ZOA-ZSE LOA 4 b (2)"
-    text: "Aircraft landing Los Angeles Basin airports (LAX, BUR, VNY, SMO, SNA, LGB) may be routed no further direct than ENI, LIN, FRA, REBRG or JAGWA"
-    destinations: [KLAX, KBUR, KVNY, KSMO, KSNA, KLGB]
-    rule: { kind: route, tokens: [ENI, LIN, FRA, REBRG, JAGWA] }

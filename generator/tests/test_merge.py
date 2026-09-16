@@ -27,7 +27,7 @@ BASE_FIXES = {
 }
 NO_BASE_FIX = ["GAPP7", "SFO5"]
 TEC_ROUTE_COUNT = 49
-LOA_RULE_COUNT = 4
+LOA_RULE_COUNT = 3
 TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_CAP_FEET = 6000

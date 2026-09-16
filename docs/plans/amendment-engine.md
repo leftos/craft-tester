@@ -107,9 +107,9 @@ the engine must still resolve the clearance a dirty plan gets after amendment.
 
 ## Open for step 21
 
-- `LOA-ZSE-LA-BASIN-DIRECT` ("no further direct than ENI/LIN/FRA/REBRG/JAGWA") is a `kind: route` row
-  but its text is a limit on direct routings, not a required token; the token check would flag every
-  airway route to LAX. Step 4 skips that row (only rows whose text names a required routing are
-  checked) and the user decides whether it becomes a new rule kind or is dropped.
+- `LOA-ZSE-LA-BASIN-DIRECT` ("no further direct than ENI/LIN/FRA/REBRG/JAGWA") was a `kind: route` row
+  but its text is a limit on direct routings, not a required token; the token check would have
+  flagged every airway route to LAX. **User decision 2026-09-15: dropped from `loa.yaml`** (3 LOA rows
+  remain). A direct-routing limit becomes its own rule kind if a worksheet plan ever needs it.
 - Whether the sheet authors amend the type or the route when a non-RNAV suffix files an RNAV SID.
 - Whether SWA2021 (KPDX via LMT, no MACHU/MOXEE/OED) is a route fault, and to what.

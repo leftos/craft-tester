@@ -969,29 +969,6 @@
       },
       "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
       "text": "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
-    },
-    {
-      "destinations": [
-        "KLAX",
-        "KBUR",
-        "KVNY",
-        "KSMO",
-        "KSNA",
-        "KLGB"
-      ],
-      "id": "LOA-ZSE-LA-BASIN-DIRECT",
-      "rule": {
-        "kind": "route",
-        "tokens": [
-          "ENI",
-          "LIN",
-          "FRA",
-          "REBRG",
-          "JAGWA"
-        ]
-      },
-      "source": "ZOA-ZSE LOA 4 b (2)",
-      "text": "Aircraft landing Los Angeles Basin airports (LAX, BUR, VNY, SMO, SNA, LGB) may be routed no further direct than ENI, LIN, FRA, REBRG or JAGWA"
     }
   ],
   "noSid": {
