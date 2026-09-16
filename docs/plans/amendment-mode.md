@@ -66,8 +66,8 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   `scenario/amend.ts`: `generateAmendmentScenario(rng, airport, filter)` draws a clean plan
   with `generateScenario`, then injects 0/1/2 faults from: stale SID version, another published SID
   of the field, no SID, wrong route for a TEC destination (only when the library has one), parity
-  flip (+1,000), non-RVSM suffix inside the band, altitude above the type ceiling, missing suffix,
-  unknown suffix. Retries until `resolveAmendments` is ok and reports exactly the injected boxes
+  flip (+1,000), non-RVSM suffix inside the band, missing suffix, unknown suffix (the "altitude above
+  the type ceiling" fault existed until 2026-09-16, when the ceiling rule was removed). Retries until `resolveAmendments` is ok and reports exactly the injected boxes
   (zero for none). Tests over 1,000 seeds: mix shares, every draw resolvable, no draw with more than
   two boxes.
 - [x] C1. (landed 2026-09-15; `submitDisabled(picks, procedure)` exported from `craftForm.ts`

@@ -17,7 +17,8 @@ Design source: [craft-trainer-v1.md, "Amendment mode"](./craft-trainer-v1.md#ame
    engine issues. The clearance-mode generator still draws no-SID plans as normal.
 3. **The proposed altitude is the highest legal altitude at or below the filed one**, legal meaning it
    satisfies every constraint at once: parity (91.179 or the LOA rotation), the RVSM band for a
-   non-RVSM suffix, the TEC cap, the type ceiling, an LOA `max`.
+   non-RVSM suffix, the TEC cap, an LOA `max`. (The type service ceiling was a constraint until
+   2026-09-16, when the user ruled that a controller does not apply aircraft performance; removed.)
 4. **One route rule**: the route box must read `<assigned SID, current version> <filed tail>`, or the
    TEC route for an NCT destination (`kind: tec` rows only). That subsumes stale version, wrong
    configuration, another airport's SID, an off-notice SID and a non-RNAV filing an RNAV SID. A filed
@@ -53,8 +54,7 @@ Design source: [craft-trainer-v1.md, "Amendment mode"](./craft-trainer-v1.md#ame
   when proposed differs from filed. Citations: assignment row, notices, TEC row. LOA `kind: route` rows
   for the destination: the filed tail must contain one of `tokens`; when it does not and no proposal can
   be built, the route box is **unresolved** with the row's text, so the fixture stays pending for step 21.
-- **altitude.ts** (with **course.ts**): constraints from the fleet ceiling (type not in the fleet:
-  no ceiling check), the matching TEC row's `altitudeCapFeet`, the RVSM band FL290–FL410 when the
+- **altitude.ts** (with **course.ts**): constraints from the matching TEC row's `altitudeCapFeet`, the RVSM band FL290–FL410 when the
   suffix's `rvsm` is false (an unknown or null suffix counts as non-RVSM), parity by course (0–179 odd,
   180–359 even; above FL410 the 4,000-ft series FL450/490 odd and FL430/470 even) or the LOA
   `parity_rotated` row matching `artcc` or `destinations`, and LOA `max`. Fault when the filed altitude

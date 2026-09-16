@@ -221,14 +221,6 @@ describe('fault injection', () => {
     expect(amendmentFor(entry, 'altitude'), label(entry)).toBeDefined();
   });
 
-  it('files an altitude above the service ceiling of the type', () => {
-    const entry = firstWith('above_ceiling');
-    const fleet = ksfo.routeLibrary.fleet.find((row) => row.type === entry.filed.aircraftType);
-    expect(fleet, label(entry)).toBeDefined();
-    expect(entry.filed.filedAltitude, label(entry)).toBe((fleet?.ceilingFeet ?? 0) + 1000);
-    expect(amendmentFor(entry, 'altitude'), label(entry)).toBeDefined();
-  });
-
   it('files no equipment suffix', () => {
     const entry = firstWith('missing_suffix');
     expect(entry.filed.equipmentSuffix, label(entry)).toBeNull();

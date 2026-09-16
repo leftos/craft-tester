@@ -359,7 +359,6 @@ def _fleet_entry(entry: FleetEntry) -> Document:
         "type": entry.type,
         "class": entry.aircraft_class,
         "wtc": entry.wtc,
-        "ceilingFeet": entry.ceiling_feet,
         "suffixes": list(entry.suffixes),
         "airlines": list(entry.airlines),
     }

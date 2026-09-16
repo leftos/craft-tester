@@ -759,7 +759,6 @@ def _fleet_entry(row: _Row) -> FleetEntry:
         type=row.text("type"),
         aircraft_class=row.choice("class", AIRCRAFT_CLASSES),
         wtc=row.choice("wtc", WAKE_CATEGORIES),
-        ceiling_feet=row.number("ceiling_feet"),
         suffixes=row.texts("suffixes"),
         airlines=row.texts("airlines"),
     )

@@ -99,10 +99,10 @@ describe('checkAltitude equipment and performance', () => {
     expect(citations(flight)).toEqual(['A-RVSM']);
   });
 
-  it('holds a B737 at its service ceiling', () => {
-    const flight = scenario({ aircraftType: 'B737', destination: 'KBOI', filedAltitude: 43000 });
-    expect(amendment(flight).proposedFeet).toBe(41000);
-    expect(citations(flight)).toEqual(['A-PARITY', 'FLEET-B737']);
+  it('leaves a B737 at FL450, the odd series its 022 course to Boise wants, alone', () => {
+    expect(
+      check(scenario({ aircraftType: 'B737', destination: 'KBOI', filedAltitude: 45000 })),
+    ).toBeUndefined();
   });
 });
 

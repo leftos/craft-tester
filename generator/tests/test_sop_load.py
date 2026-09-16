@@ -196,7 +196,6 @@ def test_routes_destinations_and_fleet(ksfo_inputs: AirportInputs) -> None:
     fleet = {entry.type: entry for entry in routes.fleet}
     assert (fleet["A20N"].aircraft_class, fleet["A20N"].wtc, fleet["A20N"].suffixes) == ("J", "M", ("/L",))
     assert fleet["B350"].aircraft_class == "T"
-    assert fleet["C172"].ceiling_feet == 14000
     assert fleet["C55B"].airlines == ()
     first = routes.routes[0]
     assert (first.exit_fix, first.destination, first.classes, first.altitudes) == ("DEDHD", "KSEA", ("J",), (32000, 34000, 36000))

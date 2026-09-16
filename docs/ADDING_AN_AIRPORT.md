@@ -172,8 +172,8 @@ Scenarios are drawn from this file, so its breadth is the game's variety.
   coordinates from CIFP `PA` records and fails on a destination it cannot place.
 - **`telephony`**: airline code → spoken callsign for the reveal.
 - **`fleet`**: type, class (checked against vNAS `AircraftSpecs.json` EngineType; the build fails on a
-  disagreement), wake category, service ceiling (for the "too high for type" amendment), equipment
-  suffixes it files, airlines that fly it. Use the ICAO type designators pilots actually file; worksheets
+  disagreement), wake category, equipment suffixes it files, airlines that fly it. No service ceiling: a
+  controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16). Use the ICAO type designators pilots actually file; worksheets
   file `A32N`, which is `A20N` in vNAS, and that alias is still an open item.
 - **`routes`**: keyed by `exit_fix` (where the aircraft leaves the SID), with the `tail` from that fix,
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.

@@ -375,7 +375,7 @@ export const DestinationSchema = z.strictObject({
 });
 
 /**
- * One curated fleet type, its class, and the service ceiling the altitude checks compare against.
+ * One curated fleet type and its class.
  *
  * `wtc` is the ICAO wake turbulence category (`L`, `M`, `H`, `J`), `suffixes` are the equipment
  * suffixes the type normally files, and `airlines` are the callsign prefixes that operate it, empty
@@ -385,7 +385,6 @@ export const FleetEntrySchema = z.strictObject({
   type: z.string(),
   class: AircraftClassSchema,
   wtc: z.string(),
-  ceilingFeet: feet,
   suffixes: z.array(z.string().regex(/^\/[A-Z]$/)),
   airlines: z.array(z.string()),
 });

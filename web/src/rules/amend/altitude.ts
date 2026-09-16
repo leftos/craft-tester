@@ -217,31 +217,6 @@ function maxConstraints(airport: AirportData, destination: Destination): Constra
   });
 }
 
-/**
- * The service ceiling of the filed type, for a type the fleet holds.
- *
- * @param scenario The filed flight plan.
- * @param airport The airport data.
- * @returns The constraint, or `undefined` for a type the fleet does not list, which has no ceiling
- *   in the data to check against.
- */
-function ceilingConstraint(scenario: Scenario, airport: AirportData): Constraint | undefined {
-  const entry = airport.routeLibrary.fleet.find((row) => row.type === scenario.aircraftType);
-  if (entry === undefined) return undefined;
-  const ceiling = entry.ceilingFeet;
-  return {
-    legal: (feet) => feet <= ceiling,
-    reason: `a ${entry.type} has a service ceiling of ${altitudeText(ceiling)}`,
-    citations: [
-      {
-        id: `FLEET-${entry.type}`,
-        source: 'routes.yaml fleet',
-        text: `${entry.type} service ceiling ${formatFeet(ceiling)} ft`,
-      },
-    ],
-  };
-}
-
 /** The highest altitude at or below the filed one that every constraint accepts. */
 function highestLegal(filedFeet: number, constraints: Constraint[]): number | undefined {
   for (let feet = filedFeet; feet >= LOWEST_PROPOSAL_FEET; feet -= STEP_FEET) {
@@ -268,9 +243,9 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
  * The constraints are the direction-of-flight parity, rotated where an LOA row for the destination
  * rotates it; the RVSM band for a suffix without RVSM approval; the cap on the TEC route a TRACON
  * destination is routed on, which is the row beginning on a departure the SOP would issue this
- * flight and nothing where no row does; an LOA ceiling; and the service ceiling of the filed type.
- * The proposal is the highest altitude at or below the filed one that satisfies all of them at
- * once, so an amendment never trades one broken rule for another.
+ * flight and nothing where no row does; and an LOA ceiling. The proposal is the highest altitude at
+ * or below the filed one that satisfies all of them at once, so an amendment never trades one
+ * broken rule for another.
  *
  * Only the constraints the *filed* altitude broke are reported and cited: the reason says what is
  * wrong with what the pilot filed, and a rule the filed altitude honours is not part of that, even
@@ -301,7 +276,6 @@ export function checkAltitude(
     rvsmConstraint(scenario, airport),
     tecConstraint(ctx, scenario, airport, destination),
     ...maxConstraints(airport, destination),
-    ceilingConstraint(scenario, airport),
   ].filter((constraint) => constraint !== undefined);
   const broken = constraints.filter((constraint) => !constraint.legal(scenario.filedAltitude));
   if (broken.length === 0) return undefined;

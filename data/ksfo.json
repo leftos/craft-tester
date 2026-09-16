@@ -1500,7 +1500,6 @@
           "VOI",
           "JBU"
         ],
-        "ceilingFeet": 39800,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1514,7 +1513,6 @@
           "VOI",
           "JBU"
         ],
-        "ceilingFeet": 39800,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1527,7 +1525,6 @@
           "AAY",
           "UAL"
         ],
-        "ceilingFeet": 39800,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1540,7 +1537,6 @@
           "SWA",
           "ASA"
         ],
-        "ceilingFeet": 41000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1555,7 +1551,6 @@
           "UAL",
           "ASA"
         ],
-        "ceilingFeet": 41000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1570,7 +1565,6 @@
           "DAL",
           "UAL"
         ],
-        "ceilingFeet": 42000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1583,7 +1577,6 @@
           "FDX",
           "KAL"
         ],
-        "ceilingFeet": 43100,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1596,7 +1589,6 @@
           "NAX",
           "UAL"
         ],
-        "ceilingFeet": 43100,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1609,7 +1601,6 @@
           "UPS",
           "FDX"
         ],
-        "ceilingFeet": 40000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1622,7 +1613,6 @@
           "FDX",
           "UPS"
         ],
-        "ceilingFeet": 43000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1635,7 +1625,6 @@
           "SKW",
           "QXE"
         ],
-        "ceilingFeet": 41000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1647,7 +1636,6 @@
         "airlines": [
           "JSX"
         ],
-        "ceilingFeet": 37000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1660,7 +1648,6 @@
           "TWY",
           "EJA"
         ],
-        "ceilingFeet": 45000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1672,7 +1659,6 @@
         "airlines": [
           "EJA"
         ],
-        "ceilingFeet": 51000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1684,7 +1670,6 @@
         "airlines": [
           "XOJ"
         ],
-        "ceilingFeet": 51000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1694,7 +1679,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 45000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1704,7 +1688,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 45000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1714,7 +1697,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 41000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1726,7 +1708,6 @@
         "airlines": [
           "LXJ"
         ],
-        "ceilingFeet": 45000,
         "class": "J",
         "suffixes": [
           "/L"
@@ -1736,7 +1717,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 35000,
         "class": "T",
         "suffixes": [
           "/G",
@@ -1747,7 +1727,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 35000,
         "class": "T",
         "suffixes": [
           "/G",
@@ -1758,7 +1737,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 31000,
         "class": "T",
         "suffixes": [
           "/L",
@@ -1769,7 +1747,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 14000,
         "class": "P",
         "suffixes": [
           "/G",
@@ -1781,7 +1758,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 17500,
         "class": "P",
         "suffixes": [
           "/G"
@@ -1791,7 +1767,6 @@
       },
       {
         "airlines": [],
-        "ceilingFeet": 25000,
         "class": "P",
         "suffixes": [
           "/G",

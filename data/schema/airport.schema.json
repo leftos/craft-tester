@@ -873,11 +873,6 @@
                 },
                 "type": "array"
               },
-              "ceilingFeet": {
-                "exclusiveMinimum": 0,
-                "maximum": 9007199254740991,
-                "type": "integer"
-              },
               "class": {
                 "enum": [
                   "P",
@@ -904,7 +899,6 @@
               "type",
               "class",
               "wtc",
-              "ceilingFeet",
               "suffixes",
               "airlines"
             ],

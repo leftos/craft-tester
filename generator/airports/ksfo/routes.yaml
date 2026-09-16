@@ -83,34 +83,34 @@ telephony:
 # Connie, Nippon Cargo.
 cargo_airlines: [FDX, UPS, GTI, ABX, ATN, CLX, CKS, NCA]
 
-# `class` is asserted against vNAS EngineType at build time. `ceiling_feet` is the certified service ceiling
-# used by the amendment-mode altitude check. `suffixes` are the equipment suffixes this type normally files.
+# A fleet row carries the type, its class, its wake turbulence category, the equipment suffixes it normally
+# files and the airlines that operate it. `class` is asserted against vNAS EngineType at build time.
 fleet:
-  - { type: A320, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [UAL, FFT, NKS, ACA, AAY, VOI, JBU] }
-  - { type: A20N, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [FFT, VOI, JBU] }
-  - { type: A319, class: J, wtc: M, ceiling_feet: 39800, suffixes: [/L], airlines: [AAY, UAL] }
-  - { type: B737, class: J, wtc: M, ceiling_feet: 41000, suffixes: [/L], airlines: [SWA, ASA] }
-  - { type: B738, class: J, wtc: M, ceiling_feet: 41000, suffixes: [/L], airlines: [DAL, SWA, UAL, ASA] }
-  - { type: B752, class: J, wtc: M, ceiling_feet: 42000, suffixes: [/L], airlines: [FDX, UPS, DAL, UAL] }
-  - { type: B77L, class: J, wtc: H, ceiling_feet: 43100, suffixes: [/L], airlines: [FDX, KAL] }
-  - { type: B788, class: J, wtc: H, ceiling_feet: 43100, suffixes: [/L], airlines: [NAX, UAL] }
-  - { type: A306, class: J, wtc: H, ceiling_feet: 40000, suffixes: [/L], airlines: [UPS, FDX] }
-  - { type: MD11, class: J, wtc: H, ceiling_feet: 43000, suffixes: [/L], airlines: [FDX, UPS] }
-  - { type: E75L, class: J, wtc: M, ceiling_feet: 41000, suffixes: [/L], airlines: [SKW, QXE] }
-  - { type: E135, class: J, wtc: M, ceiling_feet: 37000, suffixes: [/L], airlines: [JSX] }
-  - { type: CL30, class: J, wtc: M, ceiling_feet: 45000, suffixes: [/L], airlines: [TWY, EJA] }
-  - { type: GL5T, class: J, wtc: M, ceiling_feet: 51000, suffixes: [/L], airlines: [EJA] }
-  - { type: C750, class: J, wtc: M, ceiling_feet: 51000, suffixes: [/L], airlines: [XOJ] }
-  - { type: C55B, class: J, wtc: M, ceiling_feet: 45000, suffixes: [/L], airlines: [] }
-  - { type: C25B, class: J, wtc: L, ceiling_feet: 45000, suffixes: [/L], airlines: [] }
-  - { type: C510, class: J, wtc: L, ceiling_feet: 41000, suffixes: [/L], airlines: [] }
-  - { type: E55P, class: J, wtc: L, ceiling_feet: 45000, suffixes: [/L], airlines: [LXJ] }
-  - { type: B350, class: T, wtc: L, ceiling_feet: 35000, suffixes: [/G, /L], airlines: [] }
-  - { type: BE20, class: T, wtc: L, ceiling_feet: 35000, suffixes: [/G, /A], airlines: [] }
-  - { type: TBM9, class: T, wtc: L, ceiling_feet: 31000, suffixes: [/L, /G], airlines: [] }
-  - { type: C172, class: P, wtc: L, ceiling_feet: 14000, suffixes: [/G, /A, /U], airlines: [] }
-  - { type: SR22, class: P, wtc: L, ceiling_feet: 17500, suffixes: [/G], airlines: [] }
-  - { type: M20T, class: P, wtc: L, ceiling_feet: 25000, suffixes: [/G, /A], airlines: [] }
+  - { type: A320, class: J, wtc: M, suffixes: [/L], airlines: [UAL, FFT, NKS, ACA, AAY, VOI, JBU] }
+  - { type: A20N, class: J, wtc: M, suffixes: [/L], airlines: [FFT, VOI, JBU] }
+  - { type: A319, class: J, wtc: M, suffixes: [/L], airlines: [AAY, UAL] }
+  - { type: B737, class: J, wtc: M, suffixes: [/L], airlines: [SWA, ASA] }
+  - { type: B738, class: J, wtc: M, suffixes: [/L], airlines: [DAL, SWA, UAL, ASA] }
+  - { type: B752, class: J, wtc: M, suffixes: [/L], airlines: [FDX, UPS, DAL, UAL] }
+  - { type: B77L, class: J, wtc: H, suffixes: [/L], airlines: [FDX, KAL] }
+  - { type: B788, class: J, wtc: H, suffixes: [/L], airlines: [NAX, UAL] }
+  - { type: A306, class: J, wtc: H, suffixes: [/L], airlines: [UPS, FDX] }
+  - { type: MD11, class: J, wtc: H, suffixes: [/L], airlines: [FDX, UPS] }
+  - { type: E75L, class: J, wtc: M, suffixes: [/L], airlines: [SKW, QXE] }
+  - { type: E135, class: J, wtc: M, suffixes: [/L], airlines: [JSX] }
+  - { type: CL30, class: J, wtc: M, suffixes: [/L], airlines: [TWY, EJA] }
+  - { type: GL5T, class: J, wtc: M, suffixes: [/L], airlines: [EJA] }
+  - { type: C750, class: J, wtc: M, suffixes: [/L], airlines: [XOJ] }
+  - { type: C55B, class: J, wtc: M, suffixes: [/L], airlines: [] }
+  - { type: C25B, class: J, wtc: L, suffixes: [/L], airlines: [] }
+  - { type: C510, class: J, wtc: L, suffixes: [/L], airlines: [] }
+  - { type: E55P, class: J, wtc: L, suffixes: [/L], airlines: [LXJ] }
+  - { type: B350, class: T, wtc: L, suffixes: [/G, /L], airlines: [] }
+  - { type: BE20, class: T, wtc: L, suffixes: [/G, /A], airlines: [] }
+  - { type: TBM9, class: T, wtc: L, suffixes: [/L, /G], airlines: [] }
+  - { type: C172, class: P, wtc: L, suffixes: [/G, /A, /U], airlines: [] }
+  - { type: SR22, class: P, wtc: L, suffixes: [/G], airlines: [] }
+  - { type: M20T, class: P, wtc: L, suffixes: [/G, /A], airlines: [] }
 
 # Filed routes, keyed by the fix where the aircraft leaves the SID. `tail` starts at that fix. `classes`
 # limits which aircraft classes fly it; `altitudes` are plausible filed cruise altitudes.

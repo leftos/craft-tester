@@ -1,4 +1,4 @@
-import type { AirportData, Destination, FleetEntry, Scenario, Sid } from '@/data/schema.ts';
+import type { AirportData, Destination, Scenario, Sid } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
@@ -15,7 +15,6 @@ export type FaultKind =
   | 'wrong_tec_route'
   | 'parity_flip'
   | 'non_rvsm_in_band'
-  | 'above_ceiling'
   | 'missing_suffix'
   | 'unknown_suffix'
   | 'rnav_clash';
@@ -33,7 +32,6 @@ export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   wrong_tec_route: ['route'],
   parity_flip: ['altitude'],
   non_rvsm_in_band: ['altitude'],
-  above_ceiling: ['altitude'],
   missing_suffix: ['type'],
   unknown_suffix: ['type'],
   rnav_clash: ['type', 'route'],
@@ -136,11 +134,6 @@ function destinationOf(scenario: Scenario, airport: AirportData): Destination | 
   return airport.routeLibrary.destinations.find((row) => row.icao === scenario.destination);
 }
 
-/** The fleet row for the filed type, where the fleet lists it. */
-function fleetOf(scenario: Scenario, airport: AirportData): FleetEntry | undefined {
-  return airport.routeLibrary.fleet.find((row) => row.type === scenario.aircraftType);
-}
-
 /** The filed procedure one version behind the one in force, e.g. `TRUKN2` filed as `TRUKN1`. */
 function staleSid(scenario: Scenario): FaultPatch | undefined {
   const head = headOf(scenario);
@@ -205,14 +198,6 @@ function nonRvsmInBand(scenario: Scenario, airport: AirportData): FaultPatch | u
   return row === undefined ? undefined : { field: 'equipmentSuffix', suffix: row.suffix };
 }
 
-/** A thousand feet above the service ceiling of the filed type. */
-function aboveCeiling(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
-  const fleet = fleetOf(scenario, airport);
-  return fleet === undefined
-    ? undefined
-    : { field: 'filedAltitude', feet: fleet.ceilingFeet + STEP_FEET };
-}
-
 /**
  * Whether a plan can carry a suffix fault that leaves every other box alone.
  *
@@ -257,7 +242,6 @@ const INJECTORS: Record<FaultKind, Injector> = {
   wrong_tec_route: wrongTecRoute,
   parity_flip: parityFlip,
   non_rvsm_in_band: nonRvsmInBand,
-  above_ceiling: aboveCeiling,
   missing_suffix: missingSuffix,
   unknown_suffix: unknownSuffix,
   rnav_clash: rnavClash,

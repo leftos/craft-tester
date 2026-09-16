@@ -335,7 +335,6 @@ class FleetEntry:
     type: str
     aircraft_class: AircraftClass
     wtc: WakeCategory
-    ceiling_feet: int
     suffixes: tuple[str, ...]
     airlines: tuple[str, ...]
 
