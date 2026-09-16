@@ -166,15 +166,26 @@ function noSid(scenario: Scenario): FaultPatch | undefined {
   return headOf(scenario) === undefined ? undefined : withHead(scenario, undefined);
 }
 
-/** Another destination's route, for a flight the TEC routes carry on a published one of its own. */
+/**
+ * Another destination's route, for a flight the TEC routes carry on a published one of its own.
+ *
+ * A tail the flight's own destination files is not another destination's route however it is
+ * labelled: two TRACON destinations down the same corridor are filed over the same fixes, and
+ * writing Watsonville's `EUGEN` into a Monterey plan would leave the plan correct as filed.
+ */
 function wrongTecRoute(scenario: Scenario, airport: AirportData, rng: Rng): FaultPatch | undefined {
   const destination = destinationOf(scenario, airport);
   if (destination?.nct !== true) return undefined;
   const routed = airport.tecRoutes.some(
     (row) => row.kind === 'tec' && row.destination === destination.icao,
   );
+  const ownTails = new Set(
+    airport.routeLibrary.routes
+      .filter((row) => row.destination === scenario.destination)
+      .map((row) => row.tail),
+  );
   const others = airport.routeLibrary.routes.filter(
-    (row) => row.destination !== scenario.destination,
+    (row) => row.destination !== scenario.destination && !ownTails.has(row.tail),
   );
   if (!routed || others.length === 0) return undefined;
   const head = headOf(scenario);

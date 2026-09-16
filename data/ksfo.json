@@ -1807,18 +1807,6 @@
       },
       {
         "altitudes": [
-          34000,
-          36000
-        ],
-        "classes": [
-          "J"
-        ],
-        "destination": "KPDX",
-        "exitFix": "DEDHD",
-        "tail": "DEDHD LMT OCITY3"
-      },
-      {
-        "altitudes": [
           36000,
           38000
         ],
@@ -1866,8 +1854,8 @@
       },
       {
         "altitudes": [
-          34000,
-          36000
+          33000,
+          35000
         ],
         "classes": [
           "J"
@@ -1958,19 +1946,6 @@
         "destination": "KDEN",
         "exitFix": "SYRAH",
         "tail": "SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII4"
-      },
-      {
-        "altitudes": [
-          9000,
-          10000
-        ],
-        "classes": [
-          "T",
-          "J"
-        ],
-        "destination": "KSMF",
-        "exitFix": "TRUKN",
-        "tail": "TRUKN FEVTA FEVTA1"
       },
       {
         "altitudes": [
@@ -2080,54 +2055,6 @@
       },
       {
         "altitudes": [
-          5000,
-          6000
-        ],
-        "classes": [
-          "P"
-        ],
-        "destination": "KSMF",
-        "exitFix": "OAK",
-        "tail": "OAK V6 SAC"
-      },
-      {
-        "altitudes": [
-          5000,
-          7000
-        ],
-        "classes": [
-          "P",
-          "T"
-        ],
-        "destination": "KLVK",
-        "exitFix": "OAK",
-        "tail": "OAK V244 ALTAM"
-      },
-      {
-        "altitudes": [
-          7000
-        ],
-        "classes": [
-          "P"
-        ],
-        "destination": "KWVI",
-        "exitFix": "OAK",
-        "tail": "OAK V107 CATHE V111 SNS"
-      },
-      {
-        "altitudes": [
-          17000,
-          19000
-        ],
-        "classes": [
-          "T"
-        ],
-        "destination": "KOVE",
-        "exitFix": "OAK",
-        "tail": "OAK V6 SAC V23 YUBBA"
-      },
-      {
-        "altitudes": [
           16000,
           18000
         ],
@@ -2140,25 +2067,220 @@
       },
       {
         "altitudes": [
-          4000
+          7000,
+          9000
         ],
         "classes": [
-          "P"
+          "T",
+          "J"
         ],
-        "destination": "KAPC",
-        "exitFix": "SGD",
-        "tail": "SGD"
+        "destination": "KSMF",
+        "exitFix": "TRUKN",
+        "tail": "TRUKN FEVTA FEVTA1"
       },
       {
         "altitudes": [
-          7000
+          7000,
+          9000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "CIITY",
+        "tail": "CIITY FEVTA FEVTA1"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
         ],
         "classes": [
           "P"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V392 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
         ],
         "destination": "KMRY",
         "exitFix": "EUGEN",
         "tail": "EUGEN"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KMRY",
+        "exitFix": "OSI",
+        "tail": "OSI V25 SNS"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KWVI",
+        "exitFix": "EUGEN",
+        "tail": "EUGEN"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KWVI",
+        "exitFix": "OSI",
+        "tail": "OSI V25 SNS"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KLVK",
+        "exitFix": "TRUKN",
+        "tail": "TRUKN ALTAM"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P"
+        ],
+        "destination": "KLVK",
+        "exitFix": "TRUKN",
+        "tail": "TRUKN"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KLVK",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KLVK",
+        "exitFix": "CIITY",
+        "tail": "CIITY ALTAM"
+      },
+      {
+        "altitudes": [
+          7000,
+          9000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KOVE",
+        "exitFix": "ORRCA",
+        "tail": "ORRCA"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KOVE",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "T",
+          "J"
+        ],
+        "destination": "KOVE",
+        "exitFix": "CIITY",
+        "tail": "CIITY ALTAM"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KOVE",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KAPC",
+        "exitFix": "SAU",
+        "tail": "SAU"
       },
       {
         "altitudes": [
@@ -2186,8 +2308,8 @@
       },
       {
         "altitudes": [
-          31000,
-          35000
+          30000,
+          34000
         ],
         "classes": [
           "J"

@@ -173,6 +173,13 @@ Scenarios are drawn from this file, so its breadth is the game's variety.
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.
   Aim for at least one route per gate fix; the build warns on gate fixes no route reaches, and those fixes
   never appear in a scenario. KSFO shipped with 40 such warnings.
+  A row is drawn only where it is the correctly-filed plan: the scenario generator runs the amendment
+  engine over every draw and redraws one that would take any amendment, so a row that is wrong in some
+  configuration, class or suffix is simply not drawn there. For a destination inside the TRACON that
+  means one row per distinct tail the TEC rows issue (`OAK V6 SAC` for SFOW props, `OAK V244 ALTAM V392
+  SAC` for SFOE props, and so on), with altitudes at or below the cap on the direction-of-flight parity.
+  `web/src/scenario/library.test.ts` fails on a row, or an altitude, that is clean nowhere, and prints
+  how often each row is clean.
 
 ## 5. `tec.yaml` and `loa.yaml` (optional files)
 

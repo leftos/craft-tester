@@ -1,13 +1,7 @@
-import type {
-  AirportData,
-  Destination,
-  LoaRule,
-  LoaRuleKind,
-  Scenario,
-  TecRoute,
-} from '@/data/schema.ts';
+import type { AirportData, Destination, LoaRule, LoaRuleKind, Scenario } from '@/data/schema.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
 import { magneticCourse } from '@/rules/amend/course.ts';
+import { tecRouteFor } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
@@ -172,34 +166,27 @@ function rvsmConstraint(scenario: Scenario, airport: AirportData): Constraint | 
   };
 }
 
-/** Whether a TEC row is the one this flight would be routed on, and carries a cap to read. */
-function tecMatches(row: TecRoute, ctx: Classification, destination: Destination): boolean {
-  return (
-    row.kind === 'tec' &&
-    row.destination === destination.icao &&
-    row.plan === ctx.plan &&
-    (row.runwayFamilies.length === 0 || row.runwayFamilies.includes(ctx.runwayFamily)) &&
-    row.classes.includes(ctx.aircraftClass) &&
-    row.altitudeCapFeet !== undefined
-  );
-}
-
 /**
  * The TEC route cap, for a destination inside the TRACON.
  *
+ * The cap is the one published by the row that routes the flight, which must begin on a departure
+ * the SOP would issue it; a row beginning on a departure this flight would not be issued caps
+ * nothing here, and a flight routed on a row that publishes no cap is not capped at all.
+ *
  * @param ctx The classified flight.
+ * @param scenario The filed flight plan, which decides which rows are issuable to it.
  * @param airport The airport data.
  * @param destination The destination row.
- * @returns The constraint, or `undefined` for a destination outside the TRACON or one whose
- *   matching row publishes no cap.
+ * @returns The constraint, or `undefined` for a destination outside the TRACON, one no TEC row
+ *   routes this flight to, or one whose routing row publishes no cap.
  */
 function tecConstraint(
   ctx: Classification,
+  scenario: Scenario,
   airport: AirportData,
   destination: Destination,
 ): Constraint | undefined {
-  if (destination.nct !== true) return undefined;
-  const row = airport.tecRoutes.find((entry) => tecMatches(entry, ctx, destination));
+  const row = tecRouteFor(ctx, scenario, airport, destination);
   const cap = row?.altitudeCapFeet;
   if (row === undefined || cap === undefined) return undefined;
   return {
@@ -280,9 +267,10 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
  *
  * The constraints are the direction-of-flight parity, rotated where an LOA row for the destination
  * rotates it; the RVSM band for a suffix without RVSM approval; the cap on the TEC route a TRACON
- * destination is routed on; an LOA ceiling; and the service ceiling of the filed type. The proposal
- * is the highest altitude at or below the filed one that satisfies all of them at once, so an
- * amendment never trades one broken rule for another.
+ * destination is routed on, which is the row beginning on a departure the SOP would issue this
+ * flight and nothing where no row does; an LOA ceiling; and the service ceiling of the filed type.
+ * The proposal is the highest altitude at or below the filed one that satisfies all of them at
+ * once, so an amendment never trades one broken rule for another.
  *
  * Only the constraints the *filed* altitude broke are reported and cited: the reason says what is
  * wrong with what the pilot filed, and a rule the filed altitude honours is not part of that, even
@@ -311,7 +299,7 @@ export function checkAltitude(
   const constraints = [
     parityConstraint(scenario, airport, destination),
     rvsmConstraint(scenario, airport),
-    tecConstraint(ctx, airport, destination),
+    tecConstraint(ctx, scenario, airport, destination),
     ...maxConstraints(airport, destination),
     ceilingConstraint(scenario, airport),
   ].filter((constraint) => constraint !== undefined);

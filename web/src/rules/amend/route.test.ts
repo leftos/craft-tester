@@ -106,6 +106,56 @@ describe('checkRoute TRACON destinations', () => {
     );
     expect(citations(flight)).toContain('TEC-KSMF-SFOW-J');
   });
+
+  it('leaves a non-RNAV flight on the assigned vector SID when the TEC route begins on an RNAV DP', () => {
+    const flight = scenario({
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      destination: 'KSMF',
+      filedRoute: 'GAPP7 TRUKN FEVTA FEVTA1',
+      filedAltitude: 9000,
+      departureRunway: '28R',
+    });
+    expect(check(flight)).toBeUndefined();
+  });
+
+  it('routes a flight the assigned DP does carry on the TEC route that begins with it', () => {
+    const flight = scenario({
+      aircraftType: 'B738',
+      equipmentSuffix: '/L',
+      destination: 'KSMF',
+      filedRoute: 'GAPP7 TRUKN FEVTA FEVTA1',
+      filedAltitude: 9000,
+      departureRunway: '01R',
+    });
+    expect(amendment(flight).proposed).toBe('TRUKN2 TRUKN FEVTA FEVTA1');
+    expect(citations(flight)).toContain('TEC-KSMF-SFOW-J');
+  });
+
+  it('leaves the vector clearance alone when the configuration assigns no TEC row a departure', () => {
+    const flight = scenario({
+      aircraftType: 'E75L',
+      equipmentSuffix: '/L',
+      destination: 'KSMF',
+      filedRoute: 'GAPP7 TRUKN FEVTA FEVTA1',
+      filedAltitude: 9000,
+      departureRunway: '28R',
+    });
+    expect(check(flight)).toBeUndefined();
+  });
+
+  it('skips the TEC row the configuration does not assign and takes the one it does', () => {
+    const flight = scenario({
+      aircraftType: 'TBM9',
+      equipmentSuffix: '/L',
+      destination: 'KLVK',
+      filedRoute: 'GAPP7 TRUKN ALTAM',
+      filedAltitude: 5000,
+      departureRunway: '28R',
+    });
+    expect(amendment(flight).proposed).toBe('GAPP7 OAK V244 ALTAM MOD');
+    expect(citations(flight)).toContain('TEC-KLVK-SFOW-JT-28');
+  });
 });
 
 describe('checkRoute letters of agreement', () => {

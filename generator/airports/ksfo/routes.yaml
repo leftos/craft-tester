@@ -120,7 +120,6 @@ fleet:
 routes:
   # north via TRUKN/SNTNA/NIITE/CIITY transitions
   - { exit_fix: DEDHD, destination: KSEA, tail: DEDHD RBL LMT HAWKZ#, classes: [J], altitudes: [32000, 34000, 36000] }
-  - { exit_fix: DEDHD, destination: KPDX, tail: DEDHD LMT OCITY#, classes: [J], altitudes: [34000, 36000] }
   # CYVR is outside the FAA CIFP, so there is nothing to resolve a family against: this row names the
   # arrival in full and its revision is hand-maintained from the CZVR preferred-routing table
   # (https://czvr.ca/preferredrouting), which routes BTG J1 SEA PAE onto the GRIZZ arrival.
@@ -128,7 +127,7 @@ routes:
   - { exit_fix: GRTFL, destination: KPDX, tail: GRTFL MACHU TMBRS#, classes: [J], altitudes: [34000, 36000] }
   - { exit_fix: GRTFL, destination: KBLI, tail: GRTFL OED J1 SEA PAE MADEE#, classes: [J], altitudes: [36000] }
   - { exit_fix: MOGEE, destination: KSLC, tail: MOGEE Q124 BVL BVL#, classes: [J], altitudes: [37000, 39000] }
-  - { exit_fix: MOGEE, destination: KDEN, tail: MOGEE Q124 BVL TCH KAMPR LONGZ#, classes: [J], altitudes: [34000, 36000] }
+  - { exit_fix: MOGEE, destination: KDEN, tail: MOGEE Q124 BVL TCH KAMPR LONGZ#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: ORRCA, destination: KJAC, tail: ORRCA Q120 GALLI PARZZ TUVOC LEIDY DNW, classes: [J], altitudes: [37000, 41000] }
   - { exit_fix: ORRCA, destination: KGPZ, tail: ORRCA Q120 GALLI BAM J32 ABR FAR, classes: [J], altitudes: [37000] }
   - { exit_fix: ORRCA, destination: KRNO, tail: ORRCA TARVR SPOON, classes: [J], altitudes: [21000, 23000] }
@@ -136,7 +135,6 @@ routes:
   - { exit_fix: TIPRE, destination: KMCI, tail: TIPRE Q126 INSLO DTA RLG AKO MCK DPEAK JSONN#, classes: [J], altitudes: [37000, 41000] }
   - { exit_fix: TIPRE, destination: KSLC, tail: TIPRE Q126 KREYK BVL BVL#, classes: [J], altitudes: [39000, 41000] }
   - { exit_fix: SYRAH, destination: KDEN, tail: SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII#, classes: [J], altitudes: [37000, 41000] }
-  - { exit_fix: TRUKN, destination: KSMF, tail: TRUKN FEVTA FEVTA#, classes: [T, J], altitudes: [9000, 10000] }
   # south via SSTIK/WESLA/SEGUL/SAHEY transitions
   - { exit_fix: SUSEY, destination: KLAX, tail: SUSEY EBAYE BURGL IRNMN#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q174 FLCHR COKTL#, classes: [J], altitudes: [33000, 35000] }
@@ -148,16 +146,30 @@ routes:
   - { exit_fix: YYUNG, destination: KCRQ, tail: YYUNG LEGOZ LEGOZ#, classes: [J], altitudes: [37000] }
   # vector SID and radar-vector routes (GAPP7 / SFO5), props and turboprops
   - { exit_fix: OAK, destination: KTRK, tail: OAK V244 ALTAM V392 SAC V6 SWR TRUCK, classes: [P, T], altitudes: [15000, 17000] }
-  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P], altitudes: [5000, 6000] }
-  # ECA, the Manteca VORTAC this tail used to end at, is decommissioned and gone from the CIFP, so the tail ends at ALTAM on V244.
-  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM, classes: [P, T], altitudes: [5000, 7000] }
-  - { exit_fix: OAK, destination: KWVI, tail: OAK V107 CATHE V111 SNS, classes: [P], altitudes: [7000] }
-  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC V23 YUBBA, classes: [T], altitudes: [17000, 19000] }
   - { exit_fix: SGD, destination: KACV, tail: SGD YAGER, classes: [T], altitudes: [16000, 18000] }
-  - { exit_fix: SGD, destination: KAPC, tail: SGD, classes: [P], altitudes: [4000] }
-  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P], altitudes: [7000] }
+  # NCT destinations file the tails the TEC rows issue, one row per distinct tail, so every configuration,
+  # class and suffix finds a clean row; altitudes sit at or below the TEC cap on the direction-of-flight
+  # parity, and the draw rejects a row in the configurations where it is not the clean plan. Magnetic
+  # courses: KSMF 016 odd, KMRY 144 odd, KWVI 132 odd, KLVK 066 odd, KOVE 003 odd, KAPC 353 even.
+  - { exit_fix: TRUKN, destination: KSMF, tail: TRUKN FEVTA FEVTA#, classes: [T, J], altitudes: [7000, 9000] }
+  - { exit_fix: CIITY, destination: KSMF, tail: CIITY FEVTA FEVTA#, classes: [T, J], altitudes: [7000, 9000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V244 ALTAM V392 SAC, classes: [P], altitudes: [3000, 5000] }
+  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OSI, destination: KMRY, tail: OSI V25 SNS, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OSI, destination: KWVI, tail: OSI V25 SNS, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN ALTAM, classes: [T, J], altitudes: [3000, 5000] }
+  - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN, classes: [P], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: CIITY, destination: KLVK, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
+  - { exit_fix: ORRCA, destination: KOVE, tail: ORRCA, classes: [T, J], altitudes: [7000, 9000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: CIITY, destination: KOVE, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T], altitudes: [4000] }
   # The tail stops at Middleton Island: SMA and the oceanic fixes beyond it are outside the FAA CIFP, so nothing can name them on frequency.
   - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO, classes: [J], altitudes: [28000, 30000] }
   - { exit_fix: SAC, destination: KBOI, tail: SAC ANAHO, classes: [J], altitudes: [39000, 41000] }
   # oceanic
-  - { exit_fix: BEBOP, destination: PHNL, tail: BEBOP R464 BILLO R464 BITTA MAGGI#, classes: [J], altitudes: [31000, 35000] }
+  - { exit_fix: BEBOP, destination: PHNL, tail: BEBOP R464 BILLO R464 BITTA MAGGI#, classes: [J], altitudes: [30000, 34000] }

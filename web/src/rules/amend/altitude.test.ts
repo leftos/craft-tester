@@ -121,6 +121,31 @@ describe('checkAltitude TRACON destinations', () => {
   it('leaves 3,000 to Oakland alone, which is the TEC cap and odd like its 036 course', () => {
     expect(check(scenario({ destination: 'KOAK', filedAltitude: 3000 }))).toBeUndefined();
   });
+
+  it('caps nothing when the TEC route begins on a DP the flight is not assigned', () => {
+    const vectored = {
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      destination: 'KSMF',
+      filedRoute: 'GAPP7 TRUKN FEVTA FEVTA1',
+      departureRunway: '28R',
+    };
+    expect(check(scenario({ ...vectored, filedAltitude: 9000 }))).toBeUndefined();
+    expect(check(scenario({ ...vectored, filedAltitude: 15000 }))).toBeUndefined();
+  });
+
+  it('does not fall through to another row when the row that routes the flight has no cap', () => {
+    const flight = scenario({
+      aircraftType: 'B350',
+      destination: 'KSAC',
+      filedRoute: 'TRUKN2 ORRCA',
+      filedAltitude: 12000,
+    });
+    const result = check(flight);
+    if (result !== undefined && isUnresolved(result)) throw new Error(result.reason);
+    const cited = result === undefined ? [] : result.citations.map((citation) => citation.id);
+    expect(cited.filter((id) => id.startsWith('TEC-'))).toEqual([]);
+  });
 });
 
 describe('checkAltitude unresolved', () => {

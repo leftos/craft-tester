@@ -61,7 +61,9 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   destination's route-library tail differs from the transcribed TEC route (KSMF files `TRUKN CCR
   CCR2`, TEC says `TRUKN# TRUKN FEVTA FEVTA1`) and some library altitudes exceed the TEC cap, so
   those plans read as clean in clearance mode but always take a route amendment here; the nine
-  library rows should probably carry the TEC route) `scenario/amend.ts`: `generateAmendmentScenario(rng, airport, filter)` draws a clean plan
+  library rows should probably carry the TEC route — taken up 2026-09-16 in
+  [route-library-tec.md](./route-library-tec.md): the draw now verifies every plan with this engine)
+  `scenario/amend.ts`: `generateAmendmentScenario(rng, airport, filter)` draws a clean plan
   with `generateScenario`, then injects 0/1/2 faults from: stale SID version, another published SID
   of the field, no SID, wrong route for a TEC destination (only when the library has one), parity
   flip (+1,000), non-RVSM suffix inside the band, altitude above the type ceiling, missing suffix,

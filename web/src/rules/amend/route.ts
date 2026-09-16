@@ -7,6 +7,7 @@ import type {
   TecRoute,
 } from '@/data/schema.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
+import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { isSidToken } from '@/rules/route.ts';
@@ -15,9 +16,6 @@ import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** A procedure token split into the family and the version digit the AIRAC cycle bumps. */
 const PROCEDURE_TOKEN = /^([A-Z]+)(\d)$/;
-
-/** A TEC route's placeholder for the current version of a family, e.g. `TRUKN#`. */
-const FAMILY_PLACEHOLDER = /^([A-Z]+)#$/;
 
 /** What a controller calls each performance class when reading a reason aloud. */
 const CLASS_WORDS: Record<AircraftClass, string> = {
@@ -61,63 +59,27 @@ function appliesTo(row: LoaRule, icao: string, destination: Destination | undefi
   return destination !== undefined && row.artcc === destination.artcc;
 }
 
-/** The first TEC route row that routes this flight, for a destination inside the TRACON. */
-function tecRow(
-  ctx: Classification,
-  airport: AirportData,
-  destination: Destination | undefined,
-): TecRoute | undefined {
-  if (destination?.nct !== true) return undefined;
-  return airport.tecRoutes.find(
-    (row) =>
-      row.kind === 'tec' &&
-      row.destination === destination.icao &&
-      row.plan === ctx.plan &&
-      (row.runwayFamilies.length === 0 || row.runwayFamilies.includes(ctx.runwayFamily)) &&
-      row.classes.includes(ctx.aircraftClass),
-  );
-}
-
-/**
- * Reads a TEC row's route, putting the current version of each family in place of its placeholder.
- *
- * @param row The TEC route row the flight is routed on.
- * @param airport The airport data, whose `sids` carry the versions in force this cycle.
- * @returns The route as tokens, or `Unresolved` when the row names a family the airport no longer
- *   publishes, which leaves the row with no route to propose.
- */
-function tecTokens(row: TecRoute, airport: AirportData): string[] | Unresolved {
-  const tokens: string[] = [];
-  for (const token of row.route.split(/\s+/)) {
-    const family = FAMILY_PLACEHOLDER.exec(token)?.[1];
-    if (family === undefined) {
-      tokens.push(token);
-      continue;
-    }
-    const sid = airport.sids.find((entry) => entry.family === family);
-    if (sid === undefined) {
-      return unresolved(
-        'BOX.route',
-        `${row.id} routes the flight on the ${family} departure, which ${airport.airport.icao} no longer publishes`,
-      );
-    }
-    tokens.push(sid.id);
-  }
-  return tokens;
+/** The route library's row for a destination, absent when the library does not hold it. */
+function destinationRow(airport: AirportData, icao: string): Destination | undefined {
+  return airport.routeLibrary.destinations.find((row) => row.icao === icao);
 }
 
 /**
  * The route box as it should read: the TEC route for a TRACON destination, else the assigned
  * procedure followed by the tail the pilot filed.
+ *
+ * The TEC route is only one whose departure the SOP would issue this flight; where no row's is,
+ * the flight is vectored on its assigned departure and the filed tail stands.
  */
 function expectedRoute(
   filed: FiledRoute,
+  scenario: Scenario,
   ctx: Classification,
   clearance: ResolvedClearance,
   airport: AirportData,
-  destination: Destination | undefined,
 ): ExpectedRoute | Unresolved {
-  const tec = tecRow(ctx, airport, destination);
+  const destination = destinationRow(airport, scenario.destination);
+  const tec = tecRouteFor(ctx, scenario, airport, destination);
   if (tec === undefined) {
     return { tokens: [clearance.sid.value.id, ...filed.tail], tec: undefined };
   }
@@ -199,9 +161,11 @@ export function loaRouteGap(
  *
  * The box must read the assigned procedure, at the version in force this cycle, followed by the
  * tail the pilot filed; for a destination inside the TRACON it must read the published TEC route
- * instead. That one rule covers a plan filed with no procedure, a stale version, another
- * configuration's procedure, and one an operational notice has taken out of use, and the reason
- * says which of those it is. A box that already reads right is then held against the LOA routing
+ * instead, where one begins on a departure the SOP would issue this flight. A row beginning on a
+ * departure this flight would not be issued is not a route it can be given, and the box then reads
+ * the assigned procedure and the filed tail like any other. That one rule covers a plan filed with no
+ * procedure, a stale version, another configuration's procedure, and one an operational notice has
+ * taken out of use, and the reason says which of those it is. A box that already reads right is then held against the LOA routing
  * rows written for the destination.
  *
  * @param scenario The filed flight plan.
@@ -217,14 +181,12 @@ export function checkRoute(
   clearance: ResolvedClearance,
   airport: AirportData,
 ): ResolvedAmendment | undefined | Unresolved {
-  const destination = airport.routeLibrary.destinations.find(
-    (row) => row.icao === scenario.destination,
-  );
   const filed = splitFiled(scenario.filedRoute);
-  const expected = expectedRoute(filed, ctx, clearance, airport, destination);
+  const expected = expectedRoute(filed, scenario, ctx, clearance, airport);
   if (isUnresolved(expected)) return expected;
   const tail = expected.tokens.slice(1);
   if (expected.tokens.join(' ') === filed.tokens.join(' ')) {
+    const destination = destinationRow(airport, scenario.destination);
     return loaRouteGap(tail, scenario.destination, airport, destination);
   }
   return {

@@ -8,9 +8,11 @@ import type {
   Scenario,
 } from '@/data/schema.ts';
 import { ScenarioSchema } from '@/data/schema.ts';
+import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { isNoiseWindowActive } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf, isSidToken } from '@/rules/route.ts';
+import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
@@ -21,6 +23,16 @@ const ksfo = ksfoJson as unknown as AirportData;
 
 /** The seeds the mix assertions are measured over; the plan requires 0..999 to all generate. */
 const SEEDS = Array.from({ length: 1000 }, (_value, index) => index);
+
+/**
+ * How many of those raw draws may be thrown away.
+ *
+ * A draw is rejected when the SOP clears the flight without a procedure (rare) and when the plan is
+ * not clean as filed in the configuration drawn: the configuration is drawn before the route, and a
+ * TRACON destination files one tail per plan, so a tail written for SFOE is rejected in the SFOW
+ * configurations, which carry most of the training weight. About a fifth of raw draws go that way.
+ */
+const MAX_REDRAWN = 300;
 
 /** The seeds the filtered draws are measured over. */
 const FILTERED_SEEDS = Array.from({ length: 200 }, (_value, index) => index);
@@ -105,6 +117,27 @@ function drawnIn(configId: string, classes: readonly AircraftClass[]): Scenario[
   );
 }
 
+/**
+ * The three reasons that rejected the most raw draws, so a rise in the rejection rate says why.
+ *
+ * Draws are grouped by the blocked element and the reason with the callsign and every figure taken
+ * out, which is what makes two draws rejected for the same rule read as one line.
+ *
+ * @param rejected Every raw draw the engines would not present.
+ * @returns Up to three lines, the most rejections first.
+ */
+function topRejections(rejected: readonly Unresolved[]): string[] {
+  const counts = new Map<string, number>();
+  for (const gap of rejected) {
+    const key = `${gap.element} | ${gap.reason.replace(/^\S+ to /, '').replaceAll(/\d+/g, '#')}`;
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort(([, left], [, right]) => right - left)
+    .slice(0, 3)
+    .map(([key, count]) => `  ${String(count).padStart(3)}  ${key}`);
+}
+
 /** One line naming the scenario, for a failing assertion to point at. */
 function label(scenario: Scenario): string {
   return [
@@ -130,6 +163,17 @@ describe('generateScenario', () => {
       })
       .map(label);
     expect(misfiled).toEqual([]);
+  });
+
+  it('every draw is clean as filed', () => {
+    const dirty = generated
+      .slice(0, 300)
+      .filter((entry) => {
+        const result = resolveAmendments(entry, ksfo);
+        return !result.ok || result.amendments.length > 0;
+      })
+      .map(label);
+    expect(dirty).toEqual([]);
   });
 
   it('draws the same scenario from the same seed', () => {
@@ -272,9 +316,15 @@ describe('generateScenario', () => {
 
   it('redraws rather than presenting a flight the SOP clears without a procedure', () => {
     const redrawn = SEEDS.map((seed) => drawScenario(createRng(seed), ksfo, ANY_SCENARIO)).filter(
-      (drawn) => isUnresolved(drawn),
+      isUnresolved,
     );
-    expect(redrawn.length).toBeLessThan(100);
+    console.log(
+      [
+        `[seeds 0..${SEEDS.length - 1}] ${redrawn.length} raw draws were redrawn; most common:`,
+        ...topRejections(redrawn),
+      ].join('\n'),
+    );
+    expect(redrawn.length).toBeLessThan(MAX_REDRAWN);
     const night = ksfo.noiseWindows.find((window) => window.id === 'night');
     const stranded = generated
       .filter((scenario) => {

@@ -9,9 +9,11 @@ import type {
   RunwayConfig,
   Scenario,
 } from '@/data/schema.ts';
+import { resolveAmendments } from '@/rules/amend/engine.ts';
+import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
-import type { Unresolved } from '@/rules/types.ts';
+import type { ClearanceElement, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import { matchesConfig } from '@/scenario/filter.ts';
@@ -81,6 +83,19 @@ const ON_REQUEST_CHANCE = 0.5;
 
 /** How many scenarios may be drawn before the generator gives up on the airport data. */
 const MAX_ATTEMPTS = 50;
+
+/**
+ * The clearance element a draw rejected over a strip box is reported under.
+ *
+ * The rejection is a note to whoever reads the generator's reasons, not a clearance the player is
+ * shown, so it reuses the elements the engine already reports: the route box and the type box both
+ * decide what the route reads, and the altitude box decides the altitude the clearance speaks.
+ */
+const BOX_ELEMENTS: Record<ResolvedAmendment['box'], ClearanceElement> = {
+  type: 'R.route',
+  altitude: 'A.phrase',
+  route: 'R.route',
+};
 
 /** Names a configuration filter the way the error that nothing matches it reads. */
 function describeConfigFilter(filter: ConfigFilter): string {
@@ -291,18 +306,46 @@ function pickRunway(
 }
 
 /**
- * Draws one candidate scenario and runs the engine over it.
+ * What the amendment engine has to say about a composed plan, which is what makes it unclean.
  *
- * The filed route is assembled after the engine has spoken, because it names the procedure the SOP
- * assigns: a clean flight plan is one the controller can read aloud as filed. That is sound because
- * `parseFiledRoute` strips a leading procedure token whatever it says, so the clearance the engine
- * resolved here is the clearance of the returned scenario as well.
+ * @param clean The plan as it would be presented, with the assigned procedure at the head.
+ * @param airport The airport data.
+ * @returns The gap to reject the draw over — a box the amendment engine could not answer, or the
+ *   first amendment it raised — or `undefined` when it has nothing to amend.
+ */
+function amendmentGap(clean: Scenario, airport: AirportData): Unresolved | undefined {
+  const result = resolveAmendments(clean, airport);
+  if (!result.ok) {
+    return (
+      result.unresolved[0] ?? unresolved('R.route', `no amendment result for ${clean.callsign}`)
+    );
+  }
+  const amendment = result.amendments[0];
+  if (amendment === undefined) return undefined;
+  return unresolved(
+    BOX_ELEMENTS[amendment.box],
+    `${clean.callsign} to ${clean.destination} is not clean as filed: ${amendment.reason}`,
+  );
+}
+
+/**
+ * Draws one candidate scenario and runs both engines over it.
+ *
+ * The filed route is assembled after the clearance engine has spoken, because it names the
+ * procedure the SOP assigns: a clean flight plan is one the controller can read aloud as filed.
+ * That is sound because `parseFiledRoute` strips a leading procedure token whatever it says, so the
+ * clearance the engine resolved here is the clearance of the returned scenario as well.
+ *
+ * A scenario is then one the clearance engine can clear *and* the amendment engine has nothing to
+ * amend: the amendment engine is the single definition of a plan that is correct as filed, so a
+ * route library row is drawn only in the configurations, classes and suffixes where its tail and
+ * altitude are the correctly-filed plan, and a draw where they are not is thrown away.
  *
  * @param rng The seeded generator; every draw advances it.
  * @param airport The airport data the scenario is drawn from.
  * @param filter The time of day and the runway configurations the draw is narrowed to.
- * @returns The scenario, or the reason the engine could not clear it, which is the caller's cue to
- *   draw again.
+ * @returns The scenario, or the reason the engine could not clear it or would amend it, which is
+ *   the caller's cue to draw again.
  */
 export function drawScenario(
   rng: Rng,
@@ -335,15 +378,22 @@ export function drawScenario(
   if (!result.ok) {
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }
-  return { ...filed, filedRoute: `${result.clearance.sid.value.id} ${route.tail}` };
+  const clean: Scenario = {
+    ...filed,
+    filedRoute: `${result.clearance.sid.value.id} ${route.tail}`,
+  };
+  return amendmentGap(clean, airport) ?? clean;
 }
 
 /**
- * Generates a scenario the engine can clear, drawing again while the data cannot clear the draw.
+ * Generates a scenario the engine can clear and would not amend, drawing again while a draw is
+ * neither.
  *
  * The airport data deliberately leaves some flights without a procedure, such as the non-RNAV prop
  * off the 01s inside the noise window that the SOP sends off on runway heading; those draws are
- * discarded rather than presented, because clearance mode has no way to issue them.
+ * discarded rather than presented, because clearance mode has no way to issue them. So is a draw
+ * the amendment engine would amend: a route library row is written for the flights it is the
+ * correct plan for, and the configuration, class and suffix are drawn independently of it.
  *
  * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the scenario is drawn from.
