@@ -1,0 +1,1106 @@
+# Hand transcription of the Oakland ATCT SOP: section 1-5 (positions), 1-6 (runway configurations),
+# 2-1 (general procedures), 2-2 (IFR departures), 3-4 (runway assignment) and Appendix B (noise
+# abatement). Every rule row carries the SOP text it came from so the game can cite it.
+# Re-transcribe when `craft-gen verify-sop` reports a hash change.
+source:
+  title: Oakland ATCT Standard Operating Procedure
+  version: "1.7"
+  url: https://oakartcc.org/controllers/file/1217f464-6766-11e9-8010-2a32edb55910
+  sha256: 21f5fdfb40c879e7418e02339a41e48261975797505fc6b1ea76f0b409ab5935
+  transcribed_at: 2026-09-16
+  sentinels:
+    - "Version 1.7"
+    - "2-2 IFR Departures"
+    - "CVS x FL190 (J)"
+    - "Initial headings specified in this SOP shall only be issued"
+    - "SALAD# is in use 2200L until 0700L daily"
+
+# No OAK CBT deck has been read yet, so no row cites one. The two secondary sources below are the
+# shared ZOA references the phraseology and route-building rules come from.
+secondary_sources:
+  - id: craft_phraseology
+    title: ZOA CRAFT Phraseology reference
+    dated: 2026-09-15
+    url: https://docs.google.com/document/d/1Jq0uqpuhIZRSfKvYbyJvAplT1h6zf-wMhcAN6MAQC6k
+  - id: route_building
+    title: OAK Route Building Cheat Sheet (vZOA S1-OAK-5)
+    dated: 2025-01-20
+    url: https://docs.google.com/document/d/1rJm0csgkxlLMctyXmiPh-THOHpc4jxQDs9PYbGHO1Hs
+
+airport:
+  icao: KOAK
+  faa: OAK
+  spoken: Oakland
+  clearance_delivery: "121.1"
+
+runways: ["10L", "10R", "12", "15", "28L", "28R", "30", "33"]
+
+# SOP 1-6 names three configurations by what SFO and OAK are using; the ZOA route tool tags its TEC
+# rows with the same three names, so the configuration id and the plan are the same string.
+# Departure runways come from the SOP 2-2 tables (SFOW 28L/28R/30, OAKE and SFOE 10L/10R/12) plus
+# runway 33, which SOP 2-2 b ii assigns headings for in SFOW. Defaults follow SOP 3-4 a, which asks
+# turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R: the jets_and_dh8d group
+# takes the south field (30 in SFOW, 12 in OAKE/SFOE) and props and the lighter turboprops take the
+# north field (28R in SFOW, its east-flow reciprocal 10L in OAKE/SFOE), north of which they park.
+# PAC VALLEY parks its Caravans south of the other north-field pavement, so that airline defaults to
+# 28L in SFOW and to its reciprocal 10R in OAKE/SFOE.
+# training_weight is how often the scenario generator draws the configuration relative to the others,
+# a training mix rather than SOP data.
+runway_configs:
+  - id: SFOW
+    source: "OAK ATCT SOP 1-6"
+    name: SFO utilizing runways 01s and/or 28s, OAK utilizing runways 28s and 30
+    plan: SFOW
+    training_weight: 70
+    arrival_runways: ["28L", "28R", "30"]
+    departure_runways:
+      - { runway: "28L", classes: [P, T, J] }
+      - { runway: "28L", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 28L (ZOA senior staff via the user, 2026-09-16)" }
+      - { runway: "28R", classes: [P, T, J] }
+      - { runway: "28R", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 28R because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart 28L/28R. A DH8D is class T but departs with the jets: the runway 30 row defaults the jets_and_dh8d group, which is answered before a class default" }
+      - { runway: "30", classes: [P, T, J] }
+      - { runway: "30", classes: [J, T], default_for_groups: [jets_and_dh8d], note: "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them" }
+      - { runway: "33", classes: [P, T, J], note: "SOP 2-2 b ii gives runway 33 its own heading rows (J & DH8D 270 degrees, P/T 315 degrees), so the runway departs every class; it is a short north-field runway and is issued on request or for a GA flight parked beside it" }
+  - id: OAKE
+    source: "OAK ATCT SOP 1-6"
+    name: SFO utilizing runways 28s, OAK utilizing runways 10s and 12
+    plan: OAKE
+    training_weight: 20
+    arrival_runways: ["10L", "10R", "12"]
+    departure_runways:
+      - { runway: "10L", classes: [P, T, J] }
+      - { runway: "10L", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s" }
+      - { runway: "10R", classes: [P, T, J] }
+      - { runway: "10R", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)" }
+      - { runway: "12", classes: [P, T, J] }
+      - { runway: "12", classes: [J, T], default_for_groups: [jets_and_dh8d], note: "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, whose east-flow reciprocals are the 10s, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them" }
+  - id: SFOE
+    source: "OAK ATCT SOP 1-6"
+    name: SFO utilizing runways 19s and/or 10s, OAK utilizing runways 10s and 12
+    plan: SFOE
+    training_weight: 10
+    arrival_runways: ["10L", "10R", "12"]
+    departure_runways:
+      - { runway: "10L", classes: [P, T, J] }
+      - { runway: "10L", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s" }
+      - { runway: "10R", classes: [P, T, J] }
+      - { runway: "10R", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)" }
+      - { runway: "12", classes: [P, T, J] }
+      - { runway: "12", classes: [J, T], default_for_groups: [jets_and_dh8d], note: "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, whose east-flow reciprocals are the 10s, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them" }
+
+# NCT departure sectors named in SOP 2-2. Frequencies from the ZOA positions reference
+# (Area D Richmond 120.900, Area D Sutro 135.100, Area C Grove 125.350) and the OAK charts' NORCAL
+# DEP CON boxes (OAKLAND SIX/SILENT THREE/SALAD FIVE 120.9, CNDEL/COAST/KATFH/NUEVO/QUAKE/SKYLINE/
+# SUNNE 135.1, NIMITZ SIX 127.0, which is the Diablo low-altitude sector rather than a SOP sector).
+departure_sectors:
+  - { id: richmond, name: NorCal Richmond, frequency: "120.9" }
+  - { id: sutro, name: NorCal Sutro, frequency: "135.1" }
+  - { id: grove, name: NorCal Grove, frequency: "125.35" }
+
+# No OAK CBT has been read, so no staffing fallback is transcribed yet.
+departure_staffing_fallbacks: []
+
+# The SOP states no turn-direction split for OAK, so every direction takes the same runway of a
+# family: the class defaults of SOP 3-4 a (props on the north field, jets on the south field).
+direction_runway_preference:
+  SFOW:
+    north: { "28": "28R", "30": "30", "33": "33" }
+    south: { "28": "28R", "30": "30", "33": "33" }
+    oceanic: { "28": "28R", "30": "30", "33": "33" }
+  OAKE:
+    north: { "10": "10R", "12": "12" }
+    south: { "10": "10R", "12": "12" }
+    oceanic: { "10": "10R", "12": "12" }
+  SFOE:
+    north: { "10": "10R", "12": "12" }
+    south: { "10": "10R", "12": "12" }
+    oceanic: { "10": "10R", "12": "12" }
+
+# Distractor pool for the frequency dropdown: the OAK positions (SOP 1-5), the three SOP departure
+# sectors and the nearby NorCal sectors and center.
+frequencies:
+  - { label: Oakland Clearance, value: "121.1" }
+  - { label: Oakland Ground, value: "121.75" }
+  - { label: Oakland Tower, value: "127.2" }
+  - { label: NorCal Departure (Richmond), value: "120.9" }
+  - { label: NorCal Departure (Sutro), value: "135.1" }
+  - { label: NorCal Approach (Grove), value: "125.35" }
+  - { label: NorCal Approach (Boulder), value: "133.95" }
+  - { label: NorCal Approach (Woodside), value: "135.65" }
+  - { label: NorCal Departure (Diablo), value: "127.0" }
+  - { label: NorCal Departure (Fairfield), value: "124.325" }
+  - { label: NorCal Departure (Quake), value: "127.975" }
+  - { label: Oakland Center (combined), value: "132.2" }
+
+# Exit fix -> SOP direction. Seeded with every CIFP transition fix of the eleven coded procedures and
+# with the fixes the user's "Common Fixes" notes and the ZOA route tool file after the vector and
+# radar-vector SIDs (OAK#, NIMI#, QUAKE#). A fix KSFO also gates keeps the KSFO direction; the rest
+# follow the SOP's own grouping: the OAK#/HUSSH#/SLNT# fixes are northbound, the CNDEL#/SKYL#/
+# COAST#/KATFH#/NUEVO# fixes southbound, and the W oceanic fixes oceanic. Extend during validation.
+gates:
+  # HUSSH2 and SLNT3 transitions, the TEC heads that leave to the north and east, and the Altamont
+  # corridor (ALTAM, MOD), which the TEC rows work east out of the Bay the way KSFO works OAK.
+  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY]
+  # CNDEL5 and KATFH3 transitions (and their common fix PORTE), COAST9 and SKYL1 transitions,
+  # NUEVO8 transitions and the fixes the SOP's NUEVO# row names.
+  south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, FLW, GVO, RZS, SXC, MCKEY, AVE, PXN, WAGES, SHOEY, SNS, EUGEN, BSR, OSI, SJC, ARTAQ, KARNN]
+  # The user's notes: ALCOA to R463, BEBOP to R464, CINNY to A220, AMAKR to the north-west oceanic.
+  oceanic: [ALCOA, AMAKR, BEBOP, CINNY]
+
+# SOP 2-1 c: an initial heading is issued when a DP cannot be used or none applies, and is read
+# "RADAR VECTORS (first fix/airway)". Every departure runway family can be cleared that way.
+no_sid:
+  runway_families: ["10", "12", "15", "28", "30", "33"]
+  phrasing: radar_vectors_fix
+
+# Appendix B b. Local times; `sunday_end` replaces `end` on Sundays. The SOP gives no window for the
+# OAKE table of Appendix B d ii, so those rows run in the SFOW window (OAKE has SFO on the 28s).
+noise_windows:
+  - { id: sfow_night, start: "22:00", end: "07:00", sunday_end: "08:00" }
+  - { id: sfoe_night, start: "22:00", end: "06:00" }
+  - { id: salad, start: "22:00", end: "07:00" }
+  - { id: hussh_required, start: "01:00", end: "05:00" }
+
+# Named sets of aircraft the SOP tables address as one. SOP 2-2 and Appendix B write "J & DH8D"
+# throughout: the Dash 8-400 is cleared like a jet but keeps its own interim altitude on OAK#.
+aircraft_groups:
+  jets_and_dh8d: { classes: [J], types: [DH8D] }
+  dh8d: { classes: [], types: [DH8D] }
+
+# SOP 2-2 a (standard DP/route/heading by destination direction, runway and aircraft), 2-2 b
+# (non-DP headings) and Appendix B d (noise abatement). Ordered: the engine takes the first row whose
+# conditions match and whose SID is compatible with the departure runway, the aircraft's RNAV
+# capability and the filed exit fix, so the noise rows come first, then the 2-2 a tables, then the
+# 2-2 b headings as the fall-through. Within a noise row that offers a DP or a heading, the DP row is
+# written first: a heading row matches every flight, so a heading written first would swallow the DP.
+assignment_rules:
+  # Appendix B d i, footnote *: HUSSH# is required for J/DH8D between 0100L and 0500L, and the
+  # 270-degree alternatives of the same table are not authorised then (footnote 3).
+  - id: OAK-APPB-SFOW-HUSSH-REQ-N
+    source: OAK ATCT SOP Appendix B d i (footnote *)
+    text: "HUSSH# DP (unless SUNNE# DP authorized by NCT) is required for J/DH8D between 0100L and 0500L: northbound, runway 30 -> HUSSH# (Richmond)"
+    plan: SFOW
+    direction: north
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: HUSSH
+    sector: richmond
+    when: { noise_window: hussh_required, rnav: true }
+  - id: OAK-APPB-SFOW-HUSSH-REQ-S
+    source: OAK ATCT SOP Appendix B d i (footnote *)
+    text: "HUSSH# DP is required for J/DH8D between 0100L and 0500L; oceanic/southbound routed via GOBBS transition: southbound, runway 30 -> HUSSH# GOBBS (Sutro)"
+    plan: SFOW
+    direction: south
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: HUSSH
+    sector: sutro
+    when: { noise_window: hussh_required, rnav: true, forced_transition: GOBBS }
+  - id: OAK-APPB-SFOW-HUSSH-REQ-O
+    source: OAK ATCT SOP Appendix B d i (footnote *)
+    text: "HUSSH# DP is required for J/DH8D between 0100L and 0500L; oceanic/southbound routed via GOBBS transition: oceanic, runway 30 -> HUSSH# GOBBS (Sutro)"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: HUSSH
+    sector: sutro
+    when: { noise_window: hussh_required, rnav: true, forced_transition: GOBBS }
+
+  - id: OAK-APPB-SFOW-30-N-HUSSH
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 30, J & DH8D -> HUSSH# (Richmond), CVS"
+    plan: SFOW
+    direction: north
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: HUSSH
+    sector: richmond
+    when: { noise_window: sfow_night, rnav: true }
+  - id: OAK-APPB-SFOW-30-N-SLNT
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 30, J & DH8D -> SLNT# (Richmond), CVS x FL190; not authorized between 0100L and 0500L"
+    plan: SFOW
+    direction: north
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: SLNT
+    sector: richmond
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-30-S-HUSSH
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runway 30, J & DH8D -> HUSSH# (Sutro), CVS"
+    plan: SFOW
+    direction: south
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: HUSSH
+    sector: sutro
+    when: { noise_window: sfow_night, rnav: true }
+  - id: OAK-APPB-SFOW-30-O-HUSSH
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Oceanic, runway 30, J & DH8D -> HUSSH# (Sutro), CVS"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: HUSSH
+    sector: sutro
+    when: { noise_window: sfow_night, rnav: true }
+  - id: OAK-APPB-SFOW-30-S-270
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runway 30, J & DH8D -> 270 degrees (Sutro), 10,000; not authorized between 0100L and 0500L"
+    plan: SFOW
+    direction: south
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-30-O-270
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Oceanic, runway 30, J & DH8D -> 270 degrees (Sutro), 10,000; not authorized between 0100L and 0500L"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-2830-S-SUNNE
+    source: OAK ATCT SOP Appendix B d i (footnote 1)
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runways 28/30, J & DH8D -> SUNNE# (Sutro), 5,000; SUNNE# DP will be authorized by NCT when traffic levels allow"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: SUNNE
+    sector: sutro
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-2830-S-270
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runways 28/30, J & DH8D -> 270 degrees (Sutro), 10,000"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-28-N-270
+    source: OAK ATCT SOP Appendix B d i
+    text: "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 28, J & DH8D -> 270 degrees (Richmond), 10,000"
+    plan: SFOW
+    direction: north
+    runway_families: ["28"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: richmond
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-30-PT-270-N
+    source: OAK ATCT SOP Appendix B d i (footnote 2)
+    text: "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Richmond for northbound departures"
+    plan: SFOW
+    direction: north
+    runway_families: ["30"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 270
+    sector: richmond
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-30-PT-270-S
+    source: OAK ATCT SOP Appendix B d i (footnote 2)
+    text: "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Sutro for oceanic/southbound departures"
+    plan: SFOW
+    direction: south
+    runway_families: ["30"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-30-PT-270-O
+    source: OAK ATCT SOP Appendix B d i (footnote 2)
+    text: "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Sutro for oceanic/southbound departures"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["30"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-SFOW-28-SALAD
+    source: OAK ATCT SOP Appendix B b iii and d i
+    text: "SALAD# is in use 2200L until 0700L daily: All, runway 28, P and approach category A/B -> SALAD# (Richmond), CVS x 4,000"
+    plan: SFOW
+    direction: any
+    runway_families: ["28"]
+    classes: [P]
+    approach_categories: [A, B]
+    sid_family: SALAD
+    sector: richmond
+    when: { noise_window: salad }
+
+  # Appendix B d iii (SFOE). The sector "varies": Richmond northbound, Sutro oceanic/southbound.
+  - id: OAK-APPB-SFOE-J-140-N
+    source: OAK ATCT SOP Appendix B d iii
+    text: "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Richmond for northbound departures"
+    plan: SFOE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 140
+    sector: richmond
+    when: { noise_window: sfoe_night }
+  - id: OAK-APPB-SFOE-J-140-S
+    source: OAK ATCT SOP Appendix B d iii
+    text: "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Sutro for oceanic/southbound departures"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 140
+    sector: sutro
+    when: { noise_window: sfoe_night }
+  - id: OAK-APPB-SFOE-J-140-O
+    source: OAK ATCT SOP Appendix B d iii
+    text: "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Sutro for oceanic/southbound departures"
+    plan: SFOE
+    direction: oceanic
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 140
+    sector: sutro
+    when: { noise_window: sfoe_night }
+  - id: OAK-APPB-SFOE-PT-090-N
+    source: OAK ATCT SOP Appendix B d iii
+    text: "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Richmond for northbound departures"
+    plan: SFOE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 90
+    sector: richmond
+    when: { noise_window: sfoe_night }
+  - id: OAK-APPB-SFOE-PT-090-S
+    source: OAK ATCT SOP Appendix B d iii
+    text: "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Sutro for oceanic/southbound departures"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 90
+    sector: sutro
+    when: { noise_window: sfoe_night }
+  - id: OAK-APPB-SFOE-PT-090-O
+    source: OAK ATCT SOP Appendix B d iii
+    text: "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Sutro for oceanic/southbound departures"
+    plan: SFOE
+    direction: oceanic
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 90
+    sector: sutro
+    when: { noise_window: sfoe_night }
+
+  # Appendix B d ii (OAKE). The SOP gives no activation window for this table, so it runs in the
+  # SFOW window; its DEP SECTOR column holds one cell, Grove, for both aircraft rows.
+  - id: OAK-APPB-OAKE-QUAKE
+    source: OAK ATCT SOP Appendix B d ii
+    text: "Noise abatement: All, runways 10/12, J & DH8D -> QUAKE# (Grove), 5,000"
+    plan: OAKE
+    direction: any
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: QUAKE
+    sector: grove
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-OAKE-J-270
+    source: OAK ATCT SOP Appendix B d ii
+    text: "Noise abatement: All, runways 10/12, J & DH8D -> 270 degrees (Grove), 5,000"
+    plan: OAKE
+    direction: any
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: grove
+    when: { noise_window: sfow_night }
+  - id: OAK-APPB-OAKE-PT-090
+    source: OAK ATCT SOP Appendix B d ii
+    text: "Noise abatement: All, runways 10/12, P/T -> 090 degrees (Grove), 3,000"
+    plan: OAKE
+    direction: any
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 90
+    sector: grove
+    when: { noise_window: sfow_night }
+
+  # SOP 2-2 a i: SFOW (Runways 28L/28R/30).
+  - id: OAK-SFOW-N-OAK
+    source: OAK ATCT SOP 2-2 a i (SFOW Northbound)
+    text: "Northbound, runways 28L/28R/30, J & DH8D -> OAK# (Richmond), CVS x FL190 (J) / CVS x 10,000 (DH8D)"
+    plan: SFOW
+    direction: north
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: OAK
+    sector: richmond
+  - id: OAK-SFOW-O-CNDEL
+    source: OAK ATCT SOP 2-2 a i (SFOW Oceanic)
+    text: "Oceanic, runways 28L/28R/30, J & DH8D -> CNDEL# (Sutro), CVS"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: CNDEL
+    sector: sutro
+    when: { rnav: true }
+  - id: OAK-SFOW-O-SKYL
+    source: OAK ATCT SOP 2-2 a i (SFOW Oceanic)
+    text: "Oceanic, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: SKYL
+    sector: sutro
+  - id: OAK-SFOW-O-COAST
+    source: OAK ATCT SOP 2-2 a i (SFOW Oceanic)
+    text: "Oceanic, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: COAST
+    sector: sutro
+  - id: OAK-SFOW-S-CNDEL
+    source: OAK ATCT SOP 2-2 a i (SFOW Southbound)
+    text: "Southbound, runways 28L/28R/30, J & DH8D -> CNDEL# (Sutro), CVS"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: CNDEL
+    sector: sutro
+    when: { rnav: true }
+  - id: OAK-SFOW-S-SKYL
+    source: OAK ATCT SOP 2-2 a i (SFOW Southbound)
+    text: "Southbound, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: SKYL
+    sector: sutro
+  - id: OAK-SFOW-S-COAST
+    source: OAK ATCT SOP 2-2 a i (SFOW Southbound)
+    text: "Southbound, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: COAST
+    sector: sutro
+  - id: OAK-SFOW-NUEVO
+    source: OAK ATCT SOP 2-2 a i (SFOW, Via BSR, EUGEN, SHOEY, or SNS)
+    text: "Via BSR, EUGEN, SHOEY, or SNS, runways 28L/28R/30, P/T/J -> NUEVO# (Sutro), CVS x 10,000; the SOP merges this row's sector and altitude cells with the southbound row above it, so it takes Sutro and CVS x 10,000"
+    plan: SFOW
+    direction: any
+    runway_families: ["28", "30"]
+    classes: [P, T, J]
+    sid_family: NUEVO
+    sector: sutro
+    when: { exit_fixes: [BSR, EUGEN, SHOEY, SNS] }
+  - id: OAK-SFOW-PT-NIMI
+    source: OAK ATCT SOP 2-2 a i (SFOW, All other props)
+    text: "All other props, runways 28L/28R/30, P/T -> NIMI# (Richmond), 3,000"
+    plan: SFOW
+    direction: any
+    runway_families: ["28", "30"]
+    classes: [P, T]
+    sid_family: NIMI
+    sector: richmond
+
+  # SOP 2-2 a ii: OAKE (Runways 10L/10R/12). The two heading rows come first because SOP 2-1 c issues
+  # an initial heading where the TEC route does not include a DP, which is how the OAKE TEC rows read
+  # (`[OAKE] +H270 FEVTA FEVTA1+`), and 2-2 b iii gives that heading as 270 degrees at 5,000.
+  - id: OAK-OAKE-TEC-NO-DP-N
+    source: "OAK ATCT SOP 2-1 c; OAK ATCT SOP 2-2 b iii"
+    text: "Initial headings shall only be issued when a DP cannot be used or an applicable one does not exist (e.g. TEC route does not include DP): northbound, runways 10/12, J & DH8D on a TEC route with no DP -> 270 degrees (Richmond), 5,000"
+    plan: OAKE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: richmond
+    when: { tec_route_without_dp: true }
+  - id: OAK-OAKE-TEC-NO-DP-S
+    source: "OAK ATCT SOP 2-1 c; OAK ATCT SOP 2-2 b iii"
+    text: "Initial headings shall only be issued when a DP cannot be used or an applicable one does not exist (e.g. TEC route does not include DP): southbound, runways 10/12, J & DH8D on a TEC route with no DP -> 270 degrees (Sutro), 5,000"
+    plan: OAKE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+    when: { tec_route_without_dp: true }
+  - id: OAK-OAKE-N-QUAKE
+    source: OAK ATCT SOP 2-2 a ii (OAKE Northbound)
+    text: "Northbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Richmond), 5,000"
+    plan: OAKE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: QUAKE
+    sector: richmond
+  - id: OAK-OAKE-S-QUAKE
+    source: OAK ATCT SOP 2-2 a ii (OAKE Southbound)
+    text: "Southbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Sutro), 5,000"
+    plan: OAKE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: QUAKE
+    sector: sutro
+  - id: OAK-OAKE-PT-090
+    source: OAK ATCT SOP 2-2 a ii (OAKE, All)
+    text: "All, runways 10L/10R/12, P/T -> 090 degrees (Grove), 3,000"
+    plan: OAKE
+    direction: any
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 90
+    sector: grove
+
+  # SOP 2-2 a iii: SFOE (Runways 10L/10R/12).
+  - id: OAK-SFOE-N-OAK
+    source: OAK ATCT SOP 2-2 a iii (SFOE Northbound)
+    text: "Northbound, runways 10L/10R/12, J & DH8D -> OAK# (Richmond), 3,000"
+    plan: SFOE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: OAK
+    sector: richmond
+  - id: OAK-SFOE-O-OAK
+    source: OAK ATCT SOP 2-2 a iii (SFOE Oceanic)
+    text: "Oceanic, runways 10L/10R/12, J & DH8D -> OAK# (Sutro), 3,000"
+    plan: SFOE
+    direction: oceanic
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: OAK
+    sector: sutro
+  - id: OAK-SFOE-S-KATFH
+    source: OAK ATCT SOP 2-2 a iii (SFOE Southbound)
+    text: "Southbound, runways 10L/10R/12, J & DH8D -> KATFH# (Sutro), CVS x 3,000"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: KATFH
+    sector: sutro
+    when: { rnav: true }
+  - id: OAK-SFOE-S-SKYL
+    source: OAK ATCT SOP 2-2 a iii (SFOE Southbound)
+    text: "Southbound, runways 10L/10R/12, J & DH8D -> SKYL# (Sutro), CVS x 3,000"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: SKYL
+    sector: sutro
+  - id: OAK-SFOE-PT-090
+    source: OAK ATCT SOP 2-2 a iii (SFOE, All)
+    text: "All, runways 10L/10R/12, P/T -> 090 degrees (Richmond), 3,000"
+    plan: SFOE
+    direction: any
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 90
+    sector: richmond
+
+  # SOP 2-2 b: additional non-DP heading assignment, the fall-through when no DP above applies.
+  - id: OAK-B-SFOW-33-J-270-N
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runway 33, J & DH8D -> 270 degrees, 2,000; Richmond for northbound departures"
+    plan: SFOW
+    direction: north
+    runway_families: ["33"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: richmond
+  - id: OAK-B-SFOW-33-J-270-S
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures"
+    plan: SFOW
+    direction: south
+    runway_families: ["33"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+  - id: OAK-B-SFOW-33-J-270-O
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["33"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+  - id: OAK-B-SFOW-33-PT-315
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runway 33, P/T -> 315 degrees (Richmond), 3,000"
+    plan: SFOW
+    direction: any
+    runway_families: ["33"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 315
+    sector: richmond
+  - id: OAK-B-SFOW-2830-N-PT-315
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "Northbound, runways 28/30, P/T -> 315 degrees (Richmond), 3,000"
+    plan: SFOW
+    direction: north
+    runway_families: ["28", "30"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: 315
+    sector: richmond
+  - id: OAK-B-SFOW-2830-S-PT-RWY
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "Southbound, runways 28/30, P/T -> runway heading (Sutro), 10,000"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: [P, T]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: sutro
+  - id: OAK-B-SFOW-2830-J-RWY-N
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runways 28/30, J & DH8D -> runway heading, 10,000; Richmond for northbound departures"
+    plan: SFOW
+    direction: north
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: richmond
+  - id: OAK-B-SFOW-2830-J-RWY-S
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures"
+    plan: SFOW
+    direction: south
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: sutro
+  - id: OAK-B-SFOW-2830-J-RWY-O
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures"
+    plan: SFOW
+    direction: oceanic
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: sutro
+  - id: OAK-B-OAKE-J-270-N
+    source: OAK ATCT SOP 2-2 b iii (OAKE)
+    text: "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Richmond for northbound departures"
+    plan: OAKE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: richmond
+  - id: OAK-B-OAKE-J-270-S
+    source: OAK ATCT SOP 2-2 b iii (OAKE)
+    text: "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures"
+    plan: OAKE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+  - id: OAK-B-OAKE-J-270-O
+    source: OAK ATCT SOP 2-2 b iii (OAKE)
+    text: "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures"
+    plan: OAKE
+    direction: oceanic
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: 270
+    sector: sutro
+  - id: OAK-B-SFOE-J-RWY-N
+    source: OAK ATCT SOP 2-2 b iv (SFOE)
+    text: "All, runways 10/12, J & DH8D -> runway heading, 3,000; Richmond for northbound departures"
+    plan: SFOE
+    direction: north
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: richmond
+  - id: OAK-B-SFOE-J-RWY-S
+    source: OAK ATCT SOP 2-2 b iv (SFOE)
+    text: "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
+    plan: SFOE
+    direction: south
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: sutro
+  - id: OAK-B-SFOE-J-RWY-O
+    source: OAK ATCT SOP 2-2 b iv (SFOE)
+    text: "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
+    plan: SFOE
+    direction: oceanic
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_family: null
+    non_dp_heading: runway heading
+    sector: sutro
+
+# The ALTITUDE columns of SOP 2-2 a, 2-2 b and Appendix B d. Ordered; first match wins, so the rows
+# naming a DP come before the rows that answer a flight cleared on a heading. "CVS" is climb via SID
+# and "CVS x" is climb via SID except maintain. SOP 2-2 b i: instruct aircraft to expect the
+# assigned/cruise altitude 10 minutes after departure.
+altitude_rules:
+  - id: OAK-ALT-SFOW-OAK-DH8D
+    source: OAK ATCT SOP 2-2 a i (SFOW Northbound)
+    text: "SFOW: OAK#, runways 28/30, DH8D -> CVS x 10,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [dh8d]
+    sid_families: [OAK]
+    outcome: { kind: interim, feet: 10000 }
+    when_top_altitude_published: interim
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-OAK-J
+    source: OAK ATCT SOP 2-2 a i (SFOW Northbound)
+    text: "SFOW: OAK#, runways 28/30, J -> CVS x FL190"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: [J]
+    sid_families: [OAK]
+    outcome: { kind: interim, feet: 19000 }
+    when_top_altitude_published: interim
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-CNDEL
+    source: OAK ATCT SOP 2-2 a i (SFOW Oceanic/Southbound)
+    text: "SFOW: CNDEL#, runways 28/30, J & DH8D -> CVS"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [CNDEL]
+    outcome: { kind: climb_via, feet: 0 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-HUSSH
+    source: OAK ATCT SOP Appendix B d i
+    text: "SFOW noise abatement: HUSSH#, runway 30, J & DH8D -> CVS"
+    plan: SFOW
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [HUSSH]
+    outcome: { kind: climb_via, feet: 0 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-SLNT
+    source: OAK ATCT SOP Appendix B d i
+    text: "SFOW noise abatement: SLNT#, runway 30, J & DH8D -> CVS x FL190"
+    plan: SFOW
+    runway_families: ["30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [SLNT]
+    outcome: { kind: interim, feet: 19000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-SUNNE
+    source: OAK ATCT SOP Appendix B d i
+    text: "SFOW noise abatement: SUNNE#, runways 28/30, J & DH8D -> 5,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [SUNNE]
+    outcome: { kind: interim, feet: 5000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-SALAD
+    source: OAK ATCT SOP Appendix B d i
+    text: "SFOW noise abatement: SALAD#, runway 28, P and approach category A/B -> CVS x 4,000"
+    plan: SFOW
+    runway_families: ["28"]
+    classes: [P]
+    sid_families: [SALAD]
+    outcome: { kind: interim, feet: 4000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-OTHERS
+    source: OAK ATCT SOP 2-2 a i (SFOW Oceanic/Southbound, Via BSR, EUGEN, SHOEY, or SNS)
+    text: "SFOW: SKYL#, COAST#, NUEVO#, runways 28/30, P/T/J -> CVS x 10,000 (Others); the SOP merges the NUEVO# row's altitude cell with the southbound rows above it, so it carries the same 10,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: [P, T, J]
+    sid_families: [SKYL, COAST, NUEVO]
+    outcome: { kind: interim, feet: 10000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-NIMI
+    source: OAK ATCT SOP 2-2 a i (SFOW, All other props)
+    text: "SFOW: NIMI#, runways 28/30, P/T -> 3,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: [P, T]
+    sid_families: [NIMI]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-33-J
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "SFOW: runway 33, J & DH8D on a heading -> 2,000"
+    plan: SFOW
+    runway_families: ["33"]
+    classes: []
+    groups: [jets_and_dh8d]
+    outcome: { kind: interim, feet: 2000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-33-PT
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "SFOW: runway 33, P/T on a heading -> 3,000"
+    plan: SFOW
+    runway_families: ["33"]
+    classes: [P, T]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-2830-J
+    source: "OAK ATCT SOP 2-2 b ii (SFOW); OAK ATCT SOP Appendix B d i"
+    text: "SFOW: runways 28/30, J & DH8D on a heading -> 10,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: []
+    groups: [jets_and_dh8d]
+    outcome: { kind: interim, feet: 10000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-2830-PT-315
+    source: OAK ATCT SOP 2-2 b ii (SFOW)
+    text: "SFOW: runways 28/30, P/T on 315 degrees -> 3,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: [P, T]
+    non_dp_headings: [315]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOW-2830-PT-RWY
+    source: "OAK ATCT SOP 2-2 b ii (SFOW); OAK ATCT SOP Appendix B d i"
+    text: "SFOW: runways 28/30, P/T on runway heading or 270 degrees -> 10,000"
+    plan: SFOW
+    runway_families: ["28", "30"]
+    classes: [P, T]
+    non_dp_headings: [runway heading, 270]
+    outcome: { kind: interim, feet: 10000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-OAKE-QUAKE
+    source: OAK ATCT SOP 2-2 a ii (OAKE)
+    text: "OAKE: QUAKE#, runways 10/12, J & DH8D -> 5,000"
+    plan: OAKE
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [QUAKE]
+    outcome: { kind: interim, feet: 5000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-OAKE-J
+    source: "OAK ATCT SOP 2-2 b iii (OAKE); OAK ATCT SOP Appendix B d ii"
+    text: "OAKE: runways 10/12, J & DH8D on a heading -> 5,000"
+    plan: OAKE
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    outcome: { kind: interim, feet: 5000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-OAKE-PT
+    source: OAK ATCT SOP 2-2 a ii (OAKE, All)
+    text: "OAKE: runways 10/12, P/T on 090 degrees -> 3,000"
+    plan: OAKE
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOE-OAK
+    source: OAK ATCT SOP 2-2 a iii (SFOE Northbound/Oceanic)
+    text: "SFOE: OAK#, runways 10/12, J & DH8D -> 3,000"
+    plan: SFOE
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [OAK]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: interim
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOE-SOUTH
+    source: OAK ATCT SOP 2-2 a iii (SFOE Southbound)
+    text: "SFOE: KATFH#, SKYL#, runways 10/12, J & DH8D -> CVS x 3,000"
+    plan: SFOE
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    sid_families: [KATFH, SKYL]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOE-J
+    source: "OAK ATCT SOP 2-2 b iv (SFOE); OAK ATCT SOP Appendix B d iii"
+    text: "SFOE: runways 10/12, J & DH8D on a heading -> 3,000"
+    plan: SFOE
+    runway_families: ["10", "12"]
+    classes: []
+    groups: [jets_and_dh8d]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+  - id: OAK-ALT-SFOE-PT
+    source: OAK ATCT SOP 2-2 a iii (SFOE, All)
+    text: "SFOE: runways 10/12, P/T on 090 degrees -> 3,000"
+    plan: SFOE
+    runway_families: ["10", "12"]
+    classes: [P, T]
+    outcome: { kind: interim, feet: 3000 }
+    when_top_altitude_published: climb_via
+    expect_after_minutes: 10
+
+# Operational notices that change which SIDs are available. `sid_off` removes every assignment row
+# for that SID family while the notice is active, so the next compatible row applies: the OAKE
+# 270-degree row for QUAKE#, and the southbound 270-degree row for SUNNE#.
+notices:
+  - id: OAK-QUAKE-OFF
+    source: ZOA notice relayed by the user, 2026-09-15
+    dated: 2026-09-15
+    text: "OAK QUAKE SID: OFF. Issue 270 HDG RV first fix for 12/10 jet departures. CFG: OAKE"
+    plan: OAKE
+    effect: { kind: sid_off, sid_family: QUAKE, heading: 270 }
+    default_active: true
+  - id: OAK-SUNNE-OFF
+    source: ZOA notice relayed by the user, 2026-09-15
+    dated: 2026-09-15
+    text: "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement"
+    plan: SFOW
+    effect: { kind: sid_off, sid_family: SUNNE, heading: 120 }
+    default_active: true
+
+# Airport-level phraseology toggles. Defaults follow FAA JO 7110.65 4-3-2, except the expect time:
+# SOP 2-2 b i instructs aircraft to expect the assigned altitude ten minutes after departure.
+phraseology:
+  expect_altitude: unless_chart_publishes_it
+  non_standard_interim_expect_minutes: 10
+  vector_hybrid_transitions_spoken: false
+
+# The airport's own phraseology rule rows. The CRAFT rows every airport inherits live in
+# `generator/shared/phraseology_rules.yaml`; this file states only the six `RWY-*` rows the engine
+# cites by id to explain the departure runway, in the order the engine tries them: the airline
+# default, then the group default, then the class default, then the rest.
+phraseology_rules:
+  - id: RWY-AIRLINE-DEFAULT
+    source: "ZOA senior staff via the user, 2026-09-16"
+    text: "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"
+  - id: RWY-GROUP-DEFAULT
+    source: "OAK ATCT SOP 3-4 a"
+    text: "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the Dash 8-400 is grouped with the jets and departs the south field with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
+  - id: RWY-CLASS-DEFAULT
+    source: "OAK ATCT SOP 3-4 a; ZOA senior staff via the user, 2026-09-16"
+    text: "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway"
+  - id: RWY-ON-REQUEST
+    source: OAK ATCT SOP 1-6 and 3-4 b
+    text: "OAK has no runway issued only on request: SOP 3-4 b lets a controller deviate from the runway-assignment practice for safety, weather, emergencies, flow, construction and pilot requests, but the SOP names no class or route that is given another runway on request"
+  - id: RWY-DIRECTION
+    source: OAK ATCT SOP 1-6 and 2-2
+    text: "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction"
+  - id: RWY-FIRST
+    source: OAK ATCT SOP 1-6
+    text: "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"

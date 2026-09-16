@@ -1,0 +1,84 @@
+# Scenario library: the destinations, airlines, fleet and realistic filed routes of KOAK. Routes come
+# from the user's "Common Fixes" notes for KOAK and from the ZOA route reference tool pages for the
+# NCT destinations. What a destination, an airline or an aircraft type is holds at every airport, so
+# this file lists only codes: the facts sit in generator/shared/destinations.yaml,
+# generator/shared/airlines.yaml and generator/shared/aircraft_types.yaml.
+
+# The destinations KOAK scenarios file to; the order is the order the draw sees them in. The eight NCT
+# satellites between KSJC and PHNL carry TEC rows in `tec.yaml` but no filed route of their own: a
+# TEC row names a destination this list must carry.
+destinations: [KSEA, KPDX, KBFI, KBLI, KBOI, KSLC, KJAC, KDEN, KLAS, KPHX, KLAX, KSAN, KBUR, KONT, KCRQ, KSMO, KVNY, KSNA, KLGB, KUDD, KSBA, KMCI, KGPZ, KRNO, KTRK, KSMF, KFAT, KACV, KMRY, KLVK, KAPC, KWVI, KMYV, KOVE, O88, KSAC, KSFO, KSJC, KMCC, KMHR, KMOD, KNUQ, KPAO, KRHV, KSCK, KSQL, PHNL, RKSI, ESSA, MMMX, CYVR]
+
+# The airlines that fly out of KOAK: their telephony is read on frequency, and the all-cargo ones
+# among them make a flight a cargo flight for the runway rules. PAC VALLEY (PCM) flies the Caravan
+# and Horizon (QXE) the Dash 8-400 that the OAK SOP tables name beside the jets.
+airlines: [AAL, AAY, ABX, ACA, ASA, ATN, CKS, CLX, DAL, EJA, FDX, FFT, GTI, JBU, JSX, KAL, LXJ, NAX, NCA, NKS, PCM, QXE, SKW, SWA, TWY, UAL, UPS, VOI, XOJ]
+
+# The aircraft types a KOAK scenario can draw; an airline flies one when generator/shared/airlines.yaml
+# lists the type for it.
+fleet: [A320, A20N, A319, B737, B738, B752, B77L, B788, A306, MD11, E75L, E135, CL30, GL5T, C750, C55B, C25B, C510, E55P, DH8D, B350, BE20, TBM9, C208, C172, SR22, M20T]
+
+# Filed routes, keyed by the fix where the aircraft leaves the SID. `tail` starts at that fix.
+# `classes` limits which aircraft classes fly it; `altitudes` are plausible filed cruise altitudes.
+# A tail that ends on an arrival names the family (`FEVTA#`) and the build supplies the revision.
+routes:
+  # The user's common KOAK routes (Google Doc "Common Fixes", 2025-01-20). Southbound and eastbound
+  # destinations take odd altitudes: the magnetic course is the true course less about 14 degrees of
+  # easterly variation.
+  - { exit_fix: SUSEY, destination: KLAX, tail: SUSEY EBAYE BURGL IRNMN#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q174 FLCHR COKTL#, classes: [J], altitudes: [29000, 31000] }
+  - { exit_fix: YYUNG, destination: KSAN, tail: YYUNG LAX COMIX#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: MCKEY, destination: KSAN, tail: MCKEY LAX COMIX#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: RZS, destination: KSAN, tail: RZS LAX HUBRD#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: KTINA, destination: KBUR, tail: KTINA CISKO RDHOT ROKKR#, classes: [J], altitudes: [29000, 31000] }
+  - { exit_fix: YYUNG, destination: KSNA, tail: YYUNG TILLT RUKKI#, classes: [J], altitudes: [33000, 35000] }
+  # The user's note files the SNA arrival RUKKI# to Long Beach too; KLGB does not publish it, so the
+  # tail ends on TILLT until the user names the Long Beach arrival.
+  - { exit_fix: YYUNG, destination: KLGB, tail: YYUNG TILLT, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: KAYEX, destination: KPHX, tail: KAYEX LOSHN BOILE BLH HYDRR#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: AVE, destination: KPHX, tail: AVE BOILE BLH HYDRR#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: SNS, destination: KLAX, tail: SNS AVE LAX, classes: [P, T], altitudes: [9000, 11000] }
+  # Northbound and eastbound jets off OAK6, which is a vector SID: the first filed fix is the
+  # Oakland VOR itself. KSEA and KPDX take even altitudes under the ZOA-ZSE parity LOA.
+  - { exit_fix: OAK, destination: KSEA, tail: OAK DEDHD RBL LMT HAWKZ#, classes: [J], altitudes: [34000, 36000] }
+  - { exit_fix: OAK, destination: KPDX, tail: OAK GRTFL MACHU TMBRS#, classes: [J], altitudes: [34000, 36000] }
+  - { exit_fix: OAK, destination: KSLC, tail: OAK MOGEE Q124 BVL YUTES#, classes: [J], altitudes: [37000, 39000] }
+  - { exit_fix: OAK, destination: KDEN, tail: OAK SYRAH Q128 JSICA ILC EYPUZ IBSKI BUMMP SSKII#, classes: [J], altitudes: [37000, 39000] }
+  # NCT destinations file the tails the ZOA route tool issues, one row per distinct tail, so every
+  # configuration, class and suffix finds a clean row. The tool prints two altitudes in hundreds of
+  # feet, the initial and the final one; the altitudes here sit at or below the final altitude of the
+  # matching TEC row (see `tec.yaml`). A TEC altitude ignores the hemispheric parity, which is why the
+  # Sacramento jet rows off FEVTA file 10,000 on a course of 014 (user, 2026-09-16); the ORRCA rows
+  # file the 11,000 their own row ends on. Magnetic courses: KSMF 014 odd, KSAC 021 odd, KMYV 010 odd,
+  # KOVE 005 odd, O88 030 odd, KLVK 081 odd, KMRY 152 odd, KWVI 136 odd, KSJC 136 odd, KSFO 216 even,
+  # KAPC 341 even.
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK FEVTA FEVTA#, classes: [J], altitudes: [10000] }
+  - { exit_fix: FEVTA, destination: KSMF, tail: FEVTA FEVTA#, classes: [J], altitudes: [10000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KSAC, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSAC, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSAC, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: O88, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: O88, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KMYV, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KMYV, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000] }
+  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000] }
+  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T, J], altitudes: [5000, 7000] }
+  - { exit_fix: OAK, destination: KMRY, tail: OAK EUGEN, classes: [J], altitudes: [7000, 9000] }
+  - { exit_fix: OAK, destination: KMRY, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KMRY, tail: OAK V244 ALTAM MOD V111 SNS, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T, J], altitudes: [5000, 7000] }
+  - { exit_fix: OAK, destination: KWVI, tail: OAK EUGEN, classes: [J], altitudes: [7000, 9000] }
+  - { exit_fix: OAK, destination: KWVI, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: EUGEN, destination: KSJC, tail: EUGEN OSI, classes: [P, T, J], altitudes: [3000, 5000] }
+  - { exit_fix: SUNOL, destination: KSJC, tail: SUNOL SJC, classes: [J], altitudes: [3000] }
+  - { exit_fix: OAK, destination: KSJC, tail: OAK SUNOL SJC, classes: [P, T], altitudes: [3000] }
+  - { exit_fix: OAK, destination: KSJC, tail: OAK ARTAQ, classes: [J], altitudes: [3000] }
+  - { exit_fix: OSI, destination: KSFO, tail: OSI, classes: [P, T, J], altitudes: [4000] }

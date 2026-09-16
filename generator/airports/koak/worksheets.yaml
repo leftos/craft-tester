@@ -1,0 +1,38 @@
+# Trainer worksheets from the S1-OAK-2 "Clean Clearances" and S1-OAK-5 "Unclean Clearances" modules
+# on oakartcc.org, pulled 2026-09-15. Each row is a public Google Doc exported as text from
+# `https://docs.google.com/document/d/<id>/export?format=txt`. `kind` picks the parser: `phraseology`
+# sheets are flight-plan forms, `amendment` sheets are a Callsign/Type/Dest./Altitude/Route table.
+# `config` is the runway configuration the sheet declares in its instructions; all five OAK sheets
+# say SFOW ("for the purposes of this exercise, the SFOW configuration is active", and the two
+# phraseology sheets carry it in their title). `phraseology` records which reading the sheet drills.
+worksheets:
+  - id: 1mQd9jyb0jT18V4-zcT11sgQFqU-rqxpvYi7nLoEGnq4
+    title: Phraseology Practice 1A
+    kind: phraseology
+    config: SFOW
+    phraseology: abbreviated
+  - id: 1H-UOCLNPRNu6YyOlkyOOmMsxwjkT6KvxPZooum3ymd4
+    title: Phraseology Practice 2
+    kind: phraseology
+    config: SFOW
+    phraseology: full_route
+  - id: 1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU
+    title: Amendment Practice 1A
+    kind: amendment
+    config: SFOW
+    phraseology: null
+  - id: 1sYysW7ZB6tge1fpAWgVEMGbGSMdGtO3fGb0Tgf8RMws
+    title: Amendment Practice 2
+    kind: amendment
+    config: SFOW
+    phraseology: null
+  - id: 1hxT2tZxNMJ8wsd2IaP1ui1zzercsL2gEBEGs8bvUSkg
+    title: Amendment Practice 3
+    kind: amendment
+    config: SFOW
+    phraseology: null
+
+# Aircraft types the sheets file under a non-ICAO designator, mapped to the designator vNAS and the
+# fleet use.
+type_aliases:
+  A32N: A20N

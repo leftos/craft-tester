@@ -1,0 +1,69 @@
+# Per-SID facts that CIFP and the chart text do not carry, and corrections to what they do carry.
+# Keys are the ZOA charts-API chart name; the five `, CONT.1` continuation sheets are read as part of
+# their base chart, so only the base names are listed. `cifp_id` maps a chart to its ARINC 424
+# procedure identifier, which the chart name does not carry (NIMITZ SIX is NIMI6, SILENT THREE is
+# SLNT3, SKYLINE ONE is SKYL1, OAKLAND SIX is OAK6).
+sids:
+  CNDEL FIVE (RNAV):
+    cifp_id: CNDEL5
+    spoken: Candle Five
+    note: "RNAV pilot-nav SID off 28L/28R/30 with published crossing restrictions and a published top altitude of 10,000, which is why SOP 2-2 a clears it with a plain CVS. Spoken name from the S1-OAK-1 module: 'Candle Five (CNDEL5) departure, Susie (SUSEY) transition'."
+  COAST NINE:
+    cifp_id: COAST9
+    spoken: Coast Nine
+    note: "Conventional pilot-nav SID off 28L/28R/30; its enroute transitions (FLW, GVO, RZS, SXC) are printed on the CONT.1 sheet. Spoken name proposed from the chart name."
+  HUSSH TWO (RNAV):
+    cifp_id: HUSSH2
+    spoken: Hush Two
+    note: "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush Two confirmed by the user: HUSSH is read as the word 'hush'."
+  KATFH THREE (RNAV):
+    cifp_id: KATFH3
+    spoken: Katfish Three
+    note: "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish Three confirmed by the user: KATFH is read as the word 'catfish'."
+  NIMITZ SIX:
+    cifp_id: NIMI6
+    spoken: Nimitz Six
+    kind: radar_vectors
+    runways: ["28L", "28R", "30", "33"]
+    top_altitude: { kind: assigned_by_atc }
+    has_crossing_restrictions: false
+    route_phrasing: radar_vectors_fix
+    note: "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table."
+  NUEVO EIGHT:
+    cifp_id: NUEVO8
+    spoken: Nuevo Eight
+    note: "Conventional pilot-nav SID off 28L/28R/30 with the SHOEY and SNS transitions on the CONT.1 sheet; SOP 2-2 a i issues it to P/T/J filed via BSR, EUGEN, SHOEY or SNS. Spoken name proposed from the chart name."
+  OAKLAND SIX:
+    cifp_id: OAK6
+    spoken: Oakland Six
+    climb_via_eligible: true
+    route_phrasing: radar_vectors_fix
+    transitions_spoken_as_transition: false
+    note: "Vector SID (CIFP route type T for every runway) whose CIFP 'transitions' are the runway vector legs the chart never names, so it is read like KSFO's GAP SEVEN: 'Oakland Six departure, radar vectors (fix)'. SOP 2-2 a i nevertheless clears it 'CVS x FL190' and the S1-OAK-1 module reads 'Oakland Six departure, radar vectors Deadhead, then as filed. Climb via SID except maintain flight level one niner zero', so climb_via_eligible is forced true against the computed reading, which excludes vector SIDs."
+  QUAKE TWO:
+    cifp_id: QUAKE2
+    spoken: Quake Two
+    route_phrasing: radar_vectors_fix
+    transitions_spoken_as_transition: false
+    note: "Vector SID (CIFP route type T for every runway), read like OAK6: 'Quake Two departure, radar vectors (fix)'. SOP 2-2 a ii issues it to J & DH8D in OAKE at 5,000; the current ZOA notice has it off. Spoken name proposed from the chart name."
+  SALAD FIVE:
+    cifp_id: SALAD5
+    spoken: Salad Five
+    note: "Conventional pilot-nav SID off 28L/28R only, with the ALTAM transition; Appendix B b iii puts it in use 2200L until 0700L daily for runway 28 props of approach category A/B. Spoken name proposed from the chart name."
+  SILENT THREE:
+    cifp_id: SLNT3
+    spoken: Silent Three
+    runways: ["30"]
+    note: "Conventional pilot-nav SID off runway 30. CIFP codes its runway 30 leg as a common route (route type 2, transition RW30) rather than a runway transition, so the grouper derives no runway for it and the Appendix B northbound row would be unreachable; the runway is stated here from that RW30 record. Spoken name from the chart name."
+  SKYLINE ONE:
+    cifp_id: SKYL1
+    spoken: Skyline One
+    note: "Conventional pilot-nav SID published for every departure runway, with the AVE, FLW and PXN transitions on the CONT.1 sheet; SOP 2-2 a issues it southbound and oceanic in SFOW and southbound in SFOE. Spoken name from the chart name."
+  SUNNE ONE:
+    cifp_id: SUNNE1
+    spoken: Sunne One
+    note: "Conventional SID off 28L/28R/30 with no transitions and a published top altitude of 5,000, which is the altitude Appendix B d i pairs with it. NCT authorises it when traffic levels allow, and the current ZOA notice has it off. Spoken name Sunne One confirmed by the user."
+
+# Corrections to the spoken names the build reads out of the CIFP navaid records. None are needed
+# yet: every fix the OAK routes, gates and transitions name is spelled correctly in the CIFP.
+fix_spoken: {}

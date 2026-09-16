@@ -1,0 +1,5653 @@
+{
+  "aircraftClasses": {
+    "A20N": "J",
+    "A306": "J",
+    "A319": "J",
+    "A320": "J",
+    "B350": "T",
+    "B737": "J",
+    "B738": "J",
+    "B752": "J",
+    "B77L": "J",
+    "B788": "J",
+    "BE20": "T",
+    "C172": "P",
+    "C208": "T",
+    "C25B": "J",
+    "C510": "J",
+    "C55B": "J",
+    "C750": "J",
+    "CL30": "J",
+    "DH8D": "T",
+    "E135": "J",
+    "E55P": "J",
+    "E75L": "J",
+    "GL5T": "J",
+    "M20T": "P",
+    "MD11": "J",
+    "SR22": "P",
+    "TBM9": "T"
+  },
+  "aircraftGroups": {
+    "dh8d": {
+      "classes": [],
+      "types": [
+        "DH8D"
+      ]
+    },
+    "jets_and_dh8d": {
+      "classes": [
+        "J"
+      ],
+      "types": [
+        "DH8D"
+      ]
+    }
+  },
+  "airport": {
+    "clearanceDelivery": "121.1",
+    "faa": "OAK",
+    "icao": "KOAK",
+    "lat": 37.721261,
+    "lon": -122.22115,
+    "magneticVariation": 14.0,
+    "spoken": "Oakland"
+  },
+  "altitudeRules": [
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-OAK-DH8D",
+      "outcome": {
+        "feet": 10000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sidFamilies": [
+        "OAK"
+      ],
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Northbound)",
+      "text": "SFOW: OAK#, runways 28/30, DH8D -> CVS x 10,000",
+      "whenTopAltitudePublished": "interim"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-OAK-J",
+      "outcome": {
+        "feet": 19000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sidFamilies": [
+        "OAK"
+      ],
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Northbound)",
+      "text": "SFOW: OAK#, runways 28/30, J -> CVS x FL190",
+      "whenTopAltitudePublished": "interim"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-CNDEL",
+      "outcome": {
+        "kind": "climb_via"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sidFamilies": [
+        "CNDEL"
+      ],
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic/Southbound)",
+      "text": "SFOW: CNDEL#, runways 28/30, J & DH8D -> CVS",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-HUSSH",
+      "outcome": {
+        "kind": "climb_via"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sidFamilies": [
+        "HUSSH"
+      ],
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "SFOW noise abatement: HUSSH#, runway 30, J & DH8D -> CVS",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-SLNT",
+      "outcome": {
+        "feet": 19000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sidFamilies": [
+        "SLNT"
+      ],
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "SFOW noise abatement: SLNT#, runway 30, J & DH8D -> CVS x FL190",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-SUNNE",
+      "outcome": {
+        "feet": 5000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sidFamilies": [
+        "SUNNE"
+      ],
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "SFOW noise abatement: SUNNE#, runways 28/30, J & DH8D -> 5,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-SALAD",
+      "outcome": {
+        "feet": 4000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sidFamilies": [
+        "SALAD"
+      ],
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "SFOW noise abatement: SALAD#, runway 28, P and approach category A/B -> CVS x 4,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-OTHERS",
+      "outcome": {
+        "feet": 10000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sidFamilies": [
+        "SKYL",
+        "COAST",
+        "NUEVO"
+      ],
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic/Southbound, Via BSR, EUGEN, SHOEY, or SNS)",
+      "text": "SFOW: SKYL#, COAST#, NUEVO#, runways 28/30, P/T/J -> CVS x 10,000 (Others); the SOP merges the NUEVO# row's altitude cell with the southbound rows above it, so it carries the same 10,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-NIMI",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sidFamilies": [
+        "NIMI"
+      ],
+      "source": "OAK ATCT SOP 2-2 a i (SFOW, All other props)",
+      "text": "SFOW: NIMI#, runways 28/30, P/T -> 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-33-J",
+      "outcome": {
+        "feet": 2000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "33"
+      ],
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "SFOW: runway 33, J & DH8D on a heading -> 2,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-33-PT",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "33"
+      ],
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "SFOW: runway 33, P/T on a heading -> 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOW-2830-J",
+      "outcome": {
+        "feet": 10000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW); OAK ATCT SOP Appendix B d i",
+      "text": "SFOW: runways 28/30, J & DH8D on a heading -> 10,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-2830-PT-315",
+      "nonDpHeadings": [
+        315
+      ],
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "SFOW: runways 28/30, P/T on 315 degrees -> 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOW-2830-PT-RWY",
+      "nonDpHeadings": [
+        "runway heading",
+        270
+      ],
+      "outcome": {
+        "feet": 10000,
+        "kind": "interim"
+      },
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW); OAK ATCT SOP Appendix B d i",
+      "text": "SFOW: runways 28/30, P/T on runway heading or 270 degrees -> 10,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-OAKE-QUAKE",
+      "outcome": {
+        "feet": 5000,
+        "kind": "interim"
+      },
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sidFamilies": [
+        "QUAKE"
+      ],
+      "source": "OAK ATCT SOP 2-2 a ii (OAKE)",
+      "text": "OAKE: QUAKE#, runways 10/12, J & DH8D -> 5,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-OAKE-J",
+      "outcome": {
+        "feet": 5000,
+        "kind": "interim"
+      },
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "source": "OAK ATCT SOP 2-2 b iii (OAKE); OAK ATCT SOP Appendix B d ii",
+      "text": "OAKE: runways 10/12, J & DH8D on a heading -> 5,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-OAKE-PT",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "source": "OAK ATCT SOP 2-2 a ii (OAKE, All)",
+      "text": "OAKE: runways 10/12, P/T on 090 degrees -> 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOE-OAK",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sidFamilies": [
+        "OAK"
+      ],
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE Northbound/Oceanic)",
+      "text": "SFOE: OAK#, runways 10/12, J & DH8D -> 3,000",
+      "whenTopAltitudePublished": "interim"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOE-SOUTH",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sidFamilies": [
+        "KATFH",
+        "SKYL"
+      ],
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE Southbound)",
+      "text": "SFOE: KATFH#, SKYL#, runways 10/12, J & DH8D -> CVS x 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [],
+      "expectAfterMinutes": 10,
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-ALT-SFOE-J",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "source": "OAK ATCT SOP 2-2 b iv (SFOE); OAK ATCT SOP Appendix B d iii",
+      "text": "SFOE: runways 10/12, J & DH8D on a heading -> 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "expectAfterMinutes": 10,
+      "id": "OAK-ALT-SFOE-PT",
+      "outcome": {
+        "feet": 3000,
+        "kind": "interim"
+      },
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE, All)",
+      "text": "SFOE: runways 10/12, P/T on 090 degrees -> 3,000",
+      "whenTopAltitudePublished": "climb_via"
+    }
+  ],
+  "assignmentRules": [
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-HUSSH-REQ-N",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": "HUSSH",
+      "source": "OAK ATCT SOP Appendix B d i (footnote *)",
+      "text": "HUSSH# DP (unless SUNNE# DP authorized by NCT) is required for J/DH8D between 0100L and 0500L: northbound, runway 30 -> HUSSH# (Richmond)",
+      "when": {
+        "noiseWindow": "hussh_required",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-HUSSH-REQ-S",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "HUSSH",
+      "source": "OAK ATCT SOP Appendix B d i (footnote *)",
+      "text": "HUSSH# DP is required for J/DH8D between 0100L and 0500L; oceanic/southbound routed via GOBBS transition: southbound, runway 30 -> HUSSH# GOBBS (Sutro)",
+      "when": {
+        "forcedTransition": "GOBBS",
+        "noiseWindow": "hussh_required",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-HUSSH-REQ-O",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "HUSSH",
+      "source": "OAK ATCT SOP Appendix B d i (footnote *)",
+      "text": "HUSSH# DP is required for J/DH8D between 0100L and 0500L; oceanic/southbound routed via GOBBS transition: oceanic, runway 30 -> HUSSH# GOBBS (Sutro)",
+      "when": {
+        "forcedTransition": "GOBBS",
+        "noiseWindow": "hussh_required",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-30-N-HUSSH",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": "HUSSH",
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 30, J & DH8D -> HUSSH# (Richmond), CVS",
+      "when": {
+        "noiseWindow": "sfow_night",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-30-N-SLNT",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": "SLNT",
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 30, J & DH8D -> SLNT# (Richmond), CVS x FL190; not authorized between 0100L and 0500L",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-30-S-HUSSH",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "HUSSH",
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runway 30, J & DH8D -> HUSSH# (Sutro), CVS",
+      "when": {
+        "noiseWindow": "sfow_night",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-30-O-HUSSH",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "HUSSH",
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Oceanic, runway 30, J & DH8D -> HUSSH# (Sutro), CVS",
+      "when": {
+        "noiseWindow": "sfow_night",
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-30-S-270",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runway 30, J & DH8D -> 270 degrees (Sutro), 10,000; not authorized between 0100L and 0500L",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-30-O-270",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Oceanic, runway 30, J & DH8D -> 270 degrees (Sutro), 10,000; not authorized between 0100L and 0500L",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-2830-S-SUNNE",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SUNNE",
+      "source": "OAK ATCT SOP Appendix B d i (footnote 1)",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runways 28/30, J & DH8D -> SUNNE# (Sutro), 5,000; SUNNE# DP will be authorized by NCT when traffic levels allow",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-2830-S-270",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runways 28/30, J & DH8D -> 270 degrees (Sutro), 10,000",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOW-28-N-270",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 28, J & DH8D -> 270 degrees (Richmond), 10,000",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "north",
+      "id": "OAK-APPB-SFOW-30-PT-270-N",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i (footnote 2)",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Richmond for northbound departures",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "south",
+      "id": "OAK-APPB-SFOW-30-PT-270-S",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i (footnote 2)",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Sutro for oceanic/southbound departures",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "oceanic",
+      "id": "OAK-APPB-SFOW-30-PT-270-O",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d i (footnote 2)",
+      "text": "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Sutro for oceanic/southbound departures",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "approachCategories": [
+        "A",
+        "B"
+      ],
+      "classes": [
+        "P"
+      ],
+      "direction": "any",
+      "id": "OAK-APPB-SFOW-28-SALAD",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28"
+      ],
+      "sector": "richmond",
+      "sidFamily": "SALAD",
+      "source": "OAK ATCT SOP Appendix B b iii and d i",
+      "text": "SALAD# is in use 2200L until 0700L daily: All, runway 28, P and approach category A/B -> SALAD# (Richmond), CVS x 4,000",
+      "when": {
+        "noiseWindow": "salad"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOE-J-140-N",
+      "nonDpHeading": 140,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d iii",
+      "text": "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Richmond for northbound departures",
+      "when": {
+        "noiseWindow": "sfoe_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOE-J-140-S",
+      "nonDpHeading": 140,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d iii",
+      "text": "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Sutro for oceanic/southbound departures",
+      "when": {
+        "noiseWindow": "sfoe_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-SFOE-J-140-O",
+      "nonDpHeading": 140,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d iii",
+      "text": "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Sutro for oceanic/southbound departures",
+      "when": {
+        "noiseWindow": "sfoe_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "north",
+      "id": "OAK-APPB-SFOE-PT-090-N",
+      "nonDpHeading": 90,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d iii",
+      "text": "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Richmond for northbound departures",
+      "when": {
+        "noiseWindow": "sfoe_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "south",
+      "id": "OAK-APPB-SFOE-PT-090-S",
+      "nonDpHeading": 90,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d iii",
+      "text": "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Sutro for oceanic/southbound departures",
+      "when": {
+        "noiseWindow": "sfoe_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "oceanic",
+      "id": "OAK-APPB-SFOE-PT-090-O",
+      "nonDpHeading": 90,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d iii",
+      "text": "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Sutro for oceanic/southbound departures",
+      "when": {
+        "noiseWindow": "sfoe_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "any",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-OAKE-QUAKE",
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "grove",
+      "sidFamily": "QUAKE",
+      "source": "OAK ATCT SOP Appendix B d ii",
+      "text": "Noise abatement: All, runways 10/12, J & DH8D -> QUAKE# (Grove), 5,000",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "any",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-APPB-OAKE-J-270",
+      "nonDpHeading": 270,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "grove",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d ii",
+      "text": "Noise abatement: All, runways 10/12, J & DH8D -> 270 degrees (Grove), 5,000",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "any",
+      "id": "OAK-APPB-OAKE-PT-090",
+      "nonDpHeading": 90,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "grove",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP Appendix B d ii",
+      "text": "Noise abatement: All, runways 10/12, P/T -> 090 degrees (Grove), 3,000",
+      "when": {
+        "noiseWindow": "sfow_night"
+      }
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-N-OAK",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": "OAK",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Northbound)",
+      "text": "Northbound, runways 28L/28R/30, J & DH8D -> OAK# (Richmond), CVS x FL190 (J) / CVS x 10,000 (DH8D)"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-O-CNDEL",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "CNDEL",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic)",
+      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> CNDEL# (Sutro), CVS",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-O-SKYL",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SKYL",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic)",
+      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-O-COAST",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "COAST",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic)",
+      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-S-CNDEL",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "CNDEL",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Southbound)",
+      "text": "Southbound, runways 28L/28R/30, J & DH8D -> CNDEL# (Sutro), CVS",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-S-SKYL",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SKYL",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Southbound)",
+      "text": "Southbound, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOW-S-COAST",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "COAST",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW Southbound)",
+      "text": "Southbound, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000"
+    },
+    {
+      "classes": [
+        "P",
+        "T",
+        "J"
+      ],
+      "direction": "any",
+      "id": "OAK-SFOW-NUEVO",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": "NUEVO",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW, Via BSR, EUGEN, SHOEY, or SNS)",
+      "text": "Via BSR, EUGEN, SHOEY, or SNS, runways 28L/28R/30, P/T/J -> NUEVO# (Sutro), CVS x 10,000; the SOP merges this row's sector and altitude cells with the southbound row above it, so it takes Sutro and CVS x 10,000",
+      "when": {
+        "exitFixes": [
+          "BSR",
+          "EUGEN",
+          "SHOEY",
+          "SNS"
+        ]
+      }
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "any",
+      "id": "OAK-SFOW-PT-NIMI",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": "NIMI",
+      "source": "OAK ATCT SOP 2-2 a i (SFOW, All other props)",
+      "text": "All other props, runways 28L/28R/30, P/T -> NIMI# (Richmond), 3,000"
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-OAKE-TEC-NO-DP-N",
+      "nonDpHeading": 270,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-1 c; OAK ATCT SOP 2-2 b iii",
+      "text": "Initial headings shall only be issued when a DP cannot be used or an applicable one does not exist (e.g. TEC route does not include DP): northbound, runways 10/12, J & DH8D on a TEC route with no DP -> 270 degrees (Richmond), 5,000",
+      "when": {
+        "tecRouteWithoutDp": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-OAKE-TEC-NO-DP-S",
+      "nonDpHeading": 270,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-1 c; OAK ATCT SOP 2-2 b iii",
+      "text": "Initial headings shall only be issued when a DP cannot be used or an applicable one does not exist (e.g. TEC route does not include DP): southbound, runways 10/12, J & DH8D on a TEC route with no DP -> 270 degrees (Sutro), 5,000",
+      "when": {
+        "tecRouteWithoutDp": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-OAKE-N-QUAKE",
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": "QUAKE",
+      "source": "OAK ATCT SOP 2-2 a ii (OAKE Northbound)",
+      "text": "Northbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Richmond), 5,000"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-OAKE-S-QUAKE",
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": "QUAKE",
+      "source": "OAK ATCT SOP 2-2 a ii (OAKE Southbound)",
+      "text": "Southbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Sutro), 5,000"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "any",
+      "id": "OAK-OAKE-PT-090",
+      "nonDpHeading": 90,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "grove",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 a ii (OAKE, All)",
+      "text": "All, runways 10L/10R/12, P/T -> 090 degrees (Grove), 3,000"
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOE-N-OAK",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": "OAK",
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE Northbound)",
+      "text": "Northbound, runways 10L/10R/12, J & DH8D -> OAK# (Richmond), 3,000"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOE-O-OAK",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": "OAK",
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE Oceanic)",
+      "text": "Oceanic, runways 10L/10R/12, J & DH8D -> OAK# (Sutro), 3,000"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOE-S-KATFH",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": "KATFH",
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE Southbound)",
+      "text": "Southbound, runways 10L/10R/12, J & DH8D -> KATFH# (Sutro), CVS x 3,000",
+      "when": {
+        "rnav": true
+      }
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-SFOE-S-SKYL",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": "SKYL",
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE Southbound)",
+      "text": "Southbound, runways 10L/10R/12, J & DH8D -> SKYL# (Sutro), CVS x 3,000"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "any",
+      "id": "OAK-SFOE-PT-090",
+      "nonDpHeading": 90,
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 a iii (SFOE, All)",
+      "text": "All, runways 10L/10R/12, P/T -> 090 degrees (Richmond), 3,000"
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOW-33-J-270-N",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "33"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Richmond for northbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOW-33-J-270-S",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "33"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOW-33-J-270-O",
+      "nonDpHeading": 270,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "33"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "any",
+      "id": "OAK-B-SFOW-33-PT-315",
+      "nonDpHeading": 315,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "33"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runway 33, P/T -> 315 degrees (Richmond), 3,000"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "north",
+      "id": "OAK-B-SFOW-2830-N-PT-315",
+      "nonDpHeading": 315,
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "Northbound, runways 28/30, P/T -> 315 degrees (Richmond), 3,000"
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "direction": "south",
+      "id": "OAK-B-SFOW-2830-S-PT-RWY",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "Southbound, runways 28/30, P/T -> runway heading (Sutro), 10,000"
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOW-2830-J-RWY-N",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Richmond for northbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOW-2830-J-RWY-S",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOW-2830-J-RWY-O",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOW",
+      "runwayFamilies": [
+        "28",
+        "30"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
+      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-OAKE-J-270-N",
+      "nonDpHeading": 270,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b iii (OAKE)",
+      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Richmond for northbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-OAKE-J-270-S",
+      "nonDpHeading": 270,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b iii (OAKE)",
+      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-OAKE-J-270-O",
+      "nonDpHeading": 270,
+      "plan": "OAKE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b iii (OAKE)",
+      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "north",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOE-J-RWY-N",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "richmond",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b iv (SFOE)",
+      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Richmond for northbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "south",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOE-J-RWY-S",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b iv (SFOE)",
+      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
+    },
+    {
+      "classes": [],
+      "direction": "oceanic",
+      "groups": [
+        "jets_and_dh8d"
+      ],
+      "id": "OAK-B-SFOE-J-RWY-O",
+      "nonDpHeading": "runway heading",
+      "plan": "SFOE",
+      "runwayFamilies": [
+        "10",
+        "12"
+      ],
+      "sector": "sutro",
+      "sidFamily": null,
+      "source": "OAK ATCT SOP 2-2 b iv (SFOE)",
+      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
+    }
+  ],
+  "departureSectors": [
+    {
+      "frequency": "120.9",
+      "id": "richmond",
+      "name": "NorCal Richmond"
+    },
+    {
+      "frequency": "135.1",
+      "id": "sutro",
+      "name": "NorCal Sutro"
+    },
+    {
+      "frequency": "125.35",
+      "id": "grove",
+      "name": "NorCal Grove"
+    }
+  ],
+  "departureStaffingFallbacks": [],
+  "directionRunwayPreference": {
+    "OAKE": {
+      "north": {
+        "10": "10R",
+        "12": "12"
+      },
+      "oceanic": {
+        "10": "10R",
+        "12": "12"
+      },
+      "south": {
+        "10": "10R",
+        "12": "12"
+      }
+    },
+    "SFOE": {
+      "north": {
+        "10": "10R",
+        "12": "12"
+      },
+      "oceanic": {
+        "10": "10R",
+        "12": "12"
+      },
+      "south": {
+        "10": "10R",
+        "12": "12"
+      }
+    },
+    "SFOW": {
+      "north": {
+        "28": "28R",
+        "30": "30",
+        "33": "33"
+      },
+      "oceanic": {
+        "28": "28R",
+        "30": "30",
+        "33": "33"
+      },
+      "south": {
+        "28": "28R",
+        "30": "30",
+        "33": "33"
+      }
+    }
+  },
+  "equipmentSuffixes": [
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/X",
+      "text": "No DME, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/T",
+      "text": "No DME, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/U",
+      "text": "No DME, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/D",
+      "text": "DME, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/B",
+      "text": "DME, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/A",
+      "text": "DME, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/M",
+      "text": "TACAN only, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/N",
+      "text": "TACAN only, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": false,
+      "suffix": "/P",
+      "text": "TACAN only, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/Y",
+      "text": "RNAV without GNSS, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/C",
+      "text": "RNAV without GNSS, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/I",
+      "text": "RNAV without GNSS, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/V",
+      "text": "GNSS, no transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/S",
+      "text": "GNSS, transponder with no Mode C",
+      "transponderModeC": false
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": false,
+      "suffix": "/G",
+      "text": "GNSS, transponder with Mode C",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": false,
+      "rvsm": true,
+      "suffix": "/W",
+      "text": "RVSM, no RNAV",
+      "transponderModeC": true
+    },
+    {
+      "gnss": false,
+      "rnav": true,
+      "rvsm": true,
+      "suffix": "/Z",
+      "text": "RVSM with RNAV, no GNSS",
+      "transponderModeC": true
+    },
+    {
+      "gnss": true,
+      "rnav": true,
+      "rvsm": true,
+      "suffix": "/L",
+      "text": "RVSM with GNSS",
+      "transponderModeC": true
+    }
+  ],
+  "fixSpoken": {
+    "AVE": "Avenal VOR",
+    "BLH": "Blythe VOR",
+    "BSR": "Big Sur VOR",
+    "BVL": "Bonneville VOR",
+    "EHF": "Shafter VOR",
+    "ENI": "Mendocino VOR",
+    "FLW": "Fellows VOR",
+    "GVO": "Gaviota VOR",
+    "ILC": "Wilson Creek VOR",
+    "LAX": "Los Angeles VOR",
+    "LIN": "Linden VOR",
+    "LMT": "Klamath Falls VOR",
+    "MOD": "Modesto VOR",
+    "OSI": "Woodside VOR",
+    "PXN": "Panoche VOR",
+    "RBL": "Red Bluff VOR",
+    "RZS": "San Marcus VOR",
+    "SAC": "Sacramento VOR",
+    "SAU": "Sausalito VOR",
+    "SGD": "Scaggs Island VOR",
+    "SJC": "San Jose VOR",
+    "SNS": "Salinas VOR",
+    "SXC": "Santa Catalina VOR"
+  },
+  "frequencies": [
+    {
+      "label": "Oakland Clearance",
+      "value": "121.1"
+    },
+    {
+      "label": "Oakland Ground",
+      "value": "121.75"
+    },
+    {
+      "label": "Oakland Tower",
+      "value": "127.2"
+    },
+    {
+      "label": "NorCal Departure (Richmond)",
+      "value": "120.9"
+    },
+    {
+      "label": "NorCal Departure (Sutro)",
+      "value": "135.1"
+    },
+    {
+      "label": "NorCal Approach (Grove)",
+      "value": "125.35"
+    },
+    {
+      "label": "NorCal Approach (Boulder)",
+      "value": "133.95"
+    },
+    {
+      "label": "NorCal Approach (Woodside)",
+      "value": "135.65"
+    },
+    {
+      "label": "NorCal Departure (Diablo)",
+      "value": "127.0"
+    },
+    {
+      "label": "NorCal Departure (Fairfield)",
+      "value": "124.325"
+    },
+    {
+      "label": "NorCal Departure (Quake)",
+      "value": "127.975"
+    },
+    {
+      "label": "Oakland Center (combined)",
+      "value": "132.2"
+    }
+  ],
+  "gates": {
+    "north": [
+      "DEDHD",
+      "GOBBS",
+      "GRTFL",
+      "MOGEE",
+      "ORRCA",
+      "SYRAH",
+      "TIPRE",
+      "ENI",
+      "LIN",
+      "RBL",
+      "SAC",
+      "OAK",
+      "SAU",
+      "SGD",
+      "ALTAM",
+      "MOD",
+      "FEVTA",
+      "SUNOL",
+      "COLLI",
+      "OAKEY"
+    ],
+    "oceanic": [
+      "ALCOA",
+      "AMAKR",
+      "BEBOP",
+      "CINNY"
+    ],
+    "south": [
+      "KAYEX",
+      "KTINA",
+      "NTELL",
+      "SUSEY",
+      "YYUNG",
+      "PORTE",
+      "FLW",
+      "GVO",
+      "RZS",
+      "SXC",
+      "MCKEY",
+      "AVE",
+      "PXN",
+      "WAGES",
+      "SHOEY",
+      "SNS",
+      "EUGEN",
+      "BSR",
+      "OSI",
+      "SJC",
+      "ARTAQ",
+      "KARNN"
+    ]
+  },
+  "loaRules": [
+    {
+      "artcc": "ZSE",
+      "id": "LOA-ZSE-PARITY",
+      "rule": {
+        "kind": "parity_rotated",
+        "oddCourseFrom": 20,
+        "oddCourseTo": 199
+      },
+      "source": "ZOA-ZSE LOA 4 c (1)-(2), effective 2025-09-04",
+      "text": "Aircraft tracking a course of 020 through 199 degrees are assigned altitudes as 7110.65 specifies for 0 through 179 degrees (odd); 200 through 019 degrees as for 180 through 359 (even)"
+    },
+    {
+      "destinations": [
+        "KSEA",
+        "KBFI"
+      ],
+      "id": "LOA-ZSE-SEA-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "RBL",
+          "LMT",
+          "BTG",
+          "KNGDM",
+          "HAWKZ",
+          "OLM"
+        ]
+      },
+      "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
+      "text": "SEA arrivals from the Bay: ..RBL..LMT then the HAWKZ STAR, or ..BTG then the OLM STAR; non-RNAV ..KNGDM or ..BTG"
+    },
+    {
+      "destinations": [
+        "KPDX"
+      ],
+      "id": "LOA-ZSE-PDX-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "MACHU",
+          "MOXEE",
+          "OED"
+        ]
+      },
+      "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
+      "text": "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
+    }
+  ],
+  "noSid": {
+    "phrasing": "radar_vectors_fix",
+    "runwayFamilies": [
+      "10",
+      "12",
+      "15",
+      "28",
+      "30",
+      "33"
+    ]
+  },
+  "noiseWindows": [
+    {
+      "end": "0700",
+      "id": "sfow_night",
+      "start": "2200",
+      "sundayEnd": "0800"
+    },
+    {
+      "end": "0600",
+      "id": "sfoe_night",
+      "start": "2200"
+    },
+    {
+      "end": "0700",
+      "id": "salad",
+      "start": "2200"
+    },
+    {
+      "end": "0500",
+      "id": "hussh_required",
+      "start": "0100"
+    }
+  ],
+  "notices": [
+    {
+      "dated": "2026-09-15",
+      "defaultActive": true,
+      "effect": {
+        "heading": 270,
+        "kind": "sid_off",
+        "sidFamily": "QUAKE"
+      },
+      "id": "OAK-QUAKE-OFF",
+      "plan": "OAKE",
+      "source": "ZOA notice relayed by the user, 2026-09-15",
+      "text": "OAK QUAKE SID: OFF. Issue 270 HDG RV first fix for 12/10 jet departures. CFG: OAKE"
+    },
+    {
+      "dated": "2026-09-15",
+      "defaultActive": true,
+      "effect": {
+        "heading": 120,
+        "kind": "sid_off",
+        "sidFamily": "SUNNE"
+      },
+      "id": "OAK-SUNNE-OFF",
+      "plan": "SFOW",
+      "source": "ZOA notice relayed by the user, 2026-09-15",
+      "text": "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement"
+    }
+  ],
+  "phraseology": {
+    "expectAltitude": "unless_chart_publishes_it",
+    "nonStandardInterimExpectMinutes": 10,
+    "vectorHybridTransitionsSpoken": false
+  },
+  "phraseologyRules": [
+    {
+      "id": "R-TRANSITION",
+      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "text": "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions"
+    },
+    {
+      "id": "R-AS-FILED",
+      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "text": "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word"
+    },
+    {
+      "id": "R-RV-SID",
+      "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice; ZOA CRAFT Phraseology reference",
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
+    },
+    {
+      "id": "R-THEN-AS-FILED",
+      "source": "ZOA CRAFT Phraseology reference; user rule 2026-09-16 (N172SP amendment plan)",
+      "text": "THEN AS FILED — only when the last fix spoken connects to the rest of the route the pilot filed: on an amended route the controller reads every element up to the first fix that was already on the filed plan and after which the two routes are identical, then THEN AS FILED; when no such fix exists, or nothing follows it, the route is read in full to the end"
+    },
+    {
+      "id": "R-ROUTE-BUILD",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; user rule 2026-09-16 (SWA984 amendment plan)",
+      "text": "Before falling back to the vector SID, route-build: keep the SID the SOP assigns by connecting one of its published transitions to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route"
+    },
+    {
+      "id": "R-HEADING",
+      "source": "FAA JO 7110.65 4-3-2 c 3; OAK ATCT SOP 2-1 c (via koak-v3 notes); S1-SFO-0 CBT No SID",
+      "text": "VIA FLY RUNWAY HEADING / VIA TURN LEFT (or RIGHT) HEADING (heading), RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading, or turned the shorter way onto the heading the row names, and vectored to the first filed fix; no procedure is named"
+    },
+    {
+      "id": "R-RV-AIRWAY",
+      "source": "ZOA CRAFT Phraseology reference",
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+    },
+    {
+      "id": "R-AIRWAY",
+      "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15",
+      "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically"
+    },
+    {
+      "id": "R-NAVAID",
+      "source": "FAA JO 7110.65 2-5-2; ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15",
+      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
+    },
+    {
+      "id": "A-CLIMB-VIA",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
+      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+    },
+    {
+      "id": "A-CLIMB-VIA-EXCEPT",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (b); ZOA CRAFT Phraseology reference",
+      "text": "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions and the altitude to maintain is not its published top: either no top altitude is published and an SOP interim altitude applies, or the flight files below the published top"
+    },
+    {
+      "id": "A-MAINTAIN",
+      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "text": "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
+    },
+    {
+      "id": "A-EXPECT",
+      "source": "FAA JO 7110.65 4-3-2 c 3; ZOA CRAFT Phraseology reference",
+      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note"
+    },
+    {
+      "id": "A-EXPECT-AMENDED",
+      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 4-3-2 c 3",
+      "text": "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one"
+    },
+    {
+      "id": "A-EXPECT-REDUNDANT",
+      "source": "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3",
+      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise"
+    },
+    {
+      "id": "A-FINAL",
+      "source": "ZOA practice via the user, 2026-09-16 (SKW2345 amendment plan)",
+      "text": "(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause when the controller amended the final altitude and the clearance climbs the flight straight to it, speaking that altitude (CLIMB VIA SID EXCEPT MAINTAIN or MAINTAIN at the amended altitude): there is nothing further to expect, so the pilot is told the altitude just assigned is the final one. A plain CLIMB VIA SID speaks no altitude of its own, so the amended expect clause is spoken there instead, even where the published top altitude is the amended one. EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE spoken there instead is acceptable, only longer than it needs to be, at the delay the amended clause would carry"
+    },
+    {
+      "id": "C-DEST",
+      "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
+      "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
+    },
+    {
+      "id": "A-PARITY",
+      "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1); 14 CFR 91.179",
+      "text": "Below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359"
+    },
+    {
+      "id": "A-RVSM",
+      "source": "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 4-5-1 b",
+      "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band"
+    },
+    {
+      "id": "RWY-AIRLINE-DEFAULT",
+      "source": "ZOA senior staff via the user, 2026-09-16",
+      "text": "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"
+    },
+    {
+      "id": "RWY-GROUP-DEFAULT",
+      "source": "OAK ATCT SOP 3-4 a",
+      "text": "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the Dash 8-400 is grouped with the jets and departs the south field with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
+    },
+    {
+      "id": "RWY-CLASS-DEFAULT",
+      "source": "OAK ATCT SOP 3-4 a; ZOA senior staff via the user, 2026-09-16",
+      "text": "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway"
+    },
+    {
+      "id": "RWY-ON-REQUEST",
+      "source": "OAK ATCT SOP 1-6 and 3-4 b",
+      "text": "OAK has no runway issued only on request: SOP 3-4 b lets a controller deviate from the runway-assignment practice for safety, weather, emergencies, flow, construction and pilot requests, but the SOP names no class or route that is given another runway on request"
+    },
+    {
+      "id": "RWY-DIRECTION",
+      "source": "OAK ATCT SOP 1-6 and 2-2",
+      "text": "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction"
+    },
+    {
+      "id": "RWY-FIRST",
+      "source": "OAK ATCT SOP 1-6",
+      "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
+    }
+  ],
+  "provenance": {
+    "airac": {
+      "cifpSha256": "fbea2179a990e1d371d77439961d137e83252582b3c67b6ec85b8d9d11c76cad",
+      "cycle": "2609",
+      "effective": "2026-09-03"
+    },
+    "chartsApi": "https://charts-api.oakartcc.org/v1/charts?apt=OAK",
+    "secondarySources": [
+      {
+        "dated": "2026-09-15",
+        "id": "craft_phraseology",
+        "title": "ZOA CRAFT Phraseology reference",
+        "url": "https://docs.google.com/document/d/1Jq0uqpuhIZRSfKvYbyJvAplT1h6zf-wMhcAN6MAQC6k"
+      },
+      {
+        "dated": "2025-01-20",
+        "id": "route_building",
+        "title": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5)",
+        "url": "https://docs.google.com/document/d/1rJm0csgkxlLMctyXmiPh-THOHpc4jxQDs9PYbGHO1Hs"
+      }
+    ],
+    "sop": {
+      "sha256": "21f5fdfb40c879e7418e02339a41e48261975797505fc6b1ea76f0b409ab5935",
+      "transcribedAt": "2026-09-16",
+      "url": "https://oakartcc.org/controllers/file/1217f464-6766-11e9-8010-2a32edb55910",
+      "version": "1.7"
+    }
+  },
+  "routeConnections": [
+    {
+      "connects": "usually",
+      "from": "YYUNG",
+      "id": "CONN-YYUNG-TILLT",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "YYUNG usually connects to TILLT",
+      "to": "TILLT"
+    },
+    {
+      "connects": "usually",
+      "from": "YYUNG",
+      "id": "CONN-YYUNG-LAX",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "YYUNG usually connects to LAX",
+      "to": "LAX"
+    },
+    {
+      "connects": "usually",
+      "from": "MCKEY",
+      "id": "CONN-MCKEY-TILLT",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MCKEY usually connects to TILLT",
+      "to": "TILLT"
+    },
+    {
+      "connects": "usually",
+      "from": "MCKEY",
+      "id": "CONN-MCKEY-LAX",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MCKEY usually connects to LAX",
+      "to": "LAX"
+    },
+    {
+      "connects": "always",
+      "from": "KTINA",
+      "id": "CONN-KTINA-CISKO",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "KTINA always connects to CISKO",
+      "to": "CISKO"
+    },
+    {
+      "connects": "usually",
+      "from": "CISKO",
+      "id": "CONN-CISKO-RDHOT",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "CISKO usually connects to RDHOT",
+      "to": "RDHOT"
+    },
+    {
+      "connects": "always",
+      "from": "SUSEY",
+      "id": "CONN-SUSEY-EBAYE",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SUSEY always connects to EBAYE",
+      "to": "EBAYE"
+    },
+    {
+      "connects": "usually",
+      "from": "EBAYE",
+      "id": "CONN-EBAYE-BURGL",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "EBAYE usually connects to BURGL",
+      "to": "BURGL"
+    },
+    {
+      "connects": "usually",
+      "from": "EBAYE",
+      "id": "CONN-EBAYE-AVE",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "EBAYE usually connects to AVE",
+      "to": "AVE"
+    },
+    {
+      "connects": "always",
+      "from": "KAYEX",
+      "id": "CONN-KAYEX-LOSHN",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "KAYEX always connects to LOSHN",
+      "to": "LOSHN"
+    },
+    {
+      "connects": "usually",
+      "from": "LOSHN",
+      "id": "CONN-LOSHN-BOILE",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LOSHN usually connects to BOILE",
+      "to": "BOILE"
+    },
+    {
+      "connects": "usually",
+      "from": "LOSHN",
+      "id": "CONN-LOSHN-CLASN",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LOSHN usually connects to CLASN",
+      "to": "CLASN"
+    },
+    {
+      "connects": "usually",
+      "from": "LOSHN",
+      "id": "CONN-LOSHN-EHF",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LOSHN usually connects to EHF",
+      "to": "EHF"
+    },
+    {
+      "connects": "usually",
+      "from": "NTELL",
+      "id": "CONN-NTELL-Q174",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "NTELL usually connects to Q174",
+      "to": "Q174"
+    },
+    {
+      "connects": "usually",
+      "from": "DEDHD",
+      "id": "CONN-DEDHD-RBL",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "DEDHD usually connects to RBL",
+      "to": "RBL"
+    },
+    {
+      "connects": "usually",
+      "from": "ORRCA",
+      "id": "CONN-ORRCA-Q120",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "ORRCA usually connects to Q120",
+      "to": "Q120"
+    },
+    {
+      "connects": "usually",
+      "from": "SAC",
+      "id": "CONN-SAC-Q120",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SAC usually connects to Q120",
+      "to": "Q120"
+    },
+    {
+      "connects": "usually",
+      "from": "MOGEE",
+      "id": "CONN-MOGEE-Q122",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MOGEE usually connects to Q122",
+      "to": "Q122"
+    },
+    {
+      "connects": "usually",
+      "from": "MOGEE",
+      "id": "CONN-MOGEE-Q124",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "MOGEE usually connects to Q124",
+      "to": "Q124"
+    },
+    {
+      "connects": "usually",
+      "from": "TIPRE",
+      "id": "CONN-TIPRE-Q126",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "TIPRE usually connects to Q126",
+      "to": "Q126"
+    },
+    {
+      "connects": "usually",
+      "from": "SYRAH",
+      "id": "CONN-SYRAH-Q128",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SYRAH usually connects to Q128",
+      "to": "Q128"
+    },
+    {
+      "connects": "usually",
+      "from": "SYRAH",
+      "id": "CONN-SYRAH-Q130",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "SYRAH usually connects to Q130",
+      "to": "Q130"
+    },
+    {
+      "connects": "usually",
+      "from": "LIN",
+      "id": "CONN-LIN-J84",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "LIN usually connects to J84",
+      "to": "J84"
+    },
+    {
+      "connects": "usually",
+      "from": "ALCOA",
+      "id": "CONN-ALCOA-R463",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "ALCOA usually connects to R463",
+      "to": "R463"
+    },
+    {
+      "connects": "usually",
+      "from": "BEBOP",
+      "id": "CONN-BEBOP-R464",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "BEBOP usually connects to R464",
+      "to": "R464"
+    },
+    {
+      "connects": "usually",
+      "from": "CINNY",
+      "id": "CONN-CINNY-A220",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "CINNY usually connects to A220",
+      "to": "A220"
+    }
+  ],
+  "routeLibrary": {
+    "cargoAirlines": [
+      "ABX",
+      "ATN",
+      "CKS",
+      "CLX",
+      "FDX",
+      "GTI",
+      "NCA",
+      "PCM",
+      "UPS"
+    ],
+    "destinations": [
+      {
+        "artcc": "ZSE",
+        "icao": "KSEA",
+        "lat": 47.449889,
+        "lon": -122.311778,
+        "nct": false,
+        "spoken": "Seattle"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "KPDX",
+        "lat": 45.588708,
+        "lon": -122.596869,
+        "nct": false,
+        "spoken": "Portland"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "KBFI",
+        "lat": 47.529972,
+        "lon": -122.301944,
+        "nct": false,
+        "spoken": "Boeing Field"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "KBLI",
+        "lat": 48.792694,
+        "lon": -122.537528,
+        "nct": false,
+        "spoken": "Bellingham"
+      },
+      {
+        "artcc": "ZLC",
+        "icao": "KBOI",
+        "lat": 43.564361,
+        "lon": -116.222861,
+        "nct": false,
+        "spoken": "Boise"
+      },
+      {
+        "artcc": "ZLC",
+        "icao": "KSLC",
+        "lat": 40.788394,
+        "lon": -111.977772,
+        "nct": false,
+        "spoken": "Salt Lake City"
+      },
+      {
+        "artcc": "ZLC",
+        "icao": "KJAC",
+        "lat": 43.607336,
+        "lon": -110.73775,
+        "nct": false,
+        "spoken": "Jackson Hole"
+      },
+      {
+        "artcc": "ZDV",
+        "icao": "KDEN",
+        "lat": 39.861667,
+        "lon": -104.673167,
+        "nct": false,
+        "spoken": "Denver"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KLAS",
+        "lat": 36.080342,
+        "lon": -115.15245,
+        "nct": false,
+        "spoken": "Las Vegas"
+      },
+      {
+        "artcc": "ZAB",
+        "icao": "KPHX",
+        "lat": 33.434278,
+        "lon": -112.011583,
+        "nct": false,
+        "spoken": "Phoenix"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KLAX",
+        "lat": 33.942497,
+        "lon": -118.40805,
+        "nct": false,
+        "spoken": "Los Angeles"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSAN",
+        "lat": 32.733564,
+        "lon": -117.189664,
+        "nct": false,
+        "spoken": "San Diego"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KBUR",
+        "lat": 34.200694,
+        "lon": -118.358667,
+        "nct": false,
+        "spoken": "Burbank"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KONT",
+        "lat": 34.056014,
+        "lon": -117.601189,
+        "nct": false,
+        "spoken": "Ontario"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KCRQ",
+        "lat": 33.12825,
+        "lon": -117.280083,
+        "nct": false,
+        "spoken": "Carlsbad"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSMO",
+        "lat": 34.015822,
+        "lon": -118.451306,
+        "nct": false,
+        "spoken": "Santa Monica"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KVNY",
+        "lat": 34.209806,
+        "lon": -118.489972,
+        "nct": false,
+        "spoken": "Van Nuys"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSNA",
+        "lat": 33.675661,
+        "lon": -117.868233,
+        "nct": false,
+        "spoken": "John Wayne"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KLGB",
+        "lat": 33.817931,
+        "lon": -118.151892,
+        "nct": false,
+        "spoken": "Long Beach"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KUDD",
+        "lat": 33.748439,
+        "lon": -116.274814,
+        "nct": false,
+        "spoken": "Bermuda Dunes"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "KSBA",
+        "lat": 34.426192,
+        "lon": -119.841492,
+        "nct": false,
+        "spoken": "Santa Barbara"
+      },
+      {
+        "artcc": "ZKC",
+        "icao": "KMCI",
+        "lat": 39.297603,
+        "lon": -94.713906,
+        "nct": false,
+        "spoken": "Kansas City"
+      },
+      {
+        "artcc": "ZMP",
+        "icao": "KGPZ",
+        "lat": 47.209283,
+        "lon": -93.509944,
+        "nct": false,
+        "spoken": "Grand Rapids Minnesota"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KRNO",
+        "lat": 39.499111,
+        "lon": -119.768111,
+        "nct": true,
+        "spoken": "Reno"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KTRK",
+        "lat": 39.320056,
+        "lon": -120.139583,
+        "nct": false,
+        "spoken": "Truckee"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSMF",
+        "lat": 38.695444,
+        "lon": -121.590778,
+        "nct": true,
+        "spoken": "Sacramento"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KFAT",
+        "lat": 36.776556,
+        "lon": -119.718833,
+        "nct": false,
+        "spoken": "Fresno"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KACV",
+        "lat": 40.977828,
+        "lon": -124.108469,
+        "nct": false,
+        "spoken": "Arcata"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMRY",
+        "lat": 36.586953,
+        "lon": -121.842783,
+        "nct": true,
+        "spoken": "Monterey"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KLVK",
+        "lat": 37.693389,
+        "lon": -121.820361,
+        "nct": true,
+        "spoken": "Livermore"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KAPC",
+        "lat": 38.213189,
+        "lon": -122.280686,
+        "nct": false,
+        "spoken": "Napa"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KWVI",
+        "lat": 36.935733,
+        "lon": -121.789639,
+        "nct": true,
+        "spoken": "Watsonville"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMYV",
+        "lat": 39.097778,
+        "lon": -121.569833,
+        "nct": true,
+        "spoken": "Marysville"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KOVE",
+        "lat": 39.487819,
+        "lon": -121.621989,
+        "nct": true,
+        "spoken": "Oroville"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "O88",
+        "lat": 38.193383,
+        "lon": -121.703633,
+        "nct": true,
+        "spoken": "Rio Vista"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSAC",
+        "lat": 38.512861,
+        "lon": -121.4933,
+        "nct": true,
+        "spoken": "Sacramento Executive"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSFO",
+        "lat": 37.618806,
+        "lon": -122.375417,
+        "nct": true,
+        "spoken": "San Francisco"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSJC",
+        "lat": 37.362994,
+        "lon": -121.928619,
+        "nct": true,
+        "spoken": "San Jose"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMCC",
+        "lat": 38.667639,
+        "lon": -121.400611,
+        "nct": true,
+        "spoken": "McClellan"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMHR",
+        "lat": 38.555311,
+        "lon": -121.297211,
+        "nct": true,
+        "spoken": "Mather"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KMOD",
+        "lat": 37.625825,
+        "lon": -120.954431,
+        "nct": true,
+        "spoken": "Modesto"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KNUQ",
+        "lat": 37.416144,
+        "lon": -122.049131,
+        "nct": true,
+        "spoken": "Moffett"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KPAO",
+        "lat": 37.461122,
+        "lon": -122.115047,
+        "nct": true,
+        "spoken": "Palo Alto"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KRHV",
+        "lat": 37.332861,
+        "lon": -121.819806,
+        "nct": true,
+        "spoken": "Reid-Hillview"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSCK",
+        "lat": 37.894411,
+        "lon": -121.238744,
+        "nct": true,
+        "spoken": "Stockton"
+      },
+      {
+        "artcc": "ZOA",
+        "icao": "KSQL",
+        "lat": 37.511861,
+        "lon": -122.249531,
+        "nct": true,
+        "spoken": "San Carlos"
+      },
+      {
+        "artcc": "ZAK",
+        "icao": "PHNL",
+        "lat": 21.317825,
+        "lon": -157.92025,
+        "nct": false,
+        "spoken": "Honolulu"
+      },
+      {
+        "artcc": "ZAK",
+        "icao": "RKSI",
+        "lat": 37.469,
+        "lon": 126.451,
+        "nct": false,
+        "spoken": "Seoul Incheon"
+      },
+      {
+        "artcc": "ZAK",
+        "icao": "ESSA",
+        "lat": 59.652,
+        "lon": 17.919,
+        "nct": false,
+        "spoken": "Stockholm Arlanda"
+      },
+      {
+        "artcc": "ZLA",
+        "icao": "MMMX",
+        "lat": 19.436,
+        "lon": -99.072,
+        "nct": false,
+        "spoken": "Mexico City"
+      },
+      {
+        "artcc": "ZSE",
+        "icao": "CYVR",
+        "lat": 49.195,
+        "lon": -123.184,
+        "nct": false,
+        "spoken": "Vancouver"
+      }
+    ],
+    "fleet": [
+      {
+        "airlines": [
+          "AAY",
+          "ACA",
+          "FFT",
+          "JBU",
+          "NKS",
+          "UAL",
+          "VOI"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A320",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "FFT",
+          "JBU",
+          "VOI"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A20N",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "AAY",
+          "UAL"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A319",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "ASA",
+          "SWA"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B737",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "ASA",
+          "DAL",
+          "SWA",
+          "UAL"
+        ],
+        "approachCategory": "D",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B738",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "DAL",
+          "FDX",
+          "UAL",
+          "UPS"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B752",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "FDX",
+          "KAL"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B77L",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "NAX",
+          "UAL"
+        ],
+        "approachCategory": "D",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "B788",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "FDX",
+          "UPS"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "A306",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "FDX",
+          "UPS"
+        ],
+        "approachCategory": "D",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "MD11",
+        "wtc": "H"
+      },
+      {
+        "airlines": [
+          "QXE",
+          "SKW"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E75L",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "JSX"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E135",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "EJA",
+          "TWY"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "CL30",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "EJA"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "GL5T",
+        "wtc": "M"
+      },
+      {
+        "airlines": [
+          "XOJ"
+        ],
+        "approachCategory": "C",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C750",
+        "wtc": "M"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "B",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C55B",
+        "wtc": "M"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "B",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C25B",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "B",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "C510",
+        "wtc": "L"
+      },
+      {
+        "airlines": [
+          "LXJ"
+        ],
+        "approachCategory": "B",
+        "class": "J",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E55P",
+        "wtc": "L"
+      },
+      {
+        "airlines": [
+          "QXE"
+        ],
+        "approachCategory": "C",
+        "class": "T",
+        "suffixes": [
+          "/L"
+        ],
+        "type": "DH8D",
+        "wtc": "M"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "B",
+        "class": "T",
+        "suffixes": [
+          "/G",
+          "/L"
+        ],
+        "type": "B350",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "B",
+        "class": "T",
+        "suffixes": [
+          "/G",
+          "/A"
+        ],
+        "type": "BE20",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "A",
+        "class": "T",
+        "suffixes": [
+          "/L",
+          "/G"
+        ],
+        "type": "TBM9",
+        "wtc": "L"
+      },
+      {
+        "airlines": [
+          "PCM"
+        ],
+        "approachCategory": "A",
+        "class": "T",
+        "suffixes": [
+          "/G",
+          "/A"
+        ],
+        "type": "C208",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "A",
+        "class": "P",
+        "suffixes": [
+          "/G",
+          "/A",
+          "/U"
+        ],
+        "type": "C172",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "A",
+        "class": "P",
+        "suffixes": [
+          "/G"
+        ],
+        "type": "SR22",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "A",
+        "class": "P",
+        "suffixes": [
+          "/G",
+          "/A"
+        ],
+        "type": "M20T",
+        "wtc": "L"
+      }
+    ],
+    "routes": [
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLAX",
+        "exitFix": "SUSEY",
+        "tail": "SUSEY EBAYE BURGL IRNMN2"
+      },
+      {
+        "altitudes": [
+          29000,
+          31000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLAS",
+        "exitFix": "NTELL",
+        "tail": "NTELL Q174 FLCHR COKTL4"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSAN",
+        "exitFix": "YYUNG",
+        "tail": "YYUNG LAX COMIX2"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSAN",
+        "exitFix": "MCKEY",
+        "tail": "MCKEY LAX COMIX2"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSAN",
+        "exitFix": "RZS",
+        "tail": "RZS LAX HUBRD1"
+      },
+      {
+        "altitudes": [
+          29000,
+          31000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KBUR",
+        "exitFix": "KTINA",
+        "tail": "KTINA CISKO RDHOT ROKKR3"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSNA",
+        "exitFix": "YYUNG",
+        "tail": "YYUNG TILLT RUKKI1"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLGB",
+        "exitFix": "YYUNG",
+        "tail": "YYUNG TILLT"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KPHX",
+        "exitFix": "KAYEX",
+        "tail": "KAYEX LOSHN BOILE BLH HYDRR1"
+      },
+      {
+        "altitudes": [
+          33000,
+          35000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KPHX",
+        "exitFix": "AVE",
+        "tail": "AVE BOILE BLH HYDRR1"
+      },
+      {
+        "altitudes": [
+          9000,
+          11000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KLAX",
+        "exitFix": "SNS",
+        "tail": "SNS AVE LAX"
+      },
+      {
+        "altitudes": [
+          34000,
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSEA",
+        "exitFix": "OAK",
+        "tail": "OAK DEDHD RBL LMT HAWKZ8"
+      },
+      {
+        "altitudes": [
+          34000,
+          36000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KPDX",
+        "exitFix": "OAK",
+        "tail": "OAK GRTFL MACHU TMBRS4"
+      },
+      {
+        "altitudes": [
+          37000,
+          39000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSLC",
+        "exitFix": "OAK",
+        "tail": "OAK MOGEE Q124 BVL YUTES2"
+      },
+      {
+        "altitudes": [
+          37000,
+          39000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KDEN",
+        "exitFix": "OAK",
+        "tail": "OAK SYRAH Q128 JSICA ILC EYPUZ IBSKI BUMMP SSKII4"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V334 SAC"
+      },
+      {
+        "altitudes": [
+          10000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK FEVTA FEVTA1"
+      },
+      {
+        "altitudes": [
+          10000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "FEVTA",
+        "tail": "FEVTA FEVTA1"
+      },
+      {
+        "altitudes": [
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSMF",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KSAC",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KSAC",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V334 SAC"
+      },
+      {
+        "altitudes": [
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSAC",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "O88",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "O88",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KMYV",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KMYV",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V334 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KOVE",
+        "exitFix": "OAK",
+        "tail": "OAK V6 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KOVE",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V334 SAC"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KLVK",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KAPC",
+        "exitFix": "OAK",
+        "tail": "OAK SAU"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KAPC",
+        "exitFix": "SAU",
+        "tail": "SAU"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KAPC",
+        "exitFix": "OAK",
+        "tail": "OAK ALTAM V334 OAKEY V108 SGD"
+      },
+      {
+        "altitudes": [
+          5000,
+          7000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KMRY",
+        "exitFix": "EUGEN",
+        "tail": "EUGEN"
+      },
+      {
+        "altitudes": [
+          7000,
+          9000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KMRY",
+        "exitFix": "OAK",
+        "tail": "OAK EUGEN"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KMRY",
+        "exitFix": "OAK",
+        "tail": "OAK V301 KARNN V111 SNS"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KMRY",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD V111 SNS"
+      },
+      {
+        "altitudes": [
+          5000,
+          7000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KWVI",
+        "exitFix": "EUGEN",
+        "tail": "EUGEN"
+      },
+      {
+        "altitudes": [
+          7000,
+          9000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KWVI",
+        "exitFix": "OAK",
+        "tail": "OAK EUGEN"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KWVI",
+        "exitFix": "OAK",
+        "tail": "OAK V301 KARNN V111 SNS"
+      },
+      {
+        "altitudes": [
+          3000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KSJC",
+        "exitFix": "EUGEN",
+        "tail": "EUGEN OSI"
+      },
+      {
+        "altitudes": [
+          3000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSJC",
+        "exitFix": "SUNOL",
+        "tail": "SUNOL SJC"
+      },
+      {
+        "altitudes": [
+          3000
+        ],
+        "classes": [
+          "P",
+          "T"
+        ],
+        "destination": "KSJC",
+        "exitFix": "OAK",
+        "tail": "OAK SUNOL SJC"
+      },
+      {
+        "altitudes": [
+          3000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSJC",
+        "exitFix": "OAK",
+        "tail": "OAK ARTAQ"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KSFO",
+        "exitFix": "OSI",
+        "tail": "OSI"
+      }
+    ],
+    "telephony": {
+      "AAL": "American",
+      "AAY": "Allegiant",
+      "ABX": "Abex",
+      "ACA": "Air Canada",
+      "ASA": "Alaska",
+      "ATN": "Air Transport",
+      "CKS": "Connie",
+      "CLX": "Cargolux",
+      "DAL": "Delta",
+      "EJA": "ExecJet",
+      "FDX": "FedEx",
+      "FFT": "Frontier Flight",
+      "GTI": "Giant",
+      "JBU": "JetBlue",
+      "JSX": "BigStripe",
+      "KAL": "Korean Air",
+      "LXJ": "Flexjet",
+      "NAX": "Nor Shuttle",
+      "NCA": "Nippon Cargo",
+      "NKS": "Spirit Wings",
+      "PCM": "PAC VALLEY",
+      "QXE": "Horizon",
+      "SKW": "SkyWest",
+      "SWA": "Southwest",
+      "TWY": "Twilight",
+      "UAL": "United",
+      "UPS": "UPS",
+      "VOI": "Volaris",
+      "XOJ": "XOJet"
+    }
+  },
+  "runwayConfigs": [
+    {
+      "arrivalRunways": [
+        "28L",
+        "28R",
+        "30"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "28L"
+        },
+        {
+          "classes": [
+            "T"
+          ],
+          "defaultForAirlines": [
+            "PCM"
+          ],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "note": "PAC VALLEY's Caravans park south of 28L (ZOA senior staff via the user, 2026-09-16)",
+          "onRequestFor": [],
+          "runway": "28L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "28R"
+        },
+        {
+          "classes": [
+            "P",
+            "T"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [
+            "P",
+            "T"
+          ],
+          "defaultForGroups": [],
+          "note": "props and turboprops depart 28R because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart 28L/28R. A DH8D is class T but departs with the jets: the runway 30 row defaults the jets_and_dh8d group, which is answered before a class default",
+          "onRequestFor": [],
+          "runway": "28R"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "30"
+        },
+        {
+          "classes": [
+            "J",
+            "T"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [
+            "jets_and_dh8d"
+          ],
+          "note": "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them",
+          "onRequestFor": [],
+          "runway": "30"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "note": "SOP 2-2 b ii gives runway 33 its own heading rows (J & DH8D 270 degrees, P/T 315 degrees), so the runway departs every class; it is a short north-field runway and is issued on request or for a GA flight parked beside it",
+          "onRequestFor": [],
+          "runway": "33"
+        }
+      ],
+      "id": "SFOW",
+      "name": "SFO utilizing runways 01s and/or 28s, OAK utilizing runways 28s and 30",
+      "plan": "SFOW",
+      "source": "OAK ATCT SOP 1-6",
+      "trainingWeight": 70
+    },
+    {
+      "arrivalRunways": [
+        "10L",
+        "10R",
+        "12"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "10L"
+        },
+        {
+          "classes": [
+            "P",
+            "T"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [
+            "P",
+            "T"
+          ],
+          "defaultForGroups": [],
+          "note": "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s",
+          "onRequestFor": [],
+          "runway": "10L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "10R"
+        },
+        {
+          "classes": [
+            "T"
+          ],
+          "defaultForAirlines": [
+            "PCM"
+          ],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "note": "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)",
+          "onRequestFor": [],
+          "runway": "10R"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "12"
+        },
+        {
+          "classes": [
+            "J",
+            "T"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [
+            "jets_and_dh8d"
+          ],
+          "note": "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, whose east-flow reciprocals are the 10s, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them",
+          "onRequestFor": [],
+          "runway": "12"
+        }
+      ],
+      "id": "OAKE",
+      "name": "SFO utilizing runways 28s, OAK utilizing runways 10s and 12",
+      "plan": "OAKE",
+      "source": "OAK ATCT SOP 1-6",
+      "trainingWeight": 20
+    },
+    {
+      "arrivalRunways": [
+        "10L",
+        "10R",
+        "12"
+      ],
+      "departureRunways": [
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "10L"
+        },
+        {
+          "classes": [
+            "P",
+            "T"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [
+            "P",
+            "T"
+          ],
+          "defaultForGroups": [],
+          "note": "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s",
+          "onRequestFor": [],
+          "runway": "10L"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "10R"
+        },
+        {
+          "classes": [
+            "T"
+          ],
+          "defaultForAirlines": [
+            "PCM"
+          ],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "note": "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)",
+          "onRequestFor": [],
+          "runway": "10R"
+        },
+        {
+          "classes": [
+            "P",
+            "T",
+            "J"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [],
+          "onRequestFor": [],
+          "runway": "12"
+        },
+        {
+          "classes": [
+            "J",
+            "T"
+          ],
+          "defaultForAirlines": [],
+          "defaultForClasses": [],
+          "defaultForGroups": [
+            "jets_and_dh8d"
+          ],
+          "note": "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, whose east-flow reciprocals are the 10s, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them",
+          "onRequestFor": [],
+          "runway": "12"
+        }
+      ],
+      "id": "SFOE",
+      "name": "SFO utilizing runways 19s and/or 10s, OAK utilizing runways 10s and 12",
+      "plan": "SFOE",
+      "source": "OAK ATCT SOP 1-6",
+      "trainingWeight": 10
+    }
+  ],
+  "runways": [
+    {
+      "designator": "10L",
+      "magneticBearing": 98.0
+    },
+    {
+      "designator": "10R",
+      "magneticBearing": 98.0
+    },
+    {
+      "designator": "12",
+      "magneticBearing": 116.0
+    },
+    {
+      "designator": "15",
+      "magneticBearing": 150.0
+    },
+    {
+      "designator": "28L",
+      "magneticBearing": 278.0
+    },
+    {
+      "designator": "28R",
+      "magneticBearing": 278.0
+    },
+    {
+      "designator": "30",
+      "magneticBearing": 296.0
+    },
+    {
+      "designator": "33",
+      "magneticBearing": 330.0
+    }
+  ],
+  "sids": [
+    {
+      "baseFix": "PORTE",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294CNDEL.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": 10,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "CNDEL FIVE (RNAV)",
+      "climbViaEligible": true,
+      "family": "CNDEL",
+      "hasCrossingRestrictions": true,
+      "id": "CNDEL5",
+      "kind": "rnav_pilot_nav",
+      "note": "RNAV pilot-nav SID off 28L/28R/30 with published crossing restrictions and a published top altitude of 10,000, which is why SOP 2-2 a clears it with a plain CVS. Spoken name from the S1-OAK-1 module: 'Candle Five (CNDEL5) departure, Susie (SUSEY) transition'.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_below",
+          "altitudeTwoFeet": 2000,
+          "fix": "LEJAY"
+        },
+        {
+          "altitudeDescription": "at_or_below",
+          "altitudeTwoFeet": 10000,
+          "fix": "PORTE"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Candle Five",
+      "topAltitude": {
+        "feet": 10000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "KAYEX",
+          "kind": "enroute",
+          "spoken": "Kayex",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "KTINA",
+          "kind": "enroute",
+          "spoken": "Ktina",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "NTELL",
+          "kind": "enroute",
+          "spoken": "Ntell",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SUSEY",
+          "kind": "enroute",
+          "spoken": "Susey",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "YYUNG",
+          "kind": "enroute",
+          "spoken": "Yyung",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "baseFix": "MCKEY",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294COAST.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": null,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "COAST NINE",
+      "climbViaEligible": true,
+      "family": "COAST",
+      "hasCrossingRestrictions": true,
+      "id": "COAST9",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional pilot-nav SID off 28L/28R/30; its enroute transitions (FLW, GVO, RZS, SXC) are printed on the CONT.1 sheet. Spoken name proposed from the chart name.",
+      "restrictions": [
+        {
+          "altitudeDescription": "between",
+          "altitudeOneFeet": 1400,
+          "altitudeTwoFeet": 2000,
+          "fix": ""
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Coast Nine",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "FLW",
+          "kind": "enroute",
+          "spoken": "Fellows",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GVO",
+          "kind": "enroute",
+          "spoken": "Gaviota",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "RZS",
+          "kind": "enroute",
+          "spoken": "San Marcus",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SXC",
+          "kind": "enroute",
+          "spoken": "Santa Catalina",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "baseFix": "NIITE",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294HUSSH.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": 10,
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "HUSSH TWO (RNAV)",
+      "climbViaEligible": true,
+      "family": "HUSSH",
+      "hasCrossingRestrictions": true,
+      "id": "HUSSH2",
+      "kind": "rnav_pilot_nav",
+      "note": "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush Two confirmed by the user: HUSSH is read as the word 'hush'.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 8000,
+          "fix": "REBAS"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "30"
+      ],
+      "spoken": "Hush Two",
+      "topAltitude": {
+        "feet": 19000,
+        "kind": "published"
+      },
+      "transitions": [
+        {
+          "fix": "DEDHD",
+          "kind": "enroute",
+          "spoken": "Dedhd",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GOBBS",
+          "kind": "enroute",
+          "spoken": "Gobbs",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "GRTFL",
+          "kind": "enroute",
+          "spoken": "Grtfl",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "MOGEE",
+          "kind": "enroute",
+          "spoken": "Mogee",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "ORRCA",
+          "kind": "enroute",
+          "spoken": "Orrca",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SYRAH",
+          "kind": "enroute",
+          "spoken": "Syrah",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "TIPRE",
+          "kind": "enroute",
+          "spoken": "Tipre",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "baseFix": "KATFH",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294KATFH.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": 10,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "KATFH THREE (RNAV)",
+      "climbViaEligible": true,
+      "family": "KATFH",
+      "hasCrossingRestrictions": true,
+      "id": "KATFH3",
+      "kind": "rnav_pilot_nav",
+      "note": "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish Three confirmed by the user: KATFH is read as the word 'catfish'.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_below",
+          "altitudeTwoFeet": 3000,
+          "fix": "ROWLY"
+        },
+        {
+          "altitudeDescription": "at_or_below",
+          "altitudeTwoFeet": 4000,
+          "fix": "VYYDA"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 6000,
+          "fix": "KATFH"
+        }
+      ],
+      "rnavRequired": true,
+      "routePhrasing": "transition",
+      "runways": [
+        "10L",
+        "10R",
+        "12"
+      ],
+      "spoken": "Katfish Three",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "KAYEX",
+          "kind": "enroute",
+          "spoken": "Kayex",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "KTINA",
+          "kind": "enroute",
+          "spoken": "Ktina",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "NTELL",
+          "kind": "enroute",
+          "spoken": "Ntell",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SUSEY",
+          "kind": "enroute",
+          "spoken": "Susey",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294NIMITZ.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": null,
+      "chartFrequencies": [
+        {
+          "frequency": "127.0"
+        }
+      ],
+      "chartName": "NIMITZ SIX",
+      "climbViaEligible": false,
+      "family": "NIMI",
+      "hasCrossingRestrictions": false,
+      "id": "NIMI6",
+      "kind": "radar_vectors",
+      "note": "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table.",
+      "restrictions": [],
+      "rnavRequired": false,
+      "routePhrasing": "radar_vectors_fix",
+      "runways": [
+        "28L",
+        "28R",
+        "30",
+        "33"
+      ],
+      "spoken": "Nimitz Six",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": []
+    },
+    {
+      "baseFix": "EUGEN",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294NUEVO.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": null,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "NUEVO EIGHT",
+      "climbViaEligible": true,
+      "family": "NUEVO",
+      "hasCrossingRestrictions": true,
+      "id": "NUEVO8",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional pilot-nav SID off 28L/28R/30 with the SHOEY and SNS transitions on the CONT.1 sheet; SOP 2-2 a i issues it to P/T/J filed via BSR, EUGEN, SHOEY or SNS. Spoken name proposed from the chart name.",
+      "restrictions": [
+        {
+          "altitudeDescription": "between",
+          "altitudeOneFeet": 1400,
+          "altitudeTwoFeet": 2000,
+          "fix": ""
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Nuevo Eight",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "SHOEY",
+          "kind": "enroute",
+          "spoken": "Shoey",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SNS",
+          "kind": "enroute",
+          "spoken": "Salinas",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294OAKLAND.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": null,
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "OAKLAND SIX",
+      "climbViaEligible": true,
+      "family": "OAK",
+      "hasCrossingRestrictions": true,
+      "id": "OAK6",
+      "kind": "vector_hybrid",
+      "note": "Vector SID (CIFP route type T for every runway) whose CIFP 'transitions' are the runway vector legs the chart never names, so it is read like KSFO's GAP SEVEN: 'Oakland Six departure, radar vectors (fix)'. SOP 2-2 a i nevertheless clears it 'CVS x FL190' and the S1-OAK-1 module reads 'Oakland Six departure, radar vectors Deadhead, then as filed. Climb via SID except maintain flight level one niner zero', so climb_via_eligible is forced true against the computed reading, which excludes vector SIDs.",
+      "restrictions": [
+        {
+          "altitudeDescription": "between",
+          "altitudeOneFeet": 1400,
+          "altitudeTwoFeet": 2000,
+          "fix": ""
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "radar_vectors_fix",
+      "runways": [
+        "10L",
+        "10R",
+        "12",
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Oakland Six",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": []
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294QUAKE.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": null,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "QUAKE TWO",
+      "climbViaEligible": false,
+      "family": "QUAKE",
+      "hasCrossingRestrictions": true,
+      "id": "QUAKE2",
+      "kind": "vector_hybrid",
+      "note": "Vector SID (CIFP route type T for every runway), read like OAK6: 'Quake Two departure, radar vectors (fix)'. SOP 2-2 a ii issues it to J & DH8D in OAKE at 5,000; the current ZOA notice has it off. Spoken name proposed from the chart name.",
+      "restrictions": [
+        {
+          "altitudeDescription": "between",
+          "altitudeOneFeet": 1400,
+          "altitudeTwoFeet": 2000,
+          "fix": ""
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "radar_vectors_fix",
+      "runways": [
+        "10L",
+        "10R",
+        "12",
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Quake Two",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": []
+    },
+    {
+      "baseFix": "SALAD",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294SALAD.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": 10,
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "SALAD FIVE",
+      "climbViaEligible": true,
+      "family": "SALAD",
+      "hasCrossingRestrictions": true,
+      "id": "SALAD5",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional pilot-nav SID off 28L/28R only, with the ALTAM transition; Appendix B b iii puts it in use 2200L until 0700L daily for runway 28 props of approach category A/B. Spoken name proposed from the chart name.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 4000,
+          "fix": "SALAD"
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R"
+      ],
+      "spoken": "Salad Five",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "ALTAM",
+          "kind": "enroute",
+          "spoken": "Altam",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "baseFix": "REBAS",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294SILENT.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": 10,
+      "chartFrequencies": [
+        {
+          "frequency": "120.9"
+        }
+      ],
+      "chartName": "SILENT THREE",
+      "climbViaEligible": true,
+      "family": "SLNT",
+      "hasCrossingRestrictions": true,
+      "id": "SLNT3",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional pilot-nav SID off runway 30. CIFP codes its runway 30 leg as a common route (route type 2, transition RW30) rather than a runway transition, so the grouper derives no runway for it and the Appendix B northbound row would be unreachable; the runway is stated here from that RW30 record. Spoken name from the chart name.",
+      "restrictions": [
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 6000,
+          "fix": "REBAS"
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "30"
+      ],
+      "spoken": "Silent Three",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "ENI",
+          "kind": "enroute",
+          "spoken": "Mendocino",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "LIN",
+          "kind": "enroute",
+          "spoken": "Linden",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "RBL",
+          "kind": "enroute",
+          "spoken": "Red Bluff",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "SAC",
+          "kind": "enroute",
+          "spoken": "Sacramento",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "baseFix": "WAGES",
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294SKYLINE.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": 10,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "SKYLINE ONE",
+      "climbViaEligible": true,
+      "family": "SKYL",
+      "hasCrossingRestrictions": true,
+      "id": "SKYL1",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional pilot-nav SID published for every departure runway, with the AVE, FLW and PXN transitions on the CONT.1 sheet; SOP 2-2 a issues it southbound and oceanic in SFOW and southbound in SFOE. Spoken name from the chart name.",
+      "restrictions": [
+        {
+          "altitudeDescription": "between",
+          "altitudeOneFeet": 1900,
+          "altitudeTwoFeet": 3000,
+          "fix": "SIXDY"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 5000,
+          "fix": "SIWBI"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 9000,
+          "fix": "SIZXO"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 20000,
+          "fix": "WAGES"
+        },
+        {
+          "altitudeDescription": "between",
+          "altitudeOneFeet": 1400,
+          "altitudeTwoFeet": 2000,
+          "fix": ""
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 9000,
+          "fix": "PORTE"
+        }
+      ],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "10L",
+        "10R",
+        "12",
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Skyline One",
+      "topAltitude": {
+        "kind": "assigned_by_atc"
+      },
+      "transitions": [
+        {
+          "fix": "AVE",
+          "kind": "enroute",
+          "spoken": "Avenal",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "FLW",
+          "kind": "enroute",
+          "spoken": "Fellows",
+          "spokenAsTransition": true
+        },
+        {
+          "fix": "PXN",
+          "kind": "enroute",
+          "spoken": "Panoche",
+          "spokenAsTransition": true
+        }
+      ]
+    },
+    {
+      "chart": {
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294SUNNE.PDF"
+      },
+      "chartExpectFiledAltitudeMinutes": null,
+      "chartFrequencies": [
+        {
+          "frequency": "135.1"
+        }
+      ],
+      "chartName": "SUNNE ONE",
+      "climbViaEligible": true,
+      "family": "SUNNE",
+      "hasCrossingRestrictions": false,
+      "id": "SUNNE1",
+      "kind": "conventional_pilot_nav",
+      "note": "Conventional SID off 28L/28R/30 with no transitions and a published top altitude of 5,000, which is the altitude Appendix B d i pairs with it. NCT authorises it when traffic levels allow, and the current ZOA notice has it off. Spoken name Sunne One confirmed by the user.",
+      "restrictions": [],
+      "rnavRequired": false,
+      "routePhrasing": "transition",
+      "runways": [
+        "28L",
+        "28R",
+        "30"
+      ],
+      "spoken": "Sunne One",
+      "topAltitude": {
+        "feet": 5000,
+        "kind": "published"
+      },
+      "transitions": []
+    }
+  ],
+  "tecRoutes": [
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK FEVTA FEVTA1",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 10000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-OAKE-J",
+      "kind": "tec",
+      "plan": "OAKE",
+      "route": "H270 FEVTA FEVTA1",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 9000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSMF",
+      "id": "TEC-KSMF-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 9000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSAC",
+      "id": "TEC-KSAC-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 9000,
+      "classes": [
+        "T"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "O88",
+      "id": "TEC-O88-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMCC",
+      "id": "TEC-KMCC-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KMCC",
+      "id": "TEC-KMCC-SFOE-T",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KMCC",
+      "id": "TEC-KMCC-SFOE-P",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMHR",
+      "id": "TEC-KMHR-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KMHR",
+      "id": "TEC-KMHR-SFOE-T",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KMHR",
+      "id": "TEC-KMHR-SFOE-P",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOE-T",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KMYV",
+      "id": "TEC-KMYV-SFOE-P",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOE-T",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KOVE",
+      "id": "TEC-KOVE-SFOE-P",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KLVK",
+      "id": "TEC-KLVK-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KMOD",
+      "id": "TEC-KMOD-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KMOD",
+      "id": "TEC-KMOD-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMOD",
+      "id": "TEC-KMOD-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T"
+      ],
+      "destination": "KSCK",
+      "id": "TEC-KSCK-SFOW-T",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "P"
+      ],
+      "destination": "KSCK",
+      "id": "TEC-KSCK-SFOW-P",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSCK",
+      "id": "TEC-KSCK-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-OAKE-J",
+      "kind": "tec",
+      "plan": "OAKE",
+      "route": "EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V301 KARNN V111 SNS",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KMRY",
+      "id": "TEC-KMRY-OAKE-TP",
+      "kind": "tec",
+      "plan": "OAKE",
+      "route": "OAK V244 ALTAM MOD V111 SNS",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 11000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-OAKE-J",
+      "kind": "tec",
+      "plan": "OAKE",
+      "route": "EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK V301 KARNN V111 SNS",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 7000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KWVI",
+      "id": "TEC-KWVI-OAKE-TP",
+      "kind": "tec",
+      "plan": "OAKE",
+      "route": "OAK V244 ALTAM MOD V111 SNS",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KNUQ",
+      "id": "TEC-KNUQ-SFOW-JTP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KNUQ",
+      "id": "TEC-KNUQ-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KNUQ",
+      "id": "TEC-KNUQ-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KPAO",
+      "id": "TEC-KPAO-SFOW-JTP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KPAO",
+      "id": "TEC-KPAO-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KPAO",
+      "id": "TEC-KPAO-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KRHV",
+      "id": "TEC-KRHV-SFOW-JTP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KRHV",
+      "id": "TEC-KRHV-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KRHV",
+      "id": "TEC-KRHV-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSJC",
+      "id": "TEC-KSJC-SFOW-JTP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 3000,
+      "classes": [
+        "J"
+      ],
+      "destination": "KSJC",
+      "id": "TEC-KSJC-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK ARTAQ",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 4000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSJC",
+      "id": "TEC-KSJC-SFOE-TP",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK SUNOL SJC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSQL",
+      "id": "TEC-KSQL-SFOW-TP",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NUEVO# EUGEN OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "altitudeCapFeet": 5000,
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSFO",
+      "id": "TEC-KSFO-OAKE-JTP",
+      "kind": "tec",
+      "plan": "OAKE",
+      "route": "H270 OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    }
+  ]
+}
