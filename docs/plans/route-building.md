@@ -112,13 +112,31 @@ a chain, `RBL`, `SAC`, `LIN`, `EHF`, `LAX`, `AVE`, is spoken by name; the build 
 for any checked data); `cli.py` and `tests/conftest.py` wire the file; `schema.ts` `RouteConnectionSchema`
 + `routeConnections` on `AirportDataSchema`; `schema:export`; rebuild.
 
-## Drill
+## Forced transition (user decision 2026-09-16, folded in here)
+
+`when.forcedTransition` on an assignment row (KSFO: `SFOW-NOISE-S-NIITE-GOBBS`, SOP 2-4 e, 0100L–0500L
+southbound off runway 01 → NIITE# GOBBS) is honoured as a route amendment. In `unservedSids` terms the
+row's SID does not serve the filed exit fix, and route building resolves it without the connection
+table: the rebuilt route is `[sid.id, forcedTransition, ...parsed.tokens]`, the filed route flown from
+its first fix after the forced transition (filed `SSTIK5 YYUNG …` → `NIITE4 GOBBS YYUNG …`), cited to
+the row. Reading under the join rule: "Niite Four departure, Gobbs transition, direct Yyung, then as
+filed". A row with a forced transition is tried before the connection search, in row order like any
+other. The corrected plan must then resolve to NIITE4 GOBBS in `resolveClearance`: check that
+`directionOf(GOBBS)` gives `south` (the row is `direction: south`); if GOBBS is not in the south gate
+list, the row cannot match the corrected plan and the gate list needs GOBBS (data fix in `sop.yaml`
+`gates`, reported for the user rather than assumed). Clearance mode draws such plans already carrying
+`NIITE4 GOBBS`: the clean-draw composition in `scenario/generate.ts` must insert the forced transition
+after the SID token when the selected row carries one, and the draw's amendment-engine verification
+then passes.
+
+## Drill (user decision 2026-09-16: inject the fault)
 
 Amendment-scenario fault `dropped_transition` (`scenario/amend.ts`): for a drawn plan whose route reads
-`<SID> <transition> <fix> …` where `<transition> → <fix>` is a connection row, drop the transition so the
-plan files `<SID> <fix> …`; the engine must rebuild it back. Only where the library draws such a route
-(after the rows land, check whether any library tail starts on a connection target; if none does, the
-fault is dead data and is left out, recorded here).
+`<SID> <transition> <fix> …` where `<transition> → <fix>` is a connection row, or where `<transition>`
+is the row's forced transition, drop the transition so the plan files `<SID> <fix> …`; the engine must
+rebuild it back. Only where the library draws such a route (after the rows land, check whether any
+library tail starts on a connection target or a forced-transition draw exists; if neither does, the
+fault is dead data, left out and recorded here for the user).
 
 ## Steps (implementer briefs after the will-be-your-final brief lands, since both touch `speak.ts`
 tests, `schema.ts` and the data)
