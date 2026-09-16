@@ -18,7 +18,8 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
    fix alone or a route fix alone is a full answer; fixing both is a miss on the second. Same-value
    duplicate type proposals collapse into one amendment.
 5. **Fault injection draws up to two faults, 20% none.** Every fault is detectable by construction:
-   the injected plan must resolve to exactly the intended boxes, else the draw is retried.
+   the injected plan must resolve to exactly the intended boxes, else the draw is retried. A draw
+   never amends more than two boxes, so the RNAV clash (a two-box fault) is always drawn alone.
 6. **SWA2021 to Portland stays unresolved** until step 21 supplies the LOA routing; the engine does
    not guess a fix from the LOA row.
 
@@ -60,10 +61,20 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   unknown suffix. Retries until `resolveAmendments` is ok and reports exactly the injected boxes
   (zero for none). Tests over 1,000 seeds: mix shares, every draw resolvable, no draw with more than
   two boxes.
-- [ ] C. UI: mode switch in the header (`Clean clearance` / `Amend and clear`) carried in the hash;
-  amendment view = strip with three answer controls (as filed / amend to + input), submit, box
-  verdicts; then the CRAFT form for the corrected plan with the editable procedure row and given C
-  and T; combined results and a combined score line; spoiler and retry as in clean mode; phone width.
+- [x] C1. (landed 2026-09-15; `submitDisabled(picks, procedure)` exported from `craftForm.ts`
+  because vitest runs without a DOM; `state.ts` and `solved.ts` share types in a type-only cycle,
+  worth moving `Attempt` out if a third module joins) The model half: `Mode` and `m=amend` in
+  `scenario/filter.ts`; `state.ts` gains `mode`, `boxes`/`boxesSubmitted`, `procedure` in the picks,
+  `AmendmentPicks`, `withMode`/`withBox`/`withBoxesSubmitted`; `solved.ts` stores an `Attempt`
+  keyed on mode (clearance keys and values unchanged); `gradeProcedure` in `rules/grade.ts` (by
+  family, chart-name labels); `craftGroups(…, procedure: 'given' | 'picked')`; `app.ts` threads
+  the mode with no visible change.
+- [ ] C2. (after B and C1) UI: mode switch in the header (`Clean clearance` / `Amend and clear`);
+  `buildScenario` draws with `generateAmendmentScenario` and `resolveAmendedClearance` in amendment
+  mode; amendment view = strip with three answer controls (as filed / amend to + input), submit, box
+  verdicts; then the corrected strip, the ATIS and the CRAFT form with the picked procedure row and
+  given C and T; combined results (box verdicts as `BOX.*` grades, then `R.sid` and the five) with
+  one score line; spoiler and retry as in clean mode; phone width.
 - [ ] D. Browser playtest (Claude in Chrome against `pnpm -C web preview`): a no-fault draw answered
   "as filed" everywhere scores full; a stale-SID draw; an RNAV-clash draw answered on one box only;
   hash reload; then the observations go to the user.

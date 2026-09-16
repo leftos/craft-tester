@@ -48,7 +48,13 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
 /** Every row of the form, in the order CRAFT speaks them. */
 function groupsOf(state: AppState): readonly CraftGroup[] {
   if (state.view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
-  return craftGroups(state.view.generated, state.airport, state.view.clearance, state.picks);
+  return craftGroups(
+    state.view.generated,
+    state.airport,
+    state.view.clearance,
+    state.picks,
+    'given',
+  );
 }
 
 /** Every dropdown of the form, flattened out of its CRAFT groups. */
@@ -109,7 +115,7 @@ describe(`the scenario of seed ${SEED}`, () => {
 describe('the CRAFT form', () => {
   it('keeps the dependent dropdowns disabled until the pick they depend on is made', () => {
     const fields = new Map(
-      fieldsOf(newSession(airport, SEED, undefined, ANY_SCENARIO)).map((field) => [
+      fieldsOf(newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance')).map((field) => [
         field.key,
         field,
       ]),
@@ -121,7 +127,7 @@ describe('the CRAFT form', () => {
 
   it('offers the clearance the engine resolved, and grades it green', () => {
     const clearance = clearanceOf(view);
-    let state = newSession(airport, SEED, undefined, ANY_SCENARIO);
+    let state = newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance');
     for (const [key, raw] of answerFor(clearance)) state = withPick(state, key, raw);
     const picks = toPlayerPicks(state.picks);
     if (picks === undefined) throw new Error("the engine's own clearance did not fill the form");
@@ -140,7 +146,9 @@ describe('the CRAFT form', () => {
   it('opens with the clearance limit and the procedure the engine resolved', () => {
     if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
     const clearance = view.clearance;
-    const [limit, procedure] = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO));
+    const [limit, procedure] = groupsOf(
+      newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance'),
+    );
     if (limit?.kind !== 'given') throw new Error('the first row is not a given row');
     const icao = clearance.clearedTo.value;
     const spoken = airport.routeLibrary.destinations.find((row) => row.icao === icao)?.spoken;
@@ -156,7 +164,7 @@ describe('the CRAFT form', () => {
 
   it('shows the squawk as a given row just before the runway', () => {
     if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
-    const groups = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO));
+    const groups = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance'));
     const squawkAt = groups.findIndex(
       (group) => group.kind === 'given' && group.heading.startsWith('T'),
     );
@@ -172,7 +180,7 @@ describe('the CRAFT form', () => {
   });
 
   it('refuses to submit a form with a dropdown still blank', () => {
-    const state = newSession(airport, SEED, undefined, ANY_SCENARIO);
+    const state = newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance');
     expect(withSubmitted(state).submitted).toBe(false);
   });
 });

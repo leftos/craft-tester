@@ -7,7 +7,7 @@ import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
-import { toPlayerPicks } from '@/ui/state.ts';
+import { toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
 
 /** The blank choice every dropdown opens on. */
 const PLACEHOLDER = '—';
@@ -28,12 +28,22 @@ export type CraftGroup =
 /** A row of dropdowns, which is what every group builder here returns. */
 type PickedGroup = Extract<CraftGroup, { kind: 'picked' }>;
 
+/**
+ * How the form treats the procedure row.
+ *
+ * A clean clearance is read as filed, so the procedure is a given row; a clearance on a plan the
+ * student has just corrected assigns the procedure the corrected route carries, so the student
+ * picks it and it is graded.
+ */
+export type ProcedureRow = 'given' | 'picked';
+
 /** Everything the form needs to render and to report back. */
 export type CraftFormProps = {
   scenario: Scenario;
   airport: AirportData;
   clearance: ResolvedClearance;
   picks: DraftPicks;
+  procedure: ProcedureRow;
   onPick: (key: PickKey, raw: string) => void;
   onSubmit: () => void;
 };
@@ -199,17 +209,37 @@ function procedureRow(clearance: ResolvedClearance, airport: AirportData): Craft
   };
 }
 
+/** The procedure as a pick: every procedure the airport publishes, named as its chart names it. */
+function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
+  return {
+    kind: 'picked',
+    element: 'R.sid',
+    fields: [
+      {
+        key: 'procedure',
+        label: 'procedure',
+        options: airport.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
+        value: picks.procedure,
+        disabled: false,
+        placeholder: PLACEHOLDER,
+      },
+    ],
+  };
+}
+
 /**
  * Builds the eight rows of the form, the five of them the player answers the clearance with.
  *
- * The clearance limit, the procedure and the squawk are given rows: the engine resolved them and
- * the reveal speaks them, and they sit in their CRAFT positions so the whole clearance reads in
- * order.
+ * The clearance limit and the squawk are given rows: the engine resolved them and the reveal speaks
+ * them, and they sit in their CRAFT positions so the whole clearance reads in order. The procedure
+ * is a given row on a clean clearance and a picked one on a corrected plan, in the same position
+ * either way.
  *
  * @param scenario The scenario being cleared, which contributes the filed route, altitude and squawk.
  * @param airport The airport data.
  * @param clearance The clearance the engine resolved, which fills the given rows.
  * @param picks What the player has picked so far, which settles the dependent dropdowns.
+ * @param procedure Whether the procedure row is given or picked.
  * @returns The rows, in the order CRAFT speaks them.
  */
 export function craftGroups(
@@ -217,11 +247,12 @@ export function craftGroups(
   airport: AirportData,
   clearance: ResolvedClearance,
   picks: DraftPicks,
+  procedure: ProcedureRow,
 ): readonly CraftGroup[] {
   const options = buildOptions(scenario, airport);
   return [
     clearanceLimitRow(clearance, airport),
-    procedureRow(clearance, airport),
+    procedure === 'given' ? procedureRow(clearance, airport) : procedureGroup(airport, picks),
     routeGroup(options, picks),
     altitudeGroup(options, picks),
     expectGroup(options, picks, clearance.expect.value?.amended ?? false),
@@ -250,20 +281,39 @@ function renderGroup(group: CraftGroup, onPick: CraftFormProps['onPick']): HTMLE
 }
 
 /**
+ * Whether the form still has a dropdown to fill before it can be submitted.
+ *
+ * A form whose procedure row is picked needs that pick too, which an ordinary clearance is given.
+ *
+ * @param picks What the player has picked so far.
+ * @param procedure Whether the procedure row is given or picked.
+ * @returns True while a required dropdown is blank.
+ */
+export function submitDisabled(picks: DraftPicks, procedure: ProcedureRow): boolean {
+  const read = procedure === 'picked' ? toAmendmentPicks : toPlayerPicks;
+  return read(picks) === undefined;
+}
+
+/**
  * Renders the CRAFT form.
  *
- * @param props The scenario, the airport, the resolved clearance, the picks so far, and the
- *   handlers for change and submit.
+ * @param props The scenario, the airport, the resolved clearance, the picks so far, whether the
+ *   procedure is picked, and the handlers for change and submit.
  * @returns The form panel; its submit button is disabled while a required dropdown is blank.
  */
 export function renderCraftForm(props: CraftFormProps): HTMLElement {
   const panel = el('section', 'panel craft');
   panel.append(el('h2', '', 'Your clearance'));
-  for (const group of craftGroups(props.scenario, props.airport, props.clearance, props.picks)) {
-    panel.append(renderGroup(group, props.onPick));
-  }
+  const groups = craftGroups(
+    props.scenario,
+    props.airport,
+    props.clearance,
+    props.picks,
+    props.procedure,
+  );
+  for (const group of groups) panel.append(renderGroup(group, props.onPick));
   const submit = button('Submit clearance', 'primary', props.onSubmit);
-  submit.disabled = toPlayerPicks(props.picks) === undefined;
+  submit.disabled = submitDisabled(props.picks, props.procedure);
   panel.append(submit);
   return panel;
 }

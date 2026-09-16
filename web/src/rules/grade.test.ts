@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { expectChoiceLabel, grade } from '@/rules/grade.ts';
+import ksfoJson from '@data/ksfo.json';
+import type { AirportData } from '@/data/schema.ts';
+import { expectChoiceLabel, grade, gradeProcedure } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance, RuleCitation } from '@/rules/types.ts';
+
+const ksfo = ksfoJson as unknown as AirportData;
 
 const assignmentCitation: RuleCitation = {
   id: 'SFOW-N-TRUKN-01',
@@ -216,6 +220,47 @@ describe('grade', () => {
       [assignmentCitation],
       [runwayCitation],
     ]);
+  });
+});
+
+describe('gradeProcedure', () => {
+  it('reports under the procedure element, with the citations that assigned it', () => {
+    const verdict = gradeProcedure('TRUKN2', expected, ksfo);
+    expect(verdict.element).toBe('R.sid');
+    expect(verdict.citations).toEqual([assignmentCitation]);
+  });
+
+  it('marks the assigned procedure right, named as its chart names it', () => {
+    const verdict = gradeProcedure('TRUKN2', expected, ksfo);
+    expect(verdict.ok).toBe(true);
+    expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
+    expect(verdict.actualLabel).toBe('TRUKN TWO (RNAV)');
+  });
+
+  it('marks a procedure of another family wrong', () => {
+    const verdict = gradeProcedure('SSTIK5', expected, ksfo);
+    expect(verdict.ok).toBe(false);
+    expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
+    expect(verdict.actualLabel).toBe('SSTIK FIVE (RNAV)');
+  });
+
+  it('accepts another version of the same family, because a cycle bumps the version', () => {
+    const older: ResolvedClearance = {
+      ...expected,
+      sid: {
+        value: { id: 'TRUKN1', family: 'TRUKN', spoken: 'Trukn One' },
+        citations: [assignmentCitation],
+      },
+    };
+    const verdict = gradeProcedure('TRUKN2', older, ksfo);
+    expect(verdict.ok).toBe(true);
+    expect(verdict.expectedLabel).toBe('TRUKN1');
+  });
+
+  it('marks an identifier the airport does not publish wrong, and reads it back raw', () => {
+    const verdict = gradeProcedure('BIGSUR4', expected, ksfo);
+    expect(verdict.ok).toBe(false);
+    expect(verdict.actualLabel).toBe('BIGSUR4');
   });
 });
 

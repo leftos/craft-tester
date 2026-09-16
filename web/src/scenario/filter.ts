@@ -4,6 +4,17 @@ import { seedToHash } from '@/scenario/rng.ts';
 /** Which part of the day a scenario may be set in; `either` leaves the draw to the training mix. */
 export type TimeFilter = 'either' | 'day' | 'night';
 
+/**
+ * Which half of the trainer a session runs.
+ *
+ * `clearance` reads a plan that is already correct; `amendment` amends the strip's boxes first and
+ * clears the corrected plan afterwards.
+ */
+export type Mode = 'clearance' | 'amendment';
+
+/** The hash part amendment mode writes; clearance mode writes none, so its links are unchanged. */
+const AMENDMENT_PART = 'm=amend';
+
 /** Which runway configurations a scenario may be drawn in: all of them, one plan, or exactly one. */
 export type ConfigFilter =
   | { kind: 'any' }
@@ -32,13 +43,15 @@ function configParam(config: ConfigFilter): string | undefined {
  *
  * @param seed The seed the link restores.
  * @param filter The filter the draw ran under.
- * @returns The hash, e.g. `#s=21i3v9&t=night&c=id:28%2F01`.
+ * @param mode The half of the trainer the session runs; clearance mode writes no part at all.
+ * @returns The hash, e.g. `#s=21i3v9&t=night&c=id:28%2F01&m=amend`.
  */
-export function hashFor(seed: number, filter: ScenarioFilter): string {
+export function hashFor(seed: number, filter: ScenarioFilter, mode: Mode): string {
   const parts = [seedToHash(seed).slice(1)];
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
   if (config !== undefined) parts.push(`c=${config}`);
+  if (mode === 'amendment') parts.push(AMENDMENT_PART);
   return `#${parts.join('&')}`;
 }
 
@@ -96,6 +109,19 @@ function configOf(raw: string | undefined): ConfigFilter {
  */
 export function filterFromHash(hash: string): ScenarioFilter {
   return { time: timeOf(valueOf(hash, 't')), config: configOf(valueOf(hash, 'c')) };
+}
+
+/**
+ * Reads the mode back out of a URL hash.
+ *
+ * Only amendment mode names itself, so a hash without an `m=` part, and one whose value this app
+ * does not know, both open in clearance mode.
+ *
+ * @param hash The hash, with or without its leading `#`.
+ * @returns The mode the hash asks for.
+ */
+export function modeFromHash(hash: string): Mode {
+  return valueOf(hash, 'm') === 'amend' ? 'amendment' : 'clearance';
 }
 
 /**

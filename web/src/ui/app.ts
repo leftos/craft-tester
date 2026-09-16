@@ -1,7 +1,13 @@
 import type { AirportData, AirportsIndex } from '@/data/schema.ts';
 import { grade } from '@/rules/grade.ts';
-import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
-import { ANY_SCENARIO, filterFromHash, hasFilterParams, hashFor } from '@/scenario/filter.ts';
+import type { ConfigFilter, Mode, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
+import {
+  ANY_SCENARIO,
+  filterFromHash,
+  hasFilterParams,
+  hashFor,
+  modeFromHash,
+} from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
@@ -42,16 +48,16 @@ const TIME_OPTIONS: readonly (SelectOption & { value: TimeFilter })[] = [
   { value: 'night', label: 'Night' },
 ];
 
-/** Puts the seed and the filter in the URL hash, so a reload and a copied link both restore them. */
-function writeHash(seed: number, filter: ScenarioFilter): void {
-  globalThis.history.replaceState(null, '', hashFor(seed, filter));
+/** Puts the seed, the filter and the mode in the hash, so a reload and a link both restore them. */
+function writeHash(seed: number, filter: ScenarioFilter, mode: Mode): void {
+  globalThis.history.replaceState(null, '', hashFor(seed, filter, mode));
 }
 
 /** The link that shares the scenario on screen, shown as the hash it adds. */
-function shareControl(seed: number, filter: ScenarioFilter): HTMLElement {
+function shareControl(seed: number, filter: ScenarioFilter, mode: Mode): HTMLElement {
   const wrapper = el('p', 'share');
-  const link = el('a', '', hashFor(seed, filter));
-  link.href = shareLink(globalThis.location.href, seed, filter);
+  const link = el('a', '', hashFor(seed, filter, mode));
+  link.href = shareLink(globalThis.location.href, seed, filter, mode);
   wrapper.append(el('span', 'share-label', 'scenario link'), link);
   return wrapper;
 }
@@ -135,7 +141,7 @@ function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): 
   header.append(
     el('h1', '', 'CRAFT Clearance Trainer'),
     controls,
-    shareControl(state.seed, state.filter),
+    shareControl(state.seed, state.filter, state.mode),
   );
   return header;
 }
@@ -160,10 +166,10 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
   }
   const { generated, clearance } = state.view;
   const panels = [renderStrip(generated), renderAtis(generated, state.airport)];
-  if (state.revisit !== undefined && !state.submitted) {
+  if (state.revisit?.kind === 'clearance' && !state.submitted) {
     panels.push(
       renderRevisit({
-        grades: grade(state.revisit, clearance),
+        grades: grade(state.revisit.picks, clearance),
         spoken: spokenFor(generated, clearance, state.airport),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
@@ -189,6 +195,7 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
       airport: state.airport,
       clearance,
       picks: state.picks,
+      procedure: 'given',
       onPick: actions.onPick,
       onSubmit: actions.onSubmit,
     }),
@@ -216,7 +223,7 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 
   const update = (next: AppState): void => {
     state = next;
-    writeHash(state.seed, state.filter);
+    writeHash(state.seed, state.filter, state.mode);
     root.replaceChildren(renderApp(state, index, actions));
   };
 
@@ -224,19 +231,21 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     onAirport: (icao) => {
       void loadAirportData(icao).then((airport) => {
         const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
-        update(newSession(airport, state.seed, store.load(icao, state.seed), filter));
+        const previous = store.load(icao, state.seed, state.mode);
+        update(newSession(airport, state.seed, previous, filter, state.mode));
       });
     },
     onFilter: (filter) => {
       const { icao } = state.airport.airport;
       stores.filter.save(icao, filter);
       const seed = randomSeed();
-      update(withFilter(state, filter, seed, store.load(icao, seed)));
+      update(withFilter(state, filter, seed, store.load(icao, seed, state.mode)));
     },
     onNewScenario: () => {
       const seed = randomSeed();
       const { icao } = state.airport.airport;
-      update(newSession(state.airport, seed, store.load(icao, seed), state.filter));
+      const previous = store.load(icao, seed, state.mode);
+      update(newSession(state.airport, seed, previous, state.filter, state.mode));
     },
     onPick: (key, raw) => {
       update(withPick(state, key, raw));
@@ -246,7 +255,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     },
     onSubmit: () => {
       const picks = toPlayerPicks(state.picks);
-      if (picks !== undefined) store.save(state.airport.airport.icao, state.seed, picks);
+      if (picks !== undefined) {
+        store.save(state.airport.airport.icao, state.seed, { kind: 'clearance', picks });
+      }
       update(withSubmitted(state));
     },
   };
@@ -255,11 +266,12 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 }
 
 /**
- * Starts clearance mode: loads the first airport of the index and renders the scenario the URL asks
+ * Starts the trainer: loads the first airport of the index and renders the scenario the URL asks
  * for, or a fresh one when the URL carries no seed.
  *
  * A link that names a filter opens under that filter, so a shared scenario reads the same to
- * whoever opens it; a link that names none falls back to the filter this browser last chose.
+ * whoever opens it; a link that names none falls back to the filter this browser last chose. The
+ * hash names the half of the trainer the link opens in, which is clearance mode unless it says so.
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
@@ -272,14 +284,11 @@ export async function startApp(root: Element): Promise<void> {
   const airport = await loadAirportData(first.icao);
   const hash = globalThis.location.hash;
   const seed = seedFromHash(hash) ?? randomSeed();
+  const mode = modeFromHash(hash);
   const stores = { solved: browserSolvedStore(), filter: browserFilterStore() };
   const filter = hasFilterParams(hash)
     ? filterFromHash(hash)
     : (stores.filter.load(first.icao) ?? ANY_SCENARIO);
-  mount(
-    root,
-    index,
-    newSession(airport, seed, stores.solved.load(first.icao, seed), filter),
-    stores,
-  );
+  const previous = stores.solved.load(first.icao, seed, mode);
+  mount(root, index, newSession(airport, seed, previous, filter, mode), stores);
 }

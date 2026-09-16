@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { RunwayConfig } from '@/data/schema.ts';
-import type { ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
+import type { Mode, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import {
   ANY_SCENARIO,
   filterFromHash,
   hasFilterParams,
   hashFor,
   matchesConfig,
+  modeFromHash,
 } from '@/scenario/filter.ts';
 import { seedFromHash } from '@/scenario/rng.ts';
 
@@ -35,16 +36,18 @@ const CONFIGS: readonly ScenarioFilter['config'][] = [
 
 describe('hashFor', () => {
   it('writes nothing but the seed when the filter narrows nothing', () => {
-    expect(hashFor(1, ANY_SCENARIO)).toBe('#s=1');
-    expect(hashFor(123_456_789, ANY_SCENARIO)).toBe('#s=21i3v9');
+    expect(hashFor(1, ANY_SCENARIO, 'clearance')).toBe('#s=1');
+    expect(hashFor(123_456_789, ANY_SCENARIO, 'clearance')).toBe('#s=21i3v9');
   });
 
   it('names the time and the configuration the draw was narrowed to', () => {
-    expect(hashFor(1, { time: 'night', config: { kind: 'any' } })).toBe('#s=1&t=night');
-    expect(hashFor(1, { time: 'either', config: { kind: 'plan', plan: 'SFOE' } })).toBe(
-      '#s=1&c=plan:SFOE',
+    expect(hashFor(1, { time: 'night', config: { kind: 'any' } }, 'clearance')).toBe(
+      '#s=1&t=night',
     );
-    expect(hashFor(1, { time: 'day', config: { kind: 'id', id: '28/01' } })).toBe(
+    expect(
+      hashFor(1, { time: 'either', config: { kind: 'plan', plan: 'SFOE' } }, 'clearance'),
+    ).toBe('#s=1&c=plan:SFOE');
+    expect(hashFor(1, { time: 'day', config: { kind: 'id', id: '28/01' } }, 'clearance')).toBe(
       '#s=1&t=day&c=id:28%2F01',
     );
   });
@@ -53,7 +56,8 @@ describe('hashFor', () => {
     for (const time of TIMES) {
       for (const configFilter of CONFIGS) {
         const filter: ScenarioFilter = { time, config: configFilter };
-        expect(filterFromHash(hashFor(42, filter)), JSON.stringify(filter)).toStrictEqual(filter);
+        const hash = hashFor(42, filter, 'clearance');
+        expect(filterFromHash(hash), JSON.stringify(filter)).toStrictEqual(filter);
       }
     }
   });
@@ -61,7 +65,7 @@ describe('hashFor', () => {
   it('round-trips a configuration id that carries a slash or a space', () => {
     for (const id of ['28/01', '28 RT', '19/10']) {
       const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id } };
-      const hash = hashFor(7, filter);
+      const hash = hashFor(7, filter, 'clearance');
       expect(hash).not.toContain(' ');
       expect(filterFromHash(hash)).toStrictEqual(filter);
     }
@@ -69,9 +73,45 @@ describe('hashFor', () => {
 
   it('leaves the seed readable beside the filter parts', () => {
     expect(seedFromHash('#s=1&t=night&c=id:28%2F01')).toBe(1);
-    expect(
-      seedFromHash(hashFor(123_456_789, { time: 'day', config: { kind: 'id', id: '28 RT' } })),
-    ).toBe(123_456_789);
+    const filter: ScenarioFilter = { time: 'day', config: { kind: 'id', id: '28 RT' } };
+    expect(seedFromHash(hashFor(123_456_789, filter, 'clearance'))).toBe(123_456_789);
+  });
+});
+
+describe('the mode in the hash', () => {
+  const MODES: readonly Mode[] = ['clearance', 'amendment'];
+  const night: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
+
+  it('writes no part at all for clearance mode', () => {
+    expect(hashFor(1, ANY_SCENARIO, 'clearance')).toBe('#s=1');
+    expect(hashFor(1, night, 'clearance')).toBe('#s=1&t=night&c=id:28%2F01');
+  });
+
+  it('names amendment mode after the filter parts', () => {
+    expect(hashFor(1, ANY_SCENARIO, 'amendment')).toBe('#s=1&m=amend');
+    expect(hashFor(1, night, 'amendment')).toBe('#s=1&t=night&c=id:28%2F01&m=amend');
+  });
+
+  it('round-trips every mode, and the seed and the filter beside it', () => {
+    for (const mode of MODES) {
+      const hash = hashFor(123_456_789, night, mode);
+      expect(modeFromHash(hash), hash).toBe(mode);
+      expect(seedFromHash(hash)).toBe(123_456_789);
+      expect(filterFromHash(hash)).toStrictEqual(night);
+    }
+  });
+
+  it('reads a hash that names no mode, or one it does not know, as clearance', () => {
+    expect(modeFromHash('')).toBe('clearance');
+    expect(modeFromHash('#s=1')).toBe('clearance');
+    expect(modeFromHash('#s=1&m=')).toBe('clearance');
+    expect(modeFromHash('#s=1&m=strips')).toBe('clearance');
+    expect(modeFromHash('s=1&m=amend')).toBe('amendment');
+  });
+
+  it('leaves the mode out of the filter parts', () => {
+    expect(hasFilterParams('#s=1&m=amend')).toBe(false);
+    expect(filterFromHash('#s=1&m=amend')).toStrictEqual(ANY_SCENARIO);
   });
 });
 

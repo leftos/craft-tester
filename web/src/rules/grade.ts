@@ -1,4 +1,4 @@
-import type { RouteTemplate } from '@/data/schema.ts';
+import type { AirportData, RouteTemplate } from '@/data/schema.ts';
 import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 
 /** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
@@ -108,6 +108,37 @@ function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
     expectedLabel: expectLabel(wanted, amended),
     actualLabel: expectLabel(picked, amended),
     citations: expected.expect.citations,
+  };
+}
+
+/** Names one procedure as its chart does, falling back to the identifier where none is published. */
+function procedureLabel(id: string, airport: AirportData): string {
+  return airport.sids.find((sid) => sid.id === id)?.chartName ?? id;
+}
+
+/**
+ * Grades the procedure the player assigned against the one the engine resolved.
+ *
+ * The comparison is by family rather than by identifier, because an AIRAC cycle bumps the version
+ * in the identifier without changing the procedure the controller assigns.
+ *
+ * @param procedureId The identifier of the SID the player picked, e.g. `TRUKN2`.
+ * @param expected The clearance the engine resolved for the same scenario.
+ * @param airport The airport data, which names the published procedures.
+ * @returns The verdict for `R.sid`, labelled as the charts name the two procedures.
+ */
+export function gradeProcedure(
+  procedureId: string,
+  expected: ResolvedClearance,
+  airport: AirportData,
+): Grade {
+  const family = airport.sids.find((sid) => sid.id === procedureId)?.family;
+  return {
+    element: 'R.sid',
+    ok: family !== undefined && family === expected.sid.value.family,
+    expectedLabel: procedureLabel(expected.sid.value.id, airport),
+    actualLabel: procedureLabel(procedureId, airport),
+    citations: expected.sid.citations,
   };
 }
 

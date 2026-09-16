@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
+import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
+import type { Mode } from '@/scenario/filter.ts';
+import type { AmendmentPicks } from '@/ui/state.ts';
 
 /**
  * The shape a remembered attempt has to have to be loaded back.
@@ -18,6 +21,25 @@ export const PlayerPicksSchema = z.strictObject({
   runway: z.string(),
 });
 
+/** The picks an amendment attempt stores: the ordinary ones and the procedure it picked. */
+const AmendmentPicksSchema = PlayerPicksSchema.extend({ procedure: z.string() });
+
+/** What the student did with one box, as the store writes it. */
+const BoxAnswerSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('as_filed') }),
+  z.strictObject({ kind: z.literal('amended'), value: z.string() }),
+]);
+
+/** What an amendment attempt stores: the answers to the three boxes, and the clearance after them. */
+const AmendmentAttemptSchema = z.strictObject({
+  boxes: z.strictObject({
+    type: BoxAnswerSchema,
+    altitude: BoxAnswerSchema,
+    route: BoxAnswerSchema,
+  }),
+  picks: AmendmentPicksSchema,
+});
+
 /**
  * Rebuilds the picks from a parsed value, leaving out the optional picks the attempt spoke none of.
  *
@@ -33,18 +55,59 @@ function toPicks(parsed: z.infer<typeof PlayerPicksSchema>): PlayerPicks {
   };
 }
 
-/** Remembers the clearance a viewer already submitted for a scenario, in this browser only. */
+/** Rebuilds an amendment attempt from a parsed value. */
+function toAmendment(parsed: z.infer<typeof AmendmentAttemptSchema>): Attempt {
+  const { procedure, ...rest } = parsed.picks;
+  const picks: AmendmentPicks = { ...toPicks(rest), procedure };
+  return { kind: 'amendment', boxes: parsed.boxes, picks };
+}
+
+/**
+ * What one attempt at a scenario answered, which is what a revisit shows back.
+ *
+ * A clearance attempt is the CRAFT form alone; an amendment attempt carries the strip answers that
+ * came before the form, and the procedure the form picked on the corrected plan.
+ */
+export type Attempt =
+  | { kind: 'clearance'; picks: PlayerPicks }
+  | { kind: 'amendment'; boxes: BoxAnswers; picks: AmendmentPicks };
+
+/** Remembers the attempt a viewer already submitted for a scenario, in this browser only. */
 export type SolvedStore = {
-  load(icao: string, seed: number): PlayerPicks | undefined;
-  save(icao: string, seed: number, picks: PlayerPicks): void;
+  load(icao: string, seed: number, mode: Mode): Attempt | undefined;
+  save(icao: string, seed: number, attempt: Attempt): void;
 };
 
 /** The storage members the store touches, so a test can stand a Map in for the browser's. */
 type PicksStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
-/** The storage key one airport's seed is remembered under. */
-function keyFor(icao: string, seed: number): string {
-  return `craft-tester:solved:${icao}:${seed}`;
+/**
+ * The storage key one airport's seed is remembered under, in one mode.
+ *
+ * Clearance mode keeps the key it always had, so a scenario a browser solved before the trainer
+ * gained a second mode is still remembered.
+ */
+function keyFor(icao: string, seed: number, mode: Mode): string {
+  const scope = mode === 'amendment' ? ':amend' : '';
+  return `craft-tester:solved:${icao}${scope}:${seed}`;
+}
+
+/** Reads one stored value as the attempt its mode stores, or `undefined` where it does not parse. */
+function parseAttempt(raw: string, mode: Mode): Attempt | undefined {
+  const value: unknown = JSON.parse(raw);
+  if (mode === 'amendment') {
+    const parsed = AmendmentAttemptSchema.safeParse(value);
+    return parsed.success ? toAmendment(parsed.data) : undefined;
+  }
+  const parsed = PlayerPicksSchema.safeParse(value);
+  return parsed.success ? { kind: 'clearance', picks: toPicks(parsed.data) } : undefined;
+}
+
+/** What one attempt is written as: the bare picks for a clearance, both halves for an amendment. */
+function storedValue(attempt: Attempt): string {
+  return JSON.stringify(
+    attempt.kind === 'clearance' ? attempt.picks : { boxes: attempt.boxes, picks: attempt.picks },
+  );
 }
 
 /**
@@ -66,19 +129,17 @@ export function createSolvedStore(storage: PicksStorage | undefined): SolvedStor
     };
   }
   return {
-    load: (icao, seed) => {
+    load: (icao, seed, mode) => {
       try {
-        const raw = storage.getItem(keyFor(icao, seed));
-        if (raw === null) return undefined;
-        const parsed = PlayerPicksSchema.safeParse(JSON.parse(raw));
-        return parsed.success ? toPicks(parsed.data) : undefined;
+        const raw = storage.getItem(keyFor(icao, seed, mode));
+        return raw === null ? undefined : parseAttempt(raw, mode);
       } catch {
         return undefined;
       }
     },
-    save: (icao, seed, picks) => {
+    save: (icao, seed, attempt) => {
       try {
-        storage.setItem(keyFor(icao, seed), JSON.stringify(picks));
+        storage.setItem(keyFor(icao, seed, attempt.kind), storedValue(attempt));
       } catch {
         // A storage that refuses the write costs the viewer the reminder, nothing more.
       }
