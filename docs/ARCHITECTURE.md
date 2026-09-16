@@ -66,8 +66,13 @@ itself has three readings (`ExpectClause.kind`): `filed` ("expect (filed altitud
 departure"), `amended` after the altitude box was amended, and `final` ("(altitude) will be your final",
 row `A-FINAL`) where the amended clearance speaks the altitude it climbs the flight straight to. A clean
 clearance is read exactly as filed, so clearance mode draws only plans whose route already carries the
-assigned SID; a missing, stale or wrong SID is amendment-mode material. The spoken transmission ends
-"expect runway (designator)".
+assigned SID; a missing, stale or wrong SID is amendment-mode material. An assignment row with no SID
+(`sidFamily: null`, `nonDpHeading: runway heading`) clears the flight on the runway heading: the
+procedure element is the heading (`Procedure.kind === 'heading'`, spoken "via fly runway heading",
+row `R-HEADING`), the route element takes the airport's `noSid` shape on the first filed fix or the
+airway shape on an airway, clearance mode draws the plan with no procedure token, and amendment mode
+amends a filed SID down to the tail and offers the heading as the last procedure option. The spoken
+transmission ends "expect runway (designator)".
 
 ## Fixture lifecycle
 

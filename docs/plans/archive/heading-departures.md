@@ -7,7 +7,7 @@ draw away, and amendment mode cannot answer such a plan.
 
 Sources: FAA JO 7110.65 4-3-2 c 3 phraseology "FLY RUNWAY HEADING"; 4-3-2 c 4 (a) "assign the route
 filed by the pilot when a SID is not established"; OAK ATCT SOP 2-1 c phraseology as recorded in
-[koak-v3.md](./koak-v3.md): "CLEARED TO (airport) AIRPORT, VIA TURN LEFT/RIGHT (heading) / FLY RUNWAY
+[koak-v3.md](../koak-v3.md): "CLEARED TO (airport) AIRPORT, VIA TURN LEFT/RIGHT (heading) / FLY RUNWAY
 HEADING, RADAR VECTORS (first fix/airway)…"; S1-SFO-0 CBT "No SID": departure without a SID is phrased as
 radar vectors to the first filed fix (`sop.yaml` `no_sid.phrasing: radar_vectors_fix`).
 
@@ -68,8 +68,26 @@ radar vectors to the first filed fix (`sop.yaml` `no_sid.phrasing: radar_vectors
    change + export, the shared `R-HEADING` row + rebuild, generator literal check on `non_dp_heading`.
    Tests: the C172 case resolves and speaks as above; a jet off 01 at night is unaffected; the row with
    a value other than `runway heading` fails the loader. Proving: `pnpm -C web test rules`, generator gate.
-2. UI and generators: `craftForm` procedure row/dropdown, results labels, `drawScenario` composition,
+2. [x] Landed 2026-09-16: `drawScenario` composes a heading clearance's route as the library tail with no
+   procedure token (the discard is gone); `checkRoute` for a heading clearance (`checkHeadingRoute`)
+   expects the filed tail, or the TEC route where one applies, and amends a filed SID down to it with
+   the reason "the SOP sends a non-RNAV piston off 01L in the noise window on the runway heading with no
+   departure procedure" citing the row and `R-HEADING`; the procedure dropdown ends with "fly runway
+   heading (no DP)" (value `HEADING_PROCEDURE_PICK = 'runway heading'`, exported from `rules/grade.ts`
+   beside the grader, while `HEADING_PROCEDURE_LABEL` stays in `rules/types.ts`); `gradeProcedure` marks
+   the heading right only against a heading clearance; a heading clearance leaving on an airway takes
+   `radar_vectors_airway`. Fixture `syn-heading-c172-night-kmyv` (pending) proposes "November one seven
+   two sierra papa, cleared to Marysville airport, via fly runway heading, radar vectors Oakland VOR,
+   then as filed. Maintain five thousand. Departure frequency one two zero point niner, squawk four six
+   two zero. Expect runway one left." Findings: the night sweep yields one heading draw in 200 seeds,
+   because a heading needs the 01/01 configuration (`trainingWeight` 4 of 100; props take 28R in 28/01),
+   so meeting the case more often is a data question; the amendment reason hard-codes "in the noise
+   window", true of the only row that can produce it today (`SFOW-NOISE-P-RWY`), and a future non-DP row
+   outside a window would need the wording keyed on the row. Original spec: UI and generators: `craftForm` procedure row/dropdown, results labels, `drawScenario` composition,
    `checkRoute` and `gradeProcedure` in amendment mode, the synthetic fixture (pending until confirmed),
    `check:browser` on the C172 draw (`s=<seed>,d=KMYV` with a night time filter). Proving: full gate.
-3. Docs: `ARCHITECTURE.md` graded-elements paragraph, `ADDING_AN_AIRPORT.md` step 12 (`non_dp_heading`
+3. [x] Landed 2026-09-16. Docs: `ARCHITECTURE.md` graded-elements paragraph, `ADDING_AN_AIRPORT.md` step 12 (`non_dp_heading`
    is `runway heading` only), MAIN.md.
+
+Left open: the user confirms the spoken form above, then the fixture is settled. Numbered headings
+("via turn left/right heading (xxx)") come with KOAK's data ([koak-v3.md](../koak-v3.md)).

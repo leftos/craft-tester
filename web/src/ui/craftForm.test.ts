@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
+import { HEADING_PROCEDURE_PICK } from '@/rules/grade.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import type { CraftGroup } from '@/ui/craftForm.ts';
 import { craftGroups, submitDisabled } from '@/ui/craftForm.ts';
@@ -77,9 +78,35 @@ describe('craftGroups', () => {
   it('lists every procedure the airport publishes, named as its chart names it', () => {
     const row = procedureRowOf(EMPTY_PICKS, 'picked');
     if (row.kind !== 'picked') throw new Error('the procedure row is not a picked row');
-    expect(row.fields[0]?.options).toStrictEqual(
-      ksfo.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
-    );
+    expect(row.fields[0]?.options).toStrictEqual([
+      ...ksfo.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
+      { value: 'runway heading', label: 'fly runway heading (no DP)' },
+    ]);
+  });
+
+  it('offers the runway heading last, for the plans the SOP sends off without a procedure', () => {
+    const row = procedureRowOf(EMPTY_PICKS, 'picked');
+    if (row.kind !== 'picked') throw new Error('the procedure row is not a picked row');
+    expect(row.fields[0]?.options.at(-1)).toStrictEqual({
+      value: HEADING_PROCEDURE_PICK,
+      label: 'fly runway heading (no DP)',
+    });
+  });
+
+  it('shows the runway heading in the given row of a clearance issued without a procedure', () => {
+    const onTheHeading: ResolvedClearance = {
+      ...clearance,
+      procedure: {
+        value: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
+        citations: [],
+      },
+    };
+    const row = craftGroups(scenario, ksfo, onTheHeading, EMPTY_PICKS, 'given')[1];
+    expect(row).toStrictEqual({
+      kind: 'given',
+      heading: 'R — procedure',
+      value: 'fly runway heading (no DP)',
+    });
   });
 
   it('reads the procedure the student has picked back into the dropdown', () => {
@@ -133,6 +160,10 @@ describe('submitDisabled', () => {
   it('holds a corrected plan back until the procedure is picked', () => {
     expect(submitDisabled({ ...full, procedure: undefined }, 'picked')).toBe(true);
     expect(submitDisabled(full, 'picked')).toBe(false);
+  });
+
+  it('takes the runway heading as the procedure pick of a corrected plan', () => {
+    expect(submitDisabled({ ...full, procedure: HEADING_PROCEDURE_PICK }, 'picked')).toBe(false);
   });
 
   it('holds either form back while a CRAFT dropdown is blank', () => {

@@ -1,0 +1,23 @@
+{
+  "airport": "KSFO",
+  "id": "syn-heading-c172-night-kmyv",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "C172",
+    "callsign": "N172SP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "01L",
+    "destination": "KMYV",
+    "equipmentSuffix": "/A",
+    "filedAltitude": 5000,
+    "filedRoute": "OAK V6 SAC",
+    "localTime": "2300",
+    "runwayConfigId": "28/01",
+    "squawk": "4620"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "The noise window sends a non-RNAV prop off runway 01 on the runway heading with no departure procedure (SFOW-NOISE-P-RWY, SFO ATCT SOP 2-4 e), so the clearance names no SID: the procedure element is the heading and the route element is the airport's no-SID phrasing on the first filed fix (R-HEADING; FAA JO 7110.65 4-3-2 c 3). Pending until the user confirms the spoken form."
+  },
+  "status": "pending"
+}

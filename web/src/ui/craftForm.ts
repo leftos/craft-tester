@@ -1,5 +1,11 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
-import { altitudeLabel, expectChoiceLabel, formatFeet, routeLabel } from '@/rules/grade.ts';
+import {
+  altitudeLabel,
+  expectChoiceLabel,
+  formatFeet,
+  HEADING_PROCEDURE_PICK,
+  routeLabel,
+} from '@/rules/grade.ts';
 import { buildOptions } from '@/rules/options.ts';
 import type { ClearanceOptions } from '@/rules/options.ts';
 import type { ClearanceElement, ExpectClause, ResolvedClearance } from '@/rules/types.ts';
@@ -220,7 +226,10 @@ function procedureRow(clearance: ResolvedClearance, airport: AirportData): Craft
   };
 }
 
-/** The procedure as a pick: every procedure the airport publishes, named as its chart names it. */
+/**
+ * The procedure as a pick: every procedure the airport publishes, named as its chart names it,
+ * and last the runway heading, for the plans the SOP sends off without a procedure at all.
+ */
 function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
   return {
     kind: 'picked',
@@ -229,7 +238,10 @@ function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
       {
         key: 'procedure',
         label: 'procedure',
-        options: airport.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
+        options: [
+          ...airport.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
+          { value: HEADING_PROCEDURE_PICK, label: HEADING_PROCEDURE_LABEL },
+        ],
         value: picks.procedure,
         disabled: false,
         placeholder: PLACEHOLDER,

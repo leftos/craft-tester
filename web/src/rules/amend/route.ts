@@ -143,6 +143,14 @@ function flightWords(ctx: Classification): string {
   return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.aircraftClass]}`;
 }
 
+/** The reason the box names no procedure at all: the SOP sends this flight off without one. */
+function headingReason(scenario: Scenario, ctx: Classification): string {
+  return (
+    `the SOP sends ${flightWords(ctx)} off ${scenario.departureRunway} in the noise window on the ` +
+    'runway heading with no departure procedure'
+  );
+}
+
 /** The reason a filed procedure is not the one the SOP assigns this flight. */
 function procedureReason(
   filed: string,
@@ -252,6 +260,50 @@ export function loaRouteGap(
 }
 
 /**
+ * Checks the route box of a flight the SOP clears on the runway heading, which names no procedure.
+ *
+ * The box is the tail the pilot filed, so a plan that files a departure procedure is amended down
+ * to that tail and a plan that files none is left alone. A TEC route still wins where one applies,
+ * but a row whose route begins on a departure family never applies to such a flight: `tecRouteFor`
+ * puts the row's own route to the clearance engine, which answers this flight with the runway
+ * heading rather than with the family the row begins on, so only a row that begins on a fix or an
+ * airway is reached here. A box that already reads right is held against the LOA routing rows, over
+ * its whole length, because there is no procedure token at its head to skip.
+ *
+ * @param filed The route box as filed, split on a leading procedure token.
+ * @param scenario The filed flight plan.
+ * @param ctx The classified flight, which keys the TEC route rows.
+ * @param clearance The clearance the engine resolved, whose procedure citations carry the reason.
+ * @param airport The airport data.
+ * @returns The amendment for the route box, `undefined` when the box reads right, or `Unresolved`
+ *   when an LOA row demands a routing no data can propose.
+ */
+function checkHeadingRoute(
+  filed: FiledRoute,
+  scenario: Scenario,
+  ctx: Classification,
+  clearance: ResolvedClearance,
+  airport: AirportData,
+): ResolvedAmendment | undefined | Unresolved {
+  const destination = destinationRow(airport, scenario.destination);
+  const tec = tecRouteFor(ctx, scenario, airport, destination);
+  const tokens = tec === undefined ? filed.tail : tecTokens(tec, airport);
+  if (isUnresolved(tokens)) return tokens;
+  if (tokens.join(' ') === filed.tokens.join(' ')) {
+    return loaRouteGap(tokens, scenario.destination, airport, destination);
+  }
+  return {
+    box: 'route',
+    proposed: tokens.join(' '),
+    reason:
+      tec === undefined
+        ? headingReason(scenario, ctx)
+        : tecReason(ctx, { tokens, tec }, scenario.destination),
+    citations: [...clearance.procedure.citations, ...(tec === undefined ? [] : [citeTec(tec)])],
+  };
+}
+
+/**
  * Checks the route box of the strip against the procedure the SOP assigns and the routings the
  * letters of agreement demand.
  *
@@ -267,11 +319,12 @@ export function loaRouteGap(
  * transition that connects onward to the filed route; a row that forces a transition builds the box
  * on that row's own SID whatever was filed. A box that already reads right is then held against the
  * LOA routing rows written for the destination. A flight the SOP clears on the runway heading has no
- * procedure for the box to read, and the box is reported unresolved rather than guessed at.
+ * procedure for the box to read, so its box is the filed tail alone.
  *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
- * @param clearance The clearance the engine resolved for the plan, which carries the assigned SID.
+ * @param clearance The clearance the engine resolved for the plan, which carries the procedure the
+ *   SOP assigns it, or the runway heading where it assigns none.
  * @param airport The airport data.
  * @returns The amendment for the route box, `undefined` when the box reads right, or `Unresolved`
  *   when the data cannot say what the box should read.
@@ -285,10 +338,7 @@ export function checkRoute(
   const filed = splitFiled(scenario.filedRoute);
   const procedure = clearance.procedure.value;
   if (procedure.kind === 'heading') {
-    return unresolved(
-      'BOX.route',
-      'the SOP clears this flight on the runway heading with no departure procedure, and the route box for a clearance without one is not written yet',
-    );
+    return checkHeadingRoute(filed, scenario, ctx, clearance, airport);
   }
   const expected = expectedRoute(filed, scenario, ctx, procedure.id, airport);
   if (isUnresolved(expected)) return expected;

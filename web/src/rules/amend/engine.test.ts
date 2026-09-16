@@ -81,6 +81,13 @@ function assigned(clearance: ResolvedClearance): Extract<Procedure, { kind: 'sid
   return procedure;
 }
 
+/** The transitions of the procedure a clearance issues; one on the runway heading has none. */
+function transitionsOf(clearance: ResolvedClearance) {
+  const procedure = clearance.procedure.value;
+  if (procedure.kind !== 'sid') return [];
+  return ksfo.sids.find((sid) => sid.id === procedure.id)?.transitions ?? [];
+}
+
 /** Reads the corrected plan's clearance aloud, the way the reveal does (`ui/session.ts`). */
 function spoken(flight: Scenario) {
   const { corrected } = resolved(flight);
@@ -99,7 +106,7 @@ function spoken(flight: Scenario) {
     squawk: corrected.squawk,
     telephony: ksfo.routeLibrary.telephony,
     fixSpoken: ksfo.fixSpoken,
-    sidTransitions: ksfo.sids.find((sid) => sid.id === assigned(clearance).id)?.transitions ?? [],
+    sidTransitions: transitionsOf(clearance),
   });
 }
 
@@ -324,6 +331,25 @@ describe('resolveAmendedClearance', () => {
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.expect).toEqual(cleared(corrected).expect);
     expect(result.clearance.expect.value).toBeNull();
+  });
+
+  it('reads a plan amended off its procedure as the runway heading and vectors to the fix', () => {
+    const original = scenario({
+      callsign: 'N172SP',
+      aircraftType: 'C172',
+      equipmentSuffix: '/A',
+      destination: 'KMYV',
+      filedRoute: 'GAPP7 OAK V6 SAC',
+      filedAltitude: 5000,
+      departureRunway: '01L',
+      localTime: '2300',
+      squawk: '4620',
+    });
+    const { corrected } = resolved(original);
+    expect(corrected.filedRoute).toBe('OAK V6 SAC');
+    expect(spoken(original).abbreviated).toContain(
+      'cleared to Marysville airport, via fly runway heading, radar vectors Oakland VOR,',
+    );
   });
 
   it('reads a built route as the transition, the chain flown direct, then as filed', () => {

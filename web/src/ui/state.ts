@@ -23,8 +23,9 @@ export type PickKey =
 /**
  * What the player has picked so far; a dropdown nobody has touched is `undefined`.
  *
- * `procedure` is the identifier of a published SID, e.g. `TRUKN2`. Clearance mode is given the
- * procedure rather than picking it, so only amendment mode fills that pick in.
+ * `procedure` is the identifier of a published SID, e.g. `TRUKN2`, or `HEADING_PROCEDURE_PICK`
+ * where the plan is one the SOP sends off on the runway heading with no procedure at all. Clearance
+ * mode is given the procedure rather than picking it, so only amendment mode fills that pick in.
  */
 export type DraftPicks = {
   procedure: string | undefined;

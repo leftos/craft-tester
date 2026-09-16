@@ -236,6 +236,43 @@ describe('checkRoute TRACON destinations', () => {
   });
 });
 
+describe('checkRoute on the runway heading', () => {
+  /** The non-RNAV prop the noise window sends off 01L with no procedure at all (SFOW-NOISE-P-RWY). */
+  function c172(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'N172SP',
+      aircraftType: 'C172',
+      equipmentSuffix: '/A',
+      destination: 'KMYV',
+      filedRoute: 'GAPP7 OAK V6 SAC',
+      filedAltitude: 5000,
+      departureRunway: '01L',
+      localTime: '2300',
+      squawk: '4620',
+      ...overrides,
+    });
+  }
+
+  it('amends a plan that files a procedure down to the tail, and says why', () => {
+    const flight = c172();
+    expect(amendment(flight).proposed).toBe('OAK V6 SAC');
+    expect(amendment(flight).reason).toBe(
+      'the SOP sends a non-RNAV piston off 01L in the noise window on the runway heading with no ' +
+        'departure procedure',
+    );
+    expect(citations(flight)).toEqual(['SFOW-NOISE-P-RWY', 'R-HEADING']);
+  });
+
+  it('leaves a plan that files no procedure alone', () => {
+    expect(check(c172({ filedRoute: 'OAK V6 SAC' }))).toBeUndefined();
+  });
+
+  it('passes over a TEC row that begins on a departure the flight is not issued', () => {
+    const flight = c172({ filedRoute: 'SFO5 OAK V6 SAC' });
+    expect(amendment(flight).proposed).toBe('OAK V6 SAC');
+  });
+});
+
 describe('checkRoute letters of agreement', () => {
   it('reports the route box unresolved when no LOA routing fix is on the route', () => {
     const result = check(scenario({ destination: 'KPDX', filedRoute: 'TRUKN2 DEDHD LMT OCITY7' }));

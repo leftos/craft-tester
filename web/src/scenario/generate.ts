@@ -382,7 +382,9 @@ function withBuiltRoute(clean: Scenario, airport: AirportData): Scenario {
  * The filed route is assembled after the clearance engine has spoken, because it names the
  * procedure the SOP assigns: a clean flight plan is one the controller can read aloud as filed.
  * That is sound because `parseFiledRoute` strips a leading procedure token whatever it says, so the
- * clearance the engine resolved here is the clearance of the returned scenario as well.
+ * clearance the engine resolved here is the clearance of the returned scenario as well. A flight
+ * the SOP sends off on the runway heading is assigned no procedure to name, so its route is the
+ * library tail alone.
  *
  * A scenario is then one the clearance engine can clear *and* the amendment engine has nothing to
  * amend: the amendment engine is the single definition of a plan that is correct as filed, so a
@@ -432,12 +434,9 @@ export function drawScenario(
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }
   const procedure = result.clearance.procedure.value;
-  if (procedure.kind !== 'sid') {
-    return unresolved('R.sid', `${filed.callsign} is cleared on the runway heading with no DP`);
-  }
   const composed: Scenario = {
     ...filed,
-    filedRoute: `${procedure.id} ${route.tail}`,
+    filedRoute: procedure.kind === 'sid' ? `${procedure.id} ${route.tail}` : route.tail,
   };
   const clean = withBuiltRoute(composed, airport);
   return amendmentGap(clean, airport) ?? clean;
@@ -448,10 +447,10 @@ export function drawScenario(
  * neither.
  *
  * The airport data deliberately leaves some flights without a procedure, such as the non-RNAV prop
- * off the 01s inside the noise window that the SOP sends off on runway heading; those draws are
- * discarded rather than presented, because clearance mode has no way to issue them. So is a draw
- * the amendment engine would amend: a route library row is written for the flights it is the
- * correct plan for, and the configuration, class and suffix are drawn independently of it.
+ * off the 01s inside the noise window that the SOP sends off on runway heading; such a flight is
+ * drawn like any other and files no procedure token. A draw the amendment engine would amend is
+ * discarded: a route library row is written for the flights it is the correct plan for, and the
+ * configuration, class and suffix are drawn independently of it.
  *
  * A filter that names a destination draws only the route library rows filed to it.
  *

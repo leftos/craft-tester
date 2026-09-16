@@ -199,6 +199,9 @@ function gradeExpect(picks: PlayerPicks, expected: ResolvedClearance): Grade {
   };
 }
 
+/** What the procedure dropdown carries for a clearance the SOP issues without a procedure. */
+export const HEADING_PROCEDURE_PICK = 'runway heading';
+
 /** Names one procedure as its chart does, falling back to the identifier where none is published. */
 function procedureLabel(id: string, airport: AirportData): string {
   return airport.sids.find((sid) => sid.id === id)?.chartName ?? id;
@@ -215,9 +218,12 @@ function expectedProcedureLabel(expected: ResolvedClearance, airport: AirportDat
  *
  * The comparison is by family rather than by identifier, because an AIRAC cycle bumps the version
  * in the identifier without changing the procedure the controller assigns. A clearance the SOP
- * sends off on the runway heading names no procedure, so every published procedure is wrong for it.
+ * sends off on the runway heading names no procedure, so every published procedure is wrong for it
+ * and the runway heading itself is the right answer; that same heading is wrong for a clearance
+ * that does assign a procedure.
  *
- * @param procedureId The identifier of the SID the player picked, e.g. `TRUKN2`.
+ * @param procedureId The identifier of the SID the player picked, e.g. `TRUKN2`, or
+ *   `HEADING_PROCEDURE_PICK` where the player answered with the runway heading.
  * @param expected The clearance the engine resolved for the same scenario.
  * @param airport The airport data, which names the published procedures.
  * @returns The verdict for `R.sid`, labelled as the charts name the two procedures.
@@ -228,14 +234,17 @@ export function gradeProcedure(
   airport: AirportData,
 ): Grade {
   const procedure = expected.procedure.value;
+  const heading = procedureId === HEADING_PROCEDURE_PICK;
   const family = airport.sids.find((sid) => sid.id === procedureId)?.family;
   return {
     element: 'R.sid',
     verdict: verdictOf(
-      procedure.kind === 'sid' && family !== undefined && family === procedure.family,
+      heading
+        ? procedure.kind === 'heading'
+        : procedure.kind === 'sid' && family !== undefined && family === procedure.family,
     ),
     expectedLabel: expectedProcedureLabel(expected, airport),
-    actualLabel: procedureLabel(procedureId, airport),
+    actualLabel: heading ? HEADING_PROCEDURE_LABEL : procedureLabel(procedureId, airport),
     citations: expected.procedure.citations,
   };
 }

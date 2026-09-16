@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
-import { expectChoiceLabel, grade, gradeProcedure } from '@/rules/grade.ts';
+import { expectChoiceLabel, grade, gradeProcedure, HEADING_PROCEDURE_PICK } from '@/rules/grade.ts';
 import type {
   ExpectClause,
   PlayerPicks,
@@ -45,6 +45,22 @@ const expected: ResolvedClearance = {
   expect: { value: { kind: 'filed', feet: 35000, minutes: 10 }, citations: [altitudeCitation] },
   redundantExpect: { value: null, citations: [] },
   frequency: { value: { value: '120.9', sectorId: 'richmond' }, citations: [assignmentCitation] },
+};
+
+const headingCitation: RuleCitation = {
+  id: 'SFOW-NOISE-P-RWY',
+  source: 'SFO ATCT SOP 2-4 e',
+  text: 'Noise abatement: runway 01, non-RNAV props -> runway heading (no DP)',
+};
+
+/** The clearance the noise window issues a non-RNAV prop off the 01s: no procedure at all. */
+const onTheHeading: ResolvedClearance = {
+  ...expected,
+  procedure: {
+    value: { kind: 'heading', heading: 'runway heading', spoken: 'fly runway heading' },
+    citations: [headingCitation],
+  },
+  route: { value: { template: 'radar_vectors_fix', fix: 'OAK' }, citations: [] },
 };
 
 const redundantCitation: RuleCitation = {
@@ -399,6 +415,28 @@ describe('gradeProcedure', () => {
     const verdict = gradeProcedure('TRUKN2', older, ksfo);
     expect(verdict.verdict).toBe('correct');
     expect(verdict.expectedLabel).toBe('TRUKN1');
+  });
+
+  it('marks the runway heading right for a clearance the SOP issues without a procedure', () => {
+    const verdict = gradeProcedure(HEADING_PROCEDURE_PICK, onTheHeading, ksfo);
+    expect(verdict.verdict).toBe('correct');
+    expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.citations).toEqual([headingCitation]);
+  });
+
+  it('marks a published procedure wrong against a clearance on the runway heading', () => {
+    const verdict = gradeProcedure('TRUKN2', onTheHeading, ksfo);
+    expect(verdict.verdict).toBe('wrong');
+    expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.actualLabel).toBe('TRUKN TWO (RNAV)');
+  });
+
+  it('marks the runway heading wrong against a clearance that assigns a procedure', () => {
+    const verdict = gradeProcedure(HEADING_PROCEDURE_PICK, expected, ksfo);
+    expect(verdict.verdict).toBe('wrong');
+    expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
+    expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
   });
 
   it('marks an identifier the airport does not publish wrong, and reads it back raw', () => {

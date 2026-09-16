@@ -29,10 +29,11 @@ const SEEDS = Array.from({ length: 1000 }, (_value, index) => index);
 /**
  * How many of those raw draws may be thrown away.
  *
- * A draw is rejected when the SOP clears the flight without a procedure (rare) and when the plan is
- * not clean as filed in the configuration drawn: the configuration is drawn before the route, and a
- * TRACON destination files one tail per plan, so a tail written for SFOE is rejected in the SFOW
- * configurations, which carry most of the training weight. About a fifth of raw draws go that way.
+ * A draw is rejected when the plan is not clean as filed in the configuration drawn: the
+ * configuration is drawn before the route, and a TRACON destination files one tail per plan, so a
+ * tail written for SFOE is rejected in the SFOW configurations, which carry most of the training
+ * weight. The route builder adopts most of those rather than throwing them away, so the ceiling is
+ * far above what the sweep actually rejects; the test logs the figure it measures.
  */
 const MAX_REDRAWN = 300;
 
@@ -168,13 +169,14 @@ describe('generateScenario', () => {
     expect(blocked).toEqual([]);
   });
 
-  it('files the assigned procedure on every draw', () => {
+  it('files the assigned procedure on every draw, and none where the SOP assigns none', () => {
     const misfiled = generated
       .filter((entry) => {
         const result = resolveClearance(entry, ksfo);
         if (!result.ok) return true;
         const procedure = result.clearance.procedure.value;
-        return procedure.kind !== 'sid' || entry.filedRoute.split(' ')[0] !== procedure.id;
+        const head = entry.filedRoute.split(' ')[0] ?? '';
+        return procedure.kind === 'sid' ? head !== procedure.id : isSidToken(head);
       })
       .map(label);
     expect(misfiled).toEqual([]);
@@ -329,7 +331,7 @@ describe('generateScenario', () => {
     );
   });
 
-  it('redraws rather than presenting a flight the SOP clears without a procedure', () => {
+  it('redraws rather than presenting a plan the amendment engine would amend', () => {
     const redrawn = SEEDS.map((seed) => drawScenario(createRng(seed), ksfo, ANY_SCENARIO)).filter(
       isUnresolved,
     );
@@ -340,24 +342,33 @@ describe('generateScenario', () => {
       ].join('\n'),
     );
     expect(redrawn.length).toBeLessThan(MAX_REDRAWN);
-    const night = ksfo.noiseWindows.find((window) => window.id === 'night');
-    const stranded = generated
-      .filter((scenario) => {
-        const config = ksfo.runwayConfigs.find((row) => row.id === scenario.runwayConfigId);
-        return (
-          config?.plan === 'SFOW' &&
-          scenario.departureRunway.startsWith('01') &&
-          ksfo.aircraftClasses[scenario.aircraftType] === 'P' &&
-          !(
-            ksfo.equipmentSuffixes.find((row) => row.suffix === scenario.equipmentSuffix)?.rnav ??
-            false
-          ) &&
-          night !== undefined &&
-          isNoiseWindowActive(night, scenario.localTime, scenario.dayOfWeek)
-        );
-      })
-      .map(label);
-    expect(stranded).toEqual([]);
+  });
+
+  it('presents the non-RNAV prop the noise window sends off the 01s on the runway heading', () => {
+    const night = drawnUnder({ time: 'night', config: { kind: 'any' } });
+    const headings = night.filter((scenario) => {
+      const result = resolveClearance(scenario, ksfo);
+      return result.ok && result.clearance.procedure.value.kind === 'heading';
+    });
+    console.log(
+      `[night, seeds 0..${FILTERED_SEEDS.length - 1}] ${headings.length} draws are cleared on the runway heading`,
+    );
+    expect(headings.map(label).length).toBeGreaterThan(0);
+    for (const scenario of headings) {
+      expect(classOf(scenario), label(scenario)).toBe('P');
+      expect(scenario.departureRunway.startsWith('01'), label(scenario)).toBe(true);
+      expect(
+        ksfo.equipmentSuffixes.find((row) => row.suffix === scenario.equipmentSuffix)?.rnav ??
+          false,
+        label(scenario),
+      ).toBe(false);
+      expect(isSidToken(scenario.filedRoute.split(' ')[0] ?? ''), label(scenario)).toBe(false);
+      const window = ksfo.noiseWindows.find((row) => row.id === 'night');
+      expect(
+        window !== undefined && isNoiseWindowActive(window, scenario.localTime, scenario.dayOfWeek),
+        label(scenario),
+      ).toBe(true);
+    }
   });
 });
 

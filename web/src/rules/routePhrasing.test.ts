@@ -91,6 +91,18 @@ describe('phraseRoute', () => {
     expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
   });
 
+  it('speaks a clearance on the runway heading as radar vectors to the exit fix', () => {
+    const result = phraseRoute({ kind: 'heading' }, 'OAK', ksfo);
+    expect(result.value).toEqual({ template: 'radar_vectors_fix', fix: 'OAK' });
+    expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-SID']);
+  });
+
+  it('joins an airway off a clearance on the runway heading', () => {
+    const result = phraseRoute({ kind: 'heading' }, 'V6', ksfo);
+    expect(result.value).toEqual({ template: 'radar_vectors_airway', fix: 'V6' });
+    expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-AIRWAY']);
+  });
+
   it('leaves a pilot-nav SID on "as filed" for an airway it cannot be vectored to', () => {
     const result = phraseRoute(on('TRUKN2'), 'V6', ksfo);
     expect(result.value).toEqual({ template: 'as_filed', fix: 'V6' });

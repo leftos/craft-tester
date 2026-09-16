@@ -109,7 +109,9 @@ the hooks rejects the file.
 11. **`noise_windows`**: local-time windows with `sunday_end` where the SOP differs on Sundays.
 12. **`assignment_rules`**: the DP-by-direction table as ordered rows. Noise rows first, then the SOP
     table top to bottom, then CBT refinements. Fields: `plan`, `direction`, `runway_families`, `classes`,
-    `sid_family` (or `null` plus `non_dp_heading` for a heading-only row), `sector`, and `when` with any
+    `sid_family` (or `null` plus `non_dp_heading` for a row that clears the flight with no DP; only
+    `runway heading` is accepted, read "via fly runway heading, radar vectors (first fix)"; a numbered
+    heading with a turn direction is a new rule concept), `sector`, and `when` with any
     of `configs`, `not_configs`, `noise_window`, `rnav`, `exit_fixes`, `forced_transition`. The engine takes
     the first row whose conditions match **and** whose SID is compatible with the runway, the aircraft's
     RNAV capability, and the filed exit fix; write rows so a fall-through exists for every combination

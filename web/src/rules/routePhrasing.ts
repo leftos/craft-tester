@@ -33,13 +33,20 @@ function routeTemplate(sid: Sid, exitFix: string, vectorTransitionsSpoken: boole
     : sid.routePhrasing;
 }
 
-/** The shape a clearance with no DP takes: the one the airport publishes for a flight without one. */
+/**
+ * The shape a clearance with no DP takes: the one the airport publishes for a flight without one.
+ *
+ * A flight leaving the terminal on an airway takes the airway shape whatever put it on vectors, so
+ * a clearance on the runway heading joins the airway exactly as a radar-vector SID does.
+ */
 function templateFor(
   procedure: SelectedProcedure,
   exitElement: string,
   airport: AirportData,
 ): RouteTemplate {
-  if (procedure.kind === 'heading') return airport.noSid.phrasing;
+  if (procedure.kind === 'heading') {
+    return isAirwayToken(exitElement) ? 'radar_vectors_airway' : airport.noSid.phrasing;
+  }
   const { sid } = procedure;
   return isAirwayToken(exitElement)
     ? airwayTemplate(sid)
@@ -52,7 +59,7 @@ function templateFor(
  * Every shape names what the flight leaves the terminal on, "as filed" included: a fix that is no
  * published transition is still spoken, bare, before "then as filed". A flight cleared on the
  * runway heading has no chart to phrase from, so it takes the shape the airport's `noSid` row
- * publishes for a departure without a procedure.
+ * publishes for a departure without a procedure, or the airway shape where it leaves on an airway.
  *
  * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param exitElement The fix, or the airway, the flight leaves the terminal on.
