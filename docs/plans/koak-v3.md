@@ -211,9 +211,10 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   DH8D C, B350 B, BE20 B, TBM9 A, C172 A, SR22 A, M20T A, C208 A. Eight estimates change (A306, B77L, B738, CL30,
   TBM9, M20T, plus C208 new); the fleet `approach_category` source becomes "FAA Aircraft Characteristics Database,
   AAC, 2026-09-16" and the review note comes off.
-- [ ] **Brief 2e-i, group runway default**: `default_for_groups` on a departure-runway row, read between the airline
-  and the class default, `RWY-GROUP-DEFAULT` row required; mirrors 2d in the loader, emitter, importer, draw, grader
-  and ATIS. Dispatched 2026-09-16 into `wt/koak-engine`.
+- [x] **Brief 2e-i, group runway default**: landed 2026-09-16 (`f69015a`): `default_for_groups` on a departure-runway
+  row, read between the airline and the class default, `RWY-GROUP-DEFAULT` row required; loader, emitter, importer,
+  draw, grader and ATIS; `inAnyGroup` in `classify.ts` is the one membership predicate. Left for 2e-ii: `pickRunway`
+  reached six positional parameters.
 - [ ] **Brief 2e-iii, FAA approach categories as shared data** (user 2026-09-16: "cache that in the repo parsed or
   raw"): `craft-gen fetch-aircraft-characteristics` downloads the FAA xlsx (the `aircraft_data` URL) and writes
   `generator/shared/faa_aircraft_characteristics.yaml` (source block with url and fetched date; one entry per ICAO
@@ -232,7 +233,11 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   active, a row of that family clears the flight on that heading instead of being skipped (the row's sector and
   conditions stand; citations are the row and the notice; `unservedSids` ends its walk there). Data in 3b: SFOW P/T
   altitude rows split by heading (315 → 3,000; runway heading and 270 → 10,000), `heading: 120` on the SUNNE
-  notice and `heading: 270` on the QUAKE notice.
+  notice and `heading: 270` on the QUAKE notice. (3) **User steer 2026-09-16**: an inter-ARTCC LOA's at-or-below
+  altitude tells the enroute controller what to have the flight at before the handoff; a pilot may cruise above it
+  inside ZOA, so clearance delivery never caps a filed altitude for an LOA. The `max` LOA rule kind is used by no
+  airport and is removed (model, loader, emitter, schema, `rules/amend/altitude.ts`), keeping `parity_rotated`,
+  `even`, `odd` and `route`. (4) `pickRunway` takes an options object. Dispatched 2026-09-16 into `wt/koak-engine`.
 - [ ] **Brief 3a, SOP transcription**: `sop.yaml` (v1.7, sentinels; configurations `SFOW`, `OAKE`, `SFOE` as both id
   and plan, since the TEC tool tags rows `[SFOW]`/`[OAKE]`/`[SFOE]`; training weights 70/20/10; departure runways
   and class defaults from SOP 1-6/2-2 with a `note` and a report question wherever the SOP is silent on which
@@ -257,6 +262,30 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   out of OAK to FAT/VIS/MRY) and in `cargo_airlines`, and C208 in the fleet as a prop flown by PCM. Observation
   from the implementer, not done: nothing checks that a row defaulting an airline lists a class that airline
   flies, so a mis-classed row is silently inert.
+- [ ] **LOA documents** (user 2026-09-16): every LOA PDF is reachable the way `zoa-reference-cli`
+  (`C:\Users\Leftos\source\repos\zoa-reference-cli`) pulls `procs` / `sop`; use that listing to fetch the ZOA–ZLA and
+  ZOA–ZLC LOAs (and any other LOA a KOAK destination needs) before transcribing `loa.yaml` rows. The list is the
+  `<select>` on `https://reference.oakartcc.org/procedures` (cached by that CLI at
+  `~/.zoa-ref/cache/procedures/procedures_list.json`); the enroute LOAs: ZOA–ZLA
+  `oakartcc.org/controllers/file/3779589d-ae45-11ea-aa39-2a32edb55910`, ZOA–ZLC `…/72d39e4f-ae45-11ea-aa39-2a32edb55910`,
+  ZOA–ZSE `…/84f7be5c-ae45-11ea-aa39-2a32edb55910` (already in `loa.yaml`), ZOA–NCT `…/0e7f63e3-ae45-11ea-aa39-2a32edb55910`,
+  ZOA–FAT `…/fc2bd476-ae44-11ea-aa39-2a32edb55910`, Pacific Oceanic `…/0810fda5-1c16-11ec-9430-2a32edb55910`. Fetched
+  2026-09-16 to `.tmp/loa-zoa-{zla,zlc,fat,nct}.{pdf,txt}` (gitignored). A `craft-gen fetch-loa` command that reads
+  the same dropdown is a later item once the LOA rows exist.
+- [ ] **Brief 3c, `loa.yaml` ZLA and ZLC rows** (after 3b; data only, `wt/koak-data`). Sources: ZOA–ZLA LOA effective
+  2026-04-26 (`.tmp/loa-zoa-zla.txt`, Attachment 1 "Preferred routes and altitudes from ZOA to ZLA", pages 5–7) and
+  ZOA–ZLC LOA effective 2025-09-04 (`.tmp/loa-zoa-zlc.txt`, one word per line; 4 e, 4 h, Attachment 1). **Routing
+  rows only** (user 2026-09-16: the LOAs' at-or-below altitudes bind the enroute controller before the handoff, not
+  clearance delivery, so no altitude row is transcribed): KLAX jets route tokens [BURGL, REBRG, DOUIT, DERBB, BAYST,
+  DIRBY, LEENA, TILLT, MCKEY]; KSMO jets [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB]; KLGB/KSNA jets [TILLT,
+  RDHOT, MMTLY, ELLBC, REBRG, AVE, FLW, MCKEY, DAISY, BENET, DERBB]; KBUR/KVNY jets [BURGL, HONZK, MMTLY, RDHOT, REBRG,
+  AVE, FLW, DERBB]; KSAN via LAX [HUULK, PASKE, EHF, LANDO, LAX]; KCRQ [BURGL, TILLT, REBRG, LANDO]; KUDD [CLASN,
+  OYVEY, BTY, ZELMA, PMD]; KONT (Empire) [CLASN, OYVEY, PMD]; KLAS jets [BASIC, Q174, FLCHR, J92, BTY]; KSBA [GVO];
+  ZLC: KSLC [BVL, MLF, FLECC, REO], KBOI [NEERO, PRNCS] (conventional "via filed route"), KBIL [YLSTN, BAM, REO],
+  KTWF [BAM]. **Gaps to flag, not model**: ZLC 4 e "0830–2200 Pacific, OAK/SFO/SJC departures enter ZLC north of
+  KRAZY" is a time-windowed route rule (note only); the RNAV / conventional split of the ZLC table is not in the
+  `route` kind (both columns' tokens listed, as the ZSE rows do); the prop routings to LAX/LGB/SNA differ by J1/J501
+  side (note only). Each row cites the LOA attachment and row.
 - [ ] **Brief 3b, the rest of the data**: `tec.yaml` from `.tmp/oak-tec/*.txt`, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC
   rows from the notes), `worksheets.yaml`, `data/airports.json`, the KSFO-only web tests widened to the index, the
   airport switch in the UI checked in the browser.

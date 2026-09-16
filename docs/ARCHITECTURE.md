@@ -57,7 +57,7 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
 view shows them. The graded elements are `R.route`, `A.phrase`, `A.expect`, `F` and `RWY`, the
 departure runway: the scenario fixes the runway and the engine explains it (the configuration row plus the
-`RWY-*` mechanism row: an airline default, a class default, a runway issued on request, the direction split
+`RWY-*` mechanism row: an airline default, an aircraft-group default, a class default, a runway issued on request, the direction split
 of the family, else the first runway), so the ATIS can advertise the runways in normal use and the student
 must pick the parallel. The procedure, the clearance limit and the squawk are resolved but not graded. A verdict is
 `correct`, `wrong`, or `acceptable`: a reading the rules allow that says more than it needs to, counted

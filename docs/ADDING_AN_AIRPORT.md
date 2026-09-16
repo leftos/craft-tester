@@ -90,7 +90,11 @@ the hooks rejects the file.
    of the field from the rest of its class (OAK: PCM's props default to 28L, every other prop to 28R),
    give a row of that airline's classes `default_for_airlines: [PCM]`, read ahead of the class default
    for a flight whose callsign carries the code; the code must be a `routes.yaml` `telephony` key and
-   the airport must carry a `RWY-AIRLINE-DEFAULT` row, or the build fails. A default row is its own
+   the airport must carry a `RWY-AIRLINE-DEFAULT` row, or the build fails. Where the SOP keeps a type off a
+   runway its class would take (OAK: turboprops over 17,000 lbs stay off the 28s, so the Dash 8 departs
+   with the jets), give the jets' row `default_for_groups: [jets_and_dh8d]` naming an `aircraft_groups`
+   id; it is read after the airline default and before the class default, and needs a
+   `RWY-GROUP-DEFAULT` row. A default row is its own
    row: keep the runway's normal-use row for the other classes beside it, or the ATIS stops
    advertising the runway. A runway issued only on request (KSFO: 28L/R
    in 28/01 for oceanic, Far East and cargo flights, SOP 2-1 e) gets `on_request_for: [cargo, heavy,
@@ -98,8 +102,8 @@ the hooks rejects the file.
    by the exit fix's gate, and the importer reads a qualifying flight that files a SID published only for
    that runway as requesting it. Every config row carries `source` (the SOP section, KSFO `SFO ATCT SOP
    1-7`) because the graded "expect runway" element cites the configuration itself. The ATIS panel
-   advertises only the rows with none of `default_for_classes`, `default_for_airlines` and
-   `on_request_for` ("departing 01L, 01R"
+   advertises only the rows with none of `default_for_classes`, `default_for_groups`, `default_for_airlines`
+   and `on_request_for` ("departing 01L, 01R"
    in 28/01); the student picks the runway and the engine explains it with one of the `RWY-*` rows (see
    step 15).
 6. **`departure_sectors`**: id, name, frequency, from the ZOA positions list and the chart's DEP CON boxes.
@@ -151,8 +155,8 @@ the hooks rejects the file.
     rows (`RWY-CLASS-DEFAULT`, `RWY-ON-REQUEST`, `RWY-DIRECTION`, `RWY-FIRST`), which every airport must
     state because the engine cites them by id to explain the departure runway: write the `source` and
     `text` for the airport's own runway-assignment practice, or make the text say the mechanism does
-    not apply. An airport whose runway rows carry `default_for_airlines` states a fifth,
-    `RWY-AIRLINE-DEFAULT`, and the build fails without it. A file may state an id once; the build joins shared and airport rows and the airport
+    not apply. An airport whose runway rows carry `default_for_airlines` or `default_for_groups` also
+    states `RWY-AIRLINE-DEFAULT` or `RWY-GROUP-DEFAULT`, and the build fails without them. A file may state an id once; the build joins shared and airport rows and the airport
     row wins.
 
 Prove it: `uv run craft-gen verify-sop --airport <ICAO>` passes and the loader accepts the file (the build
