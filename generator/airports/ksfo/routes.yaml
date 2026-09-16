@@ -114,35 +114,38 @@ fleet:
 
 # Filed routes, keyed by the fix where the aircraft leaves the SID. `tail` starts at that fix. `classes`
 # limits which aircraft classes fly it; `altitudes` are plausible filed cruise altitudes.
+# A tail that ends on an arrival names the family and lets the build supply the revision the CIFP
+# publishes, `HAWKZ#` as `tec.yaml` does for DPs, so no revision is transcribed and none goes stale.
+# A destination outside the FAA file has nothing to resolve against and names the arrival in full.
 routes:
   # north via TRUKN/SNTNA/NIITE/CIITY transitions
-  - { exit_fix: DEDHD, destination: KSEA, tail: DEDHD RBL LMT HAWKZ7, classes: [J], altitudes: [32000, 34000, 36000] }
-  - { exit_fix: DEDHD, destination: KPDX, tail: DEDHD LMT OCITY7, classes: [J], altitudes: [34000, 36000] }
-  # CYVR is outside the FAA CIFP, so its arrival and the revision number are hand-maintained from the CZVR
-  # preferred-routing table (https://czvr.ca/preferredrouting), which publishes BTG J1 SEA PAE GRIZZ# from BTG.
+  - { exit_fix: DEDHD, destination: KSEA, tail: DEDHD RBL LMT HAWKZ#, classes: [J], altitudes: [32000, 34000, 36000] }
+  - { exit_fix: DEDHD, destination: KPDX, tail: DEDHD LMT OCITY#, classes: [J], altitudes: [34000, 36000] }
+  # CYVR is outside the FAA CIFP, so there is nothing to resolve a family against: this row names the
+  # arrival in full and its revision is hand-maintained from the CZVR preferred-routing table
+  # (https://czvr.ca/preferredrouting), which routes BTG J1 SEA PAE onto the GRIZZ arrival.
   - { exit_fix: DEDHD, destination: CYVR, tail: DEDHD LMT BTG J1 SEA PAE GRIZZ1, classes: [J], altitudes: [36000, 38000] }
-  - { exit_fix: GRTFL, destination: KPDX, tail: GRTFL MACHU TMBRS2, classes: [J], altitudes: [34000, 36000] }
-  - { exit_fix: GRTFL, destination: KBLI, tail: GRTFL OED J1 SEA PAE MADEE4, classes: [J], altitudes: [36000] }
-  - { exit_fix: MOGEE, destination: KSLC, tail: MOGEE Q124 BVL WAATS5, classes: [J], altitudes: [37000, 39000] }
-  - { exit_fix: MOGEE, destination: KDEN, tail: MOGEE Q124 BVL TCH KAMPR LONGZ1, classes: [J], altitudes: [34000, 36000] }
+  - { exit_fix: GRTFL, destination: KPDX, tail: GRTFL MACHU TMBRS#, classes: [J], altitudes: [34000, 36000] }
+  - { exit_fix: GRTFL, destination: KBLI, tail: GRTFL OED J1 SEA PAE MADEE#, classes: [J], altitudes: [36000] }
+  - { exit_fix: MOGEE, destination: KSLC, tail: MOGEE Q124 BVL BVL#, classes: [J], altitudes: [37000, 39000] }
+  - { exit_fix: MOGEE, destination: KDEN, tail: MOGEE Q124 BVL TCH KAMPR LONGZ#, classes: [J], altitudes: [34000, 36000] }
   - { exit_fix: ORRCA, destination: KJAC, tail: ORRCA Q120 GALLI PARZZ TUVOC LEIDY DNW, classes: [J], altitudes: [37000, 41000] }
   - { exit_fix: ORRCA, destination: KGPZ, tail: ORRCA Q120 GALLI BAM J32 ABR FAR, classes: [J], altitudes: [37000] }
   - { exit_fix: ORRCA, destination: KRNO, tail: ORRCA TARVR SPOON, classes: [J], altitudes: [21000, 23000] }
-  - { exit_fix: ORRCA, destination: KBOI, tail: ORRCA ANAHO PRNCS SADYL3, classes: [J], altitudes: [37000, 41000] }
-  - { exit_fix: TIPRE, destination: KMCI, tail: TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4, classes: [J], altitudes: [37000, 41000] }
-  - { exit_fix: TIPRE, destination: KSLC, tail: TIPRE Q126 KREYK BVL WAATS5, classes: [J], altitudes: [39000, 41000] }
-  - { exit_fix: SYRAH, destination: KDEN, tail: SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1, classes: [J], altitudes: [37000, 41000] }
-  - { exit_fix: TRUKN, destination: KSMF, tail: TRUKN CCR CCR2, classes: [T, J], altitudes: [9000, 11000] }
-  - { exit_fix: TRUKN, destination: KSMF, tail: TRUKN FEVTA FEVTA1, classes: [T, J], altitudes: [9000, 10000] }
+  - { exit_fix: ORRCA, destination: KBOI, tail: ORRCA ANAHO PRNCS SADYL#, classes: [J], altitudes: [37000, 41000] }
+  - { exit_fix: TIPRE, destination: KMCI, tail: TIPRE Q126 INSLO DTA RLG AKO MCK DPEAK JSONN#, classes: [J], altitudes: [37000, 41000] }
+  - { exit_fix: TIPRE, destination: KSLC, tail: TIPRE Q126 KREYK BVL BVL#, classes: [J], altitudes: [39000, 41000] }
+  - { exit_fix: SYRAH, destination: KDEN, tail: SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII#, classes: [J], altitudes: [37000, 41000] }
+  - { exit_fix: TRUKN, destination: KSMF, tail: TRUKN FEVTA FEVTA#, classes: [T, J], altitudes: [9000, 10000] }
   # south via SSTIK/WESLA/SEGUL/SAHEY transitions
-  - { exit_fix: SUSEY, destination: KLAX, tail: SUSEY EBAYE BURGL IRNMN2, classes: [J], altitudes: [33000, 35000] }
-  - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q174 FLCHR COKTL3, classes: [J], altitudes: [33000, 35000] }
-  - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q162 ESSAA BTY SUNST4, classes: [J], altitudes: [35000] }
+  - { exit_fix: SUSEY, destination: KLAX, tail: SUSEY EBAYE BURGL IRNMN#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q174 FLCHR COKTL#, classes: [J], altitudes: [33000, 35000] }
+  - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q162 ESSAA BTY PUMLE#, classes: [J], altitudes: [35000] }
   - { exit_fix: NTELL, destination: KFAT, tail: NTELL, classes: [J], altitudes: [17000, 19000] }
-  - { exit_fix: KTINA, destination: KBUR, tail: KTINA CISKO RDHOT ROKKR2, classes: [J], altitudes: [31000] }
-  - { exit_fix: YYUNG, destination: KSAN, tail: YYUNG LAX COMIX2, classes: [J], altitudes: [37000, 41000] }
+  - { exit_fix: KTINA, destination: KBUR, tail: KTINA CISKO RDHOT ROKKR#, classes: [J], altitudes: [31000] }
+  - { exit_fix: YYUNG, destination: KSAN, tail: YYUNG LAX COMIX#, classes: [J], altitudes: [37000, 41000] }
   - { exit_fix: YYUNG, destination: KSBA, tail: YYUNG GVO HABUT, classes: [J], altitudes: [29000, 33000] }
-  - { exit_fix: YYUNG, destination: KCRQ, tail: YYUNG LEGOZ LEGOZ1, classes: [J], altitudes: [37000] }
+  - { exit_fix: YYUNG, destination: KCRQ, tail: YYUNG LEGOZ LEGOZ#, classes: [J], altitudes: [37000] }
   # vector SID and radar-vector routes (GAPP7 / SFO5), props and turboprops
   - { exit_fix: OAK, destination: KTRK, tail: OAK V244 ALTAM V392 SAC V6 SWR TRUCK, classes: [P, T], altitudes: [15000, 17000] }
   - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P], altitudes: [5000, 6000] }
@@ -156,6 +159,5 @@ routes:
   # The tail stops at Middleton Island: SMA and the oceanic fixes beyond it are outside the FAA CIFP, so nothing can name them on frequency.
   - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO, classes: [J], altitudes: [28000, 30000] }
   - { exit_fix: SAC, destination: KBOI, tail: SAC ANAHO, classes: [J], altitudes: [39000, 41000] }
-  - { exit_fix: CCR, destination: KSMF, tail: CCR CCR2, classes: [J], altitudes: [9000, 11000] }
   # oceanic
-  - { exit_fix: BEBOP, destination: PHNL, tail: BEBOP R464 BILLO R464 BITTA MAGGI3, classes: [J], altitudes: [31000, 35000] }
+  - { exit_fix: BEBOP, destination: PHNL, tail: BEBOP R464 BILLO R464 BITTA MAGGI#, classes: [J], altitudes: [31000, 35000] }

@@ -13,6 +13,7 @@ from craft_generator.cifp.airports import AirportRecord, parse_airport_records
 from craft_generator.cifp.navaids import Navaid, parse_navaids
 from craft_generator.cifp.records import RunwayRecord, SidRecord, parse_records
 from craft_generator.cifp.sid import CifpSid, group_sids
+from craft_generator.cifp.stars import parse_star_ids
 from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.sop.load import EQUIPMENT_SUFFIXES_FILE, airport_dir, load_airport, load_equipment_suffixes, shared_dir
@@ -22,6 +23,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 KSFO_RECORDS = FIXTURES / "cifp" / "ksfo_records.txt"
 AIRPORT_RECORDS = FIXTURES / "cifp" / "airport_records.txt"
 NAVAID_RECORDS = FIXTURES / "cifp" / "navaid_records.txt"
+STAR_RECORDS = FIXTURES / "cifp" / "star_records.txt"
 SFO_CHARTS_JSON = FIXTURES / "charts_api" / "SFO.json"
 CHART_TEXT = FIXTURES / "chart_text"
 SOP_TEXT = FIXTURES / "sop_text.txt"
@@ -110,6 +112,17 @@ def ksfo_airport_records(airport_record_lines: list[str]) -> dict[str, AirportRe
 
 
 @pytest.fixture(scope="session")
+def star_record_lines() -> list[str]:
+    """Return the checked-in CIFP arrival rows of every destination the KSFO route library files to."""
+    return STAR_RECORDS.read_text(encoding="ascii").splitlines()
+
+
+@pytest.fixture(scope="session")
+def destination_stars(star_record_lines: list[str]) -> dict[str, frozenset[str]]:
+    return parse_star_ids(star_record_lines)
+
+
+@pytest.fixture(scope="session")
 def navaid_lines() -> list[str]:
     """Return the checked-in CIFP navaid rows of every navaid the KSFO document names."""
     return NAVAID_RECORDS.read_text(encoding="ascii").splitlines()
@@ -153,6 +166,7 @@ def ksfo_build_inputs(
         charts=ksfo_chart_inputs,
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),
         airport_records=parse_airport_records(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
+        destination_stars=parse_star_ids(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
         fixture_routes=fixture_filed_routes("KSFO"),
         provenance=Provenance(

@@ -51,7 +51,7 @@ const AIRWAY_LETTERS: Readonly<Record<string, string>> = { J: 'Jay', V: 'Victor'
 /** An airway as filed: one letter and up to three digits, e.g. `V244`. */
 const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
 
-/** A published procedure as filed: a name and one version digit, e.g. `HAWKZ7`. */
+/** A published procedure as filed: a name and one version digit, e.g. `HAWKZ8`. */
 const STAR_TOKEN = /^[A-Z]{3,5}\d$/;
 
 /** The facility word a navaid's spoken name ends in, which a procedure named after it drops. */
@@ -256,7 +256,7 @@ export function speakFix(fix: string, fixSpoken: Readonly<Record<string, string>
  * Speaks one token of a filed route.
  *
  * Airways are a letter plus a grouped number ("Victor two forty-four"); a token of two or more
- * letters ending in a digit is a STAR ("Hawkz Seven arrival"); everything else is a fix.
+ * letters ending in a digit is a STAR ("Hawkz Eight arrival"); everything else is a fix.
  *
  * @param token The route token as filed.
  * @param fixSpoken Identifier to spoken name, from the airport data.
@@ -291,10 +291,10 @@ function stripFacilityWord(name: string): string {
 /**
  * Speaks the name of a published procedure.
  *
- * A procedure named after a navaid drops the navaid's facility word: the CCR2 arrival is "Concord
- * Two arrival", although the navaid it is named after is spoken "Concord VOR".
+ * A procedure named after a navaid drops the navaid's facility word: the BVL2 arrival is
+ * "Bonneville Two arrival", although the navaid it is named after is spoken "Bonneville VOR".
  *
- * @param name The procedure name without its version digit, e.g. `CCR`.
+ * @param name The procedure name without its version digit, e.g. `BVL`.
  * @param fixSpoken Identifier to spoken name, from the airport data.
  * @returns The spoken procedure name.
  */

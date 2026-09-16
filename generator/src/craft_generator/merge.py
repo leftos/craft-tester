@@ -11,7 +11,13 @@ What the sources disagree about is a build failure, not a silent choice: a SID w
 a different set of transition fixes than the CIFP codes stops the build, as does a rule naming a DP
 family no procedure has, an exit fix in no gate, a runway no runway record lists, or a fleet type the
 vNAS specs cannot class. A TEC row is checked the same way: the DP its route begins on must be
-published for at least one runway family the row departs from. Three conditions only warn, because each is ordinary while the data is
+published for at least one runway family the row departs from. The arrival a route tail ends on is
+the same bargain read the other way: the tail names the family with the ``#`` placeholder and the
+build substitutes the revision the CIFP publishes, so no revision number is ever transcribed. A
+family the destination does not publish stops the build, as does one whose destination publishes no
+arrival at all, and so does a literal revision written for a destination the FAA file carries. The
+literal form survives only for a destination the file does not carry - every foreign one, where
+nothing can be resolved and the identifier stays hand-maintained. Three conditions only warn, because each is ordinary while the data is
 being built up: a SID no assignment rule ever issues, a gate fix no route in the library uses, and a route tail that ends on an arrival
 an LOA row names for other destinations. The last one only warns because it cannot be proved: an arrival may serve several airports, so
 what makes one wrong for a destination is not being published there, and the FAA file carries no procedures at all for a foreign
@@ -92,6 +98,7 @@ PUBLISHED_TOP_ALTITUDE = "published"
 _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
 _NAVAID_TOKEN = re.compile(r"[A-Z]{2,3}")
 _PROCEDURE_TOKEN = re.compile(r"(?P<family>[A-Z]{3,5})\d+")
+_PROCEDURE_FAMILY_TOKEN = re.compile(rf"(?P<family>[A-Z]{{3,5}}){re.escape(SID_PLACEHOLDER)}")
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,11 +123,15 @@ class Provenance:
 class BuildInputs:
     """Every source :func:`build_airport` joins, already parsed.
 
-    ``sids``, ``runways``, ``navaids`` and ``airport_records`` come from the CIFP - the navaids keyed
-    by identifier, the airport records by ICAO identifier - ``charts`` from the charts API and the chart
-    PDFs (keyed by chart name, in the order the API lists them), ``aircraft_classes`` from the vNAS
-    specs, and ``fixture_routes`` from the filed route of every checked-in fixture of the airport,
-    which name navaids the airport data itself never mentions.
+    ``sids``, ``runways``, ``navaids``, ``airport_records`` and ``destination_stars`` come from the
+    CIFP - the navaids keyed by identifier, the airport records by ICAO identifier - ``charts`` from the
+    charts API and the chart PDFs (keyed by chart name, in the order the API lists them),
+    ``aircraft_classes`` from the vNAS specs, and ``fixture_routes`` from the filed route of every
+    checked-in fixture of the airport, which name navaids the airport data itself never mentions.
+
+    ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier. A
+    destination the FAA file does not carry - every foreign one - is simply absent, as is a US airport
+    that publishes no arrival at all.
     """
 
     airport: AirportInputs
@@ -130,6 +141,7 @@ class BuildInputs:
     charts: dict[str, ChartInput]
     aircraft_classes: dict[str, AircraftClass]
     airport_records: dict[str, AirportRecord]
+    destination_stars: dict[str, frozenset[str]]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
     fixture_routes: tuple[str, ...]
     provenance: Provenance
@@ -330,10 +342,67 @@ def _fleet_entry(entry: FleetEntry) -> Document:
     }
 
 
-def _route_entry(route: RouteEntry) -> Document:
+def _route_where(route: RouteEntry) -> str:
+    return f"routeLibrary.routes[{route.exit_fix} -> {route.destination}].tail"
+
+
+def _resolved_arrival(
+    family: str,
+    route: RouteEntry,
+    airport_records: Mapping[str, AirportRecord],
+    destination_stars: Mapping[str, frozenset[str]],
+) -> str:
+    """Return the identifier of the one arrival ``family`` the destination publishes."""
+    where = _route_where(route)
+    destination = route.destination
+    if destination not in airport_records:
+        raise ValueError(
+            f"{where}: the tail names arrival family {family!r} with the {SID_PLACEHOLDER} placeholder, but the FAA file carries no "
+            f"procedure for {destination}, so the revision cannot be resolved; write the published identifier literally, {family} plus its "
+            "revision, which is then hand-maintained from the destination's own source"
+        )
+    published = destination_stars.get(destination)
+    if published is None:
+        raise ValueError(
+            f"{where}: the tail names arrival family {family!r}, but {destination} publishes no arrival at all; end the tail on a fix instead"
+        )
+    matching = sorted(star for star in published if sid_family_of(star, where) == family)
+    if not matching:
+        raise ValueError(
+            f"{where}: the tail names arrival family {family!r}, which {destination} does not publish; it publishes {sorted(published)}; "
+            "correct the family, or end the tail on a fix"
+        )
+    if len(matching) > 1:
+        raise ValueError(
+            f"{where}: the tail names arrival family {family!r}, which {destination} publishes as {matching}; the build cannot choose between "
+            "them, so write the identifier of the one the route files literally"
+        )
+    return matching[0]
+
+
+def _resolved_tail(route: RouteEntry, airport_records: Mapping[str, AirportRecord], destination_stars: Mapping[str, frozenset[str]]) -> str:
+    """Return the tail with its trailing arrival resolved to the revision the destination publishes now."""
+    tokens = route.tail.split()
+    if not tokens:
+        return route.tail
+    placeholder = _PROCEDURE_FAMILY_TOKEN.fullmatch(tokens[-1])
+    if placeholder is not None:
+        tokens[-1] = _resolved_arrival(placeholder.group("family"), route, airport_records, destination_stars)
+        return " ".join(tokens)
+    literal = _PROCEDURE_TOKEN.fullmatch(tokens[-1])
+    if literal is not None and route.destination in airport_records:
+        raise ValueError(
+            f"{_route_where(route)}: the tail ends on the literal arrival {tokens[-1]!r}, but the FAA file carries {route.destination}, so the "
+            f"build resolves the published revision itself; write {literal.group('family')}{SID_PLACEHOLDER} instead and let the CIFP supply "
+            "the number, which keeps the row current across AIRAC cycles"
+        )
+    return route.tail
+
+
+def _route_entry(route: RouteEntry, airport_records: Mapping[str, AirportRecord], destination_stars: Mapping[str, frozenset[str]]) -> Document:
     return {
         "exitFix": route.exit_fix,
-        "tail": route.tail,
+        "tail": _resolved_tail(route, airport_records, destination_stars),
         "destination": route.destination,
         "classes": list(route.classes),
         "altitudes": list(route.altitudes),
@@ -389,7 +458,7 @@ def _route_library(inputs: BuildInputs) -> Document:
         "telephony": dict(routes.telephony),
         "cargoAirlines": list(routes.cargo_airlines),
         "fleet": [_fleet_entry(entry) for entry in routes.fleet],
-        "routes": [_route_entry(route) for route in routes.routes],
+        "routes": [_route_entry(route, inputs.airport_records, inputs.destination_stars) for route in routes.routes],
     }
 
 

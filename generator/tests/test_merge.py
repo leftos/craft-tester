@@ -48,6 +48,16 @@ def _with_sop(inputs: BuildInputs, **changes: Any) -> BuildInputs:
     return replace(inputs, airport=replace(inputs.airport, sop=replace(inputs.airport.sop, **changes)))
 
 
+def _with_route(inputs: BuildInputs, route: RouteEntry) -> BuildInputs:
+    library = replace(inputs.airport.routes, routes=(*inputs.airport.routes.routes, route))
+    return replace(inputs, airport=replace(inputs.airport, routes=library))
+
+
+def _tail(document: Document, exit_fix: str, destination: str) -> str:
+    routes = document["routeLibrary"]["routes"]
+    return next(str(route["tail"]) for route in routes if route["exitFix"] == exit_fix and route["destination"] == destination)
+
+
 def test_the_document_matches_the_schema(ksfo_document: Document) -> None:
     validate(ksfo_document, schema_path())
 
@@ -307,6 +317,42 @@ def test_a_route_tail_ending_on_another_destinations_arrival_warns(ksfo_build_in
     build_airport(replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, routes=library)))
     warning = "routeLibrary.routes[DEDHD -> CYVR].tail ends on the HAWKZ arrival, which LOA-ZSE-SEA-ROUTE names for ['KBFI', 'KSEA']"
     assert warning in capsys.readouterr().err
+
+
+def test_a_family_placeholder_tail_resolves_to_the_revision_the_destination_publishes(ksfo_document: Document) -> None:
+    assert _tail(ksfo_document, "DEDHD", "KSEA") == "DEDHD RBL LMT HAWKZ8"
+
+
+def test_an_arrival_family_the_destination_does_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    route = RouteEntry(exit_fix="MOGEE", destination="KSLC", tail="MOGEE Q124 BVL WAATS#", classes=("J",), altitudes=(37000,))
+    with pytest.raises(ValueError, match=r"routeLibrary\.routes\[MOGEE -> KSLC\]\.tail: the tail names arrival family 'WAATS'") as error:
+        build_airport(_with_route(ksfo_build_inputs, route))
+    assert "'BVL2'" in str(error.value)
+    assert "'JAZZZ1'" in str(error.value)
+
+
+def test_a_family_placeholder_fails_for_a_destination_the_faa_file_does_not_carry(ksfo_build_inputs: BuildInputs) -> None:
+    route = RouteEntry(exit_fix="DEDHD", destination="CYVR", tail="DEDHD LMT BTG GRIZZ#", classes=("J",), altitudes=(36000,))
+    with pytest.raises(ValueError, match=r"routeLibrary\.routes\[DEDHD -> CYVR\]\.tail: .* no procedure for CYVR") as error:
+        build_airport(_with_route(ksfo_build_inputs, route))
+    assert "write the published identifier literally, GRIZZ plus its revision" in str(error.value)
+
+
+def test_a_family_placeholder_fails_for_a_destination_that_publishes_no_arrival(ksfo_build_inputs: BuildInputs) -> None:
+    route = RouteEntry(exit_fix="OAK", destination="KLVK", tail="OAK V244 ALTAM ANYYY#", classes=("T",), altitudes=(7000,))
+    with pytest.raises(ValueError, match=r"routeLibrary\.routes\[OAK -> KLVK\]\.tail: .* KLVK publishes no arrival at all"):
+        build_airport(_with_route(ksfo_build_inputs, route))
+
+
+def test_a_literal_arrival_revision_fails_for_a_destination_the_faa_file_carries(ksfo_build_inputs: BuildInputs) -> None:
+    route = RouteEntry(exit_fix="DEDHD", destination="KSEA", tail="DEDHD RBL LMT HAWKZ8", classes=("J",), altitudes=(34000,))
+    with pytest.raises(ValueError, match=r"routeLibrary\.routes\[DEDHD -> KSEA\]\.tail: the tail ends on the literal arrival 'HAWKZ8'") as error:
+        build_airport(_with_route(ksfo_build_inputs, route))
+    assert "write HAWKZ# instead" in str(error.value)
+
+
+def test_a_literal_arrival_revision_is_kept_for_a_destination_the_faa_file_does_not_carry(ksfo_document: Document) -> None:
+    assert _tail(ksfo_document, "DEDHD", "CYVR") == "DEDHD LMT BTG J1 SEA PAE GRIZZ1"
 
 
 def test_build_matches_committed_data(ksfo_document: Document) -> None:

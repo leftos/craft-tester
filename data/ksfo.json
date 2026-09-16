@@ -1803,7 +1803,7 @@
         ],
         "destination": "KSEA",
         "exitFix": "DEDHD",
-        "tail": "DEDHD RBL LMT HAWKZ7"
+        "tail": "DEDHD RBL LMT HAWKZ8"
       },
       {
         "altitudes": [
@@ -1815,7 +1815,7 @@
         ],
         "destination": "KPDX",
         "exitFix": "DEDHD",
-        "tail": "DEDHD LMT OCITY7"
+        "tail": "DEDHD LMT OCITY3"
       },
       {
         "altitudes": [
@@ -1839,7 +1839,7 @@
         ],
         "destination": "KPDX",
         "exitFix": "GRTFL",
-        "tail": "GRTFL MACHU TMBRS2"
+        "tail": "GRTFL MACHU TMBRS4"
       },
       {
         "altitudes": [
@@ -1850,7 +1850,7 @@
         ],
         "destination": "KBLI",
         "exitFix": "GRTFL",
-        "tail": "GRTFL OED J1 SEA PAE MADEE4"
+        "tail": "GRTFL OED J1 SEA PAE MADEE7"
       },
       {
         "altitudes": [
@@ -1862,7 +1862,7 @@
         ],
         "destination": "KSLC",
         "exitFix": "MOGEE",
-        "tail": "MOGEE Q124 BVL WAATS5"
+        "tail": "MOGEE Q124 BVL BVL2"
       },
       {
         "altitudes": [
@@ -1874,7 +1874,7 @@
         ],
         "destination": "KDEN",
         "exitFix": "MOGEE",
-        "tail": "MOGEE Q124 BVL TCH KAMPR LONGZ1"
+        "tail": "MOGEE Q124 BVL TCH KAMPR LONGZ4"
       },
       {
         "altitudes": [
@@ -1921,7 +1921,7 @@
         ],
         "destination": "KBOI",
         "exitFix": "ORRCA",
-        "tail": "ORRCA ANAHO PRNCS SADYL3"
+        "tail": "ORRCA ANAHO PRNCS SADYL4"
       },
       {
         "altitudes": [
@@ -1933,7 +1933,7 @@
         ],
         "destination": "KMCI",
         "exitFix": "TIPRE",
-        "tail": "TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4"
+        "tail": "TIPRE Q126 INSLO DTA RLG AKO MCK DPEAK JSONN4"
       },
       {
         "altitudes": [
@@ -1945,7 +1945,7 @@
         ],
         "destination": "KSLC",
         "exitFix": "TIPRE",
-        "tail": "TIPRE Q126 KREYK BVL WAATS5"
+        "tail": "TIPRE Q126 KREYK BVL BVL2"
       },
       {
         "altitudes": [
@@ -1957,20 +1957,7 @@
         ],
         "destination": "KDEN",
         "exitFix": "SYRAH",
-        "tail": "SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1"
-      },
-      {
-        "altitudes": [
-          9000,
-          11000
-        ],
-        "classes": [
-          "T",
-          "J"
-        ],
-        "destination": "KSMF",
-        "exitFix": "TRUKN",
-        "tail": "TRUKN CCR CCR2"
+        "tail": "SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII4"
       },
       {
         "altitudes": [
@@ -2007,7 +1994,7 @@
         ],
         "destination": "KLAS",
         "exitFix": "NTELL",
-        "tail": "NTELL Q174 FLCHR COKTL3"
+        "tail": "NTELL Q174 FLCHR COKTL4"
       },
       {
         "altitudes": [
@@ -2018,7 +2005,7 @@
         ],
         "destination": "KLAS",
         "exitFix": "NTELL",
-        "tail": "NTELL Q162 ESSAA BTY SUNST4"
+        "tail": "NTELL Q162 ESSAA BTY PUMLE1"
       },
       {
         "altitudes": [
@@ -2041,7 +2028,7 @@
         ],
         "destination": "KBUR",
         "exitFix": "KTINA",
-        "tail": "KTINA CISKO RDHOT ROKKR2"
+        "tail": "KTINA CISKO RDHOT ROKKR3"
       },
       {
         "altitudes": [
@@ -2076,7 +2063,7 @@
         ],
         "destination": "KCRQ",
         "exitFix": "YYUNG",
-        "tail": "YYUNG LEGOZ LEGOZ1"
+        "tail": "YYUNG LEGOZ LEGOZ4"
       },
       {
         "altitudes": [
@@ -2196,18 +2183,6 @@
         "destination": "KBOI",
         "exitFix": "SAC",
         "tail": "SAC ANAHO"
-      },
-      {
-        "altitudes": [
-          9000,
-          11000
-        ],
-        "classes": [
-          "J"
-        ],
-        "destination": "KSMF",
-        "exitFix": "CCR",
-        "tail": "CCR CCR2"
       },
       {
         "altitudes": [
