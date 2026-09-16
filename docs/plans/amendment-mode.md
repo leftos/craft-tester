@@ -54,7 +54,14 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   `A-EXPECT-AMENDED` row, `speak.ts` rendering, `gradeBoxes(answers, result)` in `amend/grade.ts`
   with the either/or rule and the normalisers. Proving: `pnpm -C web test amend` plus the generator
   gate and `build --check` for the new row.
-- [ ] B. `scenario/amend.ts`: `generateAmendmentScenario(rng, airport, filter)` draws a clean plan
+- [x] B. (landed 2026-09-15; over 1,000 seeds 1.29 attempts per draw, 16% correct as filed;
+  fault shares stale/other/no SID 19/19/16%, parity 19%, non-RVSM in band 14%, above ceiling 20%,
+  wrong TEC route 2%, missing/unknown suffix 3/3%, RNAV clash 2%; the rare four are rare because
+  the data has few NCT routes and few non-RNAV SIDs. **Finding for the user:** every NCT
+  destination's route-library tail differs from the transcribed TEC route (KSMF files `TRUKN CCR
+  CCR2`, TEC says `TRUKN# TRUKN FEVTA FEVTA1`) and some library altitudes exceed the TEC cap, so
+  those plans read as clean in clearance mode but always take a route amendment here; the nine
+  library rows should probably carry the TEC route) `scenario/amend.ts`: `generateAmendmentScenario(rng, airport, filter)` draws a clean plan
   with `generateScenario`, then injects 0/1/2 faults from: stale SID version, another published SID
   of the field, no SID, wrong route for a TEC destination (only when the library has one), parity
   flip (+1,000), non-RVSM suffix inside the band, altitude above the type ceiling, missing suffix,
