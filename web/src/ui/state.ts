@@ -257,7 +257,7 @@ export function newSession(
     seed,
     filter,
     mode,
-    view: buildScenario(airport, seed, filter),
+    view: buildScenario(airport, seed, filter, mode),
     picks: EMPTY_PICKS,
     boxes: EMPTY_BOXES,
     boxesSubmitted: false,

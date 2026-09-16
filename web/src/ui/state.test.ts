@@ -294,6 +294,12 @@ describe('withMode', () => {
     expect(state.submitted).toBe(false);
   });
 
+  it('draws the scenario the half it starts trains on', () => {
+    const started = newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance');
+    expect(started.view.kind).toBe('clearance');
+    expect(withMode(started, 'amendment', FRESH_SEED, undefined).view.kind).toBe('amendment');
+  });
+
   it('carries over the earlier attempt the caller looked up for that seed and mode', () => {
     const picks = toAmendmentPicks(full);
     if (picks === undefined) throw new Error('the filled form did not read back');

@@ -49,8 +49,13 @@ export function verdictLines(verdict: Grade): {
   };
 }
 
-/** One element's verdict: what the player said, the correction where it was wrong, and why. */
-function gradeRow(verdict: Grade): HTMLElement {
+/**
+ * Renders one element's verdict: what the player said, the correction where it was wrong, and why.
+ *
+ * @param verdict The verdict for one element of the clearance, or for one box of the strip.
+ * @returns The verdict row.
+ */
+export function renderVerdict(verdict: Grade): HTMLElement {
   const lines = verdictLines(verdict);
   const row = el('div', `verdict ${verdict.ok ? 'ok' : 'bad'}`);
   const answer = el('p', 'answer', lines.answer);
@@ -77,7 +82,7 @@ function revealPanel(spoken: SpokenClearance): HTMLElement {
 function resultsBody(props: ResultsProps): HTMLElement[] {
   return [
     el('p', 'score', scoreLine(props.grades)),
-    ...props.grades.map((verdict) => gradeRow(verdict)),
+    ...props.grades.map((verdict) => renderVerdict(verdict)),
     revealPanel(props.spoken),
   ];
 }

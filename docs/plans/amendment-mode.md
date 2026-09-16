@@ -76,7 +76,8 @@ clearance for the amended plan. Builds on the engine in [amendment-engine.md](./
   keyed on mode (clearance keys and values unchanged); `gradeProcedure` in `rules/grade.ts` (by
   family, chart-name labels); `craftGroups(…, procedure: 'given' | 'picked')`; `app.ts` threads
   the mode with no visible change.
-- [ ] C2. (after B and C1) UI: mode switch in the header (`Clean clearance` / `Amend and clear`);
+- [x] C2. (landed 2026-09-15; panels in `ui/amendPanels.ts`, form in `ui/amendForm.ts`; the answer
+  dropdown's blank option cannot un-answer a box; `procedureOf` is untested) UI: mode switch in the header (`Clean clearance` / `Amend and clear`);
   `buildScenario` draws with `generateAmendmentScenario` and `resolveAmendedClearance` in amendment
   mode; amendment view = strip with three answer controls (as filed / amend to + input), submit, box
   verdicts; then the corrected strip, the ATIS and the CRAFT form with the picked procedure row and

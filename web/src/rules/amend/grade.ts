@@ -1,6 +1,6 @@
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { formatFeet } from '@/rules/grade.ts';
-import type { RuleCitation } from '@/rules/types.ts';
+import type { Grade, RuleCitation } from '@/rules/types.ts';
 
 /** One box of the flight progress strip the student answers. */
 export type Box = 'type' | 'altitude' | 'route';
@@ -195,4 +195,19 @@ export function gradeBoxes(
   const amendments = byBox(result.amendments);
   const fixed = fixedBoxes(answers, amendments);
   return STRIP_ORDER.map((box) => gradeBox(box, answers[box], amendments[box], fixed));
+}
+
+/**
+ * Reads a box verdict as a verdict on a clearance element, which is how the results view shows it.
+ *
+ * An amendment session is graded as one run of the strip boxes and then the clearance elements, so
+ * the two kinds of verdict share a score line and a renderer; the box becomes the element it reports
+ * under, e.g. `BOX.altitude`.
+ *
+ * @param grade The verdict for one box of the strip.
+ * @returns The same verdict, keyed by the element the box reports under.
+ */
+export function boxGradeAsGrade(grade: BoxGrade): Grade {
+  const { box, ...rest } = grade;
+  return { element: `BOX.${box}`, ...rest };
 }

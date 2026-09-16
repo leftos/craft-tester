@@ -1,11 +1,14 @@
 import airportsIndexJson from '@data/airports.json';
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import { parseAirport, parseAirportsIndex } from '@/data/load.ts';
+import { resolveAmendedClearance } from '@/rules/amend/engine.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
-import type { ResolvedClearance } from '@/rules/types.ts';
-import type { ScenarioFilter } from '@/scenario/filter.ts';
+import type { ResolvedClearance, Unresolved } from '@/rules/types.ts';
+import type { AmendmentScenario } from '@/scenario/amend.ts';
+import { generateAmendmentScenario } from '@/scenario/amend.ts';
+import type { Mode, ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
 
@@ -21,9 +24,16 @@ const airportFiles = import.meta.glob<{ default: unknown }>([
   '!@data/airports.json',
 ]);
 
-/** What one seed produced: a clearance to grade, or the reasons the engine could not issue one. */
+/**
+ * What one seed produced: a clearance to grade, a plan to amend and then clear, or the reasons the
+ * engine could not issue one.
+ *
+ * An amendment view carries the drawn plan with the amendments the engine raised for it, and the
+ * clearance read for the corrected plan.
+ */
 export type ScenarioView =
   | { kind: 'clearance'; generated: Scenario; clearance: ResolvedClearance }
+  | { kind: 'amendment'; drawn: AmendmentScenario; clearance: ResolvedClearance }
   | { kind: 'unresolved'; reasons: string[] };
 
 /**
@@ -62,15 +72,16 @@ function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/**
- * Draws the scenario one seed stands for and resolves the clearance the SOP issues for it.
- *
- * @param airport The airport data the scenario is drawn from.
- * @param seed The scenario seed, which the URL hash carries.
- * @param filter The time of day and runway configurations the draw is narrowed to.
- * @returns The scenario with its clearance, or the reasons no clearance could be issued.
- */
-export function buildScenario(
+/** Reads the elements an engine result answered none of as the lines the unresolved panel shows. */
+function unresolvedView(unresolved: readonly Unresolved[]): ScenarioView {
+  return {
+    kind: 'unresolved',
+    reasons: unresolved.map((item) => `${item.element}: ${item.reason}`),
+  };
+}
+
+/** Draws a plan that is already correct, and the clearance the SOP issues for it. */
+function buildClearanceView(
   airport: AirportData,
   seed: number,
   filter: ScenarioFilter,
@@ -82,13 +93,47 @@ export function buildScenario(
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }
   const result = resolveClearance(generated, airport);
-  if (!result.ok) {
-    return {
-      kind: 'unresolved',
-      reasons: result.unresolved.map((item) => `${item.element}: ${item.reason}`),
-    };
-  }
+  if (!result.ok) return unresolvedView(result.unresolved);
   return { kind: 'clearance', generated, clearance: result.clearance };
+}
+
+/** Draws a plan that needs amending, and the clearance read for it once it is corrected. */
+function buildAmendmentView(
+  airport: AirportData,
+  seed: number,
+  filter: ScenarioFilter,
+): ScenarioView {
+  let drawn: AmendmentScenario;
+  try {
+    drawn = generateAmendmentScenario(createRng(seed), airport, filter);
+  } catch (error) {
+    return { kind: 'unresolved', reasons: [reasonOf(error)] };
+  }
+  const result = resolveAmendedClearance(drawn.filed, drawn.result.corrected, airport);
+  if (!result.ok) return unresolvedView(result.unresolved);
+  return { kind: 'amendment', drawn, clearance: result.clearance };
+}
+
+/**
+ * Draws the scenario one seed stands for and resolves the clearance the SOP issues for it.
+ *
+ * Clearance mode draws a plan that is already correct; amendment mode draws one with faults in it,
+ * and the clearance it resolves is the one read for the plan the controller corrects it into.
+ *
+ * @param airport The airport data the scenario is drawn from.
+ * @param seed The scenario seed, which the URL hash carries.
+ * @param filter The time of day and runway configurations the draw is narrowed to.
+ * @param mode Which half the session trains.
+ * @returns The scenario with its clearance, or the reasons no clearance could be issued.
+ */
+export function buildScenario(
+  airport: AirportData,
+  seed: number,
+  filter: ScenarioFilter,
+  mode: Mode,
+): ScenarioView {
+  if (mode === 'amendment') return buildAmendmentView(airport, seed, filter);
+  return buildClearanceView(airport, seed, filter);
 }
 
 /** The spoken name of a destination, falling back to its identifier. */

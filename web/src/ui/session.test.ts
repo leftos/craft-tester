@@ -47,7 +47,8 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
 
 /** Every row of the form, in the order CRAFT speaks them. */
 function groupsOf(state: AppState): readonly CraftGroup[] {
-  if (state.view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+  if (state.view.kind !== 'clearance')
+    throw new Error('the seeded scenario is not a clean clearance');
   return craftGroups(
     state.view.generated,
     state.airport,
@@ -64,7 +65,7 @@ function fieldsOf(state: AppState): CraftField[] {
 
 beforeAll(async () => {
   airport = await loadAirportData('KSFO');
-  view = buildScenario(airport, SEED, ANY_SCENARIO);
+  view = buildScenario(airport, SEED, ANY_SCENARIO, 'clearance');
 });
 
 describe('the bundled airport data', () => {
@@ -83,12 +84,12 @@ describe(`the scenario of seed ${SEED}`, () => {
   });
 
   it('is the same scenario every time the seed is drawn', () => {
-    const again = buildScenario(airport, SEED, ANY_SCENARIO);
+    const again = buildScenario(airport, SEED, ANY_SCENARIO, 'clearance');
     expect(JSON.stringify(again)).toBe(JSON.stringify(view));
   });
 
   it('fills the strip and the ATIS from the scenario', () => {
-    if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+    if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const scenario = view.generated;
     const strip = new Map(stripRows(scenario).map(([label, value]) => [label, value]));
     expect(strip.get('callsign')).toBe(scenario.callsign);
@@ -103,12 +104,52 @@ describe(`the scenario of seed ${SEED}`, () => {
   });
 
   it('is read back as a spoken clearance', () => {
-    if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+    if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const spoken = spokenFor(view.generated, view.clearance, airport);
     console.log(`[seed ${SEED}] abbreviated: ${spoken.abbreviated}`);
     console.log(`[seed ${SEED}] full route:  ${spoken.fullRoute}`);
     expect(spoken.abbreviated).toContain('cleared to');
     expect(spoken.fullRoute).toContain('squawk');
+  });
+});
+
+describe('an amendment scenario', () => {
+  /** The seeds the amendment draw is exercised over. */
+  const SEEDS = Array.from({ length: 20 }, (_, index) => index + 1);
+
+  /** The amendment view one seed draws, or a failure naming what came back instead. */
+  function amendmentOf(seed: number): Extract<ScenarioView, { kind: 'amendment' }> {
+    const drawn = buildScenario(airport, seed, ANY_SCENARIO, 'amendment');
+    if (drawn.kind === 'amendment') return drawn;
+    const reasons = drawn.kind === 'unresolved' ? drawn.reasons.join('; ') : 'a clean clearance';
+    throw new Error(`seed ${seed} drew no amendment scenario: ${reasons}`);
+  }
+
+  it('builds a plan to amend and the clearance for its corrected form, for every seed', () => {
+    for (const seed of SEEDS) {
+      const drawn = amendmentOf(seed);
+      expect(drawn.kind, `seed ${seed}`).toBe('amendment');
+      expect(drawn.clearance.sid.value.id.length, `seed ${seed}`).toBeGreaterThan(0);
+    }
+  });
+
+  it('draws the same plan every time a seed is drawn', () => {
+    for (const seed of SEEDS) {
+      expect(JSON.stringify(amendmentOf(seed)), `seed ${seed}`).toBe(
+        JSON.stringify(amendmentOf(seed)),
+      );
+    }
+  });
+
+  it('speaks the amended altitude in the expect clause where the altitude box was amended', () => {
+    const amended = SEEDS.map((seed) => amendmentOf(seed)).filter(
+      (drawn) => drawn.drawn.result.corrected.filedAltitude !== drawn.drawn.filed.filedAltitude,
+    );
+    expect(amended.length, 'no seed of 1 to 20 amends the altitude box').toBeGreaterThan(0);
+    for (const drawn of amended) {
+      expect(drawn.clearance.expect.value?.amended).toBe(true);
+      expect(drawn.clearance.expect.value?.feet).toBe(drawn.drawn.result.corrected.filedAltitude);
+    }
   });
 });
 
@@ -144,7 +185,7 @@ describe('the CRAFT form', () => {
   });
 
   it('opens with the clearance limit and the procedure the engine resolved', () => {
-    if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+    if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const clearance = view.clearance;
     const [limit, procedure] = groupsOf(
       newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance'),
@@ -163,7 +204,7 @@ describe('the CRAFT form', () => {
   });
 
   it('shows the squawk as a given row just before the runway', () => {
-    if (view.kind === 'unresolved') throw new Error('the seeded scenario has no clearance');
+    if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const groups = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance'));
     const squawkAt = groups.findIndex(
       (group) => group.kind === 'given' && group.heading.startsWith('T'),

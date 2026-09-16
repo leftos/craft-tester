@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario } from '@/data/schema.ts';
 import type { BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
-import { gradeBoxes, normaliseRoute, normaliseType, parseAltitude } from '@/rules/amend/grade.ts';
+import {
+  boxGradeAsGrade,
+  gradeBoxes,
+  normaliseRoute,
+  normaliseType,
+  parseAltitude,
+} from '@/rules/amend/grade.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
@@ -195,6 +201,34 @@ describe('gradeBoxes', () => {
     const grades = gradeBoxes(answers(), result(PAIRED_TYPE, PAIRED_ROUTE));
     expect(grades[0]?.expectedLabel).toBe('B752/L');
     expect(grades[2]?.expectedLabel).toBe('SFO5 MOGEE BVL');
+  });
+});
+
+describe('boxGradeAsGrade', () => {
+  it('reports a box under the element the results view names it by', () => {
+    const verdict = boxGradeAsGrade({
+      box: 'altitude',
+      ok: false,
+      expectedLabel: '27,000',
+      actualLabel: 'correct as filed',
+      citations: [citation],
+    });
+    expect(verdict).toStrictEqual({
+      element: 'BOX.altitude',
+      ok: false,
+      expectedLabel: '27,000',
+      actualLabel: 'correct as filed',
+      citations: [citation],
+    });
+  });
+
+  it('names every box', () => {
+    const elements = (['type', 'altitude', 'route'] as const).map(
+      (box) =>
+        boxGradeAsGrade({ box, ok: true, expectedLabel: '', actualLabel: '', citations: [] })
+          .element,
+    );
+    expect(elements).toStrictEqual(['BOX.type', 'BOX.altitude', 'BOX.route']);
   });
 });
 

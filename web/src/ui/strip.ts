@@ -32,11 +32,15 @@ export function stripRows(scenario: Scenario): readonly (readonly [string, strin
 /**
  * Renders the flight progress strip.
  *
+ * Amendment mode shows two strips at once, the plan as filed and the plan as amended, so the panel
+ * is headed by the caller rather than by the strip itself.
+ *
  * @param scenario The drawn flight plan.
+ * @param heading The heading over the strip, e.g. `Flight plan`.
  * @returns The strip panel.
  */
-export function renderStrip(scenario: Scenario): HTMLElement {
+export function renderStrip(scenario: Scenario, heading: string): HTMLElement {
   const panel = el('section', 'panel strip');
-  panel.append(el('h2', '', 'Flight plan'), rowList('strip-rows', stripRows(scenario)));
+  panel.append(el('h2', '', heading), rowList('strip-rows', stripRows(scenario)));
   return panel;
 }

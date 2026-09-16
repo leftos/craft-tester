@@ -1,4 +1,5 @@
 import type { AirportData, AirportsIndex } from '@/data/schema.ts';
+import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import { grade } from '@/rules/grade.ts';
 import type { ConfigFilter, Mode, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import {
@@ -9,6 +10,7 @@ import {
   modeFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
+import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
@@ -23,8 +25,13 @@ import type { AppState, PickKey } from '@/ui/state.ts';
 import {
   newSession,
   shareLink,
+  toAmendmentPicks,
+  toBoxAnswers,
   toPlayerPicks,
+  withBox,
+  withBoxesSubmitted,
   withFilter,
+  withMode,
   withPick,
   withRetry,
   withSubmitted,
@@ -34,7 +41,10 @@ import { renderStrip } from '@/ui/strip.ts';
 /** What the page's controls call back into. */
 type Actions = {
   onAirport: (icao: string) => void;
+  onBox: (box: Box, answer: BoxAnswer) => void;
+  onBoxesSubmit: () => void;
   onFilter: (filter: ScenarioFilter) => void;
+  onMode: (mode: Mode) => void;
   onNewScenario: () => void;
   onPick: (key: PickKey, raw: string) => void;
   onRetry: () => void;
@@ -46,6 +56,12 @@ const TIME_OPTIONS: readonly (SelectOption & { value: TimeFilter })[] = [
   { value: 'either', label: 'Either' },
   { value: 'day', label: 'Day' },
   { value: 'night', label: 'Night' },
+];
+
+/** The two halves of the trainer, in the order the dropdown offers them. */
+const MODE_OPTIONS: readonly (SelectOption & { value: Mode })[] = [
+  { value: 'clearance', label: 'Clean clearance' },
+  { value: 'amendment', label: 'Amend and clear' },
 ];
 
 /** Puts the seed, the filter and the mode in the hash, so a reload and a link both restore them. */
@@ -87,6 +103,23 @@ function configOptions(airport: AirportData): SelectOption[] {
       label: `${config.id} — ${config.name}`,
     })),
   ];
+}
+
+/** The dropdown that picks the half of the trainer the session runs in. */
+function modeControl(state: AppState, actions: Actions): HTMLElement {
+  return selectControl(
+    {
+      label: 'mode',
+      options: MODE_OPTIONS,
+      value: state.mode,
+      disabled: false,
+      placeholder: '—',
+    },
+    (raw) => {
+      const mode = MODE_OPTIONS.find((option) => option.value === raw)?.value ?? 'clearance';
+      actions.onMode(mode);
+    },
+  );
 }
 
 /** The two dropdowns that narrow the draw: the time of day and the runway configuration. */
@@ -135,6 +168,7 @@ function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): 
       },
       actions.onAirport,
     ),
+    modeControl(state, actions),
     ...filterControls(state, actions),
     button('New scenario', 'primary', actions.onNewScenario),
   );
@@ -164,8 +198,11 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
   if (state.view.kind === 'unresolved') {
     return [renderUnresolved(state.view.reasons, actions.onNewScenario)];
   }
+  if (state.view.kind === 'amendment') {
+    return renderAmendmentPanels(state, state.view, actions);
+  }
   const { generated, clearance } = state.view;
-  const panels = [renderStrip(generated), renderAtis(generated, state.airport)];
+  const panels = [renderStrip(generated, 'Flight plan'), renderAtis(generated, state.airport)];
   if (state.revisit?.kind === 'clearance' && !state.submitted) {
     panels.push(
       renderRevisit({
@@ -215,6 +252,26 @@ function renderApp(state: AppState, index: AirportsIndex, actions: Actions): HTM
 /** Everything `mount` remembers between renders that is not the state itself. */
 type Stores = { solved: SolvedStore; filter: FilterStore };
 
+/**
+ * Remembers the attempt the student just submitted, so a revisit of the seed shows it back.
+ *
+ * An amendment attempt is the strip answers and the clearance that followed them; a form still
+ * missing a pick is not an attempt at all and is not written.
+ */
+function saveAttempt(state: AppState, store: SolvedStore): void {
+  const { icao } = state.airport.airport;
+  if (state.mode === 'amendment') {
+    const boxes = toBoxAnswers(state.boxes);
+    const picks = toAmendmentPicks(state.picks);
+    if (boxes !== undefined && picks !== undefined) {
+      store.save(icao, state.seed, { kind: 'amendment', boxes, picks });
+    }
+    return;
+  }
+  const picks = toPlayerPicks(state.picks);
+  if (picks !== undefined) store.save(icao, state.seed, { kind: 'clearance', picks });
+}
+
 /** Holds the state, rewrites the hash, and renders the page after every change. */
 function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): void {
   const store = stores.solved;
@@ -235,11 +292,24 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
         update(newSession(airport, state.seed, previous, filter, state.mode));
       });
     },
+    onBox: (box, answer) => {
+      update(withBox(state, box, answer));
+    },
+    onBoxesSubmit: () => {
+      if (state.view.kind !== 'amendment') return;
+      const corrected = state.view.drawn.result.corrected;
+      update(withBoxesSubmitted(state, procedureOf(corrected, state.airport)));
+    },
     onFilter: (filter) => {
       const { icao } = state.airport.airport;
       stores.filter.save(icao, filter);
       const seed = randomSeed();
       update(withFilter(state, filter, seed, store.load(icao, seed, state.mode)));
+    },
+    onMode: (mode) => {
+      const seed = randomSeed();
+      const previous = store.load(state.airport.airport.icao, seed, mode);
+      update(withMode(state, mode, seed, previous));
     },
     onNewScenario: () => {
       const seed = randomSeed();
@@ -254,10 +324,7 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       update(withRetry(state));
     },
     onSubmit: () => {
-      const picks = toPlayerPicks(state.picks);
-      if (picks !== undefined) {
-        store.save(state.airport.airport.icao, state.seed, { kind: 'clearance', picks });
-      }
+      saveAttempt(state, store);
       update(withSubmitted(state));
     },
   };
