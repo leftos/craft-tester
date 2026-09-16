@@ -60,7 +60,10 @@ parallel. The procedure, the clearance limit and the squawk are resolved but not
 `correct`, `wrong`, or `acceptable`: a reading the rules allow that says more than it needs to, counted
 as correct in the score line but shown in its own colour. Today the only acceptable reading is the expect
 clause a SID chart already publishes, which the engine reports as `redundantExpect` next to the dropped
-clause and the grader accepts at the chart's delay, citing `A-EXPECT-REDUNDANT`. A clean
+clause and the grader accepts at the chart's delay, citing `A-EXPECT-REDUNDANT`. The expect clause
+itself has three readings (`ExpectClause.kind`): `filed` ("expect (filed altitude) N minutes after
+departure"), `amended` after the altitude box was amended, and `final` ("(altitude) will be your final",
+row `A-FINAL`) where the amended clearance speaks the altitude it climbs the flight straight to. A clean
 clearance is read exactly as filed, so clearance mode draws only plans whose route already carries the
 assigned SID; a missing, stale or wrong SID is amendment-mode material. The spoken transmission ends
 "expect runway (designator)".
