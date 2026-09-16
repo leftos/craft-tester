@@ -46,6 +46,25 @@ function ual313(): Scenario {
   });
 }
 
+/** The same plan filed with a suffix the table holds but RVSM does not, so only its altitude is wrong. */
+function ual313NonRvsm(): Scenario {
+  return scenario({ ...ual313(), equipmentSuffix: '/G' });
+}
+
+/** A plan whose valid non-RNAV suffix clashes with an RNAV departure an RNAV suffix would keep. */
+function rnavClash(): Scenario {
+  return scenario({
+    callsign: 'AAL88',
+    aircraftType: 'A320',
+    equipmentSuffix: '/A',
+    destination: 'KLAX',
+    filedRoute: 'SSTIK5 YYUNG LAX COMIX2',
+    filedAltitude: 27000,
+    departureRunway: '01L',
+    squawk: '4602',
+  });
+}
+
 /** The worksheet plan whose Sacramento route and altitude are both above what the TEC route allows. */
 function skw2345(): Scenario {
   return scenario({
@@ -130,29 +149,107 @@ describe('resolveAmendments', () => {
     );
   });
 
-  it('collapses the two type proposals of an RNAV clash and pairs the one left with the route', () => {
-    const result = resolved(ual313());
+  it('judges the altitude and the route boxes behind the suffix the type box is corrected to', () => {
+    const flight = ual313();
+    const result = resolved(flight);
     expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
-      ['type', 'route'],
-      ['altitude', undefined],
-      ['route', 'type'],
+      ['type', undefined],
     ]);
     const [type] = result.amendments;
     if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
     expect(type.proposed).toBe('B752/L');
     expect(type.reason).toContain('suffix /Q is not in');
-    expect(type.reason).toContain('an RNAV suffix would keep the filed TRUKN2');
     expect(type.citations.map((citation) => citation.id)).toEqual(['EQUIP/L']);
+    expect(result.corrected.filedRoute).toBe(flight.filedRoute);
+    expect(result.corrected.filedAltitude).toBe(flight.filedAltitude);
+  });
+
+  it('pairs the type box with the route box where a valid suffix clashes with the procedure', () => {
+    const result = resolved(rnavClash());
+    expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
+      ['type', 'route'],
+      ['route', 'type'],
+    ]);
+    const [type] = result.amendments;
+    if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
+    expect(type.proposed).toBe('A320/L');
+    expect(type.reason).toContain('an RNAV suffix would keep the filed SSTIK5');
   });
 
   it('corrects one side only of the RNAV pair, the type box the strip reads first', () => {
-    const flight = ual313();
+    const flight = rnavClash();
     const result = resolved(flight);
     expect(result.corrected.equipmentSuffix).toBe('/L');
     expect(result.corrected.filedRoute).toBe(flight.filedRoute);
     const route = result.amendments.find((amendment) => amendment.box === 'route');
     if (route?.box !== 'route') throw new Error('the route amendment is missing');
     expect(route.proposed).not.toBe(flight.filedRoute);
+  });
+
+  it('proposes the procedure the corrected type box is assigned, not the one the filed box was', () => {
+    const flight = scenario({
+      callsign: 'N898BY',
+      aircraftType: 'SR22',
+      equipmentSuffix: null,
+      destination: 'KSMF',
+      filedRoute: 'MOLEN9 OAK V6 SAC',
+      filedAltitude: 5000,
+      runwayConfigId: '01/01',
+      departureRunway: '01R',
+      localTime: '0545',
+      dayOfWeek: 'thursday',
+      squawk: '4620',
+    });
+    const result = resolved(flight);
+    expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
+      ['type', undefined],
+      ['route', undefined],
+    ]);
+    const [type, route] = result.amendments;
+    if (type?.box !== 'type' || route?.box !== 'route')
+      throw new Error('the boxes are not amended');
+    expect(type.proposed).toBe('SR22/G');
+    expect(route.proposed).toBe('SFO5 OAK V6 SAC');
+    expect(route.reason).toContain('the TEC route for a piston in SFOW is SFO5 OAK V6 SAC');
+    expect(route.reason).not.toContain('runway heading');
+    const amended = resolveAmendedClearance(flight, result.corrected, ksfo);
+    if (!amended.ok) throw new Error(amended.unresolved.map((item) => item.reason).join('; '));
+    expect(assigned(amended.clearance).family).toBe('SFO');
+  });
+
+  it('offers no RNAV alternative where the RNAV plan is assigned another procedure anyway', () => {
+    const flight = scenario({
+      callsign: 'N938KR',
+      aircraftType: 'SR22',
+      equipmentSuffix: '/E',
+      destination: 'KMRY',
+      filedRoute: 'SSTIK5 EUGEN',
+      filedAltitude: 3000,
+      runwayConfigId: '01/01',
+      departureRunway: '01L',
+      localTime: '0023',
+      squawk: '4620',
+    });
+    const result = resolved(flight);
+    expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
+      ['type', undefined],
+      ['route', undefined],
+    ]);
+    const [type, route] = result.amendments;
+    if (type?.box !== 'type' || route?.box !== 'route')
+      throw new Error('the boxes are not amended');
+    expect(type.proposed).toBe('SR22/G');
+    expect(type.reason).toContain('suffix /E is not in');
+    expect(type.reason).not.toContain('an RNAV suffix would keep');
+    expect(route.proposed).toBe('GAPP7 EUGEN');
+  });
+
+  it('leaves the altitude of a jet whose corrected suffix carries RVSM approval alone', () => {
+    const flight = scenario({ equipmentSuffix: '/E' });
+    const result = resolved(flight);
+    expect(result.amendments.map((amendment) => amendment.box)).toEqual(['type']);
+    expect(result.amendments[0]).toMatchObject({ proposed: 'B738/L' });
+    expect(result.corrected.filedAltitude).toBe(flight.filedAltitude);
   });
 
   it('fails the whole result when a box the data cannot answer blocks one check', () => {
@@ -210,7 +307,7 @@ describe('resolveAmendments forced transition', () => {
 
 describe('resolveAmendedClearance', () => {
   it('speaks the amended altitude in the expect clause when the altitude box was amended', () => {
-    const original = ual313();
+    const original = ual313NonRvsm();
     const { corrected } = resolved(original);
     expect(corrected.filedAltitude).toBe(27000);
     const result = resolveAmendedClearance(original, corrected, ksfo);
@@ -282,7 +379,7 @@ describe('resolveAmendedClearance', () => {
   });
 
   it('holds nothing redundant, because the amended clause is mandatory', () => {
-    const original = ual313();
+    const original = ual313NonRvsm();
     const { corrected } = resolved(original);
     const result = resolveAmendedClearance(original, corrected, ksfo);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));

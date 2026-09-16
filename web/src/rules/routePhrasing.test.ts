@@ -94,7 +94,7 @@ describe('phraseRoute', () => {
   it('speaks a clearance on the runway heading as radar vectors to the exit fix', () => {
     const result = phraseRoute({ kind: 'heading' }, 'OAK', ksfo);
     expect(result.value).toEqual({ template: 'radar_vectors_fix', fix: 'OAK' });
-    expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-SID']);
+    expect(result.citations.map((citation) => citation.id)).toEqual(['R-HEADING']);
   });
 
   it('joins an airway off a clearance on the runway heading', () => {

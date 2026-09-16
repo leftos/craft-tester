@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
-import { checkType } from '@/rules/amend/type.ts';
+import { checkRnavClash, checkSuffix } from '@/rules/amend/type.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
@@ -42,28 +42,29 @@ function withoutFleetType(type: string): AirportData {
   };
 }
 
-function check(flight: Scenario, airport: AirportData = ksfo) {
+/** The suffix gap of a plan, which is the half of the type box every other box is judged behind. */
+function suffixGap(flight: Scenario, airport: AirportData = ksfo) {
+  const amendment = checkSuffix(flight, airport);
+  if (amendment !== undefined && isUnresolved(amendment)) throw new Error(amendment.reason);
+  return amendment;
+}
+
+/** The RNAV clash a plan raises, judged against the clearance that plan is read under. */
+function clash(flight: Scenario, airport: AirportData = ksfo) {
   const ctx = classify(flight, airport);
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
   const result = resolveClearance(flight, airport);
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-  return checkType(flight, ctx, result.clearance, airport);
+  return checkRnavClash(flight, ctx, result.clearance, airport);
 }
 
-function amendments(flight: Scenario, airport: AirportData = ksfo) {
-  const result = check(flight, airport);
-  if (isUnresolved(result)) throw new Error(result.reason);
-  return result;
-}
-
-describe('checkType equipment suffix', () => {
+describe('checkSuffix equipment suffix', () => {
   it('leaves a suffix the equipment table holds alone', () => {
-    expect(amendments(scenario({}))).toEqual([]);
+    expect(suffixGap(scenario({}))).toBeUndefined();
   });
 
   it('proposes the suffix the fleet files when the plan filed none', () => {
-    const [amendment, ...rest] = amendments(scenario({ equipmentSuffix: null }));
-    expect(rest).toEqual([]);
+    const amendment = suffixGap(scenario({ equipmentSuffix: null }));
     expect(amendment?.box).toBe('type');
     expect(amendment).toMatchObject({ proposed: 'B738/L' });
     expect(amendment?.reason).toContain('no equipment suffix filed');
@@ -72,22 +73,21 @@ describe('checkType equipment suffix', () => {
 
   it('proposes the suffix the fleet files when the plan filed one the table does not hold', () => {
     const flight = scenario({ aircraftType: 'B752', equipmentSuffix: '/Q' });
-    const [amendment, ...rest] = amendments(flight);
-    expect(rest).toEqual([]);
+    const amendment = suffixGap(flight);
     expect(amendment).toMatchObject({ proposed: 'B752/L' });
     expect(amendment?.reason).toContain('suffix /Q is not in FAA JO 7110.65 Table 5-4-1');
   });
 
   it('reports the type box unresolved when the fleet does not list the type', () => {
     const flight = scenario({ equipmentSuffix: null });
-    expect(check(flight, withoutFleetType('B738'))).toEqual({
+    expect(checkSuffix(flight, withoutFleetType('B738'))).toEqual({
       element: 'BOX.type',
       reason: expect.stringContaining('B738'),
     });
   });
 });
 
-describe('checkType RNAV ambiguity', () => {
+describe('checkRnavClash RNAV ambiguity', () => {
   it('offers an RNAV suffix to a non-RNAV flight that filed an RNAV procedure', () => {
     const flight = scenario({
       aircraftType: 'A320',
@@ -97,10 +97,23 @@ describe('checkType RNAV ambiguity', () => {
       departureRunway: '01L',
       filedAltitude: 33000,
     });
-    const [amendment, ...rest] = amendments(flight);
-    expect(rest).toEqual([]);
+    const amendment = clash(flight);
     expect(amendment).toMatchObject({ box: 'type', proposed: 'A320/L' });
     expect(amendment?.reason).toContain('SSTIK5');
     expect(amendment?.citations.map((citation) => citation.id)).toEqual(['EQUIP/L']);
+  });
+
+  it('offers no RNAV suffix where the SOP assigns that plan another procedure anyway', () => {
+    const flight = scenario({
+      aircraftType: 'SR22',
+      equipmentSuffix: '/A',
+      destination: 'KMRY',
+      filedRoute: 'SSTIK5 EUGEN',
+      runwayConfigId: '01/01',
+      departureRunway: '01L',
+      filedAltitude: 3000,
+      localTime: '0023',
+    });
+    expect(clash(flight)).toBeUndefined();
   });
 });

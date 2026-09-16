@@ -54,12 +54,25 @@ function templateFor(
 }
 
 /**
+ * The phraseology row a shape is spoken under, which a flight on the runway heading names for itself.
+ *
+ * The radar-vector shape is read under the row that says a flight without a procedure flies the
+ * runway heading, rather than under the one whose text vectors a flight off a SID. The airway shape
+ * is spoken the same way off a SID and off the heading, so it keeps its own row either way.
+ */
+function ruleFor(procedure: SelectedProcedure, template: RouteTemplate): string {
+  if (procedure.kind === 'heading' && template === 'radar_vectors_fix') return 'R-HEADING';
+  return TEMPLATE_RULE[template];
+}
+
+/**
  * Phrases the route element of the clearance for a procedure and the element the flight leaves on.
  *
  * Every shape names what the flight leaves the terminal on, "as filed" included: a fix that is no
  * published transition is still spoken, bare, before "then as filed". A flight cleared on the
  * runway heading has no chart to phrase from, so it takes the shape the airport's `noSid` row
- * publishes for a departure without a procedure, or the airway shape where it leaves on an airway.
+ * publishes for a departure without a procedure, cited to the runway-heading row rather than to the
+ * radar-vector SID row, or the airway shape where it leaves on an airway.
  *
  * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param exitElement The fix, or the airway, the flight leaves the terminal on.
@@ -74,6 +87,6 @@ export function phraseRoute(
   const template = templateFor(procedure, exitElement, airport);
   return {
     value: { template, fix: exitElement },
-    citations: citePhraseology(airport, TEMPLATE_RULE[template]),
+    citations: citePhraseology(airport, ruleFor(procedure, template)),
   };
 }

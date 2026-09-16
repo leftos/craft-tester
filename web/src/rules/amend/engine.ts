@@ -1,9 +1,10 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { checkAltitude } from '@/rules/amend/altitude.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
-import { checkType } from '@/rules/amend/type.ts';
+import { checkRnavClash, checkSuffix } from '@/rules/amend/type.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
+import type { Classification } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type {
@@ -27,10 +28,47 @@ const STRIP_ORDER: readonly ResolvedAmendment['box'][] = ['type', 'altitude', 'r
 /** What one check produced: the amendments it raised, or the gap that blocked its box. */
 type CheckOutcome = ResolvedAmendment[] | Unresolved;
 
+/** A plan with what the engine resolved for it, which is what a box is judged against. */
+type Judged = { scenario: Scenario; ctx: Classification; clearance: ResolvedClearance };
+
 /** Reads a check that raises at most one amendment as the list every check is collected as. */
 function listed(outcome: ResolvedAmendment | undefined | Unresolved): CheckOutcome {
   if (outcome === undefined) return [];
   return isUnresolved(outcome) ? outcome : [outcome];
+}
+
+/**
+ * Classifies a plan and resolves the clearance the SOP reads it under.
+ *
+ * @param scenario The plan to judge a box against.
+ * @param airport The airport data.
+ * @returns The plan with its classification and its clearance, or the gaps that blocked either.
+ */
+function judge(scenario: Scenario, airport: AirportData): Judged | Unresolved[] {
+  const ctx = classify(scenario, airport);
+  if (isUnresolved(ctx)) return [ctx];
+  const result = resolveClearance(scenario, airport);
+  if (!result.ok) return result.unresolved;
+  return { scenario, ctx, clearance: result.clearance };
+}
+
+/**
+ * Sorts what the checks produced into the amendments raised and the boxes the data could not answer.
+ *
+ * @param outcomes What every check returned, in strip order.
+ * @returns The amendments in that order, and every gap a check reported.
+ */
+function collect(outcomes: readonly CheckOutcome[]): {
+  raised: ResolvedAmendment[];
+  gaps: Unresolved[];
+} {
+  const raised: ResolvedAmendment[] = [];
+  const gaps: Unresolved[] = [];
+  for (const outcome of outcomes) {
+    if (Array.isArray(outcome)) raised.push(...outcome);
+    else gaps.push(outcome);
+  }
+  return { raised, gaps };
 }
 
 /**
@@ -84,37 +122,39 @@ function pairAlternatives(amendments: ResolvedAmendment[]): ResolvedAmendment[] 
 /**
  * Resolves every amendment a filed plan needs, and the plan as it reads once they are applied.
  *
- * The checks run in strip order — type, altitude, route — and every box that the data cannot answer
- * fails the whole result, so a plan is never half-amended on a guess. `corrected` is the plan with
- * every proposal applied in that same order, which means a later amendment for a box overrides an
- * earlier one for it: a non-RNAV flight filing an RNAV procedure can raise two type amendments where
- * the suffix gap and the RNAV clash propose different suffixes, and `corrected` therefore carries
- * the RNAV suffix of the second. Where the RNAV clash raised a type amendment and the route box was
- * amended too, the two are marked as alternatives: either one alone fixes the clash, so `corrected`
- * applies the box earlier in strip order and skips the other, the tie-break the two are graded with.
- * Both are still reported, because writing either box is a full answer.
+ * The checks run in strip order — type, altitude, route — and the type box is corrected before the
+ * other two are judged: the equipment suffix decides what the SOP assigns the flight, so the
+ * altitude and the route are read for the plan as the type box will read rather than for the one the
+ * pilot filed, and every box then agrees with the clearance the corrected plan is read under. A box
+ * the data cannot answer fails the whole result, so a plan is never half-amended on a guess.
+ * `corrected` is the plan with every proposal applied in strip order, which means a later amendment
+ * for a box overrides an earlier one for it: the type box can carry both the suffix gap and the RNAV
+ * clash, and `corrected` therefore carries the RNAV suffix of the second. The RNAV pair is raised
+ * only where the plan with that suffix is in fact assigned the procedure the pilot filed; where it
+ * is not, the route is simply wrong for the flight and the route box alone amends it. Where the pair
+ * is raised and the route box was amended too, the two are marked as alternatives: either one alone
+ * fixes the clash, so `corrected` applies the box earlier in strip order and skips the other, the
+ * tie-break the two are graded with. Both are still reported, because writing either box is a full
+ * answer.
  *
  * @param scenario The filed flight plan.
  * @param airport The airport data.
  * @returns The amendments with the corrected plan, or every box the data could not answer.
  */
 export function resolveAmendments(scenario: Scenario, airport: AirportData): AmendmentResult {
-  const ctx = classify(scenario, airport);
-  if (isUnresolved(ctx)) return { ok: false, unresolved: [ctx] };
-  const result = resolveClearance(scenario, airport);
-  if (!result.ok) return { ok: false, unresolved: result.unresolved };
-  const { clearance } = result;
+  const filed = judge(scenario, airport);
+  if (Array.isArray(filed)) return { ok: false, unresolved: filed };
+  const suffix = checkSuffix(scenario, airport);
+  if (suffix !== undefined && isUnresolved(suffix)) return { ok: false, unresolved: [suffix] };
+  const judged = suffix === undefined ? filed : judge(apply(scenario, suffix), airport);
+  if (Array.isArray(judged)) return { ok: false, unresolved: judged };
+  const clash = checkRnavClash(judged.scenario, judged.ctx, judged.clearance, airport);
   const outcomes: CheckOutcome[] = [
-    checkType(scenario, ctx, clearance, airport),
-    listed(checkAltitude(scenario, ctx, airport)),
-    listed(checkRoute(scenario, ctx, clearance, airport)),
+    [suffix, clash].filter((amendment) => amendment !== undefined),
+    listed(checkAltitude(judged.scenario, judged.ctx, airport)),
+    listed(checkRoute(judged.scenario, judged.ctx, judged.clearance, airport)),
   ];
-  const raised: ResolvedAmendment[] = [];
-  const gaps: Unresolved[] = [];
-  for (const outcome of outcomes) {
-    if (Array.isArray(outcome)) raised.push(...outcome);
-    else gaps.push(outcome);
-  }
+  const { raised, gaps } = collect(outcomes);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
   const amendments = pairAlternatives(raised);
   return { ok: true, amendments, corrected: amendments.filter(applies).reduce(apply, scenario) };

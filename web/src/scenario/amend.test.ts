@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
+import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { isSidToken } from '@/rules/route.ts';
@@ -11,6 +12,7 @@ import {
   droppedTransition,
   generateAmendmentScenario,
 } from '@/scenario/amend.ts';
+import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import { createRng } from '@/scenario/rng.ts';
 
@@ -27,6 +29,16 @@ const CLEAN_SHARE = { low: 0.12, high: 0.28 };
 
 const drawn = SEEDS.map((seed) => generateAmendmentScenario(createRng(seed), ksfo, ANY_SCENARIO));
 
+/** The night draws off the 01s, the hour and the configuration the runway-heading flights live in. */
+const HEADING_FILTER: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '01/01' } };
+
+/** The seeds the runway-heading draws are measured over. */
+const HEADING_SEEDS = Array.from({ length: 200 }, (_value, index) => index);
+
+const headingDrawn = HEADING_SEEDS.map((seed) =>
+  generateAmendmentScenario(createRng(seed), ksfo, HEADING_FILTER),
+);
+
 /** Every fault kind, read back from the box table the module exports. */
 const FAULT_KINDS = Object.keys(FAULT_BOXES) as FaultKind[];
 
@@ -39,6 +51,23 @@ function label(entry: AmendmentScenario): string {
     `${entry.filed.filedAltitude} "${entry.filed.filedRoute}" ${entry.filed.destination}`,
     `${faults} -> ${boxes.length === 0 ? 'no amendment' : boxes}`,
   ].join(' | ');
+}
+
+/**
+ * The draws whose corrected plan the engine would amend again, named with the seed that drew them.
+ *
+ * Nothing is left to amend on a plan every box of which was judged against the plan the strip will
+ * read, so a draw that still raises a box is one whose boxes disagree with its own clearance.
+ */
+function amendedAgain(entries: readonly AmendmentScenario[], seeds: readonly number[]): string[] {
+  return entries.flatMap((entry, index) => {
+    const again = resolveAmendments(entry.result.corrected, ksfo);
+    if (again.ok && again.amendments.length === 0) return [];
+    const left = again.ok
+      ? again.amendments.map((amendment) => amendment.box).join('+')
+      : again.unresolved.map((gap) => gap.element).join('+');
+    return [`seed ${seeds[index]}: ${label(entry)} => still ${left}`];
+  });
 }
 
 /** The boxes the engine raised an amendment for. */
@@ -123,6 +152,14 @@ describe('generateAmendmentScenario', () => {
       .filter((entry) => raisedBoxes(entry).join('+') !== intendedBoxes(entry).join('+'))
       .map(label);
     expect(mismatched).toEqual([]);
+  });
+
+  it('leaves nothing to amend on the corrected plan', () => {
+    expect(amendedAgain(drawn, SEEDS)).toEqual([]);
+  });
+
+  it('leaves nothing to amend on the corrected plan of a night draw off the 01s', () => {
+    expect(amendedAgain(headingDrawn, HEADING_SEEDS)).toEqual([]);
   });
 
   it('never amends more than two boxes', () => {
