@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario } from '@/data/schema.ts';
-import { amendSubmitDisabled, boxRows } from '@/ui/amendForm.ts';
+import { amendSubmitDisabled, boxInputName, boxRows } from '@/ui/amendForm.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { EMPTY_BOXES } from '@/ui/state.ts';
 import { stripRows } from '@/ui/strip.ts';
@@ -64,6 +64,21 @@ describe('boxRows', () => {
   it('writes a type with no suffix as the bare designator', () => {
     const rows = boxRows({ ...FILED, equipmentSuffix: null }, EMPTY_BOXES);
     expect(rows[0]?.filed).toBe('B752');
+  });
+});
+
+describe('boxInputName', () => {
+  it('names the text box of every answerable box', () => {
+    expect(boxRows(FILED, EMPTY_BOXES).map((row) => boxInputName(row.box))).toStrictEqual([
+      'amend-type',
+      'amend-altitude',
+      'amend-route',
+    ]);
+  });
+
+  it('gives every box a name of its own', () => {
+    const names = boxRows(FILED, EMPTY_BOXES).map((row) => boxInputName(row.box));
+    expect(new Set(names).size).toBe(names.length);
   });
 });
 

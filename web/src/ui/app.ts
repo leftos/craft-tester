@@ -272,6 +272,27 @@ function saveAttempt(state: AppState, store: SolvedStore): void {
   if (picks !== undefined) store.save(icao, state.seed, { kind: 'clearance', picks });
 }
 
+/** The name of the text box the student is typing in, which is empty when none has focus. */
+function focusedInputName(): string {
+  const active = document.activeElement;
+  return active instanceof HTMLInputElement ? active.name : '';
+}
+
+/**
+ * Puts focus back in the text box of that name, with the caret after the text it already holds.
+ *
+ * Every change renders the page again, which throws away the box the keystroke came from; without
+ * this the student types one character and loses the box.
+ */
+function restoreFocus(root: Element, name: string): void {
+  if (name.length === 0) return;
+  const input = root.querySelector(`input[name="${name}"]`);
+  if (!(input instanceof HTMLInputElement)) return;
+  input.focus();
+  const end = input.value.length;
+  input.setSelectionRange(end, end);
+}
+
 /** Holds the state, rewrites the hash, and renders the page after every change. */
 function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): void {
   const store = stores.solved;
@@ -280,8 +301,10 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 
   const update = (next: AppState): void => {
     state = next;
+    const focused = focusedInputName();
     writeHash(state.seed, state.filter, state.mode);
     root.replaceChildren(renderApp(state, index, actions));
+    restoreFocus(root, focused);
   };
 
   actions = {

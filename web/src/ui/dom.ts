@@ -86,6 +86,7 @@ export function selectControl(
 /** Everything one labelled text box needs to render. */
 export type TextSpec = {
   label: string;
+  name: string;
   value: string;
   disabled: boolean;
   placeholder: string;
@@ -95,9 +96,11 @@ export type TextSpec = {
  * Builds one labelled text box, for a value the student writes rather than picks.
  *
  * Autocomplete and spellcheck are off: the values are callsigns, type designators and route strings,
- * which a browser's suggestions and red underlines only get in the way of.
+ * which a browser's suggestions and red underlines only get in the way of. The name is what a box
+ * is found by after the page is rendered again, which is how a box the student is typing in keeps
+ * its focus.
  *
- * @param spec The label, the current value, whether the box is enabled, and the placeholder.
+ * @param spec The label, the name, the current value, whether the box is enabled, and the placeholder.
  * @param onInput Called with the text the box reads back after every keystroke.
  * @returns The label element, with the text box inside it.
  */
@@ -105,6 +108,7 @@ export function textControl(spec: TextSpec, onInput: (value: string) => void): H
   const field = el('label', 'field');
   const input = el('input');
   input.type = 'text';
+  input.name = spec.name;
   input.value = spec.value;
   input.disabled = spec.disabled;
   input.placeholder = spec.placeholder;

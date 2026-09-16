@@ -94,6 +94,16 @@ function typedValue(answer: BoxAnswer | undefined): string {
   return answer?.kind === 'amended' ? answer.value : '';
 }
 
+/**
+ * The name the text box of one answerable box carries, which is what focus is restored by.
+ *
+ * @param box The box the text box amends.
+ * @returns The name attribute of that box's text box, unique within the page.
+ */
+export function boxInputName(box: Box): string {
+  return `amend-${box}`;
+}
+
 /** One box the student answers: its name, the filed value, the answer, and the value it amends to. */
 function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
   const node = el('div', 'amend-box');
@@ -116,6 +126,7 @@ function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
     textControl(
       {
         label: 'new value',
+        name: boxInputName(row.box),
         value: typedValue(row.answer),
         disabled: row.answer?.kind !== 'amended',
         placeholder: row.filed,
