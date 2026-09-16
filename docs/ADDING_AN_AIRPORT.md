@@ -138,13 +138,18 @@ the hooks rejects the file.
     not add `rnav: false` gates on the fallback rows; the worksheets clear RNAV-capable heavies on the
     radar-vector SID too.
 13. **`altitude_rules`**: the interim-altitude table, ordered, with `sid_families` where the SOP names
-    SIDs. `when_top_altitude_published` says what a row does when the chart publishes a top altitude:
+    SIDs, or `non_dp_headings: [315]` / `[runway heading]` where the altitude belongs to a heading the
+    SOP issues without a DP (never both; a row naming neither answers whatever the flight flies).
+    `when_top_altitude_published` says what a row does when the chart publishes a top altitude:
     `interim` applies the row anyway (KSFO, on the user's reading of the SOP table), `climb_via` defers to
     the chart and the clearance becomes a plain "climb via SID". Set `expect_after_minutes` from the SOP;
     the clause is only spoken where the chart itself does not publish the expect note (see
     `phraseology.expect_altitude`).
 14. **`notices`**: current operational notices that turn a SID off (`effect: {kind: sid_off}`), with
-    `default_active`. The engine skips assignment rows for an off SID; scenarios drill both states.
+    `default_active`. The engine skips assignment rows for an off SID; scenarios drill both states. A
+    notice that says what to issue instead ("SUNNE SID OFF, issue 120 HDG") carries `heading: 120` on the
+    effect: the row is then read as clearing the flight on that heading, and the results cite the row and
+    the notice.
 15. **`phraseology`** toggles: copy the KSFO block and change a toggle only when the airport's trainers
     disagree with a default, during validation. **`phraseology_rules`**: the CRAFT rows every airport
     inherits (the route forms, climb via, maintain, expect, parity, RVSM) live in

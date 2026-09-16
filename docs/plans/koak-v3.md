@@ -233,7 +233,9 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   foreign coordinates) to `generator/shared/destinations.yaml`; an airport's `routes.yaml` lists the type codes,
   airline codes and destination codes it draws plus its routes, and the build composes the same `routeLibrary`
   JSON as today, so the web app does not change. KSFO converts in that brief; KOAK's `routes.yaml` converts in 3b.
-- [ ] **Brief 2e-ii, heading-keyed altitudes and notice headings**: (1) an altitude row may list `non_dp_headings`
+  Dispatched 2026-09-16 into `wt/koak-shared` (from `abea86b`); the shared files also gain the KOAK additions (KPHX,
+  QXE types, PCM, DH8D, C208) so 3b touches no shared file.
+- [x] **Brief 2e-ii, heading-keyed altitudes and notice headings** (landed 2026-09-16, `abea86b`): (1) an altitude row may list `non_dp_headings`
   (`[315]`, `[runway heading]`) the way it lists `sid_families`, matching only a flight cleared on one of those
   headings; the two keys are exclusive. (2) A `sid_off` notice effect may carry `heading: 120`: while the notice is
   active, a row of that family clears the flight on that heading instead of being skipped (the row's sector and
