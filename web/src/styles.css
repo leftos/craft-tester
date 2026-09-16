@@ -66,6 +66,11 @@ h3 {
   gap: 0.2rem;
 }
 
+/* A dropdown is as wide as its longest label; capped at its row, it shrinks on a phone instead of scrolling the page sideways. */
+.field {
+  max-width: 100%;
+}
+
 .field-label {
   color: var(--muted);
   font-size: 0.72rem;
@@ -74,6 +79,7 @@ h3 {
 }
 
 select {
+  max-width: 100%;
   padding: 0.3rem 0.4rem;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -366,7 +372,8 @@ button.primary:disabled {
   }
 
   .layout {
-    grid-template-columns: 1fr;
+    /* minmax(0, …) so a panel's widest dropdown cannot grow the column past the viewport. */
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .panel.strip,
