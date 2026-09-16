@@ -1,0 +1,43 @@
+DEPARTURE ROUTE DESCRIPTION
+(SKYL1.WAGES)
+(OAK)
+AL-294 (FAA)
+25275
+OAKLAND, CALIFORNIA
+(SKYL1.WAGES)
+(OAK)
+15AUG19
+OAKLAND, CALIFORNIA
+T
+SKYLINE ONE DEPARTURE
+SKYLINE ONE DEPARTURE
+PXN VORTAC.
+PANOCHE TRANSITON (SKYL1.PXN):  From over WAGES INT on PXN R-274 to
+FLW VOR/DME.
+FELLOWS TRANSITION (SKYL1.FLW):  From over WAGES INT on FLW R-306 to
+AVE R-298 to AVE VOR/DME.
+AVENAL TRANSITION (SKYL1.AVE):  From over WAGES INT on OSI R-116 and
+intercept and proceed via the PYE R-135.  Resume your own navigation.
+TAKEOFF RUNWAYS 28L/R and 30: After reaching 3000, turn left heading 200°,
+LOST COMMUNICATIONS
+Expect filed altitude 10 minutes after departure.
+. . . .on (transition) or (assigned route) maintain ATC assigned altitude.
+thence. . . .
+Cross 4 DME northwest of OAK VOR/DME at or above 1400 and at or below 2000,
+TAKEOFF RUNWAY 30: Climb on heading 296° for vectors to assigned route/fix.
+at or above FL200, thence. . . .
+on OSI R-285 to OSI VOR/DME, then on OSI R-116 to cross WAGES INT/OSI 35 DME
+and proceed on the PYE R-135 to cross PORTE INT/PYE 40 DME at or above 9000, then
+4 DME northwest of OAK VOR/DME at or above 1400 and at or below 2000.  Intercept
+TAKEOFF RUNWAYS 28L/R: Climb on heading 278° for vectors to PYE R-135 to cross
+thence. . . .
+TAKEOFF RUNWAY 12: Climb on heading 116° for vectors to assigned route/fix,
+WAGES INT/OAK 50 DME at or above FL200, thence. . . .
+or above 5000 and to cross SIZXO/OAK 25 DME at or above 9000 and to cross
+right turn to intercept and proceed on the OAK R-135 to cross SIWBI/OAK 15 DME at
+SIXDY/OAK VOR/DME 6 DME at or above 1900 and at or below 3000, then climbing
+TAKEOFF RUNWAYS 10L/R: Climbing right turn to intercept OAK R-125, to cross
+OAKLAND SAN FRANCISCO BAY
+OAKLAND SAN FRANCISCO BAY
+SW-2,  03 SEP 2026  to  01 OCT 2026
+SW-2,  03 SEP 2026  to  01 OCT 2026

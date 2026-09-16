@@ -206,6 +206,15 @@ def test_a_continuation_sheet_carries_facts_the_base_sheet_does_not(chart_text: 
     assert sorted(facts.transitions) == ["CATALINA", "FELLOWS", "GAVIOTA", "MARCUS"]
 
 
+def test_the_skyline_continuation_reads_a_misspelled_transition_label(chart_text: Callable[[str], list[str]]) -> None:
+    """The SKYLINE ONE continuation sheet prints PANOCHE's label as TRANSITON, and all three transitions still parse."""
+    lines = chart_text("00294SKYLINE_C.PDF")
+    assert [line for line in lines if "TRANSITON" in line] == ["PANOCHE TRANSITON (SKYL1.PXN):  From over WAGES INT on PXN R-274 to"]
+    facts = parse_chart_facts(lines, "SKYLINE ONE")
+    assert facts.procedure_ids == frozenset({"SKYL1"})
+    assert facts.transitions == {"AVENAL": "AVE", "FELLOWS": "FLW", "PANOCHE": "PXN"}
+
+
 def test_the_oakland_continuation_reads_as_one_procedure(chart_text: Callable[[str], list[str]]) -> None:
     lines = [*chart_text("00294OAKLAND.PDF"), *chart_text("00294OAKLAND_C.PDF")]
     facts = parse_chart_facts(lines, "OAKLAND SIX")
