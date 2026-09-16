@@ -156,20 +156,46 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `nonDpHeading` as `runway heading` or an integer 1–360; `runways[]` with `magneticBearing` from the PG rows;
   `climb_via_eligible` override on a SID; continuation charts (`NAME, CONT.1`) merged into their procedure's
   text before the facts are parsed; schema export; KSFO rebuilt (new fields only) and `--check` clean.
-- [ ] **Brief 2, web engine**: group and approach-category matching in `sidSelection`, `altitude` and the TEC rows;
-  numbered headings as `Procedure.kind === 'heading'` with the turn direction from the departure runway's bearing
-  (shorter turn), spoken "via turn left heading two seven zero, radar vectors (fix/airway)"; the procedure
-  dropdown offers every heading the airport's rows use; fixture `heading` takes a number; `propose` prints it;
-  `CVS x FL190` spoken as a flight level.
-- [ ] **Brief 3, transcription**: `sop.yaml` (v1.7, sentinels; SFOW, OAKE, SFOE; 2-2 b headings; Appendix B
-  windows), `overrides.yaml` (12 charts incl. NIMITZ6 radar-vector facts, OAK6 `climb_via_eligible: true`),
-  `routes.yaml` seeded from the user's common routes, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC rows from the notes),
-  `worksheets.yaml`; `verify-sop`; build clean.
+- [x] **Brief 2a, audience matching** — landed 2026-09-16 (`ad6604c`): `Classification` carries the type and the
+  fleet's approach category; `addresses(row, ctx, airport)` in `rules/classify.ts` reads `classes`, `groups` and
+  `approachCategories`; the assignment and altitude tables use it. Finding: TEC rows and route-library rows still
+  key on classes only (no `groups` in their schema); needed only if an OAK TEC row says "J & DH8D".
+- [x] **Brief 2b, numbered headings** — landed 2026-09-16 (98 calls). Original: `nonDpHeading` as the literal or an
+  integer 1–360 in the schema, the generator loader and the fixture `heading`; `Procedure` heading variant with
+  `heading`, `turn` and a `spoken` label; `selectSid` derives the turn from `airport.runways` (shorter turn; the
+  reciprocal is a data error); speaker "via turn left heading two seven zero"; `headingLabel()` replaces the
+  constant label; `R-HEADING` text covers both forms; `propose` prints the label.
+- [ ] **Brief 2c, TEC routes without a DP, and the amendment side**. SOP 2-1 c: "initial headings … shall only be
+  issued when a DP cannot be used or an applicable one does not exist (e.g. pilot is unable to accept DP, TEC
+  route does not include DP)". The OAKE TEC rows are that case (`[OAKE] +H270 FEVTA FEVTA1+` for jets to SMF,
+  `[OAKE] +EUGEN+` for jets to MRY), while 2-2 a assigns those jets QUAKE#. Concept: a new assignment condition
+  `when: { tec_route_without_dp: true }` (schema `tecRouteWithoutDp`, loader, `conditionsHold`) that holds when
+  the flight's keyed TEC row (destination, plan, runway family, class; no issuable test) begins on no `FAMILY#`
+  placeholder, i.e. on an `H<ddd>` token or a fix/airway; the OAKE heading rows carry it and sit before the QUAKE#
+  rows, citing SOP 2-1 c and 2-2 b. A leading `H<ddd>` token is the heading the row is issued on: `tecTokens` drops
+  it from the route box; a row with an `H` head is issuable when the engine clears the flight on that heading (a
+  mismatch between the token and the row's heading is unresolved, naming both). The keyed-row helper moves out
+  of `rules/amend/tec.ts` into a module the selector can import without a cycle. Amendment side: the procedure
+  dropdown offers the runway heading plus every numbered heading the airport's rows use (pick values
+  `heading:runway`, `heading:270`) and `gradeProcedure` compares headings; the route-box reason for a heading
+  clearance comes from the row instead of the hard-coded "in the noise window"; `CVS x FL190` spoken as a flight
+  level (check `speakAltitude`).
+- [ ] **Brief 3a, SOP transcription**: `sop.yaml` (v1.7, sentinels; configurations `SFOW`, `OAKE`, `SFOE` as both id
+  and plan, since the TEC tool tags rows `[SFOW]`/`[OAKE]`/`[SFOE]`; training weights 70/20/10; departure runways
+  and class defaults from SOP 1-6/2-2 with a `note` and a report question wherever the SOP is silent on which
+  parallel; 2-2 a tables as rows with `groups: [jets_and_dh8d]`; 2-2 b headings as `non_dp_heading: <int>` rows;
+  Appendix B as `noise_windows` + rows; three sectors; gates seeded from the CIFP transitions and the user's
+  common-fix notes), `overrides.yaml` (12 charts; NIMITZ6 radar-vector facts; OAK6 `climb_via_eligible: true`),
+  a minimal `routes.yaml` (destinations, telephony, fleet reused from KSFO plus DH8D, `approach_category` on every
+  type estimated from published Vref with a `note`, **for the user's review**, and the user's common routes),
+  `verify-sop`, build clean.
+- [ ] **Brief 3b, the rest of the data**: `tec.yaml` from `.tmp/oak-tec/*.txt`, `loa.yaml` (ZOA–ZSE reused, ZLA/ZLC
+  rows from the notes), `worksheets.yaml`, `data/airports.json`, the KSFO-only web tests widened to the index, the
+  airport switch in the UI checked in the browser.
 - [ ] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
   PAO RHV NUQ STS MOD SCK MHR MCC) were captured 2026-09-16 with Playwright into `.tmp/oak-tec/<FAA>.txt`
   (gitignored; re-run `web/.tmp/oak-tec.ts` style script if lost). Findings: the tool prints an altitude band
   `030/090` (hundreds of feet, floor/cap; KSFO recorded the cap only); **OAKE rows begin on a heading token**
   (`[OAKE] +H270 FEVTA FEVTA1+ 100/100`), so the TEC substitution in `rules/amend/tec.ts` must accept `H<ddd>` at
   the head of a route as the numbered heading the SOP issues there, not a SID placeholder (brief 2 or 3).
-- [ ] `data/airports.json` gains KOAK; widen the KSFO-only web tests to loop over the index; airport switch in the UI
 - [ ] `import-worksheets --airport KOAK`; validation loop with the user

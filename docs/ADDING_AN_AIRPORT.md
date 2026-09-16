@@ -116,9 +116,10 @@ the hooks rejects the file.
     table top to bottom, then CBT refinements. Fields: `plan`, `direction`, `runway_families`, `classes`
     (and `groups`; `approach_categories: [A, B]` where the SOP says "Cat A/B", which then requires every
     fleet row to carry `approach_category`),
-    `sid_family` (or `null` plus `non_dp_heading` for a row that clears the flight with no DP; only
-    `runway heading` is accepted, read "via fly runway heading, radar vectors (first fix)"; a numbered
-    heading with a turn direction is a new rule concept), `sector`, and `when` with any
+    `sid_family` (or `null` plus `non_dp_heading` for a row that clears the flight with no DP:
+    `runway heading`, read "via fly runway heading, radar vectors (first fix)", or a magnetic heading
+    as an integer, read "via turn left heading two seven zero" with the turn derived as the shorter way
+    round from the departure runway's CIFP bearing), `sector`, and `when` with any
     of `configs`, `not_configs`, `noise_window`, `rnav`, `exit_fixes`, `forced_transition`. The engine takes
     the first row whose conditions match **and** whose SID is compatible with the runway, the aircraft's
     RNAV capability, and the filed exit fix; write rows so a fall-through exists for every combination
