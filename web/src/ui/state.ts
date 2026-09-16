@@ -1,15 +1,13 @@
 import type { AirportData, AltitudePhrase, RouteTemplate } from '@/data/schema.ts';
 import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
+import { EXPECT_CHOICES } from '@/rules/options.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
 import type { Mode, ScenarioFilter } from '@/scenario/filter.ts';
 import { hashFor } from '@/scenario/filter.ts';
 import { buildScenario } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import type { Attempt } from '@/ui/solved.ts';
-
-/** Every expect clause the form offers, in the order it offers them. */
-const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = ['ten_minutes', 'three_minutes', 'none'];
 
 /** One dropdown of the CRAFT form, named by the pick it sets. */
 export type PickKey =

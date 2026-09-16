@@ -13,8 +13,13 @@ const ROUTE_TEMPLATES: readonly RouteTemplate[] = [
 /** Every altitude phrase the form offers. */
 const ALTITUDE_PHRASES: readonly AltitudePhrase[] = ['climb_via', 'climb_via_except', 'maintain'];
 
-/** Every expect clause the form offers. */
-const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = ['ten_minutes', 'three_minutes', 'none'];
+/** Every expect clause the form offers, in the order it offers them. */
+export const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = [
+  'ten_minutes',
+  'five_minutes',
+  'three_minutes',
+  'none',
+];
 
 /** How many fixes of the filed route the route-fix dropdown offers as distractors. */
 const FILED_FIXES_OFFERED = 3;

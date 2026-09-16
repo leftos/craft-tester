@@ -16,7 +16,7 @@ export const PlayerPicksSchema = z.strictObject({
   routeFix: z.string().optional(),
   altitudePhrase: AltitudePhraseSchema,
   altitudeFeet: z.number().optional(),
-  expect: z.enum(['ten_minutes', 'three_minutes', 'none']),
+  expect: z.enum(['ten_minutes', 'five_minutes', 'three_minutes', 'none']),
   frequency: z.string(),
   runway: z.string(),
 });

@@ -4,6 +4,7 @@ import type { Grade, PlayerPicks, ResolvedClearance, Verdict } from '@/rules/typ
 /** How many minutes each expect-clause pick stands for; `none` means no expect clause at all. */
 const EXPECT_MINUTES: Record<PlayerPicks['expect'], number | null> = {
   ten_minutes: 10,
+  five_minutes: 5,
   three_minutes: 3,
   none: null,
 };

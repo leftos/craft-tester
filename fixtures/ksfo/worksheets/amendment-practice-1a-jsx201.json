@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "SSTIK5 NTELL Q162 ESSAA BTY SUNST4",
+        "reason": "WESLA5 is not the procedure the SOP assigns an RNAV jet from 01L in 28/01; it is SSTIK5"
+      }
+    ]
+  },
   "id": "ws-amendment-practice-1a-jsx201",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation; validated by the user 2026-09-16: route WESLA5 → SSTIK5 (WESLA is 28-only and an E135 cannot request the 28s), altitude correct; SSTIK5 NTELL transition, climb via SID, 135.1, runway 01L"
   },
-  "status": "pending"
+  "status": "settled"
 }

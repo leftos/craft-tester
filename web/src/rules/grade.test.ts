@@ -99,6 +99,11 @@ const cases: { name: string; picks: PlayerPicks; verdicts: Verdict[] }[] = [
     verdicts: wrongAt(2),
   },
   {
+    name: 'the five-minute distractor',
+    picks: { ...correct, expect: 'five_minutes' },
+    verdicts: wrongAt(2),
+  },
+  {
     name: 'no expect clause where one is due',
     picks: { ...correct, expect: 'none' },
     verdicts: wrongAt(2),
@@ -231,6 +236,12 @@ describe('grade', () => {
     expect(clause?.citations).toEqual([altitudeCitation]);
   });
 
+  it('marks the five-minute distractor wrong where the chart publishes the note', () => {
+    const [, , clause] = grade({ ...correct, expect: 'five_minutes' }, chartPublishes);
+    expect(clause?.verdict).toBe('wrong');
+    expect(clause?.citations).toEqual([altitudeCitation]);
+  });
+
   it('marks dropping the clause correct where the chart publishes the note', () => {
     const [, , clause] = grade({ ...correct, expect: 'none' }, chartPublishes);
     expect(clause?.verdict).toBe('correct');
@@ -331,5 +342,11 @@ describe('expectChoiceLabel', () => {
       'expect amended altitude 10 minutes after departure',
     );
     expect(expectChoiceLabel('none', true)).toBe('no expect altitude');
+  });
+
+  it('names the five-minute distractor at its own delay', () => {
+    expect(expectChoiceLabel('five_minutes', false)).toBe(
+      'expect filed altitude 5 minutes after departure',
+    );
   });
 });

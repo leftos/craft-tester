@@ -74,7 +74,7 @@ export type PlayerPicks = {
   routeFix?: string;
   altitudePhrase: AltitudePhrase;
   altitudeFeet?: number;
-  expect: 'ten_minutes' | 'three_minutes' | 'none';
+  expect: 'ten_minutes' | 'five_minutes' | 'three_minutes' | 'none';
   frequency: string;
   runway: string;
 };

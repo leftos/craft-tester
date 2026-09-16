@@ -33,7 +33,7 @@ describe('buildOptions', () => {
       'as_filed',
     ]);
     expect(options.altitudePhrases).toEqual(['climb_via', 'climb_via_except', 'maintain']);
-    expect(options.expect).toEqual(['ten_minutes', 'three_minutes', 'none']);
+    expect(options.expect).toEqual(['ten_minutes', 'five_minutes', 'three_minutes', 'none']);
   });
 
   it('offers the filed SID transitions and the head of the filed route as route fixes', () => {

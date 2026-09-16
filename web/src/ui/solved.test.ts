@@ -44,6 +44,16 @@ describe('createSolvedStore', () => {
     expect(store.load('KSFO', 42, 'clearance')).toStrictEqual(clearance);
   });
 
+  it('loads back a clearance whose expect pick is the five-minute distractor', () => {
+    const store = createSolvedStore(mapStorage());
+    const fiveMinutes: Attempt = {
+      kind: 'clearance',
+      picks: { ...picks, expect: 'five_minutes' },
+    };
+    store.save('KSFO', 42, fiveMinutes);
+    expect(store.load('KSFO', 42, 'clearance')).toStrictEqual(fiveMinutes);
+  });
+
   it('loads back the amendment it saved, boxes and all', () => {
     const store = createSolvedStore(mapStorage());
     store.save('KSFO', 42, amendment);
