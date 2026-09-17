@@ -50,6 +50,17 @@ function check(flight: Scenario) {
   return checkAt(flight, ksfo);
 }
 
+/**
+ * The airport with no fix published as an RNAV waypoint.
+ *
+ * A route over one is flown only by an RNAV-capable aircraft, which is the type box's rule rather
+ * than the route box's: a check that is about which procedure the SOP assigns, or which route is
+ * built from it, is read against a data set where no fix carries that second question.
+ */
+function withoutRnavWaypoints(airport: AirportData): AirportData {
+  return { ...airport, rnavWaypoints: [] };
+}
+
 function amendmentAt(flight: Scenario, airport: AirportData) {
   const result = checkAt(flight, airport);
   if (result === undefined) throw new Error('the filed route is the one the SOP assigns');
@@ -215,7 +226,7 @@ describe('checkRoute route building', () => {
   }
 
   it("builds from the SID's own end fix when no transition of it reaches the filed route", () => {
-    const result = amendmentAt(pxt415(), koak);
+    const result = amendmentAt(pxt415(), withoutRnavWaypoints(koak));
     expect(result.proposed).toBe('SKYL1 WAGES LOSHN PMD V137 PSP');
     expect(result.reason).toBe(
       'SKYL1 is the procedure the SOP assigns a non-RNAV jet from 30 in SFOW, and SUNNE is not one ' +
@@ -231,7 +242,7 @@ describe('checkRoute route building', () => {
 
   it('prefers a transition over the end fix where both reach the filed route equally soon', () => {
     const airport: AirportData = {
-      ...koak,
+      ...withoutRnavWaypoints(koak),
       routeConnections: [
         ...koak.routeConnections,
         {
@@ -295,7 +306,7 @@ describe('checkRoute TRACON destinations', () => {
       filedAltitude: 9000,
       departureRunway: '28R',
     });
-    expect(check(flight)).toBeUndefined();
+    expect(checkAt(flight, withoutRnavWaypoints(ksfo))).toBeUndefined();
   });
 
   it('routes a flight the assigned DP does carry on the TEC route that begins with it', () => {
@@ -701,8 +712,9 @@ describe('checkRoute arrivals', () => {
       family: 'SLMMR',
       transitions: ['NURAY'],
     };
-    const airport: AirportData = { ...ksfo, commonArrivals: [cell, ...ksfo.commonArrivals] };
-    expect(check(flight)).toBeUndefined();
+    const plain = withoutRnavWaypoints(ksfo);
+    const airport: AirportData = { ...plain, commonArrivals: [cell, ...ksfo.commonArrivals] };
+    expect(checkAt(flight, plain)).toBeUndefined();
     expect(checkAt(flight, airport)).toBeUndefined();
   });
 

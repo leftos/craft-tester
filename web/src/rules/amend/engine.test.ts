@@ -54,21 +54,19 @@ function ual313NonRvsm(): Scenario {
 }
 
 /**
- * A plan whose valid non-RNAV suffix clashes with the RNAV departure it files.
+ * A plan whose valid non-RNAV suffix clashes with the RNAV departure it files, and with nothing
+ * else.
  *
- * Everything else about it stands for an RNAV flight — the route the SSTIK5 connects onward to and
- * a flight level with the parity its course wants — so the suffix answers the whole plan and the
- * pair is raised.
+ * Everything else about it stands for an RNAV flight — a route of navaids and of the fixes the
+ * TRUKN2 publishes transitions to, and a flight level with the parity its course wants, below the
+ * RVSM band the suffix may not enter — so the suffix answers the whole plan and the pair is raised.
  */
 function rnavClash(): Scenario {
   return scenario({
     callsign: 'AAL88',
     aircraftType: 'A320',
     equipmentSuffix: '/A',
-    destination: 'KLAX',
-    filedRoute: 'SSTIK5 SUSEY EBAYE BURGL IRNMN2',
-    filedAltitude: 27000,
-    departureRunway: '01L',
+    filedAltitude: 28000,
     squawk: '4602',
   });
 }
@@ -182,7 +180,7 @@ describe('resolveAmendments', () => {
     if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
     expect(type.proposed).toBe('A320/L');
     expect(type.reason).toContain('an RNAV suffix would make the plan correct as filed');
-    expect(type.reason).toContain('the filed SSTIK5');
+    expect(type.reason).toContain('the filed TRUKN2');
   });
 
   it('corrects one side only of the RNAV pair, the type box the strip reads first', () => {
@@ -342,11 +340,124 @@ describe('resolveAmendments RNAV pair', () => {
   });
 
   it('does not raise the RNAV pair when the RNAV plan still needs an amendment', () => {
-    const result = resolved(scenario({ ...rnavClash(), filedAltitude: 28000 }));
+    const result = resolved(scenario({ ...rnavClash(), filedAltitude: 27000 }));
     expect(result.amendments.map((amendment) => amendment.box)).toEqual(['altitude', 'route']);
     expect(result.amendments.every((amendment) => amendment.alternativeTo === undefined)).toBe(
       true,
     );
+  });
+});
+
+describe('resolveAmendments RNAV route elements', () => {
+  /** The Oakland jet whose Las Vegas route is a Q route between two RNAV waypoints. */
+  function b738w(overrides: Partial<Scenario> = {}): Scenario {
+    return {
+      callsign: 'SWA2468',
+      aircraftType: 'B738',
+      equipmentSuffix: '/W',
+      destination: 'KLAS',
+      filedRoute: 'NTELL Q174 FLCHR COKTL4',
+      filedAltitude: 29000,
+      runwayConfigId: 'OAKE',
+      departureRunway: '12',
+      localTime: '1246',
+      dayOfWeek: 'friday',
+      squawk: '4614',
+      ...overrides,
+    };
+  }
+
+  /** The worksheet plan whose /A suffix cannot fly the Q route and the RNAV waypoint it files. */
+  function fdx3859(): Scenario {
+    return {
+      callsign: 'FDX3859',
+      aircraftType: 'B752',
+      equipmentSuffix: '/A',
+      destination: 'KDEN',
+      filedRoute: 'HUSSH2 MOGEE Q124 BVL TCH KAMPR LONGZ1',
+      filedAltitude: 34000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      localTime: '1400',
+      dayOfWeek: 'tuesday',
+      squawk: '4602',
+    };
+  }
+
+  function amended(flight: Scenario, airport: AirportData = koak) {
+    const result = resolveAmendments(flight, airport);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    return result;
+  }
+
+  it('raises the type box alone for a route of RNAV elements the filed suffix cannot fly', () => {
+    const flight = b738w();
+    const result = amended(flight);
+    expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
+      ['type', undefined],
+    ]);
+    const [type] = result.amendments;
+    if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
+    expect(type.proposed).toBe('B738/L');
+    expect(type.reason).toBe(
+      'the route needs RNAV a /W flight does not carry (Q174 is an RNAV route, NTELL and FLCHR ' +
+        'are RNAV waypoints) and the data holds no conventional route, so the type box carries ' +
+        'the suffix the fleet files for the type',
+    );
+    expect(type.citations.map((citation) => citation.id)).toEqual([
+      'EQUIP/L',
+      'R-RNAV-AIRWAY',
+      'R-RNAV-WAYPOINT',
+    ]);
+    expect(result.corrected).toEqual({ ...flight, equipmentSuffix: '/L' });
+    expect(amended(result.corrected).amendments).toEqual([]);
+  });
+
+  it('leaves the same plan alone where the filed suffix carries the navigation', () => {
+    expect(amended(b738w({ equipmentSuffix: '/L' })).amendments).toEqual([]);
+  });
+
+  it('fails the route box where the fleet files no suffix that can fly the route', () => {
+    const fleet = koak.routeLibrary.fleet.map((row) =>
+      row.type === 'B738' ? { ...row, suffixes: ['/A'] } : row,
+    );
+    const airport: AirportData = { ...koak, routeLibrary: { ...koak.routeLibrary, fleet } };
+    const result = resolveAmendments(b738w({ equipmentSuffix: '/A' }), airport);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.unresolved.map((gap) => gap.element)).toEqual(['BOX.route']);
+    expect(result.unresolved[0]?.reason).toContain(
+      'the data holds no conventional route to propose',
+    );
+  });
+
+  it('raises a GNSS suffix for the T route only a GPS-equipped flight may file', () => {
+    const result = amended(b738w({ equipmentSuffix: '/Z', filedRoute: 'NTELL T257 FLCHR COKTL4' }));
+    const [type] = result.amendments;
+    if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
+    expect(type.proposed).toBe('B738/L');
+    expect(type.reason).toContain(
+      'the route needs GPS a /Z flight does not carry (T257 is an RNAV route)',
+    );
+    expect(type.citations.map((citation) => citation.id)).toEqual(['EQUIP/L', 'R-RNAV-AIRWAY']);
+  });
+
+  it('judges the altitude and the route for the plan the RNAV type box leaves', () => {
+    const result = amended(fdx3859());
+    expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
+      ['type', undefined],
+      ['altitude', undefined],
+      ['route', undefined],
+    ]);
+    const [type, altitude, route] = result.amendments;
+    if (type?.box !== 'type' || altitude?.box !== 'altitude' || route?.box !== 'route') {
+      throw new Error('the three boxes are not amended');
+    }
+    expect(type.proposed).toBe('B752/L');
+    expect(type.reason).toContain('(Q124 is an RNAV route, KAMPR is an RNAV waypoint)');
+    expect(altitude.proposedFeet).toBe(33000);
+    expect(route.proposed).toBe('OAK6 OAK MOGEE Q124 BVL TCH KAMPR LONGZ1');
+    expect(amended(result.corrected).amendments).toEqual([]);
   });
 });
 

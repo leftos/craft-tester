@@ -26,6 +26,11 @@ export type Classification = {
   config: RunwayConfig;
   /** Whether the filed equipment suffix is an RNAV one in `equipmentSuffixes`; no suffix is not. */
   rnavCapable: boolean;
+  /**
+   * Whether that suffix row reports GNSS, which is the GPS a T or Y route is flown with. A row the
+   * table states no navigation capability for, and a plan with no suffix at all, are not.
+   */
+  gnssCapable: boolean;
   activeNoiseWindows: string[];
   activeNotices: string[];
 };
@@ -165,6 +170,9 @@ export function classify(scenario: Scenario, airport: AirportData): Classificati
       `runway configuration ${scenario.runwayConfigId} is not in the data`,
     );
   }
+  const suffix = airport.equipmentSuffixes.find(
+    (entry) => entry.suffix === scenario.equipmentSuffix,
+  );
   return {
     aircraftClass,
     aircraftType: scenario.aircraftType,
@@ -174,9 +182,8 @@ export function classify(scenario: Scenario, airport: AirportData): Classificati
     plan: config.plan,
     runwayFamily: scenario.departureRunway.slice(0, 2),
     config,
-    rnavCapable:
-      airport.equipmentSuffixes.find((entry) => entry.suffix === scenario.equipmentSuffix)?.rnav ??
-      false,
+    rnavCapable: suffix?.rnav === true,
+    gnssCapable: suffix?.gnss === true,
     activeNoiseWindows: airport.noiseWindows
       .filter((window) => isNoiseWindowActive(window, scenario.localTime, scenario.dayOfWeek))
       .map((window) => window.id),

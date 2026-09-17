@@ -3126,6 +3126,16 @@
       "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
     },
     {
+      "id": "R-RNAV-AIRWAY",
+      "source": "AIM 5-3-4 c 1",
+      "text": "A published RNAV route is filed only by an aircraft with the navigation it needs: a Q route by an RNAV-capable aircraft (GPS or DME/DME/IRU), a T or Y route by a GPS-equipped one; a non-RNAV aircraft files a conventional airway or a navaid route instead"
+    },
+    {
+      "id": "R-RNAV-WAYPOINT",
+      "source": "AIM 5-3-4 c 1; ARINC 424 enroute waypoint type (CIFP)",
+      "text": "A fix the CIFP publishes as an RNAV waypoint is filed only by an RNAV-capable aircraft; a combined fix that is also a named intersection, and a navaid, need no RNAV"
+    },
+    {
       "id": "T-MODE-C",
       "source": "VATSIM Code of Conduct B4(a); VATSIM transponder simulation (standby or Mode A+C only); user, 2026-09-17",
       "text": "Every aircraft on VATSIM simulates a Mode C transponder, so an equipment suffix without Mode C (/X, /T, /D, /B, /M, /N, /Y, /C, /V, /S, /H, /O) is not filed on the network; the type box carries the suffix the fleet files for the type"
@@ -3239,6 +3249,42 @@
       "version": "1.7"
     }
   },
+  "rnavWaypoints": [
+    "BILLO",
+    "BUMMP",
+    "BURGL",
+    "CINNY",
+    "CISKO",
+    "CLASN",
+    "CNDEL",
+    "DEDHD",
+    "EBAYE",
+    "FEVTA",
+    "FLCHR",
+    "GALLI",
+    "GRTFL",
+    "IBSKI",
+    "INSLO",
+    "JEDNA",
+    "JSICA",
+    "KAMPR",
+    "KAYEX",
+    "KREYK",
+    "KTINA",
+    "LEGOZ",
+    "LOSHN",
+    "MACHU",
+    "MOGEE",
+    "NTELL",
+    "ORRCA",
+    "PRNCS",
+    "RDHOT",
+    "SUSEY",
+    "SYRAH",
+    "TILLT",
+    "TIPRE",
+    "YYUNG"
+  ],
   "routeConnections": [
     {
       "connects": "usually",

@@ -2,7 +2,7 @@ import type { AirportData, Scenario } from '@/data/schema.ts';
 import { checkAltitude } from '@/rules/amend/altitude.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
 import type { TypeAmendment } from '@/rules/amend/type.ts';
-import { checkRnavClash, checkSuffix } from '@/rules/amend/type.ts';
+import { checkRnavClash, checkRnavElements, checkSuffix } from '@/rules/amend/type.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
@@ -145,6 +145,48 @@ function pairAlternatives(
   });
 }
 
+/** Whether a route check reported the gap a route the flight's own suffix cannot fly leaves. */
+function isRnavGap(outcome: ResolvedAmendment | undefined | Unresolved): boolean {
+  return outcome !== undefined && isUnresolved(outcome) && outcome.kind === 'rnav_elements';
+}
+
+/**
+ * What a plan filing a route its own suffix cannot fly resolves to: the type box, then the rest of
+ * the strip judged for the plan that suffix leaves.
+ *
+ * The route box is a gap because the conventional route that would replace the RNAV elements is not
+ * in the data, so the suffix is the only thing that can give, and the type box is raised the way the
+ * suffix gap raises it rather than offered as one side of a choice: the altitude and the route are
+ * then read for the plan with that suffix, and whatever they still ask for is reported beside the
+ * type box, with no alternative marks. A box the RNAV plan's own checks cannot answer fails the
+ * result as any gap does.
+ *
+ * @param scenario The filed flight plan.
+ * @param suffix The amendment the suffix check raised for the type box, absent where it raised none.
+ * @param judged The filed plan as that check leaves it, with its classification and clearance.
+ * @param airport The airport data.
+ * @returns The result, or `undefined` when the fleet files no suffix carrying what the route needs,
+ *   which leaves the route box the gap it is.
+ */
+function rnavElementResult(
+  scenario: Scenario,
+  suffix: TypeAmendment | undefined,
+  judged: Judged,
+  airport: AirportData,
+): AmendmentResult | undefined {
+  const type = checkRnavElements(judged.scenario, judged.ctx, airport);
+  if (type === undefined) return undefined;
+  const rnav = judge(apply(judged.scenario, type), airport);
+  if (Array.isArray(rnav)) return { ok: false, unresolved: rnav };
+  const { raised, gaps } = collect([
+    listed(checkAltitude(rnav.scenario, rnav.ctx, airport)),
+    listed(checkRoute(rnav.scenario, rnav.ctx, rnav.clearance, airport)),
+  ]);
+  if (gaps.length > 0) return { ok: false, unresolved: gaps };
+  const amendments = [...(suffix === undefined ? [] : [suffix]), type, ...raised];
+  return { ok: true, amendments, corrected: amendments.reduce(apply, scenario) };
+}
+
 /**
  * Resolves every amendment a filed plan needs, and the plan as it reads once they are applied.
  *
@@ -152,17 +194,25 @@ function pairAlternatives(
  * other two are judged: the equipment suffix decides what the SOP assigns the flight, so the
  * altitude and the route are read for the plan as the type box will read rather than for the one the
  * pilot filed, and every box then agrees with the clearance the corrected plan is read under. A box
- * the data cannot answer fails the whole result, so a plan is never half-amended on a guess.
+ * the data cannot answer fails the whole result, so a plan is never half-amended on a guess — with
+ * one exception: a route box left unresolved because the flight's own suffix cannot fly what the
+ * route files. A flight that files a Q route, or a fix published as an RNAV waypoint, without the
+ * navigation for it is such a plan: the conventional route that would replace those elements is not
+ * in the data, so the suffix is the only thing that can give, and the type box is raised to the one
+ * the fleet files for the type, the altitude and the route then being read for that plan. Where the
+ * fleet files no such suffix the gap fails the result like any other.
  * `corrected` is the plan with every proposal applied in strip order, which means a later amendment
  * for a box overrides an earlier one for it: the type box can carry both the suffix gap and the RNAV
- * clash, and `corrected` therefore carries the RNAV suffix of the second. The RNAV pair is raised
- * only where the plan with that suffix needs no amendment at all: the suffix is then one answer to
- * the whole plan, and every box the non-RNAV plan does amend — the route, the altitude, or both —
- * is the other. Where the RNAV plan is itself amended somewhere, the suffix answers nothing and
- * those boxes amend the plan on their own. Where the pair is raised, the type box and every box on
- * the other side are marked as alternatives: `corrected` applies the type box, earliest in strip
- * order, and skips the rest, the tie-break the two sides are graded with. All of them are still
- * reported, because either side alone is a full answer.
+ * suffix, and `corrected` therefore carries the RNAV suffix of the second. The RNAV pair is a
+ * different case, and is raised only where the route box resolves without such a gap — the filed
+ * procedure is then the only thing needing RNAV — and where the plan with that suffix needs no
+ * amendment at all: the suffix is then one answer to the whole plan, and every box the non-RNAV plan
+ * does amend — the route, the altitude, or both — is the other. Where the RNAV plan is itself
+ * amended somewhere, the suffix answers nothing and those boxes amend the plan on their own. Where
+ * the pair is raised, the type box and every box on the other side are marked as alternatives:
+ * `corrected` applies the type box, earliest in strip order, and skips the rest, the tie-break the
+ * two sides are graded with. All of them are still reported, because either side alone is a full
+ * answer.
  *
  * @param scenario The filed flight plan.
  * @param airport The airport data.
@@ -175,7 +225,14 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   if (suffix !== undefined && isUnresolved(suffix)) return { ok: false, unresolved: [suffix] };
   const judged = suffix === undefined ? filed : judge(apply(scenario, suffix), airport);
   if (Array.isArray(judged)) return { ok: false, unresolved: judged };
-  const candidate = checkRnavClash(judged.scenario, judged.ctx, airport);
+  const route = checkRoute(judged.scenario, judged.ctx, judged.clearance, airport);
+  if (isRnavGap(route)) {
+    const answered = rnavElementResult(scenario, suffix, judged, airport);
+    if (answered !== undefined) return answered;
+  }
+  const candidate = isRnavGap(route)
+    ? undefined
+    : checkRnavClash(judged.scenario, judged.ctx, airport);
   const clash =
     candidate !== undefined && rnavPlanStands(judged.scenario, candidate, airport)
       ? candidate
@@ -183,7 +240,7 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   const outcomes: CheckOutcome[] = [
     [suffix, clash].filter((amendment) => amendment !== undefined),
     listed(checkAltitude(judged.scenario, judged.ctx, airport)),
-    listed(checkRoute(judged.scenario, judged.ctx, judged.clearance, airport)),
+    listed(route),
   ];
   const { raised, gaps } = collect(outcomes);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };

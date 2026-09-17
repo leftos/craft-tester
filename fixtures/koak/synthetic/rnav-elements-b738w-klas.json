@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "syn-koak-rnav-elements-b738w-klas",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "SWA2468",
+    "dayOfWeek": "friday",
+    "departureRunway": "12",
+    "destination": "KLAS",
+    "equipmentSuffix": "/W",
+    "filedAltitude": 29000,
+    "filedRoute": "NTELL Q174 FLCHR COKTL4",
+    "localTime": "1246",
+    "runwayConfigId": "OAKE",
+    "squawk": "4614"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "user steer 2026-09-17: a non-RNAV aircraft may not file a Q route or an RNAV waypoint; pending the user's confirmation. The engine answers the type box alone, B738/L (R-RNAV-AIRWAY for Q174, R-RNAV-WAYPOINT for NTELL and FLCHR), and the corrected plan needs nothing further"
+  },
+  "status": "pending"
+}

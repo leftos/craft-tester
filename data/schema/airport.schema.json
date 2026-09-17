@@ -991,6 +991,12 @@
       ],
       "type": "object"
     },
+    "rnavWaypoints": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "routeConnections": {
       "items": {
         "additionalProperties": false,
@@ -1677,6 +1683,7 @@
     "noSid",
     "sids",
     "fixSpoken",
+    "rnavWaypoints",
     "assignmentRules",
     "noiseWindows",
     "altitudeRules",

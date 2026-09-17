@@ -48,6 +48,7 @@ const BASE_CTX: Classification = {
   runwayFamily: '01',
   config,
   rnavCapable: true,
+  gnssCapable: true,
   activeNoiseWindows: [],
   activeNotices: [],
 };

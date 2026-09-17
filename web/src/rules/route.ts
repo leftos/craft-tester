@@ -1,12 +1,22 @@
-import type { AirportData, Direction, Gates } from '@/data/schema.ts';
+import type { AirportData, Direction, Gates, Scenario } from '@/data/schema.ts';
+import type { Classification } from '@/rules/classify.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
 /** A departure procedure token: three to five letters and a version digit, e.g. `TRUKN2`. */
 const SID_TOKEN = /^[A-Z]{3,5}\d$/;
 
-/** An airway token, e.g. `J501` or `Q158`, which is never a departure procedure. */
-const AIRWAY_TOKEN = /^[JVQT]\d+$/;
+/** An airway token, e.g. `J501`, `Q158` or `T257`, which is never a departure procedure. */
+const AIRWAY_TOKEN = /^[JVQTY]\d+$/;
+
+/** What flying one element of a route takes: RNAV capability, or the GPS a T or Y route needs. */
+export type RnavNeed = 'rnav' | 'gnss';
+
+/** One element of a filed route only a suitably equipped aircraft may file, and what it takes. */
+export type RnavElement = { token: string; needs: RnavNeed; kind: 'airway' | 'waypoint' };
+
+/** The published RNAV airways by their letter, with what flying one takes (AIM 5-3-4 c 1). */
+const RNAV_AIRWAYS: Record<string, RnavNeed> = { Q: 'rnav', T: 'gnss', Y: 'gnss' };
 
 /** The directions a gate fix can belong to, in the order `gates` lists them. */
 const DIRECTIONS: readonly Direction[] = ['north', 'south', 'oceanic'];
@@ -39,7 +49,7 @@ export function isSidToken(token: string): boolean {
  * Whether a route token names an airway.
  *
  * @param token One token of a filed route.
- * @returns True for `V6`, `J501`, `Q158`, and `T257`, false for a fix or a procedure.
+ * @returns True for `V6`, `J501`, `Q158`, `T257`, and `Y291`, false for a fix or a procedure.
  */
 export function isAirwayToken(token: string): boolean {
   return AIRWAY_TOKEN.test(token);
@@ -148,4 +158,85 @@ export function flightDirection(parsed: ParsedRoute, airport: AirportData): Dire
     ? parsed.tokens.slice(1).find((token) => directionOf(token, airport.gates) !== undefined)
     : undefined;
   return directionOf(onward ?? parsed.exitFix, airport.gates);
+}
+
+/**
+ * The fixes the procedure at the head of a route already implies: where it ends, and where it
+ * publishes a transition to.
+ *
+ * Those fixes are the procedure speaking, not the route: an RNAV SID is gated by `rnavRequired`
+ * already, and most RNAV SIDs are published over RNAV waypoints, so counting them again would make
+ * every RNAV departure a route the plan cannot fly.
+ *
+ * @param head The first token of the filed route, which may be a procedure.
+ * @param airport The airport data, whose `sids` publish the transitions.
+ * @returns The fixes, empty when the route files no procedure the data holds.
+ */
+function sidFixes(head: string | undefined, airport: AirportData): Set<string> {
+  if (head === undefined || !isSidToken(head)) return new Set();
+  const sid = airport.sids.find((entry) => entry.id === head);
+  if (sid === undefined) return new Set();
+  const transitions = sid.transitions.map((transition) => transition.fix);
+  return new Set(sid.baseFix === undefined ? transitions : [sid.baseFix, ...transitions]);
+}
+
+/**
+ * What one token of a filed route takes to fly, where it takes anything at all.
+ *
+ * @param token One token of the filed route.
+ * @param implied The fixes the filed procedure already implies.
+ * @param airport The airport data, for its own navaid and its RNAV waypoints.
+ * @returns The element, or `undefined` for a token any aircraft may file.
+ */
+function elementOf(
+  token: string,
+  implied: ReadonlySet<string>,
+  airport: AirportData,
+): RnavElement | undefined {
+  if (isSidToken(token) || token === airport.airport.faa) return undefined;
+  if (isAirwayToken(token)) {
+    const needs = RNAV_AIRWAYS[token.charAt(0)];
+    return needs === undefined ? undefined : { token, needs, kind: 'airway' };
+  }
+  if (implied.has(token) || !airport.rnavWaypoints.includes(token)) return undefined;
+  return { token, needs: 'rnav', kind: 'waypoint' };
+}
+
+/**
+ * The elements of a filed route only a suitably equipped aircraft may file.
+ *
+ * A published RNAV route is one: a Q route is flown by an RNAV-capable aircraft, a T or Y route by
+ * a GPS-equipped one. So is a fix the CIFP publishes as an RNAV waypoint. The procedure tokens
+ * themselves are left out, and so are the departure airport's own navaid and every fix the filed
+ * procedure implies, which the procedure's own RNAV flag already answers for.
+ *
+ * @param scenario The filed flight plan, whose route box is read token by token.
+ * @param airport The airport data, whose `rnavWaypoints` say which fixes are RNAV-only.
+ * @returns One element per token that needs something, in the order the route files them, with no
+ *   token named twice.
+ */
+export function rnavElements(scenario: Scenario, airport: AirportData): RnavElement[] {
+  const tokens = [...new Set(splitRoute(scenario.filedRoute))];
+  const implied = sidFixes(tokens[0], airport);
+  return tokens
+    .map((token) => elementOf(token, implied, airport))
+    .filter((element) => element !== undefined);
+}
+
+/**
+ * The elements of a filed route the flight's own equipment suffix cannot fly.
+ *
+ * @param scenario The filed flight plan, as the type box's suffix check leaves it.
+ * @param ctx That plan's classification, which carries what the suffix is capable of.
+ * @param airport The airport data.
+ * @returns The elements the plan needs and the suffix has not, in the order the route files them.
+ */
+export function lackingRnavElements(
+  scenario: Scenario,
+  ctx: Classification,
+  airport: AirportData,
+): RnavElement[] {
+  return rnavElements(scenario, airport).filter((element) =>
+    element.needs === 'gnss' ? !ctx.gnssCapable : !ctx.rnavCapable,
+  );
 }

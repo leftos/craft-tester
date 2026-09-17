@@ -664,6 +664,12 @@ export const AirportDataSchema = z.strictObject({
   }),
   sids: z.array(SidSchema),
   fixSpoken: z.record(z.string(), z.string()),
+  /**
+   * Every fix the airport data or its fixtures file whose CIFP waypoint type is the RNAV-only one,
+   * sorted. A combined fix that is also a named intersection, and a fix the CIFP does not publish,
+   * are left out. The RNAV element check reads it to decide whether a filed route needs RNAV.
+   */
+  rnavWaypoints: z.array(z.string()),
   assignmentRules: z.array(AssignmentRuleSchema),
   noiseWindows: z.array(NoiseWindowSchema),
   altitudeRules: z.array(AltitudeRuleSchema),

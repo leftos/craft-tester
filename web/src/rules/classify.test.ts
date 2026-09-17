@@ -141,6 +141,19 @@ describe('classify', () => {
     expect(result.rnavCapable).toBe(expected);
   });
 
+  it.each([
+    ['/L', true],
+    ['/G', true],
+    ['/Z', false],
+    ['/A', false],
+    [null, false],
+    ['/Q', false],
+  ] as const)('reads GNSS capability from the equipment suffix %s: %s', (suffix, expected) => {
+    const result = classify(scenario({ equipmentSuffix: suffix }), ksfo);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    expect(result.gnssCapable).toBe(expected);
+  });
+
   it('blocks the SID element on an aircraft type with no class', () => {
     const result = classify(scenario({ aircraftType: 'XXXX' }), ksfo);
     expect(result).toEqual({ element: 'R.sid', reason: expect.stringContaining('XXXX') });

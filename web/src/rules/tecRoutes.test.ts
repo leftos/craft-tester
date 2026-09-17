@@ -33,6 +33,7 @@ const CTX: Classification = {
   runwayFamily: '28',
   config,
   rnavCapable: true,
+  gnssCapable: true,
   activeNoiseWindows: [],
   activeNotices: [],
 };
