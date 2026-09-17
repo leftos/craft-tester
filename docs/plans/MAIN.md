@@ -45,14 +45,37 @@ one line and move its record to the archive.
   southbound SID out of KOAK"). Rule: the flight is put on an arrival of its own class (RNAV-capable → an RNAV
   arrival, non-RNAV → a conventional one) of the destination, reached from a transition or end fix of the SOP's
   SID through the connection table, fewest hops, an arrival transition the LOA row names preferred; a
-  radar-vector SID reaches any arrival transition directly. Design in two briefs: (A) generator: each destination's
-  STARs from the CIFP `PE` records with `rnav` and their enroute transitions, emitted as `arrivals` on the
-  destination row; (B) engine: the swap in the amendment route check and in the reveal, every proposed box
-  (assigned, built, TEC, swapped) held against the LOA route rows, an amendment produced by the swap flagged
-  `arrivalSwap`, and a student answer that leaves such a box as filed or as the pre-swap proposal graded `half`
-  (new verdict tier, half a point, shown in the results and the score); fixtures SWA984-KSFO, NKS510, SWA888
-  (`CNDEL5 KTINA CISKO RDHOT ROKKR2`?), JSX203, N858EE (`CNDEL5 YYUNG TILLT LEGOZ4`?), SWA2021 re-proposed and
-  brought to the user. SWA984 (`/L` B737, KSFO to KLAX, filed `SSTIK5 EBAYE AVE SADDE8`) should expect
+  radar-vector SID reaches any arrival transition directly. **State 2026-09-17**: (A) landed as `cef27bb`
+  (`arrivals: [{id, family, rnav, transitions}]` on every destination row from the CIFP `PE` records; +41 KB KSFO,
+  +46 KB KOAK). Then three briefs: **B1** (dispatched, `wt/koak-gen`) the ZOA "Common ZLA Arrivals from ZOA" table
+  (current as of 2025-01-13) as `generator/shared/common_arrivals.yaml` emitted as `commonArrivals`
+  (`{id: CA-LAX-IRNMN, destinations, classes?, cargo?, family, transitions}`; it settles which of a destination's
+  arrivals a rerouted flight is put on and in what order: SADDE8 before MOOR4 at LAX), the shared row `R-ARRIVAL`,
+  and `arrivalSwap` on the route amendment (the box as it would read without the arrival change, which is the
+  half-credit answer); **B2** the engine swap; **B3** the `half` verdict tier and the RNAV-clash pair widened (below).
+  Swap design for B2: the swap triggers on a proposed box (assigned, built, or the heading tail; never a TEC route)
+  whose tail ends on an arrival whose `rnav` differs from the flight's capability, or whose family's published id
+  differs from the token (stale revision), or that satisfies no LOA route row written for the destination (today's
+  `loaRouteGap`, now held against every proposed box); targets are the transitions of the destination's arrivals of
+  the flight's class, tried in order: common-table arrivals for the flight's class (and cargo) in table order at the
+  transitions the table names, then any published arrival of the class at an LOA-named transition, then at any
+  transition; sources, searched breadth-first over the connection rows with always-edges first and a zero-hop hit
+  allowed: on the heading path the candidate SIDs in table order (their transitions, then end fix; "always assign a
+  DP"), then the fixes of the pre-swap box; on the procedure path the pre-swap box's fixes from the last backwards
+  (fewest changes), then the pilot-nav SID's transitions and end fix; a radar-vector SID as the last resort reaches
+  any target directly (`OAK6 OAK MACHU TMBRS4`). The result keeps the box up to the source fix, then the chain, the
+  transition and the arrival id; the LOA gap is not raised on a swapped box (the swap is the data's best answer;
+  NKS510's `SKYL1 AVE SADDE8` meets no LAX jet token) and stays `Unresolved` only where nothing reaches. Predicted:
+  SWA984-1A `SSTIK5 SUSEY EBAYE BURGL IRNMN2`, SWA984-1C `GAPP7 SFO EBAYE BURGL IRNMN2`, NKS510 `SKYL1 AVE SADDE8`,
+  SWA888 `CNDEL5 KTINA CISKO RDHOT ROKKR3` (the CIFP has ROKKR3), N858EE `CNDEL5 YYUNG TILLT LEGOZ4`, SWA2021
+  `OAK6 OAK MACHU TMBRS4`, JSX203 still unresolved (FLCHR sits on Q174, which no connection row reaches from
+  NTELL). **User ruling 2026-09-17 on the RNAV-clash pair (NKS510)**: keep it, and make it whole: "IF the pilot
+  agrees that they're /L and misfiled, then the whole flight plan as filed is correct (and since /L is
+  RVSM-capable, FL350 should stay). But if the pilot says that indeed due to equipment malfunction they're /A, the
+  student needs to be able to amend properly, and that would include the route and altitude adjustment." So the
+  pair is type alone versus every other box the non-RNAV plan amends (route and altitude), raised only where the
+  RNAV-suffixed plan needs no amendment at all; fixing the type side means the other boxes are expected as filed,
+  fixing the other side in full means the type is expected as filed. SWA984 (`/L` B737, KSFO to KLAX, filed `SSTIK5 EBAYE AVE SADDE8`) should expect
   `SSTIK5 SUSEY EBAYE BURGL IRNMN2`: SADDE8 is the non-RNAV LAX arrival (fed from DERBB per the ZOA "Common ZLA
   Arrivals from ZOA" table and the LOA's `..DERBB (Non-RNAV)`), IRNMN2 the RNAV one (BURGL, REBRG), and the LOA's
   LAX jet row names BURGL. Until this lands the fixture is `pending` (flipped 2026-09-16 with this note) and the
