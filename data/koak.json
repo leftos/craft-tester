@@ -3408,8 +3408,8 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          5000,
+          9000
         ],
         "classes": [
           "P",
@@ -3421,7 +3421,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -3467,8 +3466,8 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          5000,
+          9000
         ],
         "classes": [
           "P",
@@ -3480,7 +3479,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -3504,8 +3502,8 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          5000,
+          9000
         ],
         "classes": [
           "P",
@@ -3528,7 +3526,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -3541,8 +3538,8 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          5000,
+          7000
         ],
         "classes": [
           "P",
@@ -3554,7 +3551,17 @@
       },
       {
         "altitudes": [
-          3000,
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KMYV",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
           5000
         ],
         "classes": [
@@ -3567,8 +3574,8 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          5000,
+          7000
         ],
         "classes": [
           "P",
@@ -3580,14 +3587,80 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KOVE",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KMCC",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
+          11000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KMHR",
+        "exitFix": "OAK",
+        "tail": "OAK ORRCA"
+      },
+      {
+        "altitudes": [
+          5000,
+          7000
         ],
         "classes": [
           "P",
           "T"
         ],
         "destination": "KLVK",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD"
+      },
+      {
+        "altitudes": [
+          7000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KLVK",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD"
+      },
+      {
+        "altitudes": [
+          7000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KMOD",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM MOD"
+      },
+      {
+        "altitudes": [
+          7000
+        ],
+        "classes": [
+          "J"
+        ],
+        "destination": "KSCK",
         "exitFix": "OAK",
         "tail": "OAK V244 ALTAM MOD"
       },
@@ -3632,8 +3705,8 @@
       },
       {
         "altitudes": [
-          5000,
-          7000
+          7000,
+          11000
         ],
         "classes": [
           "P",
@@ -3646,8 +3719,7 @@
       },
       {
         "altitudes": [
-          7000,
-          9000
+          11000
         ],
         "classes": [
           "J"
@@ -3658,8 +3730,7 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          7000
         ],
         "classes": [
           "P",
@@ -3671,8 +3742,7 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          7000
         ],
         "classes": [
           "P",
@@ -3684,8 +3754,8 @@
       },
       {
         "altitudes": [
-          5000,
-          7000
+          7000,
+          11000
         ],
         "classes": [
           "P",
@@ -3698,8 +3768,7 @@
       },
       {
         "altitudes": [
-          7000,
-          9000
+          11000
         ],
         "classes": [
           "J"
@@ -3710,8 +3779,7 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          7000
         ],
         "classes": [
           "P",
@@ -3723,7 +3791,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -3748,7 +3815,7 @@
       },
       {
         "altitudes": [
-          3000
+          4000
         ],
         "classes": [
           "P",
@@ -3771,7 +3838,7 @@
       },
       {
         "altitudes": [
-          4000
+          5000
         ],
         "classes": [
           "P",
@@ -4917,7 +4984,6 @@
       "destination": "KSAC",
       "finalAltitudeFeet": 11000,
       "id": "TEC-KSAC-SFOW-J",
-      "initialAltitudeFeet": 11000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
@@ -4974,7 +5040,6 @@
       "destination": "O88",
       "finalAltitudeFeet": 11000,
       "id": "TEC-O88-SFOW-J",
-      "initialAltitudeFeet": 11000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
@@ -5026,6 +5091,32 @@
     },
     {
       "classes": [
+        "J"
+      ],
+      "destination": "KMCC",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KMCC-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KMCC",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KMCC-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
         "T",
         "P"
       ],
@@ -5064,6 +5155,32 @@
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KMHR",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KMHR-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KMHR",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KMHR-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
@@ -5112,6 +5229,32 @@
     },
     {
       "classes": [
+        "J"
+      ],
+      "destination": "KMYV",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KMYV-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KMYV",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KMYV-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
         "T",
         "P"
       ],
@@ -5150,6 +5293,32 @@
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KOVE",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KOVE-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK ORRCA",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KOVE",
+      "finalAltitudeFeet": 11000,
+      "id": "TEC-KOVE-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
@@ -5198,6 +5367,32 @@
     },
     {
       "classes": [
+        "J"
+      ],
+      "destination": "KLVK",
+      "finalAltitudeFeet": 7000,
+      "id": "TEC-KLVK-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KLVK",
+      "finalAltitudeFeet": 7000,
+      "id": "TEC-KLVK-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
         "T"
       ],
       "destination": "KLVK",
@@ -5241,6 +5436,32 @@
     },
     {
       "classes": [
+        "J"
+      ],
+      "destination": "KMOD",
+      "finalAltitudeFeet": 7000,
+      "id": "TEC-KMOD-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KMOD",
+      "finalAltitudeFeet": 7000,
+      "id": "TEC-KMOD-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
         "T"
       ],
       "destination": "KMOD",
@@ -5279,6 +5500,32 @@
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KSCK",
+      "finalAltitudeFeet": 7000,
+      "id": "TEC-KSCK-SFOW-J",
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# OAK V244 ALTAM MOD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KSCK",
+      "finalAltitudeFeet": 7000,
+      "id": "TEC-KSCK-SFOE-J",
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
@@ -5375,7 +5622,6 @@
       "destination": "KMRY",
       "finalAltitudeFeet": 7000,
       "id": "TEC-KMRY-SFOW-TP",
-      "initialAltitudeFeet": 7000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
@@ -5462,7 +5708,6 @@
       "destination": "KWVI",
       "finalAltitudeFeet": 7000,
       "id": "TEC-KWVI-SFOW-TP",
-      "initialAltitudeFeet": 7000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
@@ -5508,7 +5753,6 @@
       "destination": "KNUQ",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KNUQ-SFOW-JTP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5553,7 +5797,6 @@
       "destination": "KPAO",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KPAO-SFOW-JTP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5598,7 +5841,6 @@
       "destination": "KRHV",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KRHV-SFOW-JTP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5643,7 +5885,6 @@
       "destination": "KSJC",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSJC-SFOW-JTP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5657,7 +5898,6 @@
       "destination": "KSJC",
       "finalAltitudeFeet": 3000,
       "id": "TEC-KSJC-SFOE-J",
-      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK ARTAQ",
@@ -5687,7 +5927,6 @@
       "destination": "KSQL",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSQL-SFOW-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",

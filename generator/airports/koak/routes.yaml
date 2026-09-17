@@ -45,40 +45,48 @@ routes:
   - { exit_fix: OAK, destination: KSLC, tail: OAK MOGEE Q124 BVL YUTES#, classes: [J], altitudes: [37000, 39000] }
   - { exit_fix: OAK, destination: KDEN, tail: OAK SYRAH Q128 JSICA ILC EYPUZ IBSKI BUMMP SSKII#, classes: [J], altitudes: [37000, 39000] }
   # NCT destinations file the tails the ZOA route tool issues, one row per distinct tail, so every
-  # configuration, class and suffix finds a clean row. The tool prints two altitudes in hundreds of
-  # feet, the initial and the final one; the altitudes here sit at or below the final altitude of the
-  # matching TEC row (see `tec.yaml`). A TEC altitude ignores the hemispheric parity, which is why the
+  # configuration, class and suffix finds a clean row. A flight the TEC row routes is flown at that
+  # row's final altitude exactly, parity aside (user 2026-09-16), so every altitude here is the final
+  # altitude of the row that routes one of the flights the library row serves (see `tec.yaml`); a row
+  # whose classes are routed at different finals lists each of them. A TEC altitude ignores the hemispheric parity, which is why the
   # Sacramento jet rows off FEVTA file 10,000 on a course of 014 (user, 2026-09-16); the ORRCA rows
   # file the 11,000 their own row ends on. Magnetic courses: KSMF 014 odd, KSAC 021 odd, KMYV 010 odd,
   # KOVE 005 odd, O88 030 odd, KLVK 081 odd, KMRY 152 odd, KWVI 136 odd, KSJC 136 odd, KSFO 216 even,
-  # KAPC 341 even.
-  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KSMF, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  # KAPC 341 even, KMCC 018 odd, KMHR 032 odd, KMOD 097 odd, KSCK 057 odd.
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000, 9000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [5000] }
   - { exit_fix: OAK, destination: KSMF, tail: OAK FEVTA FEVTA#, classes: [J], altitudes: [10000] }
   - { exit_fix: FEVTA, destination: KSMF, tail: FEVTA FEVTA#, classes: [J], altitudes: [10000] }
   - { exit_fix: OAK, destination: KSMF, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
-  - { exit_fix: OAK, destination: KSAC, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KSAC, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSAC, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000, 9000] }
+  - { exit_fix: OAK, destination: KSAC, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [5000] }
   - { exit_fix: OAK, destination: KSAC, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
-  - { exit_fix: OAK, destination: O88, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: O88, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000, 9000] }
   - { exit_fix: OAK, destination: O88, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
-  - { exit_fix: OAK, destination: KMYV, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KMYV, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KMYV, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000] }
+  - { exit_fix: OAK, destination: KMYV, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [5000, 7000] }
+  - { exit_fix: OAK, destination: KMYV, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM V334 SAC, classes: [P, T], altitudes: [5000, 7000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KMCC, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KMHR, tail: OAK ORRCA, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [5000, 7000] }
+  - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
+  - { exit_fix: OAK, destination: KMOD, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
+  - { exit_fix: OAK, destination: KSCK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
   - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: OAK, destination: KAPC, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000] }
-  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T, J], altitudes: [5000, 7000] }
-  - { exit_fix: OAK, destination: KMRY, tail: OAK EUGEN, classes: [J], altitudes: [7000, 9000] }
-  - { exit_fix: OAK, destination: KMRY, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KMRY, tail: OAK V244 ALTAM MOD V111 SNS, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T, J], altitudes: [5000, 7000] }
-  - { exit_fix: OAK, destination: KWVI, tail: OAK EUGEN, classes: [J], altitudes: [7000, 9000] }
-  - { exit_fix: OAK, destination: KWVI, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: EUGEN, destination: KSJC, tail: EUGEN OSI, classes: [P, T, J], altitudes: [3000, 5000] }
+  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T, J], altitudes: [7000, 11000] }
+  - { exit_fix: OAK, destination: KMRY, tail: OAK EUGEN, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KMRY, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [7000] }
+  - { exit_fix: OAK, destination: KMRY, tail: OAK V244 ALTAM MOD V111 SNS, classes: [P, T], altitudes: [7000] }
+  - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T, J], altitudes: [7000, 11000] }
+  - { exit_fix: OAK, destination: KWVI, tail: OAK EUGEN, classes: [J], altitudes: [11000] }
+  - { exit_fix: OAK, destination: KWVI, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [7000] }
+  - { exit_fix: EUGEN, destination: KSJC, tail: EUGEN OSI, classes: [P, T, J], altitudes: [5000] }
   - { exit_fix: SUNOL, destination: KSJC, tail: SUNOL SJC, classes: [J], altitudes: [3000] }
-  - { exit_fix: OAK, destination: KSJC, tail: OAK SUNOL SJC, classes: [P, T], altitudes: [3000] }
+  - { exit_fix: OAK, destination: KSJC, tail: OAK SUNOL SJC, classes: [P, T], altitudes: [4000] }
   - { exit_fix: OAK, destination: KSJC, tail: OAK ARTAQ, classes: [J], altitudes: [3000] }
-  - { exit_fix: OSI, destination: KSFO, tail: OSI, classes: [P, T, J], altitudes: [4000] }
+  - { exit_fix: OSI, destination: KSFO, tail: OSI, classes: [P, T, J], altitudes: [5000] }

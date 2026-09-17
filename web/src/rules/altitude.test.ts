@@ -7,6 +7,7 @@ import type {
   RunwayConfig,
   Scenario,
   Sid,
+  TecRoute,
 } from '@/data/schema.ts';
 import { resolveAltitude } from '@/rules/altitude.ts';
 import type { Classification } from '@/rules/classify.ts';
@@ -399,5 +400,134 @@ describe('the expect clause', () => {
     expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
     expect(result.expect.value).toBeNull();
     expect(result.redundantExpect.value).toBeNull();
+  });
+});
+
+/** The flight the TEC rows below are keyed to: a jet in SFOW off the 01s, filed to Sacramento. */
+const TEC_FLIGHT: Partial<Scenario> = { destination: 'KSMF', filedRoute: 'TRUKN2 TRUKN FEVTA' };
+
+/** A TEC row keyed to that flight, which the airport data carries ahead of its own rows. */
+function withTecRow(row: Partial<TecRoute>, airport: AirportData = ksfo): AirportData {
+  const base: TecRoute = {
+    id: 'TEC-TEST',
+    source: 'test',
+    kind: 'tec',
+    destination: 'KSMF',
+    plan: 'SFOW',
+    runwayFamilies: [],
+    classes: ['J'],
+    route: 'TRUKN# TRUKN FEVTA FEVTA1',
+  };
+  return { ...airport, tecRoutes: [{ ...base, ...row }, ...airport.tecRoutes] };
+}
+
+/** Resolves the altitude for a flight cleared on a heading rather than on a procedure. */
+function resolveOnHeading(heading: NonDpHeading, flight: Scenario, airport: AirportData) {
+  const result = resolveAltitude(
+    ctx({}),
+    { kind: 'heading', heading, turn: undefined },
+    flight,
+    airport,
+  );
+  if (isUnresolved(result)) throw new Error(result.reason);
+  return result;
+}
+
+describe('resolveAltitude with a TEC initial altitude', () => {
+  it('maintains the initial altitude of a row issued on an initial heading', () => {
+    const airport = withTecRow({
+      route: 'H270 FEVTA FEVTA1',
+      initialAltitudeFeet: 3000,
+      finalAltitudeFeet: 10000,
+    });
+    const result = resolveOnHeading(
+      270,
+      scenario({ ...TEC_FLIGHT, filedAltitude: 10000 }),
+      airport,
+    );
+    expect(result.altitude.value).toEqual({ phrase: 'maintain', feet: 3000 });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-MAINTAIN',
+      'TEC-TEST',
+    ]);
+  });
+
+  it('speaks the expect clause at the phraseology delay, which the TEC row states none of', () => {
+    const airport = withTecRow({
+      route: 'H270 FEVTA FEVTA1',
+      initialAltitudeFeet: 3000,
+      finalAltitudeFeet: 10000,
+    });
+    const result = resolveOnHeading(
+      270,
+      scenario({ ...TEC_FLIGHT, filedAltitude: 10000 }),
+      airport,
+    );
+    expect(result.expect.value).toEqual({ kind: 'filed', feet: 10000, minutes: 3 });
+  });
+
+  it('says nothing to expect when the initial altitude is the altitude filed', () => {
+    const airport = withTecRow({ initialAltitudeFeet: 10000, finalAltitudeFeet: 10000 });
+    const result = resolveOnHeading(
+      270,
+      scenario({ ...TEC_FLIGHT, filedAltitude: 10000 }),
+      airport,
+    );
+    expect(result.expect.value).toBeNull();
+  });
+
+  it('issues an initial altitude below the published top as climb via SID except maintain', () => {
+    const airport = withTecRow({ initialAltitudeFeet: 3000, finalAltitudeFeet: 10000 });
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario(TEC_FLIGHT), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 3000 });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-CLIMB-VIA-EXCEPT',
+      'TEC-TEST',
+    ]);
+  });
+
+  it('issues an initial altitude at the published top as a plain climb via SID', () => {
+    const airport = withTecRow({ initialAltitudeFeet: 19000, finalAltitudeFeet: 19000 });
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario(TEC_FLIGHT), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-CLIMB-VIA',
+      'TEC-TEST',
+    ]);
+  });
+
+  it('does not cap the initial altitude at the altitude the pilot filed', () => {
+    const airport = withTecRow({ initialAltitudeFeet: 10000, finalAltitudeFeet: 10000 });
+    const result = resolve(
+      ctx({}),
+      sid('TRUKN2'),
+      scenario({ ...TEC_FLIGHT, filedAltitude: 5000 }),
+      airport,
+    );
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 10000 });
+  });
+
+  it('reads the SOP rows when the row begins on a departure this clearance does not issue', () => {
+    const airport = withTecRow({
+      route: 'GAPP# OAK V6 SAC',
+      initialAltitudeFeet: 3000,
+      finalAltitudeFeet: 10000,
+    });
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario(TEC_FLIGHT), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-CLIMB-VIA',
+      'SFOW-J-10000',
+    ]);
+  });
+
+  it('reads the SOP rows when the row that routes the flight states no initial altitude', () => {
+    const airport = withTecRow({ finalAltitudeFeet: 10000 });
+    const result = resolve(ctx({}), sid('TRUKN2'), scenario(TEC_FLIGHT), airport);
+    expect(result.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(result.altitude.citations.map((citation) => citation.id)).toEqual([
+      'A-CLIMB-VIA',
+      'SFOW-J-10000',
+    ]);
   });
 });

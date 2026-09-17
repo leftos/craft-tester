@@ -107,7 +107,7 @@ describe('checkAltitude equipment and performance', () => {
 });
 
 describe('checkAltitude TRACON destinations', () => {
-  it('caps a C172 to Rio Vista at the TEC route altitude off the 01s', () => {
+  it('amends a C172 to Rio Vista down to the TEC final altitude off the 01s', () => {
     const flight = scenario({
       aircraftType: 'C172',
       equipmentSuffix: '/G',
@@ -115,11 +115,38 @@ describe('checkAltitude TRACON destinations', () => {
       filedAltitude: 10000,
     });
     expect(amendment(flight).proposedFeet).toBe(5000);
-    expect(citations(flight)).toEqual(['A-PARITY', 'TEC-O88-SFOW-TP-01']);
+    expect(amendment(flight).reason).toBe(
+      'the TEC route to Rio Vista is flown at 5,000; a facility-directed altitude is not read against the direction-of-flight rule',
+    );
+    expect(citations(flight)).toEqual(['TEC-O88-SFOW-TP-01']);
   });
 
-  it('leaves 3,000 to Oakland alone, which is the TEC cap and odd like its 036 course', () => {
+  it('amends a jet to Sacramento up to the TEC final altitude it filed below', () => {
+    const flight = scenario({ destination: 'KSMF', filedAltitude: 8000 });
+    expect(amendment(flight).proposedFeet).toBe(10000);
+    expect(amendment(flight).reason).toBe(
+      'the TEC route to Sacramento is flown at 10,000; a facility-directed altitude is not read against the direction-of-flight rule',
+    );
+    expect(citations(flight)).toEqual(['TEC-KSMF-SFOW-J']);
+  });
+
+  it('leaves 10,000 to Sacramento alone, the TEC final altitude on an odd-side course', () => {
+    expect(check(scenario({ destination: 'KSMF', filedAltitude: 10000 }))).toBeUndefined();
+  });
+
+  it('leaves 3,000 to Oakland alone, which is the TEC final altitude', () => {
     expect(check(scenario({ destination: 'KOAK', filedAltitude: 3000 }))).toBeUndefined();
+  });
+
+  it('reads the parity rule when the row that routes the flight publishes no final altitude', () => {
+    const flight = scenario({
+      aircraftType: 'B350',
+      destination: 'KSAC',
+      filedRoute: 'TRUKN2 ORRCA',
+      filedAltitude: 12000,
+    });
+    expect(amendment(flight).proposedFeet).toBe(11000);
+    expect(citations(flight)).toEqual(['A-PARITY']);
   });
 
   it('caps nothing when the TEC route begins on a DP the flight is not assigned', () => {

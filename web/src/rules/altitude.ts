@@ -5,11 +5,20 @@ import type {
   Phraseology,
   Scenario,
   Sid,
+  TecRoute,
 } from '@/data/schema.ts';
+import { citeTec } from '@/rules/amend/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { addresses } from '@/rules/classify.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
-import type { Cited, ExpectClause, SelectedProcedure, Unresolved } from '@/rules/types.ts';
+import { keyedTecRoute, tecHead } from '@/rules/tecRoutes.ts';
+import type {
+  Cited,
+  ExpectClause,
+  RuleCitation,
+  SelectedProcedure,
+  Unresolved,
+} from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** The altitude element of a clearance and the expect clause that follows it. */
@@ -119,6 +128,74 @@ function altitudeValue(
 }
 
 /**
+ * The TEC route row whose initial altitude the clearance is issued with, where one applies.
+ *
+ * The row is the one keyed to the flight — destination, plan, runway family and class — and it is
+ * read only where its route begins on what the flight is in fact cleared on: the departure family it
+ * names, or the initial heading it is issued on. A row that begins on a fix or an airway carries no
+ * such condition. The keyed row is read rather than the routed one, because the routed one is
+ * decided by putting the row's route to the clearance engine, which is this engine.
+ *
+ * @param ctx The classified flight.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
+ * @param scenario The filed flight plan, which names the destination.
+ * @param airport The airport data, whose `tecRoutes` hold the transcribed rows.
+ * @returns The row, or `undefined` where none is keyed to the flight, the keyed one publishes no
+ *   initial altitude, or its route begins on a departure this clearance does not issue.
+ */
+function tecInitialRow(
+  ctx: Classification,
+  procedure: SelectedProcedure,
+  scenario: Scenario,
+  airport: AirportData,
+): TecRoute | undefined {
+  const row = keyedTecRoute(ctx, scenario, airport);
+  if (row === undefined || row.initialAltitudeFeet === undefined) return undefined;
+  const head = tecHead(row);
+  if (head.kind === 'family') {
+    return procedure.kind === 'sid' && procedure.sid.family === head.family ? row : undefined;
+  }
+  if (head.kind === 'heading') {
+    return procedure.kind === 'heading' && procedure.heading === head.heading ? row : undefined;
+  }
+  return row;
+}
+
+/**
+ * The altitude phrase a TEC route's initial altitude is issued with.
+ *
+ * The initial altitude is what the facility directive issues the route with, so it stands whatever
+ * an SOP row would have said and is not capped at the filed altitude: the route's final altitude is
+ * the cruise, and the initial altitude is never above it. The phrase is chosen as it is for an SOP
+ * interim altitude — "climb via SID except maintain" where the SID's chart publishes a top altitude
+ * above it or carries crossing restrictions off this runway, a plain "climb via SID" where the
+ * initial altitude is the published top or above it, and "maintain" for a flight on no procedure.
+ *
+ * @param initialFeet The row's initial altitude.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
+ * @param ctx The classified flight, whose runway family decides the climb-via eligibility.
+ * @returns The altitude phrase with its feet, and the phraseology rule that produced it.
+ */
+function tecAltitudeValue(
+  initialFeet: number,
+  procedure: SelectedProcedure,
+  ctx: Classification,
+): { value: AltitudeValue; ruleId: string } {
+  if (procedure.kind === 'heading') {
+    return { value: { phrase: 'maintain', feet: initialFeet }, ruleId: 'A-MAINTAIN' };
+  }
+  const { sid } = procedure;
+  if (sid.topAltitude.kind === 'published') {
+    return initialFeet < sid.topAltitude.feet
+      ? { value: { phrase: 'climb_via_except', feet: initialFeet }, ruleId: 'A-CLIMB-VIA-EXCEPT' }
+      : { value: { phrase: 'climb_via' }, ruleId: 'A-CLIMB-VIA' };
+  }
+  return isClimbViaEligible(sid, ctx.runwayFamily)
+    ? { value: { phrase: 'climb_via_except', feet: initialFeet }, ruleId: 'A-CLIMB-VIA-EXCEPT' }
+    : { value: { phrase: 'maintain', feet: initialFeet }, ruleId: 'A-MAINTAIN' };
+}
+
+/**
  * The altitude the clearance climbs the aircraft to: the interim altitude where one is issued, and
  * the SID's published top altitude on a plain "climb via SID".
  *
@@ -153,21 +230,23 @@ function clearedToFeet(altitude: AltitudeValue, procedure: SelectedProcedure): n
  * A flight cleared on the runway heading has no chart to publish the note, so nothing drops the
  * clause there but the comparison with the altitude it is cleared to.
  *
- * @param row The interim-altitude row the flight matched.
  * @param altitude The resolved altitude phrase and its feet.
  * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param scenario The filed flight plan.
  * @param phraseology The airport's phraseology toggles.
+ * @param minutes How long after departure the clause says to expect the filed altitude: the row's
+ *   own delay for an SOP interim altitude, and the phraseology default for a TEC initial altitude,
+ *   which is issued by a row that states no delay of its own.
  * @returns The expect clause to speak, or null where none is; and the clause the chart already
  *   publishes, or null where nothing is redundant. The clause names the filed altitude, so it is
  *   never the amended one; `resolveAmendedClearance` writes that clause instead.
  */
 function expectClause(
-  row: AltitudeRule,
   altitude: AltitudeValue,
   procedure: SelectedProcedure,
   scenario: Scenario,
   phraseology: Phraseology,
+  minutes: number,
 ): {
   clause: ExpectClause | null;
   redundant: { feet: number; minutes: number } | null;
@@ -185,13 +264,63 @@ function expectClause(
     };
   }
   return {
-    clause: { kind: 'filed', feet: scenario.filedAltitude, minutes: row.expectAfterMinutes },
+    clause: { kind: 'filed', feet: scenario.filedAltitude, minutes },
     redundant: null,
+  };
+}
+
+/** One resolved altitude phrase with the rule and the row that produced it, and its expect delay. */
+type AltitudeParts = {
+  value: AltitudeValue;
+  /** The phraseology rule id the phrase reads under. */
+  ruleId: string;
+  /** The data row that decided the altitude: an SOP interim row, or the TEC route row. */
+  source: RuleCitation;
+  minutes: number;
+};
+
+/**
+ * Assembles the altitude element and the expect clause from what decided the altitude.
+ *
+ * @param parts The phrase, the phraseology rule, the row that decided it, and the expect delay.
+ * @param procedure The selected SID, or the heading the flight is cleared on.
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @returns The altitude element, the expect clause and the clause the chart already publishes.
+ */
+function altitudeWith(
+  parts: AltitudeParts,
+  procedure: SelectedProcedure,
+  scenario: Scenario,
+  airport: AirportData,
+): ResolvedAltitude {
+  const { value, ruleId, source, minutes } = parts;
+  const { clause, redundant } = expectClause(
+    value,
+    procedure,
+    scenario,
+    airport.phraseology,
+    minutes,
+  );
+  return {
+    altitude: { value, citations: [...citePhraseology(airport, ruleId), source] },
+    expect: { value: clause, citations: citePhraseology(airport, 'A-EXPECT') },
+    redundantExpect: {
+      value: redundant,
+      citations: redundant === null ? [] : citePhraseology(airport, 'A-EXPECT-REDUNDANT'),
+    },
   };
 }
 
 /**
  * Resolves the altitude a flight is cleared to and the expect clause that goes with it.
+ *
+ * A flight whose TEC route row states an initial altitude is issued that altitude, whatever an SOP
+ * row would have said: the TEC route is a facility directive, and its initial altitude overrides the
+ * SOP (user 2026-09-16). The row must be the one keyed to the flight and must begin on what the
+ * clearance in fact issues; every other flight — a row that states no initial altitude, a row whose
+ * departure this clearance does not issue, a destination with no row at all — is read against the
+ * SOP rows alone.
  *
  * The first interim-altitude row keyed to the plan, runway family, class, and SID family decides:
  * a SID whose published top altitude the row defers to is cleared "climb via SID", an interim
@@ -213,6 +342,22 @@ export function resolveAltitude(
   scenario: Scenario,
   airport: AirportData,
 ): ResolvedAltitude | Unresolved {
+  const tecRow = tecInitialRow(ctx, procedure, scenario, airport);
+  const initialFeet = tecRow?.initialAltitudeFeet;
+  if (tecRow !== undefined && initialFeet !== undefined) {
+    const { value, ruleId } = tecAltitudeValue(initialFeet, procedure, ctx);
+    return altitudeWith(
+      {
+        value,
+        ruleId,
+        source: citeTec(tecRow),
+        minutes: airport.phraseology.nonStandardInterimExpectMinutes,
+      },
+      procedure,
+      scenario,
+      airport,
+    );
+  }
   const row = airport.altitudeRules.find((entry) => rowMatches(entry, ctx, procedure, airport));
   if (row === undefined) {
     const on = procedure.kind === 'sid' ? procedure.sid.family : 'the runway heading';
@@ -224,13 +369,10 @@ export function resolveAltitude(
   const resolved = altitudeValue(row, procedure, ctx, scenario);
   if (isUnresolved(resolved)) return resolved;
   const { value, ruleId } = resolved;
-  const { clause, redundant } = expectClause(row, value, procedure, scenario, airport.phraseology);
-  return {
-    altitude: { value, citations: [...citePhraseology(airport, ruleId), toCitation(row)] },
-    expect: { value: clause, citations: citePhraseology(airport, 'A-EXPECT') },
-    redundantExpect: {
-      value: redundant,
-      citations: redundant === null ? [] : citePhraseology(airport, 'A-EXPECT-REDUNDANT'),
-    },
-  };
+  return altitudeWith(
+    { value, ruleId, source: toCitation(row), minutes: row.expectAfterMinutes },
+    procedure,
+    scenario,
+    airport,
+  );
 }

@@ -71,7 +71,7 @@ def test_the_transcribed_tec_and_loa_files_load(ksfo_inputs: AirportInputs) -> N
 def test_a_tec_row_carries_its_runway_family_and_altitudes(ksfo_inputs: AirportInputs) -> None:
     prop = route_by_id(ksfo_inputs, "TEC-KSMF-SFOW-P-01")
     assert prop.runway_families == ("01",)
-    assert (prop.initial_altitude_feet, prop.final_altitude_feet) == (KSMF_PROP_ALTITUDE_FEET, KSMF_PROP_ALTITUDE_FEET)
+    assert (prop.initial_altitude_feet, prop.final_altitude_feet) == (None, KSMF_PROP_ALTITUDE_FEET)
     assert (prop.plan, prop.classes, prop.route) == ("SFOW", ("P",), "SFO# OAK V6 SAC")
     no_altitude = route_by_id(ksfo_inputs, "TEC-KSMF-SFOE-J")
     assert (no_altitude.initial_altitude_feet, no_altitude.final_altitude_feet) == (None, None)
@@ -143,6 +143,7 @@ def test_an_unknown_aircraft_class_in_a_tec_row_is_named(tmp_path: Path, ksfo_di
 
 def test_a_tec_initial_altitude_without_a_final_one_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
+        data["routes"][0]["initial_altitude_feet"] = KSMF_JET_ALTITUDE_FEET
         del data["routes"][0]["final_altitude_feet"]
 
     message = rf"routes\[TEC-KSMF-SFOW-J\]: initial_altitude_feet {KSMF_JET_ALTITUDE_FEET} is stated without final_altitude_feet"
@@ -152,6 +153,7 @@ def test_a_tec_initial_altitude_without_a_final_one_is_named(tmp_path: Path, ksf
 
 def test_a_tec_initial_altitude_above_its_final_one_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
+        data["routes"][0]["initial_altitude_feet"] = KSMF_JET_ALTITUDE_FEET
         data["routes"][0]["final_altitude_feet"] = BELOW_THE_KSMF_JET_INITIAL_FEET
 
     message = (

@@ -2329,8 +2329,7 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          6000
         ],
         "classes": [
           "P"
@@ -2341,8 +2340,7 @@
       },
       {
         "altitudes": [
-          3000,
-          5000
+          6000
         ],
         "classes": [
           "P"
@@ -2353,7 +2351,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -2366,7 +2363,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -2379,7 +2375,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -2392,7 +2387,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -2469,7 +2463,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -2495,7 +2488,6 @@
       },
       {
         "altitudes": [
-          3000,
           5000
         ],
         "classes": [
@@ -3749,7 +3741,6 @@
       "destination": "KSMF",
       "finalAltitudeFeet": 10000,
       "id": "TEC-KSMF-SFOW-J",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# TRUKN FEVTA FEVTA1",
@@ -3776,7 +3767,6 @@
       "destination": "KSMF",
       "finalAltitudeFeet": 6000,
       "id": "TEC-KSMF-SFOW-P-01",
-      "initialAltitudeFeet": 6000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "SFO# OAK V6 SAC",
@@ -3792,7 +3782,6 @@
       "destination": "KSMF",
       "finalAltitudeFeet": 6000,
       "id": "TEC-KSMF-SFOW-P-28",
-      "initialAltitudeFeet": 6000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OAK V6 SAC",
@@ -3808,7 +3797,6 @@
       "destination": "KSMF",
       "finalAltitudeFeet": 6000,
       "id": "TEC-KSMF-SFOE-P",
-      "initialAltitudeFeet": 6000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM V392 SAC",
@@ -3822,7 +3810,6 @@
       "destination": "KMRY",
       "finalAltitudeFeet": 10000,
       "id": "TEC-KMRY-SFOW-J",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# EUGEN",
@@ -3837,7 +3824,6 @@
       "destination": "KMRY",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KMRY-SFOW-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# EUGEN",
@@ -3853,7 +3839,6 @@
       "destination": "KMRY",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KMRY-SFOE",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OSI V25 SNS",
@@ -3867,7 +3852,6 @@
       "destination": "KWVI",
       "finalAltitudeFeet": 10000,
       "id": "TEC-KWVI-SFOW-J",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# EUGEN",
@@ -3882,7 +3866,6 @@
       "destination": "KWVI",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KWVI-SFOW-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# EUGEN",
@@ -3898,7 +3881,6 @@
       "destination": "KWVI",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KWVI-SFOE",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OSI V25 SNS",
@@ -3913,7 +3895,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOW-JT",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# TRUKN ALTAM",
@@ -3928,7 +3909,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOW-JT-01",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "SFO# V244 ALTAM MOD",
@@ -3945,7 +3925,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOW-JT-28",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OAK V244 ALTAM MOD",
@@ -3962,7 +3941,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOE-JT",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "CIITY# CIITY ALTAM",
@@ -3976,7 +3954,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 3000,
       "id": "TEC-KLVK-SFOE-T",
-      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM MOD",
@@ -3990,7 +3967,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOW-P",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# TRUKN",
@@ -4004,7 +3980,6 @@
       "destination": "KLVK",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOE-P",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM MOD",
@@ -4019,7 +3994,6 @@
       "destination": "KMYV",
       "finalAltitudeFeet": 10000,
       "id": "TEC-KMYV-SFOW-JT",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# ORRCA",
@@ -4034,7 +4008,6 @@
       "destination": "KMYV",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KMYV-SFOE-JT",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "CIITY# CIITY ALTAM",
@@ -4049,7 +4022,6 @@
       "destination": "KMYV",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KMYV-SFOW-TP-01",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "SFO# OAK V6 SAC",
@@ -4066,7 +4038,6 @@
       "destination": "KMYV",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KMYV-SFOW-TP-28",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OAK V6 SAC",
@@ -4083,7 +4054,6 @@
       "destination": "KMYV",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KMYV-SFOE-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM MOD",
@@ -4098,7 +4068,6 @@
       "destination": "KOVE",
       "finalAltitudeFeet": 10000,
       "id": "TEC-KOVE-SFOW-JT",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# ORRCA",
@@ -4113,7 +4082,6 @@
       "destination": "KOVE",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KOVE-SFOE-JT",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "CIITY# CIITY ALTAM",
@@ -4128,7 +4096,6 @@
       "destination": "KOVE",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KOVE-SFOW-TP-01",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "SFO# OAK V6 SAC",
@@ -4145,7 +4112,6 @@
       "destination": "KOVE",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KOVE-SFOW-TP-28",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OAK V6 SAC",
@@ -4162,7 +4128,6 @@
       "destination": "KOVE",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KOVE-SFOE-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM MOD",
@@ -4176,7 +4141,6 @@
       "destination": "KSAC",
       "finalAltitudeFeet": 10000,
       "id": "TEC-KSAC-SFOW-J",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# ORRCA",
@@ -4190,7 +4154,6 @@
       "destination": "KSAC",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSAC-SFOE-J",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "CIITY# ORRCA",
@@ -4217,7 +4180,6 @@
       "destination": "KSAC",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSAC-SFOW-TP-01",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "SFO# V6 SAC",
@@ -4234,7 +4196,6 @@
       "destination": "KSAC",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSAC-SFOW-TP-28",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OAK V6 SAC",
@@ -4251,7 +4212,6 @@
       "destination": "KSAC",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSAC-SFOE-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM V392 SAC",
@@ -4265,7 +4225,6 @@
       "destination": "O88",
       "finalAltitudeFeet": 10000,
       "id": "TEC-O88-SFOW-J",
-      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# ORRCA",
@@ -4279,7 +4238,6 @@
       "destination": "O88",
       "finalAltitudeFeet": 5000,
       "id": "TEC-O88-SFOE-J",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "CIITY# ORRCA",
@@ -4306,7 +4264,6 @@
       "destination": "O88",
       "finalAltitudeFeet": 5000,
       "id": "TEC-O88-SFOW-TP-01",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "SFO# V6 SAC",
@@ -4323,7 +4280,6 @@
       "destination": "O88",
       "finalAltitudeFeet": 5000,
       "id": "TEC-O88-SFOW-TP-28",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OAK V6 SAC",
@@ -4340,7 +4296,6 @@
       "destination": "O88",
       "finalAltitudeFeet": 5000,
       "id": "TEC-O88-SFOE-TP",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# OAK V244 ALTAM V392 SAC",
@@ -4356,7 +4311,6 @@
       "destination": "KOAK",
       "finalAltitudeFeet": 3000,
       "id": "TEC-KOAK-SFOW",
-      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "TRUKN# TRUKN",
@@ -4371,7 +4325,6 @@
       "destination": "KOAK",
       "finalAltitudeFeet": 3000,
       "id": "TEC-KOAK-SFOE-JT",
-      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "CIITY# CIITY",
@@ -4386,7 +4339,6 @@
       "destination": "KOAK",
       "finalAltitudeFeet": 3000,
       "id": "TEC-KOAK-SFOE-TP",
-      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP#",
@@ -4402,7 +4354,6 @@
       "destination": "KSJC",
       "finalAltitudeFeet": 5000,
       "id": "TEC-KSJC-SFOW",
-      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "GAPP# OSI SJC",
@@ -4418,7 +4369,6 @@
       "destination": "KSJC",
       "finalAltitudeFeet": 3000,
       "id": "TEC-KSJC-SFOE",
-      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "GAPP# SJC",

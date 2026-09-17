@@ -50,25 +50,28 @@ routes:
   - { exit_fix: OAK, destination: KTRK, tail: OAK V244 ALTAM V392 SAC V6 SWR TRUCK, classes: [P, T], altitudes: [15000, 17000] }
   - { exit_fix: SGD, destination: KACV, tail: SGD YAGER, classes: [T], altitudes: [16000, 18000] }
   # NCT destinations file the tails the TEC rows issue, one row per distinct tail, so every configuration,
-  # class and suffix finds a clean row; altitudes sit at or below the TEC cap on the direction-of-flight
-  # parity, and the draw rejects a row in the configurations where it is not the clean plan. Magnetic
-  # courses: KSMF 016 odd, KMRY 144 odd, KWVI 132 odd, KLVK 066 odd, KOVE 003 odd, KAPC 353 even.
+  # class and suffix finds a clean row. A flight the TEC row routes is flown at that row's final altitude
+  # exactly, parity aside (user 2026-09-16), so an altitude here is the final altitude of the row that
+  # routes one of the flights the library row serves; a row whose destination has no TEC final files the
+  # direction-of-flight parity instead, and the draw rejects a row in the configurations where it is not
+  # the clean plan. Magnetic courses: KSMF 016 odd, KMRY 144 odd, KWVI 132 odd, KLVK 066 odd,
+  # KOVE 003 odd, KAPC 353 even.
   - { exit_fix: TRUKN, destination: KSMF, tail: TRUKN FEVTA FEVTA#, classes: [T, J], altitudes: [7000, 9000] }
   - { exit_fix: CIITY, destination: KSMF, tail: CIITY FEVTA FEVTA#, classes: [T, J], altitudes: [7000, 9000] }
-  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KSMF, tail: OAK V244 ALTAM V392 SAC, classes: [P], altitudes: [3000, 5000] }
-  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OSI, destination: KMRY, tail: OSI V25 SNS, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: OSI, destination: KWVI, tail: OSI V25 SNS, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V6 SAC, classes: [P], altitudes: [6000] }
+  - { exit_fix: OAK, destination: KSMF, tail: OAK V244 ALTAM V392 SAC, classes: [P], altitudes: [6000] }
+  - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T], altitudes: [5000] }
+  - { exit_fix: OSI, destination: KMRY, tail: OSI V25 SNS, classes: [P, T], altitudes: [5000] }
+  - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T], altitudes: [5000] }
+  - { exit_fix: OSI, destination: KWVI, tail: OSI V25 SNS, classes: [P, T], altitudes: [5000] }
   - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN ALTAM, classes: [T, J], altitudes: [3000, 5000] }
   - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN, classes: [P], altitudes: [3000, 5000] }
   - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
   - { exit_fix: CIITY, destination: KLVK, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
   - { exit_fix: ORRCA, destination: KOVE, tail: ORRCA, classes: [T, J], altitudes: [7000, 9000] }
-  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000] }
   - { exit_fix: CIITY, destination: KOVE, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
-  - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
+  - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [5000] }
   - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T], altitudes: [4000] }
   # The tail stops at Middleton Island: SMA and the oceanic fixes beyond it are outside the FAA CIFP, so nothing can name them on frequency.
   - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO, classes: [J], altitudes: [28000, 30000] }

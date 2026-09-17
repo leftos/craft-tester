@@ -193,7 +193,7 @@ describe('resolveAmendments', () => {
       equipmentSuffix: null,
       destination: 'KSMF',
       filedRoute: 'MOLEN9 OAK V6 SAC',
-      filedAltitude: 5000,
+      filedAltitude: 6000,
       runwayConfigId: '01/01',
       departureRunway: '01R',
       localTime: '0545',
@@ -224,7 +224,7 @@ describe('resolveAmendments', () => {
       equipmentSuffix: '/E',
       destination: 'KMRY',
       filedRoute: 'SSTIK5 EUGEN',
-      filedAltitude: 3000,
+      filedAltitude: 5000,
       runwayConfigId: '01/01',
       departureRunway: '01L',
       localTime: '0023',
@@ -321,11 +321,11 @@ describe('resolveAmendedClearance', () => {
   it('says the amended altitude is the final one where the clearance climbs straight to it', () => {
     const original = skw2345();
     const { corrected } = resolved(original);
-    expect(corrected.filedAltitude).toBe(9000);
+    expect(corrected.filedAltitude).toBe(10000);
     const result = resolveAmendedClearance(original, corrected, ksfo);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-    expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 9000 });
-    expect(result.clearance.expect.value).toEqual({ kind: 'final', feet: 9000 });
+    expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 10000 });
+    expect(result.clearance.expect.value).toEqual({ kind: 'final', feet: 10000 });
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual(['A-FINAL']);
   });
 
@@ -334,7 +334,7 @@ describe('resolveAmendedClearance', () => {
     const { corrected } = resolved(original);
     const result = resolveAmendedClearance(original, corrected, ksfo);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-    expect(result.clearance.redundantExpect.value).toEqual({ feet: 9000, minutes: 10 });
+    expect(result.clearance.redundantExpect.value).toEqual({ feet: 10000, minutes: 10 });
     expect(result.clearance.redundantExpect.citations.map((citation) => citation.id)).toEqual([
       'A-FINAL',
     ]);

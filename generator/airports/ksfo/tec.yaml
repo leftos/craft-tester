@@ -1,11 +1,13 @@
 # Tower Enroute Control (TEC) and ADR routes for KSFO departures to destinations inside NCT, transcribed
 # from the ZOA route reference tool (https://reference.oakartcc.org/routes?dep=SFO&dest=<FAA>) on
 # 2026-09-15. The tool prints `[SFOW]`/`[SFOE]` plans, `(1)`/`(28)` departure-runway tags, and ends a row
-# with a pair of altitudes in hundreds of feet: the initial altitude the TEC route is issued with and the
-# final altitude it assigns (`030/090` = 3,000 initial, 9,000 final). `initial_altitude_feet` holds the
-# first number and `final_altitude_feet` the second. Every KSFO row prints a blank final (`050/`) or a
-# bare number (`060`), and both of those mean the final altitude is the initial one (user 2026-09-16), so
-# the two keys carry the same number here; a row the tool prints without an altitude carries neither key.
+# with its altitudes in hundreds of feet. A printed pair (`030/090`) is the initial altitude the TEC route
+# is issued with and the final altitude it assigns, and records both `initial_altitude_feet` and
+# `final_altitude_feet`. A single number — a blank final (`050/`) or a bare number (`060`) — is the final
+# altitude alone and records `final_altitude_feet` only: the altitude the route is issued with is then the
+# one the SOP row that assigns the departure states, and is not transcribed here (user 2026-09-16). Every
+# KSFO row prints a single number, so no row here states an initial altitude; a row the tool prints with
+# no altitude at all carries neither key.
 # SIDs are written with `#` in place of the version so a cycle bump does not stale the row; the engine
 # substitutes the current procedure.
 # `kind: adr` marks an assigned departure route, which is advisory; a row without the key is a TEC
@@ -18,59 +20,59 @@ source:
 
 routes:
   # KSMF Sacramento
-  - { id: TEC-KSMF-SFOW-J, destination: KSMF, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# TRUKN FEVTA FEVTA1", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
+  - { id: TEC-KSMF-SFOW-J, destination: KSMF, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# TRUKN FEVTA FEVTA1", final_altitude_feet: 10000 }
   - { id: TEC-KSMF-SFOE-J, destination: KSMF, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY FEVTA FEVTA1" }
-  - { id: TEC-KSMF-SFOW-P-01, destination: KSMF, plan: SFOW, classes: [P], runway_families: ["01"], route: "SFO# OAK V6 SAC", initial_altitude_feet: 6000, final_altitude_feet: 6000 }
-  - { id: TEC-KSMF-SFOW-P-28, destination: KSMF, plan: SFOW, classes: [P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", initial_altitude_feet: 6000, final_altitude_feet: 6000 }
-  - { id: TEC-KSMF-SFOE-P, destination: KSMF, plan: SFOE, classes: [P], runway_families: [], route: "GAPP# OAK V244 ALTAM V392 SAC", initial_altitude_feet: 6000, final_altitude_feet: 6000 }
+  - { id: TEC-KSMF-SFOW-P-01, destination: KSMF, plan: SFOW, classes: [P], runway_families: ["01"], route: "SFO# OAK V6 SAC", final_altitude_feet: 6000 }
+  - { id: TEC-KSMF-SFOW-P-28, destination: KSMF, plan: SFOW, classes: [P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", final_altitude_feet: 6000 }
+  - { id: TEC-KSMF-SFOE-P, destination: KSMF, plan: SFOE, classes: [P], runway_families: [], route: "GAPP# OAK V244 ALTAM V392 SAC", final_altitude_feet: 6000 }
   # KMRY Monterey and KWVI Watsonville share rows
-  - { id: TEC-KMRY-SFOW-J, destination: KMRY, plan: SFOW, classes: [J], runway_families: [], route: "GAPP# EUGEN", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
-  - { id: TEC-KMRY-SFOW-TP, destination: KMRY, plan: SFOW, classes: [T, P], runway_families: [], route: "GAPP# EUGEN", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KMRY-SFOE, destination: KMRY, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# OSI V25 SNS", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KWVI-SFOW-J, destination: KWVI, plan: SFOW, classes: [J], runway_families: [], route: "GAPP# EUGEN", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
-  - { id: TEC-KWVI-SFOW-TP, destination: KWVI, plan: SFOW, classes: [T, P], runway_families: [], route: "GAPP# EUGEN", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KWVI-SFOE, destination: KWVI, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# OSI V25 SNS", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KMRY-SFOW-J, destination: KMRY, plan: SFOW, classes: [J], runway_families: [], route: "GAPP# EUGEN", final_altitude_feet: 10000 }
+  - { id: TEC-KMRY-SFOW-TP, destination: KMRY, plan: SFOW, classes: [T, P], runway_families: [], route: "GAPP# EUGEN", final_altitude_feet: 5000 }
+  - { id: TEC-KMRY-SFOE, destination: KMRY, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# OSI V25 SNS", final_altitude_feet: 5000 }
+  - { id: TEC-KWVI-SFOW-J, destination: KWVI, plan: SFOW, classes: [J], runway_families: [], route: "GAPP# EUGEN", final_altitude_feet: 10000 }
+  - { id: TEC-KWVI-SFOW-TP, destination: KWVI, plan: SFOW, classes: [T, P], runway_families: [], route: "GAPP# EUGEN", final_altitude_feet: 5000 }
+  - { id: TEC-KWVI-SFOE, destination: KWVI, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# OSI V25 SNS", final_altitude_feet: 5000 }
   # KLVK Livermore
-  - { id: TEC-KLVK-SFOW-JT, destination: KLVK, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# TRUKN ALTAM", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KLVK-SFOW-JT-01, destination: KLVK, plan: SFOW, classes: [J, T], runway_families: ["01"], route: "SFO# V244 ALTAM MOD", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KLVK-SFOW-JT-28, destination: KLVK, plan: SFOW, classes: [J, T], runway_families: ["28"], route: "GAPP# OAK V244 ALTAM MOD", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KLVK-SFOE-JT, destination: KLVK, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KLVK-SFOE-T, destination: KLVK, plan: SFOE, classes: [T], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", initial_altitude_feet: 3000, final_altitude_feet: 3000 }
-  - { id: TEC-KLVK-SFOW-P, destination: KLVK, plan: SFOW, classes: [P], runway_families: [], route: "TRUKN# TRUKN", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KLVK-SFOE-P, destination: KLVK, plan: SFOE, classes: [P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KLVK-SFOW-JT, destination: KLVK, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# TRUKN ALTAM", final_altitude_feet: 5000 }
+  - { id: TEC-KLVK-SFOW-JT-01, destination: KLVK, plan: SFOW, classes: [J, T], runway_families: ["01"], route: "SFO# V244 ALTAM MOD", final_altitude_feet: 5000 }
+  - { id: TEC-KLVK-SFOW-JT-28, destination: KLVK, plan: SFOW, classes: [J, T], runway_families: ["28"], route: "GAPP# OAK V244 ALTAM MOD", final_altitude_feet: 5000 }
+  - { id: TEC-KLVK-SFOE-JT, destination: KLVK, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", final_altitude_feet: 5000 }
+  - { id: TEC-KLVK-SFOE-T, destination: KLVK, plan: SFOE, classes: [T], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", final_altitude_feet: 3000 }
+  - { id: TEC-KLVK-SFOW-P, destination: KLVK, plan: SFOW, classes: [P], runway_families: [], route: "TRUKN# TRUKN", final_altitude_feet: 5000 }
+  - { id: TEC-KLVK-SFOE-P, destination: KLVK, plan: SFOE, classes: [P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", final_altitude_feet: 5000 }
   # KAPC Napa lies outside the NCT terminal polygon (user 2026-09-16), so the tool's two GAPP# SAU rows for it are
   # not TEC routes the engine may issue and are not transcribed.
   # KMYV Marysville and KOVE Oroville share rows
-  - { id: TEC-KMYV-SFOW-JT, destination: KMYV, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# ORRCA", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
-  - { id: TEC-KMYV-SFOE-JT, destination: KMYV, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KMYV-SFOW-TP-01, destination: KMYV, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# OAK V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KMYV-SFOW-TP-28, destination: KMYV, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KMYV-SFOE-TP, destination: KMYV, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KOVE-SFOW-JT, destination: KOVE, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# ORRCA", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
-  - { id: TEC-KOVE-SFOE-JT, destination: KOVE, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KOVE-SFOW-TP-01, destination: KOVE, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# OAK V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KOVE-SFOW-TP-28, destination: KOVE, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KOVE-SFOE-TP, destination: KOVE, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KMYV-SFOW-JT, destination: KMYV, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# ORRCA", final_altitude_feet: 10000 }
+  - { id: TEC-KMYV-SFOE-JT, destination: KMYV, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", final_altitude_feet: 5000 }
+  - { id: TEC-KMYV-SFOW-TP-01, destination: KMYV, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# OAK V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-KMYV-SFOW-TP-28, destination: KMYV, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-KMYV-SFOE-TP, destination: KMYV, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", final_altitude_feet: 5000 }
+  - { id: TEC-KOVE-SFOW-JT, destination: KOVE, plan: SFOW, classes: [J, T], runway_families: [], route: "TRUKN# ORRCA", final_altitude_feet: 10000 }
+  - { id: TEC-KOVE-SFOE-JT, destination: KOVE, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY ALTAM", final_altitude_feet: 5000 }
+  - { id: TEC-KOVE-SFOW-TP-01, destination: KOVE, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# OAK V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-KOVE-SFOW-TP-28, destination: KOVE, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-KOVE-SFOE-TP, destination: KOVE, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM MOD", final_altitude_feet: 5000 }
   # KSAC Sacramento Executive and O88 Rio Vista share rows
-  - { id: TEC-KSAC-SFOW-J, destination: KSAC, plan: SFOW, classes: [J], runway_families: [], route: "TRUKN# ORRCA", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
-  - { id: TEC-KSAC-SFOE-J, destination: KSAC, plan: SFOE, classes: [J], runway_families: [], route: "CIITY# ORRCA", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KSAC-SFOW-J, destination: KSAC, plan: SFOW, classes: [J], runway_families: [], route: "TRUKN# ORRCA", final_altitude_feet: 10000 }
+  - { id: TEC-KSAC-SFOE-J, destination: KSAC, plan: SFOE, classes: [J], runway_families: [], route: "CIITY# ORRCA", final_altitude_feet: 5000 }
   - { id: TEC-KSAC-SFOW-T, destination: KSAC, plan: SFOW, classes: [T], runway_families: [], route: "TRUKN# ORRCA" }
-  - { id: TEC-KSAC-SFOW-TP-01, destination: KSAC, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KSAC-SFOW-TP-28, destination: KSAC, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KSAC-SFOE-TP, destination: KSAC, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM V392 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-O88-SFOW-J, destination: O88, plan: SFOW, classes: [J], runway_families: [], route: "TRUKN# ORRCA", initial_altitude_feet: 10000, final_altitude_feet: 10000 }
-  - { id: TEC-O88-SFOE-J, destination: O88, plan: SFOE, classes: [J], runway_families: [], route: "CIITY# ORRCA", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KSAC-SFOW-TP-01, destination: KSAC, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-KSAC-SFOW-TP-28, destination: KSAC, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-KSAC-SFOE-TP, destination: KSAC, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM V392 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-O88-SFOW-J, destination: O88, plan: SFOW, classes: [J], runway_families: [], route: "TRUKN# ORRCA", final_altitude_feet: 10000 }
+  - { id: TEC-O88-SFOE-J, destination: O88, plan: SFOE, classes: [J], runway_families: [], route: "CIITY# ORRCA", final_altitude_feet: 5000 }
   - { id: TEC-O88-SFOW-T, destination: O88, plan: SFOW, classes: [T], runway_families: [], route: "TRUKN# ORRCA" }
-  - { id: TEC-O88-SFOW-TP-01, destination: O88, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-O88-SFOW-TP-28, destination: O88, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-O88-SFOE-TP, destination: O88, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM V392 SAC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-O88-SFOW-TP-01, destination: O88, plan: SFOW, classes: [T, P], runway_families: ["01"], route: "SFO# V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-O88-SFOW-TP-28, destination: O88, plan: SFOW, classes: [T, P], runway_families: ["28"], route: "GAPP# OAK V6 SAC", final_altitude_feet: 5000 }
+  - { id: TEC-O88-SFOE-TP, destination: O88, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP# OAK V244 ALTAM V392 SAC", final_altitude_feet: 5000 }
   # KOAK Oakland
-  - { id: TEC-KOAK-SFOW, destination: KOAK, plan: SFOW, classes: [J, T, P], runway_families: [], route: "TRUKN# TRUKN", initial_altitude_feet: 3000, final_altitude_feet: 3000 }
-  - { id: TEC-KOAK-SFOE-JT, destination: KOAK, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY", initial_altitude_feet: 3000, final_altitude_feet: 3000 }
-  - { id: TEC-KOAK-SFOE-TP, destination: KOAK, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP#", initial_altitude_feet: 3000, final_altitude_feet: 3000 }
+  - { id: TEC-KOAK-SFOW, destination: KOAK, plan: SFOW, classes: [J, T, P], runway_families: [], route: "TRUKN# TRUKN", final_altitude_feet: 3000 }
+  - { id: TEC-KOAK-SFOE-JT, destination: KOAK, plan: SFOE, classes: [J, T], runway_families: [], route: "CIITY# CIITY", final_altitude_feet: 3000 }
+  - { id: TEC-KOAK-SFOE-TP, destination: KOAK, plan: SFOE, classes: [T, P], runway_families: [], route: "GAPP#", final_altitude_feet: 3000 }
   # KSJC San Jose
-  - { id: TEC-KSJC-SFOW, destination: KSJC, plan: SFOW, classes: [J, T, P], runway_families: [], route: "GAPP# OSI SJC", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
-  - { id: TEC-KSJC-SFOE, destination: KSJC, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# SJC", initial_altitude_feet: 3000, final_altitude_feet: 3000 }
+  - { id: TEC-KSJC-SFOW, destination: KSJC, plan: SFOW, classes: [J, T, P], runway_families: [], route: "GAPP# OSI SJC", final_altitude_feet: 5000 }
+  - { id: TEC-KSJC-SFOE, destination: KSJC, plan: SFOE, classes: [J, T, P], runway_families: [], route: "GAPP# SJC", final_altitude_feet: 3000 }
   # KSAN San Diego — an ADR (assigned departure route), not a TEC route; the ZLA LOA requires the offshore route
   - { id: ADR-KSAN-SFOW, kind: adr, destination: KSAN, plan: SFOW, classes: [J, T, P], runway_families: ["01", "28"], route: "SEGUL# YYUNG LAX HUBRD1" }
   - { id: ADR-KSAN-SFOE, kind: adr, destination: KSAN, plan: SFOE, classes: [J, T, P], runway_families: ["10"], route: "GAPP# SFO WAGES FLW LAX HUBRD1" }

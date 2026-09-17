@@ -200,7 +200,7 @@ def test_the_tec_rows_carry_their_source_cap_and_kind(ksfo_document: Document) -
     assert capped["runwayFamilies"] == ["01"]
     assert capped["classes"] == ["P"]
     assert capped["route"] == "SFO# OAK V6 SAC"
-    assert capped["initialAltitudeFeet"] == KSMF_PROP_ALTITUDE_FEET
+    assert "initialAltitudeFeet" not in capped
     assert capped["finalAltitudeFeet"] == KSMF_PROP_ALTITUDE_FEET
     assert "initialAltitudeFeet" not in rows["TEC-KSMF-SFOE-J"]
     assert "finalAltitudeFeet" not in rows["TEC-KSMF-SFOE-J"]
