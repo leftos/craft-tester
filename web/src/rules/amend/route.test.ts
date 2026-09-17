@@ -181,6 +181,60 @@ describe('checkRoute departure structure', () => {
   });
 });
 
+describe('checkRoute malformed route element', () => {
+  /** The worksheet plan that files BVL and Q124 run together as one element of its route. */
+  function ual313(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'UAL313',
+      aircraftType: 'B752',
+      destination: 'KSLC',
+      filedRoute: 'TRUKN2 MOGEE BVLQ124 BVL WAATS5',
+      filedAltitude: 33000,
+      departureRunway: '28L',
+      runwayConfigId: '28 RT',
+      squawk: '4614',
+      ...overrides,
+    });
+  }
+
+  it('drops the element that names nothing and connects the fixes either side of it', () => {
+    const result = amendment(ual313());
+    expect(result.proposed).toBe('TRUKN2 MOGEE Q124 BVL WAATS5');
+    expect(result.reason).toBe(
+      'BVLQ124 names no fix, navaid, airway or procedure; the route is connected MOGEE Q124 BVL',
+    );
+    expect(result.citations.map((citation) => citation.id)).toContain('R-ROUTE-TOKEN');
+    expect(result.warning).toBeUndefined();
+  });
+
+  it('repairs the KOAK twin of the same plan, whose box carries the airport navaid', () => {
+    const flight = ual313({
+      filedRoute: 'OAK6 MOGEE BVLQ124 BVL WAATS5',
+      departureRunway: '30',
+      runwayConfigId: 'SFOW',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('OAK6 OAK MOGEE Q124 BVL WAATS5');
+    expect(result.citations.map((citation) => citation.id)).toContain('R-ROUTE-TOKEN');
+    expect(result.warning).toBeUndefined();
+  });
+
+  it('joins the fixes either side direct where no chain of rows connects them', () => {
+    const result = amendment(
+      ual313({
+        destination: 'KSEA',
+        filedRoute: 'TRUKN2 DEDHD RBLLMT LMT HAWKZ7',
+        departureRunway: '01R',
+        runwayConfigId: '28/01',
+      }),
+    );
+    expect(result.proposed).toBe('TRUKN2 DEDHD LMT HAWKZ7');
+    expect(result.reason).toBe(
+      'RBLLMT names no fix, navaid, airway or procedure; the route is connected DEDHD LMT',
+    );
+  });
+});
+
 describe('checkRoute route building', () => {
   /** The worksheet plan filed to a fix the assigned SSTIK# does not publish a transition to. */
   function swa984(overrides: Partial<Scenario> = {}): Scenario {

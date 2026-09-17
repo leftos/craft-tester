@@ -3,7 +3,7 @@ import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Arrival } from '@/data/schema.ts';
 import type { ArrivalSource, ArrivalTarget } from '@/rules/routeBuild.ts';
-import { buildRoute, buildToArrival } from '@/rules/routeBuild.ts';
+import { buildRoute, buildToArrival, connectFixes } from '@/rules/routeBuild.ts';
 import type { UnservedSid } from '@/rules/sidSelection.ts';
 
 const koak = koakJson as unknown as AirportData;
@@ -57,6 +57,21 @@ describe('buildRoute scope', () => {
 
   it('builds nothing where the candidates hold no row of the filed family', () => {
     expect(buildRoute(tokens, [niite], filedTrukn, ksfo)).toBeUndefined();
+  });
+});
+
+describe('connectFixes', () => {
+  it('carries the route from one filed fix to another over the connecting rows', () => {
+    const link = connectFixes('MOGEE', 'BVL', koak);
+    expect(link?.chain).toEqual(['Q124']);
+    expect(link?.connections.map((row) => `${row.from} ${row.to}`)).toEqual([
+      'MOGEE Q124',
+      'Q124 BVL',
+    ]);
+  });
+
+  it('connects nothing where no chain of rows reaches the second fix', () => {
+    expect(connectFixes('MOGEE', 'RBL', koak)).toBeUndefined();
   });
 });
 

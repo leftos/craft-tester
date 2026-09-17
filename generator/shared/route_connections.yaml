@@ -37,6 +37,8 @@ connections:
   - { from: ANAHO, to: PRNCS, connects: usually }
   - { from: MOGEE, to: Q122,  connects: usually }
   - { from: MOGEE, to: Q124,  connects: usually }
+  # Q124 carries the Salt Lake route on to BVL, as both route libraries file it (KOAK OAK MOGEE Q124 BVL YUTES2, KSFO MOGEE Q124 BVL BVL2); UAL313: OAK6 OAK MOGEE Q124 BVL WAATS5 (user, 2026-09-17, UAL313)
+  - { from: Q124,  to: BVL,   connects: usually }
   - { from: TIPRE, to: Q126,  connects: usually }
   - { from: SYRAH, to: Q128,  connects: usually }
   - { from: SYRAH, to: Q130,  connects: usually }

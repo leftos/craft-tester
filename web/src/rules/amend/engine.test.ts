@@ -160,13 +160,16 @@ describe('resolveAmendments', () => {
     const result = resolved(flight);
     expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
       ['type', undefined],
+      ['route', undefined],
     ]);
-    const [type] = result.amendments;
+    const [type, route] = result.amendments;
     if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
     expect(type.proposed).toBe('B752/L');
     expect(type.reason).toContain('suffix /Q is not in');
     expect(type.citations.map((citation) => citation.id)).toEqual(['EQUIP/L']);
-    expect(result.corrected.filedRoute).toBe(flight.filedRoute);
+    if (route?.box !== 'route') throw new Error('the second amendment is not the route box');
+    expect(route.reason).toContain('BVLQ124 names no fix, navaid, airway or procedure');
+    expect(result.corrected.filedRoute).toBe('TRUKN2 MOGEE Q124 BVL WAATS5');
     expect(result.corrected.filedAltitude).toBe(flight.filedAltitude);
   });
 
