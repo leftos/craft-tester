@@ -11,7 +11,8 @@ sids:
   COAST NINE:
     cifp_id: COAST9
     spoken: Coast Nine
-    note: "Conventional pilot-nav SID off 28L/28R/30; its enroute transitions (FLW, GVO, RZS, SXC) are printed on the CONT.1 sheet. Spoken name proposed from the chart name."
+    climb_via_eligible: true
+    note: "Conventional pilot-nav SID off 28L/28R/30; its enroute transitions (FLW, GVO, RZS, SXC) are printed on the CONT.1 sheet. Spoken name proposed from the chart name. Its only CIFP altitude leg is the VD initial climb, which carries no fix and is not a crossing restriction, so the computed reading finds no restriction to climb via; SOP 2-2 a i clears it 'CVS x 10,000', so climb_via_eligible is forced true."
   HUSSH TWO (RNAV):
     cifp_id: HUSSH2
     spoken: Hush Two
@@ -32,7 +33,8 @@ sids:
   NUEVO EIGHT:
     cifp_id: NUEVO8
     spoken: Nuevo Eight
-    note: "Conventional pilot-nav SID off 28L/28R/30 with the SHOEY and SNS transitions on the CONT.1 sheet; SOP 2-2 a i issues it to P/T/J filed via BSR, EUGEN, SHOEY or SNS. Spoken name proposed from the chart name."
+    climb_via_eligible: true
+    note: "Conventional pilot-nav SID off 28L/28R/30 with the SHOEY and SNS transitions on the CONT.1 sheet; SOP 2-2 a i issues it to P/T/J filed via BSR, EUGEN, SHOEY or SNS and clears it 'CVS x 10,000'. Spoken name proposed from the chart name. Its only CIFP altitude leg is the VD initial climb, which carries no fix and is not a crossing restriction, so the computed reading finds no restriction to climb via and climb_via_eligible is forced true."
   OAKLAND SIX:
     cifp_id: OAK6
     spoken: Oakland Six

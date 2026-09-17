@@ -28,7 +28,7 @@ ENROUTE_ROUTE_TYPES = frozenset({"3", "6"})
 VECTOR_ENROUTE_ROUTE_TYPES = frozenset({"V"})
 RNAV_ROUTE_TYPES = frozenset({"4", "5", "6"})
 VECTOR_ROUTE_TYPES = frozenset({"T", "V"})
-INITIAL_CLIMB_TERMINATORS = frozenset({"VA", "CA", "VI", "CI", "FM", "VM"})
+INITIAL_CLIMB_TERMINATORS = frozenset({"VA", "CA", "VI", "CI", "FM", "VM", "VD"})
 
 _CONSTRAINTS: dict[str, ConstraintKind] = {"+": "at_or_above", "-": "at_or_below", "B": "between"}
 _SID_ID_PATTERN = re.compile(r"(?P<family>[A-Z]+)(?P<version>\d+)")
