@@ -981,6 +981,36 @@
           "items": {
             "additionalProperties": false,
             "properties": {
+              "arrivals": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "family": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "rnav": {
+                      "type": "boolean"
+                    },
+                    "transitions": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "family",
+                    "rnav",
+                    "transitions"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
               "artcc": {
                 "type": "string"
               },
@@ -1009,7 +1039,8 @@
               "spoken",
               "lat",
               "lon",
-              "artcc"
+              "artcc",
+              "arrivals"
             ],
             "type": "object"
           },

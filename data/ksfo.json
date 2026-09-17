@@ -1838,6 +1838,62 @@
     ],
     "destinations": [
       {
+        "arrivals": [
+          {
+            "family": "CHINS",
+            "id": "CHINS5",
+            "rnav": false,
+            "transitions": [
+              "PDT",
+              "SUNED",
+              "YKM"
+            ]
+          },
+          {
+            "family": "HAWKZ",
+            "id": "HAWKZ8",
+            "rnav": true,
+            "transitions": [
+              "BLYTZ",
+              "BTG",
+              "KNGDM",
+              "KRIEG",
+              "LATAY",
+              "LKV",
+              "LMT"
+            ]
+          },
+          {
+            "family": "MARNR",
+            "id": "MARNR8",
+            "rnav": true,
+            "transitions": [
+              "BUHNR",
+              "JIGEB",
+              "ROESH",
+              "TOU",
+              "VIXOR"
+            ]
+          },
+          {
+            "family": "OLM",
+            "id": "OLM2",
+            "rnav": false,
+            "transitions": [
+              "BTG",
+              "UBG"
+            ]
+          },
+          {
+            "family": "SKYKO",
+            "id": "SKYKO1",
+            "rnav": false,
+            "transitions": [
+              "EPH",
+              "ODESS"
+            ]
+          }
+        ],
         "artcc": "ZSE",
         "icao": "KSEA",
         "lat": 47.449889,
@@ -1846,6 +1902,66 @@
         "spoken": "Seattle"
       },
       {
+        "arrivals": [
+          {
+            "family": "HELNS",
+            "id": "HELNS6",
+            "rnav": false,
+            "transitions": [
+              "BUWZO",
+              "SEA"
+            ]
+          },
+          {
+            "family": "HHOOD",
+            "id": "HHOOD6",
+            "rnav": true,
+            "transitions": [
+              "BAYYR",
+              "JKNOX",
+              "JORAD",
+              "JOTBA",
+              "RABBI",
+              "SODDA",
+              "YENTL"
+            ]
+          },
+          {
+            "family": "KRATR",
+            "id": "KRATR3",
+            "rnav": true,
+            "transitions": [
+              "BUWZO",
+              "HELNS"
+            ]
+          },
+          {
+            "family": "OCITY",
+            "id": "OCITY3",
+            "rnav": false,
+            "transitions": [
+              "LMT",
+              "MOXEE",
+              "OED",
+              "PORTL",
+              "VANTZ"
+            ]
+          },
+          {
+            "family": "TMBRS",
+            "id": "TMBRS4",
+            "rnav": true,
+            "transitions": [
+              "CITYY",
+              "GALLO",
+              "MACHU",
+              "MOXEE",
+              "PORTL",
+              "SOERN",
+              "SPNSR"
+            ]
+          }
+        ],
         "artcc": "ZSE",
         "icao": "KPDX",
         "lat": 45.588708,
@@ -1854,6 +1970,36 @@
         "spoken": "Portland"
       },
       {
+        "arrivals": [
+          {
+            "family": "CHINS",
+            "id": "CHINS5",
+            "rnav": false,
+            "transitions": [
+              "PDT",
+              "SUNED",
+              "YKM"
+            ]
+          },
+          {
+            "family": "OLM",
+            "id": "OLM2",
+            "rnav": false,
+            "transitions": [
+              "BTG",
+              "UBG"
+            ]
+          },
+          {
+            "family": "SKYKO",
+            "id": "SKYKO1",
+            "rnav": false,
+            "transitions": [
+              "EPH",
+              "ODESS"
+            ]
+          }
+        ],
         "artcc": "ZSE",
         "icao": "KBFI",
         "lat": 47.529972,
@@ -1862,6 +2008,16 @@
         "spoken": "Boeing Field"
       },
       {
+        "arrivals": [
+          {
+            "family": "MADEE",
+            "id": "MADEE7",
+            "rnav": true,
+            "transitions": [
+              "KONAH"
+            ]
+          }
+        ],
         "artcc": "ZSE",
         "icao": "KBLI",
         "lat": 48.792694,
@@ -1870,6 +2026,53 @@
         "spoken": "Bellingham"
       },
       {
+        "arrivals": [
+          {
+            "family": "BEWTE",
+            "id": "BEWTE4",
+            "rnav": true,
+            "transitions": [
+              "COLLR",
+              "MAXMS",
+              "SUMOQ"
+            ]
+          },
+          {
+            "family": "KOURT",
+            "id": "KOURT4",
+            "rnav": true,
+            "transitions": [
+              "DERSO",
+              "REAPS"
+            ]
+          },
+          {
+            "family": "KYAAN",
+            "id": "KYAAN4",
+            "rnav": true,
+            "transitions": [
+              "DEVLE"
+            ]
+          },
+          {
+            "family": "SADYL",
+            "id": "SADYL4",
+            "rnav": true,
+            "transitions": [
+              "NEERO",
+              "PRNCS"
+            ]
+          },
+          {
+            "family": "SPUUD",
+            "id": "SPUUD4",
+            "rnav": true,
+            "transitions": [
+              "BROPH",
+              "ORYDA"
+            ]
+          }
+        ],
         "artcc": "ZLC",
         "icao": "KBOI",
         "lat": 43.564361,
@@ -1878,6 +2081,115 @@
         "spoken": "Boise"
       },
       {
+        "arrivals": [
+          {
+            "family": "BEARR",
+            "id": "BEARR5",
+            "rnav": false,
+            "transitions": [
+              "BYI",
+              "LCU",
+              "PIH"
+            ]
+          },
+          {
+            "family": "BVL",
+            "id": "BVL2",
+            "rnav": false,
+            "transitions": []
+          },
+          {
+            "family": "CARTR",
+            "id": "CARTR1",
+            "rnav": true,
+            "transitions": [
+              "BOBRT",
+              "CKW",
+              "DBS",
+              "DDY",
+              "JAC",
+              "OCS"
+            ]
+          },
+          {
+            "family": "JAMMN",
+            "id": "JAMMN5",
+            "rnav": false,
+            "transitions": [
+              "BCE",
+              "MLF"
+            ]
+          },
+          {
+            "family": "JAZZZ",
+            "id": "JAZZZ1",
+            "rnav": true,
+            "transitions": [
+              "HELPR",
+              "MTU",
+              "RACER"
+            ]
+          },
+          {
+            "family": "LHO",
+            "id": "LHO5",
+            "rnav": false,
+            "transitions": [
+              "BPI",
+              "DBS",
+              "JAC",
+              "OCS"
+            ]
+          },
+          {
+            "family": "PITTT",
+            "id": "PITTT2",
+            "rnav": true,
+            "transitions": [
+              "BCE",
+              "EKR",
+              "HELPR",
+              "MLF",
+              "MTU"
+            ]
+          },
+          {
+            "family": "QWENN",
+            "id": "QWENN7",
+            "rnav": true,
+            "transitions": [
+              "BCE",
+              "DTA",
+              "MLF"
+            ]
+          },
+          {
+            "family": "SKEES",
+            "id": "SKEES6",
+            "rnav": true,
+            "transitions": [
+              "BYI",
+              "PIH"
+            ]
+          },
+          {
+            "family": "SPANE",
+            "id": "SPANE8",
+            "rnav": false,
+            "transitions": [
+              "EKR",
+              "HELPR"
+            ]
+          },
+          {
+            "family": "YUTES",
+            "id": "YUTES2",
+            "rnav": true,
+            "transitions": [
+              "FLECC"
+            ]
+          }
+        ],
         "artcc": "ZLC",
         "icao": "KSLC",
         "lat": 40.788394,
@@ -1886,6 +2198,7 @@
         "spoken": "Salt Lake City"
       },
       {
+        "arrivals": [],
         "artcc": "ZLC",
         "icao": "KJAC",
         "lat": 43.607336,
@@ -1894,6 +2207,194 @@
         "spoken": "Jackson Hole"
       },
       {
+        "arrivals": [
+          {
+            "family": "AALLE",
+            "id": "AALLE4",
+            "rnav": true,
+            "transitions": [
+              "BBOTL",
+              "BIDDR",
+              "CAASK",
+              "FOAMM",
+              "HOPPP",
+              "MALTE",
+              "MILKK",
+              "NYTRO",
+              "PORDR",
+              "SDOUT",
+              "YEAST"
+            ]
+          },
+          {
+            "family": "CLASH",
+            "id": "CLASH5",
+            "rnav": true,
+            "transitions": [
+              "KIISS",
+              "OATHE"
+            ]
+          },
+          {
+            "family": "DANDD",
+            "id": "DANDD1",
+            "rnav": false,
+            "transitions": [
+              "GCK",
+              "GLD",
+              "OATHE"
+            ]
+          },
+          {
+            "family": "FLATI",
+            "id": "FLATI5",
+            "rnav": true,
+            "transitions": [
+              "FOLSM",
+              "GNOLA",
+              "HIPEE",
+              "MJANE",
+              "MSTSH",
+              "TOFUU"
+            ]
+          },
+          {
+            "family": "LANDR",
+            "id": "LANDR3",
+            "rnav": false,
+            "transitions": [
+              "BFF",
+              "CYS",
+              "ELJAY",
+              "SNY",
+              "YANKI"
+            ]
+          },
+          {
+            "family": "LARKS",
+            "id": "LARKS3",
+            "rnav": false,
+            "transitions": [
+              "ALS",
+              "HBU",
+              "LOPEC",
+              "PUB",
+              "RSK"
+            ]
+          },
+          {
+            "family": "LAWGR",
+            "id": "LAWGR4",
+            "rnav": true,
+            "transitions": [
+              "BRWRY",
+              "DUNKL",
+              "KOLSH",
+              "MARZN",
+              "PLZNR",
+              "SOOUR"
+            ]
+          },
+          {
+            "family": "LONGZ",
+            "id": "LONGZ4",
+            "rnav": true,
+            "transitions": [
+              "BIVVY",
+              "BYYKE",
+              "GRAYZ",
+              "KAMPR",
+              "LBERT",
+              "TORYS"
+            ]
+          },
+          {
+            "family": "NIIXX",
+            "id": "NIIXX4",
+            "rnav": true,
+            "transitions": [
+              "HALEN",
+              "NARNO",
+              "ZIGEE"
+            ]
+          },
+          {
+            "family": "POWDR",
+            "id": "POWDR1",
+            "rnav": false,
+            "transitions": [
+              "DBL",
+              "HBU",
+              "JNC"
+            ]
+          },
+          {
+            "family": "QUAIL",
+            "id": "QUAIL1",
+            "rnav": false,
+            "transitions": [
+              "HGO",
+              "LAA",
+              "TODDE"
+            ]
+          },
+          {
+            "family": "RAMMS",
+            "id": "RAMMS8",
+            "rnav": false,
+            "transitions": [
+              "CYS",
+              "LAR",
+              "MBW",
+              "OCS"
+            ]
+          },
+          {
+            "family": "SSKII",
+            "id": "SSKII4",
+            "rnav": true,
+            "transitions": [
+              "ABASN",
+              "BOWLL",
+              "BUMMP",
+              "CRUDD",
+              "HAMIC",
+              "HAQHY",
+              "JNETT",
+              "KLOWN",
+              "KTOOO",
+              "PEEKE",
+              "SNOEE",
+              "WUNZE"
+            ]
+          },
+          {
+            "family": "TBARR",
+            "id": "TBARR4",
+            "rnav": true,
+            "transitions": [
+              "BBRRO",
+              "CRUDD",
+              "GNDLA",
+              "LIFTE",
+              "NVVER",
+              "OLSNN",
+              "SHNPS",
+              "WUNZE",
+              "ZORKL"
+            ]
+          },
+          {
+            "family": "TOMSN",
+            "id": "TOMSN9",
+            "rnav": false,
+            "transitions": [
+              "CHE",
+              "EKR",
+              "RLG"
+            ]
+          }
+        ],
         "artcc": "ZDV",
         "icao": "KDEN",
         "lat": 39.861667,
@@ -1902,6 +2403,109 @@
         "spoken": "Denver"
       },
       {
+        "arrivals": [
+          {
+            "family": "BLAID",
+            "id": "BLAID2",
+            "rnav": false,
+            "transitions": [
+              "BCE",
+              "EHK",
+              "PGA"
+            ]
+          },
+          {
+            "family": "CHOWW",
+            "id": "CHOWW4",
+            "rnav": true,
+            "transitions": [
+              "GGAPP",
+              "STEWW",
+              "TYEGR"
+            ]
+          },
+          {
+            "family": "COKTL",
+            "id": "COKTL4",
+            "rnav": true,
+            "transitions": [
+              "FLCHR",
+              "GIINN",
+              "TQILA"
+            ]
+          },
+          {
+            "family": "CRESO",
+            "id": "CRESO5",
+            "rnav": false,
+            "transitions": [
+              "DAG",
+              "HEC"
+            ]
+          },
+          {
+            "family": "GAMES",
+            "id": "GAMES2",
+            "rnav": true,
+            "transitions": [
+              "FUULL"
+            ]
+          },
+          {
+            "family": "ISHEE",
+            "id": "ISHEE2",
+            "rnav": false,
+            "transitions": [
+              "DRK",
+              "PGS"
+            ]
+          },
+          {
+            "family": "JAYSN",
+            "id": "JAYSN3",
+            "rnav": true,
+            "transitions": [
+              "BYRDY"
+            ]
+          },
+          {
+            "family": "LARKK",
+            "id": "LARKK1",
+            "rnav": false,
+            "transitions": [
+              "DAG",
+              "TNP"
+            ]
+          },
+          {
+            "family": "PUMLE",
+            "id": "PUMLE1",
+            "rnav": false,
+            "transitions": [
+              "BTY"
+            ]
+          },
+          {
+            "family": "RKSTR",
+            "id": "RKSTR4",
+            "rnav": true,
+            "transitions": [
+              "ELLDA",
+              "HAHAA",
+              "SQIRE"
+            ]
+          },
+          {
+            "family": "RNDRZ",
+            "id": "RNDRZ4",
+            "rnav": true,
+            "transitions": [
+              "EED",
+              "MISEN",
+              "TNP"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KLAS",
         "lat": 36.080342,
@@ -1910,6 +2514,259 @@
         "spoken": "Las Vegas"
       },
       {
+        "arrivals": [
+          {
+            "family": "ANJLL",
+            "id": "ANJLL4",
+            "rnav": true,
+            "transitions": [
+              "CGNEY",
+              "DNERO",
+              "HAKMN",
+              "OTOOL",
+              "SALYY",
+              "SHTNR"
+            ]
+          },
+          {
+            "family": "BASET",
+            "id": "BASET5",
+            "rnav": false,
+            "transitions": [
+              "HEC",
+              "JLI",
+              "PGS",
+              "TNP"
+            ]
+          },
+          {
+            "family": "BAYST",
+            "id": "BAYST1",
+            "rnav": true,
+            "transitions": [
+              "BURGL",
+              "CERNL",
+              "FRASR",
+              "HUULL",
+              "MUPTT",
+              "REBRG",
+              "RYDRR",
+              "SNAXX"
+            ]
+          },
+          {
+            "family": "BIGBR",
+            "id": "BIGBR3",
+            "rnav": true,
+            "transitions": [
+              "CGNEY",
+              "DNERO",
+              "HAKMN",
+              "OTOOL",
+              "SHTNR"
+            ]
+          },
+          {
+            "family": "BOGET",
+            "id": "BOGET2",
+            "rnav": true,
+            "transitions": [
+              "BUGGA",
+              "EED",
+              "KREME",
+              "PURSE",
+              "WELUM",
+              "WNCHL"
+            ]
+          },
+          {
+            "family": "BRUEN",
+            "id": "BRUEN2",
+            "rnav": true,
+            "transitions": [
+              "ESTWD",
+              "FNNDA",
+              "GABBL",
+              "MDLER"
+            ]
+          },
+          {
+            "family": "DIRBY",
+            "id": "DIRBY2",
+            "rnav": true,
+            "transitions": [
+              "RDHOT",
+              "TCUPS",
+              "TILLT"
+            ]
+          },
+          {
+            "family": "GOATZ",
+            "id": "GOATZ2",
+            "rnav": true,
+            "transitions": [
+              "FICKY"
+            ]
+          },
+          {
+            "family": "HLYWD",
+            "id": "HLYWD1",
+            "rnav": true,
+            "transitions": [
+              "ESTWD",
+              "FNNDA",
+              "GABBL",
+              "MDLER"
+            ]
+          },
+          {
+            "family": "HUULL",
+            "id": "HUULL2",
+            "rnav": true,
+            "transitions": [
+              "TOKIO"
+            ]
+          },
+          {
+            "family": "IRNMN",
+            "id": "IRNMN2",
+            "rnav": true,
+            "transitions": [
+              "BURGL",
+              "FRASR",
+              "MUPTT",
+              "REBRG"
+            ]
+          },
+          {
+            "family": "KIMMO",
+            "id": "KIMMO3",
+            "rnav": false,
+            "transitions": [
+              "EHF",
+              "LHS",
+              "PMD",
+              "TTE"
+            ]
+          },
+          {
+            "family": "LEENA",
+            "id": "LEENA8",
+            "rnav": false,
+            "transitions": [
+              "MCKEY",
+              "ROSIN"
+            ]
+          },
+          {
+            "family": "MDNYT",
+            "id": "MDNYT2",
+            "rnav": true,
+            "transitions": [
+              "AMMOR",
+              "CGNEY",
+              "DNERO",
+              "ESTWD",
+              "FNNDA",
+              "GABBL",
+              "HAKMN",
+              "MDLER",
+              "OTOOL",
+              "SHTNR"
+            ]
+          },
+          {
+            "family": "MOOR",
+            "id": "MOOR4",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "DERBB",
+              "DINTY"
+            ]
+          },
+          {
+            "family": "OCEAN",
+            "id": "OCEAN3",
+            "rnav": false,
+            "transitions": []
+          },
+          {
+            "family": "OLAAA",
+            "id": "OLAAA2",
+            "rnav": true,
+            "transitions": []
+          },
+          {
+            "family": "RYDRR",
+            "id": "RYDRR2",
+            "rnav": true,
+            "transitions": [
+              "CERNL",
+              "EESSA",
+              "ELKEY",
+              "SNAXX"
+            ]
+          },
+          {
+            "family": "SADDE",
+            "id": "SADDE8",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "DERBB",
+              "DINTY",
+              "ELKEY",
+              "FIM",
+              "PMD",
+              "RZS",
+              "VTU"
+            ]
+          },
+          {
+            "family": "SEAVU",
+            "id": "SEAVU2",
+            "rnav": false,
+            "transitions": [
+              "TNP"
+            ]
+          },
+          {
+            "family": "SNSTT",
+            "id": "SNSTT2",
+            "rnav": true,
+            "transitions": []
+          },
+          {
+            "family": "VISTA",
+            "id": "VISTA3",
+            "rnav": false,
+            "transitions": [
+              "JLI"
+            ]
+          },
+          {
+            "family": "WAYVE",
+            "id": "WAYVE1",
+            "rnav": true,
+            "transitions": [
+              "EHF",
+              "LHS",
+              "LOPES",
+              "TTE"
+            ]
+          },
+          {
+            "family": "ZUUMA",
+            "id": "ZUUMA4",
+            "rnav": true,
+            "transitions": [
+              "BURGL",
+              "DOUIT",
+              "REBRG"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KLAX",
         "lat": 33.942497,
@@ -1918,6 +2775,81 @@
         "spoken": "Los Angeles"
       },
       {
+        "arrivals": [
+          {
+            "family": "BARET",
+            "id": "BARET5",
+            "rnav": false,
+            "transitions": [
+              "EED",
+              "IPL",
+              "PKE",
+              "TNP"
+            ]
+          },
+          {
+            "family": "COMIX",
+            "id": "COMIX2",
+            "rnav": true,
+            "transitions": [
+              "HUULK",
+              "LAX",
+              "SXC"
+            ]
+          },
+          {
+            "family": "HUBRD",
+            "id": "HUBRD1",
+            "rnav": false,
+            "transitions": [
+              "LAX",
+              "SXC"
+            ]
+          },
+          {
+            "family": "LUCKI",
+            "id": "LUCKI1",
+            "rnav": true,
+            "transitions": [
+              "HOGGZ",
+              "IPL",
+              "LVELL",
+              "MOMAR",
+              "PKE",
+              "TTRUE"
+            ]
+          },
+          {
+            "family": "PLYYA",
+            "id": "PLYYA2",
+            "rnav": true,
+            "transitions": [
+              "BAUBB",
+              "ELKEY",
+              "FICKY",
+              "LAX"
+            ]
+          },
+          {
+            "family": "SHAMU",
+            "id": "SHAMU1",
+            "rnav": false,
+            "transitions": [
+              "LAX"
+            ]
+          },
+          {
+            "family": "TOPGN",
+            "id": "TOPGN2",
+            "rnav": true,
+            "transitions": [
+              "IPL",
+              "MOMAR",
+              "PKE",
+              "TTRUE"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KSAN",
         "lat": 32.733564,
@@ -1926,6 +2858,74 @@
         "spoken": "San Diego"
       },
       {
+        "arrivals": [
+          {
+            "family": "FERN",
+            "id": "FERN7",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "DERBB",
+              "FLW",
+              "OHIGH"
+            ]
+          },
+          {
+            "family": "JANNY",
+            "id": "JANNY5",
+            "rnav": true,
+            "transitions": [
+              "BUGGA",
+              "EED",
+              "KREME",
+              "PURSE",
+              "WELUM",
+              "WNCHL"
+            ]
+          },
+          {
+            "family": "LYNXX",
+            "id": "LYNXX8",
+            "rnav": false,
+            "transitions": [
+              "DAG",
+              "HEC",
+              "LHS",
+              "PMD"
+            ]
+          },
+          {
+            "family": "ROKKR",
+            "id": "ROKKR3",
+            "rnav": true,
+            "transitions": [
+              "HIHWY",
+              "HONZK",
+              "PRPLE",
+              "RDHOT",
+              "REBRG"
+            ]
+          },
+          {
+            "family": "THRNE",
+            "id": "THRNE4",
+            "rnav": true,
+            "transitions": [
+              "AMMOR",
+              "PHRED"
+            ]
+          },
+          {
+            "family": "WEESL",
+            "id": "WEESL1",
+            "rnav": true,
+            "transitions": [
+              "EHF",
+              "NINTY",
+              "WRING"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KBUR",
         "lat": 34.200694,
@@ -1934,6 +2934,60 @@
         "spoken": "Burbank"
       },
       {
+        "arrivals": [
+          {
+            "family": "JCKIE",
+            "id": "JCKIE2",
+            "rnav": true,
+            "transitions": [
+              "FEYLA",
+              "HEYNG",
+              "MARUE",
+              "NATEE"
+            ]
+          },
+          {
+            "family": "KARLB",
+            "id": "KARLB3",
+            "rnav": true,
+            "transitions": [
+              "ELKEY",
+              "FICKY",
+              "ROSIN"
+            ]
+          },
+          {
+            "family": "SCBBY",
+            "id": "SCBBY2",
+            "rnav": true,
+            "transitions": [
+              "AMMOR",
+              "DAFNY",
+              "PHRED",
+              "TTRUE"
+            ]
+          },
+          {
+            "family": "SETER",
+            "id": "SETER5",
+            "rnav": false,
+            "transitions": [
+              "JLI",
+              "PSP"
+            ]
+          },
+          {
+            "family": "ZIGGY",
+            "id": "ZIGGY8",
+            "rnav": false,
+            "transitions": [
+              "EHF",
+              "HEC",
+              "PMD",
+              "TTE"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KONT",
         "lat": 34.056014,
@@ -1942,6 +2996,22 @@
         "spoken": "Ontario"
       },
       {
+        "arrivals": [
+          {
+            "family": "LEGOZ",
+            "id": "LEGOZ4",
+            "rnav": true,
+            "transitions": [
+              "BAUBB",
+              "BLOXX",
+              "BURGL",
+              "LANDO",
+              "REBRG",
+              "TCUPS",
+              "TILLT"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KCRQ",
         "lat": 33.12825,
@@ -1950,6 +3020,76 @@
         "spoken": "Carlsbad"
       },
       {
+        "arrivals": [
+          {
+            "family": "BOGET",
+            "id": "BOGET2",
+            "rnav": true,
+            "transitions": [
+              "BUGGA",
+              "EED",
+              "KREME",
+              "PURSE",
+              "WELUM",
+              "WNCHL"
+            ]
+          },
+          {
+            "family": "BONJO",
+            "id": "BONJO3",
+            "rnav": true,
+            "transitions": [
+              "HIHWY",
+              "HONZK",
+              "PRPLE",
+              "RDHOT",
+              "REBRG"
+            ]
+          },
+          {
+            "family": "FERN",
+            "id": "FERN7",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "DERBB",
+              "FLW",
+              "OHIGH"
+            ]
+          },
+          {
+            "family": "KIMMO",
+            "id": "KIMMO3",
+            "rnav": false,
+            "transitions": [
+              "EHF",
+              "LHS",
+              "PMD",
+              "TTE"
+            ]
+          },
+          {
+            "family": "WAYVE",
+            "id": "WAYVE1",
+            "rnav": true,
+            "transitions": [
+              "EHF",
+              "LHS",
+              "LOPES",
+              "TTE"
+            ]
+          },
+          {
+            "family": "ZUUMA",
+            "id": "ZUUMA4",
+            "rnav": true,
+            "transitions": [
+              "BURGL",
+              "DOUIT",
+              "REBRG"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KSMO",
         "lat": 34.015822,
@@ -1958,6 +3098,74 @@
         "spoken": "Santa Monica"
       },
       {
+        "arrivals": [
+          {
+            "family": "FERN",
+            "id": "FERN7",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "DERBB",
+              "FLW",
+              "OHIGH"
+            ]
+          },
+          {
+            "family": "IVINS",
+            "id": "IVINS2",
+            "rnav": true,
+            "transitions": [
+              "HIHWY",
+              "HONZK",
+              "PRPLE",
+              "RDHOT",
+              "REBRG"
+            ]
+          },
+          {
+            "family": "JANNY",
+            "id": "JANNY5",
+            "rnav": true,
+            "transitions": [
+              "BUGGA",
+              "EED",
+              "KREME",
+              "PURSE",
+              "WELUM",
+              "WNCHL"
+            ]
+          },
+          {
+            "family": "LYNXX",
+            "id": "LYNXX8",
+            "rnav": false,
+            "transitions": [
+              "DAG",
+              "HEC",
+              "LHS",
+              "PMD"
+            ]
+          },
+          {
+            "family": "THRNE",
+            "id": "THRNE4",
+            "rnav": true,
+            "transitions": [
+              "AMMOR",
+              "PHRED"
+            ]
+          },
+          {
+            "family": "WEESL",
+            "id": "WEESL1",
+            "rnav": true,
+            "transitions": [
+              "EHF",
+              "NINTY",
+              "WRING"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KVNY",
         "lat": 34.209806,
@@ -1966,6 +3174,84 @@
         "spoken": "Van Nuys"
       },
       {
+        "arrivals": [
+          {
+            "family": "DSNEE",
+            "id": "DSNEE6",
+            "rnav": true,
+            "transitions": [
+              "EED",
+              "EMLLD",
+              "FEYLA",
+              "HIMDU",
+              "LRSON",
+              "MARUE",
+              "NATEE"
+            ]
+          },
+          {
+            "family": "EMMLN",
+            "id": "EMMLN3",
+            "rnav": false,
+            "transitions": [
+              "DAG",
+              "HEC"
+            ]
+          },
+          {
+            "family": "KAYOH",
+            "id": "KAYOH8",
+            "rnav": false,
+            "transitions": [
+              "HEC",
+              "PSP"
+            ]
+          },
+          {
+            "family": "OHSEA",
+            "id": "OHSEA3",
+            "rnav": true,
+            "transitions": [
+              "ELLBC",
+              "GOONA",
+              "RDHOT",
+              "REBRG",
+              "REESR"
+            ]
+          },
+          {
+            "family": "ROOBY",
+            "id": "ROOBY3",
+            "rnav": true,
+            "transitions": [
+              "EED",
+              "EMLLD",
+              "FEYLA",
+              "HIMDU",
+              "LRSON",
+              "MARUE",
+              "NATEE"
+            ]
+          },
+          {
+            "family": "RUKKI",
+            "id": "RUKKI1",
+            "rnav": true,
+            "transitions": [
+              "TCUPS",
+              "TILLT"
+            ]
+          },
+          {
+            "family": "TANDY",
+            "id": "TANDY6",
+            "rnav": false,
+            "transitions": [
+              "FIM",
+              "FLW"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KSNA",
         "lat": 33.675661,
@@ -1974,6 +3260,84 @@
         "spoken": "John Wayne"
       },
       {
+        "arrivals": [
+          {
+            "family": "BAUBB",
+            "id": "BAUBB3",
+            "rnav": true,
+            "transitions": [
+              "TCUPS",
+              "TILLT"
+            ]
+          },
+          {
+            "family": "DSNEE",
+            "id": "DSNEE6",
+            "rnav": true,
+            "transitions": [
+              "EED",
+              "EMLLD",
+              "FEYLA",
+              "HIMDU",
+              "LRSON",
+              "MARUE",
+              "NATEE"
+            ]
+          },
+          {
+            "family": "EMMLN",
+            "id": "EMMLN3",
+            "rnav": false,
+            "transitions": [
+              "DAG",
+              "HEC"
+            ]
+          },
+          {
+            "family": "KAYOH",
+            "id": "KAYOH8",
+            "rnav": false,
+            "transitions": [
+              "HEC",
+              "PSP"
+            ]
+          },
+          {
+            "family": "PCIFC",
+            "id": "PCIFC3",
+            "rnav": true,
+            "transitions": [
+              "ELLBC",
+              "GOONA",
+              "RDHOT",
+              "REBRG",
+              "REESR"
+            ]
+          },
+          {
+            "family": "ROOBY",
+            "id": "ROOBY3",
+            "rnav": true,
+            "transitions": [
+              "EED",
+              "EMLLD",
+              "FEYLA",
+              "HIMDU",
+              "LRSON",
+              "MARUE",
+              "NATEE"
+            ]
+          },
+          {
+            "family": "TANDY",
+            "id": "TANDY6",
+            "rnav": false,
+            "transitions": [
+              "FIM",
+              "FLW"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KLGB",
         "lat": 33.817931,
@@ -1982,6 +3346,53 @@
         "spoken": "Long Beach"
       },
       {
+        "arrivals": [
+          {
+            "family": "CLOWD",
+            "id": "CLOWD1",
+            "rnav": false,
+            "transitions": [
+              "BLH",
+              "DECAS",
+              "EED",
+              "GFS"
+            ]
+          },
+          {
+            "family": "RDBUL",
+            "id": "RDBUL1",
+            "rnav": true,
+            "transitions": [
+              "CURIV",
+              "PKE",
+              "YORRK",
+              "ZELMA"
+            ]
+          },
+          {
+            "family": "SBONO",
+            "id": "SBONO1",
+            "rnav": false,
+            "transitions": [
+              "BLH",
+              "DECAS",
+              "EED",
+              "GFS"
+            ]
+          },
+          {
+            "family": "SIZLR",
+            "id": "SIZLR4",
+            "rnav": true,
+            "transitions": [
+              "CLASN",
+              "GLRNO",
+              "MURDY",
+              "OYVEY",
+              "SOSHA"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KUDD",
         "lat": 33.748439,
@@ -1990,6 +3401,17 @@
         "spoken": "Bermuda Dunes"
       },
       {
+        "arrivals": [
+          {
+            "family": "PITBL",
+            "id": "PITBL2",
+            "rnav": true,
+            "transitions": [
+              "HEC",
+              "PORPS"
+            ]
+          }
+        ],
         "artcc": "ZLA",
         "icao": "KSBA",
         "lat": 34.426192,
@@ -1998,6 +3420,72 @@
         "spoken": "Santa Barbara"
       },
       {
+        "arrivals": [
+          {
+            "family": "BQS",
+            "id": "BQS8",
+            "rnav": false,
+            "transitions": [
+              "IRK",
+              "LMN",
+              "SPI"
+            ]
+          },
+          {
+            "family": "JHAWK",
+            "id": "JHAWK8",
+            "rnav": false,
+            "transitions": [
+              "EMP"
+            ]
+          },
+          {
+            "family": "JSONN",
+            "id": "JSONN4",
+            "rnav": true,
+            "transitions": [
+              "ASIIX",
+              "DPEAK"
+            ]
+          },
+          {
+            "family": "MHOMS",
+            "id": "MHOMS3",
+            "rnav": true,
+            "transitions": [
+              "KRTNY",
+              "NELVY"
+            ]
+          },
+          {
+            "family": "RUDDH",
+            "id": "RUDDH3",
+            "rnav": true,
+            "transitions": [
+              "BLWRS",
+              "BULET",
+              "EUING",
+              "LAPOW"
+            ]
+          },
+          {
+            "family": "TYGER",
+            "id": "TYGER7",
+            "rnav": false,
+            "transitions": [
+              "SGF"
+            ]
+          },
+          {
+            "family": "WUTNG",
+            "id": "WUTNG3",
+            "rnav": true,
+            "transitions": [
+              "STASN",
+              "ZOURA"
+            ]
+          }
+        ],
         "artcc": "ZKC",
         "icao": "KMCI",
         "lat": 39.297603,
@@ -2006,6 +3494,7 @@
         "spoken": "Kansas City"
       },
       {
+        "arrivals": [],
         "artcc": "ZMP",
         "icao": "KGPZ",
         "lat": 47.209283,
@@ -2014,6 +3503,89 @@
         "spoken": "Grand Rapids Minnesota"
       },
       {
+        "arrivals": [
+          {
+            "family": "ANAHO",
+            "id": "ANAHO2",
+            "rnav": false,
+            "transitions": [
+              "GASSI",
+              "LLC"
+            ]
+          },
+          {
+            "family": "DNGLE",
+            "id": "DNGLE1",
+            "rnav": true,
+            "transitions": [
+              "SHERF"
+            ]
+          },
+          {
+            "family": "EELZA",
+            "id": "EELZA4",
+            "rnav": true,
+            "transitions": [
+              "HARTT"
+            ]
+          },
+          {
+            "family": "KLUBS",
+            "id": "KLUBS1",
+            "rnav": true,
+            "transitions": [
+              "HARTT"
+            ]
+          },
+          {
+            "family": "ORRCA",
+            "id": "ORRCA1",
+            "rnav": true,
+            "transitions": []
+          },
+          {
+            "family": "RYANN",
+            "id": "RYANN2",
+            "rnav": false,
+            "transitions": []
+          },
+          {
+            "family": "SCOLA",
+            "id": "SCOLA1",
+            "rnav": true,
+            "transitions": [
+              "KENNO",
+              "MVA"
+            ]
+          },
+          {
+            "family": "TARVR",
+            "id": "TARVR2",
+            "rnav": true,
+            "transitions": [
+              "KENNO",
+              "MVA",
+              "ORRCA",
+              "SHERF"
+            ]
+          },
+          {
+            "family": "WADOL",
+            "id": "WADOL4",
+            "rnav": true,
+            "transitions": [
+              "MYBAD"
+            ]
+          },
+          {
+            "family": "WINRZ",
+            "id": "WINRZ1",
+            "rnav": true,
+            "transitions": [
+              "MYBAD"
+            ]
+          }
+        ],
         "artcc": "ZOA",
         "icao": "KRNO",
         "lat": 39.499111,
@@ -2022,6 +3594,7 @@
         "spoken": "Reno"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KTRK",
         "lat": 39.320056,
@@ -2030,6 +3603,44 @@
         "spoken": "Truckee"
       },
       {
+        "arrivals": [
+          {
+            "family": "FEVTA",
+            "id": "FEVTA1",
+            "rnav": true,
+            "transitions": []
+          },
+          {
+            "family": "SLMMR",
+            "id": "SLMMR5",
+            "rnav": true,
+            "transitions": [
+              "ANAHO",
+              "CARVV",
+              "CRASY",
+              "DONNR",
+              "WEBGO"
+            ]
+          },
+          {
+            "family": "SUUTR",
+            "id": "SUUTR4",
+            "rnav": true,
+            "transitions": [
+              "NURAY"
+            ]
+          },
+          {
+            "family": "TUDOR",
+            "id": "TUDOR2",
+            "rnav": false,
+            "transitions": [
+              "LKV",
+              "LMT",
+              "RBL"
+            ]
+          }
+        ],
         "artcc": "ZOA",
         "icao": "KSMF",
         "lat": 38.695444,
@@ -2038,6 +3649,14 @@
         "spoken": "Sacramento"
       },
       {
+        "arrivals": [
+          {
+            "family": "ALTTA",
+            "id": "ALTTA9",
+            "rnav": false,
+            "transitions": []
+          }
+        ],
         "artcc": "ZOA",
         "icao": "KFAT",
         "lat": 36.776556,
@@ -2046,6 +3665,7 @@
         "spoken": "Fresno"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KACV",
         "lat": 40.977828,
@@ -2054,6 +3674,7 @@
         "spoken": "Arcata"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KMRY",
         "lat": 36.586953,
@@ -2062,6 +3683,7 @@
         "spoken": "Monterey"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KLVK",
         "lat": 37.693389,
@@ -2070,6 +3692,32 @@
         "spoken": "Livermore"
       },
       {
+        "arrivals": [
+          {
+            "family": "REBAS",
+            "id": "REBAS1",
+            "rnav": true,
+            "transitions": [
+              "MISON",
+              "RGOOD",
+              "RUSME",
+              "SNORA",
+              "YOSEM"
+            ]
+          },
+          {
+            "family": "VNYRD",
+            "id": "VNYRD1",
+            "rnav": true,
+            "transitions": [
+              "MISON",
+              "RGOOD",
+              "RUSME",
+              "SNORA",
+              "YOSEM"
+            ]
+          }
+        ],
         "artcc": "ZOA",
         "icao": "KAPC",
         "lat": 38.213189,
@@ -2078,6 +3726,7 @@
         "spoken": "Napa"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KWVI",
         "lat": 36.935733,
@@ -2086,6 +3735,7 @@
         "spoken": "Watsonville"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KMYV",
         "lat": 39.097778,
@@ -2094,6 +3744,7 @@
         "spoken": "Marysville"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KOVE",
         "lat": 39.487819,
@@ -2102,6 +3753,7 @@
         "spoken": "Oroville"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "O88",
         "lat": 38.193383,
@@ -2110,6 +3762,7 @@
         "spoken": "Rio Vista"
       },
       {
+        "arrivals": [],
         "artcc": "ZOA",
         "icao": "KSAC",
         "lat": 38.512861,
@@ -2118,6 +3771,66 @@
         "spoken": "Sacramento Executive"
       },
       {
+        "arrivals": [
+          {
+            "family": "AANET",
+            "id": "AANET1",
+            "rnav": true,
+            "transitions": [
+              "RBUCL",
+              "SPAMY"
+            ]
+          },
+          {
+            "family": "EMZOH",
+            "id": "EMZOH4",
+            "rnav": true,
+            "transitions": [
+              "RGOOD"
+            ]
+          },
+          {
+            "family": "OAKES",
+            "id": "OAKES3",
+            "rnav": true,
+            "transitions": [
+              "MRLET",
+              "RPARK",
+              "RUSME"
+            ]
+          },
+          {
+            "family": "PIRAT",
+            "id": "PIRAT3",
+            "rnav": true,
+            "transitions": [
+              "ALCOA",
+              "CINNY",
+              "HUNTS",
+              "PAINT",
+              "PASIF",
+              "WUSES"
+            ]
+          },
+          {
+            "family": "PXN",
+            "id": "PXN6",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "GMN"
+            ]
+          },
+          {
+            "family": "WNDSR",
+            "id": "WNDSR2",
+            "rnav": true,
+            "transitions": [
+              "RBUCL",
+              "SPAMY"
+            ]
+          }
+        ],
         "artcc": "ZOA",
         "icao": "KOAK",
         "lat": 37.721261,
@@ -2126,6 +3839,79 @@
         "spoken": "Oakland"
       },
       {
+        "arrivals": [
+          {
+            "family": "BRINY",
+            "id": "BRINY2",
+            "rnav": false,
+            "transitions": [
+              "FMG",
+              "RBL"
+            ]
+          },
+          {
+            "family": "BRIXX",
+            "id": "BRIXX4",
+            "rnav": true,
+            "transitions": [
+              "CHBLI"
+            ]
+          },
+          {
+            "family": "FRLON",
+            "id": "FRLON2",
+            "rnav": true,
+            "transitions": [
+              "GGULF"
+            ]
+          },
+          {
+            "family": "PYE",
+            "id": "PYE3",
+            "rnav": false,
+            "transitions": [
+              "ENI",
+              "SAC"
+            ]
+          },
+          {
+            "family": "RAZRR",
+            "id": "RAZRR5",
+            "rnav": true,
+            "transitions": [
+              "FAANG",
+              "KNGRY",
+              "MDOWS",
+              "RUSME"
+            ]
+          },
+          {
+            "family": "RISTI",
+            "id": "RISTI1",
+            "rnav": true,
+            "transitions": [
+              "ORRCA",
+              "TIPRE"
+            ]
+          },
+          {
+            "family": "ROBIE",
+            "id": "ROBIE5",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "RZS"
+            ]
+          },
+          {
+            "family": "SILCN",
+            "id": "SILCN6",
+            "rnav": true,
+            "transitions": [
+              "TROXX"
+            ]
+          }
+        ],
         "artcc": "ZOA",
         "icao": "KSJC",
         "lat": 37.362994,
@@ -2134,6 +3920,138 @@
         "spoken": "San Jose"
       },
       {
+        "arrivals": [
+          {
+            "family": "BOOKE",
+            "id": "BOOKE8",
+            "rnav": false,
+            "transitions": [
+              "CANON",
+              "DANNO",
+              "SYVAD",
+              "THOMA"
+            ]
+          },
+          {
+            "family": "INOYI",
+            "id": "INOYI1",
+            "rnav": true,
+            "transitions": [
+              "APACK",
+              "BITTA",
+              "DENNS",
+              "JOELE",
+              "ZIGIE"
+            ]
+          },
+          {
+            "family": "JULLE",
+            "id": "JULLE5",
+            "rnav": false,
+            "transitions": [
+              "CHAIN",
+              "DOVRR",
+              "HOKLA",
+              "LNY"
+            ]
+          },
+          {
+            "family": "KAENA",
+            "id": "KAENA5",
+            "rnav": true,
+            "transitions": [
+              "AHHEE",
+              "BITTA",
+              "CIGAN",
+              "CLUTS",
+              "DENNS",
+              "PISKE",
+              "REWWA",
+              "ZELDO"
+            ]
+          },
+          {
+            "family": "KLANI",
+            "id": "KLANI4",
+            "rnav": true,
+            "transitions": [
+              "CANON",
+              "DANNO",
+              "OUCHI",
+              "PUPPI",
+              "SYVAD",
+              "THOMA"
+            ]
+          },
+          {
+            "family": "MAGGI",
+            "id": "MAGGI3",
+            "rnav": false,
+            "transitions": [
+              "APACK",
+              "BITTA",
+              "CLUTS",
+              "DENNS",
+              "ZIGIE"
+            ]
+          },
+          {
+            "family": "MAKAH",
+            "id": "MAKAH1",
+            "rnav": true,
+            "transitions": [
+              "BEACH",
+              "CRISI",
+              "HONUU",
+              "LAVAS",
+              "SAKKI"
+            ]
+          },
+          {
+            "family": "OPACA",
+            "id": "OPACA4",
+            "rnav": false,
+            "transitions": [
+              "CARRP",
+              "CHOKO",
+              "KATHS"
+            ]
+          },
+          {
+            "family": "SAKKI",
+            "id": "SAKKI5",
+            "rnav": false,
+            "transitions": [
+              "CHAIN",
+              "DOVRR",
+              "HOKLA",
+              "LNY"
+            ]
+          },
+          {
+            "family": "SHLAE",
+            "id": "SHLAE1",
+            "rnav": true,
+            "transitions": [
+              "BEACH",
+              "CHAIN",
+              "CRISI",
+              "LAVAS",
+              "LNY"
+            ]
+          },
+          {
+            "family": "SYMIN",
+            "id": "SYMIN1",
+            "rnav": true,
+            "transitions": [
+              "APACK",
+              "BITTA",
+              "DENNS",
+              "ZIGIE"
+            ]
+          }
+        ],
         "artcc": "ZAK",
         "icao": "PHNL",
         "lat": 21.317825,
@@ -2142,6 +4060,7 @@
         "spoken": "Honolulu"
       },
       {
+        "arrivals": [],
         "artcc": "ZAK",
         "icao": "RKSI",
         "lat": 37.469,
@@ -2150,6 +4069,7 @@
         "spoken": "Seoul Incheon"
       },
       {
+        "arrivals": [],
         "artcc": "ZAK",
         "icao": "ESSA",
         "lat": 59.652,
@@ -2158,6 +4078,7 @@
         "spoken": "Stockholm Arlanda"
       },
       {
+        "arrivals": [],
         "artcc": "ZLA",
         "icao": "MMMX",
         "lat": 19.436,
@@ -2166,6 +4087,7 @@
         "spoken": "Mexico City"
       },
       {
+        "arrivals": [],
         "artcc": "ZSE",
         "icao": "CYVR",
         "lat": 49.195,

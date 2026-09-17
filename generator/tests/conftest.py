@@ -14,7 +14,7 @@ from craft_generator.cifp.airports import AirportRecord, parse_airport_records
 from craft_generator.cifp.navaids import Navaid, parse_navaids
 from craft_generator.cifp.records import RunwayRecord, SidRecord, parse_records
 from craft_generator.cifp.sid import CifpSid, group_sids
-from craft_generator.cifp.stars import parse_star_ids
+from craft_generator.cifp.stars import CifpStar, parse_stars
 from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.nct_boundary import NctBoundary, load_nct_boundary
@@ -139,8 +139,8 @@ def star_record_lines() -> list[str]:
 
 
 @pytest.fixture(scope="session")
-def destination_stars(star_record_lines: list[str]) -> dict[str, frozenset[str]]:
-    return parse_star_ids(star_record_lines)
+def destination_stars(star_record_lines: list[str]) -> dict[str, tuple[CifpStar, ...]]:
+    return parse_stars(star_record_lines)
 
 
 @pytest.fixture(scope="session")
@@ -201,7 +201,7 @@ def ksfo_build_inputs(
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),
         aircraft_characteristics=aircraft_characteristics,
         airport_records=parse_airport_records(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
-        destination_stars=parse_star_ids(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
+        destination_stars=parse_stars(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
         phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
         route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),

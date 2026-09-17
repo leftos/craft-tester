@@ -36,7 +36,7 @@ from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effe
 from craft_generator.cifp.navaids import parse_navaids
 from craft_generator.cifp.records import parse_records
 from craft_generator.cifp.sid import group_sids
-from craft_generator.cifp.stars import parse_star_ids
+from craft_generator.cifp.stars import parse_stars
 from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_path, schema_path, validate, write_or_check
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
@@ -417,7 +417,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),
             aircraft_characteristics=load_aircraft_characteristics(shared_dir() / AIRCRAFT_CHARACTERISTICS_FILE),
             airport_records=parse_airport_records(lines),
-            destination_stars=parse_star_ids(lines),
+            destination_stars=parse_stars(lines),
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
             phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
             route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),

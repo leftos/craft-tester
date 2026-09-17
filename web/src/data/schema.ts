@@ -508,9 +508,26 @@ export const LoaRuleSchema = z.strictObject({
 });
 
 /**
+ * One arrival a destination publishes, as the CIFP codes it.
+ *
+ * `family` is the identifier without its revision (`IRNMN` for `IRNMN2`), which is what a route
+ * names, since the revision changes with the AIRAC cycle. `rnav` is whether the procedure is coded
+ * on the RNAV route types, and `transitions` are the fixes its enroute transitions begin on, in the
+ * order the chart lists them; an arrival with no enroute transition has none.
+ */
+export const ArrivalSchema = z.strictObject({
+  id: z.string(),
+  family: z.string(),
+  rnav: z.boolean(),
+  transitions: z.array(z.string()),
+});
+
+/**
  * A destination airport with the coordinates and ARTCC the altitude checks need.
  *
  * `nct` marks a destination inside NorCal TRACON, which is where the TEC route rows apply.
+ * `arrivals` is every arrival the field publishes, empty for a field the FAA file carries no
+ * procedures for - every foreign one - and for one that publishes no arrival at all.
  */
 export const DestinationSchema = z.strictObject({
   icao: z.string(),
@@ -519,6 +536,7 @@ export const DestinationSchema = z.strictObject({
   lon: z.number().min(-180).max(180),
   artcc: z.string(),
   nct: z.boolean().optional(),
+  arrivals: z.array(ArrivalSchema),
 });
 
 /**
@@ -831,6 +849,7 @@ export type Airway = z.infer<typeof AirwaySchema>;
 export type TecRoute = z.infer<typeof TecRouteSchema>;
 export type LoaRuleKind = z.infer<typeof LoaRuleKindSchema>;
 export type LoaRule = z.infer<typeof LoaRuleSchema>;
+export type Arrival = z.infer<typeof ArrivalSchema>;
 export type Destination = z.infer<typeof DestinationSchema>;
 export type FleetEntry = z.infer<typeof FleetEntrySchema>;
 export type RouteLibraryEntry = z.infer<typeof RouteLibraryEntrySchema>;

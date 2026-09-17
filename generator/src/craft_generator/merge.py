@@ -62,6 +62,7 @@ from craft_generator.cifp.airports import AirportRecord
 from craft_generator.cifp.navaids import Navaid
 from craft_generator.cifp.records import RunwayRecord
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
+from craft_generator.cifp.stars import CifpStar
 from craft_generator.nct_boundary import NctBoundary
 from craft_generator.sop.load import AIRCRAFT_CHARACTERISTICS_FILE, NCT_BOUNDARY_FILE, RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
 from craft_generator.sop.model import (
@@ -146,9 +147,9 @@ class BuildInputs:
     the airport's own ``sop.yaml`` overrides a phraseology row by id, and a fleet row that states an
     ``approach_category`` of its own overrides the category the FAA table publishes for the type.
 
-    ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier. A
-    destination the FAA file does not carry - every foreign one - is simply absent, as is a US airport
-    that publishes no arrival at all.
+    ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier, in
+    CIFP order. A destination the FAA file does not carry - every foreign one - is simply absent, as
+    is a US airport that publishes no arrival at all; both emit an empty ``arrivals`` list.
     """
 
     airport: AirportInputs
@@ -159,7 +160,7 @@ class BuildInputs:
     aircraft_classes: dict[str, AircraftClass]
     aircraft_characteristics: dict[str, AircraftCharacteristic]
     airport_records: dict[str, AirportRecord]
-    destination_stars: dict[str, frozenset[str]]
+    destination_stars: dict[str, tuple[CifpStar, ...]]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
     phraseology_rules: tuple[PhraseologyRule, ...]
     route_connections: tuple[RouteConnection, ...]
@@ -380,7 +381,19 @@ def _phraseology_rules(shared: Sequence[PhraseologyRule], airport: Sequence[Phra
     return [{"id": rule.id, "source": rule.source, "text": rule.text} for rule in rules]
 
 
-def _destination(destination: Destination, airport_records: Mapping[str, AirportRecord], boundary: NctBoundary) -> Document:
+def _arrivals(icao: str, destination_stars: Mapping[str, tuple[CifpStar, ...]]) -> list[Document]:
+    """Return the arrivals a destination publishes, sorted by identifier, empty when it publishes none."""
+    published = destination_stars.get(icao, ())
+    arrivals = [{"id": star.id, "family": star.family, "rnav": star.rnav, "transitions": list(star.transitions)} for star in published]
+    return sorted(arrivals, key=lambda arrival: str(arrival["id"]))
+
+
+def _destination(
+    destination: Destination,
+    airport_records: Mapping[str, AirportRecord],
+    boundary: NctBoundary,
+    destination_stars: Mapping[str, tuple[CifpStar, ...]],
+) -> Document:
     latitude, longitude = destination.lat, destination.lon
     if latitude is None or longitude is None:
         found = airport_records.get(destination.icao)
@@ -397,6 +410,7 @@ def _destination(destination: Destination, airport_records: Mapping[str, Airport
         "nct": boundary.contains(latitude, longitude) and destination.outside_nct is None,
         "lat": latitude,
         "lon": longitude,
+        "arrivals": _arrivals(destination.icao, destination_stars),
     }
 
 
@@ -432,7 +446,7 @@ def _resolved_arrival(
     family: str,
     route: RouteEntry,
     airport_records: Mapping[str, AirportRecord],
-    destination_stars: Mapping[str, frozenset[str]],
+    destination_stars: Mapping[str, tuple[CifpStar, ...]],
 ) -> str:
     """Return the identifier of the one arrival ``family`` the destination publishes."""
     where = _route_where(route)
@@ -448,11 +462,11 @@ def _resolved_arrival(
         raise ValueError(
             f"{where}: the tail names arrival family {family!r}, but {destination} publishes no arrival at all; end the tail on a fix instead"
         )
-    matching = sorted(star for star in published if sid_family_of(star, where) == family)
+    matching = sorted(star.id for star in published if star.family == family)
     if not matching:
         raise ValueError(
-            f"{where}: the tail names arrival family {family!r}, which {destination} does not publish; it publishes {sorted(published)}; "
-            "correct the family, or end the tail on a fix"
+            f"{where}: the tail names arrival family {family!r}, which {destination} does not publish; it publishes "
+            f"{sorted(star.id for star in published)}; correct the family, or end the tail on a fix"
         )
     if len(matching) > 1:
         raise ValueError(
@@ -462,7 +476,7 @@ def _resolved_arrival(
     return matching[0]
 
 
-def _resolved_tail(route: RouteEntry, airport_records: Mapping[str, AirportRecord], destination_stars: Mapping[str, frozenset[str]]) -> str:
+def _resolved_tail(route: RouteEntry, airport_records: Mapping[str, AirportRecord], destination_stars: Mapping[str, tuple[CifpStar, ...]]) -> str:
     """Return the tail with its trailing arrival resolved to the revision the destination publishes now."""
     tokens = route.tail.split()
     if not tokens:
@@ -481,7 +495,7 @@ def _resolved_tail(route: RouteEntry, airport_records: Mapping[str, AirportRecor
     return route.tail
 
 
-def _route_entry(route: RouteEntry, airport_records: Mapping[str, AirportRecord], destination_stars: Mapping[str, frozenset[str]]) -> Document:
+def _route_entry(route: RouteEntry, airport_records: Mapping[str, AirportRecord], destination_stars: Mapping[str, tuple[CifpStar, ...]]) -> Document:
     return {
         "exitFix": route.exit_fix,
         "tail": _resolved_tail(route, airport_records, destination_stars),
@@ -535,7 +549,9 @@ def _loa_rules(inputs: BuildInputs) -> list[Document]:
 def _route_library(inputs: BuildInputs) -> Document:
     routes = inputs.airport.routes
     return {
-        "destinations": [_destination(destination, inputs.airport_records, inputs.nct_boundary) for destination in routes.destinations],
+        "destinations": [
+            _destination(destination, inputs.airport_records, inputs.nct_boundary, inputs.destination_stars) for destination in routes.destinations
+        ],
         "telephony": dict(routes.telephony),
         "cargoAirlines": list(routes.cargo_airlines),
         "fleet": [_fleet_entry(entry, inputs.aircraft_characteristics) for entry in routes.fleet],

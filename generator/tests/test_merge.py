@@ -180,6 +180,36 @@ def test_destination_coordinates_come_from_the_cifp_unless_the_yaml_gives_them(k
     assert (destinations["RKSI"]["lat"], destinations["RKSI"]["lon"]) == (37.469, 126.451)
 
 
+def _arrival(document: Document, icao: str, star_id: str) -> Document:
+    arrivals = _destinations(document)[icao]["arrivals"]
+    return next(arrival for arrival in arrivals if arrival["id"] == star_id)
+
+
+def test_a_destination_publishes_its_arrivals_with_their_families_and_enroute_transitions(ksfo_document: Document) -> None:
+    assert _arrival(ksfo_document, "KLAX", "IRNMN2") == {
+        "id": "IRNMN2",
+        "family": "IRNMN",
+        "rnav": True,
+        "transitions": ["BURGL", "FRASR", "MUPTT", "REBRG"],
+    }
+    sadde = _arrival(ksfo_document, "KLAX", "SADDE8")
+    assert (sadde["family"], sadde["rnav"]) == ("SADDE", False)
+    assert {"AVE", "DERBB"} <= set(sadde["transitions"])
+
+
+def test_the_arrivals_of_a_destination_are_sorted_by_identifier(ksfo_document: Document) -> None:
+    arrivals = _destinations(ksfo_document)["KLAX"]["arrivals"]
+    ids = [arrival["id"] for arrival in arrivals]
+    assert ids == sorted(ids)
+    assert "IRNMN2" in ids
+
+
+def test_a_destination_with_no_published_arrival_carries_an_empty_list(ksfo_document: Document) -> None:
+    destinations = _destinations(ksfo_document)
+    assert destinations["KLVK"]["arrivals"] == []
+    assert destinations["CYVR"]["arrivals"] == []
+
+
 def _with_destination(inputs: BuildInputs, icao: str, **changes: Any) -> BuildInputs:
     library = inputs.airport.routes
     destinations = tuple(replace(row, **changes) if row.icao == icao else row for row in library.destinations)

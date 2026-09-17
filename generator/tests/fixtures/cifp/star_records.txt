@@ -1,179 +1,839 @@
 SPACP PHNLPHEBOOKE81CANON 010CANONPHEA0E       IF                                             18000                        228591304
+SPACP PHNLPHEBOOKE81DANNO 010DANNOP PC0E       IF                                             18000                        228621907
+SPACP PHNLPHEBOOKE81SYVAD 010SYVADP EA0E       IF                                             18000                        228651907
+SPACP PHNLPHEBOOKE81THOMA 010THOMAP PC0E       IF                                             18000                        228691907
+SPACP PHNLPHEBOOKE82ALL   010BOOKEPHEA0E       IF                                             18000                        228752103
 SPACP PHNLPHEINOYI14APACK 010APACKP EA0E       IF                                 + FL250     18000                        228782002
+SPACP PHNLPHEINOYI14BITTA 010BITTAP EA0E       IF                                 + FL250     18000                        228832002
+SPACP PHNLPHEINOYI14DENNS 010DENNSP EA0E       IF                                 + FL250     18000                        228872002
+SPACP PHNLPHEINOYI14JOELE 010JOELEP EA0E       IF                                 + 17000     18000270                     228912002
+SPACP PHNLPHEINOYI14ZIGIE 010ZIGIEP EA0E       IF                                 + FL250     18000                        228932002
+SPACP PHNLPHEINOYI15      010BAMBOP EA0E       IF                                 B 150001000018000250                     228982002
+SPACP PHNLPHEINOYI16RW04B 010INOYIPHPC0E       IF                                 + 08000     18000230                     229012002
 SPACP PHNLPHEJULLE51CHAIN 010CHAINPHEA0E       IF LNY PH      36000127        D               18000                        229082405
+SPACP PHNLPHEJULLE51DOVRR 010DOVRRP EA0E       IF                                             18000                        229131907
+SPACP PHNLPHEJULLE51HOKLA 010HOKLAPHEA0E       IF                                             18000                        229171109
+SPACP PHNLPHEJULLE51LNY   010LNY  PHD 0V       IF                                             18000                        229221109
+SPACP PHNLPHEJULLE52ALL   010JULLEPHEA0E       IF                                             18000                        229282103
 SPACP PHNLPHEKAENA54AHHEE 010AHHEEP PC0E       IF                                             18000                        229302607
+SPACP PHNLPHEKAENA54BITTA 010BITTAP EA0E       IF                                             18000                        229362607
+SPACP PHNLPHEKAENA54CIGAN 010CIGANP PC0E       IF                                 + FL220     18000                        229432607
+SPACP PHNLPHEKAENA54CLUTS 010CLUTSP EA0E       IF                                             18000                        229472607
+SPACP PHNLPHEKAENA54DENNS 010DENNSP EA0E       IF                                             18000                        229542607
+SPACP PHNLPHEKAENA54PISKE 010PISKEP PC0E       IF                                 + FL220     18000                        229612607
+SPACP PHNLPHEKAENA54REWWA 010REWWAP PC0E       IF                                 + FL220     18000                        229652607
+SPACP PHNLPHEKAENA54ZELDO 010ZELDOP PC0E       IF                                             18000                        229692607
+SPACP PHNLPHEKAENA56RW08L 010KAENAPHPC0E       IF                                 B 080000600018000                        229752607
 SPACP PHNLPHEKLANI44CANON 010CANONPHEA0E       IF                                 + FL200     18000                        229772502
+SPACP PHNLPHEKLANI44DANNO 010DANNOP PC0E       IF                                 + FL200     18000                        229812502
+SPACP PHNLPHEKLANI44OUCHI 010OUCHIPHPC0E       IF                                 + 17000     18000                        229852502
+SPACP PHNLPHEKLANI44PUPPI 010PUPPIP EA0E       IF                                 + FL200     18000                        229872502
+SPACP PHNLPHEKLANI44SYVAD 010SYVADP EA0E       IF                                 + FL200     18000                        229912502
+SPACP PHNLPHEKLANI44THOMA 010THOMAP PC0E       IF                                 + FL200     18000                        229952502
+SPACP PHNLPHEKLANI45      010KLANIPHPC0E       IF                                 + 09000     18000                        229992502
+SPACP PHNLPHEKLANI46RW04B 010SHLLSPHPC0E       IF                                             18000                        230022502
 SPACP PHNLPHEMAGGI31APACK 010APACKP EA0E       IF                                             18000                        230111612
+SPACP PHNLPHEMAGGI31BITTA 010BITTAP EA0E       IF                                             18000                        230151612
+SPACP PHNLPHEMAGGI31CLUTS 010CLUTSP EA0E       IF                                             18000                        230201612
+SPACP PHNLPHEMAGGI31DENNS 010DENNSP EA0E       IF                                             18000                        230251612
+SPACP PHNLPHEMAGGI31ZIGIE 010ZIGIEP EA0E       IF                                             18000                        230292103
+SPACP PHNLPHEMAGGI32ALL   010MAGGIP EA0E       IF                                             18000                        230322211
 SPACP PHNLPHEMAKAH14BEACH 010BEACHPHEA0E       IF                                 + 17000     18000                        230362002
+SPACP PHNLPHEMAKAH14CRISI 010CRISIPHEA0E       IF                                 + 16000     18000                        230412002
+SPACP PHNLPHEMAKAH14HONUU 010HONUUP PC0E       IF                                 + 14000     18000280                     230442002
+SPACP PHNLPHEMAKAH14LAVAS 010LAVASPHEA0E       IF                                 + 16000     18000                        230462002
+SPACP PHNLPHEMAKAH14SAKKI 010SAKKIPHEA0E       IF                                             18000                        230492002
+SPACP PHNLPHEMAKAH15ALL   010MAKAHP PC0E       IF                                 B 140001000018000250                     230512002
 SPACP PHNLPHEOPACA41CARRP 010CARRPP EA0E       IF                                             18000                        230541612
+SPACP PHNLPHEOPACA41CHOKO 010CHOKOP EA0E       IF                                             18000                        230561612
+SPACP PHNLPHEOPACA41KATHS 010KATHSPHEA0E       IF                                             18000                        230591304
+SPACP PHNLPHEOPACA42ALL   010OPACAPHPC0E       IF                                             18000                        230612103
 SPACP PHNLPHESAKKI51CHAIN 010CHAINPHEA0E       IF LNY PH      36000127        D               18000                        230632405
+SPACP PHNLPHESAKKI51DOVRR 010DOVRRP EA0E       IF                                             18000                        230671907
+SPACP PHNLPHESAKKI51HOKLA 010HOKLAPHEA0E       IF                                             18000                        230721109
+SPACP PHNLPHESAKKI51LNY   010LNY  PHD 0V       IF                                             18000                        230781109
+SPACP PHNLPHESAKKI53RW22B 010SAKKIPHEA0E       IF                                             18000                        230832103
 SPACP PHNLPHESHLAE14BEACH 010BEACHPHEA0E       IF                                             18000                        230872002
+SPACP PHNLPHESHLAE14CHAIN 010CHAINPHEA0E       IF                                             18000                        230912405
+SPACP PHNLPHESHLAE14CRISI 010CRISIPHEA0E       IF                                             18000                        230942002
+SPACP PHNLPHESHLAE14LAVAS 010LAVASPHEA0E       IF                                             18000                        230972002
+SPACP PHNLPHESHLAE14LNY   010LNY  PHD 0V       IF                                             18000                        231002002
+SPACP PHNLPHESHLAE15ALL   010DYLLIP PC0E       IF                                 + 04000     18000                        231032002
 SPACP PHNLPHESYMIN14APACK 010APACKP EA0E       IF                                 + FL250     18000                        231062002
+SPACP PHNLPHESYMIN14BITTA 010BITTAP EA0E       IF                                 + FL250     18000                        231112002
+SPACP PHNLPHESYMIN14DENNS 010DENNSP EA0E       IF                                 + FL250     18000                        231152002
+SPACP PHNLPHESYMIN14ZIGIE 010ZIGIEP EA0E       IF                                 + FL250     18000                        231192002
+SPACP PHNLPHESYMIN15ALL   010SYMINP PC0E       IF                                 + 09000     18000250                     231242002
 SUSAP KAPCK2EREBAS14MISON 010MISONK2EA0E       IF                                   FL200     18000                        221312407
+SUSAP KAPCK2EREBAS14RGOOD 010RGOODK2EA0E       IF                                             18000                        221332407
+SUSAP KAPCK2EREBAS14RUSME 010RUSMEK2EA0E       IF                                             18000                        221382407
+SUSAP KAPCK2EREBAS14SNORA 010SNORAK2EA0E       IF                                             18000                        221432407
+SUSAP KAPCK2EREBAS14YOSEM 010YOSEMK2EA0E       IF                                             18000                        221472407
+SUSAP KAPCK2EREBAS15ALL   010BRIXXK2EA0E       IF                                             18000                        221522407
 SUSAP KAPCK2EVNYRD14MISON 010MISONK2EA0E       IF                                   FL200     18000                        221562407
+SUSAP KAPCK2EVNYRD14RGOOD 010RGOODK2EA0E       IF                                             18000                        221582407
+SUSAP KAPCK2EVNYRD14RUSME 010RUSMEK2EA0E       IF                                             18000                        221632407
+SUSAP KAPCK2EVNYRD14SNORA 010SNORAK2EA0E       IF                                             18000                        221692407
+SUSAP KAPCK2EVNYRD14YOSEM 010YOSEMK2EA0E       IF                                             18000                        221742407
+SUSAP KAPCK2EVNYRD15ALL   010OAK  K2D 0V       IF                                             18000                        221802407
 SUSAP KBFIK1ECHINS51PDT   010PDT  K1D 0V       IF                                             18000                        322532209
+SUSAP KBFIK1ECHINS51SUNED 010SUNEDK1EA0E       IF                                             18000                        322582209
+SUSAP KBFIK1ECHINS51YKM   010YKM  K1D 0V       IF                                             18000                        322612209
+SUSAP KBFIK1ECHINS53RW14B 010CHINSK1EA0E       IF                                             18000                        322632209
 SUSAP KBFIK1EOLM2  1BTG   010BTG  K1D 0V       IF                                             18000                        322732103
+SUSAP KBFIK1EOLM2  1UBG   010UBG  K1D 0V       IF                                             18000                        322761612
+SUSAP KBFIK1EOLM2  2      010OLM  K1D 0V       IF                                             18000                        322782103
+SUSAP KBFIK1EOLM2  3RW14B 010FOURTK1EA0E       IF                                             18000                        322821806
 SUSAP KBFIK1ESKYKO11EPH   010EPH  K1D 0V       IF                                 + FL180     18000                        322862205
+SUSAP KBFIK1ESKYKO11ODESS 010ODESSK1EA0E       IF                                 + FL180     18000                        322882205
+SUSAP KBFIK1ESKYKO12      010SKYKOK1EA0E       IF                                 B 160001300018000                        322912205
+SUSAP KBFIK1ESKYKO13RW14B 010HETHRK1EA0E       IF                                 B 130001000018000                        322942205
 SUSAP KBLIK1EMADEE74KONAH 010KONAHK1EA0E       IF                                 + 16000     18000270               -     361942607
+SUSAP KBLIK1EMADEE76RW16  010MADEEK1EA0E       IF                                             18000                        361972607
 SUSAP KBOIK1EBEWTE44COLLR 010COLLRK1PC0E       IF                                 + 15000     18000                        384922207
+SUSAP KBOIK1EBEWTE44MAXMS 010MAXMSK1PC0E       IF                                 + 15000     18000                        384952207
+SUSAP KBOIK1EBEWTE44SUMOQ 010SUMOQK1EA0E       IF                                             18000                        384982207
+SUSAP KBOIK1EBEWTE45      010BEWTEK1PC0E       IF                                 + 10000     18000                        385022207
+SUSAP KBOIK1EBEWTE46RW10B 010CHRIEK1PC0E       IF                                 + 08100     18000                        385042207
 SUSAP KBOIK1EKOURT44DERSO 010DERSOK1EA0E       IF                                 + 14000     18000                        385102207
+SUSAP KBOIK1EKOURT44REAPS 010REAPSK1EA0E       IF                                 + FL240     18000                        385122207
+SUSAP KBOIK1EKOURT45      010KOURTK1EA0E       IF                                 + 12500     18000                        385162502
+SUSAP KBOIK1EKOURT46RW10B 010EREXEK1EA0E       IF                                 + 09600     18000                        385192207
 SUSAP KBOIK1EKYAAN44DEVLE 010DEVLEK1PC0E       IF                                 + 16000     18000                        385272207
+SUSAP KBOIK1EKYAAN46RW10B 010KYAANK1PC0E       IF                                 + 08000     18000                        385302207
 SUSAP KBOIK1ESADYL44NEERO 010NEEROK2EA0E       IF                                             18000                        385352010
+SUSAP KBOIK1ESADYL44PRNCS 010PRNCSK1PC0E       IF                                             18000                        385382010
+SUSAP KBOIK1ESADYL45      010PELYTK1PC0E       IF                                 + FL210     18000                        385402010
+SUSAP KBOIK1ESADYL46RW10B 010MRFEEK1PC0E       IF                                 + 10100     18000                        385432010
 SUSAP KBOIK1ESPUUD44BROPH 010BROPHK1EA0E       IF                                             18000                        385502207
+SUSAP KBOIK1ESPUUD44ORYDA 010ORYDAK1PC0E       IF                                             18000                        385552207
+SUSAP KBOIK1ESPUUD46RW10B 010SPUUDK1PC0E       IF                                 + 10000     18000                        385592207
 SUSAP KBURK2EFERN7 1AVE   010AVE  K2D 0V       IF                                             18000                        418291612
+SUSAP KBURK2EFERN7 1DERBB 010DERBBK2EA0E       IF                                             18000                        418341612
+SUSAP KBURK2EFERN7 1FLW   010FLW  K2D 0V       IF                                             18000                        418381612
+SUSAP KBURK2EFERN7 1OHIGH 010OHIGHK2EA0E       IF                                             18000                        418421612
+SUSAP KBURK2EFERN7 3RW08  010FIM  K2D 0V       IF                                             18000                        418451612
 SUSAP KBURK2EJANNY54BUGGA 010BUGGAK2EA0E       IF                                             18000                        418481808
+SUSAP KBURK2EJANNY54EED   010EED  K2D 0V       IF                                             18000                        418581808
+SUSAP KBURK2EJANNY54KREME 010KREMEK2EA0E       IF                                   FL240     18000                        418701808
+SUSAP KBURK2EJANNY54PURSE 010PURSEK2EA0E       IF                                             18000                        418791808
+SUSAP KBURK2EJANNY54WELUM 010WELUMK2EA0E       IF                                             18000                        418901808
+SUSAP KBURK2EJANNY54WNCHL 010WNCHLK2EA0E       IF                                             18000                        419011808
+SUSAP KBURK2EJANNY56RW08  010JANNYK2EA0E       IF                                   08000     18000                        419081808
 SUSAP KBURK2ELYNXX81DAG   010DAG  K2D 0V       IF                                             18000                        419130804
+SUSAP KBURK2ELYNXX81HEC   010HEC  K2D 0V       IF                                             18000                        419190804
+SUSAP KBURK2ELYNXX81LHS   010LHS  K2D 0V       IF                                             18000                        419260804
+SUSAP KBURK2ELYNXX81PMD   010PMD  K2D 0V       IF                                             18000                        419290804
+SUSAP KBURK2ELYNXX82ALL   010LYNXXK2EA0E       IF                                             18000                        419332102
 SUSAP KBURK2EROKKR34HIHWY 010HIHWYK2EA0E       IF                                 B FL220FL20018000280                     419352502
+SUSAP KBURK2EROKKR34HONZK 010HONZKK2EA0E       IF                                 + FL240     18000280                     419402502
+SUSAP KBURK2EROKKR34PRPLE 010PRPLEK2EA0E       IF                                 B FL220FL20018000280                     419462502
+SUSAP KBURK2EROKKR34RDHOT 010RDHOTK2EA0E       IF                                             18000                        419512502
+SUSAP KBURK2EROKKR34REBRG 010REBRGK2EA0E       IF                                             18000                        419592502
+SUSAP KBURK2EROKKR35      010ROKKRK2EA0E       IF                                 B 120001100018000250                     419682502
+SUSAP KBURK2EROKKR36RW08  010IVINSK2EA0E       IF                                 + 08000     18000                        419712502
 SUSAP KBURK2ETHRNE44AMMOR 010AMMORK2EA0E       IF                                             18000                        419802502
+SUSAP KBURK2ETHRNE44PHRED 010PHREDK2EA0E       IF                                             18000                        419882502
+SUSAP KBURK2ETHRNE45ALL   010THRNEK2EA0E       IF                                 - 11000     18000                        420002502
 SUSAP KBURK2EWEESL14EHF   010EHF  K2D 0V       IF                                             18000                        420051612
+SUSAP KBURK2EWEESL14NINTY 010NINTYK2EA0E       IF                                             18000                        420091612
+SUSAP KBURK2EWEESL14WRING 010WRINGK2EA0E       IF                                             18000                        420111612
+SUSAP KBURK2EWEESL15ALL   010WEESLK2EA0E       IF                                             18000                        420141612
 SUSAP KCRQK2ELEGOZ44BAUBB 010BAUBBK2EA0E       IF                                   16000     18000                        573112508
+SUSAP KCRQK2ELEGOZ44BLOXX 010BLOXXK2EA0E       IF                                 + FL240     18000                        573132508
+SUSAP KCRQK2ELEGOZ44BURGL 010BURGLK2EA0E       IF                                             18000                        573182508
+SUSAP KCRQK2ELEGOZ44LANDO 010LANDOK2EA0E       IF                                 - FL230     18000                        573252508
+SUSAP KCRQK2ELEGOZ44REBRG 010REBRGK2EA0E       IF                                             18000                        573302508
+SUSAP KCRQK2ELEGOZ44TCUPS 010TCUPSK2EA0E       IF                                             18000                        573372508
+SUSAP KCRQK2ELEGOZ44TILLT 010TILLTK2EA0E       IF                                             18000                        573422508
+SUSAP KCRQK2ELEGOZ46RW06  010LEGOZK2EA0E       IF                                   15000     18000                        573502508
 SUSAP KDENK2EAALLE44BBOTL 010BBOTLK2PC0E       IF                                             18000                        674922506
+SUSAP KDENK2EAALLE44BIDDR 010BIDDRK2PC0E       IF                                 B FL320FL30018000280                     674942506
+SUSAP KDENK2EAALLE44CAASK 010CAASKK2PC0E       IF                                             18000                        674982506
+SUSAP KDENK2EAALLE44FOAMM 010FOAMMK2PC0E       IF                                             18000                        675012506
+SUSAP KDENK2EAALLE44HOPPP 010HOPPPK3PC0E       IF                                             18000                        675032506
+SUSAP KDENK2EAALLE44MALTE 010MALTEK2PC0E       IF                                             18000                        675092506
+SUSAP KDENK2EAALLE44MILKK 010MILKKK3PC0E       IF                                             18000                        675122506
+SUSAP KDENK2EAALLE44NYTRO 010NYTROK3PC0E       IF                                             18000                        675172506
+SUSAP KDENK2EAALLE44PORDR 010PORDRK3PC0E       IF                                             18000                        675232506
+SUSAP KDENK2EAALLE44SDOUT 010SDOUTK3PC0E       IF                                 B FL320FL30018000280                     675302506
+SUSAP KDENK2EAALLE44YEAST 010YEASTK2PC0E       IF                                             18000                        675342506
+SUSAP KDENK2EAALLE45      010AALLEK2PC0E       IF                                 B FL220FL19018000280                     675392506
+SUSAP KDENK2EAALLE46RW07  010HEDDDK2PC0E       IF                                 B FL1901600018000250                     675412506
 SUSAP KDENK2ECLASH54KIISS 010KIISSK3PC0E       IF                                             18000                        675782506
+SUSAP KDENK2ECLASH54OATHE 010OATHEK3EA0E       IF                                             18000                        675842506
+SUSAP KDENK2ECLASH55      010CLASHK2PC0E       IF                                 B FL220FL19018000280                     675902506
+SUSAP KDENK2ECLASH56RW07  010EVRLYK2PC0E       IF                                 B FL1901500018000250                     675922506
 SUSAP KDENK2EDANDD11GCK   010GCK  K3D 0V       IF                                             18000                        676512002
+SUSAP KDENK2EDANDD11GLD   010GLD  K3D 0V       IF                                             18000                        676582002
+SUSAP KDENK2EDANDD11OATHE 010OATHEK3EA0E       IF                                             18000                        676632002
+SUSAP KDENK2EDANDD12ALL   010DANDDK2EA0E       IF                                             18000                        676692002
 SUSAP KDENK2EFLATI54FOLSM 010FOLSMK2PC0E       IF                                 B FL270FL23018000                        676712506
+SUSAP KDENK2EFLATI54GNOLA 010GNOLAK1PC0E       IF                                             18000                        676742506
+SUSAP KDENK2EFLATI54HIPEE 010HIPEEK2PC0E       IF                                 + FL250     18000280                     676792506
+SUSAP KDENK2EFLATI54MJANE 010MJANEK1PC0E       IF                                             18000                        676832506
+SUSAP KDENK2EFLATI54MSTSH 010MSTSHK1PC0E       IF                                             18000                        676892506
+SUSAP KDENK2EFLATI54TOFUU 010TOFUUK1PC0E       IF                                             18000                        676942506
+SUSAP KDENK2EFLATI55      010FLATIK2PC0E       IF                                 B FL220FL19018000270                     677002506
+SUSAP KDENK2EFLATI56RW07  010ELLDOK2PC0E       IF                                 B FL1901600018000250                     677022506
 SUSAP KDENK2ELANDR31BFF   010BFF  K3D 0V       IF                                             18000                        677562304
+SUSAP KDENK2ELANDR31CYS   010CYS  K1D 0V       IF                                             18000                        677602304
+SUSAP KDENK2ELANDR31ELJAY 010ELJAYK3EA0E       IF                                             18000                        677642304
+SUSAP KDENK2ELANDR31SNY   010SNY  K3D 0V       IF                                             18000                        677682304
+SUSAP KDENK2ELANDR31YANKI 010YANKIK3EA0E       IF                                             18000                        677722304
+SUSAP KDENK2ELANDR32ALL   010LANDRK2EA0E       IF                                             18000                        677772304
 SUSAP KDENK2ELARKS31ALS   010ALS  K2D 0V       IF                                             18000                        677812312
+SUSAP KDENK2ELARKS31HBU   010HBU  K2D 0V       IF                                             18000                        677872312
+SUSAP KDENK2ELARKS31LOPEC 010LOPECK2EA0E       IF                                             18000                        677922312
+SUSAP KDENK2ELARKS31PUB   010PUB  K2D 0V       IF                                             18000                        677982312
+SUSAP KDENK2ELARKS31RSK   010RSK  K2D 0V       IF                                             18000                        678042312
+SUSAP KDENK2ELARKS32ALL   010LARKSK2EA0E       IF                                             18000                        678112312
 SUSAP KDENK2ELAWGR44BRWRY 010BRWRYK3PC0E       IF                                             18000                        678132506
+SUSAP KDENK2ELAWGR44DUNKL 010DUNKLK3PC0E       IF                                             18000                        678202506
+SUSAP KDENK2ELAWGR44KOLSH 010KOLSHK3PC0E       IF                                             18000                        678262506
+SUSAP KDENK2ELAWGR44MARZN 010MARZNK2PC0E       IF                                             18000                        678312506
+SUSAP KDENK2ELAWGR44PLZNR 010PLZNRK2PC0E       IF                                 B FL320FL30018000280                     678332506
+SUSAP KDENK2ELAWGR44SOOUR 010SOOURK2PC0E       IF                                             18000                        678372506
+SUSAP KDENK2ELAWGR45      010LAWGRK2PC0E       IF                                 B FL220FL19018000280                     678402506
+SUSAP KDENK2ELAWGR46RW07  010PPINTK2PC0E       IF                                 B FL1901500018000250                     678422506
 SUSAP KDENK2ELONGZ44BIVVY 010BIVVYK2PC0E       IF                                 B FL270FL23018000                        678832506
+SUSAP KDENK2ELONGZ44BYYKE 010BYYKEK2PC0E       IF                                 + FL250     18000280                     678862506
+SUSAP KDENK2ELONGZ44GRAYZ 010GRAYZK2PC0E       IF                                             18000                        678902506
+SUSAP KDENK2ELONGZ44KAMPR 010KAMPRK2PC0E       IF                                             18000                        678952506
+SUSAP KDENK2ELONGZ44LBERT 010LBERTK2PC0E       IF                                             18000                        679012506
+SUSAP KDENK2ELONGZ44TORYS 010TORYSK2PC0E       IF                                             18000                        679072506
+SUSAP KDENK2ELONGZ45      010LONGZK2PC0E       IF                                 B FL220FL19018000270                     679122506
+SUSAP KDENK2ELONGZ46RW07  010FLNELK2PC0E       IF                                 B FL1901600018000250                     679142506
 SUSAP KDENK2ENIIXX44HALEN 010HALENK2PC0E       IF                                             18000                        679702506
+SUSAP KDENK2ENIIXX44NARNO 010NARNOK2PC0E       IF                                             18000                        679752506
+SUSAP KDENK2ENIIXX44ZIGEE 010ZIGEEK2PC0E       IF                                             18000                        679792506
+SUSAP KDENK2ENIIXX45      010NIIXXK2PC0E       IF                                 B FL220FL19018000280                     679842506
+SUSAP KDENK2ENIIXX46RW07  010HAGGRK2PC0E       IF                                 B FL1901500018000250                     679862506
 SUSAP KDENK2EPOWDR11DBL   010DBL  K2D 0V       IF                                             18000                        680292002
+SUSAP KDENK2EPOWDR11HBU   010HBU  K2D 0V       IF                                             18000                        680352002
+SUSAP KDENK2EPOWDR11JNC   010JNC  K2D 0V       IF                                             18000                        680412002
+SUSAP KDENK2EPOWDR12ALL   010POWDRK2EA0E       IF                                             18000                        680482002
 SUSAP KDENK2EQUAIL11HGO   010HGO  K2D 0V       IF                                             18000                        680522002
+SUSAP KDENK2EQUAIL11LAA   010LAA  K2D 0V       IF                                             18000                        680552002
+SUSAP KDENK2EQUAIL11TODDE 010TODDEK2EA0E       IF                                             18000                        680602002
+SUSAP KDENK2EQUAIL12ALL   010QUAILK2EA0E       IF                                             18000                        680642002
 SUSAP KDENK2ERAMMS81CYS   010CYS  K1D 0V       IF                                             18000                        680662002
+SUSAP KDENK2ERAMMS81LAR   010LAR  K1D 0V       IF                                             18000                        680692002
+SUSAP KDENK2ERAMMS81MBW   010MBW  K1D 0V       IF                                             18000                        680732002
+SUSAP KDENK2ERAMMS81OCS   010OCS  K1D 0V       IF                                             18000                        680772002
+SUSAP KDENK2ERAMMS82ALL   010RAMMSK2EA0E       IF                                             18000                        680822002
 SUSAP KDENK2ESSKII44ABASN 010ABASNK2PC0E       IF                                 + FL270     18000280                     680842506
+SUSAP KDENK2ESSKII44BOWLL 010BOWLLK2PC0E       IF                                             18000                        680882506
+SUSAP KDENK2ESSKII44BUMMP 010BUMMPK2EA0E       IF                                             18000                        680932506
+SUSAP KDENK2ESSKII44CRUDD 010CRUDDK2PC0E       IF                                             18000                        681002506
+SUSAP KDENK2ESSKII44HAMIC 010HAMICK2PC0E       IF                                 B FL250FL21018000280                     681052506
+SUSAP KDENK2ESSKII44HAQHY 010HAQHYK2EA0E       IF                                 - FL260     18000                        681072506
+SUSAP KDENK2ESSKII44JNETT 010JNETTK2EA0E       IF                                 - FL260     18000                        681122506
+SUSAP KDENK2ESSKII44KLOWN 010KLOWNK2PC0E       IF                                 B FL250FL21018000                        681152506
+SUSAP KDENK2ESSKII44KTOOO 010KTOOOK2PC0E       IF                                 B FL290FL23018000                        681172506
+SUSAP KDENK2ESSKII44PEEKE 010PEEKEK2PC0E       IF                                             18000                        681202506
+SUSAP KDENK2ESSKII44SNOEE 010SNOEEK2PC0E       IF                                             18000                        681242506
+SUSAP KDENK2ESSKII44WUNZE 010WUNZEK2PC0E       IF                                 - FL260     18000                        681302506
+SUSAP KDENK2ESSKII45      010SSKIIK2PC0E       IF                                 B FL220FL19018000270                     681342506
+SUSAP KDENK2ESSKII46RW07  010BGDEEK2PC0E       IF                                 B FL1901700018000250                     681362506
 SUSAP KDENK2ETBARR44BBRRO 010BBRROK2PC0E       IF                                 + FL270     18000280                     681772506
+SUSAP KDENK2ETBARR44CRUDD 010CRUDDK2PC0E       IF                                             18000                        681812506
+SUSAP KDENK2ETBARR44GNDLA 010GNDLAK2PC0E       IF                                             18000                        681872506
+SUSAP KDENK2ETBARR44LIFTE 010LIFTEK2PC0E       IF                                 B FL290FL23018000280                     681942506
+SUSAP KDENK2ETBARR44NVVER 010NVVERK2PC0E       IF                                             18000                        681972506
+SUSAP KDENK2ETBARR44OLSNN 010OLSNNK2PC0E       IF                                 B FL250FL21018000                        682032506
+SUSAP KDENK2ETBARR44SHNPS 010SHNPSK2PC0E       IF                                             18000                        682052506
+SUSAP KDENK2ETBARR44WUNZE 010WUNZEK2PC0E       IF                                 - FL260     18000                        682102506
+SUSAP KDENK2ETBARR44ZORKL 010ZORKLK2PC0E       IF                                             18000                        682142506
+SUSAP KDENK2ETBARR45      010TBARRK2PC0E       IF                                 B FL220FL19018000270                     682192506
+SUSAP KDENK2ETBARR46RW07  010MNARKK2PC0E       IF                                 B FL1901700018000250                     682212506
 SUSAP KDENK2ETOMSN91CHE   010CHE  K2D 0V       IF                                             18000                        682602405
+SUSAP KDENK2ETOMSN91EKR   010EKR  K2D 0V       IF                                             18000                        682662405
+SUSAP KDENK2ETOMSN91RLG   010RLG  K2D 0V       IF                                             18000                        682712405
+SUSAP KDENK2ETOMSN92ALL   010TOMSNK2EA0E       IF                                             18000                        682762405
 SUSAP KFATK2EALTTA92      010TTE  K2D 0VE      IF                                             18000                        885121911
+SUSAP KFATK2EALTTA93RW11L 010TTE  K2D 0V       IF                                             18000                        885131911
 SUSAP KLASK2EBLAID21BCE   010BCE  K2D 0V       IF                                             18000                        353602401
+SUSAP KLASK2EBLAID21EHK   010EHK  K2D 0V       IF                                             18000                        353632401
+SUSAP KLASK2EBLAID21PGA   010PGA  K2D 0V       IF                                             18000                        353662401
+SUSAP KLASK2EBLAID22ALL   010AALANK2PC0E       IF                                             18000                        353692401
 SUSAP KLASK2ECHOWW44GGAPP 010GGAPPK2PC0E       IF                                             18000                        353722508
+SUSAP KLASK2ECHOWW44STEWW 010STEWWK2PC0E       IF                                             18000                        353772508
+SUSAP KLASK2ECHOWW44TYEGR 010TYEGRK2PC0E       IF                                             18000                        353812508
+SUSAP KLASK2ECHOWW45      010CHOWWK2PC0E       IF                                 - 16000     18000250                     353872508
+SUSAP KLASK2ECHOWW46RW01B 010WOLPHK2PC0E       IF                                             18000                        353892508
 SUSAP KLASK2ECOKTL44FLCHR 010FLCHRK2EA0E       IF                                 + FL240     18000                        354142411
+SUSAP KLASK2ECOKTL44GIINN 010GIINNK2PC0E       IF                                             18000                        354182411
+SUSAP KLASK2ECOKTL44TQILA 010TQILAK2PC0E       IF                                             18000                        354222411
+SUSAP KLASK2ECOKTL45      010COKTLK2PC0E       IF                                 B FL1901600018000250                     354282411
+SUSAP KLASK2ECOKTL46RW01B 010ZLLDAK2EA0E       IF                                 + 14000     18000                        354302411
 SUSAP KLASK2ECRESO51DAG   010DAG  K2D 0V       IF                                             18000                        354552201
+SUSAP KLASK2ECRESO51HEC   010HEC  K2D 0V       IF                                             18000                        354602201
+SUSAP KLASK2ECRESO52ALL   010CRESOK2EA0E       IF                                             18000                        354652201
 SUSAP KLASK2EGAMES24FUULL 010FUULLK2EA0E       IF                                             18000                        354672203
+SUSAP KLASK2EGAMES25ALL   010QWISTK2EA0E       IF                                 + 14000     18000                        354722203
 SUSAP KLASK2EISHEE21DRK   010DRK  K2D 0V       IF                                             18000                        354782201
+SUSAP KLASK2EISHEE21PGS   010PGS  K2D 0V       IF                                             18000                        354812201
+SUSAP KLASK2EISHEE22ALL   010PEHTYK2PC0E       IF                                   14000     18000                        354832201
 SUSAP KLASK2EJAYSN34BYRDY 010BYRDYK2PC0E       IF                                             18000                        354862411
+SUSAP KLASK2EJAYSN35      010JAYSNK2PC0E       IF                                 - FL190     18000                        354882411
+SUSAP KLASK2EJAYSN36RW01B 010WAPIDK2PC0E       IF                                             18000                        354902411
 SUSAP KLASK2ELARKK11DAG   010DAG  K2D 0V       IF                                             18000                        355222102
+SUSAP KLASK2ELARKK11TNP   010TNP  K2D 0V       IF                                             18000                        355252102
+SUSAP KLASK2ELARKK12ALL   010RNDRZK2PC0E       IF                                   15000     18000250                     355302102
 SUSAP KLASK2EPUMLE11BTY   010BTY  K2D 0V       IF                                             18000                        355332102
+SUSAP KLASK2EPUMLE12ALL   010PUMLEK2EA0E       IF                                   16000     18000250                     355352102
 SUSAP KLASK2ERKSTR44ELLDA 010ELLDAK2PC0E       IF                                             18000                        355402411
+SUSAP KLASK2ERKSTR44HAHAA 010HAHAAK2EA0E       IF                                             18000                        355432504
+SUSAP KLASK2ERKSTR44SQIRE 010SQIREK2PC0E       IF                                             18000                        355472411
+SUSAP KLASK2ERKSTR45      010PEHTYK2PC0E       IF                                 B 160001400018000250                     355512411
+SUSAP KLASK2ERKSTR46RW01B 010RKSTRK2PC0E       IF                                             18000                        355532411
 SUSAP KLASK2ERNDRZ44EED   010EED  K2D 0V       IF                                             18000                        355882508
+SUSAP KLASK2ERNDRZ44MISEN 010MISENK2EA0E       IF                                 + FL240     18000                        355922508
+SUSAP KLASK2ERNDRZ44TNP   010TNP  K2D 0V       IF                                             18000                        355962508
+SUSAP KLASK2ERNDRZ46RW01B 010RNDRZK2PC0E       IF                                 B 160001300018000250                     356012508
 SUSAP KLAXK2EANJLL44CGNEY 010CGNEYK2PC0E       IF                                             18000                        368811808
+SUSAP KLAXK2EANJLL44DNERO 010DNEROK2EA0E       IF                                             18000                        368871808
+SUSAP KLAXK2EANJLL44HAKMN 010HAKMNK2EA0E       IF                                             18000                        368931808
+SUSAP KLAXK2EANJLL44OTOOL 010OTOOLK2PC0E       IF                                             18000                        368991808
+SUSAP KLAXK2EANJLL44SALYY 010SALYYK2PC0E       IF                                             18000                        369032013
+SUSAP KLAXK2EANJLL44SHTNR 010SHTNRK2PC0E       IF                                             18000                        369062013
+SUSAP KLAXK2EANJLL45ALL   010ANJLLK2PC0E       IF                                 B FL240FL19018000                        369112013
 SUSAP KLAXK2EBASET51HEC   010HEC  K2D 0V       IF                                             18000                        369151713
+SUSAP KLAXK2EBASET51JLI   010JLI  K2D 0V       IF                                             18000                        369222102
+SUSAP KLAXK2EBASET51PGS   010PGS  K2D 0V       IF                                             18000                        369291713
+SUSAP KLAXK2EBASET51TNP   010TNP  K2D 0V       IF                                             18000                        369391713
+SUSAP KLAXK2EBASET52      010BASETK2PC0E       IF                                             18000                        369471713
+SUSAP KLAXK2EBASET53RW06B 010REEDRK2PC0E       IF                                 + 09000     18000                        369501713
 SUSAP KLAXK2EBAYST14BURGL 010BURGLK2EA0E       IF                                             18000                        369551806
+SUSAP KLAXK2EBAYST14CERNL 010CERNLP EA0E       IF                                             18000                        369661806
+SUSAP KLAXK2EBAYST14FRASR 010FRASRK2EA0E       IF                                             18000                        369741806
+SUSAP KLAXK2EBAYST14HUULL 010HUULLP EA0E       IF                                 B FL2001700018000280                     369782103
+SUSAP KLAXK2EBAYST14MUPTT 010MUPTTK2EA0E       IF                                 B FL270FL23018000280                     369831806
+SUSAP KLAXK2EBAYST14REBRG 010REBRGK2EA0E       IF                                             18000                        369911806
+SUSAP KLAXK2EBAYST14RYDRR 010RYDRRK2EA0E       IF                                   11000     18000250                     370032102
+SUSAP KLAXK2EBAYST14SNAXX 010SNAXXP EA0E       IF                                             18000                        370061806
+SUSAP KLAXK2EBAYST15ALL   010BAYSTK2EA0E       IF                                 + 09000     18000240                     370132102
 SUSAP KLAXK2EBIGBR34CGNEY 010CGNEYK2PC0E       IF                                             18000                        370201806
+SUSAP KLAXK2EBIGBR34DNERO 010DNEROK2EA0E       IF                                             18000                        370261806
+SUSAP KLAXK2EBIGBR34HAKMN 010HAKMNK2EA0E       IF                                             18000                        370321806
+SUSAP KLAXK2EBIGBR34OTOOL 010OTOOLK2PC0E       IF                                             18000                        370381806
+SUSAP KLAXK2EBIGBR34SHTNR 010SHTNRK2PC0E       IF                                             18000                        370422102
+SUSAP KLAXK2EBIGBR35      010ANJLLK2PC0E       IF                                 B FL290FL24018000280                     370471806
+SUSAP KLAXK2EBIGBR36RW06B 010BIGBRK2PC0E       IF                                 B 140001300018000                        370522102
 SUSAP KLAXK2EBOGET24BUGGA 010BUGGAK2EA0E       IF                                             18000                        370651808
+SUSAP KLAXK2EBOGET24EED   010EED  K2D 0V       IF                                             18000                        370751808
+SUSAP KLAXK2EBOGET24KREME 010KREMEK2EA0E       IF                                   FL240     18000                        370871808
+SUSAP KLAXK2EBOGET24PURSE 010PURSEK2EA0E       IF                                             18000                        370961808
+SUSAP KLAXK2EBOGET24WELUM 010WELUMK2EA0E       IF                                             18000                        371071808
+SUSAP KLAXK2EBOGET24WNCHL 010WNCHLK2EA0E       IF                                             18000                        371181808
+SUSAP KLAXK2EBOGET25ALL   010BOGETK2EA0E       IF                                   08000     18000                        371251808
 SUSAP KLAXK2EBRUEN24ESTWD 010ESTWDK2PC0E       IF                                             18000                        371301711
+SUSAP KLAXK2EBRUEN24FNNDA 010FNNDAK2EA0E       IF                                             18000                        371351711
+SUSAP KLAXK2EBRUEN24GABBL 010GABBLK2PC0E       IF                                             18000                        371391711
+SUSAP KLAXK2EBRUEN24MDLER 010MDLERK2PC0E       IF                                             18000                        371452102
+SUSAP KLAXK2EBRUEN25      010HLYWDK2PC0E       IF                                             18000                        371481711
+SUSAP KLAXK2EBRUEN26RW06B 010SHRTZK2PC0E       IF                                 B 140001300018000                        371552102
 SUSAP KLAXK2EDIRBY24RDHOT 010RDHOTK2EA0E       IF                                             18000                        371702413
+SUSAP KLAXK2EDIRBY24TCUPS 010TCUPSK2EA0E       IF                                 + FL290     18000                        371772413
+SUSAP KLAXK2EDIRBY24TILLT 010TILLTK2EA0E       IF                                             18000                        371822413
+SUSAP KLAXK2EDIRBY25ALL   010DIRBYK2EA0E       IF                                             18000                        371902413
 SUSAP KLAXK2EGOATZ24FICKY 010FICKYP EA0E       IF                                             18000                        371972413
+SUSAP KLAXK2EGOATZ25ALL   010GOATZK2EA0E       IF                                   16000     18000280                     372012413
 SUSAP KLAXK2EHLYWD14ESTWD 010ESTWDK2PC0E       IF                                             18000                        372091703
+SUSAP KLAXK2EHLYWD14FNNDA 010FNNDAK2EA0E       IF                                             18000                        372141703
+SUSAP KLAXK2EHLYWD14GABBL 010GABBLK2PC0E       IF                                             18000                        372181703
+SUSAP KLAXK2EHLYWD14MDLER 010MDLERK2PC0E       IF                                             18000                        372242102
+SUSAP KLAXK2EHLYWD15ALL   010HLYWDK2PC0E       IF                                 - FL320     18000                        372271703
 SUSAP KLAXK2EHUULL24TOKIO 010TOKIOP PC0E       IF                                             18000                        372341806
+SUSAP KLAXK2EHUULL25ALL   010HUULLP EA0E       IF                                 - FL230     18000280                     372402103
 SUSAP KLAXK2EIRNMN24BURGL 010BURGLK2EA0E       IF                                             18000                        372501806
+SUSAP KLAXK2EIRNMN24FRASR 010FRASRK2EA0E       IF                                             18000                        372591806
+SUSAP KLAXK2EIRNMN24MUPTT 010MUPTTK2EA0E       IF                                 B FL270FL23018000280                     372611806
+SUSAP KLAXK2EIRNMN24REBRG 010REBRGK2EA0E       IF                                             18000                        372671806
+SUSAP KLAXK2EIRNMN25ALL   010IRNMNK2EA0E       IF                                 B 160001200018000                        372771806
 SUSAP KLAXK2EKIMMO31EHF   010EHF  K2D 0V       IF                                             18000                        372851408
+SUSAP KLAXK2EKIMMO31LHS   010LHS  K2D 0V       IF                                             18000                        372921408
+SUSAP KLAXK2EKIMMO31PMD   010PMD  K2D 0V       IF                                             18000                        372951408
+SUSAP KLAXK2EKIMMO31TTE   010TTE  K2D 0V       IF                                             18000                        372981408
+SUSAP KLAXK2EKIMMO32ALL   010KIMMOK2EA0E       IF                                             18000                        373051408
 SUSAP KLAXK2ELEENA81MCKEY 010MCKEYK2EA0E       IF                                             18000                        373082308
+SUSAP KLAXK2ELEENA81ROSIN 010ROSINP EA0E       IF                                             18000                        373122308
+SUSAP KLAXK2ELEENA82ALL   010SXC  K2D 0V       IF                                             18000250                     373162308
 SUSAP KLAXK2EMDNYT24AMMOR 010AMMORK2EA0E       IF                                             18000                        373211711
+SUSAP KLAXK2EMDNYT24CGNEY 010CGNEYK2PC0E       IF                                             18000                        373301711
+SUSAP KLAXK2EMDNYT24DNERO 010DNEROK2EA0E       IF                                             18000                        373401711
+SUSAP KLAXK2EMDNYT24ESTWD 010ESTWDK2PC0E       IF                                             18000                        373501711
+SUSAP KLAXK2EMDNYT24FNNDA 010FNNDAK2EA0E       IF                                             18000                        373621711
+SUSAP KLAXK2EMDNYT24GABBL 010GABBLK2PC0E       IF                                             18000                        373731711
+SUSAP KLAXK2EMDNYT24HAKMN 010HAKMNK2EA0E       IF                                             18000                        373861711
+SUSAP KLAXK2EMDNYT24MDLER 010MDLERK2PC0E       IF                                             18000                        373962102
+SUSAP KLAXK2EMDNYT24OTOOL 010OTOOLK2PC0E       IF                                             18000                        374061711
+SUSAP KLAXK2EMDNYT24SHTNR 010SHTNRK2PC0E       IF                                             18000                        374152102
+SUSAP KLAXK2EMDNYT26RW06B 010MDNYTK2PC0E       IF                                 B 130001000018000                        374241711
 SUSAP KLAXK2EMOOR4 1AVE   010AVE  K2D 0V       IF                                             18000                        374321610
+SUSAP KLAXK2EMOOR4 1DERBB 010DERBBK2EA0E       IF                                             18000                        374371610
+SUSAP KLAXK2EMOOR4 1DINTY 010DINTYP EA0E       IF                                             18000                        374411612
+SUSAP KLAXK2EMOOR4 2ALL   010FIM  K2D 0V       IF                                             18000                        374441610
 SUSAP KLAXK2EOCEAN32ALL   010JLI  K2D 0V       IF                                             18000                        374482102
 SUSAP KLAXK2EOLAAA25ALL   010AMMORK2EA0E       IF                                             18000                        374571913
 SUSAP KLAXK2ERYDRR24CERNL 010CERNLP EA0E       IF                                             18000                        374671806
+SUSAP KLAXK2ERYDRR24EESSA 010EESSAP EA0E       IF                                 B FL2001700018000280                     374732103
+SUSAP KLAXK2ERYDRR24ELKEY 010ELKEYK2EA0E       IF                                             18000                        374761806
+SUSAP KLAXK2ERYDRR24SNAXX 010SNAXXP EA0E       IF                                             18000                        374801806
+SUSAP KLAXK2ERYDRR25ALL   010RYDRRK2EA0E       IF                                   11000     18000250                     374852103
 SUSAP KLAXK2ESADDE81AVE   010AVE  K2D 0V       IF                                             18000                        374931713
+SUSAP KLAXK2ESADDE81DERBB 010DERBBK2EA0E       IF                                             18000                        374991713
+SUSAP KLAXK2ESADDE81DINTY 010DINTYP EA0E       IF                                             18000                        375041713
+SUSAP KLAXK2ESADDE81ELKEY 010ELKEYK2EA0E       IF                                             18000                        375081713
+SUSAP KLAXK2ESADDE81FIM   010FIM  K2D 0V       IF                                             18000                        375111713
+SUSAP KLAXK2ESADDE81PMD   010PMD  K2D 0V       IF                                             18000                        375141713
+SUSAP KLAXK2ESADDE81RZS   010RZS  K2D 0V       IF                                             18000                        375191713
+SUSAP KLAXK2ESADDE81VTU   010VTU  K2D 0V       IF                                             18000250                     375221713
+SUSAP KLAXK2ESADDE82ALL   010SADDEK2EA0E       IF                                             18000250                     375241713
 SUSAP KLAXK2ESEAVU21TNP   010TNP  K2D 0V       IF                                             18000                        375280810
+SUSAP KLAXK2ESEAVU22ALL   010SEAVUK2PC0EE      IF                                 B 140001200018000                        375361310
 SUSAP KLAXK2ESNSTT25ALL   010AMMORK2EA0E       IF                                             18000                        375371802
 SUSAP KLAXK2EVISTA31JLI   010JLI  K2D 0V       IF                                             18000                        375452102
+SUSAP KLAXK2EVISTA32ALL   010VISTAK2EA0E       IF                                             18000                        375471703
 SUSAP KLAXK2EWAYVE14EHF   010EHF  K2D 0V       IF                                             18000                        375561612
+SUSAP KLAXK2EWAYVE14LHS   010LHS  K2D 0V       IF                                             18000                        375621612
+SUSAP KLAXK2EWAYVE14LOPES 010LOPESK2EA0E       IF                                             18000                        375641612
+SUSAP KLAXK2EWAYVE14TTE   010TTE  K2D 0V       IF                                             18000                        375691612
+SUSAP KLAXK2EWAYVE15ALL   010WAYVEK2EA0E       IF                                             18000                        375771612
 SUSAP KLAXK2EZUUMA44BURGL 010BURGLK2EA0E       IF                                             18000                        375822413
+SUSAP KLAXK2EZUUMA44DOUIT 010DOUITK2EA0E       IF                                             18000                        375882413
+SUSAP KLAXK2EZUUMA44REBRG 010REBRGK2EA0E       IF                                             18000                        375932413
+SUSAP KLAXK2EZUUMA46RW06B 010ZUUMAK2EA0E       IF                                 B 110000900018000250                     376002413
 SUSAP KLGBK2EBAUBB34TCUPS 010TCUPSK2EA0E       IF                                 + FL260     18000280                     413332413
+SUSAP KLGBK2EBAUBB34TILLT 010TILLTK2EA0E       IF                                             18000                        413372413
+SUSAP KLGBK2EBAUBB35      010BAUBBK2EA0E       IF                                 B 130001100018000                        413442413
+SUSAP KLGBK2EBAUBB36RW12  010STYFFK2EA0E       IF                                 B 090000700018000                        413462413
 SUSAP KLGBK2EDSNEE64EED   010EED  K2D 0V       IF                                             18000                        413632409
+SUSAP KLGBK2EDSNEE64EMLLD 010EMLLDK2EA0E       IF                                             18000                        413732409
+SUSAP KLGBK2EDSNEE64FEYLA 010FEYLAK2EA0E       IF                                             18000                        413832409
+SUSAP KLGBK2EDSNEE64HIMDU 010HIMDUK2EA0E       IF                                             18000                        413922409
+SUSAP KLGBK2EDSNEE64LRSON 010LRSONK2EA0E       IF                                 + FL280     18000                        414042409
+SUSAP KLGBK2EDSNEE64MARUE 010MARUEK2EA0E       IF                                             18000                        414122409
+SUSAP KLGBK2EDSNEE64NATEE 010NATEEK2EA0E       IF                                             18000                        414232409
+SUSAP KLGBK2EDSNEE66RW12  010DSNEEK2EA0E       IF                                   08000     18000220                     414332409
 SUSAP KLGBK2EEMMLN31DAG   010DAG  K2D 0V       IF                                             18000                        414532605
+SUSAP KLGBK2EEMMLN31HEC   010HEC  K2D 0V       IF                                             18000                        414562605
+SUSAP KLGBK2EEMMLN32ALL   010APLESK2EA0E       IF                                   10000     18000                        414592605
 SUSAP KLGBK2EKAYOH81HEC   010HEC  K2D 0V       IF                                             18000                        414682203
+SUSAP KLGBK2EKAYOH81PSP   010PSP  K2D 0V       IF                                             18000                        414742203
+SUSAP KLGBK2EKAYOH82ALL   010KAYOHK2EA0E       IF                                             18000                        414802203
 SUSAP KLGBK2EPCIFC34ELLBC 010ELLBCK2EA0E       IF                                             18000                        414832413
+SUSAP KLGBK2EPCIFC34GOONA 010GOONAK2EA0E       IF                                 + FL300     18000                        414882413
+SUSAP KLGBK2EPCIFC34RDHOT 010RDHOTK2EA0E       IF                                             18000                        414922413
+SUSAP KLGBK2EPCIFC34REBRG 010REBRGK2EA0E       IF                                             18000                        414982413
+SUSAP KLGBK2EPCIFC34REESR 010REESRK2EA0E       IF                                 + FL300     18000                        415042413
+SUSAP KLGBK2EPCIFC35      010PCIFCK2EA0E       IF                                 + FL200     18000                        415082413
+SUSAP KLGBK2EPCIFC36RW12  010STYFFK2EA0E       IF                                 B 090000700018000                        415142413
 SUSAP KLGBK2EROOBY34EED   010EED  K2D 0V       IF                                             18000                        415311802
+SUSAP KLGBK2EROOBY34EMLLD 010EMLLDK2EA0E       IF                                             18000                        415401802
+SUSAP KLGBK2EROOBY34FEYLA 010FEYLAK2EA0E       IF                                             18000                        415491802
+SUSAP KLGBK2EROOBY34HIMDU 010HIMDUK2EA0E       IF                                             18000                        415581802
+SUSAP KLGBK2EROOBY34LRSON 010LRSONK2EA0E       IF                                 + FL280     18000                        415691802
+SUSAP KLGBK2EROOBY34MARUE 010MARUEK2EA0E       IF                                             18000                        415771802
+SUSAP KLGBK2EROOBY34NATEE 010NATEEK2EA0E       IF                                             18000                        415881802
+SUSAP KLGBK2EROOBY35ALL   010ROOBYK2EA0E       IF                                   10000     18000                        415981802
 SUSAP KLGBK2ETANDY61FIM   010FIM  K2D 0V       IF                                             18000                        416042603
+SUSAP KLGBK2ETANDY61FLW   010FLW  K2D 0V       IF                                             18000                        416062603
+SUSAP KLGBK2ETANDY62ALL   010SADDEK2EA0E       IF                                             18000                        416082603
 SUSAP KMCIK3EBQS8  1IRK   010IRK  K3D 0V       IF                                             18000                        506122304
+SUSAP KMCIK3EBQS8  1LMN   010LMN  K3D 0V       IF                                             18000                        506152304
+SUSAP KMCIK3EBQS8  1SPI   010SPI  K5D 0V       IF                                             18000                        506172304
+SUSAP KMCIK3EBQS8  3RW01B 010BQS  K3D 0V       IF                                 B 140001200018000                        506202304
 SUSAP KMCIK3EJHAWK81EMP   010EMP  K3D 0V       IF                                             18000                        506342405
+SUSAP KMCIK3EJHAWK83RW01B 010JHAWKK3EA0E       IF                                             18000                        506362405
 SUSAP KMCIK3EJSONN44ASIIX 010ASIIXK3PC0E       IF                                 B FL230FL19018000                        506482308
+SUSAP KMCIK3EJSONN44DPEAK 010DPEAKK3PC0E       IF                                 B FL230FL19018000                        506502308
+SUSAP KMCIK3EJSONN45      010JSONNK3PC0E       IF                                   12000     18000                        506522308
+SUSAP KMCIK3EJSONN46RW01L 010SDKISK3PC0E       IF                                 + 07000     18000                        506542308
 SUSAP KMCIK3EMHOMS34KRTNY 010KRTNYK3PC0E       IF                                             18000                        506782308
+SUSAP KMCIK3EMHOMS34NELVY 010NELVYK3PC0E       IF                                             18000                        506832308
+SUSAP KMCIK3EMHOMS35      010TYGERK3EA0E       IF                                             18000                        506872308
+SUSAP KMCIK3EMHOMS36RW01L 010RWLNDK3PC0E       IF                                 + 07000     18000                        506902308
 SUSAP KMCIK3ERUDDH34BLWRS 010BLWRSK3PC0E       IF                                   FL230     18000                        507142308
+SUSAP KMCIK3ERUDDH34BULET 010BULETK3PC0E       IF                                 + FL240     18000                        507162308
+SUSAP KMCIK3ERUDDH34EUING 010EUINGK3PC0E       IF                                             18000                        507192308
+SUSAP KMCIK3ERUDDH34LAPOW 010LAPOWK3PC0E       IF                                             18000                        507212308
+SUSAP KMCIK3ERUDDH35      010RUDDHK3PC0E       IF                                   12000     18000                        507262308
+SUSAP KMCIK3ERUDDH36RW01L 010PAHLLK3PC0E       IF                                 + 07000     18000                        507282308
 SUSAP KMCIK3ETYGER71SGF   010SGF  K3D 0V       IF                                             18000                        507522310
+SUSAP KMCIK3ETYGER73RW01B 010TYGERK3EA0E       IF                                             18000                        507552310
 SUSAP KMCIK3EWUTNG34STASN 010STASNK3PC0E       IF                                             18000                        507672308
+SUSAP KMCIK3EWUTNG34ZOURA 010ZOURAK3PC0E       IF                                             18000                        507692308
+SUSAP KMCIK3EWUTNG35      010WUTNGK3PC0E       IF                                   12000     18000                        507712308
+SUSAP KMCIK3EWUTNG36RW01L 010SMALSK3PC0E       IF                                 + 07000     18000                        507742308
 SUSAP KOAKK2EAANET14RBUCL 010RBUCLK2PC0E       IF                                 - FL300     18000280                     721511503
+SUSAP KOAKK2EAANET14SPAMY 010SPAMYK2PC0E       IF                                 B FL260FL24018000280                     721551503
+SUSAP KOAKK2EAANET15      010WNDSRK2PC0E       IF                                 B FL2201600018000                        721581503
+SUSAP KOAKK2EAANET16RW12  010AANETK2PC0E       IF                                 + 13000     18000                        721601503
 SUSAP KOAKK2EEMZOH44RGOOD 010RGOODK2EA0E       IF                                             18000                        721622506
+SUSAP KOAKK2EEMZOH45      010EMZOHK2EA0E       IF                                 + FL280     18000280                     721642506
+SUSAP KOAKK2EEMZOH46RW12  010SKIZMK2EA0E       IF                                 B FL1901500018000                        721672506
 SUSAP KOAKK2EOAKES34MRLET 010MRLETK2EA0E       IF                                             18000                        721862506
+SUSAP KOAKK2EOAKES34RPARK 010RPARKK2EA0E       IF                                             18000                        721892506
+SUSAP KOAKK2EOAKES34RUSME 010RUSMEK2EA0E       IF                                             18000                        721922506
+SUSAP KOAKK2EOAKES35      010OAKESK2EA0E       IF                                 B FL320FL24018000280                     721942506
+SUSAP KOAKK2EOAKES36RW12  010BANNDK2EA0E       IF                                 B FL1901700018000                        721972506
 SUSAP KOAKK2EPIRAT34ALCOA 010ALCOAP EA0E       IF                                 + FL240     18000                        722102407
+SUSAP KOAKK2EPIRAT34CINNY 010CINNYP EA0E       IF                                 + FL270     18000                        722142407
+SUSAP KOAKK2EPIRAT34HUNTS 010HUNTSP EA0E       IF                                 + FL210     18000280                     722182407
+SUSAP KOAKK2EPIRAT34PAINT 010PAINTP EA0E       IF                                             18000                        722212407
+SUSAP KOAKK2EPIRAT34PASIF 010PASIFP EA0E       IF                                 - 14000     18000260                     722252407
+SUSAP KOAKK2EPIRAT34WUSES 010WUSESP EA0E       IF                                             18000                        722272407
+SUSAP KOAKK2EPIRAT35ALL   010PIRATP EA0E       IF                                   10000     18000                        722312407
 SUSAP KOAKK2EPXN6  1AVE   010AVE  K2D 0V       IF                                             18000                        722351909
+SUSAP KOAKK2EPXN6  1GMN   010GMN  K2D 0V       IF                                             18000                        722371909
+SUSAP KOAKK2EPXN6  2ALL   010PXN  K2D 0V       IF                                             18000                        722401909
 SUSAP KOAKK2EWNDSR24RBUCL 010RBUCLK2PC0E       IF                                 - FL300     18000280                     722451511
+SUSAP KOAKK2EWNDSR24SPAMY 010SPAMYK2PC0E       IF                                 B FL260FL24018000280                     722491511
+SUSAP KOAKK2EWNDSR25      010WNDSRK2PC0E       IF                                 B FL2201600018000280                     722521511
+SUSAP KOAKK2EWNDSR26RW28B 010HOPTAK2PC0E       IF                                   05000     18000                        722561511
 SUSAP KONTK2EJCKIE24FEYLA 010FEYLAK2EA0E       IF                                             18000                        771051913
+SUSAP KONTK2EJCKIE24HEYNG 010HEYNGK2PC0E       IF                                 + FL240     18000280                     771101913
+SUSAP KONTK2EJCKIE24MARUE 010MARUEK2EA0E       IF                                             18000                        771131913
+SUSAP KONTK2EJCKIE24NATEE 010NATEEK2EA0E       IF                                             18000                        771201913
+SUSAP KONTK2EJCKIE25      010JCKIEK2PC0E       IF                                 B FL1901700018000                        771261913
+SUSAP KONTK2EJCKIE26RW08B 010HINOHK2PC0E       IF                                 B 130001100018000                        771301913
 SUSAP KONTK2EKARLB34ELKEY 010ELKEYK2EA0E       IF                                             18000                        771412304
+SUSAP KONTK2EKARLB34FICKY 010FICKYP EA0E       IF                                             18000                        771432304
+SUSAP KONTK2EKARLB34ROSIN 010ROSINP EA0E       IF                                             18000                        771472304
+SUSAP KONTK2EKARLB35ALL   010GOATZK2EA0E       IF                                   16000     18000280                     771502413
 SUSAP KONTK2ESCBBY24AMMOR 010AMMORK2EA0E       IF                                             18000                        771591802
+SUSAP KONTK2ESCBBY24DAFNY 010DAFNYK2PC0E       IF                                             18000                        771641802
+SUSAP KONTK2ESCBBY24PHRED 010PHREDK2EA0E       IF                                             18000                        771751802
+SUSAP KONTK2ESCBBY24TTRUE 010TTRUEK2EA0E       IF                                             18000                        771851802
+SUSAP KONTK2ESCBBY26RW08B 010SCBBYK2PC0E       IF                                 B 110000930018000                        771951802
 SUSAP KONTK2ESETER51JLI   010JLI  K2D 0V       IF                                             18000                        772072105
+SUSAP KONTK2ESETER51PSP   010PSP  K2D 0V       IF                                             18000                        772101709
+SUSAP KONTK2ESETER53RW08B 010SETERK2EA0E       IF                                             18000                        772141709
 SUSAP KONTK2EZIGGY81EHF   010EHF  K2D 0V       IF                                             18000                        772192407
+SUSAP KONTK2EZIGGY81HEC   010HEC  K2D 0V       IF                                             18000                        772302407
+SUSAP KONTK2EZIGGY81PMD   010PMD  K2D 0V       IF                                             18000                        772362407
+SUSAP KONTK2EZIGGY81TTE   010TTE  K2D 0V       IF                                             18000                        772432407
+SUSAP KONTK2EZIGGY83RW08B 010ZIGGYK2EA0E       IF                                             18000                        772542407
 SUSAP KPDXK1EHELNS61BUWZO 010BUWZOK1EA0E       IF                                             18000                        855861804
+SUSAP KPDXK1EHELNS61SEA   010SEA  K1D 0V       IF                                             18000                        855881804
+SUSAP KPDXK1EHELNS62      010HELNSK1EA0E       IF                                             18000                        855911804
+SUSAP KPDXK1EHELNS63RW03  010BTG  K1D 0V       IF                                 + 07000     18000                        855941804
 SUSAP KPDXK1EHHOOD64BAYYR 010BAYYRK1PC0E       IF                                 + 13000     18000270                     856022603
+SUSAP KPDXK1EHHOOD64JKNOX 010JKNOXK1PC0E       IF                                 + FL240     18000                        856042603
+SUSAP KPDXK1EHHOOD64JORAD 010JORADK1PC0E       IF                                 + FL240     18000                        856082603
+SUSAP KPDXK1EHHOOD64JOTBA 010JOTBAK1PC0E       IF                                 + FL240     18000                        856122603
+SUSAP KPDXK1EHHOOD64RABBI 010RABBIK1PC0E       IF                                 + 13000     18000270                     856162603
+SUSAP KPDXK1EHHOOD64SODDA 010SODDAK1PC0E       IF                                 + 17000     18000280                     856182603
+SUSAP KPDXK1EHHOOD64YENTL 010YENTLK1PC0E       IF                                 + 13000     18000270                     856212603
+SUSAP KPDXK1EHHOOD66RW10B 010HHOODK1PC0E       IF                                 B 150000900018000250                     856232603
 SUSAP KPDXK1EKRATR34BUWZO 010BUWZOK1EA0E       IF                                             18000                        856372603
+SUSAP KPDXK1EKRATR34HELNS 010HELNSK1EA0E       IF                                             18000                        856402603
+SUSAP KPDXK1EKRATR35      010KRATRK1EA0E       IF                                 B 130001000018000260               -     856422603
+SUSAP KPDXK1EKRATR36RW10B 010HYKERK1PC0E       IF                                 B 090000700018000                        856442603
 SUSAP KPDXK1EOCITY31LMT   010LMT  K1D 0V       IF                                             18000                        856562002
+SUSAP KPDXK1EOCITY31MOXEE 010MOXEEK1EA0E       IF                                             18000                        856612002
+SUSAP KPDXK1EOCITY31OED   010OED  K1D 0V       IF                                             18000                        856652002
+SUSAP KPDXK1EOCITY31PORTL 010PORTLK1EA0E       IF                                             18000                        856702002
+SUSAP KPDXK1EOCITY31VANTZ 010VANTZK1EA0E       IF                                             18000250               -     856732002
+SUSAP KPDXK1EOCITY33RW03  010OCITYK1EA0E       IF                                             18000                        856752002
 SUSAP KPDXK1ETMBRS44CITYY 010CITYYK1PC0E       IF                                 + 12000     18000                        856832603
+SUSAP KPDXK1ETMBRS44GALLO 010GALLOK1PC0E       IF                                             18000                        856852603
+SUSAP KPDXK1ETMBRS44MACHU 010MACHUK2PC0E       IF                                             18000                        856902603
+SUSAP KPDXK1ETMBRS44MOXEE 010MOXEEK1EA0E       IF                                 + FL240     18000                        856972603
+SUSAP KPDXK1ETMBRS44PORTL 010PORTLK1EA0E       IF                                 B FL2401600018000270                     857002603
+SUSAP KPDXK1ETMBRS44SOERN 010SOERNK1PC0E       IF                                             18000                        857022603
+SUSAP KPDXK1ETMBRS44SPNSR 010SPNSRK1PC0E       IF                                             18000                        857072603
+SUSAP KPDXK1ETMBRS45      010TMBRSK1PC0E       IF                                 + 12000     18000270                     857122603
+SUSAP KPDXK1ETMBRS46RW10B 010FLOWRK1EA0E       IF                                 B 090000700018000                        857152603
 SUSAP KRNOK2EANAHO21GASSI 010GASSIK2EA0E       IF                                             18000                        036960804
+SUSAP KRNOK2EANAHO21LLC   010LLC  K2D 0V       IF                                             18000                        036980804
+SUSAP KRNOK2EANAHO22ALL   010ANAHOK2EA0E       IF                                             18000                        037000804
 SUSAP KRNOK2EDNGLE14SHERF 010SHERFK2PC0E       IF                                             18000                        037022603
+SUSAP KRNOK2EDNGLE15ALL   010DPUTYK2PC0E       IF                                 B FL260FL24018000                        037042603
 SUSAP KRNOK2EEELZA44HARTT 010HARTTK2EA0E       IF                                             18000                        037112401
+SUSAP KRNOK2EEELZA45ALL   010KLUBSK2PC0E       IF                                             18000                        037142401
 SUSAP KRNOK2EKLUBS14HARTT 010HARTTK2EA0E       IF                                             18000                        037212401
+SUSAP KRNOK2EKLUBS15ALL   010KLUBSK2PC0E       IF                                             18000                        037242401
 SUSAP KRNOK2EORRCA15ALL   010ORRCAK2EA0E       IF                                             18000                        037282211
 SUSAP KRNOK2ERYANN22RW17B 010MVA  K2D 0V       IF                                             18000                        037312211
 SUSAP KRNOK2ESCOLA14KENNO 010KENNOK2EA0E       IF                                             18000                        037352211
+SUSAP KRNOK2ESCOLA14MVA   010MVA  K2D 0V       IF                                             18000                        037392211
+SUSAP KRNOK2ESCOLA15ALL   010SCOLAK2EA0E       IF                                 B FL280FL24018000                        037412211
 SUSAP KRNOK2ETARVR24KENNO 010KENNOK2EA0E       IF                                             18000                        037472603
+SUSAP KRNOK2ETARVR24MVA   010MVA  K2D 0V       IF                                             18000                        037522603
+SUSAP KRNOK2ETARVR24ORRCA 010ORRCAK2EA0E       IF                                             18000                        037552603
+SUSAP KRNOK2ETARVR24SHERF 010SHERFK2PC0E       IF                                             18000                        037582603
+SUSAP KRNOK2ETARVR25      010TARVRK2PC0E       IF                                   14000     18000250                     037622603
+SUSAP KRNOK2ETARVR26RW35B 010HVNLYK2PC0E       IF                                 + 13100     18000250                     037642603
 SUSAP KRNOK2EWADOL44MYBAD 010MYBADK2EA0E       IF                                             18000                        037682401
+SUSAP KRNOK2EWADOL45ALL   010WADOLK2PC0E       IF                                             18000                        037712401
 SUSAP KRNOK2EWINRZ14MYBAD 010MYBADK2EA0E       IF                                             18000                        037762401
+SUSAP KRNOK2EWINRZ15ALL   010WADOLK2PC0E       IF                                             18000                        037792401
 SUSAP KSANK2EBARET51EED   010EED  K2D 0V       IF                                             18000                        083461501
+SUSAP KSANK2EBARET51IPL   010IPL  K2D 0V       IF                                             18000                        083521501
+SUSAP KSANK2EBARET51PKE   010PKE  K2D 0V       IF                                             18000                        083561501
+SUSAP KSANK2EBARET51TNP   010TNP  K2D 0V       IF                                             18000                        083621501
+SUSAP KSANK2EBARET53RW09  010BARETK2EA0E       IF                                             18000                        083671501
 SUSAP KSANK2ECOMIX24HUULK 010HUULKK2PC0E       IF                                             18000                        083741806
+SUSAP KSANK2ECOMIX24LAX   010LAX  K2D 0V       IF                                             18000                        083801806
+SUSAP KSANK2ECOMIX24SXC   010SXC  K2D 0V       IF                                 B FL290FL25018000                        083861806
+SUSAP KSANK2ECOMIX25ALL   010COMIXK2EA0E       IF                                 B 150001200018000                        083902405
 SUSAP KSANK2EHUBRD11LAX   010LAX  K2D 0V       IF                                             18000                        083970804
+SUSAP KSANK2EHUBRD11SXC   010SXC  K2D 0V       IF                                             18000                        084000804
+SUSAP KSANK2EHUBRD12ALL   010HUBRDK2EA0E       IF                                             18000                        084020804
 SUSAP KSANK2ELUCKI14HOGGZ 010HOGGZK2EA0E       IF                                             18000                        084051612
+SUSAP KSANK2ELUCKI14IPL   010IPL  K2D 0V       IF                                 B FL260FL24018000                        084162103
+SUSAP KSANK2ELUCKI14LVELL 010LVELLK2EA0E       IF                                             18000                        084221612
+SUSAP KSANK2ELUCKI14MOMAR 010MOMARK2EA0E       IF                                 B FL260FL24018000                        084321612
+SUSAP KSANK2ELUCKI14PKE   010PKE  K2D 0V       IF                                             18000                        084391612
+SUSAP KSANK2ELUCKI14TTRUE 010TTRUEK2EA0E       IF                                             18000                        084501612
+SUSAP KSANK2ELUCKI15ALL   010LUCKIK2PC0E       IF                                   06000     18000                        084621612
 SUSAP KSANK2EPLYYA24BAUBB 010BAUBBK2EA0E       IF                                             18000                        084642411
+SUSAP KSANK2EPLYYA24ELKEY 010ELKEYK2EA0E       IF                                             18000                        084692411
+SUSAP KSANK2EPLYYA24FICKY 010FICKYP EA0E       IF                                             18000                        084742411
+SUSAP KSANK2EPLYYA24LAX   010LAX  K2D 0V       IF                                 B FL260FL24018000280                     084812411
+SUSAP KSANK2EPLYYA25      010PLYYAK2PC0E       IF                                 + 11000     18000                        084862411
+SUSAP KSANK2EPLYYA26RW09  010MNLYTK2PC0E       IF                                 + 04000     18000                        084882411
 SUSAP KSANK2ESHAMU11LAX   010LAX  K2D 0V       IF                                             18000                        084900804
+SUSAP KSANK2ESHAMU13RW09  010SHAMUK2PC0E       IF                                             18000                        084931310
 SUSAP KSANK2ETOPGN24IPL   010IPL  K2D 0V       IF                                 B FL260FL24018000                        084962103
+SUSAP KSANK2ETOPGN24MOMAR 010MOMARK2EA0E       IF                                 B FL260FL24018000                        085001806
+SUSAP KSANK2ETOPGN24PKE   010PKE  K2D 0V       IF                                             18000                        085041806
+SUSAP KSANK2ETOPGN24TTRUE 010TTRUEK2EA0E       IF                                             18000                        085121806
+SUSAP KSANK2ETOPGN25ALL   010TOPGNK2EA0E       IF                                 B 100000900018000                        085211806
 SUSAP KSBAK2EPITBL24HEC   010HEC  K2D 0V       IF                                             18000                        097562508
+SUSAP KSBAK2EPITBL24PORPS 010PORPSK2PC0E       IF                                 - FL300     18000                        097602508
+SUSAP KSBAK2EPITBL25      010PITBLK2PC0E       IF                                 + FL210     18000                        097632508
+SUSAP KSBAK2EPITBL26RW07  010TELLAK2PC0E       IF                                             18000                        097652508
 SUSAP KSEAK1ECHINS51PDT   010PDT  K1D 0V       IF                                             18000                        126532209
+SUSAP KSEAK1ECHINS51SUNED 010SUNEDK1EA0E       IF                                             18000                        126582209
+SUSAP KSEAK1ECHINS51YKM   010YKM  K1D 0V       IF                                             18000                        126612209
+SUSAP KSEAK1ECHINS53RW16B 010CHINSK1EA0E       IF                                             18000                        126632209
 SUSAP KSEAK1EHAWKZ84BLYTZ 010BLYTZK1PC0E       IF                                             18000                        126732409
+SUSAP KSEAK1EHAWKZ84BTG   010BTG  K1D 0V       IF                                 + FL240     18000                        126792409
+SUSAP KSEAK1EHAWKZ84KNGDM 010KNGDMK1PC0E       IF                                             18000                        126832409
+SUSAP KSEAK1EHAWKZ84KRIEG 010KRIEGK1PC0E       IF                                             18000                        126892409
+SUSAP KSEAK1EHAWKZ84LATAY 010LATAYK1PC0E       IF                                             18000                        126912409
+SUSAP KSEAK1EHAWKZ84LKV   010LKV  K1D 0V       IF                                             18000                        126942409
+SUSAP KSEAK1EHAWKZ84LMT   010LMT  K1D 0V       IF                                             18000                        127012409
+SUSAP KSEAK1EHAWKZ85      010HAWKZK1PC0E       IF                                 + 12000     18000270                     127082409
+SUSAP KSEAK1EHAWKZ86RW16B 010LIINEK1PC0E       IF                                             18000                        127102409
 SUSAP KSEAK1EMARNR84BUHNR 010BUHNRK1PC0E       IF                                 + 12000     18000                        127222413
+SUSAP KSEAK1EMARNR84JIGEB 010JIGEBK1EA0E       IF                                 + 12000     18000                        127242413
+SUSAP KSEAK1EMARNR84ROESH 010ROESHK1PC0E       IF                                             18000                        127262413
+SUSAP KSEAK1EMARNR84TOU   010TOU  K1D 0V       IF                                 + FL200     18000                        127282413
+SUSAP KSEAK1EMARNR84VIXOR 010VIXORCYPC0E       IF                                 + FL200     18000                        127312413
+SUSAP KSEAK1EMARNR86RW16B 010MARNRK1PC0E       IF                                 + 12000     18000270                     127342413
 SUSAP KSEAK1EOLM2  1BTG   010BTG  K1D 0V       IF                                             18000                        127462103
+SUSAP KSEAK1EOLM2  1UBG   010UBG  K1D 0V       IF                                             18000                        127491612
+SUSAP KSEAK1EOLM2  2      010OLM  K1D 0V       IF                                             18000                        127512103
+SUSAP KSEAK1EOLM2  3RW16B 010FOURTK1EA0E       IF                                             18000                        127551612
 SUSAP KSEAK1ESKYKO11EPH   010EPH  K1D 0V       IF                                 + FL180     18000                        127592205
+SUSAP KSEAK1ESKYKO11ODESS 010ODESSK1EA0E       IF                                 + FL180     18000                        127612205
+SUSAP KSEAK1ESKYKO12      010SKYKOK1EA0E       IF                                 B 160001300018000                        127642205
+SUSAP KSEAK1ESKYKO13RW16B 010HETHRK1EA0E       IF                                 B 130001000018000                        127672205
 SUSAP KSJCK2EBRINY21FMG   010FMG  K2D 0V       IF                                             18000                        168092103
+SUSAP KSJCK2EBRINY21RBL   010RBL  K2D 0V       IF                                             18000                        168131610
+SUSAP KSJCK2EBRINY23RW12R 010PYE  K2D 0V       IF                                             18000                        168162103
 SUSAP KSJCK2EBRIXX44CHBLI 010CHBLIK2EA0E       IF                                 + FL280     18000                        168202403
+SUSAP KSJCK2EBRIXX45ALL   010BRIXXK2EA0E       IF                                   12000     18000250                     168252403
 SUSAP KSJCK2EFRLON24GGULF 010GGULFK2PC0E       IF                                 + FL280     18000                        168281608
+SUSAP KSJCK2EFRLON25ALL   010FRLONK2PC0E       IF                                 + 13000     18000280                     168301608
 SUSAP KSJCK2EPYE3  1ENI   010ENI  K2D 0V       IF                                             18000                        168361707
+SUSAP KSJCK2EPYE3  1SAC   010SAC  K2D 0V       IF                                             18000                        168381707
+SUSAP KSJCK2EPYE3  2ALL   010PYE  K2D 0V       IF                                             18000                        168412102
 SUSAP KSJCK2ERAZRR54FAANG 010FAANGK2EA0E       IF                                             18000                        168452207
+SUSAP KSJCK2ERAZRR54KNGRY 010KNGRYK2PC0E       IF                                             18000                        168472207
+SUSAP KSJCK2ERAZRR54MDOWS 010MDOWSK2PC0E       IF                                             18000                        168502207
+SUSAP KSJCK2ERAZRR54RUSME 010RUSMEK2EA0E       IF                                             18000                        168532207
+SUSAP KSJCK2ERAZRR55      010STUBLK2PC0E       IF                                 B FL270FL24018000                        168562207
+SUSAP KSJCK2ERAZRR56RW12B 010NIKKTK2PC0E       IF                                 B 140001000018000                        168602207
 SUSAP KSJCK2ERISTI14ORRCA 010ORRCAK2EA0E       IF                                             18000                        168741707
+SUSAP KSJCK2ERISTI14TIPRE 010TIPREK2EA0E       IF                                             18000                        168801707
+SUSAP KSJCK2ERISTI15ALL   010RISTIK2EA0E       IF                                             18000                        168841707
 SUSAP KSJCK2EROBIE51AVE   010AVE  K2D 0V       IF                                             18000                        168871909
+SUSAP KSJCK2EROBIE51RZS   010RZS  K2D 0V       IF                                             18000                        168891909
+SUSAP KSJCK2EROBIE52ALL   010ROBIEK2EA0E       IF                                             18000                        168911909
 SUSAP KSJCK2ESILCN64TROXX 010TROXXK2PC0E       IF                                 B FL320FL26018000280                     168952207
+SUSAP KSJCK2ESILCN65      010SILCNK2PC0E       IF                                 + FL200     18000                        168972207
+SUSAP KSJCK2ESILCN66RW12B 010VLLEYK2PC0E       IF                                 B FL1901500018000                        168992207
 SUSAP KSLCK2EBEARR51BYI   010BYI  K1D 0V       IF                                             18000                        180112102
+SUSAP KSLCK2EBEARR51LCU   010LCU  K2D 0V       IF                                             18000                        180162102
+SUSAP KSLCK2EBEARR51PIH   010PIH  K1D 0V       IF                                             18000                        180182102
+SUSAP KSLCK2EBEARR53RW14  010BEARRK2EA0E       IF                                             18000                        180222308
 SUSAP KSLCK2EBVL2  2ALL   010BVL  K2D 0V       IF                                             18000                        180371604
 SUSAP KSLCK2ECARTR14BOBRT 010BOBRTK1PC0E       IF                                 - FL300     18000                        180402502
+SUSAP KSLCK2ECARTR14CKW   010CKW  K1D 0V       IF                                             18000                        180442502
+SUSAP KSLCK2ECARTR14DBS   010DBS  K1D 0V       IF                                             18000                        180502502
+SUSAP KSLCK2ECARTR14DDY   010DDY  K1D 0V       IF                                             18000                        180542502
+SUSAP KSLCK2ECARTR14JAC   010JAC  K1D 0V       IF                                             18000                        180602502
+SUSAP KSLCK2ECARTR14OCS   010OCS  K1D 0V       IF                                             18000                        180642502
+SUSAP KSLCK2ECARTR16RW16B 010CARTRK2EA0E       IF                                             18000                        180692502
 SUSAP KSLCK2EJAMMN51BCE   010BCE  K2D 0V       IF                                             18000                        180871709
+SUSAP KSLCK2EJAMMN51MLF   010MLF  K2D 0V       IF                                             18000                        180921709
+SUSAP KSLCK2EJAMMN52ALL   010JAMMNK2EA0E       IF                                             18000                        180972413
 SUSAP KSLCK2EJAZZZ14HELPR 010HELPRK2EA0E       IF                                             18000                        181012502
+SUSAP KSLCK2EJAZZZ14MTU   010MTU  K2D 0V       IF                                             18000                        181042502
+SUSAP KSLCK2EJAZZZ14RACER 010RACERK2EA0E       IF                                             18000                        181072502
+SUSAP KSLCK2EJAZZZ15ALL   010SPANEK2EA0E       IF                                   15000     18000250                     181112502
 SUSAP KSLCK2ELHO5  1BPI   010BPI  K1D 0V       IF                                             18000                        181152306
+SUSAP KSLCK2ELHO5  1DBS   010DBS  K1D 0V       IF                                             18000                        181172306
+SUSAP KSLCK2ELHO5  1JAC   010JAC  K1D 0V       IF                                             18000                        181202306
+SUSAP KSLCK2ELHO5  1OCS   010OCS  K1D 0V       IF                                             18000                        181242306
+SUSAP KSLCK2ELHO5  3RW16L 010LHO  K2D 0V       IF                                             18000                        181262306
 SUSAP KSLCK2EPITTT24BCE   010BCE  K2D 0V       IF                                             18000                        181342603
+SUSAP KSLCK2EPITTT24EKR   010EKR  K2D 0V       IF                                             18000                        181422603
+SUSAP KSLCK2EPITTT24HELPR 010HELPRK2EA0E       IF                                             18000                        181512603
+SUSAP KSLCK2EPITTT24MLF   010MLF  K2D 0V       IF                                             18000                        181582603
+SUSAP KSLCK2EPITTT24MTU   010MTU  K2D 0V       IF                                             18000                        181662603
+SUSAP KSLCK2EPITTT26RW16B 010PITTTK2PC0E       IF                                   12000     18000                        181732603
 SUSAP KSLCK2EQWENN74BCE   010BCE  K2D 0V       IF                                             18000                        181832605
+SUSAP KSLCK2EQWENN74DTA   010DTA  K2D 0V       IF                                             18000                        181872605
+SUSAP KSLCK2EQWENN74MLF   010MLF  K2D 0V       IF                                             18000                        181902605
+SUSAP KSLCK2EQWENN75ALL   010JAMMNK2EA0E       IF                                   15000     18000250                     181952605
 SUSAP KSLCK2ESKEES64BYI   010BYI  K1D 0V       IF                                             18000                        181992502
+SUSAP KSLCK2ESKEES64PIH   010PIH  K1D 0V       IF                                             18000                        182032502
+SUSAP KSLCK2ESKEES65      010BEARRK2EA0E       IF                                             18000                        182072502
+SUSAP KSLCK2ESKEES66RW16B 010SKEESK2PC0E       IF                                             18000                        182092502
 SUSAP KSLCK2ESPANE81EKR   010EKR  K2D 0V       IF                                             18000                        182272405
+SUSAP KSLCK2ESPANE81HELPR 010HELPRK2EA0E       IF                                             18000                        182322405
+SUSAP KSLCK2ESPANE83RW14  010SPANEK2EA0E       IF                                             18000                        182352413
 SUSAP KSLCK2EYUTES24FLECC 010FLECCK2EA0E       IF                                             18000                        182622603
+SUSAP KSLCK2EYUTES26RW16B 010YUTESK2EA0E       IF                                             18000                        182672603
 SUSAP KSMFK2EFEVTA15      010FEVTAK2EA0E       IF                                             18000                        195592605
+SUSAP KSMFK2EFEVTA16RW17B 010ELKOEK2PC0E       IF                                   04000     18000                        195622605
 SUSAP KSMFK2ESLMMR54ANAHO 010ANAHOK2EA0E       IF                                             18000                        195662207
+SUSAP KSMFK2ESLMMR54CARVV 010CARVVK2PC0E       IF                                 B FL220FL20018000                        195692207
+SUSAP KSMFK2ESLMMR54CRASY 010CRASYK2EA0E       IF                                             18000                        195712207
+SUSAP KSMFK2ESLMMR54DONNR 010DONNRK2PC0E       IF                                             18000                        195752207
+SUSAP KSMFK2ESLMMR54WEBGO 010WEBGOK2EA0E       IF                                 B FL220FL20018000                        195782207
+SUSAP KSMFK2ESLMMR55      010SLMMRK2PC0E       IF                                 B 170001300018000                        195802207
+SUSAP KSMFK2ESLMMR56RW17B 010POZURK2PC0E       IF                                 + 08000     18000                        195822207
 SUSAP KSMFK2ESUUTR44NURAY 010NURAYK2EA0E       IF                                             18000                        195912207
+SUSAP KSMFK2ESUUTR45      010SUUTRK2PC0E       IF                                 B FL260FL24018000                        195942207
+SUSAP KSMFK2ESUUTR46RW17B 010SLUICK2PC0E       IF                                             18000                        196002207
 SUSAP KSMFK2ETUDOR21LKV   010LKV  K1D 0V       IF                                             18000                        196091202
+SUSAP KSMFK2ETUDOR21LMT   010LMT  K1D 0V       IF                                             18000                        196161202
+SUSAP KSMFK2ETUDOR21RBL   010RBL  K2D 0V       IF                                             18000                        196221202
+SUSAP KSMFK2ETUDOR22ALL   010PIECHK2PC0E       IF                                             18000                        196251310
 SUSAP KSMOK2EBOGET24BUGGA 010BUGGAK2EA0E       IF                                             18000                        201201808
+SUSAP KSMOK2EBOGET24EED   010EED  K2D 0V       IF                                             18000                        201301808
+SUSAP KSMOK2EBOGET24KREME 010KREMEK2EA0E       IF                                   FL240     18000                        201421808
+SUSAP KSMOK2EBOGET24PURSE 010PURSEK2EA0E       IF                                             18000                        201511808
+SUSAP KSMOK2EBOGET24WELUM 010WELUMK2EA0E       IF                                             18000                        201621808
+SUSAP KSMOK2EBOGET24WNCHL 010WNCHLK2EA0E       IF                                             18000                        201731808
+SUSAP KSMOK2EBOGET25ALL   010BOGETK2EA0E       IF                                   08000     18000                        201801808
 SUSAP KSMOK2EBONJO34HIHWY 010HIHWYK2EA0E       IF                                 B FL220FL20018000280                     201852502
+SUSAP KSMOK2EBONJO34HONZK 010HONZKK2EA0E       IF                                 + FL240     18000280                     201902502
+SUSAP KSMOK2EBONJO34PRPLE 010PRPLEK2EA0E       IF                                 B FL220FL20018000280                     201962502
+SUSAP KSMOK2EBONJO34RDHOT 010RDHOTK2EA0E       IF                                             18000                        202012502
+SUSAP KSMOK2EBONJO34REBRG 010REBRGK2EA0E       IF                                             18000                        202092502
+SUSAP KSMOK2EBONJO35ALL   010ROKKRK2EA0E       IF                                 B 120001100018000250                     202182502
 SUSAP KSMOK2EFERN7 1AVE   010AVE  K2D 0V       IF                                             18000                        202241612
+SUSAP KSMOK2EFERN7 1DERBB 010DERBBK2EA0E       IF                                             18000                        202291612
+SUSAP KSMOK2EFERN7 1FLW   010FLW  K2D 0V       IF                                             18000                        202331612
+SUSAP KSMOK2EFERN7 1OHIGH 010OHIGHK2EA0E       IF                                             18000                        202371612
+SUSAP KSMOK2EFERN7 2ALL   010FIM  K2D 0V       IF                                             18000                        202401612
 SUSAP KSMOK2EKIMMO31EHF   010EHF  K2D 0V       IF                                             18000                        202431408
+SUSAP KSMOK2EKIMMO31LHS   010LHS  K2D 0V       IF                                             18000                        202501408
+SUSAP KSMOK2EKIMMO31PMD   010PMD  K2D 0V       IF                                             18000                        202531408
+SUSAP KSMOK2EKIMMO31TTE   010TTE  K2D 0V       IF                                             18000                        202561408
+SUSAP KSMOK2EKIMMO32ALL   010KIMMOK2EA0E       IF                                             18000                        202631408
 SUSAP KSMOK2EWAYVE14EHF   010EHF  K2D 0V       IF                                             18000                        202661612
+SUSAP KSMOK2EWAYVE14LHS   010LHS  K2D 0V       IF                                             18000                        202721612
+SUSAP KSMOK2EWAYVE14LOPES 010LOPESK2EA0E       IF                                             18000                        202741612
+SUSAP KSMOK2EWAYVE14TTE   010TTE  K2D 0V       IF                                             18000                        202791612
+SUSAP KSMOK2EWAYVE15ALL   010WAYVEK2EA0E       IF                                             18000                        202871612
 SUSAP KSMOK2EZUUMA44BURGL 010BURGLK2EA0E       IF                                             18000                        202922413
+SUSAP KSMOK2EZUUMA44DOUIT 010DOUITK2EA0E       IF                                             18000                        202982413
+SUSAP KSMOK2EZUUMA44REBRG 010REBRGK2EA0E       IF                                             18000                        203032413
+SUSAP KSMOK2EZUUMA45ALL   010ZUUMAK2EA0E       IF                                 B 110000900018000250                     203102413
 SUSAP KSNAK2EDSNEE64EED   010EED  K2D 0V       IF                                             18000                        210132409
+SUSAP KSNAK2EDSNEE64EMLLD 010EMLLDK2EA0E       IF                                             18000                        210232409
+SUSAP KSNAK2EDSNEE64FEYLA 010FEYLAK2EA0E       IF                                             18000                        210332409
+SUSAP KSNAK2EDSNEE64HIMDU 010HIMDUK2EA0E       IF                                             18000                        210422409
+SUSAP KSNAK2EDSNEE64LRSON 010LRSONK2EA0E       IF                                 + FL280     18000                        210542409
+SUSAP KSNAK2EDSNEE64MARUE 010MARUEK2EA0E       IF                                             18000                        210622409
+SUSAP KSNAK2EDSNEE64NATEE 010NATEEK2EA0E       IF                                             18000                        210732409
+SUSAP KSNAK2EDSNEE65ALL   010DSNEEK2EA0E       IF                                   08000     18000220                     210832409
 SUSAP KSNAK2EEMMLN31DAG   010DAG  K2D 0V       IF                                             18000                        210862605
+SUSAP KSNAK2EEMMLN31HEC   010HEC  K2D 0V       IF                                             18000                        210892605
+SUSAP KSNAK2EEMMLN32ALL   010APLESK2EA0E       IF                                   10000     18000                        210922605
 SUSAP KSNAK2EKAYOH81HEC   010HEC  K2D 0V       IF                                             18000                        211002203
+SUSAP KSNAK2EKAYOH81PSP   010PSP  K2D 0V       IF                                             18000                        211062203
+SUSAP KSNAK2EKAYOH82ALL   010KAYOHK2EA0E       IF                                             18000                        211122203
 SUSAP KSNAK2EOHSEA34ELLBC 010ELLBCK2EA0E       IF                                             18000                        211152413
+SUSAP KSNAK2EOHSEA34GOONA 010GOONAK2EA0E       IF                                 + FL300     18000                        211202413
+SUSAP KSNAK2EOHSEA34RDHOT 010RDHOTK2EA0E       IF                                             18000                        211242413
+SUSAP KSNAK2EOHSEA34REBRG 010REBRGK2EA0E       IF                                             18000                        211302413
+SUSAP KSNAK2EOHSEA34REESR 010REESRK2EA0E       IF                                 + FL300     18000                        211362413
+SUSAP KSNAK2EOHSEA35      010PCIFCK2EA0E       IF                                 + FL200     18000                        211402413
+SUSAP KSNAK2EOHSEA36RW02L 010OHSEAK2EA0E       IF                                             18000                        211452413
 SUSAP KSNAK2EROOBY34EED   010EED  K2D 0V       IF                                             18000                        211561802
+SUSAP KSNAK2EROOBY34EMLLD 010EMLLDK2EA0E       IF                                             18000                        211651802
+SUSAP KSNAK2EROOBY34FEYLA 010FEYLAK2EA0E       IF                                             18000                        211741802
+SUSAP KSNAK2EROOBY34HIMDU 010HIMDUK2EA0E       IF                                             18000                        211831802
+SUSAP KSNAK2EROOBY34LRSON 010LRSONK2EA0E       IF                                 + FL280     18000                        211941802
+SUSAP KSNAK2EROOBY34MARUE 010MARUEK2EA0E       IF                                             18000                        212021802
+SUSAP KSNAK2EROOBY34NATEE 010NATEEK2EA0E       IF                                             18000                        212131802
+SUSAP KSNAK2EROOBY35ALL   010ROOBYK2EA0E       IF                                   10000     18000                        212231802
 SUSAP KSNAK2ERUKKI14TCUPS 010TCUPSK2EA0E       IF                                 + FL260     18000280                     212292413
+SUSAP KSNAK2ERUKKI14TILLT 010TILLTK2EA0E       IF                                             18000                        212312413
+SUSAP KSNAK2ERUKKI15      010RUKKIK2EA0E       IF                                 + FL210     18000                        212362413
+SUSAP KSNAK2ERUKKI16RW02L 010BAUBBK2EA0E       IF                                 B 130001100018000                        212392413
 SUSAP KSNAK2ETANDY61FIM   010FIM  K2D 0V       IF                                             18000                        212492603
+SUSAP KSNAK2ETANDY61FLW   010FLW  K2D 0V       IF                                             18000                        212512603
+SUSAP KSNAK2ETANDY62ALL   010SADDEK2EA0E       IF                                             18000                        212532603
 SUSAP KUDDK2ECLOWD11BLH   010BLH  K2D 0V       IF                                             18000                        375050804
+SUSAP KUDDK2ECLOWD11DECAS 010DECASK2EA0E       IF                                             18000                        375090804
+SUSAP KUDDK2ECLOWD11EED   010EED  K2D 0V       IF                                             18000                        375120804
+SUSAP KUDDK2ECLOWD11GFS   010GFS  K2D 0V       IF                                             18000                        375150804
+SUSAP KUDDK2ECLOWD12ALL   010CLOWDK2EA0E       IF                                             18000                        375202103
 SUSAP KUDDK2ERDBUL14CURIV 010CURIVK2EA0E       IF                                             18000                        375222506
+SUSAP KUDDK2ERDBUL14PKE   010PKE  K2D 0V       IF                                             18000                        375262506
+SUSAP KUDDK2ERDBUL14YORRK 010YORRKK2EA0E       IF                                             18000                        375302506
+SUSAP KUDDK2ERDBUL14ZELMA 010ZELMAK2EA0E       IF                                             18000                        375362506
+SUSAP KUDDK2ERDBUL15ALL   010RDBULK2EA0E       IF                                 B 090000800018000                        375402506
 SUSAP KUDDK2ESBONO11BLH   010BLH  K2D 0V       IF                                             18000                        375430804
+SUSAP KUDDK2ESBONO11DECAS 010DECASK2EA0E       IF                                             18000                        375470804
+SUSAP KUDDK2ESBONO11EED   010EED  K2D 0V       IF                                             18000                        375500804
+SUSAP KUDDK2ESBONO11GFS   010GFS  K2D 0V       IF                                             18000                        375530804
+SUSAP KUDDK2ESBONO12ALL   010CLOWDK2EA0E       IF                                             18000                        375582103
 SUSAP KUDDK2ESIZLR44CLASN 010CLASNK2EA0E       IF                                             18000                        375602506
+SUSAP KUDDK2ESIZLR44GLRNO 010GLRNOK2EA0E       IF                                 + FL240     18000                        375642506
+SUSAP KUDDK2ESIZLR44MURDY 010MURDYK2EA0E       IF                                             18000                        375662506
+SUSAP KUDDK2ESIZLR44OYVEY 010OYVEYK2EA0E       IF                                             18000                        375692506
+SUSAP KUDDK2ESIZLR44SOSHA 010SOSHAK2EA0E       IF                                             18000                        375752506
+SUSAP KUDDK2ESIZLR45ALL   010SIZLRK2EA0E       IF                                 B FL230FL20018000                        375802506
 SUSAP KVNYK2EFERN7 1AVE   010AVE  K2D 0V       IF                                             18000                        414071612
+SUSAP KVNYK2EFERN7 1DERBB 010DERBBK2EA0E       IF                                             18000                        414121612
+SUSAP KVNYK2EFERN7 1FLW   010FLW  K2D 0V       IF                                             18000                        414161612
+SUSAP KVNYK2EFERN7 1OHIGH 010OHIGHK2EA0E       IF                                             18000                        414201612
+SUSAP KVNYK2EFERN7 3RW16R 010FIM  K2D 0V       IF                                             18000                        414231612
 SUSAP KVNYK2EIVINS24HIHWY 010HIHWYK2EA0E       IF                                 B FL220FL20018000280                     414272502
+SUSAP KVNYK2EIVINS24HONZK 010HONZKK2EA0E       IF                                 + FL240     18000280                     414342502
+SUSAP KVNYK2EIVINS24PRPLE 010PRPLEK2EA0E       IF                                 B FL220FL20018000280                     414422502
+SUSAP KVNYK2EIVINS24RDHOT 010RDHOTK2EA0E       IF                                             18000                        414492502
+SUSAP KVNYK2EIVINS24REBRG 010REBRGK2EA0E       IF                                             18000                        414592502
+SUSAP KVNYK2EIVINS26RW16R 010IVINSK2EA0E       IF                                 + 08000     18000                        414702502
 SUSAP KVNYK2EJANNY54BUGGA 010BUGGAK2EA0E       IF                                             18000                        414771808
+SUSAP KVNYK2EJANNY54EED   010EED  K2D 0V       IF                                             18000                        414871808
+SUSAP KVNYK2EJANNY54KREME 010KREMEK2EA0E       IF                                   FL240     18000                        414991808
+SUSAP KVNYK2EJANNY54PURSE 010PURSEK2EA0E       IF                                             18000                        415081808
+SUSAP KVNYK2EJANNY54WELUM 010WELUMK2EA0E       IF                                             18000                        415191808
+SUSAP KVNYK2EJANNY54WNCHL 010WNCHLK2EA0E       IF                                             18000                        415301808
+SUSAP KVNYK2EJANNY55ALL   010JANNYK2EA0E       IF                                   08000     18000                        415371808
 SUSAP KVNYK2ELYNXX81DAG   010DAG  K2D 0V       IF                                             18000                        415410804
+SUSAP KVNYK2ELYNXX81HEC   010HEC  K2D 0V       IF                                             18000                        415470804
+SUSAP KVNYK2ELYNXX81LHS   010LHS  K2D 0V       IF                                             18000                        415540804
+SUSAP KVNYK2ELYNXX81PMD   010PMD  K2D 0V       IF                                             18000                        415570804
+SUSAP KVNYK2ELYNXX82ALL   010LYNXXK2EA0E       IF                                             18000                        415612102
 SUSAP KVNYK2ETHRNE44AMMOR 010AMMORK2EA0E       IF                                             18000                        415632502
+SUSAP KVNYK2ETHRNE44PHRED 010PHREDK2EA0E       IF                                             18000                        415712502
+SUSAP KVNYK2ETHRNE45ALL   010THRNEK2EA0E       IF                                 - 11000     18000                        415832502
 SUSAP KVNYK2EWEESL14EHF   010EHF  K2D 0V       IF                                             18000                        415881612
+SUSAP KVNYK2EWEESL14NINTY 010NINTYK2EA0E       IF                                             18000                        415921612
+SUSAP KVNYK2EWEESL14WRING 010WRINGK2EA0E       IF                                             18000                        415941612
+SUSAP KVNYK2EWEESL15ALL   010WEESLK2EA0E       IF                                             18000                        415971612
