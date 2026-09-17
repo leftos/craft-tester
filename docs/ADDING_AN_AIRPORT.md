@@ -266,6 +266,11 @@ a row it overrides by id or a row only it has, joined the way the phraseology ro
 LOA text into `text`, not a paraphrase: the ZOA–ZSE rule the user remembered as "even altitudes" is in
 the LOA a rotated course window, and the row carries the LOA's version. An LOA's at-or-below altitude
 for a handoff binds the enroute controller, not clearance delivery, so it is not a row (user 2026-09-16).
+A `route` rule lists the fixes one of which the route must name; a cell that routes props differently from
+jets becomes two rows with `classes: [J]` and `classes: [P, T]`, and a cell whose conventional column reads
+"via filed route" carries `rnav_only: true`. A row's destinations are checked against
+`generator/shared/destinations.yaml`, not the airport's `routes.yaml`, so an LOA row may name a field no
+scenario files to; add the field to the shared table first.
 
 ## 6. Build, fix, commit
 

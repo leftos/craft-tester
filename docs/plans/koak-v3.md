@@ -295,11 +295,41 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   rows, joined the way `phraseology_rules.yaml` is. The three ZSE rows move to the shared file and both airports'
   `loa.yaml` go away; `data/ksfo.json` and `data/koak.json` are unchanged by the move. Dispatched 2026-09-16 on
   `wt/koak-data` at `69577d2`.
-- [ ] **Brief 3c-ii status 2026-09-16 — PAUSED, uncommitted in `wt/koak-data` (branch at `7a3b662`; main has moved
-  on to `d85f545`, so rebase the branch and rebuild `data/koak.json` before landing)**: 12 rows written to
+- [x] **Brief 3c-ii, landed 2026-09-16** (112 implementer calls over three resumes): `classes` and `rnav_only` on a
+  `route` LOA rule through schema, model, loader (`_loa_route_classes`, empty list rejected) and emitter;
+  `loaRouteGap(tail, ctx, …)` skips a row of other classes or an RNAV-only row for a non-RNAV flight; `_joined_loa`
+  takes `SharedRouteFacts` and checks destinations against the shared table; 24 LOA rows (11 with classes, 1
+  RNAV-only), 13 new shared destinations, KSFO `YYUNG TILLT LEGOZ#` and `SAC ANAHO PRNCS SADYL#`; both builds
+  `--check` clean, suite 906 green, prek green. The KOAK LXJ351 fixture is no longer blocked by an LOA row (its
+  remaining reason: `no assignment rule applies to SFOW no-gate runway 30 class J`). Left for later briefs: the
+  route library has no prop rows to the ZLA fields, so the new prop rows are exercised by no library row; the
+  thirteen new destinations are drawn by no airport. **User decisions
+  2026-09-16** on the five findings below: (1) both keys, `classes` and `rnav_only`, on a `route` LOA rule, the
+  prop cells as their own rows; (2) Carlsbad: the fixture is right and the CRQ cell binds jets routed west of J1
+  only, so the row is `classes: [J]` and EHF/LHS satisfy it (the KSFO library row becomes `YYUNG TILLT LEGOZ#`,
+  TILLT being a LEGOZ4 transition; the KBOI `SAC ANAHO` row gains `PRNCS SADYL#` since jets file `/L` and the
+  BOI row is RNAV-only); (3) the LOA destination check reads `shared/destinations.yaml`, which gains the Empire
+  group, NFG, PSP/TRM, HND, SBP, BIL and TWF; (5) the `ALL SBP` cell is transcribed, the MMMX overflight row and
+  `FAT/MRY -> LAX` are not. Dispatched as one brief (schema and loader keys, `loaRouteGap` reads the class and
+  RNAV capability, the check, the rows, both data files rebuilt). **Report 2026-09-16 (102 calls, blocked)**: every
+  step's edits in, 24 LOA rows, both builds `--check` clean, generator gates green, one red web test: the
+  route-building test on SWA984 (`SSTIK5 SUSEY EBAYE AVE SADDE8`, a `/L` jet to KLAX) now trips the LAX jet row,
+  and the settled fixture expects that route. **User 2026-09-16: "SADDE8 is non-RNAV"**, citing the ZOA "Common
+  ZLA Arrivals from ZOA" table (`.tmp/zla-arrivals.txt`, oakartcc file `7fc9fef0-d1de-11ef-a1be-2a32edb55910`,
+  2025-01-13): LAX west-flow jets `IRNMN2 (BURGL, REBRG)`, `SADDE8 (DERBB) *Non-RNAV`, `HUULL2 (TOKIO)`,
+  `BAYST1/DIRBY2/LEENA8` cargo; east flow `ZUUMA4 (BURGL, REBRG)`, `MOOR4 (DERBB) *Non-RNAV`; LAX/SMO props
+  `WAYVE1 (EHF, LHS)`, `KIMMO3 (EHS, LHS)`; SMO all `BONJO2 (REBRG, RDHOT, HONKZ)`, `FERN7 (AVE, FLW, DERBB)`;
+  LAS jets `COKTL4 (FLCHR)`, `PUMLE1 (BTY)`; LAS/HND props `GAMES (FUULL)`; SAN `COMIX2 (LAX, HUULK)`, `HUBRD1
+  (LAX)`, `PLYYA2 (LAX)`, `SHAMU1 (LAX)`; LGB `BAUBB3 (TILLT)`, `PCIFC3 (RDHOT, REBRG, ELLBC)`; SNA `RUUKI
+  (TILLT)`, `OHSEA3 (RDHOT, REBRG, ELLBC)`; LGB/SNA all `TANDY5 (FLW)`; BUR `ROKKR2 (RDHOT, REBRG, HONKZ)`, `FERN7`;
+  VNY `IVINS (RDHOT, REBRG, HONKZ)`, `FERN7`; BUR/VNY props `WEESL1 (EHF, NINTY)`. CIFP: SADDE8 publishes an AVE
+  transition beside DERBB and FIM. Two engine findings from the report, to model later: (a) `checkRoute` holds the
+  LOA routing rows only against a box that already reads right, so a proposed amendment (built or TEC) is never
+  checked against them and can violate one; (b) `rules/fixtures.test.ts` prints nothing for a `pending` fixture
+  without an `expected` block, so the 50 imported KOAK fixtures are silent in the suite. Earlier state: 12 rows written to
   `generator/shared/loa_rules.yaml` (ZLA: LAX, SMO, LGB+SNA, BUR+VNY, SAN, CRQ, UDD, ONT, LAS, SBA; ZLC: SLC, BOI),
-  two sources, `LOA_RULE_COUNT` 15, generator gates green, both builds `--check` clean. **Blocked by six web
-  failures that are findings, not bugs** (`prek` blocks the commit until they are resolved):
+  two sources, `LOA_RULE_COUNT` 15, generator gates green, both builds `--check` clean, **blocked by six web
+  failures that were findings, not bugs**:
   1. **Route rules need a class key** (new concept): the LOA's LAX cell routes jets via BURGL/REBRG/… and props
      west of J1 via AVE/FLW/RZS; with one classless row, KOAK `SNS -> KLAX SNS AVE LAX [PT]` is clean nowhere and
      the engine test `amend/route.test.ts` "leaves a plan that already files the transition alone" (SWA984, a jet

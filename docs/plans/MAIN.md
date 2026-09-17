@@ -37,6 +37,40 @@ one line and move its record to the archive.
 
 ## Inputs to fold into the rules
 
+- [ ] **New concept (user 2026-09-16, SWA984): an RNAV jet filing a non-RNAV arrival is amended onto the RNAV
+  arrival the LOA routes it by.** SWA984 (`/L` B737, KSFO to KLAX, filed `SSTIK5 EBAYE AVE SADDE8`) should expect
+  `SSTIK5 SUSEY EBAYE BURGL IRNMN2`: SADDE8 is the non-RNAV LAX arrival (fed from DERBB per the ZOA "Common ZLA
+  Arrivals from ZOA" table and the LOA's `..DERBB (Non-RNAV)`), IRNMN2 the RNAV one (BURGL, REBRG), and the LOA's
+  LAX jet row names BURGL. Until this lands the fixture is `pending` (flipped 2026-09-16 with this note) and the
+  route-building unit test files the conforming route. Design to plan before building: the data needs, per
+  destination, which arrivals are RNAV and their transitions (the generator's `destination_stars` already reads
+  the CIFP STARs for every library destination; add an RNAV flag from the CIFP record and the transitions); the
+  amendment route check, when an LOA jet row is unmet and the flight is RNAV-capable, looks for an RNAV arrival of
+  the destination with a transition among the row's tokens that the connection table reaches from the SOP SID's
+  transitions (EBAYE → BURGL), and proposes SID + chain + transition + arrival, citing the LOA row and the
+  connection; a non-RNAV flight on a non-RNAV arrival stays as today. Also to hold every proposed box against
+  the LOA rows, not only a box that already reads right (finding (a) on [koak-v3.md](./koak-v3.md), 3c-ii).
+  **User steer 2026-09-16 on scoring**: clearance delivery is mostly responsible for getting aircraft out safely;
+  the correct arrival is a nice-to-have that enroute controllers change on the fly and re-clear per LOA and
+  destination flow (which can change en route), so a missed LOA arrival / "common arrivals" routing costs
+  **half a point, not a full one**. Together with the SFO-token warning above this is a graded-severity concept
+  for the route box: a full-point element, a half-point element (LOA arrival routing) and a warning (the vector
+  SID's airport navaid); the results view and the score need the three tiers, and the reveal says which applied.
+
+- [ ] **User rule 2026-09-16, radar-vector SIDs carry the airport navaid**: a radar-vector SID such as OAK6 or NIMI6
+  must be followed in the filed/amended route string by the departure airport's three-letter navaid (`OAK6 OAK RBL`,
+  "e.g. OAK or SFO") for computerized flight plan reasons, and that token is ignored when the clearance is spoken:
+  `OAK6 OAK RBL` reads "Oakland Six departure, radar vectors Red Bluff VOR". State 2026-09-16: `routeFromExitFix` in
+  `rules/route.ts` already skips the airport's own navaid after the procedure token, so the exit fix and the spoken
+  reading are right today for `OAK6 OAK RBL` (KOAK's library and TEC rows carry `OAK`). The gap is amendment mode:
+  the route box does not require the token after a vector SID, and a built route (a plan filed with no SID, KAL65
+  at KOAK) comes out `OAK6 RBL …`. **User decision 2026-09-16: KSFO too, SFO5 and GAPP7** (`SFO5 SFO RBL …`,
+  `GAPP7 SFO OAK V6 SAC`), **and at every airport a missing token is a warning, not a scored error**. Concept to
+  plan: a vector SID's `overrides.yaml` row states the navaid the route must carry after it; the route builder,
+  the proposed amendment and the worksheet importer insert it; the speaker skips it (already does); the route box
+  grader treats its absence as a warning verdict (a new verdict beside `acceptable`, not red); KSFO's settled
+  fixtures, library and TEC rows gain `SFO` and are re-proposed, not re-settled, since the reading is unchanged.
+
 - [x] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement" — landed 2026-09-16 as the two KOAK `notices` rows with their `heading` effect (`3ee592d`)
 
 ## Blockers
@@ -46,7 +80,7 @@ None. Worksheets are public Google Docs (ids in the subplan); no browser needed 
 ## Backlog
 
 - [ ] **v2, user steer 2026-09-15: free-text clearance entry** so students practise without dropdown hints. The student types (or dictates) the full spoken clearance; the grader normalises both sides (digits ↔ number words, "flight level three two zero" ↔ "FL320", punctuation, optional words such as "airport") and aligns the text against the CRAFT elements of `speakClearance` so each element is still graded green/red with its citation, plus a per-element diff showing what was said versus expected. Needs a tolerant matcher (per-element regex or token alignment), a decision on how strict wording is (accept "climb via the SID"? "then as filed" vs "direct"?), and the same seed/URL sharing as v1. Plan as a subplan before starting. The acceptable-but-inefficient verdict (step 14, 2026-09-16) is where two spoken-only readings belong once text is graded: "then as filed" after a bare exit fix, and a full route spelled out where the abbreviated form would do; the user decides whether they are acceptable or wrong
-- [ ] **v3, user steer 2026-09-15: KOAK as the second airport** — see [koak-v3.md](./koak-v3.md). Prep done 2026-09-15: OAK ATCT SOP v1.7 downloaded and hashed, 17 DP charts cached, SOP 2-2 tables read, the new rule concepts listed (type-specific class for DH8D, heading departures, hybrid SIDs that are climb-via eligible, continuation charts, approach category, optional noise rows), five OAK worksheets (2 phraseology, 3 amendment) and the S1-OAK-1/2/5 module texts read, the user's "Common Fixes" notes folded in. Status 2026-09-16 (paused by the user): on main — the KOAK data, computed NCT membership, TEC initial/final altitudes with the cruise and override rulings, KOAK in `data/airports.json` (picker works, suite green at 904), shared LOA rules (`generator/shared/loa_rules.yaml`), 50 pending KOAK worksheet fixtures. **Uncommitted in `wt/koak-data`: brief 3c-ii (12 ZLA/ZLC routing rows), blocked by six suite failures that are open decisions on the subplan** (a class key and an RNAV-only key on route rules, the Carlsbad fixture, shared rows for unlisted destinations). Next: those decisions, then the KOAK validation loop (six plans blocked by a runway-30 no-gate SOP gap, fixture ids colliding across airports, `ECA` spoken name), the destination-box concept for AAY218
+- [ ] **v3, user steer 2026-09-15: KOAK as the second airport** — see [koak-v3.md](./koak-v3.md). Prep done 2026-09-15: OAK ATCT SOP v1.7 downloaded and hashed, 17 DP charts cached, SOP 2-2 tables read, the new rule concepts listed (type-specific class for DH8D, heading departures, hybrid SIDs that are climb-via eligible, continuation charts, approach category, optional noise rows), five OAK worksheets (2 phraseology, 3 amendment) and the S1-OAK-1/2/5 module texts read, the user's "Common Fixes" notes folded in. Status 2026-09-16 (paused by the user): on main — the KOAK data, computed NCT membership, TEC initial/final altitudes with the cruise and override rulings, KOAK in `data/airports.json` (picker works, suite green at 904), shared LOA rules (`generator/shared/loa_rules.yaml`), 50 pending KOAK worksheet fixtures. Brief 3c-ii landed 2026-09-16 (21 ZLA/ZLC routing rows, class and RNAV keys on route rules, the shared destination check). Next: the KOAK validation loop (six plans blocked by a runway-30 no-gate SOP gap, fixture ids colliding across airports, `ECA` spoken name), the destination-box concept for AAY218
 - [ ] Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR
 
 ## Open questions (settled by the validation loops, recorded as data toggles)
