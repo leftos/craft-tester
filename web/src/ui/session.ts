@@ -154,6 +154,10 @@ function sidTransitionsOf(
 /**
  * Reads a resolved clearance the way the reveal speaks it, abbreviated and with the full route.
  *
+ * A clearance the engine built a route for is read for that route rather than for the plan: the
+ * flight is issued a SID the plan never filed, and the reading hands the route over as filed at the
+ * fix the built route and the filed one run together from.
+ *
  * @param scenario The flight plan the clearance answers, which in amendment mode is the corrected
  *   plan rather than the one the pilot filed.
  * @param original The plan as the pilot filed it, which is what "as filed" hands the route over to.
@@ -171,7 +175,7 @@ export function spokenFor(
     callsign: scenario.callsign,
     clearance,
     destinationSpoken: destinationSpoken(scenario.destination, airport),
-    filedRoute: scenario.filedRoute,
+    filedRoute: clearance.route.value.builtRoute ?? scenario.filedRoute,
     originalRoute: original.filedRoute,
     airportFaa: airport.airport.faa,
     squawk: scenario.squawk,

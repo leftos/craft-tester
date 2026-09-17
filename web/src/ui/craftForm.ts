@@ -290,7 +290,7 @@ export function craftGroups(
   picks: DraftPicks,
   procedure: ProcedureRow,
 ): readonly CraftGroup[] {
-  const options = buildOptions(scenario, airport);
+  const options = buildOptions(scenario, airport, clearance);
   return [
     clearanceLimitRow(clearance, airport),
     procedure === 'given' ? procedureRow(clearance, airport) : procedureGroup(airport, picks),

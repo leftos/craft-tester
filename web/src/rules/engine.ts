@@ -1,13 +1,25 @@
-import type { AirportData, Scenario } from '@/data/schema.ts';
+import type { AirportData, AssignmentRule, Direction, Scenario } from '@/data/schema.ts';
 import { resolveAltitude } from '@/rules/altitude.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
+import type { Classification } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveFrequency } from '@/rules/frequency.ts';
+import type { ParsedRoute } from '@/rules/route.ts';
 import { flightDirection, parseFiledRoute } from '@/rules/route.ts';
+import type { BuiltRoute } from '@/rules/routeBuild.ts';
+import { buildRoute, builtCitations, builtTokens } from '@/rules/routeBuild.ts';
 import { phraseRoute } from '@/rules/routePhrasing.ts';
 import { explainRunway } from '@/rules/runway.ts';
-import { selectSid } from '@/rules/sidSelection.ts';
-import type { EngineResult, Unresolved } from '@/rules/types.ts';
+import type { SidSelection } from '@/rules/sidSelection.ts';
+import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
+import { keyedTecRoute } from '@/rules/tecRoutes.ts';
+import type {
+  EngineResult,
+  ResolvedRoute,
+  RuleCitation,
+  SelectedProcedure,
+  Unresolved,
+} from '@/rules/types.ts';
 import { procedureOf } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
@@ -17,13 +29,116 @@ function blocked(reason: Unresolved): EngineResult {
 }
 
 /**
+ * The route built on a SID the assignment table passed over, for a flight it would otherwise send
+ * off on a heading.
+ *
+ * A heading is issued only because no SID the table reaches serves the element the filed route
+ * leaves the terminal on; a transition of one of the passed-over SIDs, or the fix one of them ends
+ * on, may still connect onward to a fix the flight already filed, and issuing that SID is the SOP's
+ * own answer rather than no procedure at all. There is no procedure to keep here, so every
+ * passed-over candidate is searched.
+ *
+ * A flight a TEC row is written for is left on its heading: the route it is issued is the published
+ * one the row carries, not a chain off the connection cheat sheet. The row is read before the test
+ * of whether its departure can be issued, because that test resolves the clearance and would ask
+ * this same question again.
+ *
+ * @param ctx The classified flight.
+ * @param route The filed route, whose exit element no assignable SID serves.
+ * @param direction The gate direction of the flight, undefined when its exit fix is not a gate.
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @returns The route to issue, or `undefined` where no candidate reaches the filed route.
+ */
+function builtFor(
+  ctx: Classification,
+  route: ParsedRoute,
+  direction: Direction | undefined,
+  scenario: Scenario,
+  airport: AirportData,
+): BuiltRoute | undefined {
+  if (keyedTecRoute(ctx, scenario, airport) !== undefined) return undefined;
+  const candidates = unservedSids(ctx, route.exitElement, direction, scenario, airport);
+  return buildRoute(route.tokens, candidates, { kind: 'any' }, airport);
+}
+
+/**
+ * What the clearance issues: the procedure, the element its route phrase names, the row the
+ * departure frequency is read off, and the rows that decided all three.
+ *
+ * `builtRoute` is the route box a built clearance is read for, which is not the one the pilot filed:
+ * it is the SID, the fix the flight leaves it at, the connecting fixes and the filed route from the
+ * point the two run together. It is absent wherever the flight flies the route it filed.
+ */
+type Issued = {
+  procedure: SelectedProcedure;
+  exitElement: string;
+  row: AssignmentRule;
+  citations: RuleCitation[];
+  builtRoute?: string;
+};
+
+/**
+ * What the assignment table and the route builder together issue the flight.
+ *
+ * A built route replaces every part of the selection the heading would have decided: the procedure
+ * is the candidate's SID, the route phrase names the fix the flight leaves it at rather than the one
+ * the plan filed, and the departure frequency is read off the candidate's own row. The notices that
+ * took a SID out of use are cited either way, because they are why the table reached this row at all.
+ *
+ * @param selection What the assignment table answered.
+ * @param route The filed route.
+ * @param built The route the builder found, or `undefined` where it found none.
+ * @param airport The airport data.
+ * @returns The procedure to issue with the rows that decided it.
+ */
+function issued(
+  selection: SidSelection,
+  route: ParsedRoute,
+  built: BuiltRoute | undefined,
+  airport: AirportData,
+): Issued {
+  const notices = selection.notices.map(toCitation);
+  if (built !== undefined) {
+    return {
+      procedure: { kind: 'sid', sid: built.sid },
+      exitElement: built.start.fix,
+      row: built.row,
+      citations: [...builtCitations(built, airport), ...notices],
+      builtRoute: builtTokens(built, route.tokens).join(' '),
+    };
+  }
+  const { procedure } = selection;
+  return {
+    procedure,
+    exitElement: route.exitElement,
+    row: selection.row,
+    citations: [
+      toCitation(selection.row),
+      ...notices,
+      ...(procedure.kind === 'heading' ? citePhraseology(airport, 'R-HEADING') : []),
+    ],
+  };
+}
+
+/** The route element of the clearance, which a built clearance carries the rebuilt box on. */
+function routeElement(element: Issued, airport: AirportData): ResolvedRoute {
+  const phrased = phraseRoute(element.procedure, element.exitElement, airport);
+  const { builtRoute } = element;
+  if (builtRoute === undefined) return phrased;
+  return { value: { ...phrased.value, builtRoute }, citations: phrased.citations };
+}
+
+/**
  * Resolves the clearance for a scenario: classify, parse the route, select the procedure, phrase the
  * route, resolve the altitude, read the departure frequency off the assignment row, and explain the
  * runway the flight departs from.
  *
  * Every element carries the data rows that decided it, including the operational notice that took
  * a SID out of use where one changed the outcome. A row that assigns no procedure clears the flight
- * on the runway heading and cites the phraseology row for that reading beside it.
+ * on the runway heading and cites the phraseology row for that reading beside it — but only where no
+ * route can be built first: a SID the table passed over, connected onward to the filed route, is
+ * issued in the heading's place, and the clearance then carries the route it is read for.
  *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data.
@@ -37,10 +152,14 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
   const direction = flightDirection(route, airport);
   const selection = selectSid(ctx, route.exitElement, direction, scenario, airport);
   if (isUnresolved(selection)) return blocked(selection);
-  const { procedure } = selection;
-  const altitude = resolveAltitude(ctx, procedure, scenario, airport);
+  const built =
+    selection.procedure.kind === 'heading'
+      ? builtFor(ctx, route, direction, scenario, airport)
+      : undefined;
+  const element = issued(selection, route, built, airport);
+  const altitude = resolveAltitude(ctx, element.procedure, scenario, airport);
   if (isUnresolved(altitude)) return blocked(altitude);
-  const frequency = resolveFrequency(selection.row, airport);
+  const frequency = resolveFrequency(element.row, airport);
   if (isUnresolved(frequency)) return blocked(frequency);
   return {
     ok: true,
@@ -51,14 +170,10 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
       },
       runway: explainRunway(scenario, airport, ctx.aircraftClass, direction),
       procedure: {
-        value: procedureOf(procedure),
-        citations: [
-          toCitation(selection.row),
-          ...selection.notices.map(toCitation),
-          ...(procedure.kind === 'heading' ? citePhraseology(airport, 'R-HEADING') : []),
-        ],
+        value: procedureOf(element.procedure),
+        citations: element.citations,
       },
-      route: phraseRoute(procedure, route.exitElement, airport),
+      route: routeElement(element, airport),
       altitude: altitude.altitude,
       expect: altitude.expect,
       redundantExpect: altitude.redundantExpect,

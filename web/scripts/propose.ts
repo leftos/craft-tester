@@ -29,12 +29,18 @@ export type ProposalAmendment = {
   warning?: boolean;
 };
 
-/** The clearance half of an outcome, which amendment mode also prints for the corrected plan. */
+/**
+ * The clearance half of an outcome, which amendment mode also prints for the corrected plan.
+ *
+ * `built` is the route box the clearance is read for where the engine built one on a SID the
+ * assignment table passed over, and is absent where the flight flies the route it filed.
+ */
 export type ProposalClearance = {
   kind: 'clearance';
   elements: readonly ProposalElement[];
   spoken: SpokenClearance;
   expected: unknown;
+  built?: string;
 };
 
 /** The elements an engine could not resolve, with the reason each was blocked for. */
@@ -104,7 +110,7 @@ function expectedBlock(expected: unknown): string {
   return `  "expected": ${json}`;
 }
 
-/** The CRAFT elements with their citations, and both spoken forms. */
+/** The CRAFT elements with their citations, the route any build wrote, and both spoken forms. */
 function clearanceLines(outcome: ProposalClearance): string[] {
   const lines = ['', 'CRAFT'];
   for (const element of outcome.elements) {
@@ -112,6 +118,7 @@ function clearanceLines(outcome: ProposalClearance): string[] {
     for (const citation of element.citations)
       lines.push(`       ${citation.id} — ${citation.text}`);
   }
+  if (outcome.built !== undefined) lines.push('', `built: ${outcome.built}`);
   lines.push(
     '',
     'SPOKEN',
@@ -401,14 +408,16 @@ function clearanceOutcome(
     };
   }
   const { clearance } = result;
+  const { builtRoute } = clearance.route.value;
   return {
     kind: 'clearance',
     elements: craftElements(clearance, runtime),
+    ...(builtRoute === undefined ? {} : { built: builtRoute }),
     spoken: runtime.speakClearance({
       callsign: scenario.callsign,
       clearance,
       destinationSpoken: destinationSpoken(scenario.destination, airport),
-      filedRoute: scenario.filedRoute,
+      filedRoute: clearance.route.value.builtRoute ?? scenario.filedRoute,
       originalRoute: original.filedRoute,
       airportFaa: airport.airport.faa,
       squawk: scenario.squawk,

@@ -94,6 +94,16 @@ export type ExpectClause =
   | { kind: 'final'; feet: number };
 
 /**
+ * The route element of a clearance: the shape it is spoken in, the element the flight leaves the
+ * terminal on, and the route box a built clearance is read for.
+ *
+ * `builtRoute` is set only where the flight is issued a SID the assignment table passed over,
+ * connected onward to the route the pilot filed: the clearance is then read for that route rather
+ * than for the filed one, and "then as filed" hands over at the fix the two run together from.
+ */
+export type ResolvedRoute = Cited<{ template: RouteTemplate; fix?: string; builtRoute?: string }>;
+
+/**
  * The clearance the engine resolved for a scenario, element by element.
  *
  * `runway` is the scenario's departure runway together with the configuration row and the mechanism
@@ -110,7 +120,7 @@ export type ResolvedClearance = {
   clearedTo: Cited<string>;
   runway: Cited<string>;
   procedure: Cited<Procedure>;
-  route: Cited<{ template: RouteTemplate; fix?: string }>;
+  route: ResolvedRoute;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
   expect: Cited<ExpectClause | null>;
   redundantExpect: Cited<{ feet: number; minutes: number } | null>;

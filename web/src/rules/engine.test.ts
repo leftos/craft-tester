@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type {
   AirportData,
@@ -11,6 +12,7 @@ import { resolveClearance } from '@/rules/engine.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const BASE: Scenario = {
   callsign: 'UAL1',
@@ -454,5 +456,57 @@ describe('resolveClearance on the generated KSFO data', () => {
   it('gives the same prop a procedure outside the noise window', () => {
     const clearance = clearanceFor(scenario({ ...NIGHT_PROP, localTime: '1400' }));
     expect(assigned(clearance).family).toBe('SFO');
+  });
+});
+
+describe('route building before a heading', () => {
+  /** Phraseology Practice 1A: the ZOA notice takes COAST9 out of use, and CNDEL5 has no MCKEY
+   * transition, so the flight would be sent off on the runway heading were nothing built. */
+  const SWA344: Scenario = {
+    callsign: 'SWA344',
+    aircraftType: 'B737',
+    equipmentSuffix: '/L',
+    destination: 'KSAN',
+    filedRoute: 'COAST9 MCKEY LAX COMIX2',
+    filedAltitude: 41000,
+    runwayConfigId: 'SFOW',
+    departureRunway: '30',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '3331',
+  };
+
+  it("issues the SID a transition connects onward from, in the heading's place", () => {
+    const clearance = clearanceFor(SWA344, koak);
+    expect(assigned(clearance).id).toBe('CNDEL5');
+    expect(clearance.route.value).toEqual({
+      template: 'transition',
+      fix: 'YYUNG',
+      builtRoute: 'CNDEL5 YYUNG LAX COMIX2',
+    });
+    expect(clearance.altitude.value).toEqual({ phrase: 'climb_via' });
+    expect(clearance.frequency.value.value).toBe('135.1');
+    expect(clearance.procedure.citations.map((citation) => citation.id)).toEqual([
+      'OAK-SFOW-S-CNDEL',
+      'CONN-YYUNG-LAX',
+      'R-ROUTE-BUILD',
+      'OAK-COAST-OFF',
+    ]);
+  });
+
+  it('leaves the flight on the runway heading when no chain reaches the filed route', () => {
+    const clearance = clearanceFor(
+      {
+        ...SWA344,
+        callsign: 'N903JP',
+        aircraftType: 'C510',
+        destination: 'KSBA',
+        filedRoute: 'COAST9 GVO HABUT',
+        filedAltitude: 33000,
+      },
+      koak,
+    );
+    expect(clearance.procedure.value.kind).toBe('heading');
+    expect(clearance.route.value.builtRoute).toBeUndefined();
   });
 });

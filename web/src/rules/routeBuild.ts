@@ -1,5 +1,7 @@
 import type { AirportData, AssignmentRule, RouteConnection, Sid } from '@/data/schema.ts';
+import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { UnservedSid } from '@/rules/sidSelection.ts';
+import type { RuleCitation } from '@/rules/types.ts';
 
 /**
  * Where a built route leaves the SID: one of its published transitions, or the SID's own end fix.
@@ -213,4 +215,26 @@ export function buildRoute(
  */
 export function builtTokens(built: BuiltRoute, tokens: readonly string[]): string[] {
   return [built.sid.id, built.start.fix, ...built.chain, ...tokens.slice(built.joinIndex)];
+}
+
+/**
+ * The rows a built route is cited to, in place of the ones the fallback clearance was decided by.
+ *
+ * The assignment row is the SOP's answer the build kept, and what follows it is how the route got
+ * back to the filed one: the connection rows of the chain and the rule that says to build it, or,
+ * for a forced transition, the rule that a transition is spoken with the procedure.
+ *
+ * @param built The route the builder found.
+ * @param airport The airport data, whose `phraseologyRules` hold the quotable rows.
+ * @returns The citations, the assignment row first.
+ */
+export function builtCitations(built: BuiltRoute, airport: AirportData): RuleCitation[] {
+  if (built.connections.length === 0) {
+    return [toCitation(built.row), ...citePhraseology(airport, 'R-TRANSITION')];
+  }
+  return [
+    toCitation(built.row),
+    ...built.connections.map(toCitation),
+    ...citePhraseology(airport, 'R-ROUTE-BUILD'),
+  ];
 }

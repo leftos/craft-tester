@@ -25,6 +25,7 @@ const fixSpoken = {
   SWR: 'Palisades VOR',
   LMT: 'Klamath Falls VOR',
   OED: 'Rogue Valley VOR',
+  LAX: 'Los Angeles VOR',
 };
 
 describe('speakAltitude', () => {
@@ -623,6 +624,38 @@ describe('speakClearance', () => {
     expect(spoken.fullRoute).toContain(
       'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, ' +
         'Victor twenty-three Yubba, direct.',
+    );
+  });
+
+  it('reads a built route out to the fix it joins the filed route at', () => {
+    const issued = clearance({
+      procedure: { kind: 'sid', id: 'CNDEL5', family: 'CNDEL', spoken: 'Candle Five' },
+      route: { template: 'transition', fix: 'YYUNG' },
+    });
+    const spoken = speakClearance(
+      input({
+        callsign: 'SWA344',
+        clearance: {
+          ...issued,
+          runway: { value: '30', citations: [] },
+          frequency: { value: { value: '135.1', sectorId: 'sutro' }, citations: [] },
+        },
+        destinationSpoken: 'San Diego',
+        filedRoute: 'CNDEL5 YYUNG LAX COMIX2',
+        originalRoute: 'COAST9 MCKEY LAX COMIX2',
+        airportFaa: 'OAK',
+        squawk: '3331',
+        sidTransitions: [{ fix: 'YYUNG', spoken: 'Yyung' }],
+      }),
+    );
+    expect(spoken.abbreviated).toBe(
+      'Southwest three forty-four, cleared to San Diego airport, Candle Five departure, ' +
+        'Yyung transition, direct Los Angeles VOR, then as filed. Climb via SID. ' +
+        'Departure frequency one three five point one, squawk three three three one. ' +
+        'Expect runway three zero.',
+    );
+    expect(spoken.fullRoute).toContain(
+      'Candle Five departure, Yyung transition, direct Los Angeles VOR, Comix Two arrival.',
     );
   });
 

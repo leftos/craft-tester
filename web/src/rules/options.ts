@@ -1,6 +1,6 @@
 import type { AirportData, AltitudePhrase, RouteTemplate, Scenario } from '@/data/schema.ts';
 import { isSidToken } from '@/rules/route.ts';
-import type { PlayerPicks } from '@/rules/types.ts';
+import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 
 /** Every route shape the form offers, in the order the results view names them. */
 const ROUTE_TEMPLATES: readonly RouteTemplate[] = [
@@ -75,6 +75,21 @@ function filedSidTransitions(scenario: Scenario, airport: AirportData): string[]
   return (filed?.transitions ?? []).map((transition) => transition.fix);
 }
 
+/**
+ * The transitions of the procedure the clearance issues, which the filed route need not name.
+ *
+ * A flight the engine built a route for is issued a SID the plan never filed, and the element it
+ * leaves the terminal on is a transition of that SID rather than a fix on the filed route, so the
+ * dropdown has to offer it. Where the issued procedure is the filed one, these are the transitions
+ * the filed route already contributes.
+ */
+function issuedSidTransitions(clearance: ResolvedClearance, airport: AirportData): string[] {
+  const procedure = clearance.procedure.value;
+  if (procedure.kind !== 'sid') return [];
+  const issued = airport.sids.find((sid) => sid.id === procedure.id);
+  return (issued?.transitions ?? []).map((transition) => transition.fix);
+}
+
 /** Every altitude the field can issue: the interim rows, the published tops, and the filed one. */
 function altitudeFeet(scenario: Scenario, airport: AirportData): number[] {
   const interim = airport.altitudeRules.flatMap((row) =>
@@ -97,14 +112,27 @@ function configuredRunways(scenario: Scenario, airport: AirportData): string[] {
 /**
  * Builds the dropdown lists for one scenario, from the data alone and with no randomness.
  *
+ * The route-element list is the transitions of the procedure the clearance issues, then those of the
+ * procedure the plan filed, then the first few elements of the filed route as distractors; the two
+ * sets of transitions are the same wherever the flight is issued the procedure it filed.
+ *
  * @param scenario The filed flight plan, which contributes the filed route and altitude.
  * @param airport The airport data.
+ * @param clearance The clearance the engine resolved, which names the procedure being issued.
  * @returns The options for every element of the CRAFT form.
  */
-export function buildOptions(scenario: Scenario, airport: AirportData): ClearanceOptions {
+export function buildOptions(
+  scenario: Scenario,
+  airport: AirportData,
+  clearance: ResolvedClearance,
+): ClearanceOptions {
   return {
     routeTemplates: [...ROUTE_TEMPLATES],
-    routeFixes: unique([...filedSidTransitions(scenario, airport), ...filedFixes(scenario)]),
+    routeFixes: unique([
+      ...issuedSidTransitions(clearance, airport),
+      ...filedSidTransitions(scenario, airport),
+      ...filedFixes(scenario),
+    ]),
     altitudePhrases: [...ALTITUDE_PHRASES],
     altitudeFeet: altitudeFeet(scenario, airport),
     expect: [...EXPECT_CHOICES],

@@ -6,16 +6,16 @@ import type {
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
-import type { BuildScope, BuiltRoute } from '@/rules/amend/build.ts';
-import { buildRoute, builtTokens } from '@/rules/amend/build.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
 import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
-import { citePhraseology, toCitation } from '@/rules/cite.ts';
+import { citePhraseology } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { flightDirection, isSidToken, parseFiledRoute } from '@/rules/route.ts';
+import type { BuildScope, BuiltRoute } from '@/rules/routeBuild.ts';
+import { buildRoute, builtCitations, builtTokens } from '@/rules/routeBuild.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
-import type { Procedure, ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
+import type { Procedure, ResolvedClearance, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** A procedure token split into the family and the version digit the AIRAC cycle bumps. */
@@ -281,24 +281,6 @@ function builtReason(
 }
 
 /**
- * The rows a built route is cited to, in place of the ones the vector-SID clearance was decided by.
- *
- * The assignment row is the SOP's answer the build kept, and what follows it is how the route got
- * back to the filed one: the connection rows of the chain and the rule that says to build it, or,
- * for a forced transition, the rule that a transition is spoken with the procedure.
- */
-function builtCitations(built: BuiltRoute, airport: AirportData): RuleCitation[] {
-  if (built.connections.length === 0) {
-    return [toCitation(built.row), ...citePhraseology(airport, 'R-TRANSITION')];
-  }
-  return [
-    toCitation(built.row),
-    ...built.connections.map(toCitation),
-    ...citePhraseology(airport, 'R-ROUTE-BUILD'),
-  ];
-}
-
-/**
  * The amendment a built route makes, which reads the same whether the flight was to be given a
  * procedure or sent off on a heading: the built box, why it was built, and the rows that built it.
  */
@@ -471,11 +453,14 @@ function checkHeadingRoute(
  * on that row's own SID whatever was filed. A box that already reads right is then held against the
  * LOA routing rows written for the destination. A flight the SOP clears on the runway heading is
  * built the same way, on any SID the table passed over rather than only on the filed family, because
- * it has no procedure to keep; failing a build its box is the filed tail alone. Every box the check
- * proposes carries the airport's own navaid after a radar-vector SID, which is how such a plan is
- * filed; a box that files the vector SID without it is amended as a warning, the plan being filed
- * acceptably either way.
+ * it has no procedure to keep; failing a build its box is the filed tail alone. A clearance the
+ * engine has already built a route for is one of those flights: the heading is what it would have
+ * been issued, and the box is the route that was built in its place. Every box the check proposes
+ * carries the airport's own navaid after a radar-vector SID, which is how such a plan is filed; a
+ * box that files the vector SID without it is amended as a warning, the plan being filed acceptably
+ * either way.
  *
+
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
  * @param clearance The clearance the engine resolved for the plan, which carries the procedure the
@@ -492,7 +477,7 @@ export function checkRoute(
 ): ResolvedAmendment | undefined | Unresolved {
   const filed = splitFiled(scenario.filedRoute);
   const procedure = clearance.procedure.value;
-  if (procedure.kind === 'heading') {
+  if (procedure.kind === 'heading' || clearance.route.value.builtRoute !== undefined) {
     return checkHeadingRoute(filed, scenario, ctx, clearance, airport);
   }
   const expected = expectedRoute(filed, scenario, ctx, procedure.id, airport);
