@@ -3117,8 +3117,8 @@
     },
     {
       "id": "R-AIRWAY",
-      "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15",
-      "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically"
+      "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15; user steer 2026-09-17 (pacing comma)",
+      "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically; a comma follows the airway before the fix it leads to, for pacing (Queue one seventy-four, Flchr), where DIRECT (fix) takes none"
     },
     {
       "id": "R-NAVAID",

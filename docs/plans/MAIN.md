@@ -115,6 +115,11 @@ one line and move its record to the archive.
   Speech API (en-US, rate 1), `iconButton` in `ui/dom.ts`, pressed state on `aria-pressed`, no button where
   the API is absent; browser-checked. Noted: `browser-check.ts` lists an icon-only button as a blank entry,
   so an icon button is proven by the screenshot or a `click:<label>` action.
+- [x] **User steer 2026-09-17: a comma after an airway before its exit fix, for pacing** — "Queue one
+  seventy-four, Flchr", while "direct Flchr" keeps no comma between the word and the fix. Seen on the KOAK
+  NKS9010 reading "…Ntell transition, Queue one seventy-four Flchr, Coktl Four arrival". Landed 2026-09-17
+  inline: `routeUnit` in `rules/speak.ts`, the `R-AIRWAY` row text, data rebuilt, eight speak-test
+  expectations; the radar-vectors-airway join already read the fix as its own comma-separated unit.
 - [ ] **User steer 2026-09-17: airway structure for conventional rebuilds.** The RNAV element check leaves a
   non-RNAV plan with no conventional route in the data; the J and V airway structure would let the engine
   rebuild one. Sources the user named: yaat's handling of `C:\Users\Leftos\AppData\Local\yaat\cache\NavData.dat`

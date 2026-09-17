@@ -412,8 +412,9 @@ export function asFiledJoin(
 /**
  * One unit of the route reading, and how many tokens it consumed.
  *
- * An airway takes the fix that follows it along ("Victor two forty-four Altam"), a final procedure
- * is read as an arrival, and a fix no airway precedes is flown direct.
+ * An airway takes the fix that follows it along, a comma between them for pacing ("Victor two
+ * forty-four, Altam"; user steer 2026-09-17), a final procedure is read as an arrival, and a fix no
+ * airway precedes is flown direct, with no comma after the word.
  */
 function routeUnit(
   tokens: readonly string[],
@@ -426,7 +427,7 @@ function routeUnit(
     const airway = speakRouteToken(token, fixSpoken);
     return next === undefined
       ? { unit: airway, consumed: 1 }
-      : { unit: `${airway} ${speakFix(next, fixSpoken)}`, consumed: 2 };
+      : { unit: `${airway}, ${speakFix(next, fixSpoken)}`, consumed: 2 };
   }
   if (index === tokens.length - 1 && STAR_TOKEN.test(token)) {
     return { unit: speakRouteToken(token, fixSpoken), consumed: 1 };

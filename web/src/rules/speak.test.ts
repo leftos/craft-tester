@@ -272,7 +272,7 @@ describe('speakClearance', () => {
       'San Francisco Five departure, radar vectors Red Bluff VOR, then as filed.',
     );
     expect(spoken.fullRoute).toContain(
-      'San Francisco Five departure, radar vectors Red Bluff VOR, Jay five Rogue Valley VOR, direct.',
+      'San Francisco Five departure, radar vectors Red Bluff VOR, Jay five, Rogue Valley VOR, direct.',
     );
   });
 
@@ -304,7 +304,7 @@ describe('speakClearance', () => {
         'Expect runway one right.',
     );
     expect(spoken.fullRoute).toContain(
-      'via fly runway heading, radar vectors Oakland VOR, Victor six Sacramento VOR, direct.',
+      'via fly runway heading, radar vectors Oakland VOR, Victor six, Sacramento VOR, direct.',
     );
   });
 
@@ -456,8 +456,8 @@ describe('speakClearance', () => {
     );
     expect(spoken.fullRoute).toBe(
       'November four eight three kilo alpha, cleared to Seattle airport, ' +
-        'San Francisco Five departure, radar vectors Oakland VOR, Victor two forty-four Altam, ' +
-        `Victor three ninety-two Sacramento VOR, Victor six Palisades VOR, direct Truck, direct. ${closing}`,
+        'San Francisco Five departure, radar vectors Oakland VOR, Victor two forty-four, Altam, ' +
+        `Victor three ninety-two, Sacramento VOR, Victor six, Palisades VOR, direct Truck, direct. ${closing}`,
     );
   });
 
@@ -586,7 +586,7 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.abbreviated).toContain(
-      'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, direct.',
+      'Gap Seven departure, radar vectors Oakland VOR, Victor six, Sacramento VOR, direct.',
     );
     expect(spoken.fullRoute).toBe(spoken.abbreviated);
   });
@@ -619,11 +619,11 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.abbreviated).toContain(
-      'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, then as filed.',
+      'Gap Seven departure, radar vectors Oakland VOR, Victor six, Sacramento VOR, then as filed.',
     );
     expect(spoken.fullRoute).toContain(
-      'Gap Seven departure, radar vectors Oakland VOR, Victor six Sacramento VOR, ' +
-        'Victor twenty-three Yubba, direct.',
+      'Gap Seven departure, radar vectors Oakland VOR, Victor six, Sacramento VOR, ' +
+        'Victor twenty-three, Yubba, direct.',
     );
   });
 
