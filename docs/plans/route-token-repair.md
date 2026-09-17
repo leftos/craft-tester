@@ -77,9 +77,24 @@ tokens so the amendment reason can name them.
 
 **Malformed tokens.** No ident in the NAS is longer than five characters except a procedure (`[A-Z]{3,5}\d`,
 six), so the test needs no new data: a token that is neither a procedure token nor an airway token and is
-longer than five characters names nothing. Dropping it leaves a gap, and the gap is closed by the route
-builder already in `rules/routeBuild.ts`, searching from the fix before it to the fix after it; where no
-chain connects them the token is simply dropped and the two fixes join direct.
+longer than five characters names nothing.
+
+**The test is "an ident too long to be one", not "a long token"** (corrected 2026-09-17, found by the Brief B
+dispatch running it against the corpus). The plain length test also matches `(continued)`, the marker the
+worksheet transcription leaves where the source PDF cuts a route off — seven fixtures carry it inside
+`filedRoute`, five of them settled, and the plan record keeps the truncated tail "as transcribed" on purpose.
+So a token is malformed only when it is **letters and digits only** and too long: `BVLQ124` qualifies,
+`(continued)` (parentheses, lowercase) and `ANN…` (an ellipsis) are not claiming to be idents and pass
+through. A token that is not even shaped like an ident is a transcription note, not a typo to repair.
+
+**The repair runs on the heading path too**, unlike the structure drop above. The asymmetry is principled: a
+structure fix is dropped because *a SID* flies the aircraft over it, and on a bare heading no SID does — but
+a token that names nothing names nothing whatever clearance the flight gets, and leaving it would speak
+"bravo victor lima quebec one two four" on exactly the plans the heading path serves.
+
+**The gap is closed by the route builder** already in `rules/routeBuild.ts`, searching from the fix before the
+dropped element to the fix after it; where no chain connects them the element is simply dropped and the two
+fixes join direct.
 
 **Citations.** Two new rows in `generator/shared/phraseology_rules.yaml`, since both are national reading
 conventions rather than ZOA facts: one for reading past the SID's own structure, one for a route element
@@ -113,8 +128,29 @@ ruling; the koak-v3 note claiming otherwise was stale.
   Follow-up noted, not a blocker: `builtExpectation` does not carry `dropped`, so a route that is both
   built and had a structure prefix would drop it without citing `R-SID-STRUCTURE`; no plan in the corpus
   does both.
-- [ ] **Brief B** — the malformed token, the `Q124 -> BVL` row, the rebuild across the gap
-- [ ] Settle the four fixtures against the user's confirmed answers above
+- [x] **Brief B** — landed 2026-09-17 (`5a86e63`, merged `1736564`): `isMalformedToken` in `rules/route.ts`,
+  `walkTo` as the one breadth-first search with `connectFixes` as its fix-to-fix entry point and
+  `connectionCitations` as the one path to a chain's citations, the repair on the assigned-tail, built and
+  heading paths alike, the shared row `R-ROUTE-TOKEN` cited with the connection rows crossed, and the
+  `Q124 -> BVL` row. Suite 1,097 green, both builds `--check` unchanged. Its first report was
+  `underspecified` on the `(continued)` clash above.
+- [x] Settle the four fixtures — **settled by the user 2026-09-17**, both pairs as proposed. **KOAK now has
+  no pending fixture at all**; KSFO is at 33, all in the paused step-21 loop.
+
+## Landed
+
+Both concepts are in. What the four plans now answer:
+
+| plan | type | route | spoken |
+|---|---|---|---|
+| FFT2015 KOAK | — | `CNDEL5 SUSEY EBAYE BURGL` | "Candle Five departure, Susey transition, then as filed. Climb via SID." |
+| FFT2015 KSFO | — | `WESLA5 SUSEY EBAYE BURGL` | "Wesla Five departure, Susey transition, then as filed. Climb via SID except maintain three thousand." |
+| UAL313 KOAK | `B752/L` | `OAK6 OAK MOGEE Q124 BVL WAATS5` | "Oakland Six departure, radar vectors Mogee, Queue one twenty-four, Bonneville VOR, then as filed. Climb via SID except maintain FL190." |
+| UAL313 KSFO | `B752/L` | `TRUKN2 MOGEE Q124 BVL WAATS5` | "Trukn Two departure, Mogee transition, Queue one twenty-four, Bonneville VOR, then as filed. Climb via SID." |
+
+FL330 stands on both UAL313 plans: `/Q` is in no FAA table, and the `/L` it corrects to is RVSM-approved.
+KOAK UAL313's missing `OAK` after `OAK6` rides along in the scored route correction rather than standing as
+its own `R-RV-NAVAID` warning, since the box is amended anyway (user accepted 2026-09-17).
 
 ## Findings to chase separately
 

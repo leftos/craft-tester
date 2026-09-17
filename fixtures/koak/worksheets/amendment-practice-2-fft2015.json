@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "CNDEL5 SUSEY EBAYE BURGL",
+        "reason": "the route files no departure procedure; the SOP assigns CNDEL5 from 30 in SFOW, and CNDEL and PORTE lie on the CNDEL5 structure; the route is read from its published transition SUSEY"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-fft2015",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; type A32N filed on the sheet, read as A20N"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups); type A32N filed on the sheet, read as A20N; settled by the user 2026-09-17: a filed element the CNDEL5 already flies over (CNDEL, its family; PORTE, its base fix) is not read back where the route files one of its published transitions further along, so the route is read from SUSEY (R-SID-STRUCTURE)"
   },
-  "status": "pending"
+  "status": "settled"
 }

@@ -1,5 +1,14 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "WESLA5 SUSEY EBAYE BURGL",
+        "reason": "PORTE8 is not the procedure the SOP assigns an RNAV jet from 28L in 28 RT; it is WESLA5, and PORTE lies on the WESLA5 structure; the route is read from its published transition SUSEY"
+      }
+    ]
+  },
   "id": "ws-ksfo-amendment-practice-2-fft2015",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the runway configuration 28 RT departs south per direction_runway_preference, pending validation; type A32N filed on the sheet, read as A20N"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the runway configuration 28 RT departs south per direction_runway_preference; type A32N filed on the sheet, read as A20N; settled by the user 2026-09-17: PORTE is the base fix of WESLA5, and the route files its published transition SUSEY further along, so the route is read from SUSEY (R-SID-STRUCTURE); PORTE8 names no KSFO procedure"
   },
-  "status": "pending"
+  "status": "settled"
 }

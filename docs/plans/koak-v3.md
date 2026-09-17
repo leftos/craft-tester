@@ -511,9 +511,8 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   (`ws-amendment-practice-1a-lxj351` exists under both `fixtures/ksfo/` and `fixtures/koak/`, so `propose <id>`
   is ambiguous: decide whether the importer prefixes new ids with the airport). Backlog: the amendment parser
   still counts five non-blank cells per row, so an empty plan cell would shift every later row.
-- [ ] **KOAK validation loop, started 2026-09-16** — record below; **state 2026-09-17: 2 of the 50 KOAK
-  fixtures are still pending** (FFT2015, UAL313), both held by the item under this one, and 35 KSFO fixtures
-  remain in the paused KSFO loop (MAIN.md step 21). Started with `pnpm -C web propose --pending`, 87 pending
+- [x] **KOAK validation loop, started 2026-09-16** — record below; **closed 2026-09-17: all 50 KOAK
+  fixtures are settled.** 33 KSFO fixtures remain in the paused KSFO loop (MAIN.md step 21). Started with `pnpm -C web propose --pending`, 87 pending
   across both airports; the log was `.tmp/propose-pending2.log`. Data fix the same day: the KOAK gates lacked the worksheet
   exit fixes (CCR, RDD, LKV north; SUNNE, CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO south), which blocked six
   jets with `no assignment rule applies to SFOW no-gate runway 30 class J`. Engine gaps found: (1) **route
@@ -633,10 +632,12 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `Q174 → FLCHR` connection row); N918AR re-ruled `NIMI6 OAK AVE EHF WAYVE1` (SMO props row held); SWA1254
   re-ruled `OAK6 OAK SAC ANAHO PRNCS SADYL4` as the KSFO library files it (`ANAHO → PRNCS` connection row); the
   KOAK library jet row `RZS LAX HUBRD#` to KSAN becomes `RZS LAX COMIX#`.
-- [ ] **The last two pending KOAK fixtures** (FFT2015 and UAL313, with their KSFO twins) are designed and
-  ruled on in [route-token-repair.md](./route-token-repair.md): read a filed route from the first element
-  that is not the SID's own structure (FFT2015, a scored route amendment), and drop a malformed route token
-  and build across the gap (UAL313, with a `Q124 -> BVL` connection row). Brief A dispatched 2026-09-17.
+- [x] **The last two pending KOAK fixtures** (FFT2015 and UAL313, with their KSFO twins) — landed and
+  settled 2026-09-17, record in [route-token-repair.md](./route-token-repair.md): a filed route is read from
+  the first element that is not the SID's own structure where it files a published transition further along
+  (FFT2015, a scored route amendment, shared row `R-SID-STRUCTURE`), and a route element that names nothing
+  is dropped with the gap connected (UAL313, shared row `R-ROUTE-TOKEN`, a `Q124 -> BVL` connection row).
+  **KOAK now has no pending fixture.**
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture

@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "type",
+        "proposed": "B752/L",
+        "reason": "suffix /Q is not in FAA JO 7110.65 TBL 2-3-10; the fleet files a B752 as B752/L"
+      },
+      {
+        "box": "route",
+        "proposed": "OAK6 OAK MOGEE Q124 BVL WAATS5",
+        "reason": "BVLQ124 names no fix, navaid, airway or procedure; the route is connected MOGEE Q124 BVL"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-ual313",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups); settled by the user 2026-09-17: /Q is not in FAA JO 7110.65 TBL 2-3-10 so the type box reads B752/L, which is RVSM-approved and leaves FL330 as filed; BVLQ124 is an identifier too long to be one and is dropped, the gap connected MOGEE Q124 BVL (R-ROUTE-TOKEN), which also carries the OAK the vector SID is filed with"
   },
-  "status": "pending"
+  "status": "settled"
 }
