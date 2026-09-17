@@ -423,4 +423,22 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `030/090` (hundreds of feet, floor/cap; KSFO recorded the cap only); **OAKE rows begin on a heading token**
   (`[OAKE] +H270 FEVTA FEVTA1+ 100/100`), so the TEC substitution in `rules/amend/tec.ts` must accept `H<ddd>` at
   the head of a route as the numbered heading the SOP issues there, not a SID placeholder (brief 2 or 3).
-- [ ] `import-worksheets --airport KOAK`; validation loop with the user
+- [ ] `import-worksheets --airport KOAK`; validation loop with the user. **Run 2026-09-16 in `wt/koak-worksheets`**: the
+  two phraseology sheets imported (6 + 6 pending fixtures, uncommitted there); the three amendment sheets fail
+  (`Amendment Practice 1A [310/330]: aircraft type 'OAK6 OAK ORRCA' is not a designator…`). Cause: the OAK amendment
+  sheets carry **four correction cells after the five plan cells** (type, destination, altitude, route corrections:
+  N238JP KJAC FL320 → `310/330` + `OAK6 OAK ORRCA`; SWA984 KLAX → `270`; SWA1984 KPDX → `OAK6 OAK GRTFL`; JSX201 →
+  none; AAY218's destination cell reads `KPGI` with `KGPI` on a second line, a destination correction the engine
+  has no box for; KAL65 → `OAK6 OAK RBL`; XOJ715 → `OAK6 OAK SYRAH`; SWA1859 → `OAK6 OAK TIPRE`; LXJ351 →
+  `CNDEL5 KAYEX LOSHN EHF`; SWA1883, SWA126, N172SP → none; SKW2345 → the sheet ends). The KSFO sheets have five
+  cells and no key. Cached text: `generator/cache/worksheets/1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU.txt`;
+  the sheet itself: `https://docs.google.com/document/d/1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU/edit`. User
+  2026-09-16 asked to see the sheet before ruling on the extra cells (open question: are they ZOA's answer key, and
+  does the importer settle a fixture when the engine agrees with them).
+- [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
+  `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
+  destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture
+  variant), `rules/amend/` a destination check (an unknown ICAO whose one-letter-transposed neighbour is in the
+  library? or the sheet's answer only — decide with the user), the amendment UI box, the results view, the
+  importer's correction-cell reading. Plan before the OAK amendment import; the two phraseology sheets can land
+  first.
