@@ -3,6 +3,7 @@ import type {
   AirportData,
   Destination,
   LoaRule,
+  RouteConnection,
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
@@ -15,14 +16,21 @@ import type { Classification } from '@/rules/classify.ts';
 import type { RnavElement, RnavNeed } from '@/rules/route.ts';
 import {
   flightDirection,
+  isMalformedToken,
   isSidToken,
   lackingRnavElements,
   parseFiledRoute,
 } from '@/rules/route.ts';
-import type { BuildScope, BuiltRoute } from '@/rules/routeBuild.ts';
-import { buildRoute, builtCitations, builtTokens } from '@/rules/routeBuild.ts';
+import type { BuildScope, BuiltRoute, FixChain } from '@/rules/routeBuild.ts';
+import {
+  buildRoute,
+  builtCitations,
+  builtTokens,
+  connectFixes,
+  connectionCitations,
+} from '@/rules/routeBuild.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
-import type { Procedure, ResolvedClearance, Unresolved } from '@/rules/types.ts';
+import type { Procedure, ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** A procedure token split into the family and the version digit the AIRAC cycle bumps. */
@@ -58,7 +66,8 @@ type RouteCheck = {
  * because the reason closes differently on the two paths: a flight already being given a procedure
  * keeps its SID, while a flight the SOP sends off on a heading is issued one in the heading's place.
  * `dropped` travels with a box the SOP's own procedure and the filed tail decided, naming the fixes
- * the departure already flies over that the route is no longer read from.
+ * the departure already flies over that the route is no longer read from. `repair` travels with a box
+ * the filed route named something unflyable in, naming what was taken out and how the gap was closed.
  */
 type ExpectedRoute = {
   tokens: string[];
@@ -67,7 +76,73 @@ type ExpectedRoute = {
   exitElement?: string;
   scope?: BuildScope;
   dropped?: string[];
+  repair?: RouteRepair;
 };
+
+/** A filed route with the elements that name nothing taken out, and how the gaps were closed. */
+type RouteRepair = {
+  tokens: string[];
+  dropped: string[];
+  runs: string[];
+  connections: RouteConnection[];
+};
+
+/**
+ * The filed route with every element that names nothing taken out and the gaps it leaves closed.
+ *
+ * The fixes either side of a dropped element are connected over the route-building rows, so the box
+ * reads a route the flight can be cleared on: `MOGEE BVLQ124 BVL` becomes `MOGEE Q124 BVL`. Where no
+ * chain connects them, or the element was filed with no fix on one side of it, the element is simply
+ * dropped and what is left joins direct. `runs` carries each stretch that was closed up as it now
+ * reads, for the reason to name, and `connections` the rows it was closed up by, for the citations.
+ *
+ * @param tokens The route the box would otherwise carry.
+ * @param airport The airport data, whose `routeConnections` hold the cheat sheet.
+ * @returns The repair, or `undefined` where every element of the route names something.
+ */
+function repairMalformed(tokens: readonly string[], airport: AirportData): RouteRepair | undefined {
+  const dropped = tokens.filter((token) => isMalformedToken(token));
+  if (dropped.length === 0) return undefined;
+  const repaired: string[] = [];
+  const runs: string[] = [];
+  const connections: RouteConnection[] = [];
+  let gap = false;
+  for (const token of tokens) {
+    if (isMalformedToken(token)) {
+      gap = true;
+      continue;
+    }
+    const link = gap ? connectAcross(repaired.at(-1), token, airport) : undefined;
+    if (link !== undefined) runs.push(link.run);
+    repaired.push(...(link?.chain ?? []), token);
+    connections.push(...(link?.connections ?? []));
+    gap = false;
+  }
+  return { tokens: repaired, dropped, runs, connections };
+}
+
+/** One gap closed up: the fixes written in, the rows they were found by, and how the run reads. */
+type RepairedGap = FixChain & { run: string };
+
+/**
+ * Closes the gap a dropped element left, between the fix before it and the fix after it.
+ *
+ * @param before The last fix the box still carries before the gap, absent where the dropped element
+ *   was filed first and there is no fix on that side of it.
+ * @param after The first fix the box carries after the gap.
+ * @param airport The airport data, whose `routeConnections` hold the cheat sheet.
+ * @returns The fixes and rows that carry the route across, with the run as it now reads, or
+ *   `undefined` where there is no fix before the gap to connect from.
+ */
+function connectAcross(
+  before: string | undefined,
+  after: string,
+  airport: AirportData,
+): RepairedGap | undefined {
+  if (before === undefined) return undefined;
+  const link = connectFixes(before, after, airport) ?? { chain: [], connections: [] };
+  return { ...link, run: [before, ...link.chain, after].join(' ') };
+}
 
 /** Splits the route box on whitespace, taking a leading procedure token off the front. */
 function splitFiled(filedRoute: string): FiledRoute {
@@ -143,16 +218,19 @@ function builtExpectation(
 ): ExpectedRoute | undefined {
   const parsed = parseFiledRoute(scenario.filedRoute, airport);
   if (isUnresolved(parsed)) return undefined;
+  const repair = repairMalformed(parsed.tokens, airport);
+  const tokens = repair?.tokens ?? parsed.tokens;
   const direction = flightDirection(parsed, airport);
   const candidates = unservedSids(ctx, parsed.exitElement, direction, scenario, airport);
-  const built = buildRoute(parsed.tokens, candidates, scope, airport);
+  const built = buildRoute(tokens, candidates, scope, airport);
   if (built === undefined) return undefined;
   return {
-    tokens: withVectorNavaid(builtTokens(built, parsed.tokens), airport),
+    tokens: withVectorNavaid(builtTokens(built, tokens), airport),
     tec: undefined,
     built,
     exitElement: parsed.exitElement,
     scope,
+    ...(repair === undefined ? {} : { repair }),
   };
 }
 
@@ -191,6 +269,36 @@ function withoutStructure(tail: readonly string[], dropped: readonly string[]): 
   return [...tail.slice(0, start), ...tail.slice(start + dropped.length)];
 }
 
+/**
+ * The box a flight keeps the procedure the SOP assigns and the tail it filed on.
+ *
+ * The tail is read past the fixes the departure itself flies over, and any element of it that names
+ * nothing is taken out with the gap closed up, so the box reads a route the flight can be cleared on.
+ *
+ * @param filed The route box as filed, split on a leading procedure token.
+ * @param scenario The filed flight plan.
+ * @param assigned The identifier of the procedure the SOP assigns the flight.
+ * @param airport The airport data.
+ * @returns The box as it should read, with what was dropped from it and why.
+ */
+function filedExpectation(
+  filed: FiledRoute,
+  scenario: Scenario,
+  assigned: string,
+  airport: AirportData,
+): ExpectedRoute {
+  const { dropped, exitElement } = structureDrop(scenario, airport);
+  const tail = withoutStructure(filed.tail, dropped);
+  const repair = repairMalformed(tail, airport);
+  return {
+    tokens: withVectorNavaid([assigned, ...(repair?.tokens ?? tail)], airport),
+    tec: undefined,
+    dropped: tail.length === filed.tail.length ? [] : dropped,
+    exitElement,
+    ...(repair === undefined ? {} : { repair }),
+  };
+}
+
 /** What a flight the SOP is giving a procedure may be built on: the family the pilot filed. */
 function filedScope(filed: FiledRoute): BuildScope {
   return {
@@ -216,15 +324,9 @@ function expectedRoute(
   const destination = destinationRow(airport, scenario.destination);
   const tec = tecRouteFor(ctx, scenario, airport, destination);
   if (tec === undefined) {
-    const { dropped, exitElement } = structureDrop(scenario, airport);
-    const tail = withoutStructure(filed.tail, dropped);
     return (
-      builtExpectation(scenario, ctx, airport, filedScope(filed)) ?? {
-        tokens: withVectorNavaid([assigned, ...tail], airport),
-        tec: undefined,
-        dropped: tail.length === filed.tail.length ? [] : dropped,
-        exitElement,
-      }
+      builtExpectation(scenario, ctx, airport, filedScope(filed)) ??
+      filedExpectation(filed, scenario, assigned, airport)
     );
   }
   const tokens = tecTokens(tec, airport);
@@ -362,11 +464,13 @@ function builtAmendment(
   ctx: Classification,
   airport: AirportData,
 ): ResolvedAmendment {
+  const malformed = malformedClause(expected);
+  const reason = builtReason(built, expected, scenario, ctx);
   return {
     box: 'route',
     proposed: expected.tokens.join(' '),
-    reason: builtReason(built, expected, scenario, ctx),
-    citations: builtCitations(built, airport),
+    reason: malformed === undefined ? reason : `${reason}, and ${malformed}`,
+    citations: [...builtCitations(built, airport), ...repairCitations(expected, airport)],
   };
 }
 
@@ -410,11 +514,45 @@ function structureClause(expected: ExpectedRoute, assigned: string): string | un
 }
 
 /**
+ * The rows a repaired box is cited to: the connections that closed each gap, then the rule itself.
+ *
+ * The connection rows are cited the way a built route cites them, they being the same cheat-sheet
+ * rows read for the same reason; a gap nothing connected across cites the rule alone.
+ *
+ * @param expected The box as it should read, carrying the repair where one was made.
+ * @param airport The airport data, whose `phraseologyRules` hold the quotable rows.
+ * @returns The citations, empty where the filed route named nothing that had to be taken out.
+ */
+function repairCitations(expected: ExpectedRoute, airport: AirportData): RuleCitation[] {
+  const repair = expected.repair;
+  if (repair === undefined) return [];
+  return [...connectionCitations(repair.connections), ...citePhraseology(airport, 'R-ROUTE-TOKEN')];
+}
+
+/**
+ * The clause that names the filed elements that name nothing, and how the route was closed up.
+ *
+ * @param expected The box as it should read, carrying the repair where one was made.
+ * @returns The clause, or `undefined` where every element of the filed route names something.
+ */
+function malformedClause(expected: ExpectedRoute): string | undefined {
+  const repair = expected.repair;
+  if (repair === undefined) return undefined;
+  const { dropped, runs } = repair;
+  const names = `${listWords(dropped)} name${dropped.length === 1 ? 's' : ''} no fix, navaid, airway or procedure`;
+  if (runs.length === 0) {
+    return `${names}; ${dropped.length === 1 ? 'it is' : 'they are'} taken out of the route`;
+  }
+  return `${names}; the route is connected ${runs.join(', ')}`;
+}
+
+/**
  * Which of the cases a route box with no built route is wrong for, written for the player.
  *
  * A box that files the assigned procedure and nothing else wrong but the fixes that procedure
- * already flies over is amended for those fixes alone; where the procedure is wrong or missing too,
- * the clause that says so comes first and the structure clause closes the reason.
+ * already flies over, or an element that names nothing at all, is amended for those alone; where the
+ * procedure is wrong or missing too, the clause that says so comes first and the others close the
+ * reason.
  */
 function routeReason(
   filed: FiledRoute,
@@ -424,13 +562,15 @@ function routeReason(
   assigned: string,
 ): string {
   if (expected.tec !== undefined) return tecReason(ctx, expected, scenario.destination);
-  const structure = structureClause(expected, assigned);
-  if (structure !== undefined && filed.procedure === assigned) return structure;
+  const clauses = [structureClause(expected, assigned), malformedClause(expected)].filter(
+    (clause) => clause !== undefined,
+  );
+  if (clauses.length > 0 && filed.procedure === assigned) return clauses.join(', and ');
   const procedure =
     filed.procedure === undefined
       ? `the route files no departure procedure; the SOP assigns ${assigned} from ${scenario.departureRunway} in ${ctx.config.id}`
       : procedureReason(filed.procedure, assigned, scenario, ctx);
-  return structure === undefined ? procedure : `${procedure}, and ${structure}`;
+  return [procedure, ...clauses].join(', and ');
 }
 
 /**
@@ -540,7 +680,9 @@ export function loaRouteRows(
  * on here, there being no procedure the SOP wanted this flight to keep.
  *
  * Failing a build, the box is the tail the pilot filed, so a plan that files a departure procedure
- * is amended down to that tail and a plan that files none is left alone. A TEC route wins over both,
+ * is amended down to that tail and a plan that files none is left alone; an element of that tail
+ * that names nothing is taken out of it and the fixes either side connected, a flight on a heading
+ * being vectored to a route it can fly like any other. A TEC route wins over both,
  * but a row whose route begins on a departure family never applies to such a flight: `tecRouteFor`
  * puts the row's own route to the clearance engine, which answers this flight with a heading rather
  * than with the family the row begins on. A row that begins on an initial heading token is reached
@@ -567,9 +709,16 @@ function checkHeadingRoute(
   const tec = tecRouteFor(ctx, scenario, airport, destination);
   const build =
     tec === undefined ? builtExpectation(scenario, ctx, airport, { kind: 'any' }) : undefined;
-  const resolved = tec === undefined ? (build?.tokens ?? filed.tail) : tecTokens(tec, airport);
+  const repair = build === undefined ? repairMalformed(filed.tail, airport) : undefined;
+  const resolved =
+    tec === undefined ? (build?.tokens ?? repair?.tokens ?? filed.tail) : tecTokens(tec, airport);
   if (isUnresolved(resolved)) return resolved;
-  const expected: ExpectedRoute = { ...build, tokens: withVectorNavaid(resolved, airport), tec };
+  const expected: ExpectedRoute = {
+    ...build,
+    tokens: withVectorNavaid(resolved, airport),
+    tec,
+    ...(tec === undefined && repair !== undefined ? { repair } : {}),
+  };
   const outcome = headingOutcome(filed, expected, check);
   if (tec !== undefined) return outcome;
   if (outcome !== undefined && isUnresolved(outcome)) return outcome;
@@ -599,14 +748,20 @@ function headingOutcome(
   }
   const built = expected.built;
   if (built !== undefined) return builtAmendment(expected, built, scenario, ctx, airport);
+  const reason =
+    tec === undefined
+      ? headingReason(scenario, ctx, clearance)
+      : tecReason(ctx, expected, scenario.destination);
+  const malformed = malformedClause(expected);
   return {
     box: 'route',
     proposed: tokens.join(' '),
-    reason:
-      tec === undefined
-        ? headingReason(scenario, ctx, clearance)
-        : tecReason(ctx, expected, scenario.destination),
-    citations: [...clearance.procedure.citations, ...(tec === undefined ? [] : [citeTec(tec)])],
+    reason: malformed === undefined ? reason : `${reason}, and ${malformed}`,
+    citations: [
+      ...clearance.procedure.citations,
+      ...repairCitations(expected, airport),
+      ...(tec === undefined ? [] : [citeTec(tec)]),
+    ],
   };
 }
 
@@ -632,7 +787,9 @@ function headingOutcome(
  * been issued, and the box is the route that was built in its place. Every box the check proposes
  * carries the airport's own navaid after a radar-vector SID, which is how such a plan is filed; a
  * box that files the vector SID without it is amended as a warning, the plan being filed acceptably
- * either way.
+ * either way. An element of the filed route that names nothing at all — neither a fix, a navaid, an
+ * airway nor a procedure — is taken out of the box and the fixes either side of it connected over the
+ * route-building rows, so the box reads a route the flight can be cleared on.
  *
  * Whatever that leaves, a box whose destination is outside the TRACON goes through the arrival step
  * last: a flight bound for a field the common-arrivals sheet covers is put on an arrival its
@@ -771,6 +928,7 @@ function procedureOutcome(
     citations: [
       ...clearance.procedure.citations,
       ...((expected.dropped ?? []).length === 0 ? [] : citePhraseology(airport, 'R-SID-STRUCTURE')),
+      ...repairCitations(expected, airport),
       ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
     ],
   };

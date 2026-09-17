@@ -51,22 +51,92 @@ export type BuiltRoute = {
  */
 export type BuildScope = { kind: 'filed'; family: string | undefined } | { kind: 'any' };
 
-/** One branch of the search: where it left the SID, and the fixes and rows it has crossed since. */
-type Branch = {
-  start: RouteStart;
+/** One branch of a walk: where it started, and the fixes and rows it has crossed since. */
+type Walk<S> = {
+  start: S;
   fixes: string[];
   rows: RouteConnection[];
 };
 
+/** A branch that reached one of the targets, with the target it reached. */
+type WalkHit<S> = { walk: Walk<S>; target: string };
+
 /** A branch that reached the filed route, with the index of the token it reached. */
 type Hit = {
-  branch: Branch;
+  branch: Walk<RouteStart>;
   joinIndex: number;
 };
 
 /** The fix a branch has reached, which is the start fix itself until it crosses its first edge. */
-function headOf(branch: Branch): string {
+function headOf<S extends { fix: string }>(branch: Walk<S>): string {
   return branch.fixes.at(-1) ?? branch.start.fix;
+}
+
+/**
+ * Breadth-first search from every start at once to the nearest of the targets.
+ *
+ * The frontier holds the branches of equal length, so the first target reached is reached by the
+ * fewest connections, and the frontier stays in the order the caller listed the starts, so a tie
+ * goes to the start it named first. A fix already reached is not entered again: the first way to it
+ * was at least as short. A branch has to cross at least one edge to count, so a start that is itself
+ * a target is not a hit.
+ *
+ * @param starts Where the search may begin, in preference order; each carries the fix it stands at.
+ * @param targets The fixes to reach.
+ * @param edges The connection rows the search may cross.
+ * @returns The shortest branch to a target, or undefined when none of the starts reaches one.
+ */
+function walkTo<S extends { fix: string }>(
+  starts: readonly S[],
+  targets: ReadonlySet<string>,
+  edges: readonly RouteConnection[],
+): WalkHit<S> | undefined {
+  const reached = new Set(starts.map((start) => start.fix));
+  let frontier: Walk<S>[] = starts.map((start) => ({ start, fixes: [], rows: [] }));
+  while (frontier.length > 0) {
+    const next: Walk<S>[] = [];
+    for (const branch of frontier) {
+      const head = headOf(branch);
+      for (const edge of edges) {
+        if (edge.from !== head || reached.has(edge.to)) continue;
+        const grown = {
+          start: branch.start,
+          fixes: [...branch.fixes, edge.to],
+          rows: [...branch.rows, edge],
+        };
+        if (targets.has(edge.to)) return { walk: grown, target: edge.to };
+        reached.add(edge.to);
+        next.push(grown);
+      }
+    }
+    frontier = next;
+  }
+  return undefined;
+}
+
+/** The fixes and the rows that carry a route from one fix to another over the connection rows. */
+export type FixChain = { chain: string[]; connections: RouteConnection[] };
+
+/**
+ * The route from one fix of a filed box to another over the cheat sheet's rows.
+ *
+ * The chains that always connect are searched first, so a route that never needs a controller's
+ * judgement is preferred over one that usually works, and within either search the fewest
+ * connections win — the same ordering a route built off a SID is searched by.
+ *
+ * @param from The fix the route leaves.
+ * @param to The fix the route has to reach.
+ * @param airport The airport data, whose `routeConnections` hold the cheat sheet.
+ * @returns The fixes strictly between the two and the rows crossed, or undefined where no chain
+ *   connects them.
+ */
+export function connectFixes(from: string, to: string, airport: AirportData): FixChain | undefined {
+  const starts = [{ fix: from }];
+  const targets = new Set([to]);
+  const always = airport.routeConnections.filter((row) => row.connects === 'always');
+  const hit = walkTo(starts, targets, always) ?? walkTo(starts, targets, airport.routeConnections);
+  if (hit === undefined) return undefined;
+  return { chain: hit.walk.fixes.slice(0, -1), connections: hit.walk.rows };
 }
 
 /**
@@ -87,14 +157,12 @@ export function startsOf(sid: Sid): RouteStart[] {
 }
 
 /**
- * Breadth-first search from every place the flight can leave the SID to the nearest filed token.
+ * The walk from every place the flight can leave the SID to the nearest filed token.
  *
- * The frontier holds the branches of equal length, so the first token reached is reached by the
- * fewest connections, and within a length the branches are in chart order with the SID's own end
- * fix behind them, so a tie goes to the transition the chart lists first and only then to the end
- * fix. A fix already reached is not entered again: the first way to it was at least as short. A
- * branch has to cross at least one edge to count, so a start that is itself further down the filed
- * route is not a hit — that route flies the SID as filed and needs no building.
+ * The starts are in chart order with the SID's own end fix behind them, so a tie between two
+ * branches of the same length goes to the transition the chart lists first and only then to the end
+ * fix. A start that is itself further down the filed route is not a hit, the walk having to cross at
+ * least one edge — that route flies the SID as filed and needs no building.
  *
  * @param sid The SID the SOP assigns, whose transitions and end fix are the starting points.
  * @param tokens The filed route from its exit element onwards.
@@ -106,29 +174,9 @@ function search(
   tokens: readonly string[],
   edges: readonly RouteConnection[],
 ): Hit | undefined {
-  const targets = new Set(tokens);
-  const starts = startsOf(sid);
-  const reached = new Set(starts.map((start) => start.fix));
-  let frontier: Branch[] = starts.map((start) => ({ start, fixes: [], rows: [] }));
-  while (frontier.length > 0) {
-    const next: Branch[] = [];
-    for (const branch of frontier) {
-      const head = headOf(branch);
-      for (const edge of edges) {
-        if (edge.from !== head || reached.has(edge.to)) continue;
-        const grown = {
-          start: branch.start,
-          fixes: [...branch.fixes, edge.to],
-          rows: [...branch.rows, edge],
-        };
-        if (targets.has(edge.to)) return { branch: grown, joinIndex: tokens.indexOf(edge.to) };
-        reached.add(edge.to);
-        next.push(grown);
-      }
-    }
-    frontier = next;
-  }
-  return undefined;
+  const hit = walkTo(startsOf(sid), new Set(tokens), edges);
+  if (hit === undefined) return undefined;
+  return { branch: hit.walk, joinIndex: tokens.indexOf(hit.target) };
 }
 
 /** The route a row that names a forced transition builds, which needs no connection at all. */
@@ -258,9 +306,19 @@ export function builtCitations(built: BuiltRoute, airport: AirportData): RuleCit
   }
   return [
     toCitation(built.row),
-    ...built.connections.map(toCitation),
+    ...connectionCitations(built.connections),
     ...citePhraseology(airport, 'R-ROUTE-BUILD'),
   ];
+}
+
+/**
+ * The cheat-sheet rows a chain of connections was carried by, as citations.
+ *
+ * @param connections The rows the search crossed, in the order the route reads them.
+ * @returns One citation per row.
+ */
+export function connectionCitations(connections: readonly RouteConnection[]): RuleCitation[] {
+  return connections.map(toCitation);
 }
 
 /**

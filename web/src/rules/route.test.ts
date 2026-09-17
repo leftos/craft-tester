@@ -5,6 +5,7 @@ import type { AirportData, Scenario } from '@/data/schema.ts';
 import {
   directionOf,
   isAirwayToken,
+  isMalformedToken,
   isSidToken,
   parseFiledRoute,
   rnavElements,
@@ -69,6 +70,23 @@ describe('isAirwayToken', () => {
     ['WAATS5', false],
   ])('classifies %s', (token, expected) => {
     expect(isAirwayToken(token)).toBe(expected);
+  });
+});
+
+describe('isMalformedToken', () => {
+  it.each([
+    ['BVLQ124', true],
+    ['SFOWESLA', true],
+    ['MOGEE', false],
+    ['BVL', false],
+    ['Q124', false],
+    ['R464', false],
+    ['WAATS5', false],
+    ['TRUKN2', false],
+    ['(continued)', false],
+    ['ANN…', false],
+  ])('classifies %s', (token, expected) => {
+    expect(isMalformedToken(token)).toBe(expected);
   });
 });
 

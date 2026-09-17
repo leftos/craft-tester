@@ -12,6 +12,9 @@ const SID_TOKEN = /^[A-Z]{3,5}\d$/;
  */
 const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
 
+/** An identifier as a flight plan writes one: upper-case letters and digits, and nothing else. */
+const IDENT_TOKEN = /^[A-Z0-9]+$/;
+
 /** What flying one element of a route takes: RNAV capability, or the GPS a T or Y route needs. */
 export type RnavNeed = 'rnav' | 'gnss';
 
@@ -57,6 +60,28 @@ export function isSidToken(token: string): boolean {
  */
 export function isAirwayToken(token: string): boolean {
   return AIRWAY_TOKEN.test(token);
+}
+
+/**
+ * Whether a route token is an identifier too long to be one, and so names nothing at all.
+ *
+ * Nothing the NAS publishes carries more than five characters in its identifier — a fix and a navaid
+ * are two to five, an airway a letter and up to three digits — except a departure or arrival
+ * procedure, which is three to five letters and a version digit. A token of letters and digits alone
+ * that is neither of those and runs past five characters is therefore an identifier that cannot be
+ * one: two run together, or a typo. `BVLQ124`, seven characters, is the navaid BVL and the airway
+ * Q124 filed as one element.
+ *
+ * The test is for an identifier too long to be one rather than for a long token, because a route box
+ * also carries what the worksheet wrote around the route it transcribes: the `(continued)` of a route
+ * the sheet cut off, and the `ANN…` it cut it off at. The parentheses, the lower case and the
+ * ellipsis say those are not identifiers being attempted, so they are left where they were written.
+ *
+ * @param token One token of a filed route.
+ * @returns True for `BVLQ124`, false for `BVL`, `Q124`, `MOGEE`, `R464`, `WAATS5` and `(continued)`.
+ */
+export function isMalformedToken(token: string): boolean {
+  return IDENT_TOKEN.test(token) && !isSidToken(token) && !isAirwayToken(token) && token.length > 5;
 }
 
 /** Splits a route string on whitespace, dropping the empty strings a blank route produces. */
