@@ -571,9 +571,16 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   first, then the other southbound-eligible SIDs, before resorting to a no-SID heading departure."** Concept:
   route building in clearance mode too: `resolveClearance`, before taking a heading row, tries the passed-over
   SIDs in table order with the any-candidate scope and clears the flight on the built route (SWA344 → "Candle
-  Five departure, Yyung transition, direct Los Angeles VOR, then as filed"); N903JP (`COAST9 GVO HABUT`) reaches
-  no chain (nothing connects to GVO) and stays a question. Dispatched 2026-09-17 in `wt/koak-gen` (SWA344
-  settled by it). **User 2026-09-16, UAL313**: type `B752/L` and route
+  Five departure, Yyung transition, direct Los Angeles VOR, then as filed"); N903JP (`COAST9 GVO HABUT`): **user 2026-09-17: `CNDEL5 YYUNG GVO
+  HABUT`**, so a `YYUNG → GVO (usually)` connection row (dispatched with the R464 brief) lets the same build
+  reach it. **Landed 2026-09-17** (`rules/routeBuild.ts` serves both engines; `resolveClearance` builds on the
+  passed-over candidates before a heading unless a TEC row is keyed for the flight; the clearance carries
+  `route.value.builtRoute`, `propose` prints `built: …`, the R.route dropdown offers the issued SID's transitions;
+  SWA344 settled). N903JP to settle once the YYUNG → GVO row lands.
+  **User 2026-09-17**: KAL65 `OAK6 OAK RBL J1 …`, SWA1254 FL410 + `OAK6 OAK SAC ANAHO`, N471RY `NIMI6 OAK SGD`,
+  N918AR `NIMI6 OAK AVE` are right (settling with the R464 brief). R464 exemption (FDX3875) dispatched 2026-09-17
+  in `wt/koak-data`: shared `airways.yaml` with `one_way` rows R463, R464, A220, emitted as `airways`, and the
+  parity walk in `rules/amend/altitude.ts` skipping a route on a one-way airway. **User 2026-09-16, UAL313**: type `B752/L` and route
   `OAK6 OAK MOGEE Q124 BVL WAATS5`: concept, every route token must be a known fix, navaid, airway or procedure
   (from the CIFP) and an unknown one is a route amendment; pending until built. **User 2026-09-16, PXT415**
   (C25B/A, `SUNNE1 SUNNE KAYEX LOSHN PMD V137 PSP`): "requires looking at the various charts to see if you can
