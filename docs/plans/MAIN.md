@@ -38,7 +38,21 @@ one line and move its record to the archive.
 ## Inputs to fold into the rules
 
 - [ ] **New concept (user 2026-09-16, SWA984): an RNAV jet filing a non-RNAV arrival is amended onto the RNAV
-  arrival the LOA routes it by.** SWA984 (`/L` B737, KSFO to KLAX, filed `SSTIK5 EBAYE AVE SADDE8`) should expect
+  arrival the LOA routes it by** — **chosen next 2026-09-17**, together with holding every proposed box against the
+  LOA rows. Both directions (user 2026-09-17, NKS510: an A320 `/A`, non-RNAV and non-RVSM, filing `CNDEL5 SUSEY
+  EBAYE BURGL IRNMN2` to KLAX gets `SKYL1 AVE SADDE8` at FL270: "route-building both ways: SADDE8 is the
+  conventional jet arrival, AVE is its entry fix, AVE is also the exit fix of SKYL1, the conventional jet
+  southbound SID out of KOAK"). Rule: the flight is put on an arrival of its own class (RNAV-capable → an RNAV
+  arrival, non-RNAV → a conventional one) of the destination, reached from a transition or end fix of the SOP's
+  SID through the connection table, fewest hops, an arrival transition the LOA row names preferred; a
+  radar-vector SID reaches any arrival transition directly. Design in two briefs: (A) generator: each destination's
+  STARs from the CIFP `PE` records with `rnav` and their enroute transitions, emitted as `arrivals` on the
+  destination row; (B) engine: the swap in the amendment route check and in the reveal, every proposed box
+  (assigned, built, TEC, swapped) held against the LOA route rows, an amendment produced by the swap flagged
+  `arrivalSwap`, and a student answer that leaves such a box as filed or as the pre-swap proposal graded `half`
+  (new verdict tier, half a point, shown in the results and the score); fixtures SWA984-KSFO, NKS510, SWA888
+  (`CNDEL5 KTINA CISKO RDHOT ROKKR2`?), JSX203, N858EE (`CNDEL5 YYUNG TILLT LEGOZ4`?), SWA2021 re-proposed and
+  brought to the user. SWA984 (`/L` B737, KSFO to KLAX, filed `SSTIK5 EBAYE AVE SADDE8`) should expect
   `SSTIK5 SUSEY EBAYE BURGL IRNMN2`: SADDE8 is the non-RNAV LAX arrival (fed from DERBB per the ZOA "Common ZLA
   Arrivals from ZOA" table and the LOA's `..DERBB (Non-RNAV)`), IRNMN2 the RNAV one (BURGL, REBRG), and the LOA's
   LAX jet row names BURGL. Until this lands the fixture is `pending` (flipped 2026-09-16 with this note) and the
