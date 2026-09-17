@@ -437,7 +437,10 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   and can't be trusted. They could be correct or not."** So the importer ignores every cell after the five plan
   cells and any extra line inside a cell (AAY218 files `KPGI`), records nothing from them, and a plan whose
   destination the shared file does not hold is skipped with a report line until the destination box exists.
-  Brief 3d (parser) dispatched 2026-09-16 on `wt/koak-worksheets`.
+  Brief 3d (parser) dispatched 2026-09-16 on `wt/koak-worksheets`; then **user: "The linked files have been
+  restored to a clean version at the original URLs"**, so the brief was redirected: re-fetch the three sheets (the
+  cached 1A export is stale), add the tolerance only if a clean sheet still needs it, add `KGPI` (Glacier Park,
+  ZLC) to the shared destinations if the clean sheet files it.
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture
