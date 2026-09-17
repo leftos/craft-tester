@@ -4,7 +4,7 @@
     "amendments": [
       {
         "box": "route",
-        "proposed": "OAK6 LIN TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4",
+        "proposed": "OAK6 OAK LIN TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4",
         "reason": "SLNT1 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6"
       }
     ]
@@ -26,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: SLNT1 is stale and SLNT3 a noise-window SID; at 1400L OAK6 LIN TIPRE …; the proposed route will gain OAK after the vector SID when that concept lands"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: SLNT1 is stale and SLNT3 a noise-window SID; at 1400L OAK6 LIN TIPRE …; the proposed route will gain OAK after the vector SID when that concept lands; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"
   },
   "status": "settled"
 }

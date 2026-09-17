@@ -25,6 +25,8 @@ export type ProposalAmendment = {
   proposed: string;
   reason: string;
   citations: readonly RuleCitation[];
+  /** Set on a box the plan reads acceptably either way, which the student is not scored on. */
+  warning?: boolean;
 };
 
 /** The clearance half of an outcome, which amendment mode also prints for the corrected plan. */
@@ -132,7 +134,8 @@ function amendmentLines(
   const lines = ['', 'AMENDMENTS'];
   if (amendments.length === 0) lines.push('  none — the plan is correct as filed');
   for (const amendment of amendments) {
-    lines.push(`  ${amendment.box.padEnd(12)} ${amendment.proposed}`);
+    const box = amendment.warning === true ? `${amendment.box} (warning)` : amendment.box;
+    lines.push(`  ${box.padEnd(12)} ${amendment.proposed}`);
     lines.push(`       ${amendment.reason}`);
     for (const citation of amendment.citations)
       lines.push(`       ${citation.id} — ${citation.text}`);
@@ -447,6 +450,7 @@ function amendmentOutcome(
       proposed: proposedValue(amendment),
       reason: amendment.reason,
       citations: amendment.citations,
+      ...(amendment.box === 'route' && amendment.warning === true ? { warning: true } : {}),
     })),
     corrected: clearanceOutcome(
       runtime.resolveAmendedClearance(scenario, result.corrected, airport),

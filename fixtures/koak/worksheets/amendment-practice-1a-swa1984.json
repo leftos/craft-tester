@@ -4,7 +4,7 @@
     "amendments": [
       {
         "box": "route",
-        "proposed": "OAK6 GRTFL MACHU TMBRS2",
+        "proposed": "OAK6 OAK GRTFL MACHU TMBRS2",
         "reason": "HUSSH2 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6"
       }
     ]
@@ -26,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: HUSSH2 is issued only 0100-0500L; at 1400L OAK6 GRTFL …; the proposed route will gain OAK after the vector SID when that concept lands"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: HUSSH2 is issued only 0100-0500L; at 1400L OAK6 GRTFL …; the proposed route will gain OAK after the vector SID when that concept lands; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"
   },
   "status": "settled"
 }

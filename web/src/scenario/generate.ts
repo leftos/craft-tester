@@ -10,12 +10,13 @@ import type {
   Scenario,
 } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
+import { withVectorNavaid } from '@/rules/amend/route.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { inAnyGroup } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
 import { airlineOf } from '@/rules/runway.ts';
-import type { ClearanceElement, Unresolved } from '@/rules/types.ts';
+import type { ClearanceElement, Procedure, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import { matchesConfig } from '@/scenario/filter.ts';
@@ -420,6 +421,25 @@ function withBuiltRoute(clean: Scenario, airport: AirportData): Scenario {
 }
 
 /**
+ * The route box a drawn plan files: the procedure the SOP assigns it, then the library tail.
+ *
+ * A radar-vector SID is filed with the departure airport's own navaid between the two, which is how
+ * the computerized flight plan leaves the field; a tail that already begins on that navaid keeps the
+ * one it has. A flight the SOP sends off on the runway heading is assigned no procedure to name, so
+ * its box is the tail alone.
+ *
+ * @param procedure The procedure the clearance engine assigned, or the heading it issued instead.
+ * @param tail The route library row's tail, as the plan files it after the procedure.
+ * @param airport The airport data, whose SIDs say which are flown on vectors.
+ * @returns The route box the drawn plan files.
+ */
+export function composedRoute(procedure: Procedure, tail: string, airport: AirportData): string {
+  if (procedure.kind !== 'sid') return tail;
+  const tokens = tail.split(/\s+/).filter((token) => token.length > 0);
+  return withVectorNavaid([procedure.id, ...tokens], airport).join(' ');
+}
+
+/**
  * Draws one candidate scenario and runs both engines over it.
  *
  * The filed route is assembled after the clearance engine has spoken, because it names the
@@ -483,10 +503,9 @@ export function drawScenario(
   if (!result.ok) {
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }
-  const procedure = result.clearance.procedure.value;
   const composed: Scenario = {
     ...filed,
-    filedRoute: procedure.kind === 'sid' ? `${procedure.id} ${route.tail}` : route.tail,
+    filedRoute: composedRoute(result.clearance.procedure.value, route.tail, airport),
   };
   const clean = withBuiltRoute(composed, airport);
   return amendmentGap(clean, airport) ?? clean;

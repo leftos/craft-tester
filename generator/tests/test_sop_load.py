@@ -37,6 +37,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-TRANSITION",
     "R-AS-FILED",
     "R-RV-SID",
+    "R-RV-NAVAID",
     "R-THEN-AS-FILED",
     "R-ROUTE-BUILD",
     "R-HEADING",

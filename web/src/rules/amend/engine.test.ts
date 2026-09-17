@@ -209,8 +209,8 @@ describe('resolveAmendments', () => {
     if (type?.box !== 'type' || route?.box !== 'route')
       throw new Error('the boxes are not amended');
     expect(type.proposed).toBe('SR22/G');
-    expect(route.proposed).toBe('SFO5 OAK V6 SAC');
-    expect(route.reason).toContain('the TEC route for a piston in SFOW is SFO5 OAK V6 SAC');
+    expect(route.proposed).toBe('SFO5 SFO OAK V6 SAC');
+    expect(route.reason).toContain('the TEC route for a piston in SFOW is SFO5 SFO OAK V6 SAC');
     expect(route.reason).not.toContain('runway heading');
     const amended = resolveAmendedClearance(flight, result.corrected, ksfo);
     if (!amended.ok) throw new Error(amended.unresolved.map((item) => item.reason).join('; '));
@@ -241,7 +241,7 @@ describe('resolveAmendments', () => {
     expect(type.proposed).toBe('SR22/G');
     expect(type.reason).toContain('suffix /E is not in');
     expect(type.reason).not.toContain('an RNAV suffix would keep');
-    expect(route.proposed).toBe('GAPP7 EUGEN');
+    expect(route.proposed).toBe('GAPP7 SFO EUGEN');
   });
 
   it('leaves the altitude of a jet whose corrected suffix carries RVSM approval alone', () => {

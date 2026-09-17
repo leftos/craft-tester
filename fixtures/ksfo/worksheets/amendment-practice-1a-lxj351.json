@@ -1,7 +1,14 @@
 {
   "airport": "KSFO",
   "expected": {
-    "amendments": []
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "GAPP7 SFO EHF LHS V459 SLI V23 OCN",
+        "reason": "the route names GAPP7 without SFO after it; a radar-vector SID is filed as the SID, the airport navaid, then the route (R-RV-NAVAID)",
+        "warning": true
+      }
+    ]
   },
   "id": "ws-ksfo-amendment-practice-1a-lxj351",
   "mode": "amendment",
@@ -20,7 +27,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"
   },
   "status": "settled"
 }

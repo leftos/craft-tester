@@ -703,6 +703,11 @@ export const AmendmentSchema = z.discriminatedUnion('box', [
     /** One sentence for the player, saying why the box is wrong. */
     reason: z.string(),
     /**
+     * Set where the box as filed is acceptable and the proposal is only the fuller way to write it:
+     * the student is not marked wrong for leaving it alone, nor for writing the proposal in.
+     */
+    warning: z.boolean().optional(),
+    /**
      * The other box this amendment pairs with: the two are two ways to fix the same fault, and
      * either alone is a full answer.
      */

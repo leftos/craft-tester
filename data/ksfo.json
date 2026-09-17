@@ -1452,6 +1452,11 @@
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
     },
     {
+      "id": "R-RV-NAVAID",
+      "source": "ZOA practice relayed by the user, 2026-09-16",
+      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK6 OAK RBL, SFO5 SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
+    },
+    {
       "id": "R-THEN-AS-FILED",
       "source": "ZOA CRAFT Phraseology reference; user rule 2026-09-16 (N172SP amendment plan)",
       "text": "THEN AS FILED — only when the last fix spoken connects to the rest of the route the pilot filed: on an amended route the controller reads every element up to the first fix that was already on the filed plan and after which the two routes are identical, then THEN AS FILED; when no such fix exists, or nothing follows it, the route is read in full to the end"

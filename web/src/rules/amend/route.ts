@@ -67,6 +67,28 @@ function familyOf(token: string): string | undefined {
   return PROCEDURE_TOKEN.exec(token)?.[1];
 }
 
+/**
+ * A route box with the departure airport's navaid after a radar-vector SID, where one belongs.
+ *
+ * A radar-vector SID publishes no route of its own, so the computerized flight plan needs the
+ * airport's own navaid to leave the field on: the box reads `OAK6 OAK RBL`, `SFO5 SFO RBL`. The
+ * navaid is filed, not spoken — `routeFromExitFix` skips it and the clearance still reads radar
+ * vectors to the first fix — so this only shapes the box the engine writes.
+ *
+ * @param tokens The route box as the engine would otherwise propose it.
+ * @param airport The airport data, whose SIDs say which are flown on vectors.
+ * @returns The same tokens, with the navaid after the procedure where the head is a vector SID that
+ *   is not already followed by it.
+ */
+export function withVectorNavaid(tokens: readonly string[], airport: AirportData): string[] {
+  const head = tokens[0];
+  if (head === undefined) return [...tokens];
+  const sid = airport.sids.find((entry) => entry.id === head);
+  if (sid?.routePhrasing !== 'radar_vectors_fix') return [...tokens];
+  const faa = airport.airport.faa;
+  return tokens[1] === faa ? [...tokens] : [head, faa, ...tokens.slice(1)];
+}
+
 /** Whether an LOA row is written for this destination, by its ARTCC or by name. */
 function appliesTo(row: LoaRule, icao: string, destination: Destination | undefined): boolean {
   if (row.destinations?.includes(icao) === true) return true;
@@ -102,7 +124,7 @@ function builtExpectation(
   const built = buildRoute(parsed.tokens, candidates, scope, airport);
   if (built === undefined) return undefined;
   return {
-    tokens: builtTokens(built, parsed.tokens),
+    tokens: withVectorNavaid(builtTokens(built, parsed.tokens), airport),
     tec: undefined,
     built,
     exitElement: parsed.exitElement,
@@ -137,13 +159,13 @@ function expectedRoute(
   if (tec === undefined) {
     return (
       builtExpectation(scenario, ctx, airport, filedScope(filed)) ?? {
-        tokens: [assigned, ...filed.tail],
+        tokens: withVectorNavaid([assigned, ...filed.tail], airport),
         tec: undefined,
       }
     );
   }
   const tokens = tecTokens(tec, airport);
-  return isUnresolved(tokens) ? tokens : { tokens, tec };
+  return isUnresolved(tokens) ? tokens : { tokens: withVectorNavaid(tokens, airport), tec };
 }
 
 /** The reason a TEC destination's route box reads the published route rather than what was filed. */
@@ -295,6 +317,29 @@ function builtAmendment(
   };
 }
 
+/**
+ * The amendment that writes the airport navaid into a box that files a vector SID without it.
+ *
+ * The box is not wrong: the route it names is the route the flight will fly, and the clearance reads
+ * the same either way. It is only the fuller way to file the plan, so the amendment is a warning the
+ * student is not scored on.
+ *
+ * @param tokens The route box as it should read, with the navaid in it.
+ * @param airport The airport data, for the navaid and the row that says the box carries it.
+ * @returns The route amendment, marked as a warning.
+ */
+function vectorNavaidAmendment(tokens: readonly string[], airport: AirportData): ResolvedAmendment {
+  return {
+    box: 'route',
+    proposed: tokens.join(' '),
+    reason:
+      `the route names ${tokens[0]} without ${airport.airport.faa} after it; a radar-vector SID is ` +
+      `filed as the SID, the airport navaid, then the route (R-RV-NAVAID)`,
+    warning: true,
+    citations: citePhraseology(airport, 'R-RV-NAVAID'),
+  };
+}
+
 /** Which of the three cases a route box with no built route is wrong for, written for the player. */
 function routeReason(
   filed: FiledRoute,
@@ -387,8 +432,9 @@ function checkHeadingRoute(
   const tec = tecRouteFor(ctx, scenario, airport, destination);
   const expected =
     tec === undefined ? builtExpectation(scenario, ctx, airport, { kind: 'any' }) : undefined;
-  const tokens = tec === undefined ? (expected?.tokens ?? filed.tail) : tecTokens(tec, airport);
-  if (isUnresolved(tokens)) return tokens;
+  const resolved = tec === undefined ? (expected?.tokens ?? filed.tail) : tecTokens(tec, airport);
+  if (isUnresolved(resolved)) return resolved;
+  const tokens = withVectorNavaid(resolved, airport);
   if (tokens.join(' ') === filed.tokens.join(' ')) {
     return loaRouteGap(tokens, ctx, scenario.destination, airport, destination);
   }
@@ -425,7 +471,10 @@ function checkHeadingRoute(
  * on that row's own SID whatever was filed. A box that already reads right is then held against the
  * LOA routing rows written for the destination. A flight the SOP clears on the runway heading is
  * built the same way, on any SID the table passed over rather than only on the filed family, because
- * it has no procedure to keep; failing a build its box is the filed tail alone.
+ * it has no procedure to keep; failing a build its box is the filed tail alone. Every box the check
+ * proposes carries the airport's own navaid after a radar-vector SID, which is how such a plan is
+ * filed; a box that files the vector SID without it is amended as a warning, the plan being filed
+ * acceptably either way.
  *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
@@ -452,6 +501,9 @@ export function checkRoute(
   if (expected.tokens.join(' ') === filed.tokens.join(' ')) {
     const destination = destinationRow(airport, scenario.destination);
     return loaRouteGap(tail, ctx, scenario.destination, airport, destination);
+  }
+  if (withVectorNavaid(filed.tokens, airport).join(' ') === expected.tokens.join(' ')) {
+    return vectorNavaidAmendment(expected.tokens, airport);
   }
   const built = expected.built;
   if (built !== undefined) return builtAmendment(expected, built, scenario, ctx, airport);

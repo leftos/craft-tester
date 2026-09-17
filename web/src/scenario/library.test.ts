@@ -11,6 +11,7 @@ import type {
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type { Unresolved } from '@/rules/types.ts';
+import { composedRoute } from '@/scenario/generate.ts';
 
 /** The conditions every combination is composed under: an ordinary weekday afternoon. */
 const LOCAL_TIME = '1300';
@@ -79,9 +80,10 @@ function gapsOf(gaps: readonly Unresolved[]): string {
 /**
  * Why the plan this combination composes is not the correctly-filed one.
  *
- * The plan is composed the way `drawScenario` composes it: the row's tail is put to the clearance
- * engine, and the procedure the engine assigns is written at the head of the route box; a flight the
- * SOP sends off on a heading with no procedure files the bare tail. The plan is clean when the
+ * The plan is composed the way `drawScenario` composes it, through the same `composedRoute`: the
+ * row's tail is put to the clearance engine, and the procedure the engine assigns is written at the
+ * head of the route box; a flight the SOP sends off on a heading files the bare tail. The plan is
+ * clean when the
  * amendment engine resolves it and has nothing to amend, which is the definition the draw itself
  * rejects a combination by.
  *
@@ -111,10 +113,9 @@ function uncleanReason(
   };
   const result = resolveClearance(filed, data);
   if (!result.ok) return gapsOf(result.unresolved);
-  const procedure = result.clearance.procedure.value;
   const clean: Scenario = {
     ...filed,
-    filedRoute: procedure.kind === 'sid' ? `${procedure.id} ${route.tail}` : route.tail,
+    filedRoute: composedRoute(result.clearance.procedure.value, route.tail, data),
   };
   const amended = resolveAmendments(clean, data);
   if (!amended.ok) return gapsOf(amended.unresolved);

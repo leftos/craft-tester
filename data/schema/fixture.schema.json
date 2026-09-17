@@ -171,6 +171,9 @@
                       },
                       "reason": {
                         "type": "string"
+                      },
+                      "warning": {
+                        "type": "boolean"
                       }
                     },
                     "required": [

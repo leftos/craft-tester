@@ -6,6 +6,12 @@
         "box": "altitude",
         "proposedFeet": 32000,
         "reason": "filed FL330 on a 346° magnetic course to Seattle needs an even level under LOA-ZSE-PARITY; the highest legal altitude at or below it is FL320"
+      },
+      {
+        "box": "route",
+        "proposed": "OAK6 OAK DEDHD RBL LMT HAWKZ7",
+        "reason": "the route names OAK6 without OAK after it; a radar-vector SID is filed as the SID, the airport navaid, then the route (R-RV-NAVAID)",
+        "warning": true
       }
     ]
   },
@@ -26,7 +32,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: FL330 to KSEA amended to FL320 under the ZSE parity LOA"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: FL330 to KSEA amended to FL320 under the ZSE parity LOA; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"
   },
   "status": "settled"
 }

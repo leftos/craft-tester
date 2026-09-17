@@ -86,7 +86,7 @@ describe('checkRoute procedure', () => {
       departureRunway: '28L',
       runwayConfigId: '28 RT',
     });
-    expect(amendment(flight).proposed).toBe('GAPP7 EBAYE AVE SADDE8');
+    expect(amendment(flight).proposed).toBe('GAPP7 SFO EBAYE AVE SADDE8');
     expect(amendment(flight).reason).toBe(
       'SSTIK5 is not the procedure the SOP assigns an RNAV jet from 28L in 28 RT; it is GAPP7',
     );
@@ -146,7 +146,7 @@ describe('checkRoute route building', () => {
 
   it('falls back to the vector SID when no connection reaches the filed route', () => {
     const flight = swa984({ filedRoute: 'SSTIK5 OSI SNS SADDE8' });
-    expect(amendment(flight).proposed).toBe('GAPP7 OSI SNS SADDE8');
+    expect(amendment(flight).proposed).toBe('GAPP7 SFO OSI SNS SADDE8');
     expect(citations(flight)).toContain('SFOW-S-GAPP');
   });
 
@@ -159,7 +159,7 @@ describe('checkRoute route building', () => {
       callsign: 'LXJ351',
       aircraftType: 'E55P',
       destination: 'KCRQ',
-      filedRoute: 'GAPP7 EHF LHS V459 SLI V23 OCN',
+      filedRoute: 'GAPP7 SFO EHF LHS V459 SLI V23 OCN',
       filedAltitude: 39000,
       departureRunway: '01L',
     });
@@ -252,7 +252,7 @@ describe('checkRoute route building', () => {
       filedAltitude: 30000,
     });
     expect(amendment(flight).proposed).toBe(
-      'SFO5 RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)',
+      'SFO5 SFO RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)',
     );
     expect(amendment(flight).reason).toBe(
       'the route files no departure procedure; the SOP assigns SFO5 from 01R in 28/01',
@@ -280,7 +280,7 @@ describe('checkRoute TRACON destinations', () => {
       aircraftType: 'BE20',
       equipmentSuffix: '/A',
       destination: 'KSMF',
-      filedRoute: 'GAPP7 TRUKN FEVTA FEVTA1',
+      filedRoute: 'GAPP7 SFO TRUKN FEVTA FEVTA1',
       filedAltitude: 9000,
       departureRunway: '28R',
     });
@@ -305,7 +305,7 @@ describe('checkRoute TRACON destinations', () => {
       aircraftType: 'E75L',
       equipmentSuffix: '/L',
       destination: 'KSMF',
-      filedRoute: 'GAPP7 TRUKN FEVTA FEVTA1',
+      filedRoute: 'GAPP7 SFO TRUKN FEVTA FEVTA1',
       filedAltitude: 9000,
       departureRunway: '28R',
     });
@@ -321,7 +321,7 @@ describe('checkRoute TRACON destinations', () => {
       filedAltitude: 5000,
       departureRunway: '28R',
     });
-    expect(amendment(flight).proposed).toBe('GAPP7 OAK V244 ALTAM MOD');
+    expect(amendment(flight).proposed).toBe('GAPP7 SFO OAK V244 ALTAM MOD');
     expect(citations(flight)).toContain('TEC-KLVK-SFOW-JT-28');
   });
 });
@@ -390,6 +390,79 @@ describe('checkRoute on the runway heading', () => {
   it('passes over a TEC row that begins on a departure the flight is not issued', () => {
     const flight = c172({ filedRoute: 'SFO5 OAK V6 SAC' });
     expect(amendment(flight).proposed).toBe('OAK V6 SAC');
+  });
+});
+
+describe('checkRoute vector-SID navaid', () => {
+  /** The KOAK jet the SOP clears on the OAK6, whose box files the vector SID and the navaid. */
+  function swa126(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'SWA126',
+      aircraftType: 'B737',
+      destination: 'KSEA',
+      filedRoute: 'OAK6 OAK DEDHD RBL LMT HAWKZ7',
+      filedAltitude: 32000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      squawk: '4614',
+      ...overrides,
+    });
+  }
+
+  it('warns, rather than corrects, where the box files a vector SID without the navaid', () => {
+    const flight = scenario({
+      callsign: 'KAL65',
+      aircraftType: 'B77L',
+      destination: 'RKSI',
+      filedRoute: 'SFO5 RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)',
+      filedAltitude: 30000,
+    });
+    const result = amendment(flight);
+    expect(result.proposed).toBe('SFO5 SFO RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)');
+    expect(result.warning).toBe(true);
+    expect(result.reason).toBe(
+      'the route names SFO5 without SFO after it; a radar-vector SID is filed as the SID, the ' +
+        'airport navaid, then the route (R-RV-NAVAID)',
+    );
+    expect(citations(flight)).toEqual(['R-RV-NAVAID']);
+  });
+
+  it('leaves a box that already files the vector SID and the navaid alone', () => {
+    const flight = scenario({
+      callsign: 'KAL65',
+      aircraftType: 'B77L',
+      destination: 'RKSI',
+      filedRoute: 'SFO5 SFO RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)',
+      filedAltitude: 30000,
+    });
+    expect(check(flight)).toBeUndefined();
+  });
+
+  it('writes the navaid into a TEC route that begins on a vector SID', () => {
+    const flight = scenario({
+      aircraftType: 'TBM9',
+      equipmentSuffix: '/L',
+      destination: 'KMYV',
+      filedRoute: 'SFO5 OAK V6 SAC',
+      filedAltitude: 5000,
+      departureRunway: '28R',
+    });
+    expect(amendment(flight).proposed).toBe('GAPP7 SFO OAK V6 SAC');
+    expect(citations(flight)).toContain('TEC-KMYV-SFOW-TP-28');
+  });
+
+  it('writes the navaid once into the box of a plan filed with no procedure', () => {
+    const flight = swa126({ filedRoute: 'DEDHD RBL LMT HAWKZ7' });
+    expect(amendmentAt(flight, koak).proposed).toBe('OAK6 OAK DEDHD RBL LMT HAWKZ7');
+    expect(checkAt(swa126(), koak)).toBeUndefined();
+  });
+
+  it('warns on a KOAK box that files the OAK6 without OAK', () => {
+    const flight = swa126({ filedRoute: 'OAK6 DEDHD RBL LMT HAWKZ7' });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('OAK6 OAK DEDHD RBL LMT HAWKZ7');
+    expect(result.warning).toBe(true);
+    expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-NAVAID']);
   });
 });
 

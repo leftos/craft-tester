@@ -4,7 +4,7 @@
     "amendments": [
       {
         "box": "route",
-        "proposed": "GAPP7 RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
+        "proposed": "GAPP7 SFO RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
         "reason": "the route files no departure procedure; the SOP assigns GAPP7 from 28L in 28 SO"
       }
     ]
@@ -26,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation"
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"
   },
   "status": "settled"
 }

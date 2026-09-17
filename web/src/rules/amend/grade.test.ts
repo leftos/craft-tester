@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Scenario } from '@/data/schema.ts';
+import ksfoJson from '@data/ksfo.json';
+import type { AirportData, Scenario } from '@/data/schema.ts';
 import type { BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import {
   boxGradeAsGrade,
@@ -11,6 +12,8 @@ import {
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { verdictOf } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
+
+const ksfo = ksfoJson as unknown as AirportData;
 
 const citation: RuleCitation = {
   id: 'EQUIP/L',
@@ -157,14 +160,14 @@ const cases: {
 describe('gradeBoxes', () => {
   for (const testCase of cases) {
     it(`grades ${testCase.name}`, () => {
-      const grades = gradeBoxes(testCase.answers, testCase.result);
+      const grades = gradeBoxes(testCase.answers, testCase.result, ksfo);
       expect(grades.map((grade) => grade.box)).toEqual(['type', 'altitude', 'route']);
       expect(grades.map((grade) => grade.verdict)).toEqual(testCase.ok.map(verdictOf));
     });
   }
 
   it('labels a box that needed no amendment as correct as filed', () => {
-    const [type] = gradeBoxes(answers(), result());
+    const [type] = gradeBoxes(answers(), result(), ksfo);
     expect(type?.expectedLabel).toBe('correct as filed');
     expect(type?.actualLabel).toBe('correct as filed');
     expect(type?.citations).toEqual([]);
@@ -174,6 +177,7 @@ describe('gradeBoxes', () => {
     const grades = gradeBoxes(
       answers({ type: wrote('B752/Q'), altitude: wrote('FL290') }),
       result(TYPE, ALTITUDE, ROUTE),
+      ksfo,
     );
     expect(grades.map((grade) => grade.expectedLabel)).toEqual([
       'B752/L',
@@ -192,6 +196,7 @@ describe('gradeBoxes', () => {
     const grades = gradeBoxes(
       answers({ type: wrote('B752/L'), route: wrote('SFO5 MOGEE BVL') }),
       result(PAIRED_TYPE, PAIRED_ROUTE),
+      ksfo,
     );
     expect(grades[0]?.expectedLabel).toBe('B752/L');
     expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
@@ -199,9 +204,71 @@ describe('gradeBoxes', () => {
   });
 
   it('labels both boxes of a pair with their proposals while neither carries the fix', () => {
-    const grades = gradeBoxes(answers(), result(PAIRED_TYPE, PAIRED_ROUTE));
+    const grades = gradeBoxes(answers(), result(PAIRED_TYPE, PAIRED_ROUTE), ksfo);
     expect(grades[0]?.expectedLabel).toBe('B752/L');
     expect(grades[2]?.expectedLabel).toBe('SFO5 MOGEE BVL');
+  });
+});
+
+describe('gradeBoxes vector-SID navaid', () => {
+  /** The corrected plan of a flight on the SFO5, whose box files the navaid the SID is filed with. */
+  const NAVAID_CORRECTED: Scenario = { ...CORRECTED, filedRoute: 'SFO5 SFO MOGEE BVL' };
+
+  /** The warning the engine raises for a box that files the vector SID without the navaid. */
+  const NAVAID_ROUTE: ResolvedAmendment = {
+    box: 'route',
+    proposed: 'SFO5 SFO MOGEE BVL',
+    reason:
+      'the route names SFO5 without SFO after it; a radar-vector SID is filed as the SID, the ' +
+      'airport navaid, then the route (R-RV-NAVAID)',
+    warning: true,
+    citations: [],
+  };
+
+  function navaidResult(
+    ...amendments: ResolvedAmendment[]
+  ): Extract<AmendmentResult, { ok: true }> {
+    return { ok: true, amendments, corrected: NAVAID_CORRECTED };
+  }
+
+  it('accepts a route box that leaves the navaid out of the route the engine wrote', () => {
+    const grades = gradeBoxes(
+      answers({ route: wrote('SFO5 MOGEE BVL') }),
+      navaidResult(NAVAID_ROUTE),
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('acceptable');
+    expect(grades[2]?.citations.map((cited) => cited.id)).toEqual(['R-RV-NAVAID']);
+  });
+
+  it('accepts a route box that writes the navaid into a route the engine wrote without it', () => {
+    const grades = gradeBoxes(answers({ route: wrote('SFO5 SFO MOGEE BVL') }), result(), ksfo);
+    expect(grades[2]?.verdict).toBe('acceptable');
+    expect(grades[2]?.citations.map((cited) => cited.id)).toEqual(['R-RV-NAVAID']);
+  });
+
+  it('accepts the box of a warning amendment the student left as filed', () => {
+    const grades = gradeBoxes(answers(), navaidResult(NAVAID_ROUTE), ksfo);
+    expect(grades[2]?.verdict).toBe('acceptable');
+    expect(grades[2]?.actualLabel).toBe('correct as filed');
+  });
+
+  it('still counts the box correct where the student writes the navaid in', () => {
+    const grades = gradeBoxes(
+      answers({ route: wrote('SFO5 SFO MOGEE BVL') }),
+      navaidResult(NAVAID_ROUTE),
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('correct');
+  });
+
+  it('marks a route box wrong where more than the navaid separates it from the route', () => {
+    const grades = gradeBoxes(
+      answers({ route: wrote('SFO5 SFO BVL') }),
+      navaidResult(NAVAID_ROUTE),
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('wrong');
   });
 });
 
