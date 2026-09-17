@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@/rules/route.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 /** A filed plan whose route box is the only thing these tests read. */
 function plan(filedRoute: string): Scenario {
@@ -34,11 +36,18 @@ describe('isSidToken', () => {
     ['TRUKN2', true],
     ['SFO5', true],
     ['GAPP7', true],
+    ['WAATS5', true],
+    ['IRNMN2', true],
     ['TRUKN', false],
     ['J501', false],
     ['V244', false],
+    ['V6', false],
+    ['Q124', false],
     ['Q158', false],
     ['T257', false],
+    ['R463', false],
+    ['R464', false],
+    ['A220', false],
   ])('classifies %s', (token, expected) => {
     expect(isSidToken(token)).toBe(expected);
   });
@@ -48,11 +57,16 @@ describe('isAirwayToken', () => {
   it.each([
     ['V6', true],
     ['J501', true],
+    ['Q124', true],
     ['Q158', true],
     ['T257', true],
+    ['R463', true],
+    ['R464', true],
+    ['A220', true],
     ['SAC', false],
     ['DEDHD', false],
     ['TRUKN2', false],
+    ['WAATS5', false],
   ])('classifies %s', (token, expected) => {
     expect(isAirwayToken(token)).toBe(expected);
   });
@@ -138,6 +152,54 @@ describe('parseFiledRoute', () => {
     expect(parseFiledRoute('TRUKN2 J501', ksfo)).toEqual({
       element: 'R.route',
       reason: expect.stringContaining('J501'),
+    });
+  });
+});
+
+describe('parseFiledRoute past the departure structure', () => {
+  it('drops a base fix the SID flies over when the route files a transition of that SID', () => {
+    expect(parseFiledRoute('PORTE8 PORTE SUSEY EBAYE BURGL', ksfo)).toEqual({
+      filedSidToken: 'PORTE8',
+      droppedStructureTokens: ['PORTE'],
+      exitElement: 'SUSEY',
+      exitFix: 'SUSEY',
+      tokens: ['SUSEY', 'EBAYE', 'BURGL'],
+    });
+  });
+
+  it('drops a procedure name and its base fix filed as plain route elements', () => {
+    expect(parseFiledRoute('CNDEL PORTE SUSEY EBAYE BURGL', koak)).toEqual({
+      droppedStructureTokens: ['CNDEL', 'PORTE'],
+      exitElement: 'SUSEY',
+      exitFix: 'SUSEY',
+      tokens: ['SUSEY', 'EBAYE', 'BURGL'],
+    });
+  });
+
+  it('keeps a base fix the route files no transition of that SID after', () => {
+    expect(parseFiledRoute('TRUKN2 TRUKN CCR CCR2', ksfo)).toEqual({
+      filedSidToken: 'TRUKN2',
+      exitElement: 'TRUKN',
+      exitFix: 'TRUKN',
+      tokens: ['TRUKN', 'CCR', 'CCR2'],
+    });
+  });
+
+  it('keeps the base fix of a SID that publishes no transitions at all', () => {
+    expect(parseFiledRoute('SUNNE1 SUNNE KAYEX LOSHN PMD V137 PSP', koak)).toEqual({
+      filedSidToken: 'SUNNE1',
+      exitElement: 'SUNNE',
+      exitFix: 'SUNNE',
+      tokens: ['SUNNE', 'KAYEX', 'LOSHN', 'PMD', 'V137', 'PSP'],
+    });
+  });
+
+  it('keeps a fix the SID flies over when what follows is no transition of it', () => {
+    expect(parseFiledRoute('COAST9 MCKEY LAX COMIX2', koak)).toEqual({
+      filedSidToken: 'COAST9',
+      exitElement: 'MCKEY',
+      exitFix: 'MCKEY',
+      tokens: ['MCKEY', 'LAX', 'COMIX2'],
     });
   });
 });

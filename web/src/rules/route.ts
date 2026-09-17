@@ -1,4 +1,4 @@
-import type { AirportData, Direction, Gates, Scenario } from '@/data/schema.ts';
+import type { AirportData, Direction, Gates, Scenario, Sid } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
@@ -6,8 +6,11 @@ import { unresolved } from '@/rules/unresolved.ts';
 /** A departure procedure token: three to five letters and a version digit, e.g. `TRUKN2`. */
 const SID_TOKEN = /^[A-Z]{3,5}\d$/;
 
-/** An airway token, e.g. `J501`, `Q158` or `T257`, which is never a departure procedure. */
-const AIRWAY_TOKEN = /^[JVQTY]\d+$/;
+/**
+ * An airway token: one letter and up to three digits, e.g. `V6`, `J501`, `Q158` or the oceanic
+ * `R463` and `A220`. A procedure token carries three letters or more, so the two never overlap.
+ */
+const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
 
 /** What flying one element of a route takes: RNAV capability, or the GPS a T or Y route needs. */
 export type RnavNeed = 'rnav' | 'gnss';
@@ -30,6 +33,7 @@ const DIRECTIONS: readonly Direction[] = ['north', 'south', 'oceanic'];
  */
 export type ParsedRoute = {
   filedSidToken?: string;
+  droppedStructureTokens?: string[];
   exitElement: string;
   exitFix: string;
   tokens: string[];
@@ -42,14 +46,14 @@ export type ParsedRoute = {
  * @returns True for `TRUKN2`, false for `TRUKN`, `J501`, and `V244`.
  */
 export function isSidToken(token: string): boolean {
-  return SID_TOKEN.test(token) && !AIRWAY_TOKEN.test(token);
+  return SID_TOKEN.test(token);
 }
 
 /**
  * Whether a route token names an airway.
  *
  * @param token One token of a filed route.
- * @returns True for `V6`, `J501`, `Q158`, `T257`, and `Y291`, false for a fix or a procedure.
+ * @returns True for `V6`, `J501`, `Q158`, `T257`, `Y291` and `R463`, false for a fix or a procedure.
  */
 export function isAirwayToken(token: string): boolean {
   return AIRWAY_TOKEN.test(token);
@@ -84,15 +88,78 @@ export function routeFromExitFix(filedRoute: string, airportFaa: string): string
 }
 
 /**
+ * The names one SID's own structure carries: the family the procedure is named for, the fix it is
+ * built on, and every fix its published restrictions name.
+ *
+ * A restriction row whose fix is the empty string is a chart-parse artefact, carried by five KOAK
+ * SIDs, and names nothing.
+ *
+ * @param sid One published SID.
+ * @returns The names, in no particular order.
+ */
+function structureNames(sid: Sid): string[] {
+  return [
+    sid.family,
+    ...(sid.baseFix === undefined ? [] : [sid.baseFix]),
+    ...sid.restrictions.map((row) => row.fix).filter((fix) => fix !== ''),
+  ];
+}
+
+/**
+ * Whether a token names the structure of a SID that publishes a transition to the next token.
+ *
+ * @param token The token the route files.
+ * @param next The next token of the route that survives the walk.
+ * @param airport The airport data, whose `sids` carry the structure and the transitions.
+ * @returns True when one SID answers both halves.
+ */
+function liesOnStructureBefore(token: string, next: string, airport: AirportData): boolean {
+  return airport.sids.some(
+    (sid) =>
+      structureNames(sid).includes(token) &&
+      sid.transitions.some((transition) => transition.fix === next),
+  );
+}
+
+/**
+ * How many leading tokens of a filed route name only structure the departure already flies over.
+ *
+ * A token is dropped when it names some SID's own structure and the next token to survive is one of
+ * that same SID's published transitions: `CNDEL PORTE SUSEY EBAYE BURGL` is read from SUSEY, the
+ * transition CNDEL5 publishes, CNDEL naming the procedure and PORTE the fix it is built on. Where
+ * the route files no published transition of such a SID nothing is dropped and the first filed fix
+ * stands, spoken bare: `TRUKN2 TRUKN CCR CCR2` is read from TRUKN, CCR being no transition of
+ * TRUKN2. The longest such prefix wins, and at least one token always survives.
+ *
+ * @param tokens The filed route from its exit fix onwards.
+ * @param airport The airport data, whose `sids` carry the structure and the transitions.
+ * @returns The number of leading tokens to drop, zero when the route names none.
+ */
+function structurePrefixLength(tokens: readonly string[], airport: AirportData): number {
+  for (let dropped = tokens.length - 1; dropped >= 1; dropped -= 1) {
+    const survivor = tokens[dropped] ?? '';
+    if (
+      tokens.slice(0, dropped).every((token) => liesOnStructureBefore(token, survivor, airport))
+    ) {
+      return dropped;
+    }
+  }
+  return 0;
+}
+
+/**
  * Splits a filed route into its procedure token, the element the flight leaves the terminal on, and
  * the first fix of the route.
  *
- * A route that joins an airway straight off the SID leaves on that airway, and the fix the airway
- * leads to is what places the flight in a departure gate. A route with no fix at all after the
- * procedure blocks the route element: there is nothing to pick a gate, and so a SID, from.
+ * The route is read from the first element that is not the departure's own structure: a leading fix
+ * the SID already flies over is dropped where the route files one of that SID's published
+ * transitions further along, and `droppedStructureTokens` records what was dropped so an amendment
+ * can name it. A route that joins an airway straight off the SID leaves on that airway, and the fix
+ * the airway leads to is what places the flight in a departure gate. A route with no fix at all
+ * after the procedure blocks the route element: there is nothing to pick a gate, and so a SID, from.
  *
  * @param filedRoute The route string as filed.
- * @param airport The airport data, for the airport's own navaid identifier.
+ * @param airport The airport data, for the airport's own navaid identifier and its SIDs.
  * @returns The parsed route, or `Unresolved` when nothing usable follows the procedure token.
  */
 export function parseFiledRoute(
@@ -101,7 +168,9 @@ export function parseFiledRoute(
 ): ParsedRoute | Unresolved {
   const first = splitRoute(filedRoute)[0];
   const filedSidToken = first !== undefined && isSidToken(first) ? first : undefined;
-  const tokens = routeFromExitFix(filedRoute, airport.airport.faa);
+  const filed = routeFromExitFix(filedRoute, airport.airport.faa);
+  const dropped = filed.slice(0, structurePrefixLength(filed, airport));
+  const tokens = filed.slice(dropped.length);
   const exitElement = tokens[0];
   if (exitElement === undefined) {
     return unresolved('R.route', `filed route "${filedRoute}" has no fix after the procedure`);
@@ -113,8 +182,13 @@ export function parseFiledRoute(
       `filed route "${filedRoute}" joins airway ${exitElement} with no fix to leave the terminal on`,
     );
   }
-  const parsed = { exitElement, exitFix, tokens };
-  return filedSidToken === undefined ? parsed : { filedSidToken, ...parsed };
+  return {
+    ...(filedSidToken === undefined ? {} : { filedSidToken }),
+    ...(dropped.length === 0 ? {} : { droppedStructureTokens: dropped }),
+    exitElement,
+    exitFix,
+    tokens,
+  };
 }
 
 /**
