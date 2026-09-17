@@ -188,6 +188,61 @@ describe('checkRoute route building', () => {
     ]);
   });
 
+  /** The worksheet plan the SOP sends off 30 on a heading, whose route SKYL1 reaches by WAGES. */
+  function pxt415(): Scenario {
+    return scenario({
+      callsign: 'PXT415',
+      aircraftType: 'C25B',
+      equipmentSuffix: '/A',
+      destination: 'KUDD',
+      filedRoute: 'SUNNE1 SUNNE KAYEX LOSHN PMD V137 PSP',
+      filedAltitude: 32000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      squawk: '4605',
+    });
+  }
+
+  it("builds from the SID's own end fix when no transition of it reaches the filed route", () => {
+    const result = amendmentAt(pxt415(), koak);
+    expect(result.proposed).toBe('SKYL1 WAGES LOSHN PMD V137 PSP');
+    expect(result.reason).toBe(
+      'SKYL1 is the procedure the SOP assigns a non-RNAV jet from 30 in SFOW, and SUNNE is not one ' +
+        'of its transitions, but WAGES is its own end fix and WAGES usually connects to LOSHN ' +
+        '(route building), so the SID is issued in place of the heading',
+    );
+    expect(result.citations.map((citation) => citation.id)).toEqual([
+      'OAK-SFOW-S-SKYL',
+      'CONN-WAGES-LOSHN',
+      'R-ROUTE-BUILD',
+    ]);
+  });
+
+  it('prefers a transition over the end fix where both reach the filed route equally soon', () => {
+    const airport: AirportData = {
+      ...koak,
+      routeConnections: [
+        ...koak.routeConnections,
+        {
+          id: 'CONN-PXN-LOSHN',
+          from: 'PXN',
+          to: 'LOSHN',
+          connects: 'usually',
+          source: 'a test row',
+          text: 'PXN usually connects to LOSHN',
+        },
+      ],
+    };
+    const result = amendmentAt(pxt415(), airport);
+    expect(result.proposed).toBe('SKYL1 PXN LOSHN PMD V137 PSP');
+    expect(result.reason).toContain('but PXN is and PXN usually connects to LOSHN');
+    expect(result.citations.map((citation) => citation.id)).toEqual([
+      'OAK-SFOW-S-SKYL',
+      'CONN-PXN-LOSHN',
+      'R-ROUTE-BUILD',
+    ]);
+  });
+
   it('gives a plan filed without a procedure the assigned one, not a built route', () => {
     const flight = scenario({
       callsign: 'KAL65',

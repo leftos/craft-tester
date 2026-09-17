@@ -83,8 +83,9 @@ function destinationRow(airport: AirportData, icao: string): Destination | undef
  *
  * A plan filed on a procedure the SOP would have assigned, but which publishes no transition to the
  * fix the route leaves the terminal at, takes the vector SID further down the assignment table only
- * when nothing connects it back: a transition of the filed SID that connects onward to a fix the
- * flight already filed is fewer changes than replacing the procedure. A row that forces a
+ * when nothing connects it back: a transition of the filed SID, or the fix that SID ends on, that
+ * connects onward to a fix the flight already filed is fewer changes than replacing the procedure.
+ * A row that forces a
  * transition is built whatever the plan files, because that is the SOP's routing for the hour. The
  * scope says which candidates may be connected to, and is the caller's rule rather than this one's.
  */
@@ -224,12 +225,19 @@ function builtClosing(scope: BuildScope | undefined): string {
     : 'so the SID is kept';
 }
 
+/** How a built reason names where the route left the SID: a transition, or the SID's own end fix. */
+function startWords(built: BuiltRoute): string {
+  const { fix, kind } = built.start;
+  return kind === 'base_fix' ? `${fix} is its own end fix` : `${fix} is`;
+}
+
 /**
  * The reason a route was built rather than the procedure replaced or a heading issued.
  *
  * A forced transition is the assignment row speaking for itself, so the row's own text carries the
- * reason; a connection build has to say which transition was taken and which rows of the cheat
- * sheet carry the route from there back to what the pilot filed.
+ * reason; a connection build has to say where the route left the SID — a published transition, or
+ * the fix the SID itself ends on — and which rows of the cheat sheet carry the route from there
+ * back to what the pilot filed.
  */
 function builtReason(
   built: BuiltRoute,
@@ -238,14 +246,14 @@ function builtReason(
   ctx: Classification,
 ): string {
   if (built.connections.length === 0) {
-    return `${built.row.text}: ${built.sid.id} with the ${built.transition} transition, then the filed route`;
+    return `${built.row.text}: ${built.sid.id} with the ${built.start.fix} transition, then the filed route`;
   }
   const links = built.connections
     .map((row) => `${row.from} ${row.connects} connects to ${row.to}`)
     .join(', ');
   return (
     `${built.sid.id} is the procedure the SOP assigns ${flightWords(ctx)} from ${scenario.departureRunway} ` +
-    `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${built.transition} is ` +
+    `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${startWords(built)} ` +
     `and ${links} (route building), ${builtClosing(expected.scope)}`
   );
 }
@@ -345,7 +353,8 @@ export function loaRouteGap(
  * Checks the route box of a flight the SOP clears on the runway heading, which names no procedure.
  *
  * A heading is issued only because no SID the table reaches serves the fix the route leaves the
- * terminal at, and route building may still connect an assignable SID's transition to a fix further
+ * terminal at, and route building may still connect an assignable SID's transition, or the fix that
+ * SID ends on, to a fix further
  * down the filed route, which is fewer changes than a heading; so where a route builds, the box is
  * that built route and the flight is given the SID after all. Whatever the plan filed may be built
  * on here, there being no procedure the SOP wanted this flight to keep.
@@ -411,7 +420,8 @@ function checkHeadingRoute(
  * taken out of use, and the reason says which of those it is. Where the assignment table only
  * reached the procedure it did because the procedure the pilot filed publishes no transition to the
  * fix the route leaves the terminal at, the box is built on the filed procedure instead, by a
- * transition that connects onward to the filed route; a row that forces a transition builds the box
+ * transition, or by the fix the procedure ends on, that connects onward to the filed route; a
+ * transition is preferred where both reach it equally soon. A row that forces a transition builds the box
  * on that row's own SID whatever was filed. A box that already reads right is then held against the
  * LOA routing rows written for the destination. A flight the SOP clears on the runway heading is
  * built the same way, on any SID the table passed over rather than only on the filed family, because
