@@ -19,7 +19,7 @@ pnpm -C web test -t "climb via"               # tests whose name matches
 pnpm -C web schema:export                     # regenerate data/schema/*.json from web/src/data/schema.ts
 pnpm -C web propose <fixture-id> | --pending  # engine's clearance for a fixture, with citations
 pnpm -C web exec playwright install chromium  # once per machine, for the browser check
-pnpm -C web check:browser <name> s=1,d=KLVK phone|desktop ["select:4=(no prefix)" "fill:2=…" "click:Submit clearance"]
+pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:4=(no prefix)" "fill:2=…" "click:Submit clearance"]
 
 # generator (uv, Python 3.13)
 cd generator && uv sync
@@ -45,17 +45,21 @@ network. CI does not run `craft-gen build`; `build --check` is a local step befo
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
 then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
 survive pnpm on Windows), runs the actions, and writes the page text, selects, buttons, console errors, whether
-the page scrolls sideways and a full-page screenshot to `.tmp/browser-check/`. The hash takes an undocumented
-`d=<ICAO>` part that forces the drawn destination in both modes (`s=4,d=KSMF,m=amend`), so a destination is
-checked directly instead of drawing until the RNG lands on it; it is never shown in the UI or remembered.
+the page scrolls sideways and a full-page screenshot to `.tmp/browser-check/`. The hash carries the airport in
+its `a=<ICAO>` part (every link the app writes has one; a missing or unknown one opens the first airport of the
+index) and takes an undocumented `d=<ICAO>` part that forces the drawn destination in both modes
+(`s=4,a=KOAK,d=KSMF,m=amend`), so a destination is checked directly instead of drawing until the RNG lands on
+it; it is never shown in the UI or remembered.
 
 ## References cached outside git
 
-`docs/refs/` is gitignored and holds FAA JO 7110.65 for paragraph lookups. Read it from
-`docs/refs/7110.65/`: one markdown file per section (`chap04_sec03.md` is 4-3, Departure Procedures)
-with `INDEX.md` listing every paragraph title, converted from the FAA's HTML version and shared with
-`X:\dev\yaat\.claude\reference\faa\7110.65\` (copy that directory to refresh it). Never web-search a
-7110.65 paragraph; `rg -n "4-3-2" docs/refs/7110.65/` finds it. Next to it sit the dated full-order PDF
+`docs/refs/` is gitignored and holds FAA JO 7110.65, the AIM and AC 90-66B for paragraph lookups. Read
+them from `docs/refs/7110.65/` and `docs/refs/aim/`: one markdown file per section (`chap04_sec03.md` is
+7110.65 4-3, Departure Procedures; `aim/chap05_sec03.md` is AIM 5-3, En Route Procedures) with `INDEX.md`
+listing every paragraph title, converted from the FAA's HTML versions and shared with
+`X:\dev\yaat\.claude\reference\faa\` (copy its `7110.65`, `aim` and `ac-90-66b` directories to refresh).
+Never web-search a 7110.65 or AIM paragraph; `rg -n "4-3-2" docs/refs/7110.65/` or
+`rg -n "5-3-4" docs/refs/aim/` finds it. Next to it sit the dated full-order PDF
 (`7110.65BB.pdf`, Basic with changes 1–3, effective 2026-07-09) and its pypdf text dump for a
 page-numbered citation. Fetch those once per machine:
 

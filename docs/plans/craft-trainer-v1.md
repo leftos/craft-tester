@@ -144,9 +144,12 @@ Noise abatement 2200L–0700L (0800L Sun): Northbound 01/28 P,T,J → NIITE#; So
   worksheets (KSMF, KLVK, KAPC, KMRY, KWVI, O88, KOVE, KMYV, KSAC, KOAK, KSJC, KRNO-excluded per SOP) into
   `generator/airports/ksfo/tec.yaml` with the source URL per row. No Playwright dependency in the generator.
 - The NCT SOP and ZOA–NCT LOA PDFs do not contain TEC tables (grepped the cached copies).
-- Equipment suffixes: FAA JO 7110.65 Table 5-4-1 (`/L` RVSM+GNSS, `/Z` RVSM+RNAV no GNSS, `/W` RVSM no
-  RNAV, `/G` GNSS, `/I` RNAV no GNSS, `/A` DME+Mode C no RNAV, etc.) — static table in the airport JSON
-  (`equipmentSuffixes`), used for RNAV-SID eligibility and RVSM (FL290–FL410) checks.
+- Equipment suffixes: FAA JO 7110.65 TBL 2-3-10 under paragraph 2-3-8 (`/L` RVSM+GNSS, `/Z` RVSM+RNAV no
+  GNSS, `/W` RVSM no RNAV, `/G` GNSS, `/I` RNAV no GNSS, `/A` DME+Mode C no RNAV, `/H` and `/O` RVSM with a
+  failed transponder or Mode C and no navigation stated, etc.) — shared table in `generator/shared/`, emitted
+  into every airport JSON (`equipmentSuffixes`), used for RNAV-SID eligibility and RVSM (FL290–FL410) checks.
+  On VATSIM every aircraft simulates a Mode C transponder (CoC B4(a); the VATSIM transponder has only standby
+  and Mode A+C), so a filed suffix without Mode C is amended to the fleet's suffix (shared row `T-MODE-C`).
 - Direction-of-flight altitude rule (14 CFR 91.179): magnetic course 0–179 odd thousands, 180–359 even;
   above FL410, 4,000-ft intervals. Needs origin/destination coordinates: US airports from CIFP `PA`
   records; the handful of foreign destinations on the sheets (RKSI, ESSA, MMMX, CYVR, PHNL is US) from a

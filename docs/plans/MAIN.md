@@ -39,6 +39,51 @@ one line and move its record to the archive.
 
 - [x] **Arrival swap (user 2026-09-16, SWA984; 2026-09-17, NKS510)** — landed 2026-09-17 (`cef27bb`, `b9ca7b6`, `2675bb9`, `9370293`): every proposed route box is held against the LOA route rows and, at a destination the ZOA common-arrivals sheet lists, against the flight's equipment; the flight is routed onto an arrival it can fly at the entry fix the sheet, then the LOA, then the chart names, fewest changes first (`rules/amend/arrival.ts`, `buildToArrival` in `rules/routeBuild.ts`, shared `common_arrivals.yaml`, CIFP `arrivals` per destination); the amendment carries `arrivalSwap` and a student who leaves that box earns the new `half` verdict; the RNAV-clash pair is the type box against route and altitude, raised only where the RNAV plan is clean. Nine fixtures settled (SWA984 1A/1C, NKS510, SWA888, N858EE, SWA2021, JSX203, N918AR, SWA1254). Record in [archive/arrival-swap.md](./archive/arrival-swap.md). Left: the KSFO twins of those rulings are still pending (`propose --pending`: 37, JSX203/N858EE twins move the same way; the KSFO SWA2021 twin stays unresolved on the PDX row since nothing filed reaches MACHU); the class-before-LOA precedence when both fire and nothing reaches drops the LOA gap (no fixture hits it); `generate.test.ts` seed-window sweeps for rare draws are fragile to library edits; **the `half` tier is unreachable from the generator** (browser check 2026-09-17: 4,000 KSFO seeds in amendment mode draw no arrival swap, since `scenario/amend.ts` has no arrival fault, so the tier is exercised by fixtures and unit tests only until an `arrival_swap` fault is added; the RNAV-clash pair was checked live at `#s=2z&m=amend`: type fix alone 3 of 3, route fix alone 3 of 3, both 2 of 3 with the route box told the other box already fixes it, no console errors, no sideways scroll on phone)
 
+- [x] **User steers 2026-09-17, equipment suffixes** — landed 2026-09-17 (`e2a31fb`, merged `9cab7b2`): TBL 2-3-10
+  citations, `/H` and `/O` as navigation-unknown, shared row `T-MODE-C`, the `no_mode_c` drill fault, and the
+  table-order route-building scope below. Original steers (from seed `#s=aam7gy&t=day&m=amend`, a B738/Y drawn at KOAK and
+  graded correct as filed): (1) the suffix table is FAA JO 7110.65 TBL 2-3-10 under paragraph 2-3-8, not "Table
+  5-4-1" (in 7110.65BB, 5-4-1 is the radar-handoff Application paragraph): every citation in code, data and tests
+  moves; (2) TBL 2-3-10 also lists /H (RVSM, any navigation, failed transponder) and /O (RVSM, any navigation,
+  failed Mode C), ATC-use-only per the 2-3-8 note. **User decision 2026-09-17: add them as navigation-unknown**
+  (`rnav`/`gnss` nullable in the schema and the loader; every reader already treats an absent flag as not RNAV);
+  (3) **on VATSIM every aircraft simulates a Mode C transponder** (CoC B4(a) requires a transponder where
+  regulation does; the VATSIM transponder has only standby and Mode A+C), so a suffix without Mode C (/X, /T, /D,
+  /B, /M, /N, /Y, /C, /V, /S, /H, /O) is illegal on the network: the type box is amended to the fleet's first
+  Mode C suffix, citing a new shared row `T-MODE-C`, and the other boxes are judged on that plan (the student's
+  `B738/L` and "correct as filed" FL290 were the right answers); the amendment generator draws its RVSM and RNAV
+  suffix faults from Mode C rows only (/I, /U instead of /Y, /X) and gains a `no_mode_c` type-box fault so the row
+  is reachable from a draw. Found while landing it (seed 896 of the 1,000-seed draw test, surfaced by the
+  reshuffle the new fault kind causes): a night northbound plan filed `TRUKN2 SFO RBL …` off 01R was rebuilt to
+  `TRUKN2 DEDHD RBL …` under the filed-family scope of route building, although the first applicable row at
+  night is the NIITE# noise row, whose SID also builds to RBL via DEDHD; judged again, the corrected plan is
+  amended to NIITE4. (An earlier diagnosis blamed the amended altitude; reproduced on main at FL280 and FL290,
+  the altitude is irrelevant, and the user asked for the citation.) **Orchestrator decision 2026-09-17,
+  extending the user's 2026-09-16 scope rule**: the SOP's table order outranks the filed family and the filed
+  family outranks the rows below it, so `buildRoute` builds on a candidate above the filed family that
+  connects, and still ignores candidates below it. Question raised alongside: why KATFH3 was not eligible on that draw — because SOP 2-2
+  a ii (OAKE) offers southbound jets QUAKE# only; KATFH# is the SFOE row (2-2 a iii). Answered, no change.
+- [ ] **User steer 2026-09-17: the scenario link does not carry the airport.** `#s=…&t=…&m=…` encodes seed, time and
+  mode but not the airport, so refreshing a KOAK scenario reopens a KSFO one. Add an `a=<ICAO>` hash part,
+  written on every scenario link, read on load ahead of the picker's default, and fed to the browser check.
+- [ ] **User steer 2026-09-17, amendment form inputs**: (1) typing in the route box's NEW VALUE cell jumps the
+  cursor to the end after every keystroke, and the altitude box does the same (user checked); cause:
+  `restoreFocus` in `ui/app.ts` re-renders on every change and deliberately parks the caret at the end, so the
+  fix is to capture and restore the selection range for whichever text input had focus; (2) the NEW VALUE box
+  starts out holding the filed value so it can be edited in place, and the student clears it to write from
+  scratch (applied to all three boxes; the route is the one the user named). Landed 2026-09-17 (`856b4b8`)
+  with the `a=` hash part; the caret fix is browser-checked, not unit-tested (no DOM harness in the suite).
+- [ ] **User question 2026-09-17: does the engine flag RNAV waypoints and RNAV airways (Q and T routes) filed by
+  a non-RNAV aircraft, or only RNAV procedures?** **User decision 2026-09-17: do both halves in one commit**
+  — see [rnav-route-elements.md](./rnav-route-elements.md). Checked 2026-09-17: procedures only. `rnavCapable` gates
+  SIDs (`rnavRequired`, `sidSelection.ts`), arrivals (`arrival.rnav`, `rules/amend/arrival.ts`) and LOA route
+  rows flagged `rnavOnly` (the KPDX row); `isAirwayToken` in `rules/route.ts` recognises Q and T airways but
+  nothing reads RNAV off them, and fixes carry no waypoint kind in the data. Open as a rule concept, user to
+  decide: (a) Q and T airways are RNAV-only (AIM 5-3-4: Q routes require RNAV 2 with GNSS or DME/DME/IRU, T
+  routes RNAV 2; so /Z or /I with no GNSS may be fine on a Q route, /W, /A and /U are not); (b) a route fix that
+  is a CIFP RNAV waypoint rather than a navaid or an airway intersection, which needs the waypoint kind
+  emitted per fix. The amendment would be the route box (a conventional airway or a navaid route), or the type
+  box where the RNAV-clash pair applies, citing an AIM row.
 - [ ] **User rule 2026-09-16 (FDX3875, KOAK to PHNL via R464): a unidirectional oceanic airway is exempt from
   odd/even parity**, so FL310 westbound on R464 is correct as filed. Data concept: a shared airway table (or rows on
   `route_connections.yaml`'s neighbour) listing the one-way oceanic airways (R463, R464, A220 per the user's notes,
