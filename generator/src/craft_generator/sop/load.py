@@ -1010,7 +1010,7 @@ def _aircraft_type(designator: str, row: _Row) -> AircraftType:
     row.finish()
     for suffix in aircraft.suffixes:
         if _SUFFIX_PATTERN.fullmatch(suffix) is None:
-            raise ValueError(f"{row.where}: suffix {suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 table 5-4-1")
+            raise ValueError(f"{row.where}: suffix {suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 TBL 2-3-10")
     return aircraft
 
 
@@ -1157,15 +1157,15 @@ def load_routes(path: Path, shared: SharedRouteFacts) -> RouteLibrary:
 def _equipment_suffix(row: _Row) -> EquipmentSuffix:
     suffix = EquipmentSuffix(
         suffix=row.text("suffix"),
-        rnav=row.flag("rnav"),
-        gnss=row.flag("gnss"),
+        rnav=row.optional_flag("rnav"),
+        gnss=row.optional_flag("gnss"),
         rvsm=row.flag("rvsm"),
         transponder_mode_c=row.flag("transponder_mode_c"),
         text=row.text("text"),
     )
     row.finish()
     if _SUFFIX_PATTERN.fullmatch(suffix.suffix) is None:
-        raise ValueError(f"{row.where}: suffix {suffix.suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 table 5-4-1")
+        raise ValueError(f"{row.where}: suffix {suffix.suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 TBL 2-3-10")
     return suffix
 
 

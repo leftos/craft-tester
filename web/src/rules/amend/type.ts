@@ -1,6 +1,7 @@
 import type { AirportData, EquipmentSuffix, FleetEntry, Scenario } from '@/data/schema.ts';
 import { citeSuffix } from '@/rules/amend/cite.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
+import { citePhraseology } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { formatAltitude } from '@/rules/grade.ts';
 import { isSidToken } from '@/rules/route.ts';
@@ -8,7 +9,7 @@ import type { Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
 /** The table of equipment suffixes as a reason names it. */
-const SUFFIX_TABLE = 'FAA JO 7110.65 Table 5-4-1';
+const SUFFIX_TABLE = 'FAA JO 7110.65 TBL 2-3-10';
 
 /** A suffix the fleet files for the type, together with the table row that describes it. */
 type ProposedSuffix = { suffix: string; row: EquipmentSuffix };
@@ -40,9 +41,25 @@ function typeBox(scenario: Scenario, suffix: string): string {
 }
 
 /**
- * Checks the equipment suffix of the type box: none filed, or one no longer in the equipment table.
+ * What is wrong with the filed suffix, which is the first half of the reason the box is amended.
  *
- * The box is amended to the suffix the fleet files for the type. This is the first check of the
+ * @param filed The suffix the plan filed, or `null` where it filed none.
+ * @param row The table row for that suffix, absent where the table does not hold it.
+ * @returns The fault named, which on a row the table does hold is the missing Mode C transponder.
+ */
+function suffixFault(filed: string | null, row: EquipmentSuffix | undefined): string {
+  if (filed === null) return 'no equipment suffix filed';
+  if (row === undefined) return `suffix ${filed} is not in ${SUFFIX_TABLE}`;
+  return `suffix ${filed} has no Mode C transponder, which every aircraft on VATSIM simulates`;
+}
+
+/**
+ * Checks the equipment suffix of the type box: none filed, one no longer in the equipment table, or
+ * one whose row reports no altitude.
+ *
+ * The box is amended to the first suffix the fleet files for the type whose row carries Mode C.
+ * Every aircraft on VATSIM simulates a Mode C transponder, so a suffix the table holds is still not
+ * one that is filed on the network unless its row reports altitude. This is the first check of the
  * strip and the one every other box is then judged behind, because the suffix decides what the SOP
  * assigns the flight: the altitude and the route are read for the plan this amendment leaves.
  *
@@ -55,31 +72,29 @@ export function checkSuffix(
   scenario: Scenario,
   airport: AirportData,
 ): TypeAmendment | Unresolved | undefined {
-  const fleet = fleetFor(scenario, airport);
   const filed = scenario.equipmentSuffix;
-  if (filed !== null && airport.equipmentSuffixes.some((row) => row.suffix === filed)) {
-    return undefined;
-  }
+  const row = airport.equipmentSuffixes.find((entry) => entry.suffix === filed);
+  if (row?.transponderModeC === true) return undefined;
+  const fleet = fleetFor(scenario, airport);
   if (fleet === undefined) {
     return unresolved(
       'BOX.type',
       `aircraft type ${scenario.aircraftType} is not in the fleet, so the data holds no equipment suffix to propose for it`,
     );
   }
-  const proposed = fleetSuffix(fleet, airport, () => true);
+  const proposed = fleetSuffix(fleet, airport, (entry) => entry.transponderModeC);
   if (proposed === undefined) {
     return unresolved(
       'BOX.type',
       `the fleet files a ${fleet.type} with suffixes the equipment table does not hold, so the data holds none to propose`,
     );
   }
-  const why =
-    filed === null ? 'no equipment suffix filed' : `suffix ${filed} is not in ${SUFFIX_TABLE}`;
+  const modeC = row === undefined ? [] : citePhraseology(airport, 'T-MODE-C');
   return {
     box: 'type',
     proposed: typeBox(scenario, proposed.suffix),
-    reason: `${why}; the fleet files a ${fleet.type} as ${typeBox(scenario, proposed.suffix)}`,
-    citations: [citeSuffix(proposed.row)],
+    reason: `${suffixFault(filed, row)}; the fleet files a ${fleet.type} as ${typeBox(scenario, proposed.suffix)}`,
+    citations: [...modeC, citeSuffix(proposed.row)],
   };
 }
 
@@ -113,7 +128,7 @@ export function checkRnavClash(
   if (ctx.rnavCapable || fleet === undefined) return undefined;
   const sid = filedSid(scenario, airport);
   if (sid === undefined || !sid.rnavRequired) return undefined;
-  const proposed = fleetSuffix(fleet, airport, (row) => row.rnav);
+  const proposed = fleetSuffix(fleet, airport, (row) => row.rnav === true && row.transponderModeC);
   if (proposed === undefined) return undefined;
   const level = formatAltitude(scenario.filedAltitude);
   return {

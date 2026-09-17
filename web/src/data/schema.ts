@@ -394,11 +394,16 @@ export const PhraseologyRuleSchema = z.strictObject({
   text: z.string(),
 });
 
-/** One row of FAA JO 7110.65 Table 5-4-1, used for RNAV and RVSM eligibility checks. */
+/**
+ * One row of FAA JO 7110.65 TBL 2-3-10, used for RNAV, RVSM and Mode C eligibility checks.
+ *
+ * `rnav` and `gnss` are null on the rows the table states no navigation capability for — `/H` and
+ * `/O`, the ATC-use-only RVSM rows — and every reader treats a null as not RNAV.
+ */
 export const EquipmentSuffixSchema = z.strictObject({
   suffix: z.string().regex(/^\/[A-Z]$/),
-  rnav: z.boolean(),
-  gnss: z.boolean(),
+  rnav: z.boolean().nullable(),
+  gnss: z.boolean().nullable(),
   rvsm: z.boolean(),
   transponderModeC: z.boolean(),
   text: z.string(),

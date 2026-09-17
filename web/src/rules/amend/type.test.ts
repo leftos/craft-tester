@@ -72,7 +72,22 @@ describe('checkSuffix equipment suffix', () => {
     const flight = scenario({ aircraftType: 'B752', equipmentSuffix: '/Q' });
     const amendment = suffixGap(flight);
     expect(amendment).toMatchObject({ proposed: 'B752/L' });
-    expect(amendment?.reason).toContain('suffix /Q is not in FAA JO 7110.65 Table 5-4-1');
+    expect(amendment?.reason).toContain('suffix /Q is not in FAA JO 7110.65 TBL 2-3-10');
+  });
+
+  it('proposes the suffix the fleet files when the filed one reports no altitude', () => {
+    const amendment = suffixGap(scenario({ equipmentSuffix: '/Y' }));
+    expect(amendment).toMatchObject({ box: 'type', proposed: 'B738/L' });
+    expect(amendment?.reason).toContain('suffix /Y has no Mode C transponder');
+    expect(amendment?.reason).toContain('every aircraft on VATSIM simulates');
+    expect(amendment?.citations.map((citation) => citation.id)).toEqual(['T-MODE-C', 'EQUIP/L']);
+  });
+
+  it('amends the ATC-only /H, whose navigation the table does not state, the same way', () => {
+    const amendment = suffixGap(scenario({ equipmentSuffix: '/H' }));
+    expect(amendment).toMatchObject({ box: 'type', proposed: 'B738/L' });
+    expect(amendment?.reason).toContain('suffix /H has no Mode C transponder');
+    expect(amendment?.citations.map((citation) => citation.id)).toEqual(['T-MODE-C', 'EQUIP/L']);
   });
 
   it('reports the type box unresolved when the fleet does not list the type', () => {

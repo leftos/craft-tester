@@ -1,4 +1,4 @@
-import type { AirportData, Destination, Scenario, Sid } from '@/data/schema.ts';
+import type { AirportData, Destination, EquipmentSuffix, Scenario, Sid } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
@@ -18,6 +18,7 @@ export type FaultKind =
   | 'non_rvsm_in_band'
   | 'missing_suffix'
   | 'unknown_suffix'
+  | 'no_mode_c'
   | 'rnav_clash';
 
 /**
@@ -38,6 +39,7 @@ export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   non_rvsm_in_band: ['altitude'],
   missing_suffix: ['type'],
   unknown_suffix: ['type'],
+  no_mode_c: ['type'],
   rnav_clash: ['type', 'route'],
 };
 
@@ -225,10 +227,17 @@ function parityFlip(scenario: Scenario): FaultPatch {
   return { field: 'filedAltitude', feet: scenario.filedAltitude + STEP_FEET };
 }
 
-/** A suffix without RVSM approval, for a plan filed inside the band. */
+/**
+ * A suffix without RVSM approval, for a plan filed inside the band.
+ *
+ * The row is RNAV and reports Mode C, so the altitude box is the only one the fault makes wrong:
+ * a suffix without either of those would be amended in the type box before the altitude is read.
+ */
 function nonRvsmInBand(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
   if (!inRvsmBand(scenario.filedAltitude)) return undefined;
-  const row = airport.equipmentSuffixes.find((entry) => !entry.rvsm && entry.rnav);
+  const row = airport.equipmentSuffixes.find(
+    (entry) => !entry.rvsm && entry.rnav === true && entry.transponderModeC,
+  );
   return row === undefined ? undefined : { field: 'equipmentSuffix', suffix: row.suffix };
 }
 
@@ -260,17 +269,44 @@ function unknownSuffix(scenario: Scenario, airport: AirportData): FaultPatch | u
 }
 
 /**
+ * How much a row of the table reads like another: the capabilities the two state alike.
+ *
+ * @param row The row a fault would write into the plan.
+ * @param filed The row the plan files, absent where the table does not hold its suffix.
+ * @returns How many of RNAV and RVSM the two rows agree on.
+ */
+function alike(row: EquipmentSuffix, filed: EquipmentSuffix | undefined): number {
+  return Number(row.rnav === filed?.rnav) + Number(row.rvsm === filed?.rvsm);
+}
+
+/**
+ * A suffix whose row reports no altitude, which no aircraft on VATSIM files.
+ *
+ * The row is chosen to read like the filed one in everything but Mode C where the table holds such
+ * a row — an RNAV plan takes an RNAV row — so the type box is the only one the fault makes wrong.
+ */
+function noModeC(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
+  const filed = suffixRow(scenario, airport);
+  const rows = airport.equipmentSuffixes.filter((entry) => !entry.transponderModeC);
+  const row = [...rows].sort((left, right) => alike(right, filed) - alike(left, filed))[0];
+  return row === undefined ? undefined : { field: 'equipmentSuffix', suffix: row.suffix };
+}
+
+/**
  * A suffix without RNAV capability, for a plan that files an RNAV procedure.
  *
  * The fault is drawn only outside the RVSM band, so the non-RNAV suffix leaves the altitude box
  * alone: the other side of the clash is then the route box by itself, and the draw stays at the two
- * boxes `FAULT_BOXES` says it takes.
+ * boxes `FAULT_BOXES` says it takes. The row reports Mode C, which the type box would otherwise be
+ * amended for before the clash is ever read.
  */
 function rnavClash(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
   const sid = filedSid(scenario, airport);
   if (sid === undefined || !sid.rnavRequired || inRvsmBand(scenario.filedAltitude))
     return undefined;
-  const row = airport.equipmentSuffixes.find((entry) => !entry.rnav);
+  const row = airport.equipmentSuffixes.find(
+    (entry) => entry.rnav !== true && entry.transponderModeC,
+  );
   return row === undefined ? undefined : { field: 'equipmentSuffix', suffix: row.suffix };
 }
 
@@ -285,6 +321,7 @@ const INJECTORS: Record<FaultKind, Injector> = {
   non_rvsm_in_band: nonRvsmInBand,
   missing_suffix: missingSuffix,
   unknown_suffix: unknownSuffix,
+  no_mode_c: noModeC,
   rnav_clash: rnavClash,
 };
 

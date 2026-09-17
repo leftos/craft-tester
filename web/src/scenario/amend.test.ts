@@ -100,6 +100,15 @@ function firstWith(kind: FaultKind): AmendmentScenario {
   return entry;
 }
 
+/** The first draw across the seeds that carries one fault kind and nothing else. */
+function onlyFault(kind: FaultKind): AmendmentScenario {
+  const entry = drawn.find((row) => row.faults.length === 1 && row.faults[0] === kind);
+  if (entry === undefined) {
+    throw new Error(`no draw across ${SEEDS.length} seeds carries the ${kind} fault alone`);
+  }
+  return entry;
+}
+
 /** The tokens of a draw's route box. */
 function tokensOf(entry: AmendmentScenario): string[] {
   return entry.filed.filedRoute.split(' ').filter((token) => token.length > 0);
@@ -307,6 +316,7 @@ describe('fault injection', () => {
     const suffix = ksfo.equipmentSuffixes.find((row) => row.suffix === entry.filed.equipmentSuffix);
     expect(suffix?.rvsm, label(entry)).toBe(false);
     expect(suffix?.rnav, label(entry)).toBe(true);
+    expect(suffix?.transponderModeC, label(entry)).toBe(true);
     expect(entry.filed.filedAltitude, label(entry)).toBeGreaterThanOrEqual(29000);
     expect(entry.filed.filedAltitude, label(entry)).toBeLessThanOrEqual(41000);
     expect(amendmentFor(entry, 'altitude'), label(entry)).toBeDefined();
@@ -330,10 +340,23 @@ describe('fault injection', () => {
     );
   });
 
+  it('files a suffix that reports no altitude, which the type box alone answers', () => {
+    const entry = onlyFault('no_mode_c');
+    const suffix = ksfo.equipmentSuffixes.find((row) => row.suffix === entry.filed.equipmentSuffix);
+    expect(suffix, label(entry)).toBeDefined();
+    expect(suffix?.transponderModeC, label(entry)).toBe(false);
+    expect(raisedBoxes(entry), label(entry)).toEqual(['type']);
+    expect(proposalFor(entry, 'type'), label(entry)).toMatch(
+      new RegExp(`^${entry.filed.aircraftType}/[A-Z]$`),
+    );
+    expect(amendmentFor(entry, 'type')?.reason, label(entry)).toContain('Mode C');
+  });
+
   it('files a non-RNAV suffix against an RNAV procedure', () => {
     const entry = firstWith('rnav_clash');
     const suffix = ksfo.equipmentSuffixes.find((row) => row.suffix === entry.filed.equipmentSuffix);
     expect(suffix?.rnav, label(entry)).toBe(false);
+    expect(suffix?.transponderModeC, label(entry)).toBe(true);
     const sid = ksfo.sids.find((row) => row.id === headOf(entry));
     expect(sid?.rnavRequired, label(entry)).toBe(true);
     expect(proposalFor(entry, 'type'), label(entry)).toBeDefined();

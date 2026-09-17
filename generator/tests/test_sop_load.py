@@ -49,6 +49,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-RV-AIRWAY",
     "R-AIRWAY",
     "R-NAVAID",
+    "T-MODE-C",
     "A-CLIMB-VIA",
     "A-CLIMB-VIA-EXCEPT",
     "A-MAINTAIN",

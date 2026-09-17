@@ -261,6 +261,42 @@ describe('resolveAmendments', () => {
     expect(result.corrected.filedAltitude).toBe(flight.filedAltitude);
   });
 
+  it('amends the type box alone for a suffix that reports no altitude inside the RVSM band', () => {
+    const flight = scenario({ equipmentSuffix: '/Y' });
+    const result = resolved(flight);
+    expect(result.amendments.map((amendment) => amendment.box)).toEqual(['type']);
+    const [type] = result.amendments;
+    if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
+    expect(type.proposed).toBe('B738/L');
+    expect(type.reason).toContain('has no Mode C transponder');
+    expect(type.citations.map((citation) => citation.id)).toEqual(['T-MODE-C', 'EQUIP/L']);
+    expect(result.corrected.filedAltitude).toBe(flight.filedAltitude);
+    expect(result.corrected.filedRoute).toBe(flight.filedRoute);
+  });
+
+  it('builds the noise row the table puts above the filed family, leaving nothing to amend again', () => {
+    const flight = scenario({
+      callsign: 'FDX1961',
+      aircraftType: 'A306',
+      destination: 'RKSI',
+      filedRoute: 'TRUKN2 SFO RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO',
+      filedAltitude: 29000,
+      localTime: '2300',
+    });
+    const result = resolved(flight);
+    expect(result.amendments.map((amendment) => amendment.box)).toEqual(['altitude', 'route']);
+    const [altitude, route] = result.amendments;
+    if (altitude?.box !== 'altitude' || route?.box !== 'route')
+      throw new Error('the boxes are not amended');
+    expect(altitude.proposedFeet).toBe(28000);
+    expect(route.proposed).toBe(
+      'NIITE4 DEDHD RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO',
+    );
+    const again = resolveAmendments(result.corrected, ksfo);
+    if (!again.ok) throw new Error(again.unresolved.map((item) => item.reason).join('; '));
+    expect(again.amendments).toEqual([]);
+  });
+
   it('fails the whole result when a box the data cannot answer blocks one check', () => {
     const result = resolveAmendments(scenario({ destination: 'KZZZ' }), ksfo);
     expect(result.ok).toBe(false);
