@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "altitude": {
+      "feet": 19000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KRNO",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "ORRCA",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "OAK"
+  },
   "id": "ws-koak-phraseology-practice-2-ups2896",
   "mode": "clearance",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: Oakland Six departure, radar vectors Orrca, then as filed, climb via SID except maintain FL190, 120.9; the chart publishes the expect note"
   },
-  "status": "pending"
+  "status": "settled"
 }

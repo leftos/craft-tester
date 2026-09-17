@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "CNDEL5 KAYEX LOSHN BOILE J50 PDZ J93 PPE… (continued)",
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and SUNNE is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN (route building), so the SID is issued in place of the heading"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-voi5909",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; type A32N filed on the sheet, read as A20N"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; type A32N filed on the sheet, read as A20N; validated by the user 2026-09-17: SUNNE1 is off, so the route builds onto CNDEL5 from its KAYEX transition, already on the filed route"
   },
-  "status": "pending"
+  "status": "settled"
 }

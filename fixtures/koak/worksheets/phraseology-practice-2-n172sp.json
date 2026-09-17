@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "altitude": {
+      "feet": 7000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KMRY",
+    "expect": null,
+    "frequency": "135.1",
+    "route": {
+      "fix": "EUGEN",
+      "template": "as_filed"
+    },
+    "sidFamily": "NUEVO"
+  },
   "id": "ws-koak-phraseology-practice-2-n172sp",
   "mode": "clearance",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation"
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: Nuevo Eight departure, Eugen, direct, climb via SID except maintain 7,000, 135.1; the chart publishes the expect note"
   },
-  "status": "pending"
+  "status": "settled"
 }

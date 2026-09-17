@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "altitude": {
+      "feet": 3000,
+      "phrase": "maintain"
+    },
+    "clearedTo": "KTRK",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "SAC",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "NIMI"
+  },
   "id": "ws-koak-phraseology-practice-1a-n281eb",
   "mode": "clearance",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation"
+    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation; validated by the user 2026-09-16: NIMI5 is stale, Nimitz Six departure, radar vectors Sacramento VOR, then as filed, maintain 3,000, 120.9; the chart publishes the expect note"
   },
-  "status": "pending"
+  "status": "settled"
 }
