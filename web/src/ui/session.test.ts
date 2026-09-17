@@ -10,7 +10,7 @@ import { buildScenario, listAirports, loadAirportData, spokenFor } from '@/ui/se
 import type { ScenarioView } from '@/ui/session.ts';
 import type { AppState, PickKey } from '@/ui/state.ts';
 import { newSession, toPlayerPicks, withPick, withSubmitted } from '@/ui/state.ts';
-import { stripRows } from '@/ui/strip.ts';
+import { stripFields } from '@/ui/strip.ts';
 
 /** The seed the wiring test renders, which is the one the report quotes. */
 const SEED = 1;
@@ -111,10 +111,11 @@ describe(`the scenario of seed ${SEED}`, () => {
   it('fills the strip and the ATIS from the scenario', () => {
     if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const scenario = view.generated;
-    const strip = new Map(stripRows(scenario).map(([label, value]) => [label, value]));
-    expect(strip.get('callsign')).toBe(scenario.callsign);
-    expect(strip.get('type')).toBe(`${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`);
-    expect(strip.get('route')).toBe(scenario.filedRoute);
+    const strip = stripFields(scenario, airport, SEED);
+    expect(strip.callsign).toBe(scenario.callsign);
+    expect(strip.equipment).toContain(`${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`);
+    expect(strip.depDest).toBe(`${airport.airport.icao} ${scenario.destination}`);
+    expect(strip.routeLines.join(' ')).toContain(scenario.filedRoute.split(/\s+/)[0]);
     const atis = new Map(atisRows(scenario, airport).map(([label, value]) => [label, value]));
     expect(atis.get('departing')).toBe('28L, 28R');
     expect(atis.get('configuration')).toContain(scenario.runwayConfigId);

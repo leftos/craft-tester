@@ -207,7 +207,10 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
     return renderAmendmentPanels(state, state.view, actions);
   }
   const { generated, clearance } = state.view;
-  const panels = [renderStrip(generated, 'Flight plan'), renderAtis(generated, state.airport)];
+  const panels = [
+    renderStrip(generated, state.airport, state.seed, 'Flight plan'),
+    renderAtis(generated, state.airport),
+  ];
   if (state.revisit?.kind === 'clearance' && !state.submitted) {
     panels.push(
       renderRevisit({

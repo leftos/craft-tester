@@ -8,7 +8,6 @@ import { aircraftLabel } from '@/ui/labels.ts';
 import { renderVerdict, scoreLine } from '@/ui/results.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { toBoxAnswers } from '@/ui/state.ts';
-import { stripRows } from '@/ui/strip.ts';
 
 /** The blank choice the answer dropdown opens on. */
 const PLACEHOLDER = '—';
@@ -69,17 +68,6 @@ export function boxRows(scenario: Scenario, boxes: DraftBoxes): BoxRow[] {
  */
 export function amendSubmitDisabled(boxes: DraftBoxes): boolean {
   return toBoxAnswers(boxes) === undefined;
-}
-
-/**
- * The boxes of the strip the student does not answer, which the strip beside the form prints.
- *
- * @param scenario The plan as filed.
- * @returns The label and value of every box but type, altitude and route, in strip order.
- */
-export function filedRows(scenario: Scenario): readonly (readonly [string, string])[] {
-  const answerable = new Set<string>(ANSWERABLE);
-  return stripRows(scenario).filter(([label]) => !answerable.has(label));
 }
 
 /**
@@ -166,8 +154,8 @@ function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
 /**
  * Renders the three boxes the student answers before the clearance is read.
  *
- * The boxes the student does not answer are printed by the strip beside the form, from
- * `filedRows`, so the form holds nothing but what it asks for.
+ * The strip beside the form is read-only paper, so the form asks for the three boxes in full
+ * rather than leaving part of the plan to be edited in place.
  *
  * @param props The plan as filed, the answers so far, and the handlers for answer and submit.
  * @returns The amend panel; its submit button is disabled while a box is still open.

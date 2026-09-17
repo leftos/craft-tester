@@ -5,7 +5,7 @@ import { grade, gradeProcedure } from '@/rules/grade.ts';
 import { isSidToken } from '@/rules/route.ts';
 import type { Grade, ResolvedClearance } from '@/rules/types.ts';
 import type { AmendmentScenario } from '@/scenario/amend.ts';
-import { filedRows, renderAmendForm, renderBoxVerdicts } from '@/ui/amendForm.ts';
+import { renderAmendForm, renderBoxVerdicts } from '@/ui/amendForm.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
@@ -13,7 +13,7 @@ import { spokenFor } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import type { AmendmentPicks, AppState, PickKey } from '@/ui/state.ts';
 import { toAmendmentPicks, toBoxAnswers } from '@/ui/state.ts';
-import { renderStrip, renderStripRows } from '@/ui/strip.ts';
+import { renderStrip } from '@/ui/strip.ts';
 
 /** The view an amendment session renders from. */
 type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
@@ -78,7 +78,7 @@ function revisitPanels(
 ): HTMLElement[] {
   const { drawn, clearance } = view;
   return [
-    renderStrip(drawn.filed, 'Flight plan'),
+    renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan'),
     renderAtis(drawn.filed, state.airport),
     renderRevisit({
       grades: amendmentGrades(drawn, clearance, state.airport, attempt.boxes, attempt.picks),
@@ -90,9 +90,10 @@ function revisitPanels(
 }
 
 /**
- * The rest of the strip beside the ATIS, with the boxes to answer in their own panel under both.
+ * The strip as filed beside the ATIS, with the boxes to answer in their own panel under both.
  *
- * The boxes take the full width there, so a route reads without wrapping.
+ * The strip is read-only paper, so every box it prints is answered in the panel below rather than
+ * on the strip itself, where the boxes take the full width and a route reads without wrapping.
  */
 function amendingPanels(
   state: AppState,
@@ -100,7 +101,7 @@ function amendingPanels(
   handlers: AmendmentHandlers,
 ): HTMLElement[] {
   return [
-    renderStripRows(filedRows(view.drawn.filed), 'Flight plan'),
+    renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan'),
     renderAtis(view.drawn.filed, state.airport),
     renderAmendForm({
       scenario: view.drawn.filed,
@@ -120,11 +121,11 @@ function clearingPanels(
 ): HTMLElement[] {
   const corrected = view.drawn.result.corrected;
   return [
-    renderStrip(view.drawn.filed, 'Flight plan as filed'),
+    renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan as filed'),
     renderBoxVerdicts(
       gradeBoxes(answers, view.drawn.result, view.drawn.filed, state.airport).map(boxGradeAsGrade),
     ),
-    renderStrip(corrected, 'Amended flight plan'),
+    renderStrip(corrected, state.airport, state.seed, 'Amended flight plan', 1),
     renderAtis(corrected, state.airport),
     renderCraftForm({
       scenario: corrected,
@@ -149,8 +150,8 @@ function resultPanels(
   const { drawn, clearance } = view;
   const corrected = drawn.result.corrected;
   return [
-    renderStrip(drawn.filed, 'Flight plan as filed'),
-    renderStrip(corrected, 'Amended flight plan'),
+    renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan as filed'),
+    renderStrip(corrected, state.airport, state.seed, 'Amended flight plan', 1),
     renderAtis(corrected, state.airport),
     renderResults({
       grades: amendmentGrades(drawn, clearance, state.airport, answers, picks),

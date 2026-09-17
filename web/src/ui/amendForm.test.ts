@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario } from '@/data/schema.ts';
 import type { BoxAnswer } from '@/rules/amend/grade.ts';
-import {
-  amendSubmitDisabled,
-  answerFor,
-  boxInputName,
-  boxRows,
-  filedRows,
-} from '@/ui/amendForm.ts';
+import { amendSubmitDisabled, answerFor, boxInputName, boxRows } from '@/ui/amendForm.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { EMPTY_BOXES } from '@/ui/state.ts';
-import { stripRows } from '@/ui/strip.ts';
 
 /** A filed plan with a suffix, a flight level and a route, which is one of each box to answer. */
 const FILED: Scenario = {
@@ -43,11 +36,7 @@ describe('boxRows', () => {
     ]);
   });
 
-  it('reads the filed value of every box as the strip writes it', () => {
-    const strip = new Map(stripRows(FILED));
-    for (const row of boxRows(FILED, EMPTY_BOXES)) {
-      expect(row.filed, row.box).toBe(strip.get(row.label));
-    }
+  it('reads the filed value of every box the way the plan was filed', () => {
     expect(boxRows(FILED, EMPTY_BOXES).map((row) => row.filed)).toStrictEqual([
       'B752/L',
       'FL330',
@@ -71,36 +60,6 @@ describe('boxRows', () => {
   it('writes a type with no suffix as the bare designator', () => {
     const rows = boxRows({ ...FILED, equipmentSuffix: null }, EMPTY_BOXES);
     expect(rows[0]?.filed).toBe('B752');
-  });
-});
-
-describe('filedRows', () => {
-  it('prints the boxes the student does not answer, in strip order', () => {
-    expect(filedRows(FILED).map(([label]) => label)).toStrictEqual([
-      'callsign',
-      'destination',
-      'squawk',
-      'time',
-    ]);
-  });
-
-  it('prints the remarks box where the flight filed remarks', () => {
-    const rows = filedRows({ ...FILED, remarks: 'REQ RWY 28' });
-    expect(rows.map(([label]) => label)).toStrictEqual([
-      'callsign',
-      'destination',
-      'squawk',
-      'remarks',
-      'time',
-    ]);
-    expect(new Map(rows).get('remarks')).toBe('REQ RWY 28');
-  });
-
-  it('leaves every box the student answers to the form', () => {
-    const printed = new Set(filedRows(FILED).map(([label]) => label));
-    for (const row of boxRows(FILED, EMPTY_BOXES)) {
-      expect(printed.has(row.label), row.box).toBe(false);
-    }
   });
 });
 
