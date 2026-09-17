@@ -50,6 +50,7 @@ from craft_generator.sop.model import (
     Airline,
     AirportInfo,
     AirportInputs,
+    Airway,
     AltitudeOutcome,
     AltitudeRule,
     AssignmentCondition,
@@ -106,6 +107,7 @@ EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 LOA_RULES_FILE = "loa_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
+AIRWAYS_FILE = "airways.yaml"
 AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
 NCT_BOUNDARY_FILE = "nct_boundary.yaml"
 DESTINATIONS_FILE = "destinations.yaml"
@@ -122,6 +124,7 @@ _DESIGNATOR_PATTERN = re.compile(r"^[A-Z0-9]{2,4}$")
 _AIRLINE_CODE_PATTERN = re.compile(r"^[A-Z]{3}$")
 _AIRPORT_ICAO_PATTERN = re.compile(r"^[A-Z]{4}$")
 _ROUTE_TOKEN_PATTERN = re.compile(r"^[A-Z0-9]{2,5}$")
+_AIRWAY_ID_PATTERN = re.compile(r"^[A-Z]{1,2}\d{1,3}$")
 
 
 def airports_dir() -> Path:
@@ -1025,24 +1028,25 @@ def load_aircraft_types(path: Path) -> dict[str, AircraftType]:
 
 
 def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
-    """Load the destination, airline and aircraft-type tables and the LOA rows every airport shares.
+    """Load the destination, airline and aircraft-type tables, the LOA rows and the airways every airport shares.
 
     Args:
         shared: The ``generator/shared`` directory, i.e. :func:`shared_dir`.
 
     Returns:
-        The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into, and
-        the inter-ARTCC LOA rows every airport inherits.
+        The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into, the
+        inter-ARTCC LOA rows every airport inherits, and the airways whose direction is fixed.
 
     Raises:
-        ValueError: One of the four files fails its own checks.
-        OSError: One of the four files is missing.
+        ValueError: One of the five files fails its own checks.
+        OSError: One of the five files is missing.
     """
     return SharedRouteFacts(
         destinations=load_shared_destinations(shared / DESTINATIONS_FILE),
         airlines=load_airlines(shared / AIRLINES_FILE),
         aircraft_types=load_aircraft_types(shared / AIRCRAFT_TYPES_FILE),
         loa=load_shared_loa_rules(shared / LOA_RULES_FILE),
+        airways=load_airways(shared / AIRWAYS_FILE),
     )
 
 
@@ -1246,6 +1250,58 @@ def load_route_connections(path: Path) -> tuple[RouteConnection, ...]:
     root.finish()
     _check_route_connections(connections, where)
     return connections
+
+
+def _airway(row: _Row) -> Airway:
+    identifier = row.text("id")
+    if _AIRWAY_ID_PATTERN.fullmatch(identifier) is None:
+        raise ValueError(
+            f"{row.where}.id: {identifier!r} is not an airway identifier of one or two letters and one to three digits, e.g. R464, J1 or Q120"
+        )
+    airway = Airway(id=identifier, one_way=row.flag("one_way"), note=row.text("note"))
+    row.finish()
+    return airway
+
+
+def _check_airways(airways: Sequence[Airway], where: str) -> None:
+    seen: set[str] = set()
+    for airway in airways:
+        if airway.id in seen:
+            raise ValueError(
+                f"{where} airways[{airway.id}]: the identifier is already stated by an earlier row of this file; "
+                "the engine reads an airway by its identifier, so a file states each one once"
+            )
+        seen.add(airway.id)
+
+
+def load_airways(path: Path) -> tuple[Airway, ...]:
+    """Load the airway rows every airport shares.
+
+    The ``source`` block is checked for shape - it records where the directions were read from and
+    when - and the ``airways`` rows are what the engine reads a filed route against. Nothing cites an
+    airway row, so the source stays in the file rather than reaching the airport document.
+
+    Args:
+        path: Path to ``generator/shared/airways.yaml``.
+
+    Returns:
+        One row per airway, in file order.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, holds an ``id`` that is
+            no airway identifier, or states one identifier twice.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    source = root.child("source")
+    source.text("title")
+    source.day("dated")
+    source.finish()
+    airways = tuple(_airway(child) for child in root.children("airways"))
+    root.finish()
+    _check_airways(airways, where)
+    return airways
 
 
 def _tec_source(row: _Row) -> TecSource:
@@ -1648,8 +1704,8 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
 
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
-        shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into
-            and the inherited LOA rows, from :func:`load_shared_route_facts`.
+        shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into,
+            the inherited LOA rows and the shared airways, from :func:`load_shared_route_facts`.
 
     Returns:
         The loaded and cross-checked inputs.
@@ -1677,4 +1733,5 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         routes=routes,
         tec=_optional_tec(directory / TEC_FILE, known),
         loa=_joined_loa(directory, shared, sop.airport.icao),
+        airways=shared.airways,
     )

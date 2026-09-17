@@ -198,7 +198,9 @@ Scenarios are drawn from this file, so its breadth is the game's variety.
 What a destination, an airline or an aircraft type *is* holds at every airport, so those facts live once
 under `generator/shared/` and this file lists only codes into them (user rule 2026-09-16: never copy
 airport-independent data between airports). A code the shared file lacks fails the load naming the file
-to add it to; add the row there first.
+to add it to; add the row there first. The route structure is shared the same way: `generator/shared/airways.yaml`
+marks the airways flown one way only — the Pacific oceanic routes off the Bay — and every airport inherits
+the table, so a level filed on one of them is not read against the odd/even direction-of-flight rule.
 
 - **`destinations`**: the ICAO codes the airport's scenarios file to, in draw order. The facts sit in
   `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), and `lat`/`lon` only

@@ -69,6 +69,7 @@ from craft_generator.sop.model import (
     AircraftGroup,
     AirportInfo,
     AirportInputs,
+    Airway,
     AltitudeOutcome,
     AltitudeRule,
     AssignmentCondition,
@@ -355,6 +356,10 @@ def _route_connection(connection: RouteConnection) -> Document:
         "source": connection.source,
         "text": f"{connection.from_fix} {connection.connects} connects to {connection.to}",
     }
+
+
+def _airway(airway: Airway) -> Document:
+    return {"id": airway.id, "oneWay": airway.one_way}
 
 
 def _phraseology_rules(shared: Sequence[PhraseologyRule], airport: Sequence[PhraseologyRule]) -> list[Document]:
@@ -1108,6 +1113,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "phraseologyRules": _phraseology_rules(inputs.phraseology_rules, sop.phraseology_rules),
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
         "routeConnections": [_route_connection(connection) for connection in inputs.route_connections],
+        "airways": [_airway(airway) for airway in inputs.airport.airways],
         "tecRoutes": _tec_routes(inputs),
         "loaRules": _loa_rules(inputs),
         "aircraftClasses": dict(inputs.aircraft_classes),

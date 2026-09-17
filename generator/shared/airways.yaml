@@ -1,0 +1,14 @@
+# The airways whose direction of flight the route structure fixes rather than the altitude flown on
+# them. FAA JO 7110.65 4-5-1 reads an odd or an even level off the magnetic course so that opposing
+# traffic on the same route is separated; a one-way airway carries no opposing traffic, so the rule
+# has nothing to separate there and a filed level stands whichever half of the table it falls in.
+# The Pacific oceanic routes the Bay departs on are one-way, which is why a westbound flight to
+# Hawaii files an odd level and is correct as filed.
+# Shared by every airport: an airway belongs to the route structure, not to one field, so an airport
+# inherits every row rather than restating them. A row is a fact about the airway itself and nothing
+# cites it, so only the identifier and the direction reach the airport document.
+source: { title: "Pacific oceanic route structure, per the user's Common Fixes notes and the enroute charts", dated: 2026-09-16 }
+airways:
+  - { id: R463, one_way: true, note: "The oceanic route the Common Fixes sheet leaves ALCOA on, flown westbound only" }
+  - { id: R464, one_way: true, note: "The oceanic route the Common Fixes sheet leaves BEBOP on, flown westbound only" }
+  - { id: A220, one_way: true, note: "The oceanic route the Common Fixes sheet leaves CINNY on, flown westbound only" }

@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "NIMI6 OAK SGD",
+        "reason": "the route files no departure procedure; the SOP assigns NIMI6 from 28R in SFOW"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-n471ry",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-17: no SID filed; NIMI6 OAK SGD"
   },
-  "status": "pending"
+  "status": "settled"
 }

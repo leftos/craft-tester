@@ -419,6 +419,18 @@ export const RouteConnectionSchema = z.strictObject({
 });
 
 /**
+ * One airway whose direction of flight the route structure fixes.
+ *
+ * A one-way airway carries no opposing traffic, so the direction-of-flight altitude rule has nothing
+ * to separate on it and an altitude filed on it stands whichever half of the table it falls in. The
+ * rows are national, so every airport inherits all of them.
+ */
+export const AirwaySchema = z.strictObject({
+  id: z.string(),
+  oneWay: z.boolean(),
+});
+
+/**
  * A transcribed TEC route for an NCT destination, keyed by plan, runway family, and class.
  *
  * `initialAltitudeFeet` is the altitude the TEC route is issued with and `finalAltitudeFeet` the
@@ -614,6 +626,7 @@ export const AirportDataSchema = z.strictObject({
   phraseologyRules: z.array(PhraseologyRuleSchema),
   equipmentSuffixes: z.array(EquipmentSuffixSchema),
   routeConnections: z.array(RouteConnectionSchema),
+  airways: z.array(AirwaySchema),
   tecRoutes: z.array(TecRouteSchema),
   loaRules: z.array(LoaRuleSchema),
   notices: z.array(NoticeSchema),
@@ -814,6 +827,7 @@ export type Phraseology = z.infer<typeof PhraseologySchema>;
 export type PhraseologyRule = z.infer<typeof PhraseologyRuleSchema>;
 export type EquipmentSuffix = z.infer<typeof EquipmentSuffixSchema>;
 export type RouteConnection = z.infer<typeof RouteConnectionSchema>;
+export type Airway = z.infer<typeof AirwaySchema>;
 export type TecRoute = z.infer<typeof TecRouteSchema>;
 export type LoaRuleKind = z.infer<typeof LoaRuleKindSchema>;
 export type LoaRule = z.infer<typeof LoaRuleSchema>;

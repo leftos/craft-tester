@@ -494,7 +494,7 @@ describe('route building before a heading', () => {
     ]);
   });
 
-  it('leaves the flight on the runway heading when no chain reaches the filed route', () => {
+  it("issues the SID whose transition connects to the exit fix itself, in the heading's place", () => {
     const clearance = clearanceFor(
       {
         ...SWA344,
@@ -502,6 +502,26 @@ describe('route building before a heading', () => {
         aircraftType: 'C510',
         destination: 'KSBA',
         filedRoute: 'COAST9 GVO HABUT',
+        filedAltitude: 33000,
+      },
+      koak,
+    );
+    expect(assigned(clearance).id).toBe('CNDEL5');
+    expect(clearance.route.value).toEqual({
+      template: 'transition',
+      fix: 'YYUNG',
+      builtRoute: 'CNDEL5 YYUNG GVO HABUT',
+    });
+  });
+
+  it('leaves the flight on the runway heading when no chain reaches the filed route', () => {
+    const clearance = clearanceFor(
+      {
+        ...SWA344,
+        callsign: 'N903JP',
+        aircraftType: 'C510',
+        destination: 'KSBA',
+        filedRoute: 'COAST9 SXC HABUT',
         filedAltitude: 33000,
       },
       koak,

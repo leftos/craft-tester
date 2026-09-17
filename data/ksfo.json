@@ -36,6 +36,20 @@
     "magneticVariation": 14.0,
     "spoken": "San Francisco"
   },
+  "airways": [
+    {
+      "id": "R463",
+      "oneWay": true
+    },
+    {
+      "id": "R464",
+      "oneWay": true
+    },
+    {
+      "id": "A220",
+      "oneWay": true
+    }
+  ],
   "altitudeRules": [
     {
       "classes": [
@@ -1601,6 +1615,14 @@
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "YYUNG usually connects to LAX",
       "to": "LAX"
+    },
+    {
+      "connects": "usually",
+      "from": "YYUNG",
+      "id": "CONN-YYUNG-GVO",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "YYUNG usually connects to GVO",
+      "to": "GVO"
     },
     {
       "connects": "usually",

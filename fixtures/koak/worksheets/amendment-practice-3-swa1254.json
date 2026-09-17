@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 41000,
+        "reason": "filed FL430 on a 22° magnetic course to Boise needs an odd level; the highest legal altitude at or below it is FL410"
+      },
+      {
+        "box": "route",
+        "proposed": "OAK6 OAK SAC ANAHO",
+        "reason": "NIMI5 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-swa1254",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: FL410 odd for the course to Boise; NIMI5 is a prop SID, OAK6 OAK SAC ANAHO"
   },
-  "status": "pending"
+  "status": "settled"
 }

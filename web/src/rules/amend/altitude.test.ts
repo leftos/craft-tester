@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, LoaRule, Scenario } from '@/data/schema.ts';
 import { checkAltitude } from '@/rules/amend/altitude.ts';
@@ -6,6 +7,7 @@ import { classify } from '@/rules/classify.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
@@ -172,6 +174,35 @@ describe('checkAltitude TRACON destinations', () => {
     if (result !== undefined && isUnresolved(result)) throw new Error(result.reason);
     const cited = result === undefined ? [] : result.citations.map((citation) => citation.id);
     expect(cited.filter((id) => id.startsWith('TEC-'))).toEqual([]);
+  });
+});
+
+describe('checkAltitude on a one-way airway', () => {
+  /** FDX3875 of Amendment Practice 2: an MD11 to Honolulu on the oceanic R464, westbound at FL310. */
+  const FDX3875: Scenario = {
+    callsign: 'FDX3875',
+    aircraftType: 'MD11',
+    equipmentSuffix: '/L',
+    destination: 'PHNL',
+    filedRoute: 'BEBOP R464 BILLO R464 BITTA MAGGI3',
+    filedAltitude: 31000,
+    runwayConfigId: 'SFOW',
+    departureRunway: '30',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '4613',
+  };
+
+  it('leaves an odd level filed on a westbound oceanic airway alone', () => {
+    expect(check(FDX3875, koak)).toBeUndefined();
+  });
+
+  it('reads the parity again when the same airway is two-way', () => {
+    const twoWay: AirportData = {
+      ...koak,
+      airways: koak.airways.map((row) => ({ ...row, oneWay: false })),
+    };
+    expect(amendment(FDX3875, twoWay).proposedFeet).toBe(30000);
   });
 });
 

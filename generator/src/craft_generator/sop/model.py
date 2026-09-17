@@ -591,18 +591,33 @@ class LoaData:
 
 
 @dataclass(frozen=True, slots=True)
+class Airway:
+    """One airway of ``shared/airways.yaml``: whether the route structure fixes its direction.
+
+    A one-way airway carries no opposing traffic, so the direction-of-flight altitude rule has
+    nothing to separate on it and a filed level stands whichever half of the table it falls in.
+    """
+
+    id: str
+    one_way: bool
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
 class SharedRouteFacts:
-    """The facts of a destination, an airline and an aircraft type, and the inherited LOA rows.
+    """The facts of a destination, an airline and an aircraft type, the inherited LOA rows and airways.
 
     They live in ``generator/shared/`` and an airport's ``routes.yaml`` lists only codes into them, so
     no fact is copied between airports. ``loa`` is ``shared/loa_rules.yaml``, the inter-ARTCC rows
-    every airport inherits.
+    every airport inherits, and ``airways`` is ``shared/airways.yaml``, the airways whose direction
+    the route structure fixes.
     """
 
     destinations: dict[str, Destination]
     airlines: dict[str, Airline]
     aircraft_types: dict[str, AircraftType]
     loa: LoaData
+    airways: tuple[Airway, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -657,7 +672,8 @@ class AirportInputs:
     ``tec`` is ``None`` when the airport directory carries no ``tec.yaml``; the airport document then
     emits an empty table for it. ``loa`` is the shared ``loa_rules.yaml`` rows this airport inherits
     joined with the airport's own ``loa.yaml``, so it holds the inherited rows even where the airport
-    directory carries no file of its own.
+    directory carries no file of its own. ``airways`` is the shared ``airways.yaml`` table every
+    airport inherits unchanged, carried here so the document emits it for the airport being built.
     """
 
     icao: str
@@ -666,3 +682,4 @@ class AirportInputs:
     routes: RouteLibrary
     tec: TecData | None
     loa: LoaData
+    airways: tuple[Airway, ...]

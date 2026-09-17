@@ -10,6 +10,7 @@ import yaml
 from craft_generator.sop.load import (
     AIRCRAFT_TYPES_FILE,
     AIRLINES_FILE,
+    AIRWAYS_FILE,
     DESTINATIONS_FILE,
     LOA_RULES_FILE,
     OVERRIDES_FILE,
@@ -18,6 +19,7 @@ from craft_generator.sop.load import (
     ROUTES_FILE,
     SOP_FILE,
     load_airport,
+    load_airways,
     load_overrides,
     load_phraseology_rules,
     load_route_connections,
@@ -56,7 +58,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "A-RVSM",
 ]
 KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
-ROUTE_CONNECTION_COUNT = 27
+ROUTE_CONNECTION_COUNT = 28
 ROUTE_CONNECTION_SOURCE = "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16"
 KSFO_TELEPHONY_COUNT = 28
 KSFO_CARGO_AIRLINES = {"FDX", "UPS", "GTI", "ABX", "ATN", "CLX", "CKS", "NCA"}
@@ -94,6 +96,7 @@ SHARED_FILES = (
     ("airlines", AIRLINES_FILE),
     ("aircraft_types", AIRCRAFT_TYPES_FILE),
     ("loa_rules", LOA_RULES_FILE),
+    ("airways", AIRWAYS_FILE),
 )
 
 
@@ -273,6 +276,39 @@ def test_a_route_connection_with_a_bad_token_is_rejected(tmp_path: Path) -> None
     path.write_text("source: the sheet\nconnections:\n  - { from: SUSEY, to: ebaye, connects: always }\n", encoding="utf-8")
     with pytest.raises(ValueError, match=r"connections\[0\]\.to: 'ebaye' is not an upper-case route token"):
         load_route_connections(path)
+
+
+def test_the_shared_airways_load() -> None:
+    airways = load_airways(shared_dir() / AIRWAYS_FILE)
+    by_id = {airway.id: airway for airway in airways}
+    assert set(by_id) == {"R463", "R464", "A220"}
+    assert all(airway.one_way for airway in airways)
+    assert "BEBOP" in by_id["R464"].note
+
+
+def test_an_airway_stated_twice_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / AIRWAYS_FILE
+    path.write_text(
+        "source: { title: the charts, dated: 2026-09-16 }\nairways:\n"
+        "  - { id: R464, one_way: true, note: first }\n  - { id: R464, one_way: false, note: second }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"airways\[R464\]: the identifier is already stated by an earlier row"):
+        load_airways(path)
+
+
+def test_an_airway_with_a_bad_identifier_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / AIRWAYS_FILE
+    path.write_text(
+        "source: { title: the charts, dated: 2026-09-16 }\nairways:\n  - { id: BEBOP, one_way: true, note: a fix, not an airway }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"airways\[BEBOP\]\.id: 'BEBOP' is not an airway identifier"):
+        load_airways(path)
+
+
+def test_the_shared_airways_reach_every_airport(ksfo_inputs: AirportInputs) -> None:
+    assert [airway.id for airway in ksfo_inputs.airways] == ["R463", "R464", "A220"]
 
 
 def test_an_airport_phraseology_id_stated_twice_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:

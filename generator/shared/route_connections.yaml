@@ -9,6 +9,8 @@ connections:
   # Common S/SW fixes
   - { from: YYUNG, to: TILLT, connects: usually }
   - { from: YYUNG, to: LAX,   connects: usually }
+  # N903JP to Santa Barbara: with COAST9 off, the user's answer is CNDEL5 YYUNG GVO HABUT (user, 2026-09-17)
+  - { from: YYUNG, to: GVO,   connects: usually }
   - { from: MCKEY, to: TILLT, connects: usually }
   - { from: MCKEY, to: LAX,   connects: usually }
   - { from: KTINA, to: CISKO, connects: always }

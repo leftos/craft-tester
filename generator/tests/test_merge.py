@@ -236,6 +236,12 @@ def test_the_shared_route_connections_are_emitted_as_citable_rows(ksfo_document:
     }
 
 
+def test_the_shared_airways_are_emitted_with_their_direction(ksfo_document: Document, ksfo_build_inputs: BuildInputs) -> None:
+    rows = ksfo_document["airways"]
+    assert len(rows) == len(ksfo_build_inputs.airport.airways)
+    assert rows == [{"id": "R463", "oneWay": True}, {"id": "R464", "oneWay": True}, {"id": "A220", "oneWay": True}]
+
+
 def test_the_loa_rules_keep_their_discriminated_kinds(ksfo_document: Document) -> None:
     rules = {rule["id"]: rule for rule in ksfo_document["loaRules"]}
     assert len(rules) == LOA_RULE_COUNT

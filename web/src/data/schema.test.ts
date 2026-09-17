@@ -139,6 +139,7 @@ const minimalAirportData: AirportData = {
   phraseologyRules: [],
   equipmentSuffixes: [],
   routeConnections: [],
+  airways: [],
   tecRoutes: [],
   loaRules: [],
   notices: [],

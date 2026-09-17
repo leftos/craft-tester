@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "OAK6 OAK RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
+        "reason": "the route files no departure procedure; the SOP assigns OAK6 from 30 in SFOW"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-1a-kal65",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: no SID filed; OAK6 OAK, then as filed"
   },
-  "status": "pending"
+  "status": "settled"
 }

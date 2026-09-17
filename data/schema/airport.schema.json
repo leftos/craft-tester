@@ -91,6 +91,25 @@
       ],
       "type": "object"
     },
+    "airways": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "oneWay": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "oneWay"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "altitudeRules": {
       "items": {
         "additionalProperties": false,
@@ -1572,6 +1591,7 @@
     "phraseologyRules",
     "equipmentSuffixes",
     "routeConnections",
+    "airways",
     "tecRoutes",
     "loaRules",
     "notices",

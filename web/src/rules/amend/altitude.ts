@@ -128,6 +128,21 @@ function parityConstraint(
 }
 
 /**
+ * Whether the filed route runs on an airway the route structure fixes the direction of.
+ *
+ * The direction-of-flight rule separates opposing traffic on a two-way route; a one-way airway
+ * carries none, so the rule has nothing to separate there and the level the pilot filed stands.
+ *
+ * @param scenario The filed flight plan, whose route is read token by token.
+ * @param airport The airport data, whose `airways` hold the direction of each airway.
+ * @returns True when any token of the route names a one-way airway.
+ */
+function onOneWayAirway(scenario: Scenario, airport: AirportData): boolean {
+  const oneWay = new Set(airport.airways.filter((row) => row.oneWay).map((row) => row.id));
+  return scenario.filedRoute.split(/\s+/).some((token) => oneWay.has(token));
+}
+
+/**
  * The RVSM constraint, for a suffix that carries no RVSM approval.
  *
  * A suffix the equipment table does not hold, and a plan filed with no suffix at all, both read as
@@ -187,6 +202,11 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
  * band for a suffix without RVSM approval. The proposal is then the highest altitude at or below the
  * filed one that satisfies both at once, so an amendment never trades one broken rule for another.
  *
+ * A route that runs on a one-way airway is not read against the parity at all: that rule separates
+ * opposing traffic, of which a one-way route has none, so a westbound oceanic flight keeps the odd
+ * level it filed. The RVSM band is unaffected, because it is a question of what the aircraft is
+ * approved for rather than of which way it is going.
+ *
  * Only the constraints the *filed* altitude broke are reported and cited: the reason says what is
  * wrong with what the pilot filed, and a rule the filed altitude honours is not part of that, even
  * where it is the rule that ruled out the altitudes in between.
@@ -224,7 +244,9 @@ export function checkAltitude(
     };
   }
   const constraints = [
-    parityConstraint(scenario, airport, destination),
+    onOneWayAirway(scenario, airport)
+      ? undefined
+      : parityConstraint(scenario, airport, destination),
     rvsmConstraint(scenario, airport),
   ].filter((constraint) => constraint !== undefined);
   const broken = constraints.filter((constraint) => !constraint.legal(scenario.filedAltitude));

@@ -1,5 +1,8 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": []
+  },
   "id": "ws-koak-amendment-practice-2-fdx3875",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +20,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: R464 is a unidirectional oceanic airway, so FL310 westbound stands (parity exempt)"
   },
-  "status": "pending"
+  "status": "settled"
 }
