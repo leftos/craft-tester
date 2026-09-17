@@ -365,7 +365,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `rules/amend/altitude.ts`, `rules/tecRoutes.ts`, `rules/amend/tec.ts`, `web/scripts/propose.ts`; generator
   `sop/load.py` `load_tec`, `merge.py` `_tec_routes`, `_check_tec_*`; schema + `schema:export`; both data files
   rebuilt; the KSFO worksheet fixtures whose expected altitude changes are findings to list, not to re-settle
-  silently. Dispatch after 2g and 3b-ii land (shared loaders, schema and data files).
+  silently. Dispatch after 2g lands (shared loaders, schema and data files); 3b-ii lands after it. **KSFO tool pages
+  captured 2026-09-16** into `.tmp/sfo-tec/<FAA>.txt` with `.tmp/pw/capture-tec.mjs` (`node capture-tec.mjs SFO
+  ..\sfo-tec SMF …`): the SFO rows print `NNN/` (a trailing slash, no second number) or a bare `NNN`, never a pair;
+  **user 2026-09-16: a blank final altitude means final = initial** (`100/` = 10,000 initial and final, as `100/100`
+  is), and a bare number reads the same. No rows for RNO (prop header only), APC and STS (empty groups); SQL timed
+  out (KSFO never had San Carlos rows); SAN prints the ADR rows dotted with no altitude. The tool tags SFO runways on
+  the SID (`SFO4(1)`, `GAPP7(28)`) and prints `CITTY3` for CIITY3 on SAC/O88 (a tool typo; transcribe CIITY#).
 - [ ] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
   PAO RHV NUQ STS MOD SCK MHR MCC) were captured 2026-09-16 with Playwright into `.tmp/oak-tec/<FAA>.txt`
   (gitignored; re-run `web/.tmp/oak-tec.ts` style script if lost). Findings: the tool prints an altitude band
