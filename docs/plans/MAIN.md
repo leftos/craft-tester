@@ -84,10 +84,6 @@ of them, noted inline. Three landed the same day and are in Landed below.
   route is on a one-way airway, so the reveal says why the level stood. Precedent for citing a row on a
   non-amendment verdict is `withNavaidRow` (`amend/grade.ts:231-237`); `altitude.test.ts:180-203` pins the
   current behaviour
-- [ ] **`LoaData.sources` is joined but never emitted** (`sop/load.py:1617-1633, 1796`); nothing in
-  `merge.py` reads it and `schema.ts` has no field for it. **Decided (user 2026-09-17): delete the dead
-  field**, with `joined_loa_sources` and its three assertions in `test_tec_loa_load.py`. The transcribed
-  `effective`/`url` go with it; the rows' own `source` prose already names the letters
 - [ ] **A TEC route overrides the SOP assignment** — **new rule concept, user 2026-09-17**, given as the
   ruling on the five never-routed TEC rows. **This is an engine change, not a generator fix, so it needs a
   subplan before any code** (repo rule: a correction that cannot be expressed as data adds a rule concept
@@ -109,19 +105,28 @@ of them, noted inline. Three landed the same day and are in Landed below.
   they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
   `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
   `_check_fix_spoken` would fail on `RV` while silently teaching the speaker to read `RH` as "Arsha NDB",
-  a real navaid. Add `_check_tec_route_tail` beside `_check_tec_heads`, failing a row whose route names no
-  fix after its head — the sentence `rules/route.ts:200-202` already enforces at runtime, moved to build
-  time
-- [ ] **Nothing checks that an airline-default row lists a class that airline flies.** Extend
-  `_check_runway_defaults` (`merge.py:869-890`), the only place the runway rows and the fleet are joined —
-  `sop/load.py` validates `sop.yaml` before `routes.yaml` loads, which is why `_check_runway_airlines` can
-  only check uniqueness. PCM/`[T]` is consistent today, so this is a guard, not a fix
+  a real navaid. **Attempted 2026-09-17 and stopped — the guard is harder than this line had it:**
+  - **A shape test does not catch the rows that motivate it.** `RV` matches `_NAVAID_TOKEN`
+    (`[A-Z]{2,3}`, `merge.py:123`), so `RH RV`, `OAK6 RV` and `H090 RV` all *pass* "is there a fix after
+    the head". Only "nothing after the head" and "only airways after the head" fail. Catching them needs a
+    vocabulary of non-fix markers (`RV`, and `RH`, which is the very navaid the trap is about), and
+    "rules are data" makes its home a decision too: a frozenset in `merge.py` or a row in shared YAML
+  - **The narrow version fires on live data.** `TEC-KOAK-SFOE-TP` (`ksfo/tec.yaml:72`) is the bare
+    `GAPP#` — head and nothing after it — so KSFO would stop building. That row is one of the five
+    never-routed ones below, already awaiting a ruling, so this guard is blocked behind it
 - [ ] **The amendment worksheet parser counts five non-blank cells**, so an empty plan cell shifts every
   later row. `_cells` (`worksheets.py:260-261`) drops empty lines, so an empty cell disappears rather than
   becoming an empty string, and `parse_amendment_sheet` slices positionally (`:341-364`). One to four
   blanks raise, but the message blames the last row — the wrong end of the sheet; **any multiple of five
   blanks parses silently wrong** and writes corrupt fixtures under callsign-derived filenames. No
-  checked-in fixture exercises it
+  checked-in fixture exercises it. **Measured 2026-09-17** across all four checked-in amendment texts: the
+  export writes one line per cell, separates rows by a run of **six** blank lines, and runs the header row
+  straight into the first data row with no blank run — so an empty cell is a single blank line *inside* a
+  row. **Decided:** split the body into five consecutive non-boundary lines per row, skipping blank runs
+  between rows (no threshold, so interior and trailing empty cells survive); and give `_amendment_row` its
+  own empty-cell error naming the row and the column, collected across the whole table, so one message
+  names every affected row instead of blaming the last one. `parse_altitude("")` raises, so without that
+  per-column error a blank Altitude stops the parse and nothing downstream is observable
 
 ## Wave 4 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -238,6 +243,12 @@ One line per step; the full record and the user decisions behind each are in the
   rebuild-or-sync. No UI framework was needed — the forms hold no dynamic lists. `happy-dom` (dev only)
   gives `ui/app.ts`, `ui/dom.ts` and `ui/amendPanels.ts` their first tests, which assert node identity
   across a keystroke — 2026-09-17
+- [x] An airline-default runway row must list a class that airline flies — `_check_runway_defaults`,
+  the only place the runway rows and the fleet are joined. Both readers silently dropped a mismatched
+  row, so it was dead data with no signal — 2026-09-17
+- [x] `LoaData.sources` deleted: parsed, joined and never emitted (user ruling). The three LOA letters it
+  held keep their URLs as a comment in `shared/loa_rules.yaml`, where whoever re-verifies a row will look,
+  rather than as data nothing reads — 2026-09-17
 - [x] A CIFP `VD` leg is an initial climb, not a crossing restriction, so no SID emits a restriction with
   an empty fix and the `rules/route.ts` filter that worked around five of them is gone; COAST9 and NUEVO8
   take `climb_via_eligible` to hold the "CVS x 10,000" the SOP clears them with. `CD` is the same shape and
