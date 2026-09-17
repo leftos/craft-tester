@@ -440,9 +440,18 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   cells and any extra line inside a cell (AAY218 files `KPGI`), records nothing from them, and a plan whose
   destination the shared file does not hold is skipped with a report line until the destination box exists.
   Brief 3d (parser) dispatched 2026-09-16 on `wt/koak-worksheets`; then **user: "The linked files have been
-  restored to a clean version at the original URLs"**, so the brief was redirected: re-fetch the three sheets (the
-  cached 1A export is stale), add the tolerance only if a clean sheet still needs it, add `KGPI` (Glacier Park,
-  ZLC) to the shared destinations if the clean sheet files it.
+  restored to a clean version at the original URLs"**, so the brief was redirected. **Landed 2026-09-16**: the
+  re-fetched sheets are clean (13 five-cell rows each, no note cells, AAY218 still files `KPGI`), so no parser
+  tolerance was added; the importer skips a plan whose destination the shared file lacks and prints
+  `skipped AAY218: destination KPGI is not in generator/shared/destinations.yaml`; 50 KOAK fixtures written
+  (12 clearance, 38 amendment, all `pending`); `data/koak.json` gains the worksheet navaids. **Findings for the
+  validation loop**: six amendment plans are unresolved with `R.sid | no assignment rule applies to SFOW no-gate
+  runway 30 class J` (e.g. LXJ351 to KCRQ off runway 30: a KOAK SOP gap for jets whose exit fix is in no gate);
+  SWA2021 to KPDX (`OAK6 DEDHD LMT OCITY7`) trips `LOA-ZSE-PDX-ROUTE` exactly as its KSFO twin does (open KSFO
+  question); `ECA` (N436MS `OAK V244 ECA`) has no spoken name; **fixture ids collide across airports**
+  (`ws-amendment-practice-1a-lxj351` exists under both `fixtures/ksfo/` and `fixtures/koak/`, so `propose <id>`
+  is ambiguous: decide whether the importer prefixes new ids with the airport). Backlog: the amendment parser
+  still counts five non-blank cells per row, so an empty plan cell would shift every later row.
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture
