@@ -621,6 +621,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   is offered: check `judge()` before settling); UAL313 (`/Q` is no FAA suffix, so `B752/L` is right, but the route
   typo `BVLQ124` for `Q124` is unaddressed: ask); SWA1254, N471RY, N918AR, KAL65 (vector-SID navaid; N918AR to KSMO
   via AVE also trips the SMO props LOA row only once amended boxes are held against the LOA rows).
+  **Arrival-swap rulings 2026-09-17** (settling with the engine landing): SWA984-KSFO 1A `SSTIK5 SUSEY EBAYE BURGL
+  IRNMN2` and 1C `GAPP7 SFO EBAYE BURGL IRNMN2`; NKS510 `SKYL1 AVE SADDE8` + FL270, type `A320/L` the other side
+  of the pair; SWA888 `CNDEL5 KTINA CISKO RDHOT ROKKR3`; N858EE `CNDEL5 YYUNG TILLT LEGOZ4`; SWA2021 `OAK6 OAK
+  DEDHD LMT MACHU TMBRS4` + FL280; JSX203 `CNDEL5 NTELL Q174 FLCHR COKTL4` (the LAS LOA's `.Q174.FLCHR`, so a
+  `Q174 → FLCHR` connection row); N918AR re-ruled `NIMI6 OAK AVE EHF WAYVE1` (SMO props row held); SWA1254
+  re-ruled `OAK6 OAK SAC ANAHO PRNCS SADYL4` as the KSFO library files it (`ANAHO → PRNCS` connection row); the
+  KOAK library jet row `RZS LAX HUBRD#` to KSAN becomes `RZS LAX COMIX#`.
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture

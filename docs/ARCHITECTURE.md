@@ -63,7 +63,7 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 | directory | job |
 |---|---|
 | `data/` | zod schema, loader |
-| `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/routeBuild.ts` route-builds for both engines: before the vector-SID fallback a filed SID whose transition, or own end fix, connects onward to the filed route over `routeConnections` (or a row's forced transition), and before a heading any passed-over SID that does, in amendment mode and in clearance mode alike. `rules/amend/` checks the three strip boxes |
+| `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/routeBuild.ts` route-builds for both engines: before the vector-SID fallback a filed SID whose transition, or own end fix, connects onward to the filed route over `routeConnections` (or a row's forced transition), and before a heading any passed-over SID that does, in amendment mode and in clearance mode alike; its `buildToArrival` runs the same breadth-first search from several sources to a preference-ordered set of arrival entry fixes. `rules/amend/` checks the three strip boxes; `rules/amend/arrival.ts` is the last step of the route check: every proposed box is held against the LOA route rows and, at a destination the ZOA common-arrivals sheet lists, against the flight's equipment, and a flight on the wrong arrival is routed onto one it can fly at an entry fix the sheet, the LOA or the chart names, the amendment carrying `arrivalSwap` (the box without that change) for half credit |
 | `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`; a draw is kept only when the amendment engine finds nothing to amend), amendment-scenario generator (`amend.ts`: up to two faults injected into a clean draw, kept only when the engine amends exactly the boxes they meant), time-of-day, runway-configuration and forced-destination filters in the URL hash |
 | `ui/` | header with the mode switch and filters, strip, ATIS panel, CRAFT form, the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort) |
 | `../scripts/` | Node scripts outside the bundle: `propose.ts` (the engine's clearance for a fixture, with citations), `export-schema.ts`, `browser-check.ts` (Playwright, forced viewport) |
@@ -74,8 +74,10 @@ departure runway: the scenario fixes the runway and the engine explains it (the 
 `RWY-*` mechanism row: an airline default, an aircraft-group default, a class default, a runway issued on request, the direction split
 of the family, else the first runway), so the ATIS can advertise the runways in normal use and the student
 must pick the parallel. The procedure, the clearance limit and the squawk are resolved but not graded. A verdict is
-`correct`, `wrong`, or `acceptable`: a reading the rules allow that says more than it needs to, counted
-as correct in the score line but shown in its own colour. The engine reports the longer reading it
+`correct`, `wrong`, `acceptable` (a reading the rules allow that says more than it needs to, counted
+as correct in the score line but shown in its own colour) or `half` (an amendment-mode route box that
+reads the proposal but for the arrival the engine swapped, half a box in the score line: the arrival is
+the enroute controller's to change). The engine reports the longer reading it
 allows as `redundantExpect` beside the clause it speaks: the expect clause a SID chart already publishes
 (accepted at the chart's delay, citing `A-EXPECT-REDUNDANT`), and the amended clause beside a "will be
 your final" reading (accepted at the delay that clause would carry, citing `A-FINAL`). The expect clause
