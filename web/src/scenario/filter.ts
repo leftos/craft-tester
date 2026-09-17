@@ -34,6 +34,9 @@ export type ScenarioFilter = { time: TimeFilter; config: ConfigFilter; destinati
 /** The shape a `d=` part has to have to be read: an ICAO code, upper case. */
 const DESTINATION_PATTERN = /^[A-Z0-9]{3,4}$/;
 
+/** The shape an `a=` part has to have to be read: a four-letter ICAO code, upper case. */
+const AIRPORT_PATTERN = /^[A-Z]{4}$/;
+
 /** The filter that narrows nothing, which is what a hash without filter parts reads as. */
 export const ANY_SCENARIO: ScenarioFilter = { time: 'either', config: { kind: 'any' } };
 
@@ -48,17 +51,20 @@ function configParam(config: ConfigFilter): string | undefined {
 /**
  * Renders the URL hash that shares a filtered scenario.
  *
- * A filter member that narrows nothing writes no part at all, so an unfiltered scenario shares the
- * same hash it always did. A forced destination writes its `d=` part like any other member, so the
- * testing aid is shareable even though nothing in the UI offers it.
+ * The airport rides in an `a=` part right after the seed, so a reload or a shared link reopens the
+ * airport the scenario was drawn at instead of the first one the index lists. A filter member that
+ * narrows nothing writes no part at all, so an unfiltered scenario shares nothing but the seed and
+ * the airport. A forced destination writes its `d=` part like any other member, so the testing aid
+ * is shareable even though nothing in the UI offers it.
  *
+ * @param icao The airport the scenario was drawn at.
  * @param seed The seed the link restores.
  * @param filter The filter the draw ran under.
  * @param mode The half of the trainer the session runs; clearance mode writes no part at all.
- * @returns The hash, e.g. `#s=21i3v9&t=night&c=id:28%2F01&m=amend`.
+ * @returns The hash, e.g. `#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend`.
  */
-export function hashFor(seed: number, filter: ScenarioFilter, mode: Mode): string {
-  const parts = [seedToHash(seed).slice(1)];
+export function hashFor(icao: string, seed: number, filter: ScenarioFilter, mode: Mode): string {
+  const parts = [seedToHash(seed).slice(1), `a=${icao}`];
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
   if (config !== undefined) parts.push(`c=${config}`);
@@ -142,6 +148,22 @@ export function filterFromHash(hash: string): ScenarioFilter {
 }
 
 /**
+ * Reads the airport back out of a URL hash.
+ *
+ * A hash that names no airport, or names something that cannot be an ICAO code, reads as no
+ * airport at all, so an old or hand-edited link still opens on the airport the app starts with.
+ *
+ * @param hash The hash, with or without its leading `#`.
+ * @returns The ICAO code the hash names, upper-cased, or `undefined` when it names none.
+ */
+export function airportFromHash(hash: string): string | undefined {
+  const raw = valueOf(hash, 'a');
+  if (raw === undefined) return undefined;
+  const value = decode(raw)?.toUpperCase();
+  return value !== undefined && AIRPORT_PATTERN.test(value) ? value : undefined;
+}
+
+/**
  * Reads the mode back out of a URL hash.
  *
  * Only amendment mode names itself, so a hash without an `m=` part, and one whose value this app
@@ -156,6 +178,8 @@ export function modeFromHash(hash: string): Mode {
 
 /**
  * Whether a hash asks for a filter at all, which a hash of nothing but a seed does not.
+ *
+ * The `a=` part names the airport rather than narrowing the draw, so it is not a filter part.
  *
  * @param hash The hash, with or without its leading `#`.
  * @returns True when the hash carries a `t=`, a `c=` or a `d=` part, whatever it says.

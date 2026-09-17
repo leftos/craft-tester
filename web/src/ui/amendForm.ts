@@ -85,13 +85,25 @@ export function filedRows(scenario: Scenario): readonly (readonly [string, strin
 /**
  * The answer one dropdown choice stands for.
  *
- * Choosing "amend to" keeps whatever the student had already typed, so picking it again after a
- * detour through "correct as filed" does not throw the typed value away.
+ * Choosing "amend to" on a box nobody has typed in starts the box holding the filed value, so the
+ * student edits it in place rather than writing the whole box out again, and deletes it to write
+ * from scratch. A box the student has already typed in keeps whatever they left in it, the empty
+ * string included, so picking "amend to" again after a detour through "correct as filed" does not
+ * throw the typed value away.
+ *
+ * @param raw The dropdown choice the student made.
+ * @param answer What the box already held, which is nothing while the box is unanswered.
+ * @param filed The box as the pilot filed it, written the way the strip writes it.
+ * @returns The answer the choice stands for, or `undefined` for the blank choice.
  */
-function answerFor(raw: string, answer: BoxAnswer | undefined): BoxAnswer | undefined {
+export function answerFor(
+  raw: string,
+  answer: BoxAnswer | undefined,
+  filed: string,
+): BoxAnswer | undefined {
   if (raw === 'as_filed') return { kind: 'as_filed' };
   if (raw !== 'amended') return undefined;
-  return { kind: 'amended', value: answer?.kind === 'amended' ? answer.value : '' };
+  return { kind: 'amended', value: answer?.kind === 'amended' ? answer.value : filed };
 }
 
 /** What the student typed into a box, which is nothing at all while the box is not amended. */
@@ -142,7 +154,7 @@ function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
         placeholder: PLACEHOLDER,
       },
       (raw) => {
-        const answer = answerFor(raw, row.answer);
+        const answer = answerFor(raw, row.answer, row.filed);
         if (answer !== undefined) onBox(row.box, answer);
       },
     ),

@@ -4,6 +4,7 @@ import { grade } from '@/rules/grade.ts';
 import type { ConfigFilter, Mode, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import {
   ANY_SCENARIO,
+  airportFromHash,
   filterFromHash,
   hasFilterParams,
   hashFor,
@@ -65,16 +66,19 @@ const MODE_OPTIONS: readonly (SelectOption & { value: Mode })[] = [
   { value: 'amendment', label: 'Amend and clear' },
 ];
 
-/** Puts the seed, the filter and the mode in the hash, so a reload and a link both restore them. */
-function writeHash(seed: number, filter: ScenarioFilter, mode: Mode): void {
-  globalThis.history.replaceState(null, '', hashFor(seed, filter, mode));
+/**
+ * Puts the airport, the seed, the filter and the mode in the hash, so a reload and a link both
+ * restore them.
+ */
+function writeHash(icao: string, seed: number, filter: ScenarioFilter, mode: Mode): void {
+  globalThis.history.replaceState(null, '', hashFor(icao, seed, filter, mode));
 }
 
 /** The link that shares the scenario on screen, shown as the hash it adds. */
-function shareControl(seed: number, filter: ScenarioFilter, mode: Mode): HTMLElement {
+function shareControl(icao: string, seed: number, filter: ScenarioFilter, mode: Mode): HTMLElement {
   const wrapper = el('p', 'share');
-  const link = el('a', '', hashFor(seed, filter, mode));
-  link.href = shareLink(globalThis.location.href, seed, filter, mode);
+  const link = el('a', '', hashFor(icao, seed, filter, mode));
+  link.href = shareLink(globalThis.location.href, icao, seed, filter, mode);
   wrapper.append(el('span', 'share-label', 'scenario link'), link);
   return wrapper;
 }
@@ -176,7 +180,7 @@ function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): 
   header.append(
     el('h1', '', 'CRAFT Clearance Trainer'),
     controls,
-    shareControl(state.seed, state.filter, state.mode),
+    shareControl(state.airport.airport.icao, state.seed, state.filter, state.mode),
   );
   return header;
 }
@@ -273,25 +277,39 @@ function saveAttempt(state: AppState, store: SolvedStore): void {
   if (picks !== undefined) store.save(icao, state.seed, { kind: 'clearance', picks });
 }
 
-/** The name of the text box the student is typing in, which is empty when none has focus. */
-function focusedInputName(): string {
+/** The text box the student is typing in: its name, and where the caret and selection sit in it. */
+type FocusedInput = { name: string; start: number; end: number };
+
+/**
+ * The text box that has focus and the selection in it, or nothing when no text box has focus.
+ *
+ * A browser that reports no selection for the box reads as a caret after the text it holds.
+ */
+function focusedInput(): FocusedInput | undefined {
   const active = document.activeElement;
-  return active instanceof HTMLInputElement ? active.name : '';
+  if (!(active instanceof HTMLInputElement)) return undefined;
+  const end = active.value.length;
+  return {
+    name: active.name,
+    start: active.selectionStart ?? end,
+    end: active.selectionEnd ?? end,
+  };
 }
 
 /**
- * Puts focus back in the text box of that name, with the caret after the text it already holds.
+ * Puts focus back in that text box, with the caret and the selection where they were.
  *
  * Every change renders the page again, which throws away the box the keystroke came from; without
- * this the student types one character and loses the box.
+ * this the student types one character and loses the box. The caret is put back where the student
+ * left it rather than after the text, so a character typed into the middle of a value does not
+ * send the next one to the end.
  */
-function restoreFocus(root: Element, name: string): void {
-  if (name.length === 0) return;
-  const input = root.querySelector(`input[name="${name}"]`);
+function restoreFocus(root: Element, focused: FocusedInput | undefined): void {
+  if (focused === undefined) return;
+  const input = root.querySelector(`input[name="${focused.name}"]`);
   if (!(input instanceof HTMLInputElement)) return;
   input.focus();
-  const end = input.value.length;
-  input.setSelectionRange(end, end);
+  input.setSelectionRange(focused.start, focused.end);
 }
 
 /** Holds the state, rewrites the hash, and renders the page after every change. */
@@ -302,8 +320,8 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 
   const update = (next: AppState): void => {
     state = next;
-    const focused = focusedInputName();
-    writeHash(state.seed, state.filter, state.mode);
+    const focused = focusedInput();
+    writeHash(state.airport.airport.icao, state.seed, state.filter, state.mode);
     root.replaceChildren(renderApp(state, index, actions));
     restoreFocus(root, focused);
   };
@@ -358,12 +376,14 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 }
 
 /**
- * Starts the trainer: loads the first airport of the index and renders the scenario the URL asks
- * for, or a fresh one when the URL carries no seed.
+ * Starts the trainer: loads the airport the URL names, or the first of the index when it names
+ * none, and renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
  *
- * A link that names a filter opens under that filter, so a shared scenario reads the same to
- * whoever opens it; a link that names none falls back to the filter this browser last chose. The
- * hash names the half of the trainer the link opens in, which is clearance mode unless it says so.
+ * A link that names an airport the index does not list opens on the first one, the way a link that
+ * names no airport does. A link that names a filter opens under that filter, so a shared scenario
+ * reads the same to whoever opens it; a link that names none falls back to the filter this browser
+ * last chose. The hash names the half of the trainer the link opens in, which is clearance mode
+ * unless it says so.
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
@@ -373,14 +393,16 @@ export async function startApp(root: Element): Promise<void> {
   const index = listAirports();
   const first = index[0];
   if (first === undefined) throw new Error('airports.json lists no airports');
-  const airport = await loadAirportData(first.icao);
   const hash = globalThis.location.hash;
+  const named = airportFromHash(hash);
+  const entry = index.find((candidate) => candidate.icao === named) ?? first;
+  const airport = await loadAirportData(entry.icao);
   const seed = seedFromHash(hash) ?? randomSeed();
   const mode = modeFromHash(hash);
   const stores = { solved: browserSolvedStore(), filter: browserFilterStore() };
   const filter = hasFilterParams(hash)
     ? filterFromHash(hash)
-    : (stores.filter.load(first.icao) ?? ANY_SCENARIO);
-  const previous = stores.solved.load(first.icao, seed, mode);
+    : (stores.filter.load(entry.icao) ?? ANY_SCENARIO);
+  const previous = stores.solved.load(entry.icao, seed, mode);
   mount(root, index, newSession(airport, seed, previous, filter, mode), stores);
 }

@@ -3,6 +3,7 @@ import type { RunwayConfig } from '@/data/schema.ts';
 import type { Mode, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import {
   ANY_SCENARIO,
+  airportFromHash,
   filterFromHash,
   hasFilterParams,
   hashFor,
@@ -35,28 +36,28 @@ const CONFIGS: readonly ScenarioFilter['config'][] = [
 ];
 
 describe('hashFor', () => {
-  it('writes nothing but the seed when the filter narrows nothing', () => {
-    expect(hashFor(1, ANY_SCENARIO, 'clearance')).toBe('#s=1');
-    expect(hashFor(123_456_789, ANY_SCENARIO, 'clearance')).toBe('#s=21i3v9');
+  it('writes nothing but the seed and the airport when the filter narrows nothing', () => {
+    expect(hashFor('KSFO', 1, ANY_SCENARIO, 'clearance')).toBe('#s=1&a=KSFO');
+    expect(hashFor('KOAK', 123_456_789, ANY_SCENARIO, 'clearance')).toBe('#s=21i3v9&a=KOAK');
   });
 
   it('names the time and the configuration the draw was narrowed to', () => {
-    expect(hashFor(1, { time: 'night', config: { kind: 'any' } }, 'clearance')).toBe(
-      '#s=1&t=night',
+    expect(hashFor('KSFO', 1, { time: 'night', config: { kind: 'any' } }, 'clearance')).toBe(
+      '#s=1&a=KSFO&t=night',
     );
     expect(
-      hashFor(1, { time: 'either', config: { kind: 'plan', plan: 'SFOE' } }, 'clearance'),
-    ).toBe('#s=1&c=plan:SFOE');
-    expect(hashFor(1, { time: 'day', config: { kind: 'id', id: '28/01' } }, 'clearance')).toBe(
-      '#s=1&t=day&c=id:28%2F01',
-    );
+      hashFor('KSFO', 1, { time: 'either', config: { kind: 'plan', plan: 'SFOE' } }, 'clearance'),
+    ).toBe('#s=1&a=KSFO&c=plan:SFOE');
+    expect(
+      hashFor('KSFO', 1, { time: 'day', config: { kind: 'id', id: '28/01' } }, 'clearance'),
+    ).toBe('#s=1&a=KSFO&t=day&c=id:28%2F01');
   });
 
   it('round-trips every combination of time and configuration', () => {
     for (const time of TIMES) {
       for (const configFilter of CONFIGS) {
         const filter: ScenarioFilter = { time, config: configFilter };
-        const hash = hashFor(42, filter, 'clearance');
+        const hash = hashFor('KSFO', 42, filter, 'clearance');
         expect(filterFromHash(hash), JSON.stringify(filter)).toStrictEqual(filter);
       }
     }
@@ -65,16 +66,59 @@ describe('hashFor', () => {
   it('round-trips a configuration id that carries a slash or a space', () => {
     for (const id of ['28/01', '28 RT', '19/10']) {
       const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id } };
-      const hash = hashFor(7, filter, 'clearance');
+      const hash = hashFor('KSFO', 7, filter, 'clearance');
       expect(hash).not.toContain(' ');
       expect(filterFromHash(hash)).toStrictEqual(filter);
     }
   });
 
   it('leaves the seed readable beside the filter parts', () => {
-    expect(seedFromHash('#s=1&t=night&c=id:28%2F01')).toBe(1);
+    expect(seedFromHash('#s=1&a=KSFO&t=night&c=id:28%2F01')).toBe(1);
     const filter: ScenarioFilter = { time: 'day', config: { kind: 'id', id: '28 RT' } };
-    expect(seedFromHash(hashFor(123_456_789, filter, 'clearance'))).toBe(123_456_789);
+    expect(seedFromHash(hashFor('KSFO', 123_456_789, filter, 'clearance'))).toBe(123_456_789);
+  });
+});
+
+describe('the airport in the hash', () => {
+  it('writes the a= part right after the seed', () => {
+    expect(hashFor('KOAK', 1, ANY_SCENARIO, 'clearance')).toBe('#s=1&a=KOAK');
+    expect(
+      hashFor('KOAK', 1, { time: 'night', config: { kind: 'id', id: '28/01' } }, 'amendment'),
+    ).toBe('#s=1&a=KOAK&t=night&c=id:28%2F01&m=amend');
+    expect(hashFor('KOAK', 1, { ...ANY_SCENARIO, destination: 'KLVK' }, 'clearance')).toBe(
+      '#s=1&a=KOAK&d=KLVK',
+    );
+  });
+
+  it('round-trips the airport the scenario was drawn at', () => {
+    for (const icao of ['KSFO', 'KOAK']) {
+      expect(airportFromHash(hashFor(icao, 9, ANY_SCENARIO, 'amendment')), icao).toBe(icao);
+    }
+    expect(airportFromHash('#s=1&a=KOAK&t=day')).toBe('KOAK');
+    expect(airportFromHash('s=1&a=KSFO')).toBe('KSFO');
+  });
+
+  it('reads the code back upper-cased', () => {
+    expect(airportFromHash('#s=1&a=koak')).toBe('KOAK');
+    expect(airportFromHash('#s=1&a=kSfO')).toBe('KSFO');
+  });
+
+  it('names no airport for a missing or malformed value', () => {
+    expect(airportFromHash('')).toBeUndefined();
+    expect(airportFromHash('#s=1')).toBeUndefined();
+    expect(airportFromHash('#s=1&t=day&m=amend')).toBeUndefined();
+    expect(airportFromHash('#s=1&a=')).toBeUndefined();
+    expect(airportFromHash('#s=1&a=SFO')).toBeUndefined();
+    expect(airportFromHash('#s=1&a=KSFOX')).toBeUndefined();
+    expect(airportFromHash('#s=1&a=KSF0')).toBeUndefined();
+    expect(airportFromHash('#s=1&a=K-FO')).toBeUndefined();
+    expect(airportFromHash('#s=1&a=%E0%A4%A')).toBeUndefined();
+  });
+
+  it('is not a filter part, so a hash of a seed and an airport asks for no filter', () => {
+    expect(hasFilterParams('#s=1&a=KOAK')).toBe(false);
+    expect(hasFilterParams(hashFor('KOAK', 1, ANY_SCENARIO, 'clearance'))).toBe(false);
+    expect(filterFromHash('#s=1&a=KOAK')).toStrictEqual(ANY_SCENARIO);
   });
 });
 
@@ -83,18 +127,18 @@ describe('the mode in the hash', () => {
   const night: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
 
   it('writes no part at all for clearance mode', () => {
-    expect(hashFor(1, ANY_SCENARIO, 'clearance')).toBe('#s=1');
-    expect(hashFor(1, night, 'clearance')).toBe('#s=1&t=night&c=id:28%2F01');
+    expect(hashFor('KSFO', 1, ANY_SCENARIO, 'clearance')).toBe('#s=1&a=KSFO');
+    expect(hashFor('KSFO', 1, night, 'clearance')).toBe('#s=1&a=KSFO&t=night&c=id:28%2F01');
   });
 
   it('names amendment mode after the filter parts', () => {
-    expect(hashFor(1, ANY_SCENARIO, 'amendment')).toBe('#s=1&m=amend');
-    expect(hashFor(1, night, 'amendment')).toBe('#s=1&t=night&c=id:28%2F01&m=amend');
+    expect(hashFor('KSFO', 1, ANY_SCENARIO, 'amendment')).toBe('#s=1&a=KSFO&m=amend');
+    expect(hashFor('KSFO', 1, night, 'amendment')).toBe('#s=1&a=KSFO&t=night&c=id:28%2F01&m=amend');
   });
 
   it('round-trips every mode, and the seed and the filter beside it', () => {
     for (const mode of MODES) {
-      const hash = hashFor(123_456_789, night, mode);
+      const hash = hashFor('KSFO', 123_456_789, night, mode);
       expect(modeFromHash(hash), hash).toBe(mode);
       expect(seedFromHash(hash)).toBe(123_456_789);
       expect(filterFromHash(hash)).toStrictEqual(night);
@@ -117,14 +161,17 @@ describe('the mode in the hash', () => {
 
 describe('the forced destination', () => {
   it('writes the d= part after the configuration and before the mode', () => {
-    expect(hashFor(1, { ...ANY_SCENARIO, destination: 'KLVK' }, 'clearance')).toBe('#s=1&d=KLVK');
+    expect(hashFor('KSFO', 1, { ...ANY_SCENARIO, destination: 'KLVK' }, 'clearance')).toBe(
+      '#s=1&a=KSFO&d=KLVK',
+    );
     expect(
       hashFor(
+        'KSFO',
         1,
         { time: 'night', config: { kind: 'id', id: '28/01' }, destination: 'KLVK' },
         'amendment',
       ),
-    ).toBe('#s=1&t=night&c=id:28%2F01&d=KLVK&m=amend');
+    ).toBe('#s=1&a=KSFO&t=night&c=id:28%2F01&d=KLVK&m=amend');
   });
 
   it('reads the code back upper-cased', () => {
@@ -153,7 +200,9 @@ describe('the forced destination', () => {
         config: { kind: 'plan', plan: 'SFOW' },
         destination,
       };
-      expect(filterFromHash(hashFor(9, filter, 'clearance')), destination).toStrictEqual(filter);
+      expect(filterFromHash(hashFor('KSFO', 9, filter, 'clearance')), destination).toStrictEqual(
+        filter,
+      );
     }
   });
 });

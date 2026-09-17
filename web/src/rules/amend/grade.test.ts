@@ -10,7 +10,7 @@ import {
   parseAltitude,
 } from '@/rules/amend/grade.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
-import { verdictOf } from '@/rules/grade.ts';
+import { formatAltitude, verdictOf } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -256,6 +256,45 @@ describe('gradeBoxes', () => {
     expect(grades.map((grade) => grade.verdict)).toEqual(['wrong', 'correct', 'wrong']);
     expect(grades[0]?.expectedLabel).toBe('B752/L');
     expect(grades[2]?.expectedLabel).toBe('SFO5 MOGEE BVL');
+  });
+});
+
+describe('an amend-to answer written the way the strip writes the box', () => {
+  it('reads an altitude box as the strip prints it, in feet and as a flight level', () => {
+    expect(parseAltitude(formatAltitude(9000))).toBe(9000);
+    expect(parseAltitude(formatAltitude(29_000))).toBe(29_000);
+    expect(parseAltitude('9,000')).toBe(9000);
+    expect(parseAltitude('FL290')).toBe(29_000);
+  });
+
+  it('grades every box right when the value it carries is the one the engine proposes', () => {
+    const grades = gradeBoxes(
+      answers({
+        type: wrote('B738/L'),
+        altitude: wrote(formatAltitude(9000)),
+        route: wrote('SFO5 MOGEE BVL'),
+      }),
+      result(
+        { ...TYPE, proposed: 'B738/L' },
+        { ...ALTITUDE, proposedFeet: 9000 },
+        { ...ROUTE, proposed: 'SFO5 MOGEE BVL' },
+      ),
+      FILED,
+      ksfo,
+    );
+    expect(grades.map((grade) => grade.verdict)).toEqual(['correct', 'correct', 'correct']);
+    expect(grades.map((grade) => grade.actualLabel)).toEqual(['B738/L', '9,000', 'SFO5 MOGEE BVL']);
+  });
+
+  it('grades a flight level the strip writes right too', () => {
+    const grades = gradeBoxes(
+      answers({ altitude: wrote(formatAltitude(29_000)) }),
+      result({ ...ALTITUDE, proposedFeet: 29_000 }),
+      FILED,
+      ksfo,
+    );
+    expect(grades[1]?.verdict).toBe('correct');
+    expect(grades[1]?.actualLabel).toBe('FL290');
   });
 });
 

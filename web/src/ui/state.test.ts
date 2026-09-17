@@ -3,7 +3,7 @@ import type { AirportData } from '@/data/schema.ts';
 import type { BoxAnswer } from '@/rules/amend/grade.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
-import { ANY_SCENARIO, filterFromHash, modeFromHash } from '@/scenario/filter.ts';
+import { airportFromHash, ANY_SCENARIO, filterFromHash, modeFromHash } from '@/scenario/filter.ts';
 import { seedFromHash } from '@/scenario/rng.ts';
 import { loadAirportData } from '@/ui/session.ts';
 import type { Attempt } from '@/ui/solved.ts';
@@ -395,27 +395,51 @@ describe('withSubmitted', () => {
 
 describe('shareLink', () => {
   it('replaces whatever seed the URL carried', () => {
-    expect(shareLink('https://leftos.dev/craft-tester/#s=zzzz', 1, ANY_SCENARIO, 'clearance')).toBe(
-      'https://leftos.dev/craft-tester/#s=1',
-    );
+    expect(
+      shareLink('https://leftos.dev/craft-tester/#s=zzzz', 'KSFO', 1, ANY_SCENARIO, 'clearance'),
+    ).toBe('https://leftos.dev/craft-tester/#s=1&a=KSFO');
   });
 
   it('round-trips a seed through the hash', () => {
     const seed = 3_735_928_559;
-    const link = shareLink('https://leftos.dev/craft-tester/', seed, ANY_SCENARIO, 'clearance');
+    const link = shareLink(
+      'https://leftos.dev/craft-tester/',
+      'KSFO',
+      seed,
+      ANY_SCENARIO,
+      'clearance',
+    );
     expect(seedFromHash(new URL(link).hash)).toBe(seed);
+  });
+
+  it('carries the airport the scenario was drawn at', () => {
+    const link = shareLink(
+      'https://leftos.dev/craft-tester/',
+      'KOAK',
+      1,
+      ANY_SCENARIO,
+      'amendment',
+    );
+    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&a=KOAK&m=amend');
+    expect(airportFromHash(new URL(link).hash)).toBe('KOAK');
   });
 
   it('carries the filter the scenario was drawn under', () => {
     const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
-    const link = shareLink('https://leftos.dev/craft-tester/', 1, filter, 'clearance');
-    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&t=night&c=id:28%2F01');
+    const link = shareLink('https://leftos.dev/craft-tester/', 'KSFO', 1, filter, 'clearance');
+    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&a=KSFO&t=night&c=id:28%2F01');
     expect(filterFromHash(new URL(link).hash)).toStrictEqual(filter);
   });
 
   it('carries the half of the trainer the scenario was drawn in', () => {
-    const link = shareLink('https://leftos.dev/craft-tester/', 1, ANY_SCENARIO, 'amendment');
-    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&m=amend');
+    const link = shareLink(
+      'https://leftos.dev/craft-tester/',
+      'KSFO',
+      1,
+      ANY_SCENARIO,
+      'amendment',
+    );
+    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&a=KSFO&m=amend');
     expect(modeFromHash(new URL(link).hash)).toBe('amendment');
   });
 });

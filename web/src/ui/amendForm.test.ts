@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Scenario } from '@/data/schema.ts';
-import { amendSubmitDisabled, boxInputName, boxRows, filedRows } from '@/ui/amendForm.ts';
+import type { BoxAnswer } from '@/rules/amend/grade.ts';
+import {
+  amendSubmitDisabled,
+  answerFor,
+  boxInputName,
+  boxRows,
+  filedRows,
+} from '@/ui/amendForm.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { EMPTY_BOXES } from '@/ui/state.ts';
 import { stripRows } from '@/ui/strip.ts';
@@ -109,6 +116,34 @@ describe('boxInputName', () => {
   it('gives every box a name of its own', () => {
     const names = boxRows(FILED, EMPTY_BOXES).map((row) => boxInputName(row.box));
     expect(new Set(names).size).toBe(names.length);
+  });
+});
+
+describe('answerFor', () => {
+  it('starts an unanswered box holding the value the pilot filed', () => {
+    for (const row of boxRows(FILED, EMPTY_BOXES)) {
+      expect(answerFor('amended', row.answer, row.filed), row.box).toStrictEqual({
+        kind: 'amended',
+        value: row.filed,
+      });
+    }
+  });
+
+  it('keeps the typed value after a detour through "correct as filed"', () => {
+    const typed: BoxAnswer = { kind: 'amended', value: 'FL270' };
+    expect(answerFor('amended', typed, 'FL330')).toStrictEqual(typed);
+    const detour = answerFor('as_filed', typed, 'FL330');
+    expect(detour).toStrictEqual({ kind: 'as_filed' });
+    expect(answerFor('amended', typed, 'FL330')).toStrictEqual(typed);
+  });
+
+  it('keeps a box the student cleared empty rather than refilling it', () => {
+    const cleared: BoxAnswer = { kind: 'amended', value: '' };
+    expect(answerFor('amended', cleared, 'FL330')).toStrictEqual(cleared);
+  });
+
+  it('answers nothing for the blank choice', () => {
+    expect(answerFor('—', undefined, 'FL330')).toBeUndefined();
   });
 });
 

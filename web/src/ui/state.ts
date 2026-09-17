@@ -389,13 +389,20 @@ export function withSubmitted(state: AppState): AppState {
  * Renders the link that shares the scenario on screen.
  *
  * @param href The page's current URL.
+ * @param icao The airport the scenario was drawn at, which the link reopens.
  * @param seed The seed the link restores.
  * @param filter The filter the link restores with it, so the seed draws the same scenario.
  * @param mode The half of the trainer the link opens in.
- * @returns The same URL with the seed, the filter and the mode in its hash.
+ * @returns The same URL with the airport, the seed, the filter and the mode in its hash.
  */
-export function shareLink(href: string, seed: number, filter: ScenarioFilter, mode: Mode): string {
+export function shareLink(
+  href: string,
+  icao: string,
+  seed: number,
+  filter: ScenarioFilter,
+  mode: Mode,
+): string {
   const url = new URL(href);
-  url.hash = hashFor(seed, filter, mode);
+  url.hash = hashFor(icao, seed, filter, mode);
   return url.toString();
 }

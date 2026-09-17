@@ -6,8 +6,8 @@
  *   pnpm -C web check:browser <name> <hash> [phone|desktop] [action...]
  *
  * `hash` is the URL hash to open, written with commas between its parts so no shell sees an `&`:
- * `s=1,d=KLVK` (the `d=` part forces the destination) or `s=4,d=KSMF,m=amend`. Each action runs in
- * order before the page is recorded:
+ * `s=1,a=KSFO,d=KLVK` (the `a=` part picks the airport, the `d=` part forces the destination) or
+ * `s=4,a=KOAK,d=KSMF,m=amend`. Each action runs in order before the page is recorded:
  *
  *   select:<index>=<label>   choose an option of the n-th `<select>` on the page by its label
  *   fill:<index>=<text>      type into the n-th text input
