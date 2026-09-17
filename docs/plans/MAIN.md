@@ -57,6 +57,11 @@ one line and move its record to the archive.
   for the route box: a full-point element, a half-point element (LOA arrival routing) and a warning (the vector
   SID's airport navaid); the results view and the score need the three tiers, and the reveal says which applied.
 
+- [ ] **User rule 2026-09-16 (FDX3875, KOAK to PHNL via R464): a unidirectional oceanic airway is exempt from
+  odd/even parity**, so FL310 westbound on R464 is correct as filed. Data concept: a shared airway table (or rows on
+  `route_connections.yaml`'s neighbour) listing the one-way oceanic airways (R463, R464, A220 per the user's notes,
+  verify each against the enroute chart), and the parity walk in `rules/amend/altitude.ts` skips a route whose
+  filed tail rides one of them. Fixture pending until it lands.
 - [ ] **User rule 2026-09-16, radar-vector SIDs carry the airport navaid**: a radar-vector SID such as OAK6 or NIMI6
   must be followed in the filed/amended route string by the departure airport's three-letter navaid (`OAK6 OAK RBL`,
   "e.g. OAK or SFO") for computerized flight plan reasons, and that token is ignored when the clearance is spoken:
@@ -65,11 +70,22 @@ one line and move its record to the archive.
   reading are right today for `OAK6 OAK RBL` (KOAK's library and TEC rows carry `OAK`). The gap is amendment mode:
   the route box does not require the token after a vector SID, and a built route (a plan filed with no SID, KAL65
   at KOAK) comes out `OAK6 RBL …`. **User decision 2026-09-16: KSFO too, SFO5 and GAPP7** (`SFO5 SFO RBL …`,
-  `GAPP7 SFO OAK V6 SAC`), **and at every airport a missing token is a warning, not a scored error**. Concept to
-  plan: a vector SID's `overrides.yaml` row states the navaid the route must carry after it; the route builder,
-  the proposed amendment and the worksheet importer insert it; the speaker skips it (already does); the route box
-  grader treats its absence as a warning verdict (a new verdict beside `acceptable`, not red); KSFO's settled
-  fixtures, library and TEC rows gain `SFO` and are re-proposed, not re-settled, since the reading is unchanged.
+  `GAPP7 SFO OAK V6 SAC`), **and at every airport a missing token is a warning, not a scored error**. **Design
+  (orchestrator 2026-09-16, assumptions stated; next brief after the fixture settling)**: (1) which SIDs: every SID
+  whose `routePhrasing` is `radar_vectors_fix` (SFO5, GAPP7, OAK6, NIMI6, QUAKE2), no new data field; the
+  navaid is `airport.faa`; a shared phraseology row `R-RV-NAVAID` states the rule ("a radar-vector SID is filed
+  as SID, the airport navaid, then the route, for the computerized flight plan; the navaid is not spoken") and
+  is cited. (2) Engine, amendment mode: every proposed route whose head is such a SID reads `SID NAVAID tail`
+  (assigned + tail, built, TEC: insert unless the tail already starts with the navaid; KOAK TEC rows already
+  carry `OAK`, KSFO's `SFO# OAK V6 SAC` becomes `SFO5 SFO OAK V6 SAC`); a plan whose only defect is the missing
+  navaid gets a route amendment flagged `warning: true` (schema `ResolvedAmendment.warning`, fixture
+  `amendments[].warning`), and the grader scores a route box that differs from the expected only by that
+  token as `acceptable` with the row's text, in both directions (missing or present). (3) Clearance mode: the
+  scenario generator composes drawn routes the same way, so a drawn SFO5/GAPP7 plan reads `SFO5 SFO …`; the
+  speaker already skips the token. (4) Fixtures: KSFO settled amendment fixtures whose proposed route begins with
+  SFO5/GAPP7 are re-proposed and re-settled with `SFO` (user pre-approved), "as filed" fixtures gain the
+  warning amendment where their filed route lacks it; KOAK likewise (SWA1859, SWA1984, FDX3859, KAL65, SWA1254,
+  N471RY, N918AR, QXE2415, TWY313). (5) `propose` prints the warning flag.
 
 - [x] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement" — landed 2026-09-16 as the two KOAK `notices` rows with their `heading` effect (`3ee592d`)
 

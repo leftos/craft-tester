@@ -508,6 +508,101 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   (`ws-amendment-practice-1a-lxj351` exists under both `fixtures/ksfo/` and `fixtures/koak/`, so `propose <id>`
   is ambiguous: decide whether the importer prefixes new ids with the airport). Backlog: the amendment parser
   still counts five non-blank cells per row, so an empty plan cell would shift every later row.
+- [ ] **KOAK validation loop, started 2026-09-16** (`pnpm -C web propose --pending`, 87 pending across both
+  airports; the log is `.tmp/propose-pending2.log`). Data fix the same day: the KOAK gates lacked the worksheet
+  exit fixes (CCR, RDD, LKV north; SUNNE, CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO south), which blocked six
+  jets with `no assignment rule applies to SFOW no-gate runway 30 class J`. Engine gaps found: (1) **route
+  building never runs when the SOP falls through to a heading**: `checkHeadingRoute` takes the filed tail, so
+  LXJ351 (`OAK6 EHF LHS V459 SLI V23 OCN`, southbound RNAV jet, no SID serves EHF) proposes the bare tail on the
+  runway heading, while `builtExpectation` would build `CNDEL5 KAYEX LOSHN EHF …` (KAYEX → LOSHN always, LOSHN →
+  EHF usually; the sheet's discarded note read `CNDEL5 KAYEX LOSHN EHF`); same for PXT415/VOI5909 (`SUNNE1 SUNNE
+  KAYEX LOSHN …`). Fix: try `builtExpectation` in `checkHeadingRoute` before the filed tail. (2) **A bare SID
+  family token** (`CNDEL PORTE SUSEY EBAYE BURGL`, FFT2015) is read as a fix, so the plan is unresolved;
+  `isSidToken` wants a version. A token equal to a family in `airport.sids` is the procedure filed without its
+  version, amended to the current one. (3) LOA-unresolved plans (JSX203 to KLAS via `NTELL Q158 JEDNA`, SWA888
+  to KBUR via `CISKO LHS LYNXX8`, SWA2021 to KPDX) wait for the arrival-swap concept on MAIN.md. (4) `ECA`
+  (N436MS `OAK V244 ECA`) is in no CIFP record this cycle (Manteca VOR decommissioned?); the engine replaces the
+  route by the TEC row anyway, so the warning is harmless until a clearance-mode plan files it. **User answers
+  2026-09-16**: (1) LXJ351 builds `CNDEL5 KAYEX LOSHN EHF LHS V459 SLI V23 OCN` ("OAK6 is a radar-vector SID so in
+  theory `OAK6 OAK EHF`, but OAK6 is northbound per the SOP; the proposed route properly route-builds backwards onto
+  a southbound SID appropriate for an RNAV jet"): **landed 2026-09-16** with the fixture settled (`BuildScope` on
+  `buildRoute`: `filed` keeps only the filed family on the procedure path, `any` on the heading path; first
+  candidate in table order that connects wins; reason closes "so the SID is issued in place of the heading").
+  Consequences: SWA888 (no SID filed, `CISKO LHS LYNXX8`) now builds `CNDEL5 KTINA CISKO LHS LYNXX8` and the BUR
+  LOA gap goes silent, since a built box is not held against the LOA rows (finding (a) on MAIN.md); VOI5909 builds
+  `CNDEL5 KAYEX LOSHN BOILE …`. The ids are renamed (`ws-koak-…`, `ws-ksfo-…`, 120 files). (2) FFT2015: a bare `CNDEL`
+  is a fix, not a data error; the plan is meant to be **simplified** by the student: CNDEL5 has SUSEY as a
+  transition, so `CNDEL PORTE SUSEY EBAYE BURGL` becomes `CNDEL5 SUSEY EBAYE BURGL`. Concept to model: the exit fix
+  is the first filed token that is a gate fix or a transition (tokens before it that name no fix, or lie on the
+  SID's own structure such as PORTE, are dropped), and route building with a chain of length zero (a transition
+  already on the filed route) keeps the route from that transition on; the KSFO twin `PORTE8 PORTE SUSEY EBAYE
+  BURGL` reads the same way. Pending until built. (3) Fixture ids gain the airport: `ws-koak-…`, `ws-ksfo-…`, the
+  importer writes them so and the existing files are renamed once (dispatched). (4) The OAK6 batch (FDX354, SWA2125,
+  UPS2896) is right except for the expect clause (below); the route string should carry `OAK` after `OAK6` (the
+  vector-SID navaid concept on MAIN.md, warning tier). (5) The NIMI6 batch (N281EB, CMD70, N436MS): right, NIMI5 →
+  NIMI6, `OAK` missing after NIMI6, and **"why are we telling them what altitude to expect when it's on the chart
+  that they should expect filed 10 minutes after?"** Cause found: the chart parser reads "10 minutes" but not
+  "ten minutes", so COAST9, OAK6, QUAKE2 and NUEVO8 build with no chart note, and NIMI6 (no CIFP, hand facts)
+  has none in `overrides.yaml`; KSFO's SFO5 chart reads "expect further clearance to filed altitude …" the same
+  way (**user 2026-09-16: SFO5 gains the note too, "the chart covers it"; the settled KSFO fixtures that spoke the
+  clause are re-settled without it**). **User 2026-09-16: SUNNE1's
+  "Maintain 5000. Expect higher altitude five minutes after departure" also covers the clause.** (6) The CNDEL5
+  batch (NKS188, SWA1740, FDX1563) is right; settled once the ids are renamed. (7) COAST9/NUEVO8 batch (SWA344,
+  N903JP, N172SP): right as spoken, but **COAST9 is off per the ZOA notice** "SFO/OAK SEGUL/COAST SID: OFF. Issue
+  SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW" (the KSFO `SFO-SEGUL-OFF` notice's other half): a KOAK `OAK-COAST-OFF`
+  notice (`sid_off` COAST, SFOW); with the heading-path route building, a COAST9-filed plan such as SWA344
+  (`COAST9 MCKEY LAX COMIX2`) should build `CNDEL5 YYUNG LAX COMIX2` (YYUNG → LAX usually), which is what the
+  notice says to issue. The two COAST9 fixtures stay pending until the notice lands; the expect clause on all of
+  them waits for the parser fix. **Landed 2026-09-16** (generator brief in `wt/koak-gen`): number words, the
+  "clearance to" / "further clearance to" / "higher altitude" objects and a reversed-line-pair join in
+  `chart_text.py` (pypdf emits the QUAKE TWO and NIMITZ SIX note halves in reverse order); COAST9, OAK6, QUAKE2,
+  NUEVO8, NIMI6 → 10, SUNNE1 → 5; the optional `expect_filed_altitude_minutes` override exists but no airport
+  uses it (NIMI6 reads from its own chart; **KSFO's SFO5 and GAPP7 already read 10 before this**, so the SFO5
+  question was moot and no KSFO clearance changed); `OAK-COAST-OFF` notice active by default. With COAST off,
+  SWA344 (`COAST9 MCKEY LAX COMIX2`) now resolves to the runway heading, radar vectors MCKEY: the notice's
+  "issue CNDEL# YYUNG" wants route building from the heading path to reach `CNDEL5 YYUNG LAX COMIX2` (YYUNG →
+  LAX usually), and it does: SWA1883 (amendment, `COAST9 MCKEY LAX COMIX2`) proposes `CNDEL5 YYUNG LAX
+  COMIX2`, spoken "Candle Five departure, Yyung transition, direct Los Angeles VOR, then as filed. Climb via SID".
+  N858EE (`COAST8 MCKEY LEGOZ LEGOZ1`, KCRQ) gets the heading with box `MCKEY LEGOZ LEGOZ1`, since no chain
+  reaches LEGOZ (TILLT is a LEGOZ4 transition and YYUNG → TILLT connects, but the filed LEGOZ1 is stale and TILLT
+  is not on the filed route: the arrival-swap concept). In clearance mode SWA344 and N903JP file COAST9 with the
+  notice active, so the engine answers the runway heading. **User 2026-09-16: "The COAST9 notice says to switch
+  to the CNDEL, so we shouldn't be falling back on headings. In general we should be trying to fit the CNDEL
+  first, then the other southbound-eligible SIDs, before resorting to a no-SID heading departure."** Concept:
+  route building in clearance mode too: `resolveClearance`, before taking a heading row, tries the passed-over
+  SIDs in table order with the any-candidate scope and clears the flight on the built route (SWA344 → "Candle
+  Five departure, Yyung transition, direct Los Angeles VOR, then as filed"); N903JP (`COAST9 GVO HABUT`) reaches
+  no chain (nothing connects to GVO) and stays a question. **User 2026-09-16, UAL313**: type `B752/L` and route
+  `OAK6 OAK MOGEE Q124 BVL WAATS5`: concept, every route token must be a known fix, navaid, airway or procedure
+  (from the CIFP) and an unknown one is a route amendment; pending until built. **User 2026-09-16, PXT415**
+  (C25B/A, `SUNNE1 SUNNE KAYEX LOSHN PMD V137 PSP`): "requires looking at the various charts to see if you can
+  find a good fix on the way to one filed. SKYL1 PXN LOSHN works and keeps them on a SID that's conventional"
+  (SKYLINE ONE chart: PXN transition, LOSHN just east of it); a `PXN → LOSHN` row made the heading path build
+  `SKYL1 PXN LOSHN PMD V137 PSP`, then **user 2026-09-17: "make that WAGES LOSHN instead of PXN LOSHN. WAGES is
+  also on SKYL1 and seems to be preferred as an exit fix when PXN isn't involved"**: the row is `WAGES → LOSHN`
+  and the expected route `SKYL1 WAGES LOSHN PMD V137 PSP`. WAGES is the SID's end fix, not a published
+  transition, so the builder must also start a chain from a SID's end fix (engine, if the row alone does not
+  build). VOI5909's `CNDEL5 KAYEX LOSHN BOILE …` stands.
+  The settled-fixture commit landed 2026-09-16 (25 fixtures; EJA115 carries the route box `OAK6 RBL J1 BTG
+  OLM2` beside FL430 since its plan filed no SID). **Amendment rulings
+  2026-09-16** (engine answers confirmed, to settle once the ids are renamed; vector-SID proposals gain `OAK` when
+  the navaid concept lands and are re-settled then): (a) **RVSM suffix rule: an RVSM-capable type filing a
+  non-RVSM suffix at an RVSM level has its altitude amended, the type stays as filed** (the engine's behaviour):
+  SWA984-KOAK (B737/G, FL350 → FL270), FDX3859 (B752/A, FL340 → FL270 and `HUSSH2` → `OAK6 MOGEE …`), SWA1922
+  (no suffix → `B737/L`, FL280 → FL270, `OAK6 AVE J6 PMD` → `SKYL1 AVE J6 PMD`). (b) Altitudes: N238JP FL310, SWA126
+  FL320, XOJ715 FL410, EJA115 FL430 right; **FDX3875 (MD11, PHNL, `BEBOP R464 …`) is correct as filed at FL310:
+  R464 is a unidirectional oceanic airway, exempt from parity** (new data concept: an airway row that exempts a
+  route from the parity rule; FDX3875 pending until it lands). (c) TEC batch right: SKW2345 `OAK6 OAK FEVTA FEVTA1`
+  10,000; N172SP `NIMI6 OAK V6 SAC`; N346G 5,000 + `NIMI6 OAK V6 SAC`; N436MS `NIMI6 OAK V244 ALTAM MOD`; N222T
+  `NUEVO8 EUGEN`; N739ML 5,000 + `NIMI6 OAK V6 SAC`. (d) SID batch right: AAY1002 and NAX7068 `OAK9` → `OAK6`;
+  SWA1585 `CNDEL4` → `CNDEL5`; SWA1859 `SLNT1 …` → `OAK6 LIN TIPRE …`; SWA1984 `HUSSH2 …` → `OAK6 GRTFL …`; as
+  filed JSX201, SWA556, QXE2415, TWY313. Still pending with a reason: NKS510 (A320/A FL350 `CNDEL5 SUSEY …`: the
+  engine offers the type box as the RNAV pair AND amends the altitude to FL270 AND the route to the runway heading
+  tail; under ruling (a) the type stays, so the answer is altitude FL270 + route `SUSEY EBAYE BURGL IRNMN2` on the
+  runway heading, but the three-box print suggests the altitude is judged on the uncorrected plan while the pair
+  is offered: check `judge()` before settling); UAL313 (`/Q` is no FAA suffix, so `B752/L` is right, but the route
+  typo `BVLQ124` for `Q124` is unaddressed: ask); SWA1254, N471RY, N918AR, KAL65 (vector-SID navaid; N918AR to KSMO
+  via AVE also trips the SMO props LOA row only once amended boxes are held against the LOA rows).
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture

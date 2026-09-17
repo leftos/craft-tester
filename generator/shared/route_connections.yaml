@@ -20,6 +20,10 @@ connections:
   - { from: LOSHN, to: BOILE, connects: usually }
   - { from: LOSHN, to: CLASN, connects: usually }
   - { from: LOSHN, to: EHF,   connects: usually }
+  # SKYLINE ONE chart: WAGES, the SID's own end fix, lies on the way to LOSHN, so a conventional
+  # southbound flight filed through LOSHN keeps a SID instead of a heading (user, 2026-09-17, PXT415:
+  # "WAGES is also on SKYL1 and seems to be preferred as an exit fix when PXN isn't involved").
+  - { from: WAGES, to: LOSHN, connects: usually }
   - { from: NTELL, to: Q174,  connects: usually }
   # Common N/NE fixes
   - { from: DEDHD, to: RBL,   connects: usually }
