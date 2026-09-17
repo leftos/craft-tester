@@ -73,6 +73,42 @@ one line and move its record to the archive.
   starts out holding the filed value so it can be edited in place, and the student clears it to write from
   scratch (applied to all three boxes; the route is the one the user named). Landed 2026-09-17 (`856b4b8`)
   with the `a=` hash part; the caret fix is browser-checked, not unit-tested (no DOM harness in the suite).
+- [x] **User steer 2026-09-17: draw the flight plan as a flight strip** — landed 2026-09-17 (`4c7232c`),
+  browser-checked on both viewports; the CWT prefix landed 2026-09-17 (`d189b6a`). Original steer: in both modes, the way vStrips lays one
+  out (callsign, weight-class/type/suffix, CID and barcode on the left; beacon, P-time, requested altitude in
+  hundreds in the second column; departure and destination; the route wrapped over three lines; blank annotation
+  boxes on the right), so an amendment-mode plan reads as one strip carrying every field including the ones to
+  amend. Inspiration: `X:\dev\yaat` strip control and its vStrips web app (the whole layout is in
+  `src/Yaat.Client.Strips/Views/VStrips/FlightStripControl.axaml`: 535×74, rows 28/23/23, columns
+  118/46/90/*/32/32/33, cream `#EEEBE0` cells, `#BFBBAE` borders, `#111111` ink, bold JetBrains Mono 13/12/8,
+  route `MaxLines` 3 or 2 with remarks, tail tokens dropped for ` *** ` on overflow, barcode 14 px tall from a
+  hash, revision number at 8 px under the callsign). **User decisions 2026-09-17**: (1) the strip is read-only
+  in amendment mode and the three answer rows stay in their panel below; (2) the reveal keeps two strips,
+  filed and amended, and the amended one carries revision number `1`; (3) cream cells on both themes, a
+  three-digit CID derived from the seed, the barcode from the callsign. Orchestrator assumptions: the
+  equipment cell reads `H/B744/L` for a heavy or super (`wtc` H or J) and `B738/L` otherwise; the altitude
+  cell is hundreds of feet (`290`, `090`); the time cell is `P` plus the local HHMM; the departure cell is
+  `KOAK KLAS`; the strip scales down below its 535 px width so a phone shows it whole with no sideways
+  scroll. Dispatched 2026-09-17 (worktree `wt/strip-look`); landed in the worktree the same day, with the
+  strip column widened so the paper draws at full size on a desktop. **User decision 2026-09-17: the wake
+  prefix is the FAA CWT letter (A–I), not the ICAO H/J category** — landed 2026-09-17 (`d189b6a`): the
+  user pointed at yaat, whose `FaaAircraftDataService` reads the `CWT` column of the FAA Aircraft
+  Characteristics Database already fetched into `generator/shared/`; every one of its 388 rows states one,
+  so `cwt` is required on the shared table and each fleet row emits it (`F/B738/L`, `B/B77L/L`, `I/C172/L`).
+  Left open: `web/scripts/browser-check.ts` hardcodes port 4173, so two previews cannot be checked at once;
+  make the port an env var. Implementer observations, not acted on: `_check_approach_categories` in
+  `merge.py` can never fire since `_approach_category` raises first; `scenario/generate.ts` still keys the
+  heavy kind on `wtc === 'H'` (correct, the CWT letter is a display value).
+- [ ] **User steer 2026-09-17: a TTS icon button on each of the "On frequency" and "With the route read in
+  full" boxes** of the reveal panel (`revealPanel` in `ui/results.ts`), so the spoken clearance can be heard.
+- [ ] **User steer 2026-09-17: airway structure for conventional rebuilds.** The RNAV element check leaves a
+  non-RNAV plan with no conventional route in the data; the J and V airway structure would let the engine
+  rebuild one. Sources the user named: yaat's handling of `C:\Users\Leftos\AppData\Local\yaat\cache\NavData.dat`
+  (the vNAS nav data) and `C:\Users\Leftos\source\repos\zoa-reference-cli\`, which can pull up any airway.
+  Surveyed 2026-09-17, findings and recommendation in [airway-structure.md](./airway-structure.md): parse the
+  CIFP `ER` records the generator already downloads (ordered fixes plus high/low, conventional/RNAV, MEA/MAA);
+  the vNAS file carries only `id + fixes` and has 224 colliding ids (`J1`, `V6` resolve to foreign routes
+  first-wins). Data concept and the rebuild rule still to plan with the user before any engine change.
 - [ ] **User question 2026-09-17: does the engine flag RNAV waypoints and RNAV airways (Q and T routes) filed by
   a non-RNAV aircraft, or only RNAV procedures?** **User decision 2026-09-17: do both halves in one commit**
   — see [rnav-route-elements.md](./rnav-route-elements.md). Checked 2026-09-17: procedures only. `rnavCapable` gates

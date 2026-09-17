@@ -56,6 +56,46 @@ the route check. **User decision 2026-09-17: do both halves in one commit.**
    fixtures at KOAK: a B738/W filing `CNDEL5 NTELL Q174 FLCHR COKTL4` in SFOW (answer: type box to `/L`), and
    a `/A` C172 filing a T route (answer: unresolved, recorded as `pending` with the note).
 
+## Step A landed in the worktree (2026-09-17)
+
+`cifp/waypoints.py` reads EA and PC rows (type at `[26:29]`, enroute row wins); `rnavWaypoints` holds 48
+fixes at KSFO and 34 at KOAK because most SID transition and gate fixes are published `W` (TRUKN, SSTIK,
+CNDEL, SNTNA …). Nine KSFO fixes on routes to foreign fields have no waypoint record at all and read as not
+RNAV. The Pacific grid waypoints carry their type one column right and are skipped (their identifiers carry a
+digit). `_document_navaid_tokens` does not walk LOA rows, so the list mirrors that.
+
+## Step B decisions (orchestrator, 2026-09-17)
+
+- A fix the filed SID already implies (its base fix and its published transitions) is not an element: the
+  RNAV SID is gated by `rnavRequired`, and a conventional SID's fixes are navaids or intersections.
+- `Classification.gnssCapable` beside `rnavCapable`; `Y` joins the airway token pattern. **User confirmed
+  2026-09-17**: T routes need GNSS, per the AIM's "GPS or GPS/WAAS equipped aircraft" wording for T routes
+  against "RNAV equipped" for Q routes.
+- When the RNAV clash is raised and the non-RNAV side is unresolved (no conventional route in the data), the
+  type box alone is the answer, unpaired; without a clash an unresolved outcome still fails the result.
+- The generator's `rnavClash` fault writes `/U` for a plan needing RNAV and `/I` for one needing only GNSS.
+- Fixture `rnav-elements-b738w-klas` (KOAK, OAKE, `NTELL Q174 FLCHR COKTL4`, `/W`) stays pending until the
+  user confirms the type-box answer.
+
+## Step B finding and decision (orchestrator, 2026-09-17)
+
+Three settled KOAK worksheet fixtures were validated before this rule existed and keep RNAV elements on a
+`/A` aircraft: FDX3859 (`B752/A`, `HUSSH2 MOGEE Q124 …`, settled as altitude FL270 plus a rebuilt route that
+keeps Q124, type as filed), PXT415 (`C25B/A`, settled onto `SKYL1 WAGES LOSHN …`, LOSHN being an RNAV
+waypoint), and NKS510 (structure unchanged, only the clash reason now names EBAYE and BURGL). Under the
+user's rule of today those first two answers are wrong: a `/A` jet cannot fly Q124 or LOSHN, and the data
+holds no conventional route to rebuild, so the only answer is the type box.
+
+Decision, extending step B item 5: when the route check on the non-RNAV plan fails only because of RNAV
+elements the data cannot route around, and the fleet files an RNAV Mode C suffix, the type box is raised as
+a first-stage amendment like the suffix gap, and the altitude and route are judged on the RNAV plan — no
+alternatives, whether or not the RNAV plan is otherwise clean (when it is, this equals the earlier "type box
+alone"). The generator gets a separate `rnav_element` fault (type box alone) for plans whose route carries
+RNAV elements, and `rnav_clash` (type against route) stays restricted to plans whose only RNAV need is the
+SID. FDX3859 and PXT415 go back to `pending` with the engine's new answer printed for the user to confirm;
+route-building unit tests that used `/A` on RNAV-waypoint routes file `/L` instead, since RNAV is not what
+they test.
+
 ## Out of scope
 
 - Conventional route rebuilding (no J or V airway structure is in the data).
