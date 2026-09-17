@@ -135,3 +135,45 @@ export function button(label: string, className: string, onClick: () => void): H
   node.addEventListener('click', onClick);
   return node;
 }
+
+/** The namespace inline SVG is created in. */
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** The drawn size of an icon, in pixels, which is what the icon's box is sized against. */
+const ICON_SIZE = 18;
+
+/**
+ * Builds a button that carries an icon instead of a word, its label being what it reads as.
+ *
+ * The icon is drawn inline rather than loaded, so it takes the button's own colour and needs no
+ * request of its own; it is hidden from a screen reader, which reads the label instead.
+ *
+ * @param label The accessible name of the button, shown as its tooltip.
+ * @param className The class attribute, after the `icon` class every icon button carries.
+ * @param iconPath The path the icon is drawn from, in a 24 by 24 box.
+ * @param onClick Called when the button is pressed.
+ * @returns The button, with the icon inside it.
+ */
+export function iconButton(
+  label: string,
+  className: string,
+  iconPath: string,
+  onClick: () => void,
+): HTMLButtonElement {
+  const node = el('button', `icon ${className}`.trim());
+  node.type = 'button';
+  node.title = label;
+  node.setAttribute('aria-label', label);
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('width', String(ICON_SIZE));
+  svg.setAttribute('height', String(ICON_SIZE));
+  svg.setAttribute('aria-hidden', 'true');
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', iconPath);
+  path.setAttribute('fill', 'currentColor');
+  svg.append(path);
+  node.append(svg);
+  node.addEventListener('click', onClick);
+  return node;
+}

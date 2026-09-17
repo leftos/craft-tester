@@ -1,7 +1,8 @@
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
-import { button, el } from '@/ui/dom.ts';
+import { button, el, iconButton } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
+import { readAloud, speechAvailable, stopReading } from '@/ui/speech.ts';
 
 /** Everything the results view shows after the form is submitted. */
 export type ResultsProps = {
@@ -112,6 +113,50 @@ export function renderVerdict(verdict: Grade): HTMLElement {
   return row;
 }
 
+/** The speaker the read-aloud button draws: Material Icons `volume_up`, Apache 2.0. */
+const SPEAKER_ICON =
+  'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z';
+
+/**
+ * The button that reads one box aloud, and stops the reading when it is pressed a second time.
+ *
+ * The pressed state is the button's own `aria-pressed`, cleared by the callback the reading ends
+ * through, so starting the other box — which cancels this one — releases this button too.
+ */
+function readAloudButton(text: string): HTMLButtonElement {
+  const node = iconButton('Read aloud', 'read-aloud', SPEAKER_ICON, () => {
+    if (node.getAttribute('aria-pressed') === 'true') {
+      stopReading();
+      return;
+    }
+    node.setAttribute('aria-pressed', 'true');
+    readAloud(text, () => {
+      node.setAttribute('aria-pressed', 'false');
+    });
+  });
+  node.setAttribute('aria-pressed', 'false');
+  return node;
+}
+
+/**
+ * One box of the reveal: what it is a reading of, and the clearance as it is spoken.
+ *
+ * The button that reads it aloud is only offered where the browser has a synthesiser to read it
+ * with.
+ *
+ * @param heading What the box is a reading of.
+ * @param text The clearance, written the way it is spoken.
+ * @returns The box.
+ */
+function spokenBox(heading: string, text: string): HTMLElement {
+  const box = el('div', 'spoken-box');
+  const head = el('div', 'spoken-head');
+  head.append(el('h3', '', heading));
+  if (speechAvailable()) head.append(readAloudButton(text));
+  box.append(head, el('p', 'spoken', text));
+  return box;
+}
+
 /**
  * The clearance as it is read on frequency, and the same clearance with the route read in full.
  *
@@ -120,9 +165,9 @@ export function renderVerdict(verdict: Grade): HTMLElement {
  */
 function revealPanel(spoken: SpokenClearance): HTMLElement {
   const panel = el('div', 'reveal');
-  panel.append(el('h3', '', 'On frequency'), el('p', 'spoken', spoken.abbreviated));
+  panel.append(spokenBox('On frequency', spoken.abbreviated));
   if (spoken.abbreviated !== spoken.fullRoute) {
-    panel.append(el('h3', '', 'With the route read in full'), el('p', 'spoken', spoken.fullRoute));
+    panel.append(spokenBox('With the route read in full', spoken.fullRoute));
   }
   return panel;
 }
