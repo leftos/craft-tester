@@ -64,7 +64,7 @@ FIRST_PLAN = PlanRow(
     truncated=False,
 )
 FIRST_FIXTURE = {
-    "id": "ws-phraseology-practice-1a-ual320",
+    "id": "ws-ksfo-phraseology-practice-1a-ual320",
     "source": {
         "kind": "worksheet",
         "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 01R, "

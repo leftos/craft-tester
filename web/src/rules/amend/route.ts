@@ -6,7 +6,7 @@ import type {
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
-import type { BuiltRoute } from '@/rules/amend/build.ts';
+import type { BuildScope, BuiltRoute } from '@/rules/amend/build.ts';
 import { buildRoute, builtTokens } from '@/rules/amend/build.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
 import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
@@ -39,13 +39,16 @@ type FiledRoute = {
  * The route box as it should read, and the TEC row or the built route that decided it where one did.
  *
  * `exitElement` travels with a built route because the reason names the element the flight filed out
- * of the terminal on, which is what the SID the SOP assigns does not reach.
+ * of the terminal on, which is what the SID the SOP assigns does not reach. `scope` travels with it
+ * because the reason closes differently on the two paths: a flight already being given a procedure
+ * keeps its SID, while a flight the SOP sends off on a heading is issued one in the heading's place.
  */
 type ExpectedRoute = {
   tokens: string[];
   tec: TecRoute | undefined;
   built?: BuiltRoute;
   exitElement?: string;
+  scope?: BuildScope;
 };
 
 /** Splits the route box on whitespace, taking a leading procedure token off the front. */
@@ -76,32 +79,41 @@ function destinationRow(airport: AirportData, icao: string): Destination | undef
 }
 
 /**
- * The route box built on the procedure the pilot filed, where the filed route can be reached from it.
+ * The route box built on a SID the SOP would assign, where the filed route can be reached from it.
  *
  * A plan filed on a procedure the SOP would have assigned, but which publishes no transition to the
  * fix the route leaves the terminal at, takes the vector SID further down the assignment table only
  * when nothing connects it back: a transition of the filed SID that connects onward to a fix the
  * flight already filed is fewer changes than replacing the procedure. A row that forces a
- * transition is built whatever the plan files, because that is the SOP's routing for the hour.
+ * transition is built whatever the plan files, because that is the SOP's routing for the hour. The
+ * scope says which candidates may be connected to, and is the caller's rule rather than this one's.
  */
 function builtExpectation(
   scenario: Scenario,
   ctx: Classification,
   airport: AirportData,
+  scope: BuildScope,
 ): ExpectedRoute | undefined {
   const parsed = parseFiledRoute(scenario.filedRoute, airport);
   if (isUnresolved(parsed)) return undefined;
   const direction = flightDirection(parsed, airport);
   const candidates = unservedSids(ctx, parsed.exitElement, direction, scenario, airport);
-  const filedFamily =
-    parsed.filedSidToken === undefined ? undefined : familyOf(parsed.filedSidToken);
-  const built = buildRoute(parsed.tokens, candidates, filedFamily, airport);
+  const built = buildRoute(parsed.tokens, candidates, scope, airport);
   if (built === undefined) return undefined;
   return {
     tokens: builtTokens(built, parsed.tokens),
     tec: undefined,
     built,
     exitElement: parsed.exitElement,
+    scope,
+  };
+}
+
+/** What a flight the SOP is giving a procedure may be built on: the family the pilot filed. */
+function filedScope(filed: FiledRoute): BuildScope {
+  return {
+    kind: 'filed',
+    family: filed.procedure === undefined ? undefined : familyOf(filed.procedure),
   };
 }
 
@@ -123,7 +135,7 @@ function expectedRoute(
   const tec = tecRouteFor(ctx, scenario, airport, destination);
   if (tec === undefined) {
     return (
-      builtExpectation(scenario, ctx, airport) ?? {
+      builtExpectation(scenario, ctx, airport, filedScope(filed)) ?? {
         tokens: [assigned, ...filed.tail],
         tec: undefined,
       }
@@ -200,7 +212,20 @@ function procedureReason(
 }
 
 /**
- * The reason a route was built rather than the procedure replaced.
+ * How a built reason closes, which is what the build spared the flight.
+ *
+ * On the procedure path the flight filed the family it is built on, so the build keeps that SID
+ * where the vector SID would otherwise have replaced it; on the heading path the SOP assigns no
+ * procedure at all, so the build issues one where the flight would otherwise have been vectored.
+ */
+function builtClosing(scope: BuildScope | undefined): string {
+  return scope?.kind === 'any'
+    ? 'so the SID is issued in place of the heading'
+    : 'so the SID is kept';
+}
+
+/**
+ * The reason a route was built rather than the procedure replaced or a heading issued.
  *
  * A forced transition is the assignment row speaking for itself, so the row's own text carries the
  * reason; a connection build has to say which transition was taken and which rows of the cheat
@@ -208,7 +233,7 @@ function procedureReason(
  */
 function builtReason(
   built: BuiltRoute,
-  exitElement: string,
+  expected: ExpectedRoute,
   scenario: Scenario,
   ctx: Classification,
 ): string {
@@ -220,8 +245,8 @@ function builtReason(
     .join(', ');
   return (
     `${built.sid.id} is the procedure the SOP assigns ${flightWords(ctx)} from ${scenario.departureRunway} ` +
-    `in ${ctx.config.id}, and ${exitElement} is not one of its transitions, but ${built.transition} is ` +
-    `and ${links} (route building), so the SID is kept`
+    `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${built.transition} is ` +
+    `and ${links} (route building), ${builtClosing(expected.scope)}`
   );
 }
 
@@ -243,7 +268,26 @@ function builtCitations(built: BuiltRoute, airport: AirportData): RuleCitation[]
   ];
 }
 
-/** Which of the four cases the route box is wrong for, written out for the player. */
+/**
+ * The amendment a built route makes, which reads the same whether the flight was to be given a
+ * procedure or sent off on a heading: the built box, why it was built, and the rows that built it.
+ */
+function builtAmendment(
+  expected: ExpectedRoute,
+  built: BuiltRoute,
+  scenario: Scenario,
+  ctx: Classification,
+  airport: AirportData,
+): ResolvedAmendment {
+  return {
+    box: 'route',
+    proposed: expected.tokens.join(' '),
+    reason: builtReason(built, expected, scenario, ctx),
+    citations: builtCitations(built, airport),
+  };
+}
+
+/** Which of the three cases a route box with no built route is wrong for, written for the player. */
 function routeReason(
   filed: FiledRoute,
   expected: ExpectedRoute,
@@ -252,9 +296,6 @@ function routeReason(
   assigned: string,
 ): string {
   if (expected.tec !== undefined) return tecReason(ctx, expected, scenario.destination);
-  if (expected.built !== undefined) {
-    return builtReason(expected.built, expected.exitElement ?? '', scenario, ctx);
-  }
   if (filed.procedure === undefined) {
     return `the route files no departure procedure; the SOP assigns ${assigned} from ${scenario.departureRunway} in ${ctx.config.id}`;
   }
@@ -303,8 +344,14 @@ export function loaRouteGap(
 /**
  * Checks the route box of a flight the SOP clears on the runway heading, which names no procedure.
  *
- * The box is the tail the pilot filed, so a plan that files a departure procedure is amended down
- * to that tail and a plan that files none is left alone. A TEC route still wins where one applies,
+ * A heading is issued only because no SID the table reaches serves the fix the route leaves the
+ * terminal at, and route building may still connect an assignable SID's transition to a fix further
+ * down the filed route, which is fewer changes than a heading; so where a route builds, the box is
+ * that built route and the flight is given the SID after all. Whatever the plan filed may be built
+ * on here, there being no procedure the SOP wanted this flight to keep.
+ *
+ * Failing a build, the box is the tail the pilot filed, so a plan that files a departure procedure
+ * is amended down to that tail and a plan that files none is left alone. A TEC route wins over both,
  * but a row whose route begins on a departure family never applies to such a flight: `tecRouteFor`
  * puts the row's own route to the clearance engine, which answers this flight with a heading rather
  * than with the family the row begins on. A row that begins on an initial heading token is reached
@@ -329,10 +376,16 @@ function checkHeadingRoute(
 ): ResolvedAmendment | undefined | Unresolved {
   const destination = destinationRow(airport, scenario.destination);
   const tec = tecRouteFor(ctx, scenario, airport, destination);
-  const tokens = tec === undefined ? filed.tail : tecTokens(tec, airport);
+  const expected =
+    tec === undefined ? builtExpectation(scenario, ctx, airport, { kind: 'any' }) : undefined;
+  const tokens = tec === undefined ? (expected?.tokens ?? filed.tail) : tecTokens(tec, airport);
   if (isUnresolved(tokens)) return tokens;
   if (tokens.join(' ') === filed.tokens.join(' ')) {
     return loaRouteGap(tokens, ctx, scenario.destination, airport, destination);
+  }
+  const built = expected?.built;
+  if (expected !== undefined && built !== undefined) {
+    return builtAmendment(expected, built, scenario, ctx, airport);
   }
   return {
     box: 'route',
@@ -360,8 +413,9 @@ function checkHeadingRoute(
  * fix the route leaves the terminal at, the box is built on the filed procedure instead, by a
  * transition that connects onward to the filed route; a row that forces a transition builds the box
  * on that row's own SID whatever was filed. A box that already reads right is then held against the
- * LOA routing rows written for the destination. A flight the SOP clears on the runway heading has no
- * procedure for the box to read, so its box is the filed tail alone.
+ * LOA routing rows written for the destination. A flight the SOP clears on the runway heading is
+ * built the same way, on any SID the table passed over rather than only on the filed family, because
+ * it has no procedure to keep; failing a build its box is the filed tail alone.
  *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
@@ -389,16 +443,15 @@ export function checkRoute(
     const destination = destinationRow(airport, scenario.destination);
     return loaRouteGap(tail, ctx, scenario.destination, airport, destination);
   }
+  const built = expected.built;
+  if (built !== undefined) return builtAmendment(expected, built, scenario, ctx, airport);
   return {
     box: 'route',
     proposed: expected.tokens.join(' '),
     reason: routeReason(filed, expected, scenario, ctx, procedure.id),
-    citations:
-      expected.built === undefined
-        ? [
-            ...clearance.procedure.citations,
-            ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
-          ]
-        : builtCitations(expected.built, airport),
+    citations: [
+      ...clearance.procedure.citations,
+      ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
+    ],
   };
 }

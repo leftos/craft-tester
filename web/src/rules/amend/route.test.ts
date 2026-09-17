@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, AssignmentRule, LoaRule, LoaRuleKind, Scenario } from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
@@ -7,6 +8,7 @@ import { resolveClearance } from '@/rules/engine.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 /** The optional keys an LOA routing row narrows itself with: the classes and the RNAV column. */
 type LoaRouteNarrowing = Omit<Extract<LoaRuleKind, { kind: 'route' }>, 'kind' | 'tokens'>;
@@ -162,6 +164,28 @@ describe('checkRoute route building', () => {
       departureRunway: '01L',
     });
     expect(check(flight)).toBeUndefined();
+  });
+
+  it('builds a route for a flight the SOP would send off on a heading, on the SID it passed over', () => {
+    const flight = scenario({
+      callsign: 'LXJ351',
+      aircraftType: 'E55P',
+      destination: 'KCRQ',
+      filedRoute: 'OAK6 EHF LHS V459 SLI V23 OCN',
+      filedAltitude: 39000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      squawk: '4611',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('CNDEL5 KAYEX LOSHN EHF LHS V459 SLI V23 OCN');
+    expect(result.reason).toContain('so the SID is issued in place of the heading');
+    expect(result.citations.map((citation) => citation.id)).toEqual([
+      'OAK-SFOW-S-CNDEL',
+      'CONN-KAYEX-LOSHN',
+      'CONN-LOSHN-EHF',
+      'R-ROUTE-BUILD',
+    ]);
   });
 
   it('gives a plan filed without a procedure the assigned one, not a built route', () => {

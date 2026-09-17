@@ -1,6 +1,15 @@
 {
   "airport": "KOAK",
-  "id": "ws-amendment-practice-1a-lxj351",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "CNDEL5 KAYEX LOSHN EHF LHS V459 SLI V23 OCN",
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and EHF is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN, LOSHN usually connects to EHF (route building), so the SID is issued in place of the heading"
+      }
+    ]
+  },
+  "id": "ws-koak-amendment-practice-1a-lxj351",
   "mode": "amendment",
   "scenario": {
     "aircraftType": "E55P",
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: OAK6 is northbound per the SOP, so the route builds backwards onto CNDEL5, Kayex transition, Loshn, Ehf, then as filed"
   },
-  "status": "pending"
+  "status": "settled"
 }

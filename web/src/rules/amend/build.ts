@@ -19,6 +19,18 @@ export type BuiltRoute = {
   connections: RouteConnection[];
 };
 
+/**
+ * Which of the passed-over SIDs a build may keep the flight on.
+ *
+ * `filed` names the family the pilot filed, and only that family is built on: a flight the SOP is
+ * giving a procedure to is not rerouted onto a chain of connecting fixes it never asked for (user
+ * decision 2026-09-16), and a `family` of `undefined` is a plan that filed no procedure at all,
+ * which nothing but a forced transition builds. `any` is the flight the SOP sends off on a heading,
+ * where there is no procedure to keep and any assignable candidate may be connected to the filed
+ * route instead.
+ */
+export type BuildScope = { kind: 'filed'; family: string | undefined } | { kind: 'any' };
+
 /** One branch of the search: where it left the SID, and the fixes and rows it has crossed since. */
 type Branch = {
   transition: string;
@@ -120,36 +132,44 @@ function connectedRoute(
   };
 }
 
+/** Whether a candidate is one the scope allows a connection search to be run from. */
+function inScope(candidate: UnservedSid, scope: BuildScope): boolean {
+  return scope.kind === 'any' || candidate.sid.family === scope.family;
+}
+
 /**
- * Builds the route that keeps the SID the pilot filed, rather than falling back to the vector SID.
+ * Builds the route that keeps a SID the SOP would assign, rather than falling back to the vector
+ * SID or to a heading.
  *
  * The candidates are the rows `selectSid` passed over, in table order. A row that names a forced
  * transition is built on that transition alone — the SOP sends the flight over it whatever the
- * route files, so nothing about the filed procedure matters. The connection search is narrower: it
- * only keeps a procedure the pilot filed, so a plan filed without one, or filed on the procedure
- * the flight is being given anyway, is not rerouted onto a chain of connecting fixes it never
- * asked for (user decision 2026-09-16). Where the filed family is a candidate, it is built by
- * connecting one of its published transitions to the filed route over the cheat sheet's rows: the
- * chains of fixes that always connect are searched first, so a route that never needs a
- * controller's judgement is preferred over one that usually works, and within either search the
- * fewest connections win.
+ * route files, so nothing about the filed procedure matters, and no scope narrows it. The
+ * connection search is narrowed by `scope`: for a flight the SOP gives a procedure it only keeps
+ * the family the pilot filed, so a plan filed without one, or filed on the procedure the flight is
+ * being given anyway, is not rerouted onto a chain of connecting fixes it never asked for (user
+ * decision 2026-09-16); for a flight the SOP sends off on a heading there is no procedure to keep,
+ * so every candidate is searched and the first in table order that connects wins. Either way a
+ * candidate is built by connecting one of its published transitions to the filed route over the
+ * cheat sheet's rows: the chains of fixes that always connect are searched first, so a route that
+ * never needs a controller's judgement is preferred over one that usually works, and within either
+ * search the fewest connections win.
  *
  * @param tokens The filed route from its exit element onwards.
  * @param candidates The SIDs of the applicable rows that do not reach the exit element, in order.
- * @param filedFamily The family of the procedure the pilot filed, undefined when none was filed.
+ * @param scope Which candidates may be built on: the filed family, or any of them on the heading path.
  * @param airport The airport data, whose `routeConnections` hold the cheat sheet.
  * @returns The route to give the flight, or undefined when no candidate reaches the filed route.
  */
 export function buildRoute(
   tokens: readonly string[],
   candidates: readonly UnservedSid[],
-  filedFamily: string | undefined,
+  scope: BuildScope,
   airport: AirportData,
 ): BuiltRoute | undefined {
   for (const candidate of candidates) {
     const forced = candidate.row.when?.forcedTransition;
     if (forced !== undefined) return forcedRoute(candidate, forced);
-    if (candidate.sid.family !== filedFamily) continue;
+    if (!inScope(candidate, scope)) continue;
     const built = connectedRoute(candidate, tokens, airport);
     if (built !== undefined) return built;
   }

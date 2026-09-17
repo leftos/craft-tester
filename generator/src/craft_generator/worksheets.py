@@ -764,7 +764,7 @@ def fixture_for(worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, ru
     if read_as is not None:
         note += f"; type {row.designator} filed on the sheet, read as {read_as}"
     return {
-        "id": f"ws-{slug(worksheet.title)}-{row.callsign.lower()}",
+        "id": f"ws-{icao.lower()}-{slug(worksheet.title)}-{row.callsign.lower()}",
         "source": {"kind": "worksheet", "note": note},
         "status": "pending",
         "mode": FIXTURE_MODES[worksheet.kind],
