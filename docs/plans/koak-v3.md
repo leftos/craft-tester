@@ -432,9 +432,12 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   has no box for; KAL65 → `OAK6 OAK RBL`; XOJ715 → `OAK6 OAK SYRAH`; SWA1859 → `OAK6 OAK TIPRE`; LXJ351 →
   `CNDEL5 KAYEX LOSHN EHF`; SWA1883, SWA126, N172SP → none; SKW2345 → the sheet ends). The KSFO sheets have five
   cells and no key. Cached text: `generator/cache/worksheets/1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU.txt`;
-  the sheet itself: `https://docs.google.com/document/d/1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU/edit`. User
-  2026-09-16 asked to see the sheet before ruling on the extra cells (open question: are they ZOA's answer key, and
-  does the importer settle a fixture when the engine agrees with them).
+  the sheet itself: `https://docs.google.com/document/d/1kcIMVHUhKnK33tL71JdRukDoHw0qILnkOQeq20fMXGU/edit`. All three
+  OAK amendment sheets have the cells. **User 2026-09-16: "Those were accidental notes that shouldn't have persisted
+  and can't be trusted. They could be correct or not."** So the importer ignores every cell after the five plan
+  cells and any extra line inside a cell (AAY218 files `KPGI`), records nothing from them, and a plan whose
+  destination the shared file does not hold is skipped with a report line until the destination box exists.
+  Brief 3d (parser) dispatched 2026-09-16 on `wt/koak-worksheets`.
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture
