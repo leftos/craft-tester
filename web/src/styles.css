@@ -486,11 +486,46 @@ button.primary:disabled {
   border-top: 1px solid var(--line);
 }
 
+.spoken-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.spoken-head h3 {
+  margin-bottom: 0;
+}
+
 .spoken {
   margin: 0 0 0.8rem;
   padding: 0.5rem 0.7rem;
   border-radius: 4px;
   background: #eef2f8;
+}
+
+button.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+button.icon:hover {
+  background: #eef2f8;
+}
+
+button.icon[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .muted {
