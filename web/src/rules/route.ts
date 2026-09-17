@@ -33,10 +33,15 @@ const DIRECTIONS: readonly Direction[] = ['north', 'south', 'oceanic'];
  * `exitElement` is what the flight leaves the terminal on and what the route phrase names: the
  * first fix after the procedure, or the airway when the route joins one straight off the SID.
  * `exitFix` is the first fix of the route either way, which is what the gate lookup reads.
+ * `structureSids` names every SID whose own structure the dropped fixes lie on and which publishes
+ * the transition they are read to. Two departures out of the same airport often fly over the same
+ * fix to the same transition, so more than one SID can justify the same drop, and an amendment
+ * naming the fixes picks the procedure it is itself proposing where that one is among them.
  */
 export type ParsedRoute = {
   filedSidToken?: string;
   droppedStructureTokens?: string[];
+  structureSids?: string[];
   exitElement: string;
   exitFix: string;
   tokens: string[];
@@ -128,20 +133,24 @@ function structureNames(sid: Sid): string[] {
 }
 
 /**
- * Whether a token names the structure of a SID that publishes a transition to the next token.
+ * The SIDs a token names the structure of, where the SID publishes a transition to the next token.
  *
  * @param token The token the route files.
  * @param next The next token of the route that survives the walk.
  * @param airport The airport data, whose `sids` carry the structure and the transitions.
- * @returns True when one SID answers both halves.
+ * @returns Every SID that answers both halves, in the order the airport publishes them; empty where
+ *   none does.
  */
-function liesOnStructureBefore(token: string, next: string, airport: AirportData): boolean {
-  return airport.sids.some(
+function structureSidsBefore(token: string, next: string, airport: AirportData): Sid[] {
+  return airport.sids.filter(
     (sid) =>
       structureNames(sid).includes(token) &&
       sid.transitions.some((transition) => transition.fix === next),
   );
 }
+
+/** The leading tokens a route is read past, and the SIDs whose structure they were read past on. */
+type StructurePrefix = { length: number; sids: string[] };
 
 /**
  * How many leading tokens of a filed route name only structure the departure already flies over.
@@ -155,18 +164,20 @@ function liesOnStructureBefore(token: string, next: string, airport: AirportData
  *
  * @param tokens The filed route from its exit fix onwards.
  * @param airport The airport data, whose `sids` carry the structure and the transitions.
- * @returns The number of leading tokens to drop, zero when the route names none.
+ * @returns The number of leading tokens to drop, zero when the route names none, and the SIDs whose
+ *   structure the first of them lies on, empty when nothing is dropped.
  */
-function structurePrefixLength(tokens: readonly string[], airport: AirportData): number {
-  for (let dropped = tokens.length - 1; dropped >= 1; dropped -= 1) {
-    const survivor = tokens[dropped] ?? '';
-    if (
-      tokens.slice(0, dropped).every((token) => liesOnStructureBefore(token, survivor, airport))
-    ) {
-      return dropped;
+function structurePrefix(tokens: readonly string[], airport: AirportData): StructurePrefix {
+  for (let length = tokens.length - 1; length >= 1; length -= 1) {
+    const survivor = tokens[length] ?? '';
+    const answering = tokens
+      .slice(0, length)
+      .map((token) => structureSidsBefore(token, survivor, airport));
+    if (answering.every((sids) => sids.length > 0)) {
+      return { length, sids: (answering[0] ?? []).map((sid) => sid.id) };
     }
   }
-  return 0;
+  return { length: 0, sids: [] };
 }
 
 /**
@@ -175,9 +186,10 @@ function structurePrefixLength(tokens: readonly string[], airport: AirportData):
  *
  * The route is read from the first element that is not the departure's own structure: a leading fix
  * the SID already flies over is dropped where the route files one of that SID's published
- * transitions further along, and `droppedStructureTokens` records what was dropped so an amendment
- * can name it. A route that joins an airway straight off the SID leaves on that airway, and the fix
- * the airway leads to is what places the flight in a departure gate. A route with no fix at all
+ * transitions further along, and `droppedStructureTokens` records what was dropped, with
+ * `structureSids` the SIDs it was dropped on, so an amendment can name both. A route that joins an
+ * airway straight off the SID leaves on that airway, and the fix the airway leads to is what places
+ * the flight in a departure gate. A route with no fix at all
  * after the procedure blocks the route element: there is nothing to pick a gate, and so a SID, from.
  *
  * @param filedRoute The route string as filed.
@@ -191,7 +203,8 @@ export function parseFiledRoute(
   const first = splitRoute(filedRoute)[0];
   const filedSidToken = first !== undefined && isSidToken(first) ? first : undefined;
   const filed = routeFromExitFix(filedRoute, airport.airport.faa);
-  const dropped = filed.slice(0, structurePrefixLength(filed, airport));
+  const prefix = structurePrefix(filed, airport);
+  const dropped = filed.slice(0, prefix.length);
   const tokens = filed.slice(dropped.length);
   const exitElement = tokens[0];
   if (exitElement === undefined) {
@@ -207,6 +220,7 @@ export function parseFiledRoute(
   return {
     ...(filedSidToken === undefined ? {} : { filedSidToken }),
     ...(dropped.length === 0 ? {} : { droppedStructureTokens: dropped }),
+    ...(prefix.sids.length === 0 ? {} : { structureSids: prefix.sids }),
     exitElement,
     exitFix,
     tokens,

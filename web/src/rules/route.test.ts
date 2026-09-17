@@ -179,6 +179,7 @@ describe('parseFiledRoute past the departure structure', () => {
     expect(parseFiledRoute('PORTE8 PORTE SUSEY EBAYE BURGL', ksfo)).toEqual({
       filedSidToken: 'PORTE8',
       droppedStructureTokens: ['PORTE'],
+      structureSids: ['SSTIK5', 'WESLA5'],
       exitElement: 'SUSEY',
       exitFix: 'SUSEY',
       tokens: ['SUSEY', 'EBAYE', 'BURGL'],
@@ -188,6 +189,7 @@ describe('parseFiledRoute past the departure structure', () => {
   it('drops a procedure name and its base fix filed as plain route elements', () => {
     expect(parseFiledRoute('CNDEL PORTE SUSEY EBAYE BURGL', koak)).toEqual({
       droppedStructureTokens: ['CNDEL', 'PORTE'],
+      structureSids: ['CNDEL5'],
       exitElement: 'SUSEY',
       exitFix: 'SUSEY',
       tokens: ['SUSEY', 'EBAYE', 'BURGL'],
