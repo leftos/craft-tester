@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "NUEVO8 EUGEN",
+        "reason": "KWVI is inside NorCal TRACON; the TEC route for a piston in SFOW is NUEVO8 EUGEN"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-n222t",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: TEC route to Watsonville: NUEVO8 EUGEN"
   },
-  "status": "pending"
+  "status": "settled"
 }

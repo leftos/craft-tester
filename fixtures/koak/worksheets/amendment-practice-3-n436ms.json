@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "NIMI6 OAK V244 ALTAM MOD",
+        "reason": "KLVK is inside NorCal TRACON; the TEC route for a turboprop in SFOW is NIMI6 OAK V244 ALTAM MOD"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-n436ms",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation; validated by the user 2026-09-16: TEC route to Livermore: NIMI6 OAK V244 ALTAM MOD (ECA is in no CIFP record this cycle)"
   },
-  "status": "pending"
+  "status": "settled"
 }

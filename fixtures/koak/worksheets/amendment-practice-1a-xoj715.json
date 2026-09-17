@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 41000,
+        "reason": "filed FL430 on a 62° magnetic course to Denver needs an odd level; the highest legal altitude at or below it is FL410"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-1a-xoj715",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: FL430 to KDEN amended to FL410"
   },
-  "status": "pending"
+  "status": "settled"
 }

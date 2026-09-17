@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 10000,
+        "reason": "the TEC route to Sacramento is flown at 10,000; a facility-directed altitude is not read against the direction-of-flight rule"
+      },
+      {
+        "box": "route",
+        "proposed": "OAK6 OAK FEVTA FEVTA1",
+        "reason": "KSMF is inside NorCal TRACON; the TEC route for a jet in SFOW is OAK6 OAK FEVTA FEVTA1"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-1a-skw2345",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: TEC route to Sacramento: OAK6 OAK FEVTA FEVTA1 at 10,000"
   },
-  "status": "pending"
+  "status": "settled"
 }

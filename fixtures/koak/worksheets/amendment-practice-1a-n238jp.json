@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 31000,
+        "reason": "filed FL320 on a 38° magnetic course to Jackson Hole needs an odd level; the highest legal altitude at or below it is FL310"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-1a-n238jp",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: FL320 to KJAC amended to FL310 (odd for the eastbound course)"
   },
-  "status": "pending"
+  "status": "settled"
 }

@@ -1,5 +1,24 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "type",
+        "proposed": "B737/L",
+        "reason": "no equipment suffix filed; the fleet files a B737 as B737/L"
+      },
+      {
+        "box": "altitude",
+        "proposedFeet": 27000,
+        "reason": "filed FL280 on a 119° magnetic course to Ontario needs an odd level; the highest legal altitude at or below it is FL270"
+      },
+      {
+        "box": "route",
+        "proposed": "SKYL1 AVE J6 PMD",
+        "reason": "OAK6 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is SKYL1"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-swa1922",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +36,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: no suffix filed: B737/L; FL280 to KONT amended to FL270; OAK6 is northbound, so SKYL1 AVE J6 PMD"
   },
-  "status": "pending"
+  "status": "settled"
 }

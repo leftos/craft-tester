@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "CNDEL5 YYUNG LAX COMIX2",
+        "reason": "CNDEL4 is not the current version of the CNDEL departure, which is CNDEL5"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-swa1585",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: stale CNDEL4 amended to CNDEL5"
   },
-  "status": "pending"
+  "status": "settled"
 }

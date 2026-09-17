@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 43000,
+        "reason": "filed FL450 on a 346° magnetic course to Boeing Field needs an even level under LOA-ZSE-PARITY; the highest legal altitude at or below it is FL430"
+      },
+      {
+        "box": "route",
+        "proposed": "OAK6 RBL J1 BTG OLM2",
+        "reason": "the route files no departure procedure; the SOP assigns OAK6 from 30 in SFOW"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-eja115",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: FL450 to KBFI amended to FL430; the proposed route will gain OAK after the vector SID when that concept lands"
   },
-  "status": "pending"
+  "status": "settled"
 }

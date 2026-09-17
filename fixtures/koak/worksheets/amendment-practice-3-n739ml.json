@@ -1,5 +1,19 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 5000,
+        "reason": "the TEC route to Oroville is flown at 5,000; a facility-directed altitude is not read against the direction-of-flight rule"
+      },
+      {
+        "box": "route",
+        "proposed": "NIMI6 OAK V6 SAC",
+        "reason": "KOVE is inside NorCal TRACON; the TEC route for a turboprop in SFOW is NIMI6 OAK V6 SAC"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-n739ml",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +31,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation; validated by the user 2026-09-16: TEC route to Oroville: NIMI6 OAK V6 SAC at 5,000"
   },
-  "status": "pending"
+  "status": "settled"
 }
