@@ -58,6 +58,7 @@ EXPECTED: dict[str, Expected] = {
 }
 
 CHART_NAMES = sorted(EXPECTED)
+OAK_EXPECT_MINUTES = 10
 
 
 def facts_for(name: str, charts: dict[str, ChartRef], text: Callable[[str], list[str]]) -> ChartFacts:
@@ -118,6 +119,64 @@ def test_disagreeing_expect_note_minutes_fail_loudly() -> None:
     lines = ["expect filed altitude 10 minutes after departure.", "expect filed altitude 5 minutes after departure."]
     with pytest.raises(ValueError, match=r"disagreeing minutes \[5, 10\]"):
         parse_chart_facts(lines, "TEST ONE")
+
+
+@pytest.mark.parametrize(
+    ("note", "minutes"),
+    [
+        (". . . .maintain ATC assigned altitude.  Expect filed altitude ten minutes after departure.", 10),
+        ("Maintain FL220.  Expect clearance to filed altitude ten minutes after departure.", 10),
+        (". . . .expect further clearance to filed altitude 10 minutes after departure.", 10),
+        ("Maintain 5000. Expect higher altitude five minutes after departure.", 5),
+        ("Expect filed altitude fifteen minutes after departure.", 15),
+        ("Expect filed altitude twenty five minutes after departure.", 25),
+    ],
+)
+def test_the_expect_note_is_read_in_every_printed_phrasing(note: str, minutes: int) -> None:
+    assert parse_chart_facts([note], "TEST ONE").expect_filed_altitude_minutes == minutes
+
+
+def test_the_number_word_note_survives_halves_on_separate_lines_in_either_order() -> None:
+    lines = ["altitude ten minutes after departure.", "Maintain ATC assigned altitude.  Expect filed"]
+    assert parse_chart_facts(lines, "TEST ONE").expect_filed_altitude_minutes == OAK_EXPECT_MINUTES
+    assert parse_chart_facts(list(reversed(lines)), "TEST ONE").expect_filed_altitude_minutes == OAK_EXPECT_MINUTES
+
+
+def test_the_expect_note_is_read_when_pypdf_reverses_the_anchor_halves() -> None:
+    """QUAKE TWO and NIMITZ SIX emit one printed line as two adjacent chunks in reverse order."""
+    quake = [
+        "TAKEOFF RUNWAYS 10L/R, 12:  Climbing right turn heading 270",
+        "after departure.",
+        ". . . .maintain ATC assigned altitude.  Expect filed altitude ten minutes",
+        "of 375' per NM to 2000.",
+    ]
+    nimitz = [
+        "LOST COMMUNICATIONS: If not in contact with departure control after reaching 4000',",
+        "departure.",
+        "to assigned route/fix. Maintain ATC assigned altitude. Expect filed altitude ten minutes after",
+        "TAKEOFF RUNWAYS 28L/R and 30: Climbing right turn heading 315 for RADAR vectors",
+    ]
+    assert parse_chart_facts(quake, "QUAKE TWO").expect_filed_altitude_minutes == OAK_EXPECT_MINUTES
+    assert parse_chart_facts(nimitz, "NIMITZ SIX").expect_filed_altitude_minutes == OAK_EXPECT_MINUTES
+
+
+def test_an_expect_note_without_minutes_after_departure_is_not_read() -> None:
+    lines = ["Maintain ATC assigned altitude.  Expect filed altitude after departure.", "Expect higher altitude."]
+    assert parse_chart_facts(lines, "TEST ONE").expect_filed_altitude_minutes is None
+
+
+def test_the_oakland_continuation_prints_the_minutes_as_a_number_word(chart_text: Callable[[str], list[str]]) -> None:
+    lines = [*chart_text("00294OAKLAND.PDF"), *chart_text("00294OAKLAND_C.PDF")]
+    assert [line for line in lines if "ten minutes" in line] == [
+        ". . . .maintain ATC assigned altitude.  Expect filed altitude ten minutes after departure."
+    ]
+    assert parse_chart_facts(lines, "OAKLAND SIX").expect_filed_altitude_minutes == OAK_EXPECT_MINUTES
+
+
+def test_the_coast_continuation_prints_clearance_to_filed_altitude(chart_text: Callable[[str], list[str]]) -> None:
+    lines = [*chart_text("00294COAST.PDF"), *chart_text("00294COAST_C.PDF")]
+    assert [line for line in lines if "ten minutes" in line] == ["Maintain FL220.  Expect clearance to filed altitude ten minutes after departure."]
+    assert parse_chart_facts(lines, "COAST NINE").expect_filed_altitude_minutes == OAK_EXPECT_MINUTES
 
 
 def test_a_printed_transition_name_may_differ_from_its_fix(sfo_charts_by_name: dict[str, ChartRef], chart_text: Callable[[str], list[str]]) -> None:

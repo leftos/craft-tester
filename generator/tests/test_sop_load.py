@@ -31,6 +31,8 @@ from craft_generator.sop.model import AirportInputs, SharedRouteFacts
 
 Mutation = Callable[[Any], None]
 
+HAND_EXPECT_MINUTES = 7
+
 SHARED_PHRASEOLOGY_IDS = [
     "R-TRANSITION",
     "R-AS-FILED",
@@ -854,3 +856,21 @@ def test_a_climb_via_eligible_override_round_trips(tmp_path: Path, ksfo_dir: Pat
     overrides = load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
     assert overrides.sids["GAP SEVEN"].climb_via_eligible is True
     assert overrides.sids["TRUKN TWO (RNAV)"].climb_via_eligible is None
+
+
+def test_an_expect_filed_altitude_minutes_override_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["sids"]["GAP SEVEN"]["expect_filed_altitude_minutes"] = HAND_EXPECT_MINUTES
+
+    overrides = load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
+    assert overrides.sids["GAP SEVEN"].expect_filed_altitude_minutes == HAND_EXPECT_MINUTES
+    assert overrides.sids["SAN FRANCISCO FIVE"].expect_filed_altitude_minutes is None
+    assert overrides.sids["TRUKN TWO (RNAV)"].expect_filed_altitude_minutes is None
+
+
+def test_a_non_positive_expect_filed_altitude_minutes_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["sids"]["GAP SEVEN"]["expect_filed_altitude_minutes"] = 0
+
+    with pytest.raises(ValueError, match=r"sids\[GAP SEVEN\]: expect_filed_altitude_minutes must be a positive whole number, got 0"):
+        load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)

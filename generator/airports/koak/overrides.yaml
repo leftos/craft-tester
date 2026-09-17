@@ -28,7 +28,7 @@ sids:
     top_altitude: { kind: assigned_by_atc }
     has_crossing_restrictions: false
     route_phrasing: radar_vectors_fix
-    note: "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table."
+    note: "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table. The chart reads 'Maintain ATC assigned altitude. Expect filed altitude ten minutes after departure'."
   NUEVO EIGHT:
     cifp_id: NUEVO8
     spoken: Nuevo Eight

@@ -646,7 +646,9 @@ def _sid(
         "runways": list(runways),
         "transitions": transitions,
         "topAltitude": top_altitude,
-        "chartExpectFiledAltitudeMinutes": chart.facts.expect_filed_altitude_minutes,
+        "chartExpectFiledAltitudeMinutes": override.expect_filed_altitude_minutes
+        if override.expect_filed_altitude_minutes is not None
+        else chart.facts.expect_filed_altitude_minutes,
         "hasCrossingRestrictions": has_restrictions,
         "restrictions": [] if cifp is None else [_restriction(restriction) for restriction in cifp.restrictions],
         "climbViaEligible": override.climb_via_eligible

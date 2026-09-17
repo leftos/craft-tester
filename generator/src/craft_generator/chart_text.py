@@ -11,7 +11,8 @@ Two boxes matter here, and both were surveyed across all 12 KSFO departure chart
   tower frequency is the line immediately after it. GAP SEVEN publishes two, tagged ``(NW-E)`` and
   ``(SE-W)``; the rest publish one.
 * ``expect filed altitude N minutes after departure`` — the route description note, whose halves
-  arrive in either order and are therefore matched against the whole page rather than a line; see
+  arrive in either order and are therefore matched against the whole page rather than a line, and
+  whose minutes and object are printed several ways across the KSFO and KOAK charts; see
   :func:`_parse_expect_filed_altitude_minutes`.
 
 Because the label always follows its value, a value is never searched for *after* a label: the line
@@ -24,6 +25,7 @@ import io
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
+from itertools import pairwise
 from typing import Literal
 
 from pypdf import PdfReader
@@ -41,9 +43,38 @@ _PROCEDURE = re.compile(r"\((?P<procedure>[A-Z]{3,6}\d)\.\s?(?P<fix>[A-Z0-9]{2,5
 # The SKYLINE ONE (OAK) continuation sheet prints "PANOCHE TRANSITON", so the label spelling is optional in the middle.
 _TRANSITION = re.compile(r"(?P<name>[A-Z][A-Z0-9]{1,14})\s+TRANSITI?ON\s*\((?P<procedure>[A-Z]{3,6}\d)\.\s?(?P<fix>[A-Z0-9]{2,5})\)")
 _FREQUENCY = re.compile(r"(?P<frequency>1[123]\d\.\d{1,3})\s+\d{3}\.\d{1,3}(?:\s*\((?P<note>[A-Z]{1,2}-[A-Z]{1,2})\))?")
-_MINUTES_AFTER_DEPARTURE = re.compile(r"(?P<minutes>\d+)\s*minutes\s*after\s*departure", re.IGNORECASE)
+_NUMBER_WORDS: dict[str, int] = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+    "eleven": 11,
+    "twelve": 12,
+    "thirteen": 13,
+    "fourteen": 14,
+    "fifteen": 15,
+    "sixteen": 16,
+    "seventeen": 17,
+    "eighteen": 18,
+    "nineteen": 19,
+    "twenty": 20,
+    "thirty": 30,
+}
+# Longest first, so "fifteen" is preferred over "five" and "twenty five" is read as one number.
+_NUMBER_WORD = "|".join(sorted(_NUMBER_WORDS, key=len, reverse=True))
+_MINUTES_AFTER_DEPARTURE = re.compile(
+    rf"(?P<minutes>\d+|(?<![A-Za-z])(?:{_NUMBER_WORD})(?:[\s-]+(?:{_NUMBER_WORD}))?)\s*minutes\s*after\s*departure",
+    re.IGNORECASE,
+)
+_WORD_SEPARATOR = re.compile(r"[\s-]+")
 _EXPECT = re.compile(r"expect", re.IGNORECASE)
-_FILED_ALTITUDE = re.compile(r"filed\s+altitude|expect\s+filed", re.IGNORECASE)
+_EXPECT_OBJECT = re.compile(r"filed\s+altitude|expect\s+filed|higher\s+altitude|expect\s+higher", re.IGNORECASE)
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,6 +175,13 @@ def _parse_dep_frequencies(lines: Sequence[str], chart_name: str) -> list[DepFre
     return matches
 
 
+def _minutes_value(printed: str) -> int:
+    """Return the minutes a chart printed as digits ("10") or as number words ("ten", "twenty five")."""
+    if printed.isdigit():
+        return int(printed)
+    return sum(_NUMBER_WORDS[word] for word in _WORD_SEPARATOR.split(printed.lower()))
+
+
 def _parse_expect_filed_altitude_minutes(lines: Sequence[str], chart_name: str) -> int | None:
     """Read the minutes out of the chart's "expect filed altitude N minutes after departure" note.
 
@@ -152,10 +190,24 @@ def _parse_expect_filed_altitude_minutes(lines: Sequence[str], chart_name: str) 
     *before* the one carrying "Expect filed altitude"; on SSTIK FIVE they arrive first and the word
     "expect" follows, glued to the chart name as "expectSSTIK". A page-level test is the only one
     both layouts pass, so every "N minutes after departure" on the page is an anchor, and the note
-    counts as published when the page also holds "expect" and "filed altitude" anywhere on it, in
+    counts as published when the page also holds "expect" and the note's object anywhere on it, in
     any order and at any distance. GNNRR THREE, NIITE FOUR, SAHEY FOUR and WESLA FIVE are split
     between "filed" and "altitude" instead, leaving neither word next to the other, so either half
     of the phrase — "filed altitude" or "expect filed" — counts.
+
+    The KSFO charts print the minutes as digits, the KOAK charts as a number word: "Expect filed
+    altitude ten minutes after departure" (OAKLAND SIX, QUAKE TWO, NIMITZ SIX, SALAD FIVE), "Expect
+    clearance to filed altitude ten minutes after departure" (COAST NINE, NUEVO EIGHT). Either form
+    is read. The object is "filed altitude" on most charts, with or without a "clearance to" or
+    "further clearance to" in front of it, and "higher altitude" on SUNNE ONE, which prints
+    "Maintain 5000. Expect higher altitude five minutes after departure".
+
+    QUAKE TWO and NIMITZ SIX split the anchor itself: pypdf emits the printed line as two adjacent
+    chunks in reverse order, "after departure." before ". . . .maintain ATC assigned altitude.
+    Expect filed altitude ten minutes" on QUAKE TWO and "departure." before "... Expect filed
+    altitude ten minutes after" on NIMITZ SIX, so no anchor survives on the page joined in content
+    order. Every adjacent pair of lines is therefore also tested joined the other way round, which
+    re-forms exactly the printed line and keeps the anchor phrase itself contiguous.
 
     Args:
         lines: The chart text as returned by :func:`extract_text`.
@@ -170,8 +222,9 @@ def _parse_expect_filed_altitude_minutes(lines: Sequence[str], chart_name: str) 
         ValueError: The page's anchors disagree on the minutes.
     """
     page = " ".join(lines)
-    minutes = {int(match.group("minutes")) for match in _MINUTES_AFTER_DEPARTURE.finditer(page)}
-    if not minutes or _EXPECT.search(page) is None or _FILED_ALTITUDE.search(page) is None:
+    texts = [page, *(f"{second} {first}" for first, second in pairwise(lines))]
+    minutes = {_minutes_value(match.group("minutes")) for text in texts for match in _MINUTES_AFTER_DEPARTURE.finditer(text)}
+    if not minutes or _EXPECT.search(page) is None or _EXPECT_OBJECT.search(page) is None:
         return None
     if len(minutes) > 1:
         raise ValueError(f"{chart_name}: the page publishes an expect filed altitude note with disagreeing minutes {sorted(minutes)}")

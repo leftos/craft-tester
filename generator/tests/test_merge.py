@@ -35,6 +35,8 @@ KSMF_PROP_ALTITUDE_FEET = 6000
 OUTSIDE_NCT_REASON = "Another facility owns a shelf below NCT's lateral boundary down to the ground"
 PARITY_ODD_COURSE_FROM = 20
 PARITY_ODD_COURSE_TO = 199
+HAND_EXPECT_MINUTES = 7
+CHART_EXPECT_MINUTES = 10
 
 
 def _sids(document: Document) -> dict[str, Document]:
@@ -99,6 +101,19 @@ def test_a_published_top_altitude_alone_makes_a_sid_climb_via_eligible(ksfo_docu
     assert sntna2["hasCrossingRestrictions"] is False
     assert sntna2["topAltitude"] == {"kind": "published", "feet": SNTNA_TOP_ALTITUDE_FEET}
     assert sntna2["climbViaEligible"] is True
+
+
+def test_a_hand_expect_note_wins_over_the_one_read_off_the_chart(ksfo_build_inputs: BuildInputs) -> None:
+    overrides = ksfo_build_inputs.airport.overrides
+    sfo5 = replace(overrides.sids["SAN FRANCISCO FIVE"], expect_filed_altitude_minutes=HAND_EXPECT_MINUTES)
+    airport = replace(ksfo_build_inputs.airport, overrides=replace(overrides, sids={**overrides.sids, "SAN FRANCISCO FIVE": sfo5}))
+    sids = _sids(build_airport(replace(ksfo_build_inputs, airport=airport)))
+    assert sids["SFO5"]["chartExpectFiledAltitudeMinutes"] == HAND_EXPECT_MINUTES
+    assert sids["TRUKN2"]["chartExpectFiledAltitudeMinutes"] == CHART_EXPECT_MINUTES
+
+
+def test_a_chart_expect_note_reaches_the_document(ksfo_document: Document) -> None:
+    assert {sid["chartExpectFiledAltitudeMinutes"] for sid in ksfo_document["sids"]} == {CHART_EXPECT_MINUTES}
 
 
 def test_a_sid_with_a_vector_segment_is_never_climb_via_eligible(ksfo_document: Document) -> None:

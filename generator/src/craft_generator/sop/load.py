@@ -840,9 +840,16 @@ def _sid_override(chart_name: str, row: _Row) -> SidOverride:
         route_phrasing=row.optional_choice("route_phrasing", ROUTE_PHRASINGS),
         transitions_spoken_as_transition=row.optional_flag("transitions_spoken_as_transition"),
         climb_via_eligible=row.optional_flag("climb_via_eligible"),
+        expect_filed_altitude_minutes=row.optional_number("expect_filed_altitude_minutes"),
         note=row.optional_text("note"),
     )
     row.finish()
+    minutes = override.expect_filed_altitude_minutes
+    if minutes is not None and minutes < 1:
+        raise ValueError(
+            f"{row.where}: expect_filed_altitude_minutes must be a positive whole number, got {minutes}; it is the minutes the "
+            "chart's expect filed altitude note publishes"
+        )
     return override
 
 
@@ -885,8 +892,9 @@ def load_overrides(path: Path) -> Overrides:
         The per-DP corrections and spoken fix names.
 
     Raises:
-        ValueError: The file carries an unknown key, a malformed ``cifp_id``, or two charts claiming
-            the same procedure id.
+        ValueError: The file carries an unknown key, a malformed ``cifp_id``, an
+            ``expect_filed_altitude_minutes`` that is not a positive whole number, or two charts
+            claiming the same procedure id.
     """
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))

@@ -2554,6 +2554,18 @@
       "plan": "SFOW",
       "source": "ZOA notice relayed by the user, 2026-09-15",
       "text": "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement"
+    },
+    {
+      "dated": "2026-09-16",
+      "defaultActive": true,
+      "effect": {
+        "kind": "sid_off",
+        "sidFamily": "COAST"
+      },
+      "id": "OAK-COAST-OFF",
+      "plan": "SFOW",
+      "source": "ZOA operational notice relayed by the user, 2026-09-16",
+      "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
     }
   ],
   "phraseology": {
@@ -4749,7 +4761,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294COAST.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": null,
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -4965,7 +4977,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294NIMITZ.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": null,
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "127.0"
@@ -4977,7 +4989,7 @@
       "hasCrossingRestrictions": false,
       "id": "NIMI6",
       "kind": "radar_vectors",
-      "note": "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table.",
+      "note": "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table. The chart reads 'Maintain ATC assigned altitude. Expect filed altitude ten minutes after departure'.",
       "restrictions": [],
       "rnavRequired": false,
       "routePhrasing": "radar_vectors_fix",
@@ -4998,7 +5010,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294NUEVO.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": null,
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -5049,7 +5061,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294OAKLAND.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": null,
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "120.9"
@@ -5090,7 +5102,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294QUAKE.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": null,
+      "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
         {
           "frequency": "135.1"
@@ -5323,7 +5335,7 @@
       "chart": {
         "pdfUrl": "https://aeronav.faa.gov/d-tpp/2609/00294SUNNE.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": null,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "135.1"

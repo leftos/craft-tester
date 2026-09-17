@@ -1075,6 +1075,13 @@ notices:
     plan: SFOW
     effect: { kind: sid_off, sid_family: SUNNE, heading: 120 }
     default_active: true
+  - id: OAK-COAST-OFF
+    source: ZOA operational notice relayed by the user, 2026-09-16
+    dated: 2026-09-16
+    text: "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
+    plan: SFOW
+    effect: { kind: sid_off, sid_family: COAST }
+    default_active: true
 
 # Airport-level phraseology toggles. Defaults follow FAA JO 7110.65 4-3-2, except the expect time:
 # SOP 2-2 b i instructs aircraft to expect the assigned altitude ten minutes after departure.

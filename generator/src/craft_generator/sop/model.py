@@ -368,6 +368,7 @@ class SidOverride:
     route_phrasing: RoutePhrasing | None
     transitions_spoken_as_transition: bool | None
     climb_via_eligible: bool | None
+    expect_filed_altitude_minutes: int | None
     note: str | None
 
 

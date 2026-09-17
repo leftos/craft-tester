@@ -3810,7 +3810,7 @@
       "hasCrossingRestrictions": false,
       "id": "SFO5",
       "kind": "radar_vectors",
-      "note": "Radar-vector SID; the FAA does not code it in CIFP. Runway 28: SFO R-281 to NORMM then vectors (no restriction -> maintain 3,000). Runway 01: heading 033 or assigned, cross SFO 6 DME at or above 3000 for vectors (a crossing restriction -> climb via SID except maintain; S1-SFO-0 CBT agrees).",
+      "note": "Radar-vector SID; the FAA does not code it in CIFP. Runway 28: SFO R-281 to NORMM then vectors (no restriction -> maintain 3,000). Runway 01: heading 033 or assigned, cross SFO 6 DME at or above 3000 for vectors (a crossing restriction -> climb via SID except maintain; S1-SFO-0 CBT agrees). The chart reads 'expect further clearance to filed altitude 10 minutes after departure' (user 2026-09-16: the chart covers the clause).",
       "restrictions": [],
       "rnavRequired": false,
       "routePhrasing": "radar_vectors_fix",
