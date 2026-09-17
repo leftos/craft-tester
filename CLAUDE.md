@@ -83,7 +83,10 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   so `strip.ts`'s `typeof document === 'undefined'` fallbacks stay exercised by the other files.
 - **Fixtures.** `fixtures/<icao>/synthetic/` is hand-written; `fixtures/<icao>/worksheets/` is written by
   `import-worksheets`. `web/src/rules/fixtures.test.ts` runs every fixture and prints what the engine makes
-  of each `pending` one.
+  of each `pending` one. It is also the **only** guard on amendment reason wording — the unit tests assert
+  citations and boxes, not prose — so run `pnpm -C web test rules/fixtures` after any change to a reason
+  string, before the full suite. A settled fixture's reason is text the user confirmed; if one moves, that
+  is a ruling to take to them, not an expectation to update.
 - **Data depends on fixtures.** `craft-gen build` reads navaid names for every route filed in
   `fixtures/<icao>/**`, so re-run the build after an import.
 - **Graded elements** are `R.route`, `A.phrase`, `A.expect`, `F`, and `RWY`, plus the three strip boxes
