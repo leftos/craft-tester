@@ -366,7 +366,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   which row is the flight's) and asserts the altitude the clearance climbs the flight to (`clearedToFeet`: the
   interim, or the published top on a plain "climb via SID") equals the row's initial altitude; the SOP's cap at the
   filed altitude makes OAK# jets to SMF (SOP CVS x FL190, TEC 100/100, cruise 10,000) agree. A disagreement is a
-  data finding for the validation loop, listed row by row, never patched in the engine. Engine files:
+  data finding for the validation loop, listed row by row, never patched in the engine. Known consequence for the
+  validation loop: settled fixture `ws-amendment-practice-1a-skw2345` (KSFO jet to Sacramento filed 10,000, TEC
+  `100/`) today expects the altitude amended to 9,000 for parity; under ruling (1) it is correct as filed, so the
+  fixture's expected block changes and the user re-confirms it. 2f-i observation: the OAK tool pages for
+  MCC/MHR/MYV/OVE and LVK/MOD/SCK do print a Jet row with no `[SFOW]`/`[SFOE]` tag (`+OAK6 OAK ORRCA+ 110`,
+  `+OAK6 OAK V244 ALTAM MOD+ 070`); `tec.yaml` says "the tool prints no jet row" and skips them. Question for the
+  user: does an untagged row apply in every configuration? Engine files:
   `rules/amend/altitude.ts` (cruise = final), `rules/amend/tec.ts`, `web/scripts/propose.ts`; generator
   `sop/load.py` `load_tec`, `merge.py` `_tec_routes`, `_check_tec_*`; schema + `schema:export`; both data files
   rebuilt; the KSFO worksheet fixtures whose expected altitude changes are findings to list, not to re-settle
