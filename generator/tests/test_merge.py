@@ -415,6 +415,18 @@ def _with_pcm_telephony(inputs: BuildInputs) -> BuildInputs:
     return replace(inputs, airport=replace(inputs.airport, routes=routes))
 
 
+def _pcm_flying(inputs: BuildInputs, designator: str) -> BuildInputs:
+    """Put PCM on one fleet type, so the airline flies that type's aircraft class and no other."""
+    fleet = tuple(replace(entry, airlines=(*entry.airlines, "PCM")) if entry.type == designator else entry for entry in inputs.airport.routes.fleet)
+    routes = replace(inputs.airport.routes, fleet=fleet)
+    return replace(inputs, airport=replace(inputs.airport, routes=routes))
+
+
+def _pcm_defaulting(inputs: BuildInputs, designator: str) -> BuildInputs:
+    """The KSFO inputs with PCM spoken, flying one type, and defaulted onto the 28R class-default row."""
+    return _defaulting_pcm(_pcm_flying(_with_pcm_telephony(inputs), designator))
+
+
 def _with_airline_default_rule(inputs: BuildInputs) -> BuildInputs:
     rule = PhraseologyRule(id="RWY-AIRLINE-DEFAULT", source="OAK ATCT SOP 2-1", text="the airline's props depart the runway their ramp is on")
     return _with_sop(inputs, phraseology_rules=(*inputs.airport.sop.phraseology_rules, rule))
@@ -427,13 +439,23 @@ def test_an_airline_default_without_telephony_fails_the_build(ksfo_build_inputs:
 
 
 def test_an_airline_default_without_its_phraseology_row_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
-    inputs = _defaulting_pcm(_with_pcm_telephony(ksfo_build_inputs))
+    inputs = _pcm_defaulting(ksfo_build_inputs, "B350")
     with pytest.raises(ValueError, match=r"the airport has no RWY-AIRLINE-DEFAULT phraseology row"):
         build_airport(inputs)
 
 
+def test_an_airline_default_for_a_class_the_airline_does_not_fly_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_airline_default_rule(_pcm_defaulting(ksfo_build_inputs, "A320"))
+    match = (
+        r"runwayConfigs\[28/01\]\.departureRunways\[28R\]\.defaultForAirlines: 'PCM' flies \['J'\], and the row's `classes` are \['P', 'T'\]; "
+        r"a runway cannot be the default for an airline that may not use it"
+    )
+    with pytest.raises(ValueError, match=match):
+        build_airport(inputs)
+
+
 def test_an_airline_default_is_emitted_on_the_departure_runway(ksfo_build_inputs: BuildInputs) -> None:
-    document = build_airport(_with_airline_default_rule(_defaulting_pcm(_with_pcm_telephony(ksfo_build_inputs))))
+    document = build_airport(_with_airline_default_rule(_pcm_defaulting(ksfo_build_inputs, "B350")))
     config = next(row for row in document["runwayConfigs"] if row["id"] == "28/01")
     defaults = [runway["defaultForAirlines"] for runway in config["departureRunways"]]
     assert defaults == [[], [], [], [], ["PCM"]]

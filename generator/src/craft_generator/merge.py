@@ -72,6 +72,7 @@ from craft_generator.cifp.waypoints import RNAV_WAYPOINT
 from craft_generator.nct_boundary import NctBoundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
+    AIRLINES_FILE,
     COMMON_ARRIVALS_FILE,
     NCT_BOUNDARY_FILE,
     RUNWAY_FAMILY_LENGTH,
@@ -866,9 +867,19 @@ _AIRLINE_DEFAULT_RULE = "RWY-AIRLINE-DEFAULT"
 _GROUP_DEFAULT_RULE = "RWY-GROUP-DEFAULT"
 
 
+def _airline_classes(document: Document) -> dict[str, set[str]]:
+    """Return the aircraft classes every airline flies, read off the fleet types that name it."""
+    flown: dict[str, set[str]] = {}
+    for entry in document["routeLibrary"]["fleet"]:
+        for code in entry["airlines"]:
+            flown.setdefault(str(code), set()).add(str(entry["class"]))
+    return flown
+
+
 def _check_runway_defaults(document: Document) -> None:
     """Check that every airline and group a departure runway defaults can be spoken and cited."""
     telephony = document["routeLibrary"]["telephony"]
+    flown = _airline_classes(document)
     rules = {rule["id"] for rule in document["phraseologyRules"]}
     for config in document["runwayConfigs"]:
         for runway in config["departureRunways"]:
@@ -878,6 +889,13 @@ def _check_runway_defaults(document: Document) -> None:
                 for code in codes:
                     if code not in telephony:
                         raise ValueError(f"{at}.defaultForAirlines: {code!r} has no telephony entry in routes.yaml")
+                    flies = sorted(flown.get(code, set()))
+                    if not set(flies) & set(runway["classes"]):
+                        raise ValueError(
+                            f"{at}.defaultForAirlines: {code!r} flies {flies}, and the row's `classes` are {list(runway['classes'])}; "
+                            f"a runway cannot be the default for an airline that may not use it; correct the row in sop.yaml, or the types "
+                            f"the airline flies in generator/shared/{AIRLINES_FILE}"
+                        )
                 if _AIRLINE_DEFAULT_RULE not in rules:
                     raise ValueError(
                         f"{at}.defaultForAirlines: the airport has no {_AIRLINE_DEFAULT_RULE} phraseology row, which the engine cites "

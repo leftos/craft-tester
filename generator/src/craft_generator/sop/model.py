@@ -508,16 +508,6 @@ class TecData:
 
 
 @dataclass(frozen=True, slots=True)
-class LoaSource:
-    """One letter of agreement a ``loa.yaml`` rule row cites."""
-
-    id: str
-    title: str
-    effective: date
-    url: str
-
-
-@dataclass(frozen=True, slots=True)
 class ParityRotatedRule:
     """Altitude parity assigned by a course window rotated off the FAA JO 7110.65 hemispheres."""
 
@@ -580,13 +570,12 @@ class LoaRule:
 
 @dataclass(frozen=True, slots=True)
 class LoaData:
-    """The letters of agreement and the rule rows transcribed from them.
+    """The rule rows transcribed from the letters of agreement.
 
     ``shared/loa_rules.yaml`` holds the rows every airport inherits and an airport's own ``loa.yaml``
     holds what that airport overrides by id or adds; :class:`AirportInputs` carries the two joined.
     """
 
-    sources: tuple[LoaSource, ...]
     rules: tuple[LoaRule, ...]
 
 

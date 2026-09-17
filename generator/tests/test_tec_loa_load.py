@@ -51,7 +51,6 @@ SHARED_LOA_RULE_IDS = [
     "LOA-ZLC-BIL-ROUTE",
     "LOA-ZLC-TWF-ROUTE",
 ]
-LOA_SOURCE_IDS = ["zoa-zse", "zoa-zla", "zoa-zlc"]
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_ALTITUDE_FEET = 6000
 KSMF_JET_ALTITUDE_FEET = 10000
@@ -84,9 +83,9 @@ def airport_copy(tmp_path: Path, ksfo_dir: Path, **mutations: Mutation) -> Path:
     return target
 
 
-def write_loa(directory: Path, rules: list[Any], sources: list[Any] | None = None) -> Path:
+def write_loa(directory: Path, rules: list[Any]) -> Path:
     """Write the airport ``loa.yaml`` a copied airport directory overrides the shared rows with."""
-    data = {"sources": sources or [], "rules": rules}
+    data = {"rules": rules}
     (directory / LOA_FILE).write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
     return directory
 
@@ -117,8 +116,6 @@ def test_the_transcribed_tec_and_loa_files_load(ksfo_inputs: AirportInputs) -> N
     assert tec.source.title == "ZOA Reference Tool, TEC/AAR/ADR Routes"
     assert tec.source.transcribed_at == date(2026, 9, 15)
     assert len(loa.rules) == LOA_RULE_COUNT
-    assert [source.id for source in loa.sources] == LOA_SOURCE_IDS
-    assert loa.sources[0].effective == date(2025, 9, 4)
 
 
 def test_a_tec_row_carries_its_runway_family_and_altitudes(ksfo_inputs: AirportInputs) -> None:
@@ -204,7 +201,6 @@ def test_an_airport_without_the_optional_files_has_no_tec_and_inherits_the_share
     inputs = load_airport(directory, shared_route_facts)
     assert inputs.tec is None
     assert [rule.id for rule in inputs.loa.rules] == SHARED_LOA_RULE_IDS
-    assert [source.id for source in inputs.loa.sources] == LOA_SOURCE_IDS
 
 
 def test_a_tec_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
@@ -317,11 +313,9 @@ def test_an_airport_row_overrides_a_shared_row_by_id_and_adds_its_own(tmp_path: 
         "artcc": "ZLC",
         "rule": {"kind": "even"},
     }
-    source = {"id": "ksfo-local", "title": "A letter only KSFO signs", "effective": date(2026, 9, 16), "url": "https://example.invalid/loa"}
-    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [override, added], [source])
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [override, added])
     loa = load_airport(directory, shared_route_facts).loa
     assert [rule.id for rule in loa.rules] == [*SHARED_LOA_RULE_IDS, "LOA-TEST-EXTRA"]
-    assert [source_row.id for source_row in loa.sources] == [*LOA_SOURCE_IDS, "ksfo-local"]
     portland = next(rule for rule in loa.rules if rule.id == "LOA-ZSE-PDX-ROUTE")
     assert isinstance(portland.rule, RouteTokenRule)
     assert (portland.rule.tokens, portland.source) == (("MOXEE",), "a test row")

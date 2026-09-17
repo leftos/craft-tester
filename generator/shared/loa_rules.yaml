@@ -15,19 +15,16 @@
 # no row models: which side of J1 or J501 a prop is routed by, which is how an attachment splits its
 # prop routings, and the ZOA-ZLC LOA 4 e window, from 0830 to 2200 Pacific Time all OAK, SFO and SJC
 # departures must enter Salt Lake City ARTCC north of KRAZY.
-sources:
-  - id: zoa-zse
-    title: Seattle ARTCC and Oakland ARTCC Letter of Agreement
-    effective: 2025-09-04
-    url: https://oakartcc.org/controllers/file/84f7be5c-ae45-11ea-aa39-2a32edb55910
-  - id: zoa-zla
-    title: Los Angeles ARTCC, Oakland ARTCC, Bakersfield TRACON, Fresno TRACON, and Santa Barbara TRACON Letter of Agreement
-    effective: 2026-04-26
-    url: https://oakartcc.org/controllers/file/3779589d-ae45-11ea-aa39-2a32edb55910
-  - id: zoa-zlc
-    title: Salt Lake City ARTCC and Oakland ARTCC Letter of Agreement
-    effective: 2025-09-04
-    url: https://oakartcc.org/controllers/file/72d39e4f-ae45-11ea-aa39-2a32edb55910
+# The letters these rows are transcribed from. Each row's own `source` names its letter and effective
+# date in prose, which is what the reveal cites; these URLs are here for whoever re-verifies a row
+# against the document. Nothing loads them.
+#   Seattle ARTCC and Oakland ARTCC LOA, effective 2025-09-04
+#     https://oakartcc.org/controllers/file/84f7be5c-ae45-11ea-aa39-2a32edb55910
+#   Los Angeles ARTCC, Oakland ARTCC, Bakersfield TRACON, Fresno TRACON, and Santa Barbara TRACON LOA,
+#   effective 2026-04-26
+#     https://oakartcc.org/controllers/file/3779589d-ae45-11ea-aa39-2a32edb55910
+#   Salt Lake City ARTCC and Oakland ARTCC LOA, effective 2025-09-04
+#     https://oakartcc.org/controllers/file/72d39e4f-ae45-11ea-aa39-2a32edb55910
 
 rules:
   - id: LOA-ZSE-PARITY
