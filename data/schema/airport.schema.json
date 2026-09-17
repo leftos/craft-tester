@@ -599,9 +599,23 @@
               {
                 "additionalProperties": false,
                 "properties": {
+                  "classes": {
+                    "items": {
+                      "enum": [
+                        "P",
+                        "T",
+                        "J"
+                      ],
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
                   "kind": {
                     "const": "route",
                     "type": "string"
+                  },
+                  "rnavOnly": {
+                    "type": "boolean"
                   },
                   "tokens": {
                     "items": {

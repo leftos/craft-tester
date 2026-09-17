@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData, AssignmentRule, Scenario } from '@/data/schema.ts';
+import type { AirportData, AssignmentRule, LoaRule, LoaRuleKind, Scenario } from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+
+/** The optional keys an LOA routing row narrows itself with: the classes and the RNAV column. */
+type LoaRouteNarrowing = Omit<Extract<LoaRuleKind, { kind: 'route' }>, 'kind' | 'tokens'>;
 
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
@@ -146,7 +149,7 @@ describe('checkRoute route building', () => {
   });
 
   it('leaves a plan that already files the transition alone', () => {
-    expect(check(swa984({ filedRoute: 'SSTIK5 SUSEY EBAYE AVE SADDE8' }))).toBeUndefined();
+    expect(check(swa984({ filedRoute: 'SSTIK5 SUSEY EBAYE BURGL IRNMN2' }))).toBeUndefined();
   });
 
   it('leaves a plan filed on the vector SID alone rather than building the SOP one', () => {
@@ -312,11 +315,57 @@ describe('checkRoute on the runway heading', () => {
 });
 
 describe('checkRoute letters of agreement', () => {
+  /** An LOA routing row for one destination whose fixes no route in these tests names. */
+  function loaRow(destination: string, narrowing: LoaRouteNarrowing): LoaRule {
+    return {
+      id: 'LOA-TEST-ROUTE',
+      source: 'a test row',
+      text: 'the test routing',
+      destinations: [destination],
+      rule: { kind: 'route', tokens: ['ZZZZZ'], ...narrowing },
+    };
+  }
+
+  function airportWith(row: LoaRule): AirportData {
+    return { ...ksfo, loaRules: [row, ...ksfo.loaRules] };
+  }
+
+  /** The non-RNAV piston the noise window sends off 01L, filed as its route box should read. */
+  function n172sp(): Scenario {
+    return scenario({
+      callsign: 'N172SP',
+      aircraftType: 'C172',
+      equipmentSuffix: '/A',
+      destination: 'KMYV',
+      filedRoute: 'OAK V6 SAC',
+      filedAltitude: 5000,
+      departureRunway: '01L',
+      localTime: '2300',
+      squawk: '4620',
+    });
+  }
+
+  const gap = { element: 'BOX.route', reason: expect.stringContaining('LOA-TEST-ROUTE') };
+
   it('reports the route box unresolved when no LOA routing fix is on the route', () => {
     const result = check(scenario({ destination: 'KPDX', filedRoute: 'TRUKN2 DEDHD LMT OCITY7' }));
     expect(result).toEqual({
       element: 'BOX.route',
       reason: expect.stringContaining('LOA-ZSE-PDX-ROUTE'),
     });
+  });
+
+  it('holds a row written for jets against a jet and passes over it for a prop', () => {
+    const jet = scenario({});
+    expect(checkAt(jet, airportWith(loaRow('KSEA', { classes: ['J'] })))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', {})))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', { classes: ['J'] })))).toBeUndefined();
+  });
+
+  it('holds a row written for the RNAV column against an RNAV flight only', () => {
+    const rnav = scenario({});
+    expect(checkAt(rnav, airportWith(loaRow('KSEA', { rnavOnly: true })))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', {})))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', { rnavOnly: true })))).toBeUndefined();
   });
 });

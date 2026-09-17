@@ -970,6 +970,430 @@
       },
       "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
       "text": "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
+    },
+    {
+      "destinations": [
+        "KLAX"
+      ],
+      "id": "LOA-ZLA-LAX-ROUTE",
+      "rule": {
+        "classes": [
+          "J"
+        ],
+        "kind": "route",
+        "tokens": [
+          "BURGL",
+          "REBRG",
+          "DOUIT",
+          "DERBB",
+          "BAYST",
+          "DIRBY",
+          "LEENA",
+          "TILLT",
+          "MCKEY"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Jets) LAX, effective 2026-04-26",
+      "text": "LAX jets: ..BURGL, ..REBRG, ..DOUIT, ..DERBB (non-RNAV); ..BURGL.BAYST STAR, ..TILLT.DIRBY STAR, ..MCKEY.LEENA STAR (non-RNAV) only for known cargo aircraft on or west of J501"
+    },
+    {
+      "destinations": [
+        "KLAX"
+      ],
+      "id": "LOA-ZLA-LAX-PROPS-ROUTE",
+      "rule": {
+        "classes": [
+          "P",
+          "T"
+        ],
+        "kind": "route",
+        "tokens": [
+          "PAIDD",
+          "EHF",
+          "LHS",
+          "AVE",
+          "FLW",
+          "RZS"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) LAX, effective 2026-04-26",
+      "text": "LAX props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..AVE, ..FLW, ..RZS (which side of J1 is not modelled)"
+    },
+    {
+      "destinations": [
+        "KSMO"
+      ],
+      "id": "LOA-ZLA-SMO-ROUTE",
+      "rule": {
+        "classes": [
+          "J"
+        ],
+        "kind": "route",
+        "tokens": [
+          "BURGL",
+          "HONZK",
+          "MMTLY",
+          "RDHOT",
+          "REBRG",
+          "AVE",
+          "FLW",
+          "DERBB"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Jets) SMO, effective 2026-04-26",
+      "text": "SMO jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
+    },
+    {
+      "destinations": [
+        "KSMO"
+      ],
+      "id": "LOA-ZLA-SMO-PROPS-ROUTE",
+      "rule": {
+        "classes": [
+          "P",
+          "T"
+        ],
+        "kind": "route",
+        "tokens": [
+          "PAIDD",
+          "EHF",
+          "LHS",
+          "FLW",
+          "RZS"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) SMO, effective 2026-04-26",
+      "text": "SMO props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..FLW, ..RZS (which side of J1 is not modelled)"
+    },
+    {
+      "destinations": [
+        "KLGB",
+        "KSNA"
+      ],
+      "id": "LOA-ZLA-LGB-SNA-ROUTE",
+      "rule": {
+        "classes": [
+          "J"
+        ],
+        "kind": "route",
+        "tokens": [
+          "TILLT",
+          "RDHOT",
+          "MMTLY",
+          "ELLBC",
+          "REBRG",
+          "AVE",
+          "FLW",
+          "MCKEY",
+          "DAISY",
+          "BENET",
+          "DERBB"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Jets) LGB/SNA, effective 2026-04-26",
+      "text": "LGB and SNA jets: ..TILLT, ..RDHOT, ..MMTLY, ..ELLBC, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..MCKEY..DAISY..BENET (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
+    },
+    {
+      "destinations": [
+        "KLGB",
+        "KSNA"
+      ],
+      "id": "LOA-ZLA-LGB-SNA-PROPS-ROUTE",
+      "rule": {
+        "classes": [
+          "P",
+          "T"
+        ],
+        "kind": "route",
+        "tokens": [
+          "EHF",
+          "FLW",
+          "GVO"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Props) LGB/SNA, effective 2026-04-26",
+      "text": "LGB and SNA props east of J7: ..EHF; all other props: ..FLW, ..GVO (which side of J7 is not modelled)"
+    },
+    {
+      "destinations": [
+        "KBUR",
+        "KVNY"
+      ],
+      "id": "LOA-ZLA-BUR-VNY-ROUTE",
+      "rule": {
+        "classes": [
+          "J"
+        ],
+        "kind": "route",
+        "tokens": [
+          "BURGL",
+          "HONZK",
+          "MMTLY",
+          "RDHOT",
+          "REBRG",
+          "AVE",
+          "FLW",
+          "DERBB"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Jets) BUR/VNY, effective 2026-04-26",
+      "text": "BUR and VNY jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
+    },
+    {
+      "destinations": [
+        "KBUR",
+        "KVNY"
+      ],
+      "id": "LOA-ZLA-BUR-VNY-PROPS-ROUTE",
+      "rule": {
+        "classes": [
+          "P",
+          "T"
+        ],
+        "kind": "route",
+        "tokens": [
+          "NINTY",
+          "EHF",
+          "LHS",
+          "RZS",
+          "FLW"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Props) BUR/VNY, effective 2026-04-26",
+      "text": "BUR and VNY props east of J1: ..NINTY, ..EHF, ..LHS; all other props: ..RZS, ..FLW (which side of J1 is not modelled)"
+    },
+    {
+      "destinations": [
+        "KSAN"
+      ],
+      "id": "LOA-ZLA-SAN-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "HUULK",
+          "PASKE",
+          "EHF",
+          "LANDO",
+          "LAX"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL SAN, effective 2026-04-26",
+      "text": "SAN via LAX, over or west of J1: ..HUULK, ..PASKE, ..EHF, ..LANDO, ..LAX (if via the PLYYA STAR)"
+    },
+    {
+      "destinations": [
+        "KCRQ",
+        "KNFG"
+      ],
+      "id": "LOA-ZLA-CRQ-ROUTE",
+      "rule": {
+        "classes": [
+          "J"
+        ],
+        "kind": "route",
+        "tokens": [
+          "BURGL",
+          "TILLT",
+          "REBRG",
+          "LANDO",
+          "DERBB",
+          "FIM",
+          "EHF",
+          "LHS"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per the user 2026-09-16",
+      "text": "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (LXJ351, GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (user, 2026-09-16)"
+    },
+    {
+      "destinations": [
+        "KPSP",
+        "KTRM",
+        "KUDD"
+      ],
+      "id": "LOA-ZLA-UDD-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "CLASN",
+          "OYVEY",
+          "BTY",
+          "ZELMA",
+          "PMD"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Palm Springs, ALL PSP/TRM/UDD, effective 2026-04-26",
+      "text": "PSP, TRM and UDD: ..CLASN, ..OYVEY, ..BTY..ZELMA, ..PMD (non-RNAV, LANDO..PMD to avoid R2508)"
+    },
+    {
+      "destinations": [
+        "KONT",
+        "KCNO",
+        "KPOC",
+        "KAJO",
+        "KEMT",
+        "KRAL",
+        "KSBD"
+      ],
+      "id": "LOA-ZLA-ONT-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "CLASN",
+          "OYVEY",
+          "PMD"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Empire Area, ALL, effective 2026-04-26",
+      "text": "Empire area (ONT, CNO, POC, AJO, EMT, RAL, SBD): ..CLASN, ..OYVEY, ..PMD (LANDO..PMD to avoid R2508)"
+    },
+    {
+      "destinations": [
+        "KLAS"
+      ],
+      "id": "LOA-ZLA-LAS-ROUTE",
+      "rule": {
+        "classes": [
+          "J"
+        ],
+        "kind": "route",
+        "tokens": [
+          "BASIC",
+          "Q174",
+          "FLCHR",
+          "J92",
+          "BTY"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL LAS Jets, effective 2026-04-26",
+      "text": "LAS jets: ..BASIC, .Q174.FLCHR, .J92.BTY (non-RNAV)"
+    },
+    {
+      "destinations": [
+        "KLAS"
+      ],
+      "id": "LOA-ZLA-LAS-NONJET-ROUTE",
+      "rule": {
+        "classes": [
+          "P",
+          "T"
+        ],
+        "kind": "route",
+        "tokens": [
+          "FUULL",
+          "J92"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL LAS Non-Jets, effective 2026-04-26",
+      "text": "LAS non-jets: ..FUULL or .J92 (non-RNAV)"
+    },
+    {
+      "destinations": [
+        "KHND"
+      ],
+      "id": "LOA-ZLA-HND-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "FUULL",
+          "J92"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL HND, effective 2026-04-26",
+      "text": "HND: ..FUULL or .J92 (non-RNAV)"
+    },
+    {
+      "destinations": [
+        "KSBA"
+      ],
+      "id": "LOA-ZLA-SBA-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "GVO"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Other Airports, ALL SBA, effective 2026-04-26",
+      "text": "SBA via GVO"
+    },
+    {
+      "destinations": [
+        "KSBP"
+      ],
+      "id": "LOA-ZLA-SBP-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "MQO",
+          "CREPE",
+          "CADAB"
+        ]
+      },
+      "source": "ZOA-ZLA LOA Attachment 1, Other Airports, ALL SBP, effective 2026-04-26",
+      "text": "SBP: ..MQO.., ..CREPE.., ..CADAB.."
+    },
+    {
+      "destinations": [
+        "KSLC"
+      ],
+      "id": "LOA-ZLC-SLC-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "BVL",
+          "MLF",
+          "FLECC",
+          "REO"
+        ]
+      },
+      "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, and 4 h, effective 2025-09-04",
+      "text": "SLC from the ZOA north and east areas: ..BVL, ..MLF, ..FLECC, ..REO across the attachment's RNAV and conventional columns; aircraft landing SLC routed through ZLC Area D must be cleared no further east than BVL"
+    },
+    {
+      "destinations": [
+        "KBOI"
+      ],
+      "id": "LOA-ZLC-BOI-ROUTE",
+      "rule": {
+        "kind": "route",
+        "rnavOnly": true,
+        "tokens": [
+          "NEERO",
+          "PRNCS"
+        ]
+      },
+      "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, effective 2025-09-04",
+      "text": "BOI from the ZOA north and east areas, RNAV: ..NEERO..PRNCS; the conventional column reads via filed route"
+    },
+    {
+      "destinations": [
+        "KBIL"
+      ],
+      "id": "LOA-ZLC-BIL-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "YLSTN",
+          "BAM",
+          "REO"
+        ]
+      },
+      "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, effective 2025-09-04",
+      "text": "BIL from the ZOA north and east areas: ..YLSTN, ..BAM, ..REO across the attachment's RNAV and conventional columns"
+    },
+    {
+      "destinations": [
+        "KTWF"
+      ],
+      "id": "LOA-ZLC-TWF-ROUTE",
+      "rule": {
+        "kind": "route",
+        "tokens": [
+          "BAM"
+        ]
+      },
+      "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, effective 2025-09-04",
+      "text": "TWF from the ZOA north and east areas: ..BAM across the attachment's RNAV and conventional columns"
     }
   ],
   "noSid": {
@@ -2274,7 +2698,7 @@
         ],
         "destination": "KCRQ",
         "exitFix": "YYUNG",
-        "tail": "YYUNG LEGOZ LEGOZ4"
+        "tail": "YYUNG TILLT LEGOZ4"
       },
       {
         "altitudes": [
@@ -2532,7 +2956,7 @@
         ],
         "destination": "KBOI",
         "exitFix": "SAC",
-        "tail": "SAC ANAHO"
+        "tail": "SAC ANAHO PRNCS SADYL4"
       },
       {
         "altitudes": [

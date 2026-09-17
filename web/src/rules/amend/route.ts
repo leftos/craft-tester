@@ -267,9 +267,13 @@ function routeReason(
  * An LOA row names the fixes an arrival stream must be routed over, so a route that names none of
  * them is wrong; but the row does not say which of its fixes this flight should be given, and the
  * airway structure that would reach one is not in the data, so no route can be proposed from it.
- * The box is reported unresolved rather than guessed at.
+ * The box is reported unresolved rather than guessed at. A row written for named classes is held
+ * only against a flight of one of them, because an attachment cell routes props differently from
+ * jets; a row written for the RNAV column alone is held only against an RNAV-capable flight, the
+ * conventional column of such a cell reading via filed route.
  *
  * @param tail The route the flight would fly after its procedure, as the box should read it.
+ * @param ctx The classified flight, whose class and RNAV capability decide which rows apply.
  * @param icao The destination the flight filed to.
  * @param airport The airport data, whose `loaRules` hold the routing rows.
  * @param destination The destination row, absent when the route library does not hold it.
@@ -277,6 +281,7 @@ function routeReason(
  */
 export function loaRouteGap(
   tail: readonly string[],
+  ctx: Classification,
   icao: string,
   airport: AirportData,
   destination: Destination | undefined,
@@ -284,6 +289,8 @@ export function loaRouteGap(
   for (const row of airport.loaRules) {
     const { rule } = row;
     if (rule.kind !== 'route' || !appliesTo(row, icao, destination)) continue;
+    if (rule.classes !== undefined && !rule.classes.includes(ctx.aircraftClass)) continue;
+    if (rule.rnavOnly === true && !ctx.rnavCapable) continue;
     if (rule.tokens.some((token) => tail.includes(token))) continue;
     return unresolved(
       'BOX.route',
@@ -325,7 +332,7 @@ function checkHeadingRoute(
   const tokens = tec === undefined ? filed.tail : tecTokens(tec, airport);
   if (isUnresolved(tokens)) return tokens;
   if (tokens.join(' ') === filed.tokens.join(' ')) {
-    return loaRouteGap(tokens, scenario.destination, airport, destination);
+    return loaRouteGap(tokens, ctx, scenario.destination, airport, destination);
   }
   return {
     box: 'route',
@@ -380,7 +387,7 @@ export function checkRoute(
   const tail = expected.tokens.slice(1);
   if (expected.tokens.join(' ') === filed.tokens.join(' ')) {
     const destination = destinationRow(airport, scenario.destination);
-    return loaRouteGap(tail, scenario.destination, airport, destination);
+    return loaRouteGap(tail, ctx, scenario.destination, airport, destination);
   }
   return {
     box: 'route',

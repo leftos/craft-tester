@@ -1315,6 +1315,16 @@ def _check_course(degrees: int, where: str) -> int:
     return degrees
 
 
+def _loa_route_classes(row: _Row) -> tuple[AircraftClass, ...] | None:
+    classes = row.optional_choices_or_none("classes", AIRCRAFT_CLASSES)
+    if classes is not None and not classes:
+        raise ValueError(
+            f"{row.where}.classes: the list is empty; a `route` rule states the classes it is written for, "
+            "or leaves `classes` out to cover every class"
+        )
+    return classes
+
+
 def _loa_rule_kind(kind: LoaRuleKindName, row: _Row) -> LoaRuleKind:
     if kind == "parity_rotated":
         return ParityRotatedRule(
@@ -1322,7 +1332,11 @@ def _loa_rule_kind(kind: LoaRuleKindName, row: _Row) -> LoaRuleKind:
             odd_course_to=_check_course(row.number("odd_course_to"), f"{row.where}.odd_course_to"),
         )
     if kind == "route":
-        return RouteTokenRule(tokens=row.texts("tokens"))
+        return RouteTokenRule(
+            tokens=row.texts("tokens"),
+            classes=_loa_route_classes(row),
+            rnav_only=bool(row.optional_flag("rnav_only", default=False)),
+        )
     return EvenAltitudeRule() if kind == "even" else OddAltitudeRule()
 
 
@@ -1581,31 +1595,39 @@ def _optional_tec(path: Path, known: _Known) -> TecData | None:
     return tec
 
 
-def _joined_loa(directory: Path, shared: LoaData, icao: str, known: _Known) -> LoaData:
+def _joined_loa(directory: Path, shared: SharedRouteFacts, icao: str) -> LoaData:
     """Join the shared LOA rows this airport inherits with its own ``loa.yaml`` and check them.
+
+    An LOA row covers an arrival stream whatever airport is being built, so its destinations are held
+    against the shared destinations table rather than against the airport's own ``routes.yaml``: a
+    letter names fields no scenario of this airport files to.
 
     Args:
         directory: The airport directory, which carries a ``loa.yaml`` only where it overrides or
             adds a row.
-        shared: The rows of ``generator/shared/loa_rules.yaml``.
+        shared: The shared facts, whose ``loa`` holds the inherited rows and whose ``destinations``
+            hold every field a row may name.
         icao: The airport being built, which decides whether a row naming ``departures`` applies.
-        known: The names the airport's other files define, as the LOA rows cite them.
 
     Returns:
         The joined sources and rules.
 
     Raises:
-        ValueError: A row names a destination no ``routes.yaml`` row lists, or the airport's own file
-            fails its own checks.
+        ValueError: A row names a destination ``shared/destinations.yaml`` does not hold, or the
+            airport's own file fails its own checks.
     """
     path = directory / LOA_FILE
     airport = load_loa(path) if path.is_file() else None
-    loa = LoaData(sources=joined_loa_sources(shared, airport), rules=joined_loa_rules(shared, airport, icao))
+    loa = LoaData(sources=joined_loa_sources(shared.loa, airport), rules=joined_loa_rules(shared.loa, airport, icao))
     own = {rule.id for rule in airport.rules} if airport is not None else set()
     for rule in loa.rules:
         where = _where(path) if rule.id in own else f"shared/{LOA_RULES_FILE}"
         for destination in rule.destinations or ():
-            _check_destination(destination, known, f"{where} rules[{rule.id}]")
+            if destination not in shared.destinations:
+                raise ValueError(
+                    f"{where} rules[{rule.id}]: destination {destination!r} is in no `destinations` row of "
+                    f"shared/{DESTINATIONS_FILE}; add it there first"
+                )
     return loa
 
 
@@ -1626,8 +1648,9 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
 
     Raises:
         ValueError: Any file fails its own checks, a rule names a DP family no override declares, a
-            route leaves the DP at a fix that belongs to no gate, or a TEC or LOA row names a
-            destination, a plan, a runway family or a DP family the other files do not define.
+            route leaves the DP at a fix that belongs to no gate, a TEC row names a destination, a
+            plan, a runway family or a DP family the other files do not define, or an LOA row names a
+            destination ``shared/destinations.yaml`` does not hold.
         OSError: One of the three required files is missing.
     """
     sop_path = directory / SOP_FILE
@@ -1645,5 +1668,5 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         overrides=overrides,
         routes=routes,
         tec=_optional_tec(directory / TEC_FILE, known),
-        loa=_joined_loa(directory, shared.loa, sop.airport.icao, known),
+        loa=_joined_loa(directory, shared, sop.airport.icao),
     )

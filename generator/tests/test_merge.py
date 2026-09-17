@@ -5,7 +5,7 @@ import pytest
 
 from craft_generator.emit import data_path, dump, schema_path, validate
 from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport
-from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry
+from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -28,7 +28,7 @@ BASE_FIXES = {
 }
 NO_BASE_FIX = ["GAPP7", "SFO5"]
 TEC_ROUTE_COUNT = 47
-LOA_RULE_COUNT = 3
+LOA_RULE_COUNT = 24
 TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_ALTITUDE_FEET = 6000
@@ -232,6 +232,23 @@ def test_the_loa_rules_keep_their_discriminated_kinds(ksfo_document: Document) -
     assert portland["rule"] == {"kind": "route", "tokens": ["MACHU", "MOXEE", "OED"]}
     assert portland["destinations"] == ["KPDX"]
     assert "artcc" not in portland
+
+
+def _with_loa_rule(inputs: BuildInputs, rule_id: str, rule: RouteTokenRule) -> BuildInputs:
+    loa = inputs.airport.loa
+    rules = tuple(replace(row, rule=rule) if row.id == rule_id else row for row in loa.rules)
+    return replace(inputs, airport=replace(inputs.airport, loa=replace(loa, rules=rules)))
+
+
+def test_a_route_rule_emits_its_classes_and_rnav_flag_only_where_the_row_states_them(ksfo_build_inputs: BuildInputs, ksfo_document: Document) -> None:
+    narrowed = RouteTokenRule(tokens=("MOXEE",), classes=("P", "T"), rnav_only=True)
+    document = build_airport(_with_loa_rule(ksfo_build_inputs, "LOA-ZSE-PDX-ROUTE", narrowed))
+    portland = next(rule for rule in document["loaRules"] if rule["id"] == "LOA-ZSE-PDX-ROUTE")
+    assert portland["rule"] == {"kind": "route", "tokens": ["MOXEE"], "classes": ["P", "T"], "rnavOnly": True}
+    validate(document, schema_path())
+    plain = next(rule for rule in ksfo_document["loaRules"] if rule["id"] == "LOA-ZSE-PDX-ROUTE")["rule"]
+    assert "classes" not in plain
+    assert "rnavOnly" not in plain
 
 
 def test_a_tec_row_on_a_dp_its_runways_do_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:

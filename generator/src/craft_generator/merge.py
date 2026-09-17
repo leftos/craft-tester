@@ -512,7 +512,8 @@ def _loa_effect(rule: LoaRuleKind) -> Document:
     if isinstance(rule, ParityRotatedRule):
         return {"kind": rule.kind, "oddCourseFrom": rule.odd_course_from, "oddCourseTo": rule.odd_course_to}
     if isinstance(rule, RouteTokenRule):
-        return {"kind": rule.kind, "tokens": list(rule.tokens)}
+        entry: Document = {"kind": rule.kind, "tokens": list(rule.tokens)}
+        return _with_optional(entry, classes=_texts(rule.classes), rnavOnly=rule.rnav_only or None)
     return {"kind": rule.kind}
 
 

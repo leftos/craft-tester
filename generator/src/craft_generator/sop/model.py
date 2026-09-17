@@ -541,10 +541,17 @@ class OddAltitudeRule:
 
 @dataclass(frozen=True, slots=True)
 class RouteTokenRule:
-    """The route to the destinations the rule covers is built from one of ``tokens``."""
+    """The route to the destinations the rule covers is built from one of ``tokens``.
+
+    ``classes`` narrows the rule to those aircraft classes, for an attachment cell that routes props
+    differently from jets; ``None`` covers every class. ``rnav_only`` narrows it to an RNAV-capable
+    flight, for a cell whose conventional column reads via filed route and so demands no fix.
+    """
 
     kind: ClassVar[LoaRuleKindName] = "route"
     tokens: tuple[str, ...]
+    classes: tuple[AircraftClass, ...] | None
+    rnav_only: bool
 
 
 LoaRuleKind = ParityRotatedRule | EvenAltitudeRule | OddAltitudeRule | RouteTokenRule

@@ -11,16 +11,21 @@ destinations:
   CYVR: { spoken: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
   ESSA: { spoken: Stockholm Arlanda, artcc: ZAK, lat: 59.652, lon: 17.919 }
   KACV: { spoken: Arcata, artcc: ZOA }
+  KAJO: { spoken: Corona, artcc: ZLA }
   KAPC: { spoken: Napa, artcc: ZOA }
   KBFI: { spoken: Boeing Field, artcc: ZSE }
+  KBIL: { spoken: Billings, artcc: ZLC }
   KBLI: { spoken: Bellingham, artcc: ZSE }
   KBOI: { spoken: Boise, artcc: ZLC }
   KBUR: { spoken: Burbank, artcc: ZLA }
   KCCR: { spoken: Concord, artcc: ZOA, outside_nct: "Travis Approach owns a shelf below NCT's lateral boundary down to the ground over Concord (user, 2026-09-16)" }
+  KCNO: { spoken: Chino, artcc: ZLA }
   KCRQ: { spoken: Carlsbad, artcc: ZLA }
   KDEN: { spoken: Denver, artcc: ZDV }
+  KEMT: { spoken: El Monte, artcc: ZLA }
   KFAT: { spoken: Fresno, artcc: ZOA }
   KGPZ: { spoken: Grand Rapids Minnesota, artcc: ZMP }
+  KHND: { spoken: Henderson, artcc: ZLA }
   KHWD: { spoken: Hayward, artcc: ZOA }
   KJAC: { spoken: Jackson Hole, artcc: ZLC }
   KLAS: { spoken: Las Vegas, artcc: ZLA }
@@ -33,6 +38,7 @@ destinations:
   KMOD: { spoken: Modesto, artcc: ZOA }
   KMRY: { spoken: Monterey, artcc: ZOA }
   KMYV: { spoken: Marysville, artcc: ZOA }
+  KNFG: { spoken: Camp Pendleton, artcc: ZLA }
   KNUQ: { spoken: Moffett, artcc: ZOA }
   KOAK: { spoken: Oakland, artcc: ZOA }
   KONT: { spoken: Ontario, artcc: ZLA }
@@ -40,11 +46,16 @@ destinations:
   KPAO: { spoken: Palo Alto, artcc: ZOA }
   KPDX: { spoken: Portland, artcc: ZSE }
   KPHX: { spoken: Phoenix, artcc: ZAB }
+  KPOC: { spoken: Brackett, artcc: ZLA }
+  KPSP: { spoken: Palm Springs, artcc: ZLA }
+  KRAL: { spoken: Riverside, artcc: ZLA }
   KRHV: { spoken: Reid-Hillview, artcc: ZOA }
   KRNO: { spoken: Reno, artcc: ZOA }
   KSAC: { spoken: Sacramento Executive, artcc: ZOA }
   KSAN: { spoken: San Diego, artcc: ZLA }
   KSBA: { spoken: Santa Barbara, artcc: ZLA }
+  KSBD: { spoken: San Bernardino, artcc: ZLA }
+  KSBP: { spoken: San Luis Obispo, artcc: ZLA }
   KSCK: { spoken: Stockton, artcc: ZOA }
   KSEA: { spoken: Seattle, artcc: ZSE }
   KSFO: { spoken: San Francisco, artcc: ZOA }
@@ -56,6 +67,8 @@ destinations:
   KSQL: { spoken: San Carlos, artcc: ZOA }
   KSTS: { spoken: Santa Rosa, artcc: ZOA }
   KTRK: { spoken: Truckee, artcc: ZOA }
+  KTRM: { spoken: Jacqueline Cochran, artcc: ZLA }
+  KTWF: { spoken: Twin Falls, artcc: ZLC }
   KUDD: { spoken: Bermuda Dunes, artcc: ZLA }
   KVNY: { spoken: Van Nuys, artcc: ZLA }
   KWVI: { spoken: Watsonville, artcc: ZOA }

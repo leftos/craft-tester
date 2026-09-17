@@ -45,7 +45,7 @@ routes:
   - { exit_fix: KTINA, destination: KBUR, tail: KTINA CISKO RDHOT ROKKR#, classes: [J], altitudes: [31000] }
   - { exit_fix: YYUNG, destination: KSAN, tail: YYUNG LAX COMIX#, classes: [J], altitudes: [37000, 41000] }
   - { exit_fix: YYUNG, destination: KSBA, tail: YYUNG GVO HABUT, classes: [J], altitudes: [29000, 33000] }
-  - { exit_fix: YYUNG, destination: KCRQ, tail: YYUNG LEGOZ LEGOZ#, classes: [J], altitudes: [37000] }
+  - { exit_fix: YYUNG, destination: KCRQ, tail: YYUNG TILLT LEGOZ#, classes: [J], altitudes: [37000] }
   # vector SID and radar-vector routes (GAPP7 / SFO5), props and turboprops
   - { exit_fix: OAK, destination: KTRK, tail: OAK V244 ALTAM V392 SAC V6 SWR TRUCK, classes: [P, T], altitudes: [15000, 17000] }
   - { exit_fix: SGD, destination: KACV, tail: SGD YAGER, classes: [T], altitudes: [16000, 18000] }
@@ -75,6 +75,6 @@ routes:
   - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T], altitudes: [4000] }
   # The tail stops at Middleton Island: SMA and the oceanic fixes beyond it are outside the FAA CIFP, so nothing can name them on frequency.
   - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO, classes: [J], altitudes: [28000, 30000] }
-  - { exit_fix: SAC, destination: KBOI, tail: SAC ANAHO, classes: [J], altitudes: [39000, 41000] }
+  - { exit_fix: SAC, destination: KBOI, tail: SAC ANAHO PRNCS SADYL#, classes: [J], altitudes: [39000, 41000] }
   # oceanic
   - { exit_fix: BEBOP, destination: PHNL, tail: BEBOP R464 BILLO R464 BITTA MAGGI#, classes: [J], altitudes: [30000, 34000] }

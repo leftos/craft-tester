@@ -464,6 +464,10 @@ export const TecRouteSchema = z
  *
  * `parity_rotated` carries the boundary courses of a rotated odd/even split: courses from
  * `oddCourseFrom` through `oddCourseTo` take odd altitudes and the rest take even ones.
+ *
+ * A `route` row with `classes` applies only to flights of those classes, because an attachment cell
+ * routes props differently from jets; one with `rnavOnly` applies only to an RNAV-capable flight,
+ * because the cell's conventional column reads "via filed route" and so demands no fix.
  */
 export const LoaRuleKindSchema = z.discriminatedUnion('kind', [
   z.strictObject({
@@ -473,7 +477,12 @@ export const LoaRuleKindSchema = z.discriminatedUnion('kind', [
   }),
   z.strictObject({ kind: z.literal('even') }),
   z.strictObject({ kind: z.literal('odd') }),
-  z.strictObject({ kind: z.literal('route'), tokens: z.array(z.string()) }),
+  z.strictObject({
+    kind: z.literal('route'),
+    tokens: z.array(z.string()),
+    classes: z.array(AircraftClassSchema).optional(),
+    rnavOnly: z.boolean().optional(),
+  }),
 ]);
 
 /** One letter-of-agreement row, cited like an SOP row when it overrides a default. */
