@@ -124,6 +124,11 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   on the line before or after its label.
 - Radar-vector SIDs (SAN FRANCISCO FIVE) have no CIFP records at all; their facts come from
   `overrides.yaml`.
+- A CIFP altitude leg on an initial-climb path terminator is not a crossing restriction and carries no fix;
+  `INITIAL_CLIMB_TERMINATORS` (`cifp/sid.py`) lists the ones seen so far (`VA CA VI CI FM VM VD`). `CD` is
+  the same shape and deliberately absent because no current row exercises it — a new airport whose SIDs use
+  it will emit restrictions with an empty fix until it is added. A SID left with no restriction at all may
+  need `climb_via_eligible` in `overrides.yaml` to hold the phraseology the SOP clears it with.
 - The ZOA route tool is a Blazor app with no JSON API; TEC routes are transcribed, not scraped.
 - The FAA code is the ICAO code without the leading `K`; the CLI derives it (`--airport KOAK` reads
   `generator/airports/koak/` and asks the charts API for `OAK`).

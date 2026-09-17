@@ -74,24 +74,23 @@ Three UI questions the engine already answers correctly; all three are presentat
 
 Two gaps where the engine is right but the drill cannot reach it. Gate: aviation + engine.
 
-- [ ] **The `half` verdict tier is unreachable from a draw.** A thirteenth `arrival_swap` fault kind was
-  written 2026-09-17 and **does not draw**; the work is uncommitted in `../craft-tester.wt/amend-reach`.
-  What the attempt established:
-  - The mechanism the first survey proposed — strip RNAV capability from a flight on an RNAV arrival to a
-    sheet-listed destination — **cannot work**. Every eligible library route files inside the RVSM band
-    (29,000–41,000): KSFO's four are 31,000–41,000, KOAK's seven 29,000–35,000. `lackingSuffix` writes
-    `/U`, which is not RVSM-approved, so inside the band the altitude box is raised too — a third box, and
-    `sameBoxes` (`amend.ts:460-466`) throws every such draw away
-  - **Two corrections to that survey**, both checked against the source: `rnav_clash` is already
+- [x] **The `half` verdict tier stays fixture-only** — **closed by the user 2026-09-17: "drop it; fixtures
+  are enough"**, after an `arrival_swap` fault kind was written and would not draw. The tier is exercised
+  by nine settled fixtures and three unit tests (`amend/grade.test.ts:383-437`), plus the swap-production
+  cases at `amend/route.test.ts:255, 270, 282`; only the *draw* cannot reach it. What the attempt
+  established, so nobody re-opens it blind:
+  - Stripping RNAV capability cannot work. Every eligible library route files inside the RVSM band
+    (KSFO's four at 31,000–41,000, KOAK's seven at 29,000–35,000), and `lackingSuffix` writes `/U`, which
+    is not RVSM-approved, so the altitude box is raised too — a third box, and `sameBoxes`
+    (`amend.ts:460-466`) throws every such draw away. A drawn swap would need library routes outside the
+    band, which neither airport's data has
+  - The cheaper mechanism, if it is ever wanted: `arrivalTrigger` fires on
+    `filed.arrival.rnav !== ctx.rnavCapable` in **both** directions, so filing a *conventional* arrival for
+    an RNAV-capable flight swaps the arrival with no suffix strip, no RVSM interaction and no type box
+  - **Two corrections to the 2026-09-17 survey**, both checked against the source: `rnav_clash` is already
     `['type','route']` (`amend.ts:45`), not type-box-only — the type-box-only strippers are
     `missing_suffix`, `unknown_suffix` and `rnav_element`; and the common-arrivals sheet lists **nine**
     destinations, not eight (KBUR KHND KLAS KLAX KLGB KSAN KSMO KSNA KVNY, identical in both data files)
-  - **Two ways forward, awaiting the user.** Either write `/W` (RNAV false, Mode C true, RVSM true, present
-    in both equipment tables) in place of `/U` for this fault, which needs a suffix picker or a parameter
-    on `lackingSuffix` that `rnav_clash` and `rnav_element` also use; or — the cheaper one the implementer
-    found — file a *conventional* arrival for an RNAV-capable flight, since `arrivalTrigger` fires on
-    `filed.arrival.rnav !== ctx.rnavCapable` in **both** directions. That is route-box-only, with no suffix
-    strip, no RVSM interaction and no type box
 - [x] **`builtExpectation` does not carry `dropped`** — landed 2026-09-17. The plan understated it: `:930`
   could not fire for a built expectation even with `dropped` threaded, because `procedureOutcome` returns
   `builtAmendment` first (`:923`) and that cited `R-SID-STRUCTURE` nowhere. `builtExpectation` now returns
@@ -102,8 +101,9 @@ Two gaps where the engine is right but the drill cannot reach it. Gate: aviation
   a self-contradiction: for the test case it reads "CNDEL5 … and AVE is not one of its transitions, but
   YYUNG is … , and PORTE lies on the CNDEL5 structure; the route is read from its published transition
   AVE". The only accurate name is SKYL1 — the SID whose structure carries PORTE and which publishes AVE —
-  and reaching it needs `structureNames` from `rules/route.ts`. Awaiting the user: thread the structure SID
-  through the expectation, reword the clause for the built path, or leave the citation to speak alone
+  and reaching it needs `structureNames` from `rules/route.ts`. **Decided (user 2026-09-17): thread the
+  structure SID through the expectation** beside `dropped`, so the clause names SKYL1 and reads accurately
+  on the built and the non-built path alike
 
 ## Wave 4 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
@@ -111,22 +111,16 @@ Findings recorded while KOAK landed, none acted on. Gate: generator.
 
 Surveyed 2026-09-17; the survey corrected three of these, noted inline.
 
-- [ ] **Five altitude restrictions in `data/koak.json` carry `"fix": ""`** (`"between" 1400/2000`, on
-  COAST9, NUEVO8, OAK6, QUAKE2, SKYL1), so a restriction exists with nothing to hang it on. KSFO has none.
-  **Correction: this is not the chart-text parser.** The legs are CIFP `VD` (heading to a DME distance),
-  which has no fix ident by construction, and `VD` is simply missing from `INITIAL_CLIMB_TERMINATORS`
-  (`cifp/sid.py:31`) beside the `VA`/`CA` it belongs with — KSFO's blank-fix legs are all `VA`/`CA`, which
-  is why it has none. The chart text carries only the gradient note, so nothing is recoverable. Knock-on:
-  COAST9 and NUEVO8 have no other restriction, so `hasCrossingRestrictions` and `climbViaEligible`
-  (`merge.py:670-691`) flip false and their phraseology would drop to "maintain" against the SOP rows that
-  clear NUEVO# "CVS x 10,000" — both need `climb_via_eligible: true` in `koak/overrides.yaml`, the OAK6
-  precedent. `web/src/rules/route.ts:119-129` carries a filter and comment working around the empty fix;
-  they come out with it
-- [ ] **`merge._check_approach_categories` can never fire**: `_fleet_entry` always writes
-  `_approach_category(...)`, which raises when it cannot resolve, so the `missing` list is always empty and
-  the guard at `merge.py:1092` is dead. Delete it — the "move the check ahead" variant makes
-  `approachCategory` optional in the schema and lets both data files ship fleet rows with no category, so
-  it is a separate concept if the conditional rule is ever wanted
+- [x] **Five altitude restrictions in `data/koak.json` carried `"fix": ""`** — landed 2026-09-17. Not the
+  chart-text parser, as this index had it: the legs are CIFP `VD` (heading to a DME distance), which has no
+  fix ident by construction and was simply missing from `INITIAL_CLIMB_TERMINATORS` beside the `VA`/`CA` it
+  belongs with. COAST9 and NUEVO8 were left with no restriction at all, so `climb_via_eligible: true` in
+  `koak/overrides.yaml` holds the "CVS x 10,000" the SOP clears them with; the `route.ts` filter that
+  worked around the empty fix came out with it. `CD` is deliberately still absent — see CLAUDE.md Footguns
+- [x] **`merge._check_approach_categories` could never fire** — deleted 2026-09-17. `_approach_category`
+  writes the key unconditionally and raises first, so `missing` was always empty. The "move the check
+  ahead" variant makes `approachCategory` optional in the schema and lets both data files ship fleet rows
+  with no category; it is a separate concept if the conditional rule is ever wanted
 - [ ] **`A-ONE-WAY-AIRWAY`.** **Correction: the row does not exist** — it was never authored
   (`archive/koak-v3.md:584-593` says so outright), so this is not a missing citation on an existing row.
   The exemption itself works (`amend/altitude.ts:140-143, 246-251`) but drops the parity `Constraint`
@@ -164,12 +158,11 @@ Surveyed 2026-09-17; the survey corrected three of these, noted inline.
   a real navaid. Add `_check_tec_route_tail` beside `_check_tec_heads`, failing a row whose route names no
   fix after its head — the sentence `rules/route.ts:200-202` already enforces at runtime, moved to build
   time
-- [ ] **`direction_runway_preference` maps family 10 to 10R** against the 10L prop default
-  (`koak/sop.yaml:110-117`, six entries). **Decided (user 2026-09-17): correct to 10L** — it matches the
-  P/T class default (`:72, :85`), the north-field geometry, and the west-flow half of the same table, which
-  maps 28 to the north-field 28R; 10R is PAC VALLEY's pavement (`:74, :87`). Blast radius is nil today
-  (every KOAK class is settled by an earlier default), but it is the `RWY-DIRECTION` citation source
-  (`rules/runway.ts:77-86`), so the reveal stops contradicting the row beside it
+- [x] **`direction_runway_preference` mapped family 10 to 10R** against the 10L prop default — corrected
+  2026-09-17 (user ruling), all six OAKE/SFOE entries. It matches the P/T class default, the north-field
+  geometry, and the west-flow half of the same table, which maps 28 to the north-field 28R; 10R is PAC
+  VALLEY's pavement. An east-flow OAK plan now expects 10L, and the `RWY-DIRECTION` citation stops
+  contradicting the row beside it
 - [ ] **Nothing checks that an airline-default row lists a class that airline flies.** Extend
   `_check_runway_defaults` (`merge.py:869-890`), the only place the runway rows and the fleet are joined —
   `sop/load.py` validates `sop.yaml` before `routes.yaml` loads, which is why `_check_runway_airlines` can
