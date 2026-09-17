@@ -1,5 +1,14 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "type",
+        "proposed": "B738/L",
+        "reason": "the route needs RNAV a /W flight does not carry (Q174 is an RNAV route, NTELL and FLCHR are RNAV waypoints) and the data holds no conventional route, so the type box carries the suffix the fleet files for the type"
+      }
+    ]
+  },
   "id": "syn-koak-rnav-elements-b738w-klas",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +26,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "user steer 2026-09-17: a non-RNAV aircraft may not file a Q route or an RNAV waypoint; pending the user's confirmation. The engine answers the type box alone, B738/L (R-RNAV-AIRWAY for Q174, R-RNAV-WAYPOINT for NTELL and FLCHR), and the corrected plan needs nothing further"
+    "note": "user steer 2026-09-17: a non-RNAV aircraft may not file a Q route or an RNAV waypoint; pending the user's confirmation. The engine answers the type box alone, B738/L (R-RNAV-AIRWAY for Q174, R-RNAV-WAYPOINT for NTELL and FLCHR), and the corrected plan needs nothing further; confirmed by the user 2026-09-17: type box alone"
   },
-  "status": "pending"
+  "status": "settled"
 }
