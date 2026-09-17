@@ -3,12 +3,13 @@
   "expected": {
     "amendments": [
       {
-        "alternativeTo": "route",
+        "alternativeTo": "altitude",
         "box": "type",
         "proposed": "A320/L",
-        "reason": "an RNAV suffix would keep the filed CNDEL5, which the route check otherwise replaces with the runway heading and no procedure"
+        "reason": "an RNAV suffix would make the plan correct as filed: the filed CNDEL5, the route and FL350 all stand for a /L flight"
       },
       {
+        "alternativeTo": "type",
         "box": "altitude",
         "proposedFeet": 27000,
         "reason": "filed FL350 is inside RVSM airspace (FL290 through FL410), which a /A flight may not enter; the highest legal altitude at or below it is FL270"
