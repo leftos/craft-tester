@@ -23,14 +23,6 @@ I notice or that users find as they come up" — and queued free-text entry next
 
 Queued next by the user 2026-09-17. Gate: UI.
 
-- [ ] **Stop re-rendering the input panels.** `mount` in `ui/app.ts` replaces the whole page on every
-  state change and `restoreFocus` puts the caret back afterwards; that workaround already produced the
-  caret-jumping bug of 2026-09-17, and a free-text box (long value, selection, scroll, IME composition,
-  dictation) would make every input a `restoreFocus` case. Render the answer form once per scenario and
-  update only the results panel and the strips from state, so the inputs are never replaced; then
-  `restoreFocus` and `focusedInput` go. No new dependency. Fall back to Preact or Solid for `ui/` only if
-  that refactor needs a hand-rolled diff; the engine and scenario code are pure and stay as they are
-  either way
 - [ ] **v2: free-text clearance entry** as an **alternative to** the dropdowns (user 2026-09-17: "the
   dropdowns stay and the student chooses"), so students practise without dropdown hints. The student types
   (or dictates) the full spoken clearance; the grader normalises both sides (digits ↔ number words,
@@ -276,6 +268,11 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] Browser-check tooling: `CRAFT_PREVIEW_URL` picks the preview, so two builds can be checked at once, and
   a button with no text lists by its `aria-label` — 2026-09-17
 - [x] The strip's revision number is left-aligned under the callsign — 2026-09-17
+- [x] The answer form is built once per phase and synced in place, so a keystroke or a pick no longer
+  destroys the control it came from; `focusedInput`/`restoreFocus` are gone and `viewKey`/`phaseOf` decide
+  rebuild-or-sync. No UI framework was needed — the forms hold no dynamic lists. `happy-dom` (dev only)
+  gives `ui/app.ts`, `ui/dom.ts` and `ui/amendPanels.ts` their first tests, which assert node identity
+  across a keystroke — 2026-09-17
 - [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
   offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
   pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules
