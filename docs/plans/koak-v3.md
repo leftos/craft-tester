@@ -371,8 +371,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `100/`) today expects the altitude amended to 9,000 for parity; under ruling (1) it is correct as filed, so the
   fixture's expected block changes and the user re-confirms it. 2f-i observation: the OAK tool pages for
   MCC/MHR/MYV/OVE and LVK/MOD/SCK do print a Jet row with no `[SFOW]`/`[SFOE]` tag (`+OAK6 OAK ORRCA+ 110`,
-  `+OAK6 OAK V244 ALTAM MOD+ 070`); `tec.yaml` says "the tool prints no jet row" and skips them. Question for the
-  user: does an untagged row apply in every configuration? Engine files:
+  `+OAK6 OAK V244 ALTAM MOD+ 070`); `tec.yaml` says "the tool prints no jet row" and skips them. **User
+  2026-09-16: an untagged row "applies in every configuration the SID is eligible for, every configuration if no
+  SID in route"**, so 2f-ii transcribes them for the plans whose SOP issues OAK# to jets and adds the matching
+  jet filed routes. **2f-i landed 2026-09-16 (`745b654`)**: the two fields through schema, loader, both data files
+  (every KSFO number matched the fresh capture; KOAK carries real pairs such as 3,000/11,000), web rename
+  behaviour-neutral. Uncovered KSFO destinations the tool prints rows for: CCR 10, HWD 7, MCC 10, MHR 10, MOD
+  10, NUQ 6, PAO 6, RHV 6, SCK 11 (a later data brief; CCR is outside NCT by the Travis ruling). Engine files:
   `rules/amend/altitude.ts` (cruise = final), `rules/amend/tec.ts`, `web/scripts/propose.ts`; generator
   `sop/load.py` `load_tec`, `merge.py` `_tec_routes`, `_check_tec_*`; schema + `schema:export`; both data files
   rebuilt; the KSFO worksheet fixtures whose expected altitude changes are findings to list, not to re-settle
