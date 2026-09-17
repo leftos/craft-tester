@@ -246,12 +246,14 @@ for it to render before reading). One row per printed line: `destination`, `plan
 `runway_families` (`(1)`/`(28)` tags on the tool; empty means every departure runway of the plan), `route`
 with the SID written as `FAMILY#` so an AIRAC bump does not stale it, the trailing altitude pair as
 `initial_altitude_feet` / `final_altitude_feet` (the tool prints hundreds of feet as `initial/final`: `030/090`
-is 3,000 initial and 9,000 final; a blank final such as `100/` and a bare `060` both mean final = initial, user
-2026-09-16; a row printed with no altitude carries neither key), and `kind: adr` for assigned departure
-routes, which are advisory. The engine flies a TEC-routed flight at the final altitude, parity aside; the SOP
-altitude row still decides what the clearance climbs the flight to, and the web suite audits that altitude
-against the row's initial altitude, which should be redundant with the SOP (user 2026-09-16), so a mismatch is
-a transcription finding rather than an engine rule.
+is 3,000 initial and 9,000 final; a single number, whether a blank final such as `100/` or a bare `060`, is the
+final altitude only and the row states no initial, user 2026-09-16; a row printed with no altitude carries
+neither key), and `kind: adr` for assigned departure routes, which are advisory. The engine flies a TEC-routed
+flight at the final altitude exactly, amending a filed altitude up or down to it with parity set aside; a row
+that states an initial altitude decides what the clearance climbs the flight to in place of the SOP altitude
+row ("TEC initials override the SOP for now", user 2026-09-16), and a row without one leaves the SOP row in
+charge. The web suite prints, per airport, where the SOP row and a TEC initial disagree, for the validation
+loop.
 Every destination must exist in `routes.yaml`; the build also checks that the DP a row begins on is
 published for a runway family the row departs from.
 
