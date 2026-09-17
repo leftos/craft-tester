@@ -386,6 +386,65 @@ export function withSubmitted(state: AppState): AppState {
 }
 
 /**
+ * Which panel set the page is on.
+ *
+ * Clearance mode shows the earlier attempt, the results, or the form; amendment mode answers the
+ * strip first and clears the corrected plan afterwards, and a seed the engine cannot clear shows
+ * the reasons instead of any of them.
+ */
+export type Phase =
+  | 'unresolved'
+  | 'clearance-revisit'
+  | 'clearance-results'
+  | 'clearance-form'
+  | 'amendment-revisit'
+  | 'amending'
+  | 'clearing'
+  | 'amendment-results';
+
+/** The phase an amendment session is in, which answers the strip before it reads the clearance. */
+function amendmentPhase(state: AppState): Phase {
+  if (state.revisit?.kind === 'amendment' && !state.submitted) return 'amendment-revisit';
+  if (!state.boxesSubmitted || toBoxAnswers(state.boxes) === undefined) return 'amending';
+  if (!state.submitted || toAmendmentPicks(state.picks) === undefined) return 'clearing';
+  return 'amendment-results';
+}
+
+/** The phase a clearance session is in: the earlier attempt, the results, or the form. */
+function clearancePhase(state: AppState): Phase {
+  if (state.revisit?.kind === 'clearance' && !state.submitted) return 'clearance-revisit';
+  if (state.submitted && toPlayerPicks(state.picks) !== undefined) return 'clearance-results';
+  return 'clearance-form';
+}
+
+/**
+ * Which panel set the state renders, which the panels dispatch on and the view key is built from.
+ *
+ * @param state The state the page renders from.
+ * @returns The phase the state is in.
+ */
+export function phaseOf(state: AppState): Phase {
+  if (state.view.kind === 'unresolved') return 'unresolved';
+  return state.view.kind === 'amendment' ? amendmentPhase(state) : clearancePhase(state);
+}
+
+/**
+ * Identity of the panel set on screen: panels are rebuilt when it changes and synced when it does not.
+ *
+ * Everything the panels are built from is either in the key or held constant by it: the scenario
+ * comes from the airport, the seed, the filter and the mode, and the hash that shares it names all
+ * four, so the panels answer to nothing else while the key holds. What varies under one key is the
+ * form's picks and the strip's answers, which the panels write into the controls they already built.
+ *
+ * @param state The state the page renders from.
+ * @returns The key; two states that render the same panel set share it.
+ */
+export function viewKey(state: AppState): string {
+  const hash = hashFor(state.airport.airport.icao, state.seed, state.filter, state.mode);
+  return `${hash}|${phaseOf(state)}`;
+}
+
+/**
  * Renders the link that shares the scenario on screen.
  *
  * @param href The page's current URL.

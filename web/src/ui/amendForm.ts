@@ -3,7 +3,17 @@ import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import { formatAltitude } from '@/rules/grade.ts';
 import type { Grade } from '@/rules/types.ts';
 import type { SelectOption } from '@/ui/dom.ts';
-import { button, el, selectControl, textControl } from '@/ui/dom.ts';
+import {
+  button,
+  el,
+  selectControl,
+  selectOf,
+  syncButton,
+  syncSelect,
+  syncText,
+  textControl,
+  textOf,
+} from '@/ui/dom.ts';
 import { aircraftLabel } from '@/ui/labels.ts';
 import { renderVerdict, scoreLine } from '@/ui/results.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
@@ -44,6 +54,11 @@ function filedValue(scenario: Scenario, box: Box): string {
   return scenario.filedRoute;
 }
 
+/** One box of the strip as the form reads it: the filed value, and what the student answered. */
+function boxRow(scenario: Scenario, boxes: DraftBoxes, box: Box): BoxRow {
+  return { box, label: box, filed: filedValue(scenario, box), answer: boxes[box] };
+}
+
 /**
  * The three boxes of the strip the student answers, in strip order.
  *
@@ -52,12 +67,7 @@ function filedValue(scenario: Scenario, box: Box): string {
  * @returns One row per answerable box: type, altitude, route.
  */
 export function boxRows(scenario: Scenario, boxes: DraftBoxes): BoxRow[] {
-  return ANSWERABLE.map((box) => ({
-    box,
-    label: box,
-    filed: filedValue(scenario, box),
-    answer: boxes[box],
-  }));
+  return ANSWERABLE.map((box) => boxRow(scenario, boxes, box));
 }
 
 /**
@@ -109,8 +119,19 @@ export function boxInputName(box: Box): string {
   return `amend-${box}`;
 }
 
-/** The text box the student writes a new value in, marked apart from the answer dropdown. */
-function renderValueBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
+/** The controls one answerable box was built with, which a later answer is written back into. */
+type BoxControls = { box: Box; answer: HTMLSelectElement; value: HTMLInputElement };
+
+/** The amend form: the panel on screen, and how to write a later answer into the controls it built. */
+export type AmendForm = { node: HTMLElement; sync: (props: AmendFormProps) => void };
+
+/**
+ * The text box the student writes a new value in, marked apart from the answer dropdown.
+ *
+ * The box the handler answers is the one it was built for, but what the student has answered so far
+ * is read when the keystroke arrives rather than captured, because the box outlives the answer.
+ */
+function renderValueBox(row: BoxRow, current: () => AmendFormProps): HTMLLabelElement {
   const field = textControl(
     {
       label: 'new value',
@@ -120,7 +141,7 @@ function renderValueBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElemen
       placeholder: row.filed,
     },
     (value) => {
-      onBox(row.box, { kind: 'amended', value });
+      current().onBox(row.box, { kind: 'amended', value });
     },
   );
   field.classList.add('amend-value');
@@ -128,48 +149,70 @@ function renderValueBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElemen
 }
 
 /** One box the student answers: its name, the filed value, the answer, and the value it amends to. */
-function renderBox(row: BoxRow, onBox: AmendFormProps['onBox']): HTMLElement {
+function renderBox(
+  row: BoxRow,
+  current: () => AmendFormProps,
+): { node: HTMLElement; controls: BoxControls } {
   const node = el('div', `amend-box ${row.box}`);
-  node.append(
-    el('h3', '', row.label),
-    el('div', 'amend-filed', row.filed),
-    selectControl(
-      {
-        label: 'answer',
-        options: ANSWER_OPTIONS,
-        value: row.answer?.kind,
-        disabled: false,
-        placeholder: PLACEHOLDER,
-      },
-      (raw) => {
-        const answer = answerFor(raw, row.answer, row.filed);
-        if (answer !== undefined) onBox(row.box, answer);
-      },
-    ),
-    renderValueBox(row, onBox),
+  const answer = selectControl(
+    {
+      label: 'answer',
+      options: ANSWER_OPTIONS,
+      value: row.answer?.kind,
+      disabled: false,
+      placeholder: PLACEHOLDER,
+    },
+    (raw) => {
+      const props = current();
+      const live = boxRow(props.scenario, props.boxes, row.box);
+      const answered = answerFor(raw, live.answer, live.filed);
+      if (answered !== undefined) props.onBox(row.box, answered);
+    },
   );
-  return node;
+  const value = renderValueBox(row, current);
+  node.append(el('h3', '', row.label), el('div', 'amend-filed', row.filed), answer, value);
+  return { node, controls: { box: row.box, answer: selectOf(answer), value: textOf(value) } };
 }
 
 /**
  * Renders the three boxes the student answers before the clearance is read.
  *
  * The strip beside the form is read-only paper, so the form asks for the three boxes in full
- * rather than leaving part of the plan to be edited in place.
+ * rather than leaving part of the plan to be edited in place. The panel is built once and every
+ * later answer is written into the controls it already holds, so the box a student is typing in
+ * survives the keystroke.
  *
  * @param props The plan as filed, the answers so far, and the handlers for answer and submit.
- * @returns The amend panel; its submit button is disabled while a box is still open.
+ * @returns The amend panel, whose submit button is disabled while a box is still open, and the
+ *   sync that writes a later state of the same strip into it.
  */
-export function renderAmendForm(props: AmendFormProps): HTMLElement {
+export function renderAmendForm(props: AmendFormProps): AmendForm {
+  let current = props;
   const panel = el('section', 'panel amend');
   panel.append(el('h2', '', 'Amend the flight plan'));
+  const controls: BoxControls[] = [];
   for (const row of boxRows(props.scenario, props.boxes)) {
-    panel.append(renderBox(row, props.onBox));
+    const built = renderBox(row, () => current);
+    panel.append(built.node);
+    controls.push(built.controls);
   }
-  const submit = button('Submit amendments', 'primary', props.onSubmit);
+  const submit = button('Submit amendments', 'primary', () => {
+    current.onSubmit();
+  });
   submit.disabled = amendSubmitDisabled(props.boxes);
   panel.append(submit);
-  return panel;
+  return {
+    node: panel,
+    sync: (next) => {
+      current = next;
+      for (const control of controls) {
+        const row = boxRow(next.scenario, next.boxes, control.box);
+        syncSelect(control.answer, row.answer?.kind, false);
+        syncText(control.value, typedValue(row.answer), row.answer?.kind !== 'amended');
+      }
+      syncButton(submit, amendSubmitDisabled(next.boxes));
+    },
+  };
 }
 
 /**

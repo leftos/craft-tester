@@ -18,10 +18,12 @@ import {
   toAmendmentPicks,
   toBoxAnswers,
   toPlayerPicks,
+  viewKey,
   withBox,
   withBoxesSubmitted,
   withFilter,
   withMode,
+  withPick,
   withRetry,
   withSubmitted,
 } from '@/ui/state.ts';
@@ -390,6 +392,71 @@ describe('withSubmitted', () => {
     const session = newSession(airport, SEED, undefined, ANY_SCENARIO, 'amendment');
     const state: AppState = { ...session, boxesSubmitted: true, picks: full };
     expect(withSubmitted(state).submitted).toBe(true);
+  });
+});
+
+describe('viewKey', () => {
+  const CLEARANCE_SEED = 1;
+  const AMENDMENT_SEED = 7;
+  const FRESH_SEED = 11;
+  const night: ScenarioFilter = { time: 'night', config: { kind: 'plan', plan: 'SFOE' } };
+  let airport: AirportData;
+
+  beforeAll(async () => {
+    airport = await loadAirportData('KSFO');
+  });
+
+  /** A clearance session on a seed the engine clears, which is the form the student fills. */
+  function clearing(): AppState {
+    const session = newSession(airport, CLEARANCE_SEED, undefined, ANY_SCENARIO, 'clearance');
+    expect(session.view.kind).toBe('clearance');
+    return session;
+  }
+
+  /** An amendment session on a seed the engine amends, which opens on the strip's boxes. */
+  function amending(): AppState {
+    const session = newSession(airport, AMENDMENT_SEED, undefined, ANY_SCENARIO, 'amendment');
+    expect(session.view.kind).toBe('amendment');
+    return session;
+  }
+
+  it('does not change while the student fills the form', () => {
+    const session = clearing();
+    const picked = withPick(session, 'runway', '01R');
+    expect(viewKey(picked)).toBe(viewKey(session));
+    expect(viewKey(withPick(picked, 'frequency', '120.9'))).toBe(viewKey(session));
+  });
+
+  it('does not change while the student types in a box', () => {
+    const session = amending();
+    const typed = withBox(session, 'route', { kind: 'amended', value: 'TRUKN2 DEDHD' });
+    expect(viewKey(typed)).toBe(viewKey(session));
+    const again = withBox(typed, 'route', { kind: 'amended', value: 'TRUKN2 DEDHD Q1' });
+    expect(viewKey(again)).toBe(viewKey(session));
+  });
+
+  it('changes when the strip is submitted', () => {
+    const answered: AppState = { ...amending(), boxes: answeredBoxes };
+    const submitted = withBoxesSubmitted(answered, 'TRUKN2');
+    expect(submitted.boxesSubmitted).toBe(true);
+    expect(viewKey(submitted)).not.toBe(viewKey(answered));
+  });
+
+  it('changes when the form is submitted', () => {
+    const filled: AppState = { ...clearing(), picks: full };
+    const submitted = withSubmitted(filled);
+    expect(submitted.submitted).toBe(true);
+    expect(viewKey(submitted)).not.toBe(viewKey(filled));
+  });
+
+  it('changes with the filter, with the mode, and with a fresh scenario', () => {
+    const session = clearing();
+    expect(viewKey(withFilter(session, night, FRESH_SEED, undefined))).not.toBe(viewKey(session));
+    expect(viewKey(withMode(session, 'amendment', FRESH_SEED, undefined))).not.toBe(
+      viewKey(session),
+    );
+    const fresh = newSession(airport, FRESH_SEED, undefined, ANY_SCENARIO, 'clearance');
+    expect(viewKey(fresh)).not.toBe(viewKey(session));
   });
 });
 
