@@ -62,7 +62,13 @@ one line and move its record to the archive.
   `route_connections.yaml`'s neighbour) listing the one-way oceanic airways (R463, R464, A220 per the user's notes,
   verify each against the enroute chart), and the parity walk in `rules/amend/altitude.ts` skips a route whose
   filed tail rides one of them. Fixture pending until it lands.
-- [ ] **User rule 2026-09-16, radar-vector SIDs carry the airport navaid**: a radar-vector SID such as OAK6 or NIMI6
+- [x] **User rule 2026-09-16, radar-vector SIDs carry the airport navaid** — landed 2026-09-17 as designed below
+  (`withVectorNavaid` in `rules/amend/route.ts`, `warning` on a route amendment and in the fixture schema,
+  `gradeBoxes(…, airport)` in `rules/amend/grade.ts` grading the navaid-only difference `acceptable` both ways,
+  `composedRoute` in `scenario/generate.ts`, shared row `R-RV-NAVAID`, 13 fixtures re-settled). Left for the user:
+  the results view labels an acceptable route box "shorter: …" and counts it "acceptable but inefficient", which
+  reads backwards for the navaid case (the proposal is the longer form); the UI never shows an amendment's
+  `reason`, only its citations. Original steer and design: a radar-vector SID such as OAK6 or NIMI6
   must be followed in the filed/amended route string by the departure airport's three-letter navaid (`OAK6 OAK RBL`,
   "e.g. OAK or SFO") for computerized flight plan reasons, and that token is ignored when the clearance is spoken:
   `OAK6 OAK RBL` reads "Oakland Six departure, radar vectors Red Bluff VOR". State 2026-09-16: `routeFromExitFix` in

@@ -572,7 +572,8 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   route building in clearance mode too: `resolveClearance`, before taking a heading row, tries the passed-over
   SIDs in table order with the any-candidate scope and clears the flight on the built route (SWA344 → "Candle
   Five departure, Yyung transition, direct Los Angeles VOR, then as filed"); N903JP (`COAST9 GVO HABUT`) reaches
-  no chain (nothing connects to GVO) and stays a question. **User 2026-09-16, UAL313**: type `B752/L` and route
+  no chain (nothing connects to GVO) and stays a question. Dispatched 2026-09-17 in `wt/koak-gen` (SWA344
+  settled by it). **User 2026-09-16, UAL313**: type `B752/L` and route
   `OAK6 OAK MOGEE Q124 BVL WAATS5`: concept, every route token must be a known fix, navaid, airway or procedure
   (from the CIFP) and an unknown one is a route amendment; pending until built. **User 2026-09-16, PXT415**
   (C25B/A, `SUNNE1 SUNNE KAYEX LOSHN PMD V137 PSP`): "requires looking at the various charts to see if you can
@@ -581,8 +582,12 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `SKYL1 PXN LOSHN PMD V137 PSP`, then **user 2026-09-17: "make that WAGES LOSHN instead of PXN LOSHN. WAGES is
   also on SKYL1 and seems to be preferred as an exit fix when PXN isn't involved"**: the row is `WAGES → LOSHN`
   and the expected route `SKYL1 WAGES LOSHN PMD V137 PSP`. WAGES is the SID's end fix, not a published
-  transition, so the builder must also start a chain from a SID's end fix (engine, if the row alone does not
-  build). VOI5909's `CNDEL5 KAYEX LOSHN BOILE …` stands.
+  transition, so the builder now also starts a chain from a SID's `baseFix`, after its transitions (landed
+  2026-09-17: `RouteStart` on `BuiltRoute`, reason "WAGES is its own end fix and WAGES usually connects to
+  LOSHN"; PXT415 settled; spoken "Skyline One departure, Wages, direct Loshn, then as filed" through R-AS-FILED).
+  Follow-up data edit: the shared `R-ROUTE-BUILD` row text still says "one of its published transitions"; extend
+  it to the end fix once the navaid brief (which also edits that file) lands. VOI5909's `CNDEL5 KAYEX LOSHN
+  BOILE …` stands.
   The settled-fixture commit landed 2026-09-16 (25 fixtures; EJA115 carries the route box `OAK6 RBL J1 BTG
   OLM2` beside FL430 since its plan filed no SID). **Amendment rulings
   2026-09-16** (engine answers confirmed, to settle once the ids are renamed; vector-SID proposals gain `OAK` when

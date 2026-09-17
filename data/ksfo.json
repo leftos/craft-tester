@@ -1463,8 +1463,8 @@
     },
     {
       "id": "R-ROUTE-BUILD",
-      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; user rule 2026-09-16 (SWA984 amendment plan)",
-      "text": "Before falling back to the vector SID, route-build: keep the SID the SOP assigns by connecting one of its published transitions to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route"
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; user rules 2026-09-16 (SWA984 amendment plan) and 2026-09-17 (PXT415: WAGES LOSHN off SKYL1)",
+      "text": "Before falling back to the vector SID or a heading, route-build: keep a SID the SOP assigns by connecting one of its published transitions, or the fix the SID itself ends on, to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route"
     },
     {
       "id": "R-HEADING",
