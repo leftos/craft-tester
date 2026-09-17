@@ -287,7 +287,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   ZOA–FAT `…/fc2bd476-ae44-11ea-aa39-2a32edb55910`, Pacific Oceanic `…/0810fda5-1c16-11ec-9430-2a32edb55910`. Fetched
   2026-09-16 to `.tmp/loa-zoa-{zla,zlc,fat,nct}.{pdf,txt}` (gitignored). A `craft-gen fetch-loa` command that reads
   the same dropdown is a later item once the LOA rows exist.
-- [ ] **Brief 3c, `loa.yaml` ZLA and ZLC rows** (after 3b; data only, `wt/koak-data`). Sources: ZOA–ZLA LOA effective
+- [ ] **Brief 3c-i, shared LOA rows** (user 2026-09-16: "Shared file, airports inherit"): `generator/shared/loa_rules.yaml`
+  holds every ZOA LOA source and rule once; a rule may carry `departures: [KOAK, KSFO]` and then applies only when
+  the airport being built is listed; an airport's optional `loa.yaml` keeps only overrides by id and airport-only
+  rows, joined the way `phraseology_rules.yaml` is. The three ZSE rows move to the shared file and both airports'
+  `loa.yaml` go away; `data/ksfo.json` and `data/koak.json` are unchanged by the move. Dispatched 2026-09-16 on
+  `wt/koak-data` at `69577d2`.
+- [ ] **Brief 3c-ii, ZLA and ZLC rows** into the shared file (after 3c-i; data only). Sources: ZOA–ZLA LOA effective
   2026-04-26 (`.tmp/loa-zoa-zla.txt`, Attachment 1 "Preferred routes and altitudes from ZOA to ZLA", pages 5–7) and
   ZOA–ZLC LOA effective 2025-09-04 (`.tmp/loa-zoa-zlc.txt`, one word per line; 4 e, 4 h, Attachment 1). **Routing
   rows only** (user 2026-09-16: the LOAs' at-or-below altitudes bind the enroute controller before the handoff, not
