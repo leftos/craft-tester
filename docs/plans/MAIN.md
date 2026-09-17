@@ -99,8 +99,11 @@ one line and move its record to the archive.
   make the port an env var. Implementer observations, not acted on: `_check_approach_categories` in
   `merge.py` can never fire since `_approach_category` raises first; `scenario/generate.ts` still keys the
   heavy kind on `wtc === 'H'` (correct, the CWT letter is a display value).
-- [ ] **User steer 2026-09-17: a TTS icon button on each of the "On frequency" and "With the route read in
-  full" boxes** of the reveal panel (`revealPanel` in `ui/results.ts`), so the spoken clearance can be heard.
+- [x] **User steer 2026-09-17: a TTS icon button on each of the "On frequency" and "With the route read in
+  full" boxes** — landed 2026-09-17 (`b1ef6e9`): `ui/speech.ts` reads the box through the browser's Web
+  Speech API (en-US, rate 1), `iconButton` in `ui/dom.ts`, pressed state on `aria-pressed`, no button where
+  the API is absent; browser-checked. Noted: `browser-check.ts` lists an icon-only button as a blank entry,
+  so an icon button is proven by the screenshot or a `click:<label>` action.
 - [ ] **User steer 2026-09-17: airway structure for conventional rebuilds.** The RNAV element check leaves a
   non-RNAV plan with no conventional route in the data; the J and V airway structure would let the engine
   rebuild one. Sources the user named: yaat's handling of `C:\Users\Leftos\AppData\Local\yaat\cache\NavData.dat`
