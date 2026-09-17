@@ -465,7 +465,8 @@ const oakeTec: TecRoute = {
   runwayFamilies: [],
   classes: ['J'],
   route: 'H270 FEVTA FEVTA1',
-  altitudeCapFeet: 10000,
+  initialAltitudeFeet: 10000,
+  finalAltitudeFeet: 10000,
 };
 
 describe('selectSid on a TEC route that carries no departure procedure', () => {

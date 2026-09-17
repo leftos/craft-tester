@@ -61,7 +61,8 @@ const headingRow: TecRoute = {
   runwayFamilies: [],
   classes: ['J'],
   route: 'H270 FEVTA FEVTA1',
-  altitudeCapFeet: 10000,
+  initialAltitudeFeet: 10000,
+  finalAltitudeFeet: 10000,
 };
 
 function row(overrides: Partial<TecRoute>): TecRoute {

@@ -418,18 +418,46 @@ export const RouteConnectionSchema = z.strictObject({
   text: z.string(),
 });
 
-/** A transcribed TEC route for an NCT destination, keyed by plan, runway family, and class. */
-export const TecRouteSchema = z.strictObject({
-  id: z.string(),
-  source: z.string(),
-  kind: z.enum(['tec', 'adr']),
-  destination: z.string(),
-  plan: z.string(),
-  runwayFamilies: z.array(z.string()),
-  classes: z.array(AircraftClassSchema),
-  route: z.string(),
-  altitudeCapFeet: feet.optional(),
-});
+/**
+ * A transcribed TEC route for an NCT destination, keyed by plan, runway family, and class.
+ *
+ * `initialAltitudeFeet` is the altitude the TEC route is issued with and `finalAltitudeFeet` the
+ * cruise altitude it assigns; a row that carries neither publishes no altitude at all. A row that
+ * states an initial states a final too, and never one above it, which is what the check enforces.
+ */
+export const TecRouteSchema = z
+  .strictObject({
+    id: z.string(),
+    source: z.string(),
+    kind: z.enum(['tec', 'adr']),
+    destination: z.string(),
+    plan: z.string(),
+    runwayFamilies: z.array(z.string()),
+    classes: z.array(AircraftClassSchema),
+    route: z.string(),
+    initialAltitudeFeet: feet.optional(),
+    finalAltitudeFeet: feet.optional(),
+  })
+  .check((ctx) => {
+    const row = ctx.value;
+    const { initialAltitudeFeet: initial, finalAltitudeFeet: final } = row;
+    if (initial === undefined) return;
+    if (final === undefined) {
+      ctx.issues.push({
+        code: 'custom',
+        input: row,
+        message: `TEC route ${row.id} states initialAltitudeFeet without finalAltitudeFeet: a row that publishes an initial altitude publishes the final altitude it climbs to as well`,
+      });
+      return;
+    }
+    if (initial > final) {
+      ctx.issues.push({
+        code: 'custom',
+        input: row,
+        message: `TEC route ${row.id} has initialAltitudeFeet ${initial} above finalAltitudeFeet ${final}: the initial altitude is the one the route is issued with, so it is never above the final altitude`,
+      });
+    }
+  });
 
 /**
  * What an LOA row demands of a flight.

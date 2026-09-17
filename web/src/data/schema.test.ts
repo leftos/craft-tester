@@ -9,8 +9,9 @@ import {
   AmendmentSchema,
   AssignmentRuleSchema,
   FixtureSchema,
+  TecRouteSchema,
 } from '@/data/schema.ts';
-import type { AirportData, AssignmentRule, Fixture } from '@/data/schema.ts';
+import type { AirportData, AssignmentRule, Fixture, TecRoute } from '@/data/schema.ts';
 
 const minimalAssignmentRule: AssignmentRule = {
   id: 'SFOW-N-TRUKN-01',
@@ -22,6 +23,17 @@ const minimalAssignmentRule: AssignmentRule = {
   classes: ['T', 'J'],
   sidFamily: 'TRUKN',
   sector: 'richmond',
+};
+
+const minimalTecRoute: TecRoute = {
+  id: 'TEC-KSMF-SFOW-J',
+  source: 'ZOA Reference Tool, TEC/AAR/ADR Routes',
+  kind: 'tec',
+  destination: 'KSMF',
+  plan: 'SFOW',
+  runwayFamilies: [],
+  classes: ['J'],
+  route: 'TRUKN# TRUKN FEVTA FEVTA1',
 };
 
 const minimalAirportData: AirportData = {
@@ -192,6 +204,23 @@ describe('AssignmentRuleSchema', () => {
   it('accepts a rule that clears the flight without a DP', () => {
     const nonDp = { ...minimalAssignmentRule, sidFamily: null, nonDpHeading: 'runway heading' };
     expect(AssignmentRuleSchema.parse(nonDp)).toEqual(nonDp);
+  });
+});
+
+describe('TecRouteSchema', () => {
+  it('rejects a row that states an initial altitude without a final one', () => {
+    const initialOnly = { ...minimalTecRoute, initialAltitudeFeet: 3000 };
+    expect(TecRouteSchema.safeParse(initialOnly).success).toBe(false);
+  });
+
+  it('rejects a row whose initial altitude is above its final one', () => {
+    const inverted = { ...minimalTecRoute, initialAltitudeFeet: 9000, finalAltitudeFeet: 5000 };
+    expect(TecRouteSchema.safeParse(inverted).success).toBe(false);
+  });
+
+  it('accepts a row whose initial altitude is its final one', () => {
+    const level = { ...minimalTecRoute, initialAltitudeFeet: 5000, finalAltitudeFeet: 5000 };
+    expect(TecRouteSchema.parse(level)).toEqual(level);
   });
 });
 

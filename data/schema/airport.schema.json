@@ -1473,11 +1473,6 @@
       "items": {
         "additionalProperties": false,
         "properties": {
-          "altitudeCapFeet": {
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991,
-            "type": "integer"
-          },
           "classes": {
             "items": {
               "enum": [
@@ -1492,8 +1487,18 @@
           "destination": {
             "type": "string"
           },
+          "finalAltitudeFeet": {
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
+          },
           "id": {
             "type": "string"
+          },
+          "initialAltitudeFeet": {
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "type": "integer"
           },
           "kind": {
             "enum": [

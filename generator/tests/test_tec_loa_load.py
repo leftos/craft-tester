@@ -16,7 +16,9 @@ FILES = (("sop", SOP_FILE), ("overrides", OVERRIDES_FILE), ("routes", ROUTES_FIL
 TEC_ROUTE_COUNT = 47
 LOA_RULE_COUNT = 3
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
-KSMF_PROP_CAP_FEET = 6000
+KSMF_PROP_ALTITUDE_FEET = 6000
+KSMF_JET_ALTITUDE_FEET = 10000
+BELOW_THE_KSMF_JET_INITIAL_FEET = 5000
 PARITY_ODD_COURSE_FROM = 20
 PARITY_ODD_COURSE_TO = 199
 OUT_OF_RANGE_COURSE = 360
@@ -66,12 +68,13 @@ def test_the_transcribed_tec_and_loa_files_load(ksfo_inputs: AirportInputs) -> N
     assert loa.sources[0].effective == date(2025, 9, 4)
 
 
-def test_a_tec_row_carries_its_runway_family_and_altitude_cap(ksfo_inputs: AirportInputs) -> None:
-    capped = route_by_id(ksfo_inputs, "TEC-KSMF-SFOW-P-01")
-    assert capped.runway_families == ("01",)
-    assert capped.altitude_cap_feet == KSMF_PROP_CAP_FEET
-    assert (capped.plan, capped.classes, capped.route) == ("SFOW", ("P",), "SFO# OAK V6 SAC")
-    assert route_by_id(ksfo_inputs, "TEC-KSMF-SFOE-J").altitude_cap_feet is None
+def test_a_tec_row_carries_its_runway_family_and_altitudes(ksfo_inputs: AirportInputs) -> None:
+    prop = route_by_id(ksfo_inputs, "TEC-KSMF-SFOW-P-01")
+    assert prop.runway_families == ("01",)
+    assert (prop.initial_altitude_feet, prop.final_altitude_feet) == (KSMF_PROP_ALTITUDE_FEET, KSMF_PROP_ALTITUDE_FEET)
+    assert (prop.plan, prop.classes, prop.route) == ("SFOW", ("P",), "SFO# OAK V6 SAC")
+    no_altitude = route_by_id(ksfo_inputs, "TEC-KSMF-SFOE-J")
+    assert (no_altitude.initial_altitude_feet, no_altitude.final_altitude_feet) == (None, None)
     assert route_by_id(ksfo_inputs, "TEC-KSMF-SFOW-J").runway_families == ()
 
 
@@ -135,6 +138,27 @@ def test_an_unknown_aircraft_class_in_a_tec_row_is_named(tmp_path: Path, ksfo_di
         data["routes"][0]["classes"] = ["J", "X"]
 
     with pytest.raises(ValueError, match=r"routes\[TEC-KSMF-SFOW-J\].classes\[1\]: 'X' is not one of \['P', 'T', 'J'\]"):
+        load_tec(airport_copy(tmp_path, ksfo_dir, tec=mutate) / TEC_FILE)
+
+
+def test_a_tec_initial_altitude_without_a_final_one_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        del data["routes"][0]["final_altitude_feet"]
+
+    message = rf"routes\[TEC-KSMF-SFOW-J\]: initial_altitude_feet {KSMF_JET_ALTITUDE_FEET} is stated without final_altitude_feet"
+    with pytest.raises(ValueError, match=message):
+        load_tec(airport_copy(tmp_path, ksfo_dir, tec=mutate) / TEC_FILE)
+
+
+def test_a_tec_initial_altitude_above_its_final_one_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["routes"][0]["final_altitude_feet"] = BELOW_THE_KSMF_JET_INITIAL_FEET
+
+    message = (
+        rf"routes\[TEC-KSMF-SFOW-J\]: initial_altitude_feet {KSMF_JET_ALTITUDE_FEET} "
+        rf"is above final_altitude_feet {BELOW_THE_KSMF_JET_INITIAL_FEET}"
+    )
+    with pytest.raises(ValueError, match=message):
         load_tec(airport_copy(tmp_path, ksfo_dir, tec=mutate) / TEC_FILE)
 
 

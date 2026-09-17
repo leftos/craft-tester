@@ -493,6 +493,10 @@ class TecRoute:
 
     ``route`` keeps the ``FAMILY#`` placeholder the transcription uses in place of a versioned DP
     id, so an AIRAC bump cannot stale the row; the engine substitutes the current procedure.
+
+    ``initial_altitude_feet`` is the altitude the TEC route is issued with and
+    ``final_altitude_feet`` the cruise altitude it assigns, the pair the route tool prints; a row
+    the tool prints without an altitude carries neither.
     """
 
     id: str
@@ -502,7 +506,8 @@ class TecRoute:
     runway_families: tuple[str, ...]
     classes: tuple[AircraftClass, ...]
     route: str
-    altitude_cap_feet: int | None
+    initial_altitude_feet: int | None
+    final_altitude_feet: int | None
 
 
 @dataclass(frozen=True, slots=True)

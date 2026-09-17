@@ -497,7 +497,7 @@ def _tec_route(route: TecRoute, source: str) -> Document:
         "classes": list(route.classes),
         "route": route.route,
     }
-    return _with_optional(entry, altitudeCapFeet=route.altitude_cap_feet)
+    return _with_optional(entry, initialAltitudeFeet=route.initial_altitude_feet, finalAltitudeFeet=route.final_altitude_feet)
 
 
 def _tec_routes(inputs: BuildInputs) -> list[Document]:

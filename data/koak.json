@@ -4826,12 +4826,13 @@
   ],
   "tecRoutes": [
     {
-      "altitudeCapFeet": 10000,
       "classes": [
         "J"
       ],
       "destination": "KSMF",
+      "finalAltitudeFeet": 10000,
       "id": "TEC-KSMF-SFOW-J",
+      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "OAK# OAK FEVTA FEVTA1",
@@ -4839,12 +4840,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KSMF",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KSMF-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK ORRCA",
@@ -4852,12 +4854,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 10000,
       "classes": [
         "J"
       ],
       "destination": "KSMF",
+      "finalAltitudeFeet": 10000,
       "id": "TEC-KSMF-OAKE-J",
+      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "H270 FEVTA FEVTA1",
@@ -4865,12 +4868,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 9000,
       "classes": [
         "T"
       ],
       "destination": "KSMF",
+      "finalAltitudeFeet": 9000,
       "id": "TEC-KSMF-SFOW-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -4878,12 +4882,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KSMF",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSMF-SFOW-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -4891,13 +4896,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KSMF",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSMF-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -4905,12 +4911,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KSAC",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KSAC-SFOW-J",
+      "initialAltitudeFeet": 11000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
@@ -4918,12 +4925,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 9000,
       "classes": [
         "T"
       ],
       "destination": "KSAC",
+      "finalAltitudeFeet": 9000,
       "id": "TEC-KSAC-SFOW-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -4931,12 +4939,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KSAC",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSAC-SFOW-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -4944,13 +4953,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KSAC",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSAC-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -4958,12 +4968,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "O88",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-O88-SFOW-J",
+      "initialAltitudeFeet": 11000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
@@ -4971,12 +4982,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 9000,
       "classes": [
         "T"
       ],
       "destination": "O88",
+      "finalAltitudeFeet": 9000,
       "id": "TEC-O88-SFOW-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -4984,12 +4996,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "O88",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-O88-SFOW-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -4997,13 +5010,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "O88",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-O88-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5011,13 +5025,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMCC",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMCC-SFOW-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -5025,12 +5040,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KMCC",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMCC-SFOE-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5038,12 +5054,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KMCC",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMCC-SFOE-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5051,13 +5068,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMHR",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMHR-SFOW-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -5065,12 +5083,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KMHR",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMHR-SFOE-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5078,12 +5097,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KMHR",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMHR-SFOE-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5091,13 +5111,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMYV",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMYV-SFOW-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -5105,12 +5126,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KMYV",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMYV-SFOE-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5118,12 +5140,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KMYV",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMYV-SFOE-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5131,13 +5154,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KOVE",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KOVE-SFOW-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
@@ -5145,12 +5169,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KOVE",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KOVE-SFOE-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5158,12 +5183,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KOVE",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KOVE-SFOE-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
@@ -5171,12 +5197,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KLVK",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KLVK-SFOW-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
@@ -5184,12 +5211,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KLVK",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOW-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
@@ -5197,13 +5225,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KLVK",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KLVK-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
@@ -5211,12 +5240,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KMOD",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMOD-SFOW-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
@@ -5224,12 +5254,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KMOD",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMOD-SFOW-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
@@ -5237,13 +5268,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMOD",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KMOD-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
@@ -5251,12 +5283,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T"
       ],
       "destination": "KSCK",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KSCK-SFOW-T",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
@@ -5264,12 +5297,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "P"
       ],
       "destination": "KSCK",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSCK-SFOW-P",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
@@ -5277,13 +5311,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KSCK",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSCK-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
@@ -5291,12 +5326,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KMRY",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KMRY-SFOW-J",
+      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
@@ -5304,12 +5340,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KMRY",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KMRY-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK EUGEN",
@@ -5317,12 +5354,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KMRY",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KMRY-OAKE-J",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "EUGEN",
@@ -5330,13 +5368,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMRY",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMRY-SFOW-TP",
+      "initialAltitudeFeet": 7000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
@@ -5344,13 +5383,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMRY",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMRY-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V301 KARNN V111 SNS",
@@ -5358,13 +5398,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KMRY",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KMRY-OAKE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "OAK V244 ALTAM MOD V111 SNS",
@@ -5372,12 +5413,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KWVI",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KWVI-SFOW-J",
+      "initialAltitudeFeet": 10000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
@@ -5385,12 +5427,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KWVI",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KWVI-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK EUGEN",
@@ -5398,12 +5441,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 11000,
       "classes": [
         "J"
       ],
       "destination": "KWVI",
+      "finalAltitudeFeet": 11000,
       "id": "TEC-KWVI-OAKE-J",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "EUGEN",
@@ -5411,13 +5455,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KWVI",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KWVI-SFOW-TP",
+      "initialAltitudeFeet": 7000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
@@ -5425,13 +5470,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KWVI",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KWVI-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK V301 KARNN V111 SNS",
@@ -5439,13 +5485,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 7000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KWVI",
+      "finalAltitudeFeet": 7000,
       "id": "TEC-KWVI-OAKE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "OAK V244 ALTAM MOD V111 SNS",
@@ -5453,14 +5500,15 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "J",
         "T",
         "P"
       ],
       "destination": "KNUQ",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KNUQ-SFOW-JTP",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5468,12 +5516,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "J"
       ],
       "destination": "KNUQ",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KNUQ-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# SUNOL SJC",
@@ -5481,13 +5530,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KNUQ",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KNUQ-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
@@ -5495,14 +5545,15 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "J",
         "T",
         "P"
       ],
       "destination": "KPAO",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KPAO-SFOW-JTP",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5510,12 +5561,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "J"
       ],
       "destination": "KPAO",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KPAO-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# SUNOL SJC",
@@ -5523,13 +5575,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KPAO",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KPAO-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
@@ -5537,14 +5590,15 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "J",
         "T",
         "P"
       ],
       "destination": "KRHV",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KRHV-SFOW-JTP",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5552,12 +5606,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "J"
       ],
       "destination": "KRHV",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KRHV-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# SUNOL SJC",
@@ -5565,13 +5620,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KRHV",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KRHV-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
@@ -5579,14 +5635,15 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "J",
         "T",
         "P"
       ],
       "destination": "KSJC",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSJC-SFOW-JTP",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5594,12 +5651,13 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 3000,
       "classes": [
         "J"
       ],
       "destination": "KSJC",
+      "finalAltitudeFeet": 3000,
       "id": "TEC-KSJC-SFOE-J",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK ARTAQ",
@@ -5607,13 +5665,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 4000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KSJC",
+      "finalAltitudeFeet": 4000,
       "id": "TEC-KSJC-SFOE-TP",
+      "initialAltitudeFeet": 3000,
       "kind": "tec",
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
@@ -5621,13 +5680,14 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "T",
         "P"
       ],
       "destination": "KSQL",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSQL-SFOW-TP",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
@@ -5635,14 +5695,15 @@
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     },
     {
-      "altitudeCapFeet": 5000,
       "classes": [
         "J",
         "T",
         "P"
       ],
       "destination": "KSFO",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSFO-OAKE-JTP",
+      "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "H270 OSI",

@@ -153,18 +153,19 @@ function rvsmConstraint(scenario: Scenario, airport: AirportData): Constraint | 
 }
 
 /**
- * The TEC route cap, for a destination inside the TRACON.
+ * The TEC route final altitude, for a destination inside the TRACON.
  *
- * The cap is the one published by the row that routes the flight, which must begin on a departure
- * the SOP would issue it; a row beginning on a departure this flight would not be issued caps
- * nothing here, and a flight routed on a row that publishes no cap is not capped at all.
+ * The final altitude is the one published by the row that routes the flight, which must begin on a
+ * departure the SOP would issue it; a row beginning on a departure this flight would not be issued
+ * caps nothing here, and a flight routed on a row that publishes no final altitude is not capped at
+ * all.
  *
  * @param ctx The classified flight.
  * @param scenario The filed flight plan, which decides which rows are issuable to it.
  * @param airport The airport data.
  * @param destination The destination row.
  * @returns The constraint, or `undefined` for a destination outside the TRACON, one no TEC row
- *   routes this flight to, or one whose routing row publishes no cap.
+ *   routes this flight to, or one whose routing row publishes no final altitude.
  */
 function tecConstraint(
   ctx: Classification,
@@ -173,11 +174,11 @@ function tecConstraint(
   destination: Destination,
 ): Constraint | undefined {
   const row = tecRouteFor(ctx, scenario, airport, destination);
-  const cap = row?.altitudeCapFeet;
-  if (row === undefined || cap === undefined) return undefined;
+  const final = row?.finalAltitudeFeet;
+  if (row === undefined || final === undefined) return undefined;
   return {
-    legal: (feet) => feet <= cap,
-    reason: `the TEC route to ${destination.spoken} is at or below ${formatAltitude(cap)}`,
+    legal: (feet) => feet <= final,
+    reason: `the TEC route to ${destination.spoken} is at or below ${formatAltitude(final)}`,
     citations: [citeTec(row)],
   };
 }
@@ -206,9 +207,9 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
  * Checks the altitude box of the strip against every rule the data holds for the flight.
  *
  * The constraints are the direction-of-flight parity, rotated where an LOA row for the destination
- * rotates it; the RVSM band for a suffix without RVSM approval; the cap on the TEC route a TRACON
- * destination is routed on, which is the row beginning on a departure the SOP would issue this
- * flight and nothing where no row does. The proposal is the highest altitude at or below the filed
+ * rotates it; the RVSM band for a suffix without RVSM approval; the final altitude of the TEC route
+ * a TRACON destination is routed on, which is the row beginning on a departure the SOP would issue
+ * this flight and nothing where no row does. The proposal is the highest altitude at or below the filed
  * one that satisfies all of them at once, so an amendment never trades one broken rule for another.
  *
  * Only the constraints the *filed* altitude broke are reported and cited: the reason says what is

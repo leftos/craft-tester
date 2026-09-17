@@ -31,7 +31,7 @@ TEC_ROUTE_COUNT = 47
 LOA_RULE_COUNT = 3
 TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
-KSMF_PROP_CAP_FEET = 6000
+KSMF_PROP_ALTITUDE_FEET = 6000
 OUTSIDE_NCT_REASON = "Another facility owns a shelf below NCT's lateral boundary down to the ground"
 PARITY_ODD_COURSE_FROM = 20
 PARITY_ODD_COURSE_TO = 199
@@ -200,8 +200,10 @@ def test_the_tec_rows_carry_their_source_cap_and_kind(ksfo_document: Document) -
     assert capped["runwayFamilies"] == ["01"]
     assert capped["classes"] == ["P"]
     assert capped["route"] == "SFO# OAK V6 SAC"
-    assert capped["altitudeCapFeet"] == KSMF_PROP_CAP_FEET
-    assert "altitudeCapFeet" not in rows["TEC-KSMF-SFOE-J"]
+    assert capped["initialAltitudeFeet"] == KSMF_PROP_ALTITUDE_FEET
+    assert capped["finalAltitudeFeet"] == KSMF_PROP_ALTITUDE_FEET
+    assert "initialAltitudeFeet" not in rows["TEC-KSMF-SFOE-J"]
+    assert "finalAltitudeFeet" not in rows["TEC-KSMF-SFOE-J"]
     assert [row["id"] for row in ksfo_document["tecRoutes"] if row["kind"] == "adr"] == ADR_ROUTE_IDS
 
 

@@ -19,7 +19,8 @@ const headingRow: TecRoute = {
   runwayFamilies: [],
   classes: ['J'],
   route: 'H270 FEVTA FEVTA1',
-  altitudeCapFeet: 10000,
+  initialAltitudeFeet: 10000,
+  finalAltitudeFeet: 10000,
 };
 
 /** The SOP row that clears a flight whose TEC route carries no departure on that same heading. */

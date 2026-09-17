@@ -6,6 +6,22 @@ import type { RuleCitation } from '@/rules/types.ts';
 const SUFFIX_TABLE_SOURCE = 'FAA JO 7110.65 TBL 5-4-1';
 
 /**
+ * The altitudes a TEC row publishes, written the way the tool prints them.
+ *
+ * A row whose initial altitude is its final one, and a row that publishes no initial at all, read
+ * as the single altitude; a row that climbs from one to the other names both.
+ *
+ * @param row The TEC route row being cited.
+ * @returns The trailing altitude text, empty on a row that publishes no altitude.
+ */
+function altitudes(row: TecRoute): string {
+  const { initialAltitudeFeet: initial, finalAltitudeFeet: final } = row;
+  if (final === undefined) return '';
+  if (initial === undefined || initial === final) return ` at ${formatFeet(final)}`;
+  return ` ${formatFeet(initial)} initial, ${formatFeet(final)} final`;
+}
+
+/**
  * Cites a TEC route row, which is the one citable row that carries no `text` of its own.
  *
  * @param row The TEC route row the check read.
@@ -13,10 +29,8 @@ const SUFFIX_TABLE_SOURCE = 'FAA JO 7110.65 TBL 5-4-1';
  */
 export function citeTec(row: TecRoute): RuleCitation {
   const runways = row.runwayFamilies.length === 0 ? '' : ` ${row.runwayFamilies.join('/')}`;
-  const cap =
-    row.altitudeCapFeet === undefined ? '' : ` at or below ${formatFeet(row.altitudeCapFeet)}`;
   const keys = `${row.destination} ${row.plan}${runways} ${row.classes.join('/')}`;
-  return { id: row.id, source: row.source, text: `${keys}: ${row.route}${cap}` };
+  return { id: row.id, source: row.source, text: `${keys}: ${row.route}${altitudes(row)}` };
 }
 
 /**

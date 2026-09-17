@@ -1240,8 +1240,26 @@ def _tec_source(row: _Row) -> TecSource:
     return source
 
 
+def _check_tec_altitudes(initial_feet: int | None, final_feet: int | None, where: str) -> None:
+    if initial_feet is None:
+        return
+    if final_feet is None:
+        raise ValueError(
+            f"{where}: initial_altitude_feet {initial_feet} is stated without final_altitude_feet; "
+            "state final_altitude_feet too; a blank final on the tool means final = initial"
+        )
+    if initial_feet > final_feet:
+        raise ValueError(
+            f"{where}: initial_altitude_feet {initial_feet} is above final_altitude_feet {final_feet}; "
+            "the initial altitude is the one the route is issued with, so it is never above the final altitude"
+        )
+
+
 def _tec_route(row: _Row) -> TecRoute:
     kind = row.optional_choice("kind", TEC_ROUTE_KINDS)
+    initial_feet = row.optional_number("initial_altitude_feet")
+    final_feet = row.optional_number("final_altitude_feet")
+    _check_tec_altitudes(initial_feet, final_feet, row.where)
     route = TecRoute(
         id=row.text("id"),
         kind=kind if kind is not None else "tec",
@@ -1250,7 +1268,8 @@ def _tec_route(row: _Row) -> TecRoute:
         runway_families=row.texts("runway_families"),
         classes=row.choices("classes", AIRCRAFT_CLASSES),
         route=row.text("route"),
-        altitude_cap_feet=row.optional_number("altitude_cap_feet"),
+        initial_altitude_feet=initial_feet,
+        final_altitude_feet=final_feet,
     )
     row.finish()
     return route
@@ -1266,8 +1285,9 @@ def load_tec(path: Path) -> TecData:
         The transcribed TEC and ADR rows.
 
     Raises:
-        ValueError: The file carries an unknown key, a route kind other than ``tec`` or ``adr``, or
-            an aircraft class outside P/T/J.
+        ValueError: The file carries an unknown key, a route kind other than ``tec`` or ``adr``, an
+            aircraft class outside P/T/J, or a row stating an initial altitude without a final one
+            or above it.
         OSError: The file is missing.
     """
     where = _where(path)
