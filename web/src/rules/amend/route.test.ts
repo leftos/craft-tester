@@ -176,6 +176,12 @@ describe('checkRoute departure structure', () => {
     const result = amendmentAt(flight, koak);
     expect(result.proposed).toBe('CNDEL5 YYUNG GVO');
     expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
+    expect(result.reason).toBe(
+      'CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and AVE is not one of ' +
+        'its transitions, but YYUNG is and YYUNG usually connects to GVO (route building), so the ' +
+        'SID is kept, and PORTE lies on the SKYL1 structure; the route is read from its published ' +
+        'transition AVE',
+    );
   });
 
   it('leaves a base fix the route files no transition of that SID after alone', () => {

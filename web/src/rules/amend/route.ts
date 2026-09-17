@@ -68,8 +68,11 @@ type RouteCheck = {
  * `dropped` travels with a box the SOP's own procedure and the filed tail decided, and with a built
  * one, naming the fixes the departure already flies over that the route is no longer read from; a
  * built box reads past them the same way, its build starting from the element they are read to.
- * `repair` travels with a box the filed route named something unflyable in, naming what was taken
- * out and how the gap was closed.
+ * `structureSids` travels beside it, naming every SID whose structure those fixes lie on, from which
+ * a reason names the procedure the box itself proposes where that one is among them and the first
+ * otherwise: on a built box the route is read past another departure's structure, which the box does
+ * have to name. `repair` travels with a box the filed route named something unflyable in, naming
+ * what was taken out and how the gap was closed.
  */
 type ExpectedRoute = {
   tokens: string[];
@@ -78,6 +81,7 @@ type ExpectedRoute = {
   exitElement?: string;
   scope?: BuildScope;
   dropped?: string[];
+  structureSids?: string[];
   repair?: RouteRepair;
 };
 
@@ -233,24 +237,30 @@ function builtExpectation(
     exitElement: parsed.exitElement,
     scope,
     dropped: parsed.droppedStructureTokens ?? [],
+    ...(parsed.structureSids === undefined ? {} : { structureSids: parsed.structureSids }),
     ...(repair === undefined ? {} : { repair }),
   };
 }
 
 /** What the filed route names before the departure's own structure is read past. */
-type StructureDrop = { dropped: string[]; exitElement: string };
+type StructureDrop = { dropped: string[]; exitElement: string; structureSids?: string[] };
 
 /**
  * The fixes of the filed route the departure itself already flies over, and what it is read from.
  *
  * @param scenario The filed flight plan.
  * @param airport The airport data, whose SIDs carry the structure and the transitions.
- * @returns The dropped fixes, empty where the route names none, and the element after them.
+ * @returns The dropped fixes, empty where the route names none, the SIDs whose structure they lie
+ *   on, and the element after them.
  */
 function structureDrop(scenario: Scenario, airport: AirportData): StructureDrop {
   const parsed = parseFiledRoute(scenario.filedRoute, airport);
   if (isUnresolved(parsed)) return { dropped: [], exitElement: '' };
-  return { dropped: parsed.droppedStructureTokens ?? [], exitElement: parsed.exitElement };
+  return {
+    dropped: parsed.droppedStructureTokens ?? [],
+    exitElement: parsed.exitElement,
+    ...(parsed.structureSids === undefined ? {} : { structureSids: parsed.structureSids }),
+  };
 }
 
 /**
@@ -290,13 +300,15 @@ function filedExpectation(
   assigned: string,
   airport: AirportData,
 ): ExpectedRoute {
-  const { dropped, exitElement } = structureDrop(scenario, airport);
+  const { dropped, exitElement, structureSids } = structureDrop(scenario, airport);
   const tail = withoutStructure(filed.tail, dropped);
+  const read = tail.length === filed.tail.length ? [] : dropped;
   const repair = repairMalformed(tail, airport);
   return {
     tokens: withVectorNavaid([assigned, ...(repair?.tokens ?? tail)], airport),
     tec: undefined,
-    dropped: tail.length === filed.tail.length ? [] : dropped,
+    dropped: read,
+    ...(read.length === 0 || structureSids === undefined ? {} : { structureSids }),
     exitElement,
     ...(repair === undefined ? {} : { repair }),
   };
@@ -437,7 +449,7 @@ function startWords(built: BuiltRoute): string {
  * the fix the SID itself ends on — and which rows of the cheat sheet carry the route from there
  * back to what the pilot filed.
  */
-function builtReason(
+function builtCore(
   built: BuiltRoute,
   expected: ExpectedRoute,
   scenario: Scenario,
@@ -454,6 +466,30 @@ function builtReason(
     `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${startWords(built)} ` +
     `and ${links} (route building), ${builtClosing(built, expected.scope)}`
   );
+}
+
+/**
+ * The reason a built box reads as it does: why it was built, and what it was read past to build it.
+ *
+ * A build that starts from a fix further along the filed route is reading past structure, so the
+ * reason closes by naming the fixes it read past and the SID they lie on; the box proposes the SID
+ * the build settled on, which is the procedure that clause names where it carries that structure.
+ *
+ * @param built The route the cheat sheet built, with the SID and the rows it was built from.
+ * @param expected The box as it should read, carrying what the structure walk dropped.
+ * @param scenario The filed flight plan.
+ * @param ctx The classified flight.
+ * @returns The reason, written for the player.
+ */
+function builtReason(
+  built: BuiltRoute,
+  expected: ExpectedRoute,
+  scenario: Scenario,
+  ctx: Classification,
+): string {
+  const core = builtCore(built, expected, scenario, ctx);
+  const structure = structureClause(expected, built.sid.id);
+  return structure === undefined ? core : `${core}, and ${structure}`;
 }
 
 /**
@@ -507,15 +543,25 @@ function vectorNavaidAmendment(tokens: readonly string[], airport: AirportData):
 /**
  * The clause that names the filed fixes the departure itself flies over, and what it is read from.
  *
- * @param expected The box as it should read, carrying what the structure walk dropped.
- * @param assigned The identifier of the procedure the SOP assigns the flight.
+ * Several departures out of the same airport can fly over the same fix to the same transition, so
+ * the clause names the procedure the box is proposing wherever that one carries the structure, that
+ * being the one the student is flying. Where it does not — a built box reads past the structure of a
+ * departure the flight is not being given — the SID that does carry it is named instead, because
+ * naming the proposed one would have the clause contradict the reason it closes, which says the
+ * transition the route is read from is none of that procedure's.
+ *
+ * @param expected The box as it should read, carrying what the structure walk dropped and the SIDs
+ *   it was dropped on.
+ * @param proposed The identifier of the procedure the box proposes.
  * @returns The clause, or `undefined` where the route files no such fix.
  */
-function structureClause(expected: ExpectedRoute, assigned: string): string | undefined {
+function structureClause(expected: ExpectedRoute, proposed: string): string | undefined {
   const dropped = expected.dropped ?? [];
-  if (dropped.length === 0) return undefined;
+  const sids = expected.structureSids ?? [];
+  const sid = sids.includes(proposed) ? proposed : sids[0];
+  if (dropped.length === 0 || sid === undefined) return undefined;
   return (
-    `${listWords(dropped)} ${dropped.length === 1 ? 'lies' : 'lie'} on the ${assigned} structure; ` +
+    `${listWords(dropped)} ${dropped.length === 1 ? 'lies' : 'lie'} on the ${sid} structure; ` +
     `the route is read from its published transition ${expected.exitElement ?? ''}`
   );
 }
