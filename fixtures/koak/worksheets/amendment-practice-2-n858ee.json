@@ -1,5 +1,15 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "arrivalSwap": "MCKEY LEGOZ LEGOZ1",
+        "box": "route",
+        "proposed": "CNDEL5 YYUNG TILLT LEGOZ4",
+        "reason": "OAK-B-SFOW-2830-J-RWY-S sends an RNAV jet off 30 on the runway heading with no departure procedure; LOA-ZLA-CRQ-ROUTE routes CRQ via BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF or LHS and the route names none of them; CNDEL5 is the procedure OAK-SFOW-S-CNDEL assigns an RNAV jet from 30 in SFOW, and YYUNG usually connects to TILLT (route building), and TILLT is an entry fix of LEGOZ4 (LOA-ZLA-CRQ-ROUTE), so the SID is issued onto LEGOZ4 via TILLT"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-n858ee",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +27,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: COAST off, the CRQ LOA names TILLT, so CNDEL5 YYUNG TILLT LEGOZ4"
   },
-  "status": "pending"
+  "status": "settled"
 }

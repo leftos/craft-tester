@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData, AssignmentRule, LoaRule, LoaRuleKind, Scenario } from '@/data/schema.ts';
+import type {
+  AirportData,
+  AssignmentRule,
+  CommonArrival,
+  LoaRule,
+  LoaRuleKind,
+  Scenario,
+} from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
@@ -86,8 +93,8 @@ describe('checkRoute procedure', () => {
       departureRunway: '28L',
       runwayConfigId: '28 RT',
     });
-    expect(amendment(flight).proposed).toBe('GAPP7 SFO EBAYE AVE SADDE8');
-    expect(amendment(flight).reason).toBe(
+    expect(amendment(flight).arrivalSwap).toBe('GAPP7 SFO EBAYE AVE SADDE8');
+    expect(amendment(flight).reason).toContain(
       'SSTIK5 is not the procedure the SOP assigns an RNAV jet from 28L in 28 RT; it is GAPP7',
     );
     expect(citations(flight)).toContain('SFOW-S-GAPP');
@@ -101,7 +108,7 @@ describe('checkRoute procedure', () => {
       departureRunway: '01L',
       filedAltitude: 33000,
     });
-    expect(amendment(flight).proposed).toBe('SSTIK5 YYUNG LAX COMIX2');
+    expect(amendment(flight).arrivalSwap).toBe('SSTIK5 YYUNG LAX COMIX2');
     expect(citations(flight)).toContain('SFO-SEGUL-OFF');
   });
 });
@@ -123,20 +130,24 @@ describe('checkRoute route building', () => {
 
   it('keeps the assigned SID by the transition that always connects to the filed route', () => {
     const flight = swa984();
-    expect(amendment(flight).proposed).toBe('SSTIK5 SUSEY EBAYE AVE SADDE8');
-    expect(amendment(flight).reason).toBe(
+    expect(amendment(flight).arrivalSwap).toBe('SSTIK5 SUSEY EBAYE AVE SADDE8');
+    expect(amendment(flight).reason).toContain(
       'SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one ' +
         'of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so ' +
         'the SID is kept',
     );
-    expect(citations(flight)).toEqual(['SFOW-S-SSTIK-01', 'CONN-SUSEY-EBAYE', 'R-ROUTE-BUILD']);
+    expect(citations(flight).slice(0, 3)).toEqual([
+      'SFOW-S-SSTIK-01',
+      'CONN-SUSEY-EBAYE',
+      'R-ROUTE-BUILD',
+    ]);
   });
 
   it('builds a two-hop chain over a connection that usually holds, and says so', () => {
     const flight = swa984({ filedRoute: 'SSTIK5 BOILE EHF SADDE8' });
-    expect(amendment(flight).proposed).toBe('SSTIK5 KAYEX LOSHN BOILE EHF SADDE8');
+    expect(amendment(flight).arrivalSwap).toBe('SSTIK5 KAYEX LOSHN BOILE EHF SADDE8');
     expect(amendment(flight).reason).toContain('LOSHN usually connects to BOILE');
-    expect(citations(flight)).toEqual([
+    expect(citations(flight).slice(0, 4)).toEqual([
       'SFOW-S-SSTIK-01',
       'CONN-KAYEX-LOSHN',
       'CONN-LOSHN-BOILE',
@@ -146,7 +157,7 @@ describe('checkRoute route building', () => {
 
   it('falls back to the vector SID when no connection reaches the filed route', () => {
     const flight = swa984({ filedRoute: 'SSTIK5 OSI SNS SADDE8' });
-    expect(amendment(flight).proposed).toBe('GAPP7 SFO OSI SNS SADDE8');
+    expect(amendment(flight).arrivalSwap).toBe('GAPP7 SFO OSI SNS SADDE8');
     expect(citations(flight)).toContain('SFOW-S-GAPP');
   });
 
@@ -488,7 +499,7 @@ describe('checkRoute letters of agreement', () => {
       callsign: 'N172SP',
       aircraftType: 'C172',
       equipmentSuffix: '/A',
-      destination: 'KMYV',
+      destination: 'KTRK',
       filedRoute: 'OAK V6 SAC',
       filedAltitude: 5000,
       departureRunway: '01L',
@@ -499,25 +510,221 @@ describe('checkRoute letters of agreement', () => {
 
   const gap = { element: 'BOX.route', reason: expect.stringContaining('LOA-TEST-ROUTE') };
 
+  /** The RNAV jet whose Portland route meets no LOA fix and reaches no arrival it can fly. */
+  function pdxJet(): Scenario {
+    return scenario({ destination: 'KPDX', filedRoute: 'TRUKN2 DEDHD LMT TMBRS4' });
+  }
+
   it('reports the route box unresolved when no LOA routing fix is on the route', () => {
-    const result = check(scenario({ destination: 'KPDX', filedRoute: 'TRUKN2 DEDHD LMT OCITY7' }));
-    expect(result).toEqual({
+    expect(check(pdxJet())).toEqual({
       element: 'BOX.route',
       reason: expect.stringContaining('LOA-ZSE-PDX-ROUTE'),
     });
   });
 
   it('holds a row written for jets against a jet and passes over it for a prop', () => {
-    const jet = scenario({});
-    expect(checkAt(jet, airportWith(loaRow('KSEA', { classes: ['J'] })))).toEqual(gap);
-    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', {})))).toEqual(gap);
-    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', { classes: ['J'] })))).toBeUndefined();
+    expect(checkAt(pdxJet(), airportWith(loaRow('KPDX', { classes: ['J'] })))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KTRK', {})))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KTRK', { classes: ['J'] })))).toBeUndefined();
   });
 
   it('holds a row written for the RNAV column against an RNAV flight only', () => {
-    const rnav = scenario({});
-    expect(checkAt(rnav, airportWith(loaRow('KSEA', { rnavOnly: true })))).toEqual(gap);
-    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', {})))).toEqual(gap);
-    expect(checkAt(n172sp(), airportWith(loaRow('KMYV', { rnavOnly: true })))).toBeUndefined();
+    expect(checkAt(pdxJet(), airportWith(loaRow('KPDX', { rnavOnly: true })))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KTRK', {})))).toEqual(gap);
+    expect(checkAt(n172sp(), airportWith(loaRow('KTRK', { rnavOnly: true })))).toBeUndefined();
+  });
+});
+
+describe('checkRoute arrivals', () => {
+  /** The worksheet plan of an RNAV jet to Los Angeles filed on the conventional SADDE arrival. */
+  function swa984(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'SWA984',
+      aircraftType: 'B737',
+      destination: 'KLAX',
+      filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+      filedAltitude: 35000,
+      departureRunway: '01L',
+      squawk: '4602',
+      ...overrides,
+    });
+  }
+
+  /** A KOAK plan off 30 in the south-flow plan, which is where the worksheet's flights depart. */
+  function offOakland(overrides: Partial<Scenario>): Scenario {
+    return scenario({
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      ...overrides,
+    });
+  }
+
+  it('puts an RNAV jet filing the conventional SADDE8 onto IRNMN2 via BURGL and keeps the built SID', () => {
+    const flight = swa984();
+    const result = amendment(flight);
+    expect(result.proposed).toBe('SSTIK5 SUSEY EBAYE BURGL IRNMN2');
+    expect(result.arrivalSwap).toBe('SSTIK5 SUSEY EBAYE AVE SADDE8');
+    expect(result.warning).toBeUndefined();
+    expect(citations(flight)).toEqual(
+      expect.arrayContaining(['CA-LAX-IRNMN', 'CONN-EBAYE-BURGL', 'R-ARRIVAL']),
+    );
+  });
+
+  it('keeps the filed fix that connects to the arrival off a radar-vector SID', () => {
+    const result = amendment(swa984({ departureRunway: '28L', runwayConfigId: '28 SO' }));
+    expect(result.proposed).toBe('GAPP7 SFO EBAYE BURGL IRNMN2');
+    expect(result.arrivalSwap).toBe('GAPP7 SFO EBAYE AVE SADDE8');
+  });
+
+  /** The worksheet plan of a non-RNAV jet to Los Angeles filed on the RNAV IRNMN arrival. */
+  function nks510(overrides: Partial<Scenario> = {}): Scenario {
+    return offOakland({
+      callsign: 'NKS510',
+      aircraftType: 'A320',
+      equipmentSuffix: '/A',
+      destination: 'KLAX',
+      filedRoute: 'CNDEL5 SUSEY EBAYE BURGL IRNMN2',
+      filedAltitude: 35000,
+      squawk: '4611',
+      ...overrides,
+    });
+  }
+
+  it('issues the conventional southbound SID onto SADDE8 for a non-RNAV jet filing IRNMN2', () => {
+    const result = amendmentAt(nks510(), koak);
+    expect(result.proposed).toBe('SKYL1 AVE SADDE8');
+    expect(result.arrivalSwap).toBe('SUSEY EBAYE BURGL IRNMN2');
+    const cited = result.citations.map((citation) => citation.id);
+    expect(cited[0]).toBe('OAK-SFOW-S-SKYL');
+    expect(cited).toEqual(expect.arrayContaining(['CA-LAX-SADDE', 'R-ARRIVAL']));
+    expect(cited).not.toContain('R-HEADING');
+  });
+
+  it('leaves a non-RNAV jet filing SKYL1 AVE SADDE8 as filed', () => {
+    const flight = nks510({ filedRoute: 'SKYL1 AVE SADDE8', filedAltitude: 27000 });
+    expect(checkAt(flight, koak)).toBeUndefined();
+  });
+
+  it('reroutes a box that meets no LOA token onto the transition the LOA names', () => {
+    const flight = offOakland({
+      callsign: 'N858EE',
+      aircraftType: 'E55P',
+      equipmentSuffix: '/Z',
+      destination: 'KCRQ',
+      filedRoute: 'COAST8 MCKEY LEGOZ LEGOZ1',
+      filedAltitude: 37000,
+      squawk: '4610',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('CNDEL5 YYUNG TILLT LEGOZ4');
+    expect(result.arrivalSwap).toBe('MCKEY LEGOZ LEGOZ1');
+    expect(result.reason).toContain(
+      'LOA-ZLA-CRQ-ROUTE routes CRQ via BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF or LHS and ' +
+        'the route names none of them',
+    );
+  });
+
+  it('keeps the filed fixes and continues to the entry fix off a radar-vector SID', () => {
+    const flight = offOakland({
+      callsign: 'SWA2021',
+      aircraftType: 'B738',
+      equipmentSuffix: '/G',
+      destination: 'KPDX',
+      filedRoute: 'OAK6 DEDHD LMT OCITY7',
+      filedAltitude: 35000,
+      squawk: '4604',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('OAK6 OAK DEDHD LMT MACHU TMBRS4');
+    expect(result.arrivalSwap).toBe('OAK6 OAK DEDHD LMT OCITY7');
+    expect(result.reason).toContain('so the flight continues to MACHU for TMBRS4');
+  });
+
+  it('reports the box unresolved when no arrival of the class is reachable', () => {
+    const flight = scenario({
+      callsign: 'SWA2021',
+      equipmentSuffix: '/G',
+      destination: 'KPDX',
+      filedRoute: 'TRUKN2 DEDHD LMT OCITY7',
+      filedAltitude: 35000,
+      departureRunway: '28L',
+      runwayConfigId: '28 RT',
+      squawk: '4604',
+    });
+    expect(check(flight)).toEqual({
+      element: 'BOX.route',
+      reason: expect.stringContaining('LOA-ZSE-PDX-ROUTE'),
+    });
+  });
+
+  it('leaves a stale arrival revision alone where nothing else is wrong', () => {
+    expect(check(scenario({ filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7' }))).toBeUndefined();
+  });
+
+  it('leaves a conventional arrival alone where the common-arrivals sheet does not list the field', () => {
+    const flight = offOakland({
+      callsign: 'FDX3875',
+      aircraftType: 'MD11',
+      destination: 'PHNL',
+      filedRoute: 'BEBOP R464 BILLO R464 BITTA MAGGI3',
+      filedAltitude: 31000,
+      squawk: '4613',
+    });
+    expect(checkAt(flight, koak)).toBeUndefined();
+  });
+
+  it('leaves the box alone when the class trigger reaches no arrival', () => {
+    const flight = scenario({
+      destination: 'KLAX',
+      filedRoute: 'SSTIK5 SUSEY EBAYE DERBB SADDE8',
+      filedAltitude: 35000,
+      departureRunway: '01L',
+    });
+    const airport: AirportData = { ...ksfo, routeConnections: [] };
+    expect(checkAt(flight, airport)).toBeUndefined();
+  });
+
+  it('never swaps the arrival of a TRACON destination', () => {
+    const flight = scenario({
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      destination: 'KSMF',
+      filedRoute: 'GAPP7 SFO TRUKN FEVTA FEVTA1',
+      filedAltitude: 9000,
+      departureRunway: '28R',
+    });
+    const cell: CommonArrival = {
+      id: 'CA-SMF-TEST',
+      source: 'a test row',
+      text: 'the test sheet cell',
+      destinations: ['KSMF'],
+      family: 'SLMMR',
+      transitions: ['NURAY'],
+    };
+    const airport: AirportData = { ...ksfo, commonArrivals: [cell, ...ksfo.commonArrivals] };
+    expect(check(flight)).toBeUndefined();
+    expect(checkAt(flight, airport)).toBeUndefined();
+  });
+
+  it('excludes an arrival the sheet reserves for cargo from a passenger flight', () => {
+    const airport: AirportData = {
+      ...ksfo,
+      routeConnections: [
+        ...ksfo.routeConnections,
+        {
+          id: 'CONN-SNS-SNAXX',
+          from: 'SNS',
+          to: 'SNAXX',
+          connects: 'usually',
+          source: 'a test row',
+          text: 'SNS usually connects to SNAXX',
+        },
+      ],
+    };
+    const filedRoute = 'SSTIK5 OSI SNS SADDE8';
+    const passenger = amendmentAt(swa984({ filedRoute }), airport);
+    expect(passenger.proposed).toBe('GAPP7 SFO OSI SNS SNAXX RYDRR2');
+    const cargo = swa984({ filedRoute, callsign: 'FDX984', aircraftType: 'B752' });
+    expect(amendmentAt(cargo, airport).proposed).toBe('GAPP7 SFO OSI SNS SNAXX BAYST1');
   });
 });

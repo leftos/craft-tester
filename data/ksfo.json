@@ -2201,6 +2201,14 @@
     },
     {
       "connects": "usually",
+      "from": "Q174",
+      "id": "CONN-Q174-FLCHR",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "Q174 usually connects to FLCHR",
+      "to": "FLCHR"
+    },
+    {
+      "connects": "usually",
       "from": "DEDHD",
       "id": "CONN-DEDHD-RBL",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
@@ -2222,6 +2230,14 @@
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "SAC usually connects to Q120",
       "to": "Q120"
+    },
+    {
+      "connects": "usually",
+      "from": "ANAHO",
+      "id": "CONN-ANAHO-PRNCS",
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
+      "text": "ANAHO usually connects to PRNCS",
+      "to": "PRNCS"
     },
     {
       "connects": "usually",
@@ -5058,17 +5074,6 @@
         "destination": "KLAS",
         "exitFix": "NTELL",
         "tail": "NTELL Q174 FLCHR COKTL4"
-      },
-      {
-        "altitudes": [
-          35000
-        ],
-        "classes": [
-          "J"
-        ],
-        "destination": "KLAS",
-        "exitFix": "NTELL",
-        "tail": "NTELL Q162 ESSAA BTY PUMLE1"
       },
       {
         "altitudes": [

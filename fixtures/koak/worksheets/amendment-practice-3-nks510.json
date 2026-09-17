@@ -1,5 +1,27 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "alternativeTo": "route",
+        "box": "type",
+        "proposed": "A320/L",
+        "reason": "an RNAV suffix would keep the filed CNDEL5, which the route check otherwise replaces with the runway heading and no procedure"
+      },
+      {
+        "box": "altitude",
+        "proposedFeet": 27000,
+        "reason": "filed FL350 is inside RVSM airspace (FL290 through FL410), which a /A flight may not enter; the highest legal altitude at or below it is FL270"
+      },
+      {
+        "alternativeTo": "type",
+        "arrivalSwap": "SUSEY EBAYE BURGL IRNMN2",
+        "box": "route",
+        "proposed": "SKYL1 AVE SADDE8",
+        "reason": "OAK-B-SFOW-2830-J-RWY-S sends a non-RNAV jet off 30 on the runway heading with no departure procedure; IRNMN2 is an RNAV arrival and the flight is non-RNAV; SKYL1 is the procedure OAK-SFOW-S-SKYL assigns a non-RNAV jet from 30 in SFOW, and AVE is an entry fix of SADDE8 (CA-LAX-SADDE), so the SID is issued onto SADDE8 via AVE"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-3-nks510",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +39,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: as /A the flight is non-RNAV and non-RVSM, so SKYL1 AVE SADDE8 (SADDE8 the conventional arrival, AVE its entry fix and a SKYL1 transition) and FL270; the type box A320/L is the other side of the pair, under which the whole plan stands as filed"
   },
-  "status": "pending"
+  "status": "settled"
 }

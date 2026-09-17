@@ -1,4 +1,12 @@
-import type { AirportData, AssignmentRule, RouteConnection, Sid } from '@/data/schema.ts';
+import type {
+  AirportData,
+  Arrival,
+  AssignmentRule,
+  CommonArrival,
+  LoaRule,
+  RouteConnection,
+  Sid,
+} from '@/data/schema.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { UnservedSid } from '@/rules/sidSelection.ts';
 import type { RuleCitation } from '@/rules/types.ts';
@@ -68,7 +76,7 @@ function headOf(branch: Branch): string {
  * the tie, and it is left out when the chart publishes it as a transition too, where it is already
  * a starting point and is spoken as the transition it is.
  */
-function startsOf(sid: Sid): RouteStart[] {
+export function startsOf(sid: Sid): RouteStart[] {
   const starts: RouteStart[] = sid.transitions.map((transition) => ({
     fix: transition.fix,
     kind: 'transition',
@@ -237,4 +245,174 @@ export function builtCitations(built: BuiltRoute, airport: AirportData): RuleCit
     ...built.connections.map(toCitation),
     ...citePhraseology(airport, 'R-ROUTE-BUILD'),
   ];
+}
+
+/**
+ * One place a flight may be put onto an arrival: an entry fix of a published arrival.
+ *
+ * `common` is the row of the common-arrivals table that names the arrival for this destination, and
+ * `loa` the letter-of-agreement row that names the fix, where either does; a target the data names
+ * neither way is an entry fix the chart publishes and nothing else speaks for.
+ */
+export type ArrivalTarget = {
+  transition: string;
+  arrival: Arrival;
+  common?: CommonArrival;
+  loa?: LoaRule;
+};
+
+/**
+ * Somewhere a search for an arrival may start: a fix already in the route box, or a start of a SID.
+ *
+ * `index` is where the fix sits in the box, which is what the rebuilt box is cut at; a `sid` source
+ * carries the transition or end fix the flight would leave the procedure at instead.
+ */
+export type ArrivalSource =
+  | { kind: 'box'; index: number; fix: string }
+  | { kind: 'sid'; start: RouteStart };
+
+/** The route found onto an arrival: where it left, the fixes between, and what it reached. */
+export type ArrivalRoute = {
+  source: ArrivalSource;
+  chain: string[];
+  target: ArrivalTarget;
+  strength: 'always' | 'usually';
+  connections: RouteConnection[];
+};
+
+/** One branch of an arrival search: the source it left from and the fixes and rows it has crossed. */
+type ArrivalBranch = {
+  source: ArrivalSource;
+  sourceIndex: number;
+  fixes: string[];
+  rows: RouteConnection[];
+};
+
+/** A branch that reached an arrival entry fix, with the index of the target it reached. */
+type ArrivalHit = { branch: ArrivalBranch; targetIndex: number };
+
+/** The fix a source stands at, whichever kind of source it is. */
+function sourceFix(source: ArrivalSource): string {
+  return source.kind === 'box' ? source.fix : source.start.fix;
+}
+
+/** The first target each entry fix answers, so a fix two arrivals share is read as the first one. */
+function targetIndexes(targets: readonly ArrivalTarget[]): Map<string, number> {
+  const indexes = new Map<string, number>();
+  targets.forEach((target, index) => {
+    if (!indexes.has(target.transition)) indexes.set(target.transition, index);
+  });
+  return indexes;
+}
+
+/** The hit to take of the ones found at one level: the earliest target, then the earliest source. */
+function bestHit(hits: readonly ArrivalHit[]): ArrivalHit | undefined {
+  return hits.reduce<ArrivalHit | undefined>((best, hit) => {
+    if (best === undefined || hit.targetIndex < best.targetIndex) return hit;
+    if (hit.targetIndex > best.targetIndex) return best;
+    return hit.branch.sourceIndex < best.branch.sourceIndex ? hit : best;
+  }, undefined);
+}
+
+/** The source that already stands on an entry fix, where one does: a route needing no connection. */
+function directHit(
+  sources: readonly ArrivalSource[],
+  targets: readonly ArrivalTarget[],
+): ArrivalHit | undefined {
+  const indexes = targetIndexes(targets);
+  const hits = sources.flatMap((source, sourceIndex) => {
+    const targetIndex = indexes.get(sourceFix(source));
+    if (targetIndex === undefined) return [];
+    return [{ branch: { source, sourceIndex, fixes: [], rows: [] }, targetIndex }];
+  });
+  return bestHit(hits);
+}
+
+/**
+ * Breadth-first search from every source at once to the nearest arrival entry fix.
+ *
+ * The frontier holds the branches of equal length, so a target reached here is reached by the fewest
+ * connections; every hit of a level is collected rather than the first taken, because a level may
+ * reach two entry fixes and the earlier target is the one the tables prefer. A fix already reached
+ * is not entered again, and the frontier stays in source order, so the branch that first reaches a
+ * fix is the one from the earliest source.
+ *
+ * @param sources Where the search may start, in preference order.
+ * @param targets The entry fixes to reach, in preference order.
+ * @param edges The connection rows the search may cross.
+ * @returns The shortest branch to the best target of its level, or undefined when none reaches one.
+ */
+function arrivalSearch(
+  sources: readonly ArrivalSource[],
+  targets: readonly ArrivalTarget[],
+  edges: readonly RouteConnection[],
+): ArrivalHit | undefined {
+  const indexes = targetIndexes(targets);
+  const reached = new Set(sources.map(sourceFix));
+  let frontier: ArrivalBranch[] = sources.map((source, sourceIndex) => ({
+    source,
+    sourceIndex,
+    fixes: [],
+    rows: [],
+  }));
+  while (frontier.length > 0) {
+    const hits: ArrivalHit[] = [];
+    const next: ArrivalBranch[] = [];
+    for (const branch of frontier) {
+      const head = branch.fixes.at(-1) ?? sourceFix(branch.source);
+      for (const edge of edges) {
+        if (edge.from !== head || reached.has(edge.to)) continue;
+        reached.add(edge.to);
+        const grown = {
+          source: branch.source,
+          sourceIndex: branch.sourceIndex,
+          fixes: [...branch.fixes, edge.to],
+          rows: [...branch.rows, edge],
+        };
+        const targetIndex = indexes.get(edge.to);
+        if (targetIndex === undefined) next.push(grown);
+        else hits.push({ branch: grown, targetIndex });
+      }
+    }
+    const best = bestHit(hits);
+    if (best !== undefined) return best;
+    frontier = next;
+  }
+  return undefined;
+}
+
+/**
+ * Builds the route from the places a flight can leave its filed box onto an arrival of its
+ * destination.
+ *
+ * A source that already stands on an entry fix is the shortest route of all and is taken before any
+ * connection is crossed. Failing that, the chains that always connect are searched first, so a route
+ * that never needs a controller's judgement is preferred over one that usually works; within either
+ * search the fewest connections win, a tie goes to the target the tables name first, and a tie on
+ * that goes to the source the caller listed first.
+ *
+ * @param sources Where the search may start, in preference order.
+ * @param targets The entry fixes to reach, in preference order.
+ * @param airport The airport data, whose `routeConnections` hold the cheat sheet.
+ * @returns The route onto the arrival, or undefined when no source reaches any target.
+ */
+export function buildToArrival(
+  sources: readonly ArrivalSource[],
+  targets: readonly ArrivalTarget[],
+  airport: AirportData,
+): ArrivalRoute | undefined {
+  const always = airport.routeConnections.filter((row) => row.connects === 'always');
+  const hit =
+    directHit(sources, targets) ??
+    arrivalSearch(sources, targets, always) ??
+    arrivalSearch(sources, targets, airport.routeConnections);
+  const target = hit === undefined ? undefined : targets[hit.targetIndex];
+  if (hit === undefined || target === undefined) return undefined;
+  return {
+    source: hit.branch.source,
+    chain: hit.branch.fixes.slice(0, -1),
+    target,
+    strength: hit.branch.rows.every((row) => row.connects === 'always') ? 'always' : 'usually',
+    connections: hit.branch.rows,
+  };
 }

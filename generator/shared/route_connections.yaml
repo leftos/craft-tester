@@ -27,10 +27,14 @@ connections:
   # "WAGES is also on SKYL1 and seems to be preferred as an exit fix when PXN isn't involved").
   - { from: WAGES, to: LOSHN, connects: usually }
   - { from: NTELL, to: Q174,  connects: usually }
+  # Q174 carries a Las Vegas arrival to FLCHR, the COKTL# entry fix the ZOA-ZLA LOA names (".Q174.FLCHR"); JSX203: CNDEL5 NTELL Q174 FLCHR COKTL4 (user, 2026-09-17)
+  - { from: Q174, to: FLCHR, connects: usually }
   # Common N/NE fixes
   - { from: DEDHD, to: RBL,   connects: usually }
   - { from: ORRCA, to: Q120,  connects: usually }
   - { from: SAC,   to: Q120,  connects: usually }
+  # ANAHO connects onward to PRNCS, the SADYL# entry fix the ZOA-ZLC LOA names for Boise, as the KSFO route library files it (SAC ANAHO PRNCS SADYL#); SWA1254: OAK6 OAK SAC ANAHO PRNCS SADYL4 (user, 2026-09-17)
+  - { from: ANAHO, to: PRNCS, connects: usually }
   - { from: MOGEE, to: Q122,  connects: usually }
   - { from: MOGEE, to: Q124,  connects: usually }
   - { from: TIPRE, to: Q126,  connects: usually }

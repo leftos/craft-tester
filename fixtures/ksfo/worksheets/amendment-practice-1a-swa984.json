@@ -3,9 +3,10 @@
   "expected": {
     "amendments": [
       {
+        "arrivalSwap": "SSTIK5 SUSEY EBAYE AVE SADDE8",
         "box": "route",
         "proposed": "SSTIK5 SUSEY EBAYE BURGL IRNMN2",
-        "reason": "SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so the SID is kept; SADDE8 is the non-RNAV Los Angeles arrival, LOA-ZLA-LAX-ROUTE routes LAX jets via BURGL, a transition of the RNAV arrival IRNMN2 that EBAYE usually connects to, so an RNAV jet is amended onto IRNMN2 via BURGL (user 2026-09-16; the arrival swap is not built yet)"
+        "reason": "SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so the SID is kept; SADDE8 is a conventional arrival and the flight is RNAV-capable; EBAYE usually connects to BURGL (route building), and BURGL is an entry fix of IRNMN2 (CA-LAX-IRNMN), so the route is built onto IRNMN2 via BURGL"
       }
     ]
   },
@@ -26,7 +27,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation; validated by the user 2026-09-16: route-build to keep SSTIK5 (EBAYE connects off the SUSEY transition per the OAK Route Building Cheat Sheet) rather than falling back to GAPP7 radar vectors; read \"Sstik Five departure, Susey transition, direct Ebaye, then as filed\"; re-opened 2026-09-16: the user ruled that an RNAV jet filing the non-RNAV SADDE8 is amended onto IRNMN2 via BURGL (`SSTIK5 SUSEY EBAYE BURGL IRNMN2`, the LOA's LAX jet routing); pending until the arrival-swap concept lands"
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation; validated by the user 2026-09-16: route-build to keep SSTIK5 (EBAYE connects off the SUSEY transition per the OAK Route Building Cheat Sheet) rather than falling back to GAPP7 radar vectors; read \"Sstik Five departure, Susey transition, direct Ebaye, then as filed\"; re-opened 2026-09-16: the user ruled that an RNAV jet filing the non-RNAV SADDE8 is amended onto IRNMN2 via BURGL (`SSTIK5 SUSEY EBAYE BURGL IRNMN2`, the LOA's LAX jet routing); pending until the arrival-swap concept lands; validated by the user 2026-09-17: an RNAV jet filing the conventional SADDE8 is put on IRNMN2 via BURGL (route building EBAYE to BURGL), read \"Sstik Five departure, Susey transition, direct Ebaye, direct Burgl, Irnmn Two arrival\""
   },
-  "status": "pending"
+  "status": "settled"
 }

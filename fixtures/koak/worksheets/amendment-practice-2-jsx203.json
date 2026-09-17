@@ -1,5 +1,20 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "type",
+        "proposed": "E135/L",
+        "reason": "no equipment suffix filed; the fleet files a E135 as E135/L"
+      },
+      {
+        "arrivalSwap": "CNDEL5 NTELL Q158 JEDNA",
+        "box": "route",
+        "proposed": "CNDEL5 NTELL Q174 FLCHR COKTL4",
+        "reason": "LOA-ZLA-LAS-ROUTE routes LAS via BASIC, Q174, FLCHR, J92 or BTY and the route names none of them; NTELL usually connects to Q174, Q174 usually connects to FLCHR (route building), and FLCHR is an entry fix of COKTL4 (CA-LAS-COKTL), so the route is built onto COKTL4 via FLCHR"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-jsx203",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +32,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: CNDEL5 NTELL Q174 FLCHR COKTL4, the LAS jets LOA routing .Q174.FLCHR (Q174 to FLCHR added to the connection table)"
   },
-  "status": "pending"
+  "status": "settled"
 }

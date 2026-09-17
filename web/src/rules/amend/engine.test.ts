@@ -514,7 +514,7 @@ describe('resolveAmendedClearance', () => {
       squawk: '4602',
     });
     expect(spoken(original).abbreviated).toContain(
-      'Sstik Five departure, Susey transition, direct Ebaye, then as filed.',
+      'Sstik Five departure, Susey transition, direct Ebaye, direct Burgl, Irnmn Two arrival.',
     );
   });
 });

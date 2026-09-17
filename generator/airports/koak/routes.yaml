@@ -29,7 +29,9 @@ routes:
   - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q174 FLCHR COKTL#, classes: [J], altitudes: [29000, 31000] }
   - { exit_fix: YYUNG, destination: KSAN, tail: YYUNG LAX COMIX#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: MCKEY, destination: KSAN, tail: MCKEY LAX COMIX#, classes: [J], altitudes: [33000, 35000] }
-  - { exit_fix: RZS, destination: KSAN, tail: RZS LAX HUBRD#, classes: [J], altitudes: [33000, 35000] }
+  # The ZOA sheet gives San Diego jets COMIX# via LAX, HUBRD# being the non-RNAV arrival, so this row
+  # files what the YYUNG and MCKEY rows already file (user, 2026-09-17).
+  - { exit_fix: RZS, destination: KSAN, tail: RZS LAX COMIX#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: KTINA, destination: KBUR, tail: KTINA CISKO RDHOT ROKKR#, classes: [J], altitudes: [29000, 31000] }
   - { exit_fix: YYUNG, destination: KSNA, tail: YYUNG TILLT RUKKI#, classes: [J], altitudes: [33000, 35000] }
   # The user's note files the SNA arrival RUKKI# to Long Beach too; KLGB does not publish it, so the

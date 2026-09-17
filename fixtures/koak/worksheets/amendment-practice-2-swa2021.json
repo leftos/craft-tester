@@ -1,5 +1,20 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 28000,
+        "reason": "filed FL350 on a 344° magnetic course to Portland needs an even level under LOA-ZSE-PARITY; filed FL350 is inside RVSM airspace (FL290 through FL410), which a /G flight may not enter; the highest legal altitude at or below it is FL280"
+      },
+      {
+        "arrivalSwap": "OAK6 OAK DEDHD LMT OCITY7",
+        "box": "route",
+        "proposed": "OAK6 OAK DEDHD LMT MACHU TMBRS4",
+        "reason": "the route names OAK6 without OAK after it; a radar-vector SID is filed as the SID, the airport navaid, then the route (R-RV-NAVAID); LOA-ZSE-PDX-ROUTE routes PDX via MACHU, MOXEE or OED and the route names none of them; MACHU is an entry fix of TMBRS4 (LOA-ZSE-PDX-ROUTE), so the flight continues to MACHU for TMBRS4"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-swa2021",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +32,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: OAK6 OAK DEDHD LMT MACHU TMBRS4 (the PDX LOA names MACHU; the filed fixes are kept so DEDHD stays the gate) and FL280"
   },
-  "status": "pending"
+  "status": "settled"
 }

@@ -40,7 +40,10 @@ routes:
   # south via SSTIK/WESLA/SEGUL/SAHEY transitions
   - { exit_fix: SUSEY, destination: KLAX, tail: SUSEY EBAYE BURGL IRNMN#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q174 FLCHR COKTL#, classes: [J], altitudes: [33000, 35000] }
-  - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q162 ESSAA BTY PUMLE#, classes: [J], altitudes: [35000] }
+  # The non-RNAV LAS jet route (PUMLE# via BTY). No fleet jet files a non-RNAV suffix, and an RNAV jet
+  # is put on COKTL# via FLCHR (the ZOA sheet's LAS jets row), so the row can never be drawn clean;
+  # kept for reference (user 2026-09-17 ruled the same way on the KOAK KSAN row).
+  # - { exit_fix: NTELL, destination: KLAS, tail: NTELL Q162 ESSAA BTY PUMLE#, classes: [J], altitudes: [35000] }
   - { exit_fix: NTELL, destination: KFAT, tail: NTELL, classes: [J], altitudes: [17000, 19000] }
   - { exit_fix: KTINA, destination: KBUR, tail: KTINA CISKO RDHOT ROKKR#, classes: [J], altitudes: [31000] }
   - { exit_fix: YYUNG, destination: KSAN, tail: YYUNG LAX COMIX#, classes: [J], altitudes: [37000, 41000] }

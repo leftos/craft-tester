@@ -3,9 +3,10 @@
   "expected": {
     "amendments": [
       {
+        "arrivalSwap": "NIMI6 OAK AVE",
         "box": "route",
-        "proposed": "NIMI6 OAK AVE",
-        "reason": "the route files no departure procedure; the SOP assigns NIMI6 from 28R in SFOW"
+        "proposed": "NIMI6 OAK AVE EHF WAYVE1",
+        "reason": "the route files no departure procedure; the SOP assigns NIMI6 from 28R in SFOW; LOA-ZLA-SMO-PROPS-ROUTE routes SMO via PAIDD, EHF, LHS, FLW or RZS and the route names none of them; EHF is an entry fix of WAYVE1 (CA-LAX-WAYVE), so the flight continues to EHF for WAYVE1"
       }
     ]
   },
@@ -26,7 +27,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-17: no SID filed; NIMI6 OAK AVE; the SMO props LOA cell (FLW, RZS) is not yet held against an amended box"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-17: no SID filed; NIMI6 OAK AVE; the SMO props LOA cell (FLW, RZS) is not yet held against an amended box; re-validated by the user 2026-09-17: holding the box against the SMO props LOA row, the flight continues from AVE to EHF for WAYVE1"
   },
   "status": "settled"
 }

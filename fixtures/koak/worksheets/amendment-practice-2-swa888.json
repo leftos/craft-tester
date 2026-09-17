@@ -1,5 +1,15 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "arrivalSwap": "CNDEL5 KTINA CISKO LHS LYNXX8",
+        "box": "route",
+        "proposed": "CNDEL5 KTINA CISKO RDHOT ROKKR3",
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and CISKO is not one of its transitions, but KTINA is and KTINA always connects to CISKO (route building), so the SID is issued in place of the heading; LYNXX8 is a conventional arrival and the flight is RNAV-capable; CISKO usually connects to RDHOT (route building), and RDHOT is an entry fix of ROKKR3 (CA-BUR-ROKKR), so the route is built onto ROKKR3 via RDHOT"
+      }
+    ]
+  },
   "id": "ws-koak-amendment-practice-2-swa888",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +27,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: LYNXX8 is conventional, so the RNAV jet is built onto ROKKR3 via RDHOT (KTINA always connects to CISKO, CISKO usually to RDHOT)"
   },
-  "status": "pending"
+  "status": "settled"
 }

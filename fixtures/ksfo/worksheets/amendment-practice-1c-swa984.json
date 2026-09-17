@@ -1,5 +1,15 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "arrivalSwap": "GAPP7 SFO EBAYE AVE SADDE8",
+        "box": "route",
+        "proposed": "GAPP7 SFO EBAYE BURGL IRNMN2",
+        "reason": "SSTIK5 is not the procedure the SOP assigns an RNAV jet from 28L in 28 SO; it is GAPP7; SADDE8 is a conventional arrival and the flight is RNAV-capable; EBAYE usually connects to BURGL (route building), and BURGL is an entry fix of IRNMN2 (CA-LAX-IRNMN), so the route is built onto IRNMN2 via BURGL"
+      }
+    ]
+  },
   "id": "ws-ksfo-amendment-practice-1c-swa984",
   "mode": "amendment",
   "scenario": {
@@ -17,7 +27,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation"
+    "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation; validated by the user 2026-09-17: GAPP7 radar vectors EBAYE, then BURGL onto IRNMN2, the filed EBAYE kept"
   },
-  "status": "pending"
+  "status": "settled"
 }

@@ -40,11 +40,18 @@ const MAX_REDRAWN = 300;
 /** The seeds the filtered draws are measured over. */
 const FILTERED_SEEDS = Array.from({ length: 200 }, (_value, index) => index);
 
+/**
+ * A night non-RNAV prop off the 01s is a rare draw — night, a prop, a non-RNAV suffix and an 01
+ * configuration all at once — so it is measured over more seeds than the other filtered sweeps,
+ * which keeps the test from turning on the route library's row count.
+ */
+const NIGHT_HEADING_SEEDS = Array.from({ length: 1000 }, (_value, index) => index);
+
 const generated = SEEDS.map((seed) => generateScenario(createRng(seed), ksfo, ANY_SCENARIO));
 
-/** Every scenario the filter draws over `FILTERED_SEEDS`. */
-function drawnUnder(filter: ScenarioFilter): Scenario[] {
-  return FILTERED_SEEDS.map((seed) => generateScenario(createRng(seed), ksfo, filter));
+/** Every scenario the filter draws over the seeds given. */
+function drawnUnder(filter: ScenarioFilter, seeds: number[]): Scenario[] {
+  return seeds.map((seed) => generateScenario(createRng(seed), ksfo, filter));
 }
 
 /** The local time as minutes past midnight, which the bucket assertions compare. */
@@ -345,13 +352,13 @@ describe('generateScenario', () => {
   });
 
   it('presents the non-RNAV prop the noise window sends off the 01s on the runway heading', () => {
-    const night = drawnUnder({ time: 'night', config: { kind: 'any' } });
+    const night = drawnUnder({ time: 'night', config: { kind: 'any' } }, NIGHT_HEADING_SEEDS);
     const headings = night.filter((scenario) => {
       const result = resolveClearance(scenario, ksfo);
       return result.ok && result.clearance.procedure.value.kind === 'heading';
     });
     console.log(
-      `[night, seeds 0..${FILTERED_SEEDS.length - 1}] ${headings.length} draws are cleared on the runway heading`,
+      `[night, seeds 0..${NIGHT_HEADING_SEEDS.length - 1}] ${headings.length} draws are cleared on the runway heading`,
     );
     expect(headings.map(label).length).toBeGreaterThan(0);
     for (const scenario of headings) {
@@ -490,14 +497,14 @@ describe('the scenario filter', () => {
   });
 
   it('sets every day scenario between 0800 and 2159 local', () => {
-    const day = drawnUnder({ time: 'day', config: { kind: 'any' } });
+    const day = drawnUnder({ time: 'day', config: { kind: 'any' } }, FILTERED_SEEDS);
     expect(day).toHaveLength(FILTERED_SEEDS.length);
     expect(day.filter((entry) => minuteOf(entry) < 8 * 60).map(label)).toEqual([]);
     expect(day.filter((entry) => minuteOf(entry) >= 22 * 60).map(label)).toEqual([]);
   });
 
   it('sets every night scenario between 2200 and 0759 local', () => {
-    const night = drawnUnder({ time: 'night', config: { kind: 'any' } });
+    const night = drawnUnder({ time: 'night', config: { kind: 'any' } }, FILTERED_SEEDS);
     expect(night).toHaveLength(FILTERED_SEEDS.length);
     const daylight = night.filter(
       (entry) => minuteOf(entry) >= 8 * 60 && minuteOf(entry) < 22 * 60,
@@ -509,7 +516,10 @@ describe('the scenario filter', () => {
   });
 
   it('draws only the configurations of the plan it is narrowed to', () => {
-    const east = drawnUnder({ time: 'either', config: { kind: 'plan', plan: 'SFOE' } });
+    const east = drawnUnder(
+      { time: 'either', config: { kind: 'plan', plan: 'SFOE' } },
+      FILTERED_SEEDS,
+    );
     expect(east).toHaveLength(FILTERED_SEEDS.length);
     const planOf = (entry: Scenario): string | undefined =>
       ksfo.runwayConfigs.find((row) => row.id === entry.runwayConfigId)?.plan;
@@ -518,7 +528,10 @@ describe('the scenario filter', () => {
   });
 
   it('draws only the configuration whose id it is narrowed to', () => {
-    const straightOut = drawnUnder({ time: 'either', config: { kind: 'id', id: '28 SO' } });
+    const straightOut = drawnUnder(
+      { time: 'either', config: { kind: 'id', id: '28 SO' } },
+      FILTERED_SEEDS,
+    );
     expect(straightOut).toHaveLength(FILTERED_SEEDS.length);
     expect(straightOut.filter((entry) => entry.runwayConfigId !== '28 SO').map(label)).toEqual([]);
   });
@@ -564,11 +577,14 @@ describe('the forced destination', () => {
 
 describe('the route the draw files', () => {
   it('files the transition the noise row forces on a late-night southbound draw', () => {
-    const drawn = drawnUnder({
-      time: 'night',
-      config: { kind: 'id', id: '28/01' },
-      destination: 'KSAN',
-    }).filter(
+    const drawn = drawnUnder(
+      {
+        time: 'night',
+        config: { kind: 'id', id: '28/01' },
+        destination: 'KSAN',
+      },
+      FILTERED_SEEDS,
+    ).filter(
       (entry) =>
         timeBucket(entry.localTime) === 'late night' &&
         entry.departureRunway.startsWith('01') &&

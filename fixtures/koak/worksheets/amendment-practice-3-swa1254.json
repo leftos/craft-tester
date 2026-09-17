@@ -8,9 +8,10 @@
         "reason": "filed FL430 on a 22° magnetic course to Boise needs an odd level; the highest legal altitude at or below it is FL410"
       },
       {
+        "arrivalSwap": "OAK6 OAK SAC ANAHO",
         "box": "route",
-        "proposed": "OAK6 OAK SAC ANAHO",
-        "reason": "NIMI5 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6"
+        "proposed": "OAK6 OAK SAC ANAHO PRNCS SADYL4",
+        "reason": "NIMI5 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6; LOA-ZLC-BOI-ROUTE routes BOI via NEERO or PRNCS and the route names none of them; ANAHO usually connects to PRNCS (route building), and PRNCS is an entry fix of SADYL4 (LOA-ZLC-BOI-ROUTE), so the route is built onto SADYL4 via PRNCS"
       }
     ]
   },
@@ -31,7 +32,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: FL410 odd for the course to Boise; NIMI5 is a prop SID, OAK6 OAK SAC ANAHO"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: FL410 odd for the course to Boise; NIMI5 is a prop SID, OAK6 OAK SAC ANAHO; re-validated by the user 2026-09-17: the BOI LOA names PRNCS, so OAK6 OAK SAC ANAHO PRNCS SADYL4 (ANAHO to PRNCS added to the connection table), FL410"
   },
   "status": "settled"
 }

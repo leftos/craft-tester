@@ -6,6 +6,7 @@ import type {
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
+import { changeArrival } from '@/rules/amend/arrival.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
 import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
@@ -33,6 +34,14 @@ type FiledRoute = {
   procedure: string | undefined;
   tail: string[];
   tokens: string[];
+};
+
+/** The filed plan, how it classifies, the clearance it was given, and the airport data, as one. */
+type RouteCheck = {
+  scenario: Scenario;
+  ctx: Classification;
+  clearance: ResolvedClearance;
+  airport: AirportData;
 };
 
 /**
@@ -95,8 +104,14 @@ function appliesTo(row: LoaRule, icao: string, destination: Destination | undefi
   return destination !== undefined && row.artcc === destination.artcc;
 }
 
-/** The route library's row for a destination, absent when the library does not hold it. */
-function destinationRow(airport: AirportData, icao: string): Destination | undefined {
+/**
+ * The route library's row for a destination, absent when the library does not hold it.
+ *
+ * @param airport The airport data, whose route library holds the destinations.
+ * @param icao The destination the flight filed to.
+ * @returns The destination row, or `undefined` when the library does not carry the field.
+ */
+export function destinationRow(airport: AirportData, icao: string): Destination | undefined {
   return airport.routeLibrary.destinations.find((row) => row.icao === icao);
 }
 
@@ -173,8 +188,13 @@ function tecReason(ctx: Classification, expected: ExpectedRoute, destination: st
   return `${destination} is inside NorCal TRACON; the TEC route for a ${CLASS_WORDS[ctx.aircraftClass]} in ${ctx.plan} is ${expected.tokens.join(' ')}`;
 }
 
-/** How a reason names the flight the assignment table answered, e.g. "an RNAV jet". */
-function flightWords(ctx: Classification): string {
+/**
+ * How a reason names the flight the assignment table answered, e.g. "an RNAV jet".
+ *
+ * @param ctx The classified flight.
+ * @returns The words for its equipment and its performance class.
+ */
+export function flightWords(ctx: Classification): string {
   return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.aircraftClass]}`;
 }
 
@@ -362,18 +382,75 @@ export function loaRouteGap(
   airport: AirportData,
   destination: Destination | undefined,
 ): Unresolved | undefined {
-  for (const row of airport.loaRules) {
+  const routing = unmetRouteRow(tail, ctx, icao, airport, destination);
+  return routing === undefined ? undefined : loaRouteGapOf(routing);
+}
+
+/** One routing row of a letter of agreement, with the fixes it demands the route name one of. */
+export type LoaRouting = { row: LoaRule; tokens: string[] };
+
+/**
+ * The first routing row written for this flight that the route names none of the fixes of.
+ *
+ * @param tail The route the flight would fly after its procedure, as the box should read it.
+ * @param ctx The classified flight, whose class and RNAV capability decide which rows apply.
+ * @param icao The destination the flight filed to.
+ * @param airport The airport data, whose `loaRules` hold the routing rows.
+ * @param destination The destination row, absent when the route library does not hold it.
+ * @returns The unmet row and its fixes, or `undefined` when every applicable row is met.
+ */
+export function unmetRouteRow(
+  tail: readonly string[],
+  ctx: Classification,
+  icao: string,
+  airport: AirportData,
+  destination: Destination | undefined,
+): LoaRouting | undefined {
+  return loaRouteRows(ctx, icao, airport, destination).find(
+    ({ tokens }) => !tokens.some((token) => tail.includes(token)),
+  );
+}
+
+/**
+ * The unresolved box an unmet routing row leaves: the row, its own text, and the fixes it names.
+ *
+ * @param routing The routing row the route meets none of the fixes of.
+ * @returns The unresolved route box.
+ */
+export function loaRouteGapOf(routing: LoaRouting): Unresolved {
+  const { row, tokens } = routing;
+  return unresolved(
+    'BOX.route',
+    `${row.id}: ${row.text}; the route names none of ${tokens.join(', ')}`,
+  );
+}
+
+/**
+ * The routing rows of the letters of agreement written for this destination and this flight.
+ *
+ * A row written for named classes is read only for a flight of one of them, because an attachment
+ * cell routes props differently from jets; a row written for the RNAV column alone is read only for
+ * an RNAV-capable flight, the conventional column of such a cell reading via filed route.
+ *
+ * @param ctx The classified flight, whose class and RNAV capability decide which rows apply.
+ * @param icao The destination the flight filed to.
+ * @param airport The airport data, whose `loaRules` hold the routing rows.
+ * @param destination The destination row, absent when the route library does not hold it.
+ * @returns The applicable rows in table order, each with the fixes it names.
+ */
+export function loaRouteRows(
+  ctx: Classification,
+  icao: string,
+  airport: AirportData,
+  destination: Destination | undefined,
+): LoaRouting[] {
+  return airport.loaRules.flatMap((row) => {
     const { rule } = row;
-    if (rule.kind !== 'route' || !appliesTo(row, icao, destination)) continue;
-    if (rule.classes !== undefined && !rule.classes.includes(ctx.aircraftClass)) continue;
-    if (rule.rnavOnly === true && !ctx.rnavCapable) continue;
-    if (rule.tokens.some((token) => tail.includes(token))) continue;
-    return unresolved(
-      'BOX.route',
-      `${row.id}: ${row.text}; the route names none of ${rule.tokens.join(', ')}`,
-    );
-  }
-  return undefined;
+    if (rule.kind !== 'route' || !appliesTo(row, icao, destination)) return [];
+    if (rule.classes !== undefined && !rule.classes.includes(ctx.aircraftClass)) return [];
+    if (rule.rnavOnly === true && !ctx.rnavCapable) return [];
+    return [{ row, tokens: rule.tokens }];
+  });
 }
 
 /**
@@ -391,46 +468,68 @@ export function loaRouteGap(
  * but a row whose route begins on a departure family never applies to such a flight: `tecRouteFor`
  * puts the row's own route to the clearance engine, which answers this flight with a heading rather
  * than with the family the row begins on. A row that begins on an initial heading token is reached
- * where the flight is issued that same heading, and its route, the token dropped, is the box. A box
- * that already reads right is held against the LOA routing rows, over its whole length, because
- * there is no procedure token at its head to skip.
+ * where the flight is issued that same heading, and its route, the token dropped, is the box.
+ *
+ * A box for a destination outside the TRACON then goes through the arrival step, which may put the
+ * flight on another arrival of its destination and, where a SID the table passed over reaches an
+ * entry fix of one, issue that SID in the heading's place. The LOA routing rows are read there
+ * rather than here: a box that misses one is routed onto an arrival the letter names where the
+ * connections reach it, and only a box no arrival is reachable from is reported as the gap it
+ * leaves.
  *
  * @param filed The route box as filed, split on a leading procedure token.
- * @param scenario The filed flight plan.
- * @param ctx The classified flight, which keys the TEC route rows.
- * @param clearance The clearance the engine resolved, whose procedure citations carry the reason.
- * @param airport The airport data.
+ * @param check The filed plan, its classification, the clearance it was given, and the data.
  * @returns The amendment for the route box, `undefined` when the box reads right, or `Unresolved`
  *   when an LOA row demands a routing no data can propose.
  */
 function checkHeadingRoute(
   filed: FiledRoute,
-  scenario: Scenario,
-  ctx: Classification,
-  clearance: ResolvedClearance,
-  airport: AirportData,
+  check: RouteCheck,
 ): ResolvedAmendment | undefined | Unresolved {
+  const { scenario, ctx, airport } = check;
   const destination = destinationRow(airport, scenario.destination);
   const tec = tecRouteFor(ctx, scenario, airport, destination);
-  const expected =
+  const build =
     tec === undefined ? builtExpectation(scenario, ctx, airport, { kind: 'any' }) : undefined;
-  const resolved = tec === undefined ? (expected?.tokens ?? filed.tail) : tecTokens(tec, airport);
+  const resolved = tec === undefined ? (build?.tokens ?? filed.tail) : tecTokens(tec, airport);
   if (isUnresolved(resolved)) return resolved;
-  const tokens = withVectorNavaid(resolved, airport);
+  const expected: ExpectedRoute = { ...build, tokens: withVectorNavaid(resolved, airport), tec };
+  const outcome = headingOutcome(filed, expected, check);
+  if (tec !== undefined) return outcome;
+  if (outcome !== undefined && isUnresolved(outcome)) return outcome;
+  return changeArrival(expected.tokens, outcome, scenario, ctx, airport);
+}
+
+/**
+ * The amendment a flight on a heading needs before the arrival step, if any.
+ *
+ * @param filed The route box as filed, split on a leading procedure token.
+ * @param expected The box as it should read, with the TEC row or built route that decided it.
+ * @param check The filed plan, its classification, the clearance it was given, and the data.
+ * @returns The amendment, `undefined` when the box reads right, or `Unresolved` where a TEC box
+ *   misses the routing an LOA row demands.
+ */
+function headingOutcome(
+  filed: FiledRoute,
+  expected: ExpectedRoute,
+  check: RouteCheck,
+): ResolvedAmendment | undefined | Unresolved {
+  const { scenario, ctx, clearance, airport } = check;
+  const { tec, tokens } = expected;
   if (tokens.join(' ') === filed.tokens.join(' ')) {
+    if (tec === undefined) return undefined;
+    const destination = destinationRow(airport, scenario.destination);
     return loaRouteGap(tokens, ctx, scenario.destination, airport, destination);
   }
-  const built = expected?.built;
-  if (expected !== undefined && built !== undefined) {
-    return builtAmendment(expected, built, scenario, ctx, airport);
-  }
+  const built = expected.built;
+  if (built !== undefined) return builtAmendment(expected, built, scenario, ctx, airport);
   return {
     box: 'route',
     proposed: tokens.join(' '),
     reason:
       tec === undefined
         ? headingReason(scenario, ctx, clearance)
-        : tecReason(ctx, { tokens, tec }, scenario.destination),
+        : tecReason(ctx, expected, scenario.destination),
     citations: [...clearance.procedure.citations, ...(tec === undefined ? [] : [citeTec(tec)])],
   };
 }
@@ -450,8 +549,7 @@ function checkHeadingRoute(
  * fix the route leaves the terminal at, the box is built on the filed procedure instead, by a
  * transition, or by the fix the procedure ends on, that connects onward to the filed route; a
  * transition is preferred where both reach it equally soon. A row that forces a transition builds the box
- * on that row's own SID whatever was filed. A box that already reads right is then held against the
- * LOA routing rows written for the destination. A flight the SOP clears on the runway heading is
+ * on that row's own SID whatever was filed. A flight the SOP clears on the runway heading is
  * built the same way, on any SID the table passed over rather than only on the filed family, because
  * it has no procedure to keep; failing a build its box is the filed tail alone. A clearance the
  * engine has already built a route for is one of those flights: the heading is what it would have
@@ -460,7 +558,13 @@ function checkHeadingRoute(
  * box that files the vector SID without it is amended as a warning, the plan being filed acceptably
  * either way.
  *
-
+ * Whatever that leaves, a box whose destination is outside the TRACON goes through the arrival step
+ * last: a flight bound for a field the common-arrivals sheet covers is put on an arrival its
+ * equipment can fly, and a box that meets none of the fixes a letter of agreement demands is routed
+ * onto one the letter names, in both cases at an entry fix the connections reach. A destination
+ * inside the TRACON is left to the TEC table, which owns its routing, and a box that misses an LOA
+ * routing no arrival is reachable for is reported as the gap it leaves.
+ *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
  * @param clearance The clearance the engine resolved for the plan, which carries the procedure the
@@ -475,17 +579,41 @@ export function checkRoute(
   clearance: ResolvedClearance,
   airport: AirportData,
 ): ResolvedAmendment | undefined | Unresolved {
+  const check: RouteCheck = { scenario, ctx, clearance, airport };
   const filed = splitFiled(scenario.filedRoute);
   const procedure = clearance.procedure.value;
   if (procedure.kind === 'heading' || clearance.route.value.builtRoute !== undefined) {
-    return checkHeadingRoute(filed, scenario, ctx, clearance, airport);
+    return checkHeadingRoute(filed, check);
   }
   const expected = expectedRoute(filed, scenario, ctx, procedure.id, airport);
   if (isUnresolved(expected)) return expected;
-  const tail = expected.tokens.slice(1);
+  const outcome = procedureOutcome(filed, expected, procedure.id, check);
+  if (expected.tec !== undefined) return outcome;
+  if (outcome !== undefined && isUnresolved(outcome)) return outcome;
+  return changeArrival(expected.tokens, outcome, scenario, ctx, airport);
+}
+
+/**
+ * The amendment a flight given a procedure needs before the arrival step, if any.
+ *
+ * @param filed The route box as filed, split on a leading procedure token.
+ * @param expected The box as it should read, with the TEC row or built route that decided it.
+ * @param assigned The identifier of the procedure the SOP assigns the flight.
+ * @param check The filed plan, its classification, the clearance it was given, and the data.
+ * @returns The amendment, `undefined` when the box reads right, or `Unresolved` where a TEC box
+ *   misses the routing an LOA row demands.
+ */
+function procedureOutcome(
+  filed: FiledRoute,
+  expected: ExpectedRoute,
+  assigned: string,
+  check: RouteCheck,
+): ResolvedAmendment | undefined | Unresolved {
+  const { scenario, ctx, clearance, airport } = check;
   if (expected.tokens.join(' ') === filed.tokens.join(' ')) {
+    if (expected.tec === undefined) return undefined;
     const destination = destinationRow(airport, scenario.destination);
-    return loaRouteGap(tail, ctx, scenario.destination, airport, destination);
+    return loaRouteGap(expected.tokens.slice(1), ctx, scenario.destination, airport, destination);
   }
   if (withVectorNavaid(filed.tokens, airport).join(' ') === expected.tokens.join(' ')) {
     return vectorNavaidAmendment(expected.tokens, airport);
@@ -495,7 +623,7 @@ export function checkRoute(
   return {
     box: 'route',
     proposed: expected.tokens.join(' '),
-    reason: routeReason(filed, expected, scenario, ctx, procedure.id),
+    reason: routeReason(filed, expected, scenario, ctx, assigned),
     citations: [
       ...clearance.procedure.citations,
       ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
