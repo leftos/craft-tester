@@ -15,6 +15,7 @@ from craft_generator.cifp.navaids import Navaid, parse_navaids
 from craft_generator.cifp.records import RunwayRecord, SidRecord, parse_records
 from craft_generator.cifp.sid import CifpSid, group_sids
 from craft_generator.cifp.stars import CifpStar, parse_stars
+from craft_generator.cifp.waypoints import parse_waypoints
 from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
 from craft_generator.nct_boundary import NctBoundary, load_nct_boundary
@@ -38,6 +39,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 KSFO_RECORDS = FIXTURES / "cifp" / "ksfo_records.txt"
 AIRPORT_RECORDS = FIXTURES / "cifp" / "airport_records.txt"
 NAVAID_RECORDS = FIXTURES / "cifp" / "navaid_records.txt"
+WAYPOINT_RECORDS = FIXTURES / "cifp" / "waypoint_records.txt"
 STAR_RECORDS = FIXTURES / "cifp" / "star_records.txt"
 SFO_CHARTS_JSON = FIXTURES / "charts_api" / "SFO.json"
 CHART_TEXT = FIXTURES / "chart_text"
@@ -155,6 +157,17 @@ def ksfo_navaids(navaid_lines: list[str]) -> dict[str, Navaid]:
 
 
 @pytest.fixture(scope="session")
+def waypoint_lines() -> list[str]:
+    """Return the checked-in CIFP waypoint rows of every five-letter fix the KSFO document names."""
+    return WAYPOINT_RECORDS.read_text(encoding="ascii").splitlines()
+
+
+@pytest.fixture(scope="session")
+def ksfo_waypoints(waypoint_lines: list[str]) -> dict[str, str]:
+    return parse_waypoints(waypoint_lines)
+
+
+@pytest.fixture(scope="session")
 def equipment_suffixes() -> tuple[EquipmentSuffix, ...]:
     return load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE)
 
@@ -187,6 +200,7 @@ def ksfo_build_inputs(
     ksfo_chart_inputs: dict[str, ChartInput],
     aircraft_specs_subset: list[dict[str, Any]],
     ksfo_navaids: dict[str, Navaid],
+    ksfo_waypoints: dict[str, str],
     aircraft_characteristics: dict[str, AircraftCharacteristic],
     nct_boundary: NctBoundary,
 ) -> BuildInputs:
@@ -197,6 +211,7 @@ def ksfo_build_inputs(
         sids=group_sids(legs, [record.designator for record in runway_records]),
         runways=runway_records,
         navaids=ksfo_navaids,
+        waypoints=ksfo_waypoints,
         charts=ksfo_chart_inputs,
         aircraft_classes=classes_for_fleet(aircraft_specs_subset, ksfo_inputs.routes.fleet),
         aircraft_characteristics=aircraft_characteristics,

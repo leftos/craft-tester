@@ -12,7 +12,13 @@ import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
-import { flightDirection, isSidToken, parseFiledRoute } from '@/rules/route.ts';
+import type { RnavElement, RnavNeed } from '@/rules/route.ts';
+import {
+  flightDirection,
+  isSidToken,
+  lackingRnavElements,
+  parseFiledRoute,
+} from '@/rules/route.ts';
 import type { BuildScope, BuiltRoute } from '@/rules/routeBuild.ts';
 import { buildRoute, builtCitations, builtTokens } from '@/rules/routeBuild.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
@@ -568,6 +574,14 @@ function headingOutcome(
  * inside the TRACON is left to the TEC table, which owns its routing, and a box that misses an LOA
  * routing no arrival is reachable for is reported as the gap it leaves.
  *
+ * A route the flight's own equipment cannot fly is the one box no proposal answers: a Q route, or a
+ * fix published as an RNAV waypoint, is filed by an RNAV-capable aircraft and a T or Y route by a
+ * GPS-equipped one, and the conventional airway structure that would replace them is not in the
+ * data. Where the box a TEC row or the arrival step proposes carries none of those elements it
+ * stands as any other proposal does; otherwise the box is reported unresolved, marked
+ * `rnav_elements`: it is the one gap the amendment engine answers rather than fails on, by raising
+ * the type box to a suffix that can fly what the route files.
+ *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC route rows.
  * @param clearance The clearance the engine resolved for the plan, which carries the procedure the
@@ -577,6 +591,66 @@ function headingOutcome(
  *   when the data cannot say what the box should read.
  */
 export function checkRoute(
+  scenario: Scenario,
+  ctx: Classification,
+  clearance: ResolvedClearance,
+  airport: AirportData,
+): ResolvedAmendment | undefined | Unresolved {
+  const lacking = lackingRnavElements(scenario, ctx, airport);
+  const outcome = routeOutcome(scenario, ctx, clearance, airport);
+  if (lacking.length === 0) return outcome;
+  if (outcome !== undefined && !isUnresolved(outcome) && outcome.box === 'route') {
+    const proposal = { ...scenario, filedRoute: outcome.proposed };
+    if (lackingRnavElements(proposal, ctx, airport).length === 0) return outcome;
+  }
+  return { ...unresolved('BOX.route', rnavGapReason(lacking, scenario)), kind: 'rnav_elements' };
+}
+
+/** A list of things written the way a reason reads them out: `A`, `A and B`, `A, B and C`. */
+function listWords(items: readonly string[]): string {
+  const head = items.slice(0, -1).join(', ');
+  const last = items[items.length - 1] ?? '';
+  return head === '' ? last : `${head} and ${last}`;
+}
+
+/** What a reason calls the navigation an element takes, which is the GPS a T or Y route needs. */
+function needWords(need: RnavNeed): string {
+  return need === 'gnss' ? 'GPS' : 'RNAV';
+}
+
+/**
+ * The reason the route box is unresolved: what the route needs, and that no route can be proposed.
+ *
+ * @param lacking The elements of the filed route the flight's suffix cannot fly.
+ * @param scenario The plan as the type box's suffix check leaves it.
+ * @returns The reason, written for the player and for a data-gap report.
+ */
+function rnavGapReason(lacking: readonly RnavElement[], scenario: Scenario): string {
+  const { equipmentSuffix } = scenario;
+  const flight =
+    equipmentSuffix === null ? 'a flight with no suffix filed' : `a ${equipmentSuffix} flight`;
+  const needs: RnavNeed[] = ['rnav', 'gnss'];
+  const clauses = needs.flatMap((need) => {
+    const tokens = lacking.filter((element) => element.needs === need).map((el) => el.token);
+    if (tokens.length === 0) return [];
+    const verb = tokens.length === 1 ? 'needs' : 'need';
+    return [`${listWords(tokens)} ${verb} ${needWords(need)} ${flight} does not carry`];
+  });
+  return `${clauses.join(', and ')}, and the data holds no conventional route to propose`;
+}
+
+/**
+ * The route box the SOP, the TEC table and the arrival sheet ask for, before the flight's own
+ * equipment is held against it.
+ *
+ * @param scenario The filed flight plan.
+ * @param ctx The classified flight, which keys the TEC route rows.
+ * @param clearance The clearance the engine resolved for the plan.
+ * @param airport The airport data.
+ * @returns The amendment for the route box, `undefined` when the box reads right, or `Unresolved`
+ *   when the data cannot say what the box should read.
+ */
+function routeOutcome(
   scenario: Scenario,
   ctx: Classification,
   clearance: ResolvedClearance,

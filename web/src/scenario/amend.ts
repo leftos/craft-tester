@@ -2,7 +2,7 @@ import type { AirportData, Destination, EquipmentSuffix, Scenario, Sid } from '@
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
-import { isSidToken } from '@/rules/route.ts';
+import { isSidToken, rnavElements } from '@/rules/route.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import type { Rng, Weighted } from '@/scenario/rng.ts';
@@ -19,7 +19,8 @@ export type FaultKind =
   | 'missing_suffix'
   | 'unknown_suffix'
   | 'no_mode_c'
-  | 'rnav_clash';
+  | 'rnav_clash'
+  | 'rnav_element';
 
 /**
  * Which strip boxes each fault means to make wrong.
@@ -27,7 +28,8 @@ export type FaultKind =
  * The RNAV clash takes two boxes because the data does not settle which of them the controller
  * amends: raising the suffix leaves the plan standing as filed, amending every other box the plan
  * is then wrong in fixes it the other way round. The clash is drawn outside the RVSM band, so the
- * other side of it is the route box alone.
+ * other side of it is the route box alone. The RNAV element takes the type box alone: the route it
+ * makes unflyable cannot be replaced from the data, so the suffix is the only thing that can give.
  */
 export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   stale_sid: ['route'],
@@ -41,6 +43,7 @@ export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   unknown_suffix: ['type'],
   no_mode_c: ['type'],
   rnav_clash: ['type', 'route'],
+  rnav_element: ['type'],
 };
 
 /** A filed plan with the faults injected into it, and what the amendment engine makes of it. */
@@ -245,12 +248,14 @@ function nonRvsmInBand(scenario: Scenario, airport: AirportData): FaultPatch | u
  * Whether a plan can carry a suffix fault that leaves every other box alone.
  *
  * A plan with no suffix, and one whose suffix the equipment table does not hold, both read as
- * neither RNAV nor RVSM approved: the altitude must therefore sit outside the RVSM band and the
- * filed procedure must be one a non-RNAV flight may fly, or the fault would take a second box.
+ * neither RNAV nor RVSM approved: the altitude must therefore sit outside the RVSM band, the filed
+ * procedure must be one a non-RNAV flight may fly, and the route must name no RNAV element, or the
+ * fault would take a second box.
  */
 function takesPlainSuffixFault(scenario: Scenario, airport: AirportData): boolean {
   const sid = filedSid(scenario, airport);
-  return !inRvsmBand(scenario.filedAltitude) && sid !== undefined && !sid.rnavRequired;
+  if (inRvsmBand(scenario.filedAltitude) || sid === undefined || sid.rnavRequired) return false;
+  return rnavElements(scenario, airport).length === 0;
 }
 
 /** No equipment suffix filed at all. */
@@ -293,21 +298,59 @@ function noModeC(scenario: Scenario, airport: AirportData): FaultPatch | undefin
 }
 
 /**
- * A suffix without RNAV capability, for a plan that files an RNAV procedure.
+ * The first row of the equipment table that reports altitude and lacks the navigation a plan needs.
  *
- * The fault is drawn only outside the RVSM band, so the non-RNAV suffix leaves the altitude box
- * alone: the other side of the clash is then the route box by itself, and the draw stays at the two
- * boxes `FAULT_BOXES` says it takes. The row reports Mode C, which the type box would otherwise be
- * amended for before the clash is ever read.
+ * A plan over a Q route, an RNAV waypoint or an RNAV procedure needs RNAV; one over a T or Y route
+ * needs the GPS that only a GNSS row carries, so a plan wanting nothing but GNSS takes an RNAV row
+ * without it. Every row reports Mode C, which the type box would otherwise be amended for before
+ * the navigation is ever read.
+ *
+ * @param airport The airport data, whose `equipmentSuffixes` is the table.
+ * @param needsRnav Whether the plan needs RNAV itself, rather than only the GPS a T or Y route takes.
+ * @returns The suffix to write into the plan, absent where the table holds no such row.
+ */
+function lackingSuffix(airport: AirportData, needsRnav: boolean): string | undefined {
+  const row = airport.equipmentSuffixes.find((entry) =>
+    needsRnav
+      ? entry.rnav !== true && entry.transponderModeC
+      : entry.rnav === true && entry.gnss !== true && entry.transponderModeC,
+  );
+  return row?.suffix;
+}
+
+/**
+ * A suffix without the navigation the filed procedure needs, for a plan that files an RNAV one.
+ *
+ * The clash is the fault the controller has two answers to, so it is drawn only where the procedure
+ * is the whole of what needs RNAV: a route carrying an RNAV element of its own cannot be flown by
+ * the non-RNAV plan at all, and the type box is then the only answer rather than one of two. The
+ * fault is drawn only outside the RVSM band, so the suffix leaves the altitude box alone: the other
+ * side of the clash is then the route box by itself, and the draw stays at the two boxes
+ * `FAULT_BOXES` says it takes.
  */
 function rnavClash(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
-  const sid = filedSid(scenario, airport);
-  if (sid === undefined || !sid.rnavRequired || inRvsmBand(scenario.filedAltitude))
-    return undefined;
-  const row = airport.equipmentSuffixes.find(
-    (entry) => entry.rnav !== true && entry.transponderModeC,
-  );
-  return row === undefined ? undefined : { field: 'equipmentSuffix', suffix: row.suffix };
+  if (inRvsmBand(scenario.filedAltitude)) return undefined;
+  if (filedSid(scenario, airport)?.rnavRequired !== true) return undefined;
+  if (rnavElements(scenario, airport).length > 0) return undefined;
+  const suffix = lackingSuffix(airport, true);
+  return suffix === undefined ? undefined : { field: 'equipmentSuffix', suffix };
+}
+
+/**
+ * A suffix without the navigation the route itself files, for a plan over an RNAV element.
+ *
+ * The route is then one the plan cannot fly and the data holds no conventional route to replace it
+ * with, so the type box is the only answer: the altitude and the route are read for the plan the
+ * corrected suffix leaves, which is the plan as drawn. A plan filing an RNAV procedure is left to
+ * the clash, which is the same fault with two answers to choose between.
+ */
+function rnavElement(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
+  if (filedSid(scenario, airport)?.rnavRequired === true) return undefined;
+  const elements = rnavElements(scenario, airport);
+  if (elements.length === 0) return undefined;
+  const needsRnav = elements.some((element) => element.needs === 'rnav');
+  const suffix = lackingSuffix(airport, needsRnav);
+  return suffix === undefined ? undefined : { field: 'equipmentSuffix', suffix };
 }
 
 /** How every fault is injected, in the order the applicable ones are collected. */
@@ -323,6 +366,7 @@ const INJECTORS: Record<FaultKind, Injector> = {
   unknown_suffix: unknownSuffix,
   no_mode_c: noModeC,
   rnav_clash: rnavClash,
+  rnav_element: rnavElement,
 };
 
 /** Every fault kind, in the order the tables list them. */

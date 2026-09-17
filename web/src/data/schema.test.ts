@@ -116,6 +116,7 @@ const minimalAirportData: AirportData = {
     },
   ],
   fixSpoken: { OSI: 'Woodside' },
+  rnavWaypoints: [],
   assignmentRules: [minimalAssignmentRule],
   noiseWindows: [],
   altitudeRules: [

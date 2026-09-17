@@ -577,6 +577,25 @@ def test_a_navaid_only_a_fixture_names_warns_instead_of_failing(ksfo_build_input
     assert "navaid(s) on worksheet routes have no spoken name: ZZQ" in capsys.readouterr().err
 
 
+def test_an_rnav_waypoint_the_data_files_is_listed(ksfo_document: Document) -> None:
+    listed = ksfo_document["rnavWaypoints"]
+    assert "DEDHD" in listed
+    assert "NTELL" in listed
+
+
+def test_only_the_rnav_only_fixes_of_a_filed_route_are_listed(ksfo_build_inputs: BuildInputs) -> None:
+    document = build_airport(replace(ksfo_build_inputs, fixture_routes=("TRUKN2 NTELL ALTAM ZZQQZ",)))
+    listed = document["rnavWaypoints"]
+    assert "NTELL" in listed, "NTELL is published as an RNAV waypoint"
+    assert "ALTAM" not in listed, "ALTAM is published as a combined named intersection and RNAV waypoint"
+    assert "ZZQQZ" not in listed, "the CIFP publishes no waypoint record for ZZQQZ"
+
+
+def test_the_rnav_waypoints_are_sorted_and_named_once(ksfo_document: Document) -> None:
+    listed = ksfo_document["rnavWaypoints"]
+    assert listed == sorted(set(listed))
+
+
 def test_a_route_tail_ending_on_another_destinations_arrival_warns(ksfo_build_inputs: BuildInputs, capsys: pytest.CaptureFixture[str]) -> None:
     routes = ksfo_build_inputs.airport.routes
     seattle_star_to_vancouver = RouteEntry(exit_fix="DEDHD", destination="CYVR", tail="DEDHD LMT BTG HAWKZ7", classes=("J",), altitudes=(36000,))

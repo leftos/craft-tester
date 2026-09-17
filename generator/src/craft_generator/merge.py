@@ -34,6 +34,11 @@ rather than curated. Transitions are the exception that keeps their published na
 transition is the bare navaid name, "Mendocino", because a controller says "Mendocino transition"
 but "radar vectors Mendocino VOR".
 
+``rnavWaypoints`` is derived from the same sources, read the other way round: every five-letter fix
+those rows and the fixtures name whose CIFP waypoint type is ``W``, the RNAV-only kind. A fix the
+CIFP publishes as a combined intersection and RNAV waypoint, as a named intersection or not at all
+is left out, so the list holds exactly the fixes an aircraft needs RNAV to file.
+
 Two SID facts are computed here rather than transcribed. ``climbViaEligible`` follows FAA JO 7110.65
 4-3-2 c as ZOA applies it: a procedure may be cleared "climb via SID" when it publishes crossing
 restrictions **or** a top altitude, and when it has no vector segment - so the radar-vector and
@@ -63,6 +68,7 @@ from craft_generator.cifp.navaids import Navaid
 from craft_generator.cifp.records import RunwayRecord
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
 from craft_generator.cifp.stars import CifpStar
+from craft_generator.cifp.waypoints import RNAV_WAYPOINT
 from craft_generator.nct_boundary import NctBoundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
@@ -115,6 +121,7 @@ PUBLISHED_TOP_ALTITUDE = "published"
 
 _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
 _NAVAID_TOKEN = re.compile(r"[A-Z]{2,3}")
+_FIX_TOKEN = re.compile(r"[A-Z]{5}")
 _PROCEDURE_TOKEN = re.compile(r"(?P<family>[A-Z]{3,5})\d+")
 _PROCEDURE_FAMILY_TOKEN = re.compile(rf"(?P<family>[A-Z]{{3,5}}){re.escape(SID_PLACEHOLDER)}")
 _HEADING_TOKEN = re.compile(r"H\d{3}")
@@ -143,8 +150,9 @@ class Provenance:
 class BuildInputs:
     """Every source :func:`build_airport` joins, already parsed.
 
-    ``sids``, ``runways``, ``navaids``, ``airport_records`` and ``destination_stars`` come from the
-    CIFP - the runway records in CIFP order, the navaids keyed by identifier, the airport records by
+    ``sids``, ``runways``, ``navaids``, ``waypoints``, ``airport_records`` and ``destination_stars``
+    come from the CIFP - the runway records in CIFP order, the navaids and the waypoint type letter
+    of every fix keyed by identifier, the airport records by
     ICAO identifier - ``charts`` from the
     charts API and the chart PDFs (keyed by chart name, in the order the API lists them),
     ``aircraft_classes`` from the vNAS specs, and ``fixture_routes`` from the filed route of every
@@ -164,6 +172,7 @@ class BuildInputs:
     sids: dict[str, CifpSid]
     runways: tuple[RunwayRecord, ...]
     navaids: dict[str, Navaid]
+    waypoints: Mapping[str, str]
     charts: dict[str, ChartInput]
     aircraft_classes: dict[str, AircraftClass]
     aircraft_characteristics: dict[str, AircraftCharacteristic]
@@ -1029,6 +1038,14 @@ def _fixture_navaid_tokens(document: Document, inputs: BuildInputs) -> set[str]:
     return tokens - {document["airport"]["faa"]}
 
 
+def _rnav_waypoints(document: Document, inputs: BuildInputs) -> list[str]:
+    """Return every fix the airport data or its fixtures file that the CIFP publishes as RNAV-only."""
+    tokens = {token for token, _ in _route_navaid_tokens(document)}
+    tokens |= {token for route in inputs.fixture_routes for token in route.split()}
+    filed = {token for token in tokens if _FIX_TOKEN.fullmatch(token)}
+    return sorted(token for token in filed if inputs.waypoints.get(token) == RNAV_WAYPOINT)
+
+
 def _fix_spoken(document: Document, inputs: BuildInputs) -> dict[str, str]:
     tokens = set(_document_navaid_tokens(document)) | _fixture_navaid_tokens(document, inputs)
     named = {token: inputs.navaids[token].spoken for token in sorted(tokens) if token in inputs.navaids}
@@ -1165,6 +1182,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "noSid": {"runwayFamilies": list(sop.no_sid.runway_families), "phrasing": sop.no_sid.phrasing},
         "sids": _sids(inputs),
         "fixSpoken": {},
+        "rnavWaypoints": [],
         "assignmentRules": [_assignment_rule(rule) for rule in sop.assignment_rules],
         "noiseWindows": [_noise_window(window) for window in sop.noise_windows],
         "altitudeRules": [_altitude_rule(rule) for rule in sop.altitude_rules],
@@ -1186,6 +1204,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "routeLibrary": _route_library(inputs),
     }
     document["fixSpoken"] = _fix_spoken(document, inputs)
+    document["rnavWaypoints"] = _rnav_waypoints(document, inputs)
     _check(document, inputs)
     _warn(document, inputs)
     return document

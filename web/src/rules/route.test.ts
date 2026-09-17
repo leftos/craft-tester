@@ -1,15 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData } from '@/data/schema.ts';
+import type { AirportData, Scenario } from '@/data/schema.ts';
 import {
   directionOf,
   isAirwayToken,
   isSidToken,
   parseFiledRoute,
+  rnavElements,
   routeFromExitFix,
 } from '@/rules/route.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+
+/** A filed plan whose route box is the only thing these tests read. */
+function plan(filedRoute: string): Scenario {
+  return {
+    callsign: 'UAL1',
+    aircraftType: 'B738',
+    equipmentSuffix: '/L',
+    destination: 'KSEA',
+    filedRoute,
+    filedAltitude: 34000,
+    runwayConfigId: '28/01',
+    departureRunway: '01R',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '1234',
+  };
+}
 
 describe('isSidToken', () => {
   it.each([
@@ -121,6 +139,31 @@ describe('parseFiledRoute', () => {
       element: 'R.route',
       reason: expect.stringContaining('J501'),
     });
+  });
+});
+
+describe('rnavElements', () => {
+  it.each([
+    ['SFO4 OAK V6 SAC', []],
+    ['TRUKN2 DEDHD RBL LMT HAWKZ7', []],
+    ['TRUKN2 TRUKN CCR', []],
+    ['DEDHD RBL LMT HAWKZ7', ['DEDHD']],
+    ['MOGEE Q174 FLCHR', ['MOGEE', 'Q174', 'FLCHR']],
+  ] as const)('reads %s as needing %s', (filedRoute, expected) => {
+    expect(rnavElements(plan(filedRoute), ksfo).map((element) => element.token)).toEqual(expected);
+  });
+
+  it('says what each element is and what it takes to fly', () => {
+    expect(rnavElements(plan('DEDHD T257 RBL'), ksfo)).toEqual([
+      { token: 'DEDHD', needs: 'rnav', kind: 'waypoint' },
+      { token: 'T257', needs: 'gnss', kind: 'airway' },
+    ]);
+  });
+
+  it('names a fix filed twice once', () => {
+    expect(rnavElements(plan('DEDHD RBL DEDHD'), ksfo).map((element) => element.token)).toEqual([
+      'DEDHD',
+    ]);
   });
 });
 

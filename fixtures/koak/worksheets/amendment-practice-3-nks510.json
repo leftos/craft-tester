@@ -6,7 +6,7 @@
         "alternativeTo": "altitude",
         "box": "type",
         "proposed": "A320/L",
-        "reason": "an RNAV suffix would make the plan correct as filed: the filed CNDEL5, the route and FL350 all stand for a /L flight"
+        "reason": "an RNAV suffix would make the plan correct as filed: the filed CNDEL5 needs RNAV, EBAYE and BURGL are RNAV waypoints, and the route and FL350 all stand for a /L flight"
       },
       {
         "alternativeTo": "type",

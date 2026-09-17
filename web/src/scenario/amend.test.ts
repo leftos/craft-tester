@@ -4,7 +4,7 @@ import type { AirportData, Scenario } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
-import { isSidToken } from '@/rules/route.ts';
+import { isSidToken, rnavElements } from '@/rules/route.ts';
 import type { AmendmentScenario, FaultKind } from '@/scenario/amend.ts';
 import {
   FAULT_BOXES,
@@ -359,7 +359,20 @@ describe('fault injection', () => {
     expect(suffix?.transponderModeC, label(entry)).toBe(true);
     const sid = ksfo.sids.find((row) => row.id === headOf(entry));
     expect(sid?.rnavRequired, label(entry)).toBe(true);
+    expect(rnavElements(entry.filed, ksfo), label(entry)).toEqual([]);
     expect(proposalFor(entry, 'type'), label(entry)).toBeDefined();
     expect(proposalFor(entry, 'route'), label(entry)).toBeDefined();
+  });
+
+  it('files a suffix without the navigation the route needs, which the type box alone answers', () => {
+    const entry = onlyFault('rnav_element');
+    const suffix = ksfo.equipmentSuffixes.find((row) => row.suffix === entry.filed.equipmentSuffix);
+    expect(suffix?.transponderModeC, label(entry)).toBe(true);
+    expect(rnavElements(entry.filed, ksfo).length, label(entry)).toBeGreaterThan(0);
+    expect(ksfo.sids.find((row) => row.id === headOf(entry))?.rnavRequired ?? false).toBe(false);
+    expect(raisedBoxes(entry), label(entry)).toEqual(['type']);
+    expect(amendmentFor(entry, 'type')?.reason, label(entry)).toContain(
+      'the data holds no conventional route',
+    );
   });
 });

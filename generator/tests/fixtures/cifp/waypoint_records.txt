@@ -1,0 +1,78 @@
+SUSAP KOAKK2CAAAME K20    W     N37461527W122045812                       E0128     NAR           AAAME                    719162605
+SUSAEAENRT   AAERO K22    W     N39355773W106584601                       E0085     NAR           AAERO                    271752605
+SPACEAENRT   ALANN P 0    W     N35354800W125562400                       E0129     NAR           ALANN                    197662504
+SPACEAENRT   ALCOA P 0    C   B N37495971W125500429                       E0133     NAR           ALCOA                    197672605
+SPACEAENRT   ALLBE P 0    W   B N37302300W127000000                       E0134     NAR           ALLBE                    197712605
+SUSAEAENRT   ALTAM K20    C   L N37484382W121444954                       E0128     NAR           ALTAM                    276772605
+SUSAEAENRT   AMAKR K20    C     N39000000W123450000                       E0133     NAR           AMAKR                    277052605
+SUSAEAENRT   ANAHO K20    C   H N39573997W119245630                       E0128     NAR           ANAHO                    277762605
+SPACEAENRT   BAART P 0    W   B N36274300W126560000                       E0131     NAR           BAART                    198032605
+SUSAEAENRT   BDROC K20    R   H N38270328W108361986                       E0091     NAR           BDROC                    286872605
+SPACEAENRT   BEBOP P 0    C   B N36595980W125000418                       E0131     NAR           BEBOP                    198202504
+SPACEAENRT   BILLO P 0    W   B N31104200W141172400                       E0120     NAR           BILLO                    198352605
+SPACEAENRT   BITTA P 0    C   B N23314091W155284381                       E0096     NAR           BITTA                    198422605
+SUSAEAENRT   BOILE K20    C   H N34252078W118013307                       E0114     NAR           BOILE                    293202605
+SUSAEAENRT   BURGL K20    W     N35395768W120062786                       E0121     NAR           BURGL                    298302504
+SUSAEAENRT   CATHE K20    R   L N37054682W121185707                       E0126     NAR           CATHE                    303292504
+SUSAP KSFOK2CCIITY K20    W     N37315922W122085824                       E0128     NAR           CIITY                    142122605
+SPACEAENRT   CINNY P 0    W   B N36105400W124453600                       E0129     NAR           CINNY                    199082504
+SUSAEAENRT   CISKO K20    W     N35415102W120275464                       E0121     NAR           CISKO                    314932605
+SUSAEAENRT   CLASN K20    W     N35393540W119300870                       E0119     NAR           CLASN                    315772605
+SPACEAENRT   CLUTS P 0    C   B N23001173W154391718                       E0096     NAR           CLUTS                    199142605
+SUSAEAENRT   COLLI K20    R   L N37514672W122050064                       E0128     NAR           COLLI                    318062605
+SUSAEAENRT   DEDHD K20    W     N38200786W122064611                       E0129     NAR           DEDHD                    327862605
+SUSAP KMCIK3CDPEAK K30    W     N40052763W096335824                       E0024     NAR           DPEAK                    503952605
+SUSAEAENRT   EBAYE K20    W     N35520739W120153801                       E0121     NAR           EBAYE                    337522605
+SUSAEAENRT   ESSAA K20    W     N37040507W116555916                       E0116     NAR           ESSAA                    343652605
+SUSAEAENRT   EUGEN K20    R   L N37053641W122263917                       E0127     NAR           EUGEN                    344292605
+SUSAEAENRT   FEVTA K20    W     N38084943W121581304                       E0129     NAR           FEVTA                    350632605
+SUSAEAENRT   FLCHR K20    W   H N37060227W116523136                       E0116     NAR           FLCHR                    353762605
+SUSAEAENRT   GALLI K20    W   H N40191034W118071784                       E0125     NAR           GALLI                    358772605
+SUSAEAENRT   GILRO K20    C   L N37024662W121340676                       E0126     NAR           GILRO                    361822605
+SUSAP KSFOK2CGNNRR K20    W     N37402908W122301218                       E0129     NAR           GNNRR                    142322605
+SUSAEAENRT   GOBBS K20    C   L N37461674W122392923                       E0129     NAR           GOBBS                    363512605
+SUSAEAENRT   GRTFL K20    W     N38210781W122135329                       E0130     NAR           GRTFL                    366652605
+SUSAP KSBAK2CHABUT K20    R     N34252053W120051966                       E0118     NAR           HABUT                    096542605
+SUSAEAENRT   HAQHY K20    C   L N38491219W108051902                       E0089     NAR           HAQHY                    370712605
+SUSAEAENRT   INSLO K20    W   H N38404490W117175320                       E0120     NAR           INSLO                    389072605
+SUSAEAENRT   JEDNA K20    W   H N36192355W115392217                       E0112     NAR           JEDNA                    395762605
+SUSAEAENRT   JSICA K20    W   H N38311386W117171254                       E0120     NAR           JSICA                    404142605
+SUSAP KDENK2CKAMPR K20    W     N40402229W109025190                       E0096     NAR           KAMPR                    665302605
+SUSAEAENRT   KAYEX K20    W     N36291495W120565229                       E0124     NAR           KAYEX                    408722605
+SCANEAENRT   KIVAK PA0    W   B N60350000W172050000                       E0044     NAR           KIVAK                    018652605
+SUSAEAENRT   KREYK K20    W   H N39282048W112115412                       E0106     NAR           KREYK                    420822605
+SUSAEAENRT   KTINA K20    W     N36230360W121094862                       E0124     NAR           KTINA                    422182605
+SUSAEAENRT   LEGOZ K20    W     N33275012W118355557                       E0113     NAR           LEGOZ                    429052605
+SCANEAENRT   LEIDY PA0    W     N52061500W173595168                       E0044     NAR           LEIDY                    019422605
+SUSAEAENRT   LOSHN K20    W     N35505139W120000171                       E0121     NAR           LOSHN                    433652605
+SUSAP KPDXK1CMACHU K20    W     N41312973W122343123                       E0137     NAR           MACHU                    854042605
+SCANEAENRT   MARCC PA0    W   B N60113600W177533600                       E0017     NAR           MARCC                    020082605
+SUSAEAENRT   MCKEY K20    C     N35285914W121045930                       E0122     NAR           MCKEY                    441412605
+SUSAEAENRT   MOGEE K20    W   H N38201000W121232300                       E0128     NAR           MOGEE                    446312605
+SUSAEAENRT   MOLEN K20    C   L N37595234W123051247                       E0130     NAR           MOLEN                    446532605
+SUSAEAENRT   NIITE K20    W     N37504287W122231273                       E0129     NAR           NIITE                    453312605
+SUSAEAENRT   NTELL K20    W   B N36535899W119532221                       E0123     NAR           NTELL                    455412504
+SUSAEAENRT   ORRCA K20    W   H N38263717W121330584                       E0129     NAR           ORRCA                    462812605
+SUSAEAENRT   PARZZ K20    W   B N41361464W115020969                       E0119     NAR           PARZZ                    467132605
+SUSAEAENRT   PORTE K20    C   L N37292323W122282848                       E0128     NAR           PORTE                    474102605
+SUSAP KBOIK1CPRNCS K10    W     N42263565W117485257                       E0129     NAR           PRNCS                    384492605
+SUSAEAENRT   RDHOT K20    W     N35353331W120213643                       E0121     NAR           RDHOT                    480102605
+SUSAP KSFOK2CSAHEY K20    W     N37340642W122144040                       E0128     NAR           SAHEY                    142772605
+SUSAP KSFOK2CSNTNA K20    W     N37501603W122260326                       E0129     NAR           SNTNA                    142852605
+SUSAP KRNOK2CSPOON K20    C     N39062620W119461312                       E0127     NAR           SPOON                    036092605
+SUSAP KSFOK2CSSTIK K20    W     N37404204W122214197                       E0128     NAR           SSTIK                    142872605
+SUSAEAENRT   STINS K20    C   L N37492524W122452406                       E0129     NAR           STINS                    501522605
+SUSAEAENRT   SUNOL K20    C   L N37361991W121483701                       E0127     NAR           SUNOL                    503122605
+SUSAEAENRT   SUSEY K20    W     N36255687W121034799                       E0124     NAR           SUSEY                    503302605
+SUSAEAENRT   SYRAH K20    W   H N37592778W121061112                       E0127     NAR           SYRAH                    504392605
+SUSAP KRNOK2CTARVR K20    W     N38485551W119461527                       E0126     NAR           TARVR                    036122605
+SUSAEAENRT   TILLT K20    W     N35271322W121000351                       E0122     NAR           TILLT                    509492605
+SUSAEAENRT   TIPRE K20    W   B N38122100W121020900                       E0127     NAR           TIPRE                    509882605
+SUSAEAENRT   TRUCK K20    C   L N39261567W120094248                       E0128     NAR           TRUCK                    513152605
+SUSAP KSFOK2CTRUKN K20    W     N37430321W122125252                       E0128     NAR           TRUKN                    142902605
+SUSAEAENRT   TUVOC K10    C   L N43150963W110303198                       E0106     NAR           TUVOC                    514652605
+SUSAP KOAKK2CWAGES K20    R     N36592772W121441342                       E0126     NAR           WAGES                    719882605
+SUSAP KSFOK2CWESLA K20    C     N37395174W122284905                       E0129     NAR           WESLA                    142972605
+SUSAEAENRT   YAGER K20    C   L N40332649W123492745                       E0137     NAR           YAGER                    544492605
+SUSAEAENRT   YUBBA K20    C   L N39072578W121460977                       E0130     NAR           YUBBA                    547282605
+SUSAEAENRT   YYUNG K20    W     N35305790W121040727                       E0122     NAR           YYUNG                    547702605

@@ -148,10 +148,17 @@ export type ClearanceElement =
   | 'BOX.altitude'
   | 'BOX.route';
 
-/** An element the engine could not resolve, with the reason to show the player. */
+/**
+ * An element the engine could not resolve, with the reason to show the player.
+ *
+ * `kind` marks the one gap another check answers rather than fails on: a route box left unresolved
+ * because the flight's own suffix cannot fly what the route files, which the amendment engine
+ * answers with the type box where the fleet files a suffix that can.
+ */
 export type Unresolved = {
   element: ClearanceElement;
   reason: string;
+  kind?: 'rnav_elements';
 };
 
 /** What the engine returns: a full clearance, or the elements that blocked it. */

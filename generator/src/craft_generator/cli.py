@@ -37,6 +37,7 @@ from craft_generator.cifp.navaids import parse_navaids
 from craft_generator.cifp.records import parse_records
 from craft_generator.cifp.sid import group_sids
 from craft_generator.cifp.stars import parse_stars
+from craft_generator.cifp.waypoints import parse_waypoints
 from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_path, schema_path, validate, write_or_check
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
@@ -413,6 +414,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             sids=group_sids(legs, tuple(record.designator for record in runway_records)),
             runways=runway_records,
             navaids=parse_navaids(lines),
+            waypoints=parse_waypoints(lines),
             charts=charts,
             aircraft_classes=classes_for_fleet(fetch_aircraft_specs(cache, force=force), inputs.routes.fleet),
             aircraft_characteristics=load_aircraft_characteristics(shared_dir() / AIRCRAFT_CHARACTERISTICS_FILE),
