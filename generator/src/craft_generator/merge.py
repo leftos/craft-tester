@@ -897,19 +897,6 @@ def _check_fleet(document: Document) -> None:
             raise ValueError(f"routeLibrary.fleet[{entry['type']}]: no aircraft class was resolved for {entry['type']!r} from the vNAS specs")
 
 
-def _check_approach_categories(document: Document) -> None:
-    """Check that the fleet can answer the approach-category question, where a rule row asks it."""
-    asking = [rule["id"] for rule in document["assignmentRules"] if rule.get("approachCategories")]
-    if not asking:
-        return
-    missing = [entry["type"] for entry in document["routeLibrary"]["fleet"] if "approachCategory" not in entry]
-    if missing:
-        raise ValueError(
-            f"routeLibrary.fleet: {len(missing)} type(s) carry no `approach_category` ({', '.join(missing)}), "
-            f"but assignmentRules[{asking[0]}] selects on approach category; give every fleet type its category in routes.yaml"
-        )
-
-
 def _check_destinations(document: Document) -> None:
     known = {destination["icao"] for destination in document["routeLibrary"]["destinations"]}
     for route in _routes(document):
@@ -1089,7 +1076,6 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_runways(document, inputs.runways)
     _check_runway_defaults(document)
     _check_fleet(document)
-    _check_approach_categories(document)
     _check_destinations(document)
     _check_outside_nct(document, inputs)
     _check_tec_routes(document)

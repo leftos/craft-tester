@@ -116,9 +116,6 @@ export function routeFromExitFix(filedRoute: string, airportFaa: string): string
  * The names one SID's own structure carries: the family the procedure is named for, the fix it is
  * built on, and every fix its published restrictions name.
  *
- * A restriction row whose fix is the empty string is a chart-parse artefact, carried by five KOAK
- * SIDs, and names nothing.
- *
  * @param sid One published SID.
  * @returns The names, in no particular order.
  */
@@ -126,7 +123,7 @@ function structureNames(sid: Sid): string[] {
   return [
     sid.family,
     ...(sid.baseFix === undefined ? [] : [sid.baseFix]),
-    ...sid.restrictions.map((row) => row.fix).filter((fix) => fix !== ''),
+    ...sid.restrictions.map((row) => row.fix),
   ];
 }
 

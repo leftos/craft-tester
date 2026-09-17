@@ -108,13 +108,13 @@ direction_runway_preference:
     south: { "28": "28R", "30": "30", "33": "33" }
     oceanic: { "28": "28R", "30": "30", "33": "33" }
   OAKE:
-    north: { "10": "10R", "12": "12" }
-    south: { "10": "10R", "12": "12" }
-    oceanic: { "10": "10R", "12": "12" }
+    north: { "10": "10L", "12": "12" }
+    south: { "10": "10L", "12": "12" }
+    oceanic: { "10": "10L", "12": "12" }
   SFOE:
-    north: { "10": "10R", "12": "12" }
-    south: { "10": "10R", "12": "12" }
-    oceanic: { "10": "10R", "12": "12" }
+    north: { "10": "10L", "12": "12" }
+    south: { "10": "10L", "12": "12" }
+    oceanic: { "10": "10L", "12": "12" }
 
 # Distractor pool for the frequency dropdown: the OAK positions (SOP 1-5), the three SOP departure
 # sectors and the nearby NorCal sectors and center.
