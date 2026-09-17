@@ -124,6 +124,63 @@ describe('checkRoute procedure', () => {
   });
 });
 
+describe('checkRoute departure structure', () => {
+  /** The worksheet plan that files the fix its departure flies over, then a transition of it. */
+  function fft2015(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      callsign: 'FFT2015',
+      aircraftType: 'A20N',
+      destination: 'KLAX',
+      filedRoute: 'PORTE8 PORTE SUSEY EBAYE BURGL',
+      filedAltitude: 29000,
+      departureRunway: '28L',
+      runwayConfigId: '28 RT',
+      squawk: '4612',
+      ...overrides,
+    });
+  }
+
+  it('reads a KSFO plan from the transition rather than the base fix the SID flies over', () => {
+    const result = amendment(fft2015());
+    expect(result.proposed).toBe('WESLA5 SUSEY EBAYE BURGL');
+    expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
+  });
+
+  it('reads a KOAK plan past the procedure name and the base fix filed as route elements', () => {
+    const flight = fft2015({
+      filedRoute: 'CNDEL PORTE SUSEY EBAYE BURGL',
+      departureRunway: '30',
+      runwayConfigId: 'SFOW',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('CNDEL5 SUSEY EBAYE BURGL');
+    expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
+  });
+
+  it('amends a plan whose procedure is right and whose only fault is the structure fix', () => {
+    const result = amendment(fft2015({ filedRoute: 'WESLA5 PORTE SUSEY EBAYE BURGL' }));
+    expect(result.proposed).toBe('WESLA5 SUSEY EBAYE BURGL');
+    expect(result.reason).toBe(
+      'PORTE lies on the WESLA5 structure; the route is read from its published transition SUSEY',
+    );
+    expect(result.warning).toBeUndefined();
+  });
+
+  it('leaves a base fix the route files no transition of that SID after alone', () => {
+    const flight = scenario({
+      callsign: 'N221TB',
+      aircraftType: 'TBM9',
+      equipmentSuffix: '/G',
+      destination: 'KSMF',
+      filedRoute: 'TRUKN2 TRUKN FEVTA FEVTA1',
+      filedAltitude: 11000,
+      localTime: '1230',
+      squawk: '4117',
+    });
+    expect(check(flight)).toBeUndefined();
+  });
+});
+
 describe('checkRoute route building', () => {
   /** The worksheet plan filed to a fix the assigned SSTIK# does not publish a transition to. */
   function swa984(overrides: Partial<Scenario> = {}): Scenario {

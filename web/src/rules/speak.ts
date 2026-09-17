@@ -1,5 +1,5 @@
 import type { NonDpHeading } from '@/data/schema.ts';
-import { routeFromExitFix } from '@/rules/route.ts';
+import { isAirwayToken, routeFromExitFix } from '@/rules/route.ts';
 import type { ResolvedClearance, Turn } from '@/rules/types.ts';
 
 /** A heading is read as three digits, so a two-digit heading is spoken with a leading zero. */
@@ -51,9 +51,6 @@ const PHONETIC_LETTERS: Readonly<Record<string, string>> = {
 
 /** Airway letters that are not spoken phonetically: "Victor 6", "Jay 5", "Queue 2". */
 const AIRWAY_LETTERS: Readonly<Record<string, string>> = { J: 'Jay', V: 'Victor', Q: 'Queue' };
-
-/** An airway as filed: one letter and up to three digits, e.g. `V244`. */
-const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
 
 /** A published procedure as filed: a name and one version digit, e.g. `HAWKZ8`. */
 const STAR_TOKEN = /^[A-Z]{3,5}\d$/;
@@ -405,7 +402,7 @@ export function asFiledJoin(
   if (shared === 0) return undefined;
   let index = amended.length - shared;
   if (index === 0) return 0;
-  while (index < amended.length && AIRWAY_TOKEN.test(amended[index] ?? '')) index += 1;
+  while (index < amended.length && isAirwayToken(amended[index] ?? '')) index += 1;
   return index < amended.length ? index : undefined;
 }
 
@@ -423,7 +420,7 @@ function routeUnit(
 ): { unit: string; consumed: number } {
   const token = tokens[index] ?? '';
   const next = tokens[index + 1];
-  if (AIRWAY_TOKEN.test(token)) {
+  if (isAirwayToken(token)) {
     const airway = speakRouteToken(token, fixSpoken);
     return next === undefined
       ? { unit: airway, consumed: 1 }

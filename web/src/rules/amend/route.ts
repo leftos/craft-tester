@@ -57,6 +57,8 @@ type RouteCheck = {
  * of the terminal on, which is what the SID the SOP assigns does not reach. `scope` travels with it
  * because the reason closes differently on the two paths: a flight already being given a procedure
  * keeps its SID, while a flight the SOP sends off on a heading is issued one in the heading's place.
+ * `dropped` travels with a box the SOP's own procedure and the filed tail decided, naming the fixes
+ * the departure already flies over that the route is no longer read from.
  */
 type ExpectedRoute = {
   tokens: string[];
@@ -64,6 +66,7 @@ type ExpectedRoute = {
   built?: BuiltRoute;
   exitElement?: string;
   scope?: BuildScope;
+  dropped?: string[];
 };
 
 /** Splits the route box on whitespace, taking a leading procedure token off the front. */
@@ -153,6 +156,41 @@ function builtExpectation(
   };
 }
 
+/** What the filed route names before the departure's own structure is read past. */
+type StructureDrop = { dropped: string[]; exitElement: string };
+
+/**
+ * The fixes of the filed route the departure itself already flies over, and what it is read from.
+ *
+ * @param scenario The filed flight plan.
+ * @param airport The airport data, whose SIDs carry the structure and the transitions.
+ * @returns The dropped fixes, empty where the route names none, and the element after them.
+ */
+function structureDrop(scenario: Scenario, airport: AirportData): StructureDrop {
+  const parsed = parseFiledRoute(scenario.filedRoute, airport);
+  if (isUnresolved(parsed)) return { dropped: [], exitElement: '' };
+  return { dropped: parsed.droppedStructureTokens ?? [], exitElement: parsed.exitElement };
+}
+
+/**
+ * The filed tail with the fixes the departure already flies over taken out of it.
+ *
+ * The tail is the route box as filed, so it may still carry the airport's own navaid the exit-fix
+ * reading skips; the dropped fixes are taken out where they sit rather than off the front.
+ *
+ * @param tail The route the pilot filed after any procedure token.
+ * @param dropped The fixes the structure walk dropped, in the order the route files them.
+ * @returns The tail without them, unchanged when the tail does not carry them in that order.
+ */
+function withoutStructure(tail: readonly string[], dropped: readonly string[]): string[] {
+  if (dropped.length === 0) return [...tail];
+  const start = tail.findIndex((token) => token === dropped[0]);
+  if (start < 0) return [...tail];
+  const run = tail.slice(start, start + dropped.length);
+  if (run.join(' ') !== dropped.join(' ')) return [...tail];
+  return [...tail.slice(0, start), ...tail.slice(start + dropped.length)];
+}
+
 /** What a flight the SOP is giving a procedure may be built on: the family the pilot filed. */
 function filedScope(filed: FiledRoute): BuildScope {
   return {
@@ -178,10 +216,14 @@ function expectedRoute(
   const destination = destinationRow(airport, scenario.destination);
   const tec = tecRouteFor(ctx, scenario, airport, destination);
   if (tec === undefined) {
+    const { dropped, exitElement } = structureDrop(scenario, airport);
+    const tail = withoutStructure(filed.tail, dropped);
     return (
       builtExpectation(scenario, ctx, airport, filedScope(filed)) ?? {
-        tokens: withVectorNavaid([assigned, ...filed.tail], airport),
+        tokens: withVectorNavaid([assigned, ...tail], airport),
         tec: undefined,
+        dropped: tail.length === filed.tail.length ? [] : dropped,
+        exitElement,
       }
     );
   }
@@ -351,7 +393,29 @@ function vectorNavaidAmendment(tokens: readonly string[], airport: AirportData):
   };
 }
 
-/** Which of the three cases a route box with no built route is wrong for, written for the player. */
+/**
+ * The clause that names the filed fixes the departure itself flies over, and what it is read from.
+ *
+ * @param expected The box as it should read, carrying what the structure walk dropped.
+ * @param assigned The identifier of the procedure the SOP assigns the flight.
+ * @returns The clause, or `undefined` where the route files no such fix.
+ */
+function structureClause(expected: ExpectedRoute, assigned: string): string | undefined {
+  const dropped = expected.dropped ?? [];
+  if (dropped.length === 0) return undefined;
+  return (
+    `${listWords(dropped)} ${dropped.length === 1 ? 'lies' : 'lie'} on the ${assigned} structure; ` +
+    `the route is read from its published transition ${expected.exitElement ?? ''}`
+  );
+}
+
+/**
+ * Which of the cases a route box with no built route is wrong for, written for the player.
+ *
+ * A box that files the assigned procedure and nothing else wrong but the fixes that procedure
+ * already flies over is amended for those fixes alone; where the procedure is wrong or missing too,
+ * the clause that says so comes first and the structure clause closes the reason.
+ */
 function routeReason(
   filed: FiledRoute,
   expected: ExpectedRoute,
@@ -360,10 +424,13 @@ function routeReason(
   assigned: string,
 ): string {
   if (expected.tec !== undefined) return tecReason(ctx, expected, scenario.destination);
-  if (filed.procedure === undefined) {
-    return `the route files no departure procedure; the SOP assigns ${assigned} from ${scenario.departureRunway} in ${ctx.config.id}`;
-  }
-  return procedureReason(filed.procedure, assigned, scenario, ctx);
+  const structure = structureClause(expected, assigned);
+  if (structure !== undefined && filed.procedure === assigned) return structure;
+  const procedure =
+    filed.procedure === undefined
+      ? `the route files no departure procedure; the SOP assigns ${assigned} from ${scenario.departureRunway} in ${ctx.config.id}`
+      : procedureReason(filed.procedure, assigned, scenario, ctx);
+  return structure === undefined ? procedure : `${procedure}, and ${structure}`;
 }
 
 /**
@@ -703,6 +770,7 @@ function procedureOutcome(
     reason: routeReason(filed, expected, scenario, ctx, assigned),
     citations: [
       ...clearance.procedure.citations,
+      ...((expected.dropped ?? []).length === 0 ? [] : citePhraseology(airport, 'R-SID-STRUCTURE')),
       ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
     ],
   };

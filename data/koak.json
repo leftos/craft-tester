@@ -3081,6 +3081,11 @@
       "text": "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word"
     },
     {
+      "id": "R-SID-STRUCTURE",
+      "source": "FAA JO 7110.65 4-3-2 c 5; user rule 2026-09-17 (FFT2015)",
+      "text": "A filed element the departure itself flies over — the SID's own name, the fix it is built on, or a fix it is restricted over — is not read back when the route files one of that same SID's published transitions further along: the route is read from that transition (R-TRANSITION) and the elements before it are dropped from the route box. Where the route files no published transition of the SID nothing is dropped and the first filed fix stands, spoken bare (R-AS-FILED)"
+    },
+    {
       "id": "R-RV-SID",
       "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice; ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
