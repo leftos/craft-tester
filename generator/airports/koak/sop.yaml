@@ -140,10 +140,12 @@ frequencies:
 gates:
   # HUSSH2 and SLNT3 transitions, the TEC heads that leave to the north and east, and the Altamont
   # corridor (ALTAM, MOD), which the TEC rows work east out of the Bay the way KSFO works OAK.
-  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY]
+  # CCR, RDD and LKV are worksheet exit fixes north of the field (KSFO lists them the same way).
+  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY, CCR, RDD, LKV]
   # CNDEL5 and KATFH3 transitions (and their common fix PORTE), COAST9 and SKYL1 transitions,
-  # NUEVO8 transitions and the fixes the SOP's NUEVO# row names.
-  south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, FLW, GVO, RZS, SXC, MCKEY, AVE, PXN, WAGES, SHOEY, SNS, EUGEN, BSR, OSI, SJC, ARTAQ, KARNN]
+  # NUEVO8 transitions and the fixes the SOP's NUEVO# row names; SUNNE (the SUNNE1 end fix) and the
+  # valley and coastal fixes worksheet plans leave on (CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO).
+  south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, FLW, GVO, RZS, SXC, MCKEY, AVE, PXN, WAGES, SHOEY, SNS, EUGEN, BSR, OSI, SJC, ARTAQ, KARNN, SUNNE, CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO]
   # The user's notes: ALCOA to R463, BEBOP to R464, CINNY to A220, AMAKR to the north-west oceanic.
   oceanic: [ALCOA, AMAKR, BEBOP, CINNY]
 

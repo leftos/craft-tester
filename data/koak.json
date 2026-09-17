@@ -1889,6 +1889,7 @@
     "PWE": "Pawnee City DME",
     "PXN": "Panoche VOR",
     "RBL": "Red Bluff VOR",
+    "RDD": "Redding VOR",
     "RLG": "Kremmling VOR",
     "RZS": "San Marcus VOR",
     "SAC": "Sacramento VOR",
@@ -1976,7 +1977,10 @@
       "FEVTA",
       "SUNOL",
       "COLLI",
-      "OAKEY"
+      "OAKEY",
+      "CCR",
+      "RDD",
+      "LKV"
     ],
     "oceanic": [
       "ALCOA",
@@ -2006,7 +2010,15 @@
       "OSI",
       "SJC",
       "ARTAQ",
-      "KARNN"
+      "KARNN",
+      "SUNNE",
+      "CISKO",
+      "EBAYE",
+      "LOSHN",
+      "LHS",
+      "BOILE",
+      "EHF",
+      "GILRO"
     ]
   },
   "loaRules": [
