@@ -9,11 +9,22 @@ import pytest
 from craft_generator.cli import published_sid_runways
 from craft_generator.emit import dump, fixture_schema_path, validate, write_or_check
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
-from craft_generator.sop.model import AircraftClass, AircraftGroup, AirportInputs, RunwayConfig, SopData, Worksheet, WorksheetConfig
+from craft_generator.sop.model import (
+    AircraftClass,
+    AircraftGroup,
+    AirportInputs,
+    RunwayConfig,
+    SharedRouteFacts,
+    SopData,
+    Worksheet,
+    WorksheetConfig,
+)
 from craft_generator.worksheets import (
     Fixture,
     PlanRow,
     RunwayChoice,
+    SheetImport,
+    SkippedPlan,
     departure_runway,
     designator_classes,
     designator_wtcs,
@@ -107,6 +118,7 @@ class Importer:
     classes: Mapping[str, AircraftClass]
     wake_categories: Mapping[str, str]
     sid_runways: Mapping[str, Sequence[str]]
+    destinations: frozenset[str]
 
 
 @pytest.fixture(scope="module")
@@ -115,12 +127,14 @@ def importer(
     aircraft_specs_subset: list[dict[str, Any]],
     worksheet_config: WorksheetConfig,
     aircraft_classes: dict[str, AircraftClass],
+    shared_route_facts: SharedRouteFacts,
 ) -> Importer:
     return Importer(
         inputs=ksfo_inputs,
         classes=aircraft_classes,
         wake_categories=designator_wtcs(aircraft_specs_subset, worksheet_config.type_aliases),
         sid_runways=published_sid_runways(ksfo_inputs.icao, ksfo_inputs.overrides),
+        destinations=frozenset(shared_route_facts.destinations),
     )
 
 
@@ -159,19 +173,25 @@ def row_of(by_title: dict[str, Worksheet], title: str, callsign: str) -> PlanRow
     return next(row for row in rows_of(by_title, title) if row.callsign == callsign)
 
 
-def sheet_of(worksheet: Worksheet, importer: Importer, aliases: Mapping[str, str]) -> dict[Path, Fixture]:
-    """Return the fixtures of one worksheet, built from its checked-in text."""
+def import_of(worksheet: Worksheet, importer: Importer, aliases: Mapping[str, str]) -> SheetImport:
+    """Return the fixtures and the skipped plans of one worksheet, built from its checked-in text."""
     return sheet_fixtures(
         worksheet,
         sheet_text(worksheet),
         icao=importer.inputs.icao,
         sop=importer.inputs.sop,
+        destinations=importer.destinations,
         type_aliases=aliases,
         aircraft_classes=importer.classes,
         wake_categories=importer.wake_categories,
         cargo_airlines=importer.inputs.routes.cargo_airlines,
         sid_runways=importer.sid_runways,
     )
+
+
+def sheet_of(worksheet: Worksheet, importer: Importer, aliases: Mapping[str, str]) -> dict[Path, Fixture]:
+    """Return the fixtures of one worksheet, built from its checked-in text."""
+    return import_of(worksheet, importer, aliases).fixtures
 
 
 def plan_row(callsign: str, designator: str, route: str) -> PlanRow:
@@ -492,6 +512,25 @@ def test_type_alias_is_applied_on_import(by_title: dict[str, Worksheet], workshe
     assert row_of(by_title, "Amendment Practice 2", "FFT2015").designator == "A32N"
     assert fixture["scenario"]["aircraftType"] == "A20N"
     assert fixture["source"]["note"].endswith("; type A32N filed on the sheet, read as A20N")
+
+
+def test_plan_filed_to_a_destination_outside_the_shared_table_is_skipped(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    unshared = replace(importer, destinations=importer.destinations - {"KJAC"})
+    sheet = import_of(by_title["Amendment Practice 1A"], unshared, {})
+    assert sheet.skipped == (SkippedPlan(callsign="N238JP", destination="KJAC"),)
+    assert len(sheet.fixtures) == PLAN_COUNTS["Amendment Practice 1A"] - 1
+    assert not [path for path in sheet.fixtures if path.name.endswith("-n238jp.json")]
+
+
+def test_a_skipped_plan_leaves_the_squawks_of_the_plans_after_it_alone(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    unshared = replace(importer, destinations=importer.destinations - {"KJAC"})
+    sheet = import_of(by_title["Amendment Practice 1A"], unshared, {})
+    assert fixture_of(sheet.fixtures, "SWA984")["scenario"]["squawk"] == AMENDMENT_SQUAWKS[1]
+
+
+def test_no_plan_is_skipped_when_every_destination_is_shared(worksheet_config: WorksheetConfig, importer: Importer) -> None:
+    aliases = worksheet_config.type_aliases
+    assert [plan for worksheet in worksheet_config.worksheets for plan in import_of(worksheet, importer, aliases).skipped] == []
 
 
 def test_type_alias_to_itself_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:

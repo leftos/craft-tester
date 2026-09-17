@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-phraseology-practice-2-fdx1563",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "B752",
+    "callsign": "FDX1563",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KFAT",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 18000,
+    "filedRoute": "CNDEL5 NTELL",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "3332"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

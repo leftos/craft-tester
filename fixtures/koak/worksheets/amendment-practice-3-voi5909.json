@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-3-voi5909",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "A20N",
+    "callsign": "VOI5909",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "MMMX",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 35000,
+    "filedRoute": "SUNNE1 SUNNE KAYEX LOSHN BOILE J50 PDZ J93 PPE… (continued)",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4602"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; type A32N filed on the sheet, read as A20N"
+  },
+  "status": "pending"
+}

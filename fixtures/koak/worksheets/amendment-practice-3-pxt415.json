@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-3-pxt415",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "C25B",
+    "callsign": "PXT415",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KUDD",
+    "equipmentSuffix": "/A",
+    "filedAltitude": 32000,
+    "filedRoute": "SUNNE1 SUNNE KAYEX LOSHN PMD V137 PSP",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4605"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

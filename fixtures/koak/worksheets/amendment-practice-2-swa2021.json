@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-2-swa2021",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "SWA2021",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KPDX",
+    "equipmentSuffix": "/G",
+    "filedAltitude": 35000,
+    "filedRoute": "OAK6 DEDHD LMT OCITY7",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4604"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

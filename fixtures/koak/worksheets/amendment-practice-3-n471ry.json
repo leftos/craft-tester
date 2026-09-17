@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-3-n471ry",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "SR22",
+    "callsign": "N471RY",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28R",
+    "destination": "KAPC",
+    "equipmentSuffix": "/G",
+    "filedAltitude": 4000,
+    "filedRoute": "SGD",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4607"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation"
+  },
+  "status": "pending"
+}

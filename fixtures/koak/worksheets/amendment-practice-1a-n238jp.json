@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-1a-n238jp",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "C55B",
+    "callsign": "N238JP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KJAC",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 32000,
+    "filedRoute": "OAK6 ORRCA Q120 GALLI PIH",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4601"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

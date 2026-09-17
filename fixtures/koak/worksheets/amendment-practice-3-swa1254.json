@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-3-swa1254",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA1254",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KBOI",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 43000,
+    "filedRoute": "NIMI5 SAC ANAHO",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4610"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

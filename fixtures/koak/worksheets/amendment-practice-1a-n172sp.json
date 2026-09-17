@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-1a-n172sp",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "C172",
+    "callsign": "N172SP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28R",
+    "destination": "KMYV",
+    "equipmentSuffix": "/G",
+    "filedAltitude": 5000,
+    "filedRoute": "SGD SAC",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4614"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation"
+  },
+  "status": "pending"
+}

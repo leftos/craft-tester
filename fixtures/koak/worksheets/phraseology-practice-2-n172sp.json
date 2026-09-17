@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-phraseology-practice-2-n172sp",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "C172",
+    "callsign": "N172SP",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28R",
+    "destination": "KMRY",
+    "equipmentSuffix": "/G",
+    "filedAltitude": 7000,
+    "filedRoute": "NUEVO8 EUGEN",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "3331"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation"
+  },
+  "status": "pending"
+}

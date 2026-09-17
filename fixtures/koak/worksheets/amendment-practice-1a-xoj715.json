@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-1a-xoj715",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "C750",
+    "callsign": "XOJ715",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KDEN",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 43000,
+    "filedRoute": "OAK6 SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4606"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

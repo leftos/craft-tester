@@ -2,7 +2,8 @@ import argparse
 
 import pytest
 
-from craft_generator.cli import build_parser, faa_code, main, normalize_icao
+from craft_generator.cli import _print_sheet_summary, build_parser, faa_code, main, normalize_icao
+from craft_generator.worksheets import SkippedPlan
 
 
 def test_help_exits_zero() -> None:
@@ -37,6 +38,12 @@ def test_verify_sop_accepts_the_drift_flag() -> None:
 def test_build_accepts_its_own_flags() -> None:
     args = build_parser().parse_args(["build", "--airport", "ksfo", "--cycle", "2609", "--offline", "--check"])
     assert (args.airport, args.cycle, args.offline, args.check) == ("KSFO", "2609", True, True)
+
+
+def test_a_skipped_plan_is_named_under_its_sheet(capsys: pytest.CaptureFixture[str]) -> None:
+    _print_sheet_summary("Amendment Practice 1A", [], (SkippedPlan(callsign="AAY218", destination="KPGI"),))
+    lines = capsys.readouterr().out.splitlines()
+    assert lines[1] == "  skipped AAY218: destination KPGI is not in generator/shared/destinations.yaml"
 
 
 def test_normalize_icao_rejects_short_identifier() -> None:

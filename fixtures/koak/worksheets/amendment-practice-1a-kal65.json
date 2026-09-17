@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-1a-kal65",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "B77L",
+    "callsign": "KAL65",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "RKSI",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 30000,
+    "filedRoute": "RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4610"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

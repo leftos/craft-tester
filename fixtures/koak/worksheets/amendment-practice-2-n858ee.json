@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-2-n858ee",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "E55P",
+    "callsign": "N858EE",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KCRQ",
+    "equipmentSuffix": "/Z",
+    "filedAltitude": 37000,
+    "filedRoute": "COAST8 MCKEY LEGOZ LEGOZ1",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4610"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

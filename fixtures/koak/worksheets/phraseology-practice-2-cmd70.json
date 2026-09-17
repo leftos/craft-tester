@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-phraseology-practice-2-cmd70",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "BE20",
+    "callsign": "CMD70",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28R",
+    "destination": "KACV",
+    "equipmentSuffix": "/G",
+    "filedAltitude": 18000,
+    "filedRoute": "NIMI5 SGD YAGER",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "3371"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation"
+  },
+  "status": "pending"
+}

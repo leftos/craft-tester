@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-2-fft2015",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "A20N",
+    "callsign": "FFT2015",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KLAX",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 29000,
+    "filedRoute": "CNDEL PORTE SUSEY EBAYE BURGL",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4612"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; type A32N filed on the sheet, read as A20N"
+  },
+  "status": "pending"
+}

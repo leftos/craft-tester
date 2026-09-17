@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-phraseology-practice-1a-swa344",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "B737",
+    "callsign": "SWA344",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KSAN",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 41000,
+    "filedRoute": "COAST9 MCKEY LAX COMIX2",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "3331"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

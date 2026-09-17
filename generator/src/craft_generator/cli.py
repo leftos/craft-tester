@@ -43,6 +43,7 @@ from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance,
 from craft_generator.nct_boundary import load_nct_boundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
+    DESTINATIONS_FILE,
     EQUIPMENT_SUFFIXES_FILE,
     NCT_BOUNDARY_FILE,
     PHRASEOLOGY_RULES_FILE,
@@ -64,6 +65,7 @@ from craft_generator.sop.verify import sop_cache_path, verify_sop_source
 from craft_generator.worksheets import (
     Fixture,
     SettledFixture,
+    SkippedPlan,
     designator_classes,
     designator_wtcs,
     fetch_worksheet_text,
@@ -78,6 +80,7 @@ EXIT_NOT_IMPLEMENTED = 2
 
 KEPT_SETTLED = "kept (settled)"
 IMPORT_STATUSES = ("unchanged", "written", KEPT_SETTLED, "differs")
+SHARED_DESTINATIONS = f"generator/shared/{DESTINATIONS_FILE}"
 
 FETCH_AIRCRAFT_CHARACTERISTICS = "fetch-aircraft-characteristics"
 
@@ -495,9 +498,11 @@ def _counts_line(counts: Counter[str]) -> str:
     return ", ".join(f"{counts[status]} {status}" for status in IMPORT_STATUSES if counts[status])
 
 
-def _print_sheet_summary(title: str, results: Sequence[_FixtureOutcome]) -> None:
+def _print_sheet_summary(title: str, results: Sequence[_FixtureOutcome], skipped: Sequence[SkippedPlan]) -> None:
     counts = Counter(result.status for result in results)
     print(f"  {title}: {len(results)} plan(s), " + _counts_line(counts))
+    for plan in skipped:
+        print(f"  skipped {plan.callsign}: destination {plan.destination} is not in {SHARED_DESTINATIONS}")
     for result in results:
         if result.status == "differs":
             print(f"    {result.path}: differs")
@@ -517,7 +522,8 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
 
     A fixture the user has settled is never overwritten: one whose scenario the import would leave
     as it is counts as ``kept (settled)``, and one whose scenario would change is left on disk and
-    named in the exit status, so no validated clearance is lost to a re-import.
+    named in the exit status, so no validated clearance is lost to a re-import. A plan filed to a
+    field ``generator/shared/destinations.yaml`` does not carry is skipped and named in the report.
 
     Args:
         airport: Four-letter ICAO identifier, e.g. ``KSFO``.
@@ -532,7 +538,8 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
     """
     directory = airport_dir(airport)
     config = load_worksheets(directory / WORKSHEETS_FILE)
-    inputs = load_airport(directory, load_shared_route_facts(shared_dir()))
+    shared = load_shared_route_facts(shared_dir())
+    inputs = load_airport(directory, shared)
     cache = cache_dir()
     specs = fetch_aircraft_specs(cache, force=force)
     classes = designator_classes(specs, config.type_aliases)
@@ -543,23 +550,24 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
     print(f"{airport}: {len(config.worksheets)} worksheet(s) -> {fixture_dir(airport)}")
     for worksheet in config.worksheets:
         text = fetch_worksheet_text(worksheet, cache, force=force)
-        fixtures = sheet_fixtures(
+        sheet = sheet_fixtures(
             worksheet,
             text,
             icao=airport,
             sop=inputs.sop,
+            destinations=shared.destinations,
             type_aliases=config.type_aliases,
             aircraft_classes=classes,
             wake_categories=wake_categories,
             cargo_airlines=inputs.routes.cargo_airlines,
             sid_runways=sid_runways,
         )
-        results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in fixtures.items()]
+        results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in sheet.fixtures.items()]
         for result in results:
             if result.refused is not None:
                 refused.append(result.refused)
         counts.update(result.status for result in results)
-        _print_sheet_summary(worksheet.title, results)
+        _print_sheet_summary(worksheet.title, results, sheet.skipped)
     print(f"  {counts.total()} plan(s): " + _counts_line(counts))
     if refused:
         print(_settled_refusal_line(refused))

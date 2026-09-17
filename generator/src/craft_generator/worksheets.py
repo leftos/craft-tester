@@ -22,6 +22,11 @@ the direction the filed route leaves on prefers (``direction_runway_preference``
 the first runway the configuration publishes; and - on the amendment sheets, which print no squawk -
 a code counted up from 4601 in octal.
 
+A sheet may file a plan to a field the shared destination table does not carry, which the fixture
+would need for the spoken name and the center whose rules apply. Such a plan is skipped rather than
+written, and the import names it, so a typo on a sheet costs a report line instead of a broken
+fixture.
+
 The request step is SOP 2-1 e: oceanic, Far East and cargo flights need the 28s for performance and
 may be given them while runway 01 is the advertised departure runway. A sheet prints no request, so
 the importer reads one off the flight plan - a cargo, heavy or oceanic flight that filed a procedure
@@ -30,7 +35,7 @@ published for that runway family alone is asking for it.
 
 import json
 import re
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Collection, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -853,25 +858,46 @@ def fixture_dir(icao: str) -> Path:
     return repo_root() / "fixtures" / icao.lower() / "worksheets"
 
 
+@dataclass(frozen=True, slots=True)
+class SkippedPlan:
+    """A flight plan the import left out, because its destination is in no shared destination row."""
+
+    callsign: str
+    destination: str
+
+
+@dataclass(frozen=True, slots=True)
+class SheetImport:
+    """What one worksheet contributes to an import: a fixture per plan it could build, and the plans it skipped."""
+
+    fixtures: dict[Path, Fixture]
+    skipped: tuple[SkippedPlan, ...]
+
+
 def sheet_fixtures(
     worksheet: Worksheet,
     text: str,
     *,
     icao: str,
     sop: SopData,
+    destinations: Collection[str],
     type_aliases: Mapping[str, str],
     aircraft_classes: Mapping[str, AircraftClass],
     wake_categories: Mapping[str, str],
     cargo_airlines: Sequence[str],
     sid_runways: Mapping[str, Sequence[str]],
-) -> dict[Path, Fixture]:
+) -> SheetImport:
     """Parse one worksheet and build the fixture of every flight plan on it.
+
+    A plan filed to a field ``destinations`` does not carry is skipped and named in the return value,
+    because the fixture would state a destination the data has no spoken name or center for.
 
     Args:
         worksheet: The worksheet row out of ``worksheets.yaml``.
         text: The document's exported text.
         icao: The departure airport the fixtures belong to.
         sop: The transcribed SOP, for the runway configurations, the gates and the preference table.
+        destinations: The ICAO codes ``generator/shared/destinations.yaml`` states a destination for.
         type_aliases: The aircraft type aliases out of ``worksheets.yaml``.
         aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
         wake_categories: The wake turbulence category of each designator, from
@@ -880,7 +906,9 @@ def sheet_fixtures(
         sid_runways: The runways each procedure is published for, keyed by CIFP id.
 
     Returns:
-        One fixture per flight plan, keyed by the file it is written to, in sheet order.
+        One fixture per flight plan whose destination is known, keyed by the file it is written to
+        and in sheet order, and the plans that were skipped. A skipped plan still counts its place in
+        the sheet, so the squawks of the plans after it do not move when its destination is added.
 
     Raises:
         ValueError: The text does not have the shape the sheet's kind promises, the sheet's runway
@@ -890,7 +918,11 @@ def sheet_fixtures(
     name = slug(worksheet.title)
     directory = fixture_dir(icao)
     fixtures: dict[Path, Fixture] = {}
+    skipped: list[SkippedPlan] = []
     for index, row in enumerate(parse_worksheet(worksheet, text)):
+        if row.destination not in destinations:
+            skipped.append(SkippedPlan(callsign=row.callsign, destination=row.destination))
+            continue
         path = directory / f"{name}-{row.callsign.lower()}.json"
         if path in fixtures:
             raise ValueError(
@@ -906,4 +938,4 @@ def sheet_fixtures(
             sid_runways=sid_runways,
         )
         fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, type_aliases=type_aliases)
-    return fixtures
+    return SheetImport(fixtures=fixtures, skipped=tuple(skipped))

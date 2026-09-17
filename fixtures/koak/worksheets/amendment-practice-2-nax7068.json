@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-2-nax7068",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "B788",
+    "callsign": "NAX7068",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "ESSA",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 39000,
+    "filedRoute": "OAK9 OAK DEDHD LKV J3 GEG J517 YXC ADVOX… (continued)",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4611"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

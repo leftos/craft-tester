@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-3-twy313",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "CL30",
+    "callsign": "TWY313",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KSLC",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 41000,
+    "filedRoute": "OAK6 TIPRE Q126 KREYK BVL WAATS5",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4614"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

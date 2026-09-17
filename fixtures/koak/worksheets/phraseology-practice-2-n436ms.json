@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-phraseology-practice-2-n436ms",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "TBM9",
+    "callsign": "N436MS",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "28R",
+    "destination": "KSMF",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 9000,
+    "filedRoute": "NIMI5 OAK V6 SAC",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "3342"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation"
+  },
+  "status": "pending"
+}

@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-phraseology-practice-2-ups2896",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "A306",
+    "callsign": "UPS2896",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KRNO",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 21000,
+    "filedRoute": "OAK6 ORRCA ORRCA1",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "3357"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}

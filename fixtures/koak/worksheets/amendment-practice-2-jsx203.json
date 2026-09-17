@@ -1,0 +1,23 @@
+{
+  "airport": "KOAK",
+  "id": "ws-amendment-practice-2-jsx203",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "E135",
+    "callsign": "JSX203",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KLAS",
+    "equipmentSuffix": null,
+    "filedAltitude": 35000,
+    "filedRoute": "CNDEL5 NTELL Q158 JEDNA",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4605"
+  },
+  "source": {
+    "kind": "worksheet",
+    "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+  },
+  "status": "pending"
+}
