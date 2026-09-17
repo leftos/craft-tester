@@ -65,9 +65,11 @@ type RouteCheck = {
  * of the terminal on, which is what the SID the SOP assigns does not reach. `scope` travels with it
  * because the reason closes differently on the two paths: a flight already being given a procedure
  * keeps its SID, while a flight the SOP sends off on a heading is issued one in the heading's place.
- * `dropped` travels with a box the SOP's own procedure and the filed tail decided, naming the fixes
- * the departure already flies over that the route is no longer read from. `repair` travels with a box
- * the filed route named something unflyable in, naming what was taken out and how the gap was closed.
+ * `dropped` travels with a box the SOP's own procedure and the filed tail decided, and with a built
+ * one, naming the fixes the departure already flies over that the route is no longer read from; a
+ * built box reads past them the same way, its build starting from the element they are read to.
+ * `repair` travels with a box the filed route named something unflyable in, naming what was taken
+ * out and how the gap was closed.
  */
 type ExpectedRoute = {
   tokens: string[];
@@ -230,6 +232,7 @@ function builtExpectation(
     built,
     exitElement: parsed.exitElement,
     scope,
+    dropped: parsed.droppedStructureTokens ?? [],
     ...(repair === undefined ? {} : { repair }),
   };
 }
@@ -470,7 +473,11 @@ function builtAmendment(
     box: 'route',
     proposed: expected.tokens.join(' '),
     reason: malformed === undefined ? reason : `${reason}, and ${malformed}`,
-    citations: [...builtCitations(built, airport), ...repairCitations(expected, airport)],
+    citations: [
+      ...builtCitations(built, airport),
+      ...structureCitations(expected, airport),
+      ...repairCitations(expected, airport),
+    ],
   };
 }
 
@@ -511,6 +518,18 @@ function structureClause(expected: ExpectedRoute, assigned: string): string | un
     `${listWords(dropped)} ${dropped.length === 1 ? 'lies' : 'lie'} on the ${assigned} structure; ` +
     `the route is read from its published transition ${expected.exitElement ?? ''}`
   );
+}
+
+/**
+ * The row a box read past the departure's own structure is cited to.
+ *
+ * @param expected The box as it should read, carrying what the structure walk dropped.
+ * @param airport The airport data, whose `phraseologyRules` hold the quotable rows.
+ * @returns The citation, empty where the filed route named no fix the departure already flies over.
+ */
+function structureCitations(expected: ExpectedRoute, airport: AirportData): RuleCitation[] {
+  if ((expected.dropped ?? []).length === 0) return [];
+  return citePhraseology(airport, 'R-SID-STRUCTURE');
 }
 
 /**
@@ -927,7 +946,7 @@ function procedureOutcome(
     reason: routeReason(filed, expected, scenario, ctx, assigned),
     citations: [
       ...clearance.procedure.citations,
-      ...((expected.dropped ?? []).length === 0 ? [] : citePhraseology(airport, 'R-SID-STRUCTURE')),
+      ...structureCitations(expected, airport),
       ...repairCitations(expected, airport),
       ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
     ],

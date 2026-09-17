@@ -166,6 +166,18 @@ describe('checkRoute departure structure', () => {
     expect(result.warning).toBeUndefined();
   });
 
+  it('cites the structure rule on a KOAK box the route builder reads past the base fix in', () => {
+    const flight = fft2015({
+      destination: 'KSBA',
+      filedRoute: 'CNDEL5 PORTE AVE GVO',
+      departureRunway: '30',
+      runwayConfigId: 'SFOW',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('CNDEL5 YYUNG GVO');
+    expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
+  });
+
   it('leaves a base fix the route files no transition of that SID after alone', () => {
     const flight = scenario({
       callsign: 'N221TB',
