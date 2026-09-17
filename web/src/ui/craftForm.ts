@@ -11,7 +11,7 @@ import type { ClearanceOptions } from '@/rules/options.ts';
 import type { ClearanceElement, ExpectClause, ResolvedClearance } from '@/rules/types.ts';
 import { headingLabel } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
-import { button, el, selectControl } from '@/ui/dom.ts';
+import { button, el, selectControl, selectOf, syncButton, syncSelect } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
 import { toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
@@ -303,8 +303,21 @@ export function craftGroups(
   ];
 }
 
-/** One row of the form: its heading, and then its dropdowns or the value the clearance settles. */
-function renderGroup(group: CraftGroup, onPick: CraftFormProps['onPick']): HTMLElement {
+/** The dropdown built for each pick the form offers; a pick it does not offer has none. */
+type FieldControls = Partial<Record<PickKey, HTMLSelectElement>>;
+
+/**
+ * One row of the form: its heading, and then its dropdowns or the value the clearance settles.
+ *
+ * Each dropdown is recorded under the pick it sets, so a later state of the same form is written
+ * into it rather than building it again. The handler reads the props when the change arrives rather
+ * than the ones it was built with, because the dropdown outlives them.
+ */
+function renderGroup(
+  group: CraftGroup,
+  controls: FieldControls,
+  current: () => CraftFormProps,
+): HTMLElement {
   const row = el('div', 'craft-group');
   if (group.kind === 'given') {
     row.append(el('h3', '', group.heading), el('div', 'craft-given', group.value));
@@ -312,13 +325,24 @@ function renderGroup(group: CraftGroup, onPick: CraftFormProps['onPick']): HTMLE
   }
   row.append(el('h3', '', elementLabel(group.element)));
   for (const field of group.fields) {
-    row.append(
-      selectControl(field, (value) => {
-        onPick(field.key, value);
-      }),
-    );
+    const control = selectControl(field, (value) => {
+      current().onPick(field.key, value);
+    });
+    controls[field.key] = selectOf(control);
+    row.append(control);
   }
   return row;
+}
+
+/** Writes a later state of the form into the dropdowns it already built. */
+function syncGroups(groups: readonly CraftGroup[], controls: FieldControls): void {
+  for (const group of groups) {
+    if (group.kind === 'given') continue;
+    for (const field of group.fields) {
+      const control = controls[field.key];
+      if (control !== undefined) syncSelect(control, field.value, field.disabled);
+    }
+  }
 }
 
 /**
@@ -335,26 +359,45 @@ export function submitDisabled(picks: DraftPicks, procedure: ProcedureRow): bool
   return read(picks) === undefined;
 }
 
+/** The CRAFT form: the panel on screen, and how to write a later pick into the dropdowns it built. */
+export type CraftForm = { node: HTMLElement; sync: (props: CraftFormProps) => void };
+
+/** The rows of the form, which both the build and every later sync are derived from. */
+function groupsOf(props: CraftFormProps): readonly CraftGroup[] {
+  return craftGroups(props.scenario, props.airport, props.clearance, props.picks, props.procedure);
+}
+
 /**
  * Renders the CRAFT form.
  *
+ * The panel is built once and every later pick is written into the dropdowns it already holds: the
+ * choices each one offers are a function of the scenario, so only the value picked and which
+ * dropdowns the pick enables change while the form is on screen.
+ *
  * @param props The scenario, the airport, the resolved clearance, the picks so far, whether the
  *   procedure is picked, and the handlers for change and submit.
- * @returns The form panel; its submit button is disabled while a required dropdown is blank.
+ * @returns The form panel, whose submit button is disabled while a required dropdown is blank, and
+ *   the sync that writes a later state of the same form into it.
  */
-export function renderCraftForm(props: CraftFormProps): HTMLElement {
+export function renderCraftForm(props: CraftFormProps): CraftForm {
+  let current = props;
   const panel = el('section', 'panel craft');
   panel.append(el('h2', '', 'Your clearance'));
-  const groups = craftGroups(
-    props.scenario,
-    props.airport,
-    props.clearance,
-    props.picks,
-    props.procedure,
-  );
-  for (const group of groups) panel.append(renderGroup(group, props.onPick));
-  const submit = button('Submit clearance', 'primary', props.onSubmit);
+  const controls: FieldControls = {};
+  for (const group of groupsOf(props)) {
+    panel.append(renderGroup(group, controls, () => current));
+  }
+  const submit = button('Submit clearance', 'primary', () => {
+    current.onSubmit();
+  });
   submit.disabled = submitDisabled(props.picks, props.procedure);
   panel.append(submit);
-  return panel;
+  return {
+    node: panel,
+    sync: (next) => {
+      current = next;
+      syncGroups(groupsOf(next), controls);
+      syncButton(submit, submitDisabled(next.picks, next.procedure));
+    },
+  };
 }

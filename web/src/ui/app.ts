@@ -11,8 +11,10 @@ import {
   modeFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
+import type { Panels } from '@/ui/amendPanels.ts';
 import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { renderAtis } from '@/ui/atis.ts';
+import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import type { SelectOption } from '@/ui/dom.ts';
@@ -25,10 +27,12 @@ import { browserSolvedStore } from '@/ui/solved.ts';
 import type { AppState, PickKey } from '@/ui/state.ts';
 import {
   newSession,
+  phaseOf,
   shareLink,
   toAmendmentPicks,
   toBoxAnswers,
   toPlayerPicks,
+  viewKey,
   withBox,
   withBoxesSubmitted,
   withFilter,
@@ -199,31 +203,36 @@ function renderUnresolved(reasons: readonly string[], onNext: () => void): HTMLE
 }
 
 /** The strip, the ATIS, and then either the form or the results. */
-function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
+function renderPanels(state: AppState, actions: Actions): Panels {
   if (state.view.kind === 'unresolved') {
-    return [renderUnresolved(state.view.reasons, actions.onNewScenario)];
+    return {
+      nodes: [renderUnresolved(state.view.reasons, actions.onNewScenario)],
+      sync: undefined,
+    };
   }
   if (state.view.kind === 'amendment') {
     return renderAmendmentPanels(state, state.view, actions);
   }
+  const phase = phaseOf(state);
   const { generated, clearance } = state.view;
   const panels = [
     renderStrip(generated, state.airport, state.seed, 'Flight plan'),
     renderAtis(generated, state.airport),
   ];
-  if (state.revisit?.kind === 'clearance' && !state.submitted) {
+  const revisit = state.revisit;
+  if (phase === 'clearance-revisit' && revisit?.kind === 'clearance') {
     panels.push(
       renderRevisit({
-        grades: grade(state.revisit.picks, clearance),
+        grades: grade(revisit.picks, clearance),
         spoken: spokenFor(generated, generated, clearance, state.airport),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
     );
-    return panels;
+    return { nodes: panels, sync: undefined };
   }
   const picks = toPlayerPicks(state.picks);
-  if (state.submitted && picks !== undefined) {
+  if (phase === 'clearance-results' && picks !== undefined) {
     panels.push(
       renderResults({
         grades: grade(picks, clearance),
@@ -232,29 +241,38 @@ function renderPanels(state: AppState, actions: Actions): HTMLElement[] {
         onRetry: actions.onRetry,
       }),
     );
-    return panels;
+    return { nodes: panels, sync: undefined };
   }
-  panels.push(
-    renderCraftForm({
-      scenario: generated,
-      airport: state.airport,
-      clearance,
-      picks: state.picks,
-      procedure: 'given',
-      onPick: actions.onPick,
-      onSubmit: actions.onSubmit,
-    }),
-  );
-  return panels;
+  const props = (next: AppState): CraftFormProps => ({
+    scenario: generated,
+    airport: next.airport,
+    clearance,
+    picks: next.picks,
+    procedure: 'given',
+    onPick: actions.onPick,
+    onSubmit: actions.onSubmit,
+  });
+  const form = renderCraftForm(props(state));
+  panels.push(form.node);
+  return {
+    nodes: panels,
+    sync: (next) => {
+      form.sync(props(next));
+    },
+  };
 }
 
+/** The whole page: the node on screen, and how to write a later state of the same panels into it. */
+type Page = { node: HTMLElement; sync: ((state: AppState) => void) | undefined };
+
 /** Renders the whole page from the state. */
-function renderApp(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
+function renderApp(state: AppState, index: AirportsIndex, actions: Actions): Page {
   const page = el('div', 'page');
   const main = el('main', 'layout');
-  main.append(...renderPanels(state, actions));
+  const panels = renderPanels(state, actions);
+  main.append(...panels.nodes);
   page.append(renderHeader(state, index, actions), main);
-  return page;
+  return { node: page, sync: panels.sync };
 }
 
 /** Everything `mount` remembers between renders that is not the state itself. */
@@ -280,53 +298,33 @@ function saveAttempt(state: AppState, store: SolvedStore): void {
   if (picks !== undefined) store.save(icao, state.seed, { kind: 'clearance', picks });
 }
 
-/** The text box the student is typing in: its name, and where the caret and selection sit in it. */
-type FocusedInput = { name: string; start: number; end: number };
+/** The panels on screen, and the view key they were built for. */
+type Built = { key: string; sync: ((state: AppState) => void) | undefined };
 
 /**
- * The text box that has focus and the selection in it, or nothing when no text box has focus.
+ * Holds the state, rewrites the hash, and puts every change on screen.
  *
- * A browser that reports no selection for the box reads as a caret after the text it holds.
+ * The panels are built again only when the view key changes, which is when a different set of them
+ * belongs on screen; every other change is written into the controls already there. A pick or a
+ * keystroke therefore leaves the control it came from in place, with its focus and its caret.
  */
-function focusedInput(): FocusedInput | undefined {
-  const active = document.activeElement;
-  if (!(active instanceof HTMLInputElement)) return undefined;
-  const end = active.value.length;
-  return {
-    name: active.name,
-    start: active.selectionStart ?? end,
-    end: active.selectionEnd ?? end,
-  };
-}
-
-/**
- * Puts focus back in that text box, with the caret and the selection where they were.
- *
- * Every change renders the page again, which throws away the box the keystroke came from; without
- * this the student types one character and loses the box. The caret is put back where the student
- * left it rather than after the text, so a character typed into the middle of a value does not
- * send the next one to the end.
- */
-function restoreFocus(root: Element, focused: FocusedInput | undefined): void {
-  if (focused === undefined) return;
-  const input = root.querySelector(`input[name="${focused.name}"]`);
-  if (!(input instanceof HTMLInputElement)) return;
-  input.focus();
-  input.setSelectionRange(focused.start, focused.end);
-}
-
-/** Holds the state, rewrites the hash, and renders the page after every change. */
 function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): void {
   const store = stores.solved;
   let state = initial;
   let actions: Actions;
+  let built: Built | undefined;
 
   const update = (next: AppState): void => {
     state = next;
-    const focused = focusedInput();
     writeHash(state.airport.airport.icao, state.seed, state.filter, state.mode);
-    root.replaceChildren(renderApp(state, index, actions));
-    restoreFocus(root, focused);
+    const key = viewKey(state);
+    if (built === undefined || built.key !== key) {
+      const page = renderApp(state, index, actions);
+      root.replaceChildren(page.node);
+      built = { key, sync: page.sync };
+      return;
+    }
+    built.sync?.(state);
   };
 
   actions = {

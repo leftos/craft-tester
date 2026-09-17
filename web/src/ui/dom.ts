@@ -83,6 +83,41 @@ export function selectControl(
   return field;
 }
 
+/**
+ * The dropdown inside a control `selectControl` built.
+ *
+ * @param field The label element the builder returned.
+ * @returns The dropdown it wraps.
+ * @throws Error When the element is not one `selectControl` built.
+ */
+export function selectOf(field: HTMLElement): HTMLSelectElement {
+  const select = field.querySelector('select');
+  if (select === null) throw new Error('the control holds no dropdown');
+  return select;
+}
+
+/**
+ * Writes a value and an enabled state into a dropdown already on screen.
+ *
+ * The value is written only when it differs from what the dropdown already reads, so a control the
+ * student is working in is left alone. The choices are not rewritten: every list this form offers
+ * is a function of the scenario, which does not change while the dropdown is on screen.
+ *
+ * @param node The dropdown to update.
+ * @param value The value it should read, or `undefined` for its blank choice.
+ * @param disabled Whether it should be enabled.
+ * @returns Nothing; the dropdown is updated in place.
+ */
+export function syncSelect(
+  node: HTMLSelectElement,
+  value: string | undefined,
+  disabled: boolean,
+): void {
+  const next = value ?? '';
+  if (node.value !== next) node.value = next;
+  node.disabled = disabled;
+}
+
 /** Everything one labelled text box needs to render. */
 export type TextSpec = {
   label: string;
@@ -122,6 +157,35 @@ export function textControl(spec: TextSpec, onInput: (value: string) => void): H
 }
 
 /**
+ * The text box inside a control `textControl` built.
+ *
+ * @param field The label element the builder returned.
+ * @returns The text box it wraps.
+ * @throws Error When the element is not one `textControl` built.
+ */
+export function textOf(field: HTMLElement): HTMLInputElement {
+  const input = field.querySelector('input');
+  if (input === null) throw new Error('the control holds no text box');
+  return input;
+}
+
+/**
+ * Writes a value and an enabled state into a text box already on screen.
+ *
+ * The value is written only when it differs from what the box already holds, so the word the
+ * student is halfway through typing is never taken from under the caret.
+ *
+ * @param node The text box to update.
+ * @param value The text it should hold.
+ * @param disabled Whether it should be enabled.
+ * @returns Nothing; the text box is updated in place.
+ */
+export function syncText(node: HTMLInputElement, value: string, disabled: boolean): void {
+  if (node.value !== value) node.value = value;
+  node.disabled = disabled;
+}
+
+/**
  * Builds a button.
  *
  * @param label The text on the button.
@@ -134,6 +198,17 @@ export function button(label: string, className: string, onClick: () => void): H
   node.type = 'button';
   node.addEventListener('click', onClick);
   return node;
+}
+
+/**
+ * Writes an enabled state into a button already on screen.
+ *
+ * @param node The button to update.
+ * @param disabled Whether it should be enabled.
+ * @returns Nothing; the button is updated in place.
+ */
+export function syncButton(node: HTMLButtonElement, disabled: boolean): void {
+  node.disabled = disabled;
 }
 
 /** The namespace inline SVG is created in. */
