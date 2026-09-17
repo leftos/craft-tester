@@ -17,11 +17,14 @@
  * sideways are written to `.tmp/browser-check/<name>-<viewport>.json` next to a full-page
  * screenshot, and the essentials are printed. Playwright's Chromium must be installed once with
  * `pnpm -C web exec playwright install chromium`.
+ *
+ * `CRAFT_PREVIEW_URL` overrides the preview the run opens, so two previews on different ports can
+ * be checked at once: `CRAFT_PREVIEW_URL=http://localhost:4174/craft-tester/`.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
-const BASE = 'http://localhost:4173/craft-tester/';
+const BASE = process.env['CRAFT_PREVIEW_URL'] ?? 'http://localhost:4173/craft-tester/';
 const OUT_DIR = '../.tmp/browser-check';
 
 const VIEWPORTS = {
@@ -125,7 +128,7 @@ const recorded = await page.evaluate(() => {
       value: input.value,
     })),
     buttons: [...document.querySelectorAll('button')].map(
-      (button) => button.textContent?.trim() ?? '',
+      (button) => button.textContent?.trim() || button.getAttribute('aria-label') || '',
     ),
   };
 });

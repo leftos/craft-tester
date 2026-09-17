@@ -49,7 +49,9 @@ the page scrolls sideways and a full-page screenshot to `.tmp/browser-check/`. T
 its `a=<ICAO>` part (every link the app writes has one; a missing or unknown one opens the first airport of the
 index) and takes an undocumented `d=<ICAO>` part that forces the drawn destination in both modes
 (`s=4,a=KOAK,d=KSMF,m=amend`), so a destination is checked directly instead of drawing until the RNG lands on
-it; it is never shown in the UI or remembered.
+it; it is never shown in the UI or remembered. `CRAFT_PREVIEW_URL` points the run at another preview
+(`pnpm -C web preview --port 4174` plus `CRAFT_PREVIEW_URL=http://localhost:4174/craft-tester/`), so two builds
+can be checked side by side. A button with no text lists by its `aria-label`, which is how the icon buttons read.
 
 ## References cached outside git
 

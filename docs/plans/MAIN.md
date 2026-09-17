@@ -1,5 +1,7 @@
 # Plan index
 
+<!-- plan-doc-hygiene: 2026-09-17 05281397349f4d2d1c10c5ef7817407b9e422d7e -->
+
 Entry point for anyone continuing this work. **Open items in full, one line per landed step.** When an
 item lands, replace it here with one line and move its record to `archive/`. Open work is grouped into
 waves: one release-sized bundle sharing owning files, so one implementer reads those files once and one
@@ -91,16 +93,7 @@ Findings recorded while KOAK landed, none acted on. Gate: generator.
 - [ ] **The amendment worksheet parser counts five non-blank cells**, so an empty plan cell shifts every
   later row
 
-## Wave 5 — Browser-check tooling (`web/scripts/browser-check.ts`)
-
-Gate: tooling.
-
-- [ ] **The preview port is hardcoded** (`const BASE = 'http://localhost:4173/craft-tester/'`, :24), so two
-  previews cannot be checked at once. Make it an env var
-- [ ] **An icon-only button lists as a blank entry**: the button mapper reads `textContent`, and an
-  `iconButton` has only an SVG, so it prints empty. Fall back to `aria-label`
-
-## Wave 6 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
+## Wave 5 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
 
@@ -112,7 +105,7 @@ Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data c
   `shared/airways.yaml`. **Data concept and the rebuild rule still to plan with the user before any engine
   change**; the subplan's three questions are open
 
-## Wave 7 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
+## Wave 6 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
 
 Gate: aviation + UI. The only rule concept KOAK left unbuilt.
 
@@ -124,7 +117,7 @@ Gate: aviation + UI. The only rule concept KOAK left unbuilt.
   answer only), the amendment UI box, the results view, and the importer's correction-cell reading. KGPI
   is in the CIFP cache but not among the 67 rows of `shared/destinations.yaml`, so it needs a data row too
 
-## Wave 8 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
+## Wave 7 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
 
 Paused by user steer 2026-09-16; resume with `pnpm -C web propose --pending`. Gate: aviation, one fixture
 at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build`, never an engine edit.
@@ -207,6 +200,8 @@ One line per step; the full record and the user decisions behind each are in the
   `3117367`, `5a86e63`
 - [x] v3: KOAK as the second airport — closed 2026-09-17 at 51 of 51 fixtures settled; the rule concepts
   it introduced are in ADDING_AN_AIRPORT.md "Lessons from KOAK"
+- [x] Browser-check tooling: `CRAFT_PREVIEW_URL` picks the preview, so two builds can be checked at once, and
+  a button with no text lists by its `aria-label` — 2026-09-17
 - [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
   offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
   pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules
