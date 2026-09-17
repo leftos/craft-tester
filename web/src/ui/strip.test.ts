@@ -23,14 +23,30 @@ const FILED: Scenario = {
 /** A route long enough to need every line of the route cell. */
 const LONG_ROUTE = 'SSTIK4 SNS PXN AVE EHF PMD CIVET4 DOTSS HAKMN TRIXI KEGGS BAYST';
 
+/** The same airport with one fleet type stripped of the FAA category, as an unlisted type reads. */
+function withoutCwt(airport: AirportData, type: string): AirportData {
+  const fleet = airport.routeLibrary.fleet.map((entry) => {
+    if (entry.type !== type) return entry;
+    const unlisted = { ...entry };
+    delete unlisted.cwt;
+    return unlisted;
+  });
+  return { ...airport, routeLibrary: { ...airport.routeLibrary, fleet } };
+}
+
 describe('stripFields', () => {
-  it('prints a heavy with its wake prefix and a medium without one', () => {
-    expect(stripFields({ ...FILED, aircraftType: 'B77L' }, ksfo, 1).equipment).toBe('H/B77L/L');
-    expect(stripFields(FILED, ksfo, 1).equipment).toBe('B738/L');
+  it('prints the FAA wake category of the type ahead of it', () => {
+    expect(stripFields({ ...FILED, aircraftType: 'B77L' }, ksfo, 1).equipment).toBe('B/B77L/L');
+    expect(stripFields(FILED, ksfo, 1).equipment).toBe('F/B738/L');
+    expect(stripFields({ ...FILED, aircraftType: 'C172' }, ksfo, 1).equipment).toBe('I/C172/L');
   });
 
-  it('prints a type filed without a suffix as the bare designator', () => {
-    expect(stripFields({ ...FILED, equipmentSuffix: null }, ksfo, 1).equipment).toBe('B738');
+  it('prints no prefix for a type the FAA table does not list', () => {
+    expect(stripFields(FILED, withoutCwt(ksfo, 'B738'), 1).equipment).toBe('B738/L');
+  });
+
+  it('prints a type filed without a suffix as the category and the bare designator', () => {
+    expect(stripFields({ ...FILED, equipmentSuffix: null }, ksfo, 1).equipment).toBe('F/B738');
   });
 
   it('prints the requested altitude in hundreds of feet, three digits', () => {

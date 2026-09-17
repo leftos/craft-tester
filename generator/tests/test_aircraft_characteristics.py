@@ -25,15 +25,31 @@ HEADER = [
     "AAC_maximum",
     "Approach_Speed_knot",
     "MTOW_lb",
+    "CWT",
     "ICAO_WTC",
     "LastUpdate",
 ]
 
 ROWS: list[list[object]] = [
-    ["A320", "A320", "AIRBUS", "Airbus A320", "Jet", 2, "C", None, None, 136, 171961, "Medium", "2024-01-01"],
-    ["DH8D", "DH8D", "DEHAVILLAND CANADA", "DeHavilland Canada 8/DHC8-400", "Turboprop", 2, "C", None, None, 125, 64500.4, "Medium", "2024-01-01"],
-    ["ZZZZ", "ZZZZ", "BELL", "Bell V-22 Osprey", "Turboshaft", 2, "N/A", None, None, "N/A", 60500, "Medium", "2024-01-01"],
-    ["A320", "A320", "AIRBUS", "Airbus A320 duplicate", "Jet", 2, "D", "C", "D", 150, 171961, "Medium", "2024-01-01"],
+    ["A320", "A320", "AIRBUS", "Airbus A320", "Jet", 2, "C", None, None, 136, 171961, "D", "Medium", "2024-01-01"],
+    [
+        "DH8D",
+        "DH8D",
+        "DEHAVILLAND CANADA",
+        "DeHavilland Canada 8/DHC8-400",
+        "Turboprop",
+        2,
+        "C",
+        None,
+        None,
+        125,
+        64500.4,
+        "F",
+        "Medium",
+        "2024-01-01",
+    ],
+    ["ZZZZ", "ZZZZ", "BELL", "Bell V-22 Osprey", "Turboshaft", 2, "N/A", None, None, "N/A", 60500, "H", "Medium", "2024-01-01"],
+    ["A320", "A320", "AIRBUS", "Airbus A320 duplicate", "Jet", 2, "D", "C", "D", 150, 171961, "D", "Medium", "2024-01-01"],
 ]
 
 
@@ -58,6 +74,7 @@ def test_every_column_of_a_row_is_read() -> None:
         aac_minimum=None,
         aac_maximum=None,
         approach_speed_knot=136,
+        cwt="D",
         engine="Jet",
         engines=2,
         manufacturer="AIRBUS",
@@ -66,8 +83,21 @@ def test_every_column_of_a_row_is_read() -> None:
         wtc="Medium",
     )
     assert table.aircraft["DH8D"].aac == "C"
+    assert table.aircraft["DH8D"].cwt == "F"
     assert table.aircraft["DH8D"].engine == "Turboprop"
     assert table.aircraft["DH8D"].mtow_lb == 64500
+
+
+def test_a_wake_category_outside_a_to_i_is_rejected() -> None:
+    rows: list[list[object]] = [["A320", "A320", "AIRBUS", "Airbus A320", "Jet", 2, "C", None, None, 136, 171961, "Z", "Medium", "2024-01-01"]]
+    with pytest.raises(ValueError, match=r"column CWT is 'Z', which is no consolidated wake turbulence category"):
+        parse_aircraft_characteristics(workbook_bytes(rows))
+
+
+def test_a_row_stating_no_wake_category_is_rejected() -> None:
+    rows: list[list[object]] = [["A320", "A320", "AIRBUS", "Airbus A320", "Jet", 2, "C", None, None, 136, 171961, None, "Medium", "2024-01-01"]]
+    with pytest.raises(ValueError, match=r"column CWT is '', which is no consolidated wake turbulence category"):
+        parse_aircraft_characteristics(workbook_bytes(rows))
 
 
 def test_a_type_the_faa_states_no_category_for_carries_none() -> None:
@@ -96,7 +126,10 @@ def test_the_yaml_round_trips_through_write_and_load(tmp_path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     assert f"  url: {AIRCRAFT_CHARACTERISTICS_URL}" in text
     assert "  fetched_at: 2026-09-16" in text
-    assert "  A320: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, mtow_lb: 171961," in text
+    assert (
+        "  A320: { aac: C, approach_speed_knot: 136, cwt: D, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, mtow_lb: 171961,"
+        in text
+    )
     assert [line.split(":")[0].strip() for line in text.splitlines() if line.startswith("  ") and "{" in line] == ["A320", "DH8D", "ZZZZ"]
     assert load_aircraft_characteristics(path) == table.aircraft
 
@@ -107,7 +140,7 @@ def test_a_category_outside_a_to_e_fails_the_load(tmp_path: Path) -> None:
         "source:\n"
         f"  title: FAA Aircraft Characteristics Database\n  url: {AIRCRAFT_CHARACTERISTICS_URL}\n  fetched_at: 2026-09-16\n"
         "aircraft:\n"
-        "  A320: { aac: Z, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, wtc: Medium }\n",
+        "  A320: { aac: Z, cwt: D, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, wtc: Medium }\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match=r"aircraft\[A320\]\.aac: 'Z' is not one of \['A', 'B', 'C', 'D', 'E'\]"):
@@ -120,7 +153,7 @@ def test_an_unknown_key_fails_the_load(tmp_path: Path) -> None:
         "source:\n"
         f"  title: FAA Aircraft Characteristics Database\n  url: {AIRCRAFT_CHARACTERISTICS_URL}\n  fetched_at: 2026-09-16\n"
         "aircraft:\n"
-        "  A320: { aac: C, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, wtc: Medium, span_ft: 117 }\n",
+        "  A320: { aac: C, cwt: D, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, wtc: Medium, span_ft: 117 }\n",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match=r"unknown key\(s\) \['span_ft'\]"):

@@ -42,6 +42,7 @@ export type StripFields = {
   callsign: string;
   /** The amendment number printed under the callsign, absent on a strip as filed. */
   revision: number | undefined;
+  /** The equipment cell, `F/B738/L`: the FAA wake category, the type, and the suffix as filed. */
   equipment: string;
   cid: string;
   barcodeBars: readonly BarcodeBar[];
@@ -160,10 +161,10 @@ export function barcodeBars(callsign: string): BarcodeBar[] {
   return bars;
 }
 
-/** The equipment field: the wake prefix a heavy or a super carries, the type, and the suffix. */
+/** The equipment field: the FAA wake category the type carries, the type, and the suffix. */
 function equipmentOf(scenario: Scenario, airport: AirportData): string {
-  const wtc = airport.routeLibrary.fleet.find((entry) => entry.type === scenario.aircraftType)?.wtc;
-  const prefix = wtc === 'H' || wtc === 'J' ? `${wtc}/` : '';
+  const cwt = airport.routeLibrary.fleet.find((entry) => entry.type === scenario.aircraftType)?.cwt;
+  const prefix = cwt === undefined ? '' : `${cwt}/`;
   return `${prefix}${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`;
 }
 
@@ -177,7 +178,7 @@ function remarksOf(scenario: Scenario): string | undefined {
  * Every field of the paper strip, filled from the plan as filed.
  *
  * @param scenario The drawn flight plan.
- * @param airport The airport data, which names the departure and the fleet's wake categories.
+ * @param airport The airport data, which names the departure and the fleet's FAA wake categories.
  * @param seed The scenario seed, which the computer identification is derived from.
  * @param revision The amendment number, printed under the callsign; absent on a strip as filed.
  * @returns The fields, written the way the strip prints them.

@@ -584,6 +584,15 @@ export const FleetEntrySchema = z.strictObject({
    * categories; it is absent at an airport whose rows never do.
    */
   approachCategory: ApproachCategorySchema.optional(),
+  /**
+   * The FAA Consolidated Wake Turbulence category (`A` to `I`) from the Aircraft Characteristics
+   * Database, which the strip prints ahead of the type; absent where the FAA table does not list
+   * the type.
+   */
+  cwt: z
+    .string()
+    .regex(/^[A-I]$/)
+    .optional(),
 });
 
 /** A curated filed route: the gate fix, the rest of the route string, and where it goes. */

@@ -3,9 +3,10 @@
 ``https://www.faa.gov/airports/engineering/aircraft_char_database/aircraft_data`` serves the FAA's
 own spreadsheet of the types that operate at US airports, one row per ICAO designator, carrying the
 Aircraft Approach Category (AAC) the FAA publishes for it along with the approach speed, engine
-class, manufacturer, model, maximum take-off weight and ICAO wake turbulence category it is derived
-from. The table is national, so it lands in ``generator/shared/`` as one YAML file every airport
-inherits rather than a column of estimates copied into each airport's ``routes.yaml``.
+class, manufacturer, model, maximum take-off weight, Consolidated Wake Turbulence (CWT) category
+and ICAO wake turbulence category it is derived from. The table is national, so it lands in
+``generator/shared/`` as one YAML file every airport inherits rather than a column of estimates
+copied into each airport's ``routes.yaml``.
 
 :func:`parse_aircraft_characteristics` reads the workbook, :func:`write_aircraft_characteristics`
 writes the shared YAML, and :func:`load_aircraft_characteristics` reads it back with the same strict
@@ -33,6 +34,10 @@ Aac = Literal["A", "B", "C", "D", "E"]
 
 AAC_CATEGORIES: tuple[Aac, ...] = ("A", "B", "C", "D", "E")
 
+Cwt = Literal["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+
+CWT_CATEGORIES: tuple[Cwt, ...] = ("A", "B", "C", "D", "E", "F", "G", "H", "I")
+
 AIRCRAFT_CHARACTERISTICS_URL = "https://www.faa.gov/airports/engineering/aircraft_char_database/aircraft_data"
 AIRCRAFT_CHARACTERISTICS_TITLE = "FAA Aircraft Characteristics Database"
 AIRCRAFT_CHARACTERISTICS_CACHE_FILE = "faa-aircraft-characteristics.xlsx"
@@ -50,6 +55,7 @@ COLUMNS = (
     "AAC_maximum",
     "Approach_Speed_knot",
     "MTOW_lb",
+    "CWT",
     "ICAO_WTC",
 )
 
@@ -63,13 +69,15 @@ class AircraftCharacteristic:
 
     ``aac`` is the published Aircraft Approach Category, and is ``None`` for a type the FAA states
     none for. ``aac_minimum`` and ``aac_maximum`` are the span of the variants the row covers, and
-    are ``None`` on a row whose variants share one category.
+    are ``None`` on a row whose variants share one category. ``cwt`` is the Consolidated Wake
+    Turbulence category, a letter ``A`` to ``I``, which the FAA states for every type in the table.
     """
 
     aac: Aac | None
     aac_minimum: Aac | None
     aac_maximum: Aac | None
     approach_speed_knot: int | None
+    cwt: str
     engine: str
     engines: int
     manufacturer: str
@@ -114,6 +122,17 @@ def _category(value: object, field: str, where: str) -> Aac | None:
     raise ValueError(f"{where}: column {field} is {text!r}, which is no approach category; expected one of {list(AAC_CATEGORIES)} or N/A")
 
 
+def _wake_category(value: object, field: str, where: str) -> Cwt:
+    text = _cell_text(value).upper()
+    for option in CWT_CATEGORIES:
+        if option == text:
+            return option
+    raise ValueError(
+        f"{where}: column {field} is {text!r}, which is no consolidated wake turbulence category; "
+        f"expected one of {list(CWT_CATEGORIES)}, which the FAA states for every type"
+    )
+
+
 def _whole(value: object, field: str, where: str) -> int | None:
     if isinstance(value, bool):
         raise ValueError(f"{where}: column {field} is {value!r}, expected a number")
@@ -154,6 +173,7 @@ def _entry_of(row: Sequence[Any], columns: Mapping[str, int], where: str) -> Air
         aac_minimum=_category(cell("AAC_minimum"), "AAC_minimum", where),
         aac_maximum=_category(cell("AAC_maximum"), "AAC_maximum", where),
         approach_speed_knot=_whole(cell("Approach_Speed_knot"), "Approach_Speed_knot", where),
+        cwt=_wake_category(cell("CWT"), "CWT", where),
         engine=_text(cell("Physical_Class_Engine"), "Physical_Class_Engine", where),
         engines=_required_whole(cell("Num_Engines"), "Num_Engines", where),
         manufacturer=_text(cell("Manufacturer"), "Manufacturer", where),
@@ -189,8 +209,8 @@ def parse_aircraft_characteristics(data: bytes) -> AircraftCharacteristics:
 
     Raises:
         ValueError: The workbook has no ``ACD_Data`` sheet, no header row carrying an ``ICAO_Code``
-            cell, no column this reads, or a row whose approach category, number or required text
-            the parser cannot read.
+            cell, no column this reads, or a row whose approach category, wake turbulence category,
+            number or required text the parser cannot read.
     """
     rows = _sheet_rows(data)
     header_index, columns = _header_row(rows)
@@ -221,6 +241,7 @@ def _fields(entry: AircraftCharacteristic) -> Iterator[tuple[str, str]]:
         ("aac_maximum", entry.aac_maximum),
         ("aac_minimum", entry.aac_minimum),
         ("approach_speed_knot", entry.approach_speed_knot),
+        ("cwt", entry.cwt),
         ("engine", entry.engine),
         ("engines", entry.engines),
         ("manufacturer", entry.manufacturer),
@@ -263,6 +284,7 @@ def _entry(row: _Row) -> AircraftCharacteristic:
         aac_minimum=row.optional_choice("aac_minimum", AAC_CATEGORIES),
         aac_maximum=row.optional_choice("aac_maximum", AAC_CATEGORIES),
         approach_speed_knot=row.optional_number("approach_speed_knot"),
+        cwt=row.choice("cwt", CWT_CATEGORIES),
         engine=row.text("engine"),
         engines=row.number("engines"),
         manufacturer=row.text("manufacturer"),
@@ -288,7 +310,8 @@ def load_aircraft_characteristics(path: Path) -> dict[str, AircraftCharacteristi
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown key, states an approach
-            category outside A-E, or holds a malformed number or date.
+            category outside A-E or a wake turbulence category outside A-I, or holds a malformed
+            number or date.
         OSError: The file is missing.
     """
     where = _where(path)

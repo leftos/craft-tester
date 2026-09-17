@@ -4,393 +4,393 @@
 source:
   title: FAA Aircraft Characteristics Database
   url: https://www.faa.gov/airports/engineering/aircraft_char_database/aircraft_data
-  fetched_at: 2026-09-16
+  fetched_at: 2026-09-17
 aircraft:
-  A10: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: FAIRCHILD, model: Fairchild A10, mtow_lb: 50045, wtc: Medium }
-  A124: { aac: D, approach_speed_knot: 151, engine: Jet, engines: 4, manufacturer: ANTONOV, model: Antonov AN-124 Ruslan, mtow_lb: 892871, wtc: Heavy }
-  A19N: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A319 Neo, mtow_lb: 166449, wtc: Medium }
-  A20N: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320 Neo, mtow_lb: 174165, wtc: Medium }
-  A21N: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A321 Neo, mtow_lb: 209439, wtc: Medium }
-  A306: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A300 B4-600, mtow_lb: 363760, wtc: Heavy }
-  A30B: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A300-B2, mtow_lb: 363760, wtc: Heavy }
-  A310: { aac: C, approach_speed_knot: 139, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A310, mtow_lb: 317465, wtc: Heavy }
-  A318: { aac: C, approach_speed_knot: 121, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A318, mtow_lb: 149914, wtc: Medium }
-  A319: { aac: C, approach_speed_knot: 126, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A319, mtow_lb: 168653, wtc: Medium }
-  A320: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, mtow_lb: 171961, wtc: Medium }
-  A321: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 142, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A321, mtow_lb: 200621, wtc: Medium }
-  A332: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-200, mtow_lb: 533519, wtc: Heavy }
-  A333: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-300, mtow_lb: 533519, wtc: Heavy }
-  A337: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-700 - Beluga XL, mtow_lb: 500449, wtc: Heavy }
-  A338: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-800, mtow_lb: 544542, wtc: Heavy }
-  A339: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-900, mtow_lb: 553400, wtc: Heavy }
-  A342: { aac: D, approach_speed_knot: 145, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-200, mtow_lb: 606271, wtc: Heavy }
-  A343: { aac: D, approach_speed_knot: 145, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-300, mtow_lb: 609578, wtc: Heavy }
-  A345: { aac: D, approach_speed_knot: 146, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-500, mtow_lb: 837756, wtc: Heavy }
-  A346: { aac: D, approach_speed_knot: 153, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-600, mtow_lb: 837756, wtc: Heavy }
-  A359: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus 350-900, mtow_lb: 617295, wtc: Heavy }
-  A35K: { aac: D, approach_speed_knot: 147, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A350-1000 XWB, mtow_lb: 696661, wtc: Heavy }
-  A388: { aac: C, approach_speed_knot: 138, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A380-800, mtow_lb: 1267658, wtc: Super }
-  A400: { aac: C, approach_speed_knot: 130, engine: Turboprop, engines: 4, manufacturer: AIRBUS, model: Airbus A400M Atlas, mtow_lb: 310852, wtc: Heavy }
-  A5: { aac: A, approach_speed_knot: 59, engine: Piston, engines: 1, manufacturer: ICON, model: Icon A-5, mtow_lb: 1510, wtc: Light }
-  AA1: { aac: A, approach_speed_knot: 69, engine: Piston, engines: 1, manufacturer: GRUMMAN AMERICAN, model: Grumman American AA1, mtow_lb: 1500, wtc: Light }
-  AA5: { aac: A, approach_speed_knot: 69, engine: Piston, engines: 1, manufacturer: GRUMMAN AMERICAN, model: Grumman American AA5, mtow_lb: 2200, wtc: Light }
-  AC11: { aac: A, approach_speed_knot: 70, engine: Piston, engines: 1, manufacturer: ROCKWELL, model: Rockwell Commander 112, mtow_lb: 3250, wtc: Light }
-  AC50: { aac: A, approach_speed_knot: 77, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 500, mtow_lb: 6000, wtc: Light }
-  AC56: { aac: B, approach_speed_knot: 97, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 560, mtow_lb: 6000, wtc: Light }
-  AC68: { aac: B, approach_speed_knot: 97, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 680FP, mtow_lb: 8500, wtc: Light }
-  AC6L: { aac: B, approach_speed_knot: 98, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 680FL, mtow_lb: 9000, wtc: Light }
-  AC80: { aac: B, approach_speed_knot: 97, engine: Turboprop, engines: 2, manufacturer: ROCKWELL, model: Rockwell Commander Turbo 680, mtow_lb: 8950, wtc: Light }
-  AC90: { aac: B, approach_speed_knot: 97, engine: Turboprop, engines: 2, manufacturer: GULFSTREAM AEROSPACE-ROCKWELL, model: Gulfstream 690 Commander 690, mtow_lb: 10325, wtc: Light }
-  AC95: { aac: B, approach_speed_knot: 100, engine: Turboprop, engines: 2, manufacturer: GULFSTREAM AEROSPACE-ROCKWELL, model: Gulfstream Jetprop Commander 1000, mtow_lb: 10325, wtc: Light }
-  AEST: { aac: B, approach_speed_knot: 96, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Aero Star, mtow_lb: 6315, wtc: Light }
-  AN12: { aac: C, approach_speed_knot: 127, engine: Turboprop, engines: 4, manufacturer: ANTONOV, model: Antonov AN-12, mtow_lb: 134482, wtc: Medium }
-  AN72: { aac: B, approach_speed_knot: 100, engine: Jet, engines: 2, manufacturer: ANTONOV, model: Antonov AN-74-100/200, mtow_lb: 76060, wtc: Medium }
-  AR11: { aac: A, approach_speed_knot: 49, engine: Piston, engines: 1, manufacturer: AERONCA, model: Aeronca 11 Chief, mtow_lb: 1250, wtc: Light }
-  ASTR: { aac: B, approach_speed_knot: 120, engine: Jet, engines: 2, manufacturer: IAI, model: IAI Astra 1125, mtow_lb: 23500, wtc: Medium }
-  AT3T: { aac: A, approach_speed_knot: 74, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: Air Tractor AT-402, mtow_lb: 9170, wtc: Light }
-  AT43: { aac: B, approach_speed_knot: 104, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 42-300/320, mtow_lb: 36825, wtc: Medium }
-  AT44: { aac: B, approach_speed_knot: 104, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR-42-400, mtow_lb: 36817, wtc: Medium }
-  AT45: { aac: B, approach_speed_knot: 104, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 42-500, mtow_lb: 41005, wtc: Medium }
-  AT46: { aac: B, approach_speed_knot: 104, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 42-600, mtow_lb: 41005, wtc: Medium }
-  AT5T: { aac: A, approach_speed_knot: 77, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: Air Tractor AT-503, mtow_lb: 9600, wtc: Light }
-  AT6T: { aac: B, approach_speed_knot: 92, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: AT-602 Air Tractor, mtow_lb: 12500, wtc: Light }
-  AT72: { aac: B, approach_speed_knot: 114, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR-72-201/202, mtow_lb: 47400, wtc: Medium }
-  AT73: { aac: B, approach_speed_knot: 109, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 72-211/212, mtow_lb: 47399, wtc: Medium }
-  AT75: { aac: B, approach_speed_knot: 120, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR-72-500, mtow_lb: 50265, wtc: Medium }
-  AT76: { aac: B, approach_speed_knot: 113, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 72-600/212A, mtow_lb: 50265, wtc: Medium }
-  AT8T: { aac: B, approach_speed_knot: 103, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: Air Tractor AT-802, mtow_lb: 16000, wtc: Light/Medium }
-  B18T: { aac: A, approach_speed_knot: 87, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech 18 (Turbo), mtow_lb: 9900, wtc: Light }
-  B190: { aac: B, aac_maximum: C, aac_minimum: B, approach_speed_knot: 121, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech 1900/C-12J, mtow_lb: 17120, wtc: Medium }
-  B2: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 4, manufacturer: NORTHROP, model: Northrop B-2 Spirit, mtow_lb: 375998, wtc: Heavy }
-  B350: { aac: B, approach_speed_knot: 107, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech Super King Air 350, mtow_lb: 15000, wtc: Light/Medium }
-  B36T: { aac: A, approach_speed_knot: 73, engine: Piston, engines: 1, manufacturer: ALLISON-BEECH, model: Allison 36 Turbine Bonanza, mtow_lb: 3650, wtc: Light }
-  B37M: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 145, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737 MAX 7, mtow_lb: 177000, wtc: Medium }
-  B38M: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 145, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737 MAX 8, mtow_lb: 181200, wtc: Medium }
-  B39M: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 150, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737 MAX 9, mtow_lb: 194700, wtc: Medium }
-  B461: { aac: C, approach_speed_knot: 121, engine: Jet, engines: 4, manufacturer: BRITISH AEROSPACE, model: BAe 146-100, mtow_lb: 84000, wtc: Medium }
-  B462: { aac: C, approach_speed_knot: 122, engine: Jet, engines: 4, manufacturer: BRITISH AEROSPACE, model: BAe 146 -200, mtow_lb: 93000, wtc: Medium }
-  B52: { aac: D, approach_speed_knot: 141, engine: Jet, engines: 8, manufacturer: BOEING, model: Boeing B-52 Stratofortress, mtow_lb: 488000, wtc: Heavy }
-  B703: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 707-300, mtow_lb: 333600, wtc: Heavy }
-  B712: { aac: C, approach_speed_knot: 139, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 717-200, mtow_lb: 118000, wtc: Medium }
-  B721: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 727-100 (C-22), mtow_lb: 160000, wtc: Medium }
-  B722: { aac: C, approach_speed_knot: 133, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 727-200, mtow_lb: 184800, wtc: Medium }
-  B732: { aac: C, approach_speed_knot: 129, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-200/VC96, mtow_lb: 115500, wtc: Medium }
-  B733: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-300, mtow_lb: 139500, wtc: Medium }
-  B734: { aac: C, approach_speed_knot: 139, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-400, mtow_lb: 150000, wtc: Medium }
-  B735: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-500, mtow_lb: 136000, wtc: Medium }
-  B736: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-600, mtow_lb: 144500, wtc: Medium }
-  B737: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-700, mtow_lb: 154500, wtc: Medium }
-  B738: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-800, mtow_lb: 174200, wtc: Medium }
-  B739: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 149, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-900, mtow_lb: 187700, wtc: Medium }
-  B741: { aac: D, approach_speed_knot: 144, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-100, mtow_lb: 750000, wtc: Heavy }
-  B742: { aac: D, approach_speed_knot: 150, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-200, mtow_lb: 833000, wtc: Heavy }
-  B743: { aac: D, approach_speed_knot: 142, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-300, mtow_lb: 833000, wtc: Heavy }
-  B744: { aac: D, approach_speed_knot: 157, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-400, mtow_lb: 910000, wtc: Heavy }
-  B748: { aac: D, approach_speed_knot: 159, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-8, mtow_lb: 987000, wtc: Heavy }
-  B752: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 757-200, mtow_lb: 255500, wtc: Medium }
-  B753: { aac: D, approach_speed_knot: 143, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 757-300, mtow_lb: 270000, wtc: Medium }
-  B762: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 767-200, mtow_lb: 315000, wtc: Heavy }
-  B763: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 767-300, mtow_lb: 412000, wtc: Heavy }
-  B764: { aac: D, approach_speed_knot: 150, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 767-400, mtow_lb: 450000, wtc: Heavy }
-  B772: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-200, mtow_lb: 656000, wtc: Heavy }
-  B773: { aac: D, approach_speed_knot: 149, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-300, mtow_lb: 660000, wtc: Heavy }
-  B778: { aac: D, approach_speed_knot: 152, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-8, mtow_lb: 775000, wtc: Heavy }
-  B779: { aac: D, approach_speed_knot: 154, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-9, mtow_lb: 775000, wtc: Heavy }
-  B77L: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-200LRF/LR, mtow_lb: 766106, wtc: Heavy }
-  B77W: { aac: D, approach_speed_knot: 149, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-300ER, mtow_lb: 775000, wtc: Heavy }
-  B788: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 787-8 BBJ/Dreamliner, mtow_lb: 502500, wtc: Heavy }
-  B789: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 787-9 Dreamliner, mtow_lb: 560000, wtc: Heavy }
-  B78X: { aac: D, approach_speed_knot: 149, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 787-10 Dreamliner, mtow_lb: 560000, wtc: Heavy }
-  BA11: { aac: C, approach_speed_knot: 133, engine: Jet, engines: 2, manufacturer: BAC, model: BAC 111 One-Eleven, mtow_lb: 87000, wtc: Medium }
-  BCS1: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: AIRBUS-BOMBARDIER, model: Airbus A220-100, mtow_lb: 139100, wtc: Medium }
-  BCS3: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: AIRBUS-BOMBARDIER, model: Airbus A220-300, mtow_lb: 156307, wtc: Medium }
-  BE10: { aac: B, approach_speed_knot: 111, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech King Air 100, mtow_lb: 11800, wtc: Light }
-  BE18: { aac: A, approach_speed_knot: 87, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 18, mtow_lb: 9700, wtc: Light }
-  BE19: { aac: A, approach_speed_knot: 65, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech B19 Musketeer, mtow_lb: 2150, wtc: Light }
-  BE20: { aac: B, approach_speed_knot: 107, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech 200 Super King, mtow_lb: 12500, wtc: Light/Medium }
-  BE23: { aac: A, approach_speed_knot: 70, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 23 Sundowner, mtow_lb: 2450, wtc: Light }
-  BE24: { aac: A, approach_speed_knot: 78, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 24 Sierra, mtow_lb: 2750, wtc: Light }
-  BE30: { aac: B, approach_speed_knot: 107, engine: Turboprop, engines: 2, manufacturer: RAYTHEON-BEECH, model: Raytheon 300 Super King Air, mtow_lb: 14000, wtc: Light }
-  BE33: { aac: A, approach_speed_knot: 69, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech Bonanza 33, mtow_lb: 3400, wtc: Light }
-  BE35: { aac: A, approach_speed_knot: 72, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech Bonanza 35, mtow_lb: 3400, wtc: Light }
-  BE36: { aac: A, approach_speed_knot: 77, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech Bonanza 36, mtow_lb: 3650, wtc: Light }
-  BE40: { aac: B, approach_speed_knot: 114, engine: Jet, engines: 2, manufacturer: RAYTHEON-BEECH-HAWKER, model: Raytheon/Beech Beechjet 400/T-1 Jayhawk, mtow_lb: 16100, wtc: Medium }
-  BE50: { aac: A, approach_speed_knot: 80, engine: Piston, engines: 2, manufacturer: BEECH, model: Beechcraft 50 Twin Bonanza, mtow_lb: 6305, wtc: Light }
-  BE55: { aac: B, approach_speed_knot: 95, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech Baron 55, mtow_lb: 5100, wtc: Light }
-  BE58: { aac: B, approach_speed_knot: 95, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 58 Baron, mtow_lb: 5500, wtc: Light }
-  BE60: { aac: B, approach_speed_knot: 98, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 60 Duke, mtow_lb: 6775, wtc: Light }
-  BE65: { aac: B, approach_speed_knot: 92, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 65 Queen Air, mtow_lb: 7700, wtc: Light }
-  BE70: { aac: B, approach_speed_knot: 92, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 70 Queen Air, mtow_lb: 8200, wtc: Light }
-  BE76: { aac: A, approach_speed_knot: 76, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 76 Duchess, mtow_lb: 3900, wtc: Light }
-  BE77: { aac: A, approach_speed_knot: 63, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 77 Skipper, mtow_lb: 1675, wtc: Light }
-  BE80: { aac: B, approach_speed_knot: 92, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech BE-80 Queen Air, mtow_lb: 8000, wtc: Light }
-  BE95: { aac: A, approach_speed_knot: 79, engine: Piston, engines: 2, manufacturer: BEECH, model: Beechcraft 95 Travel Air, mtow_lb: 4200, wtc: Light }
-  BE99: { aac: B, approach_speed_knot: 107, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech Airliner 99, mtow_lb: 11300, wtc: Light }
-  BE9L: { aac: B, approach_speed_knot: 100, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech King Air 90, mtow_lb: 10485, wtc: Light }
-  BE9T: { aac: B, approach_speed_knot: 108, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech F90 King Air, mtow_lb: 10950, wtc: Light }
-  BL17: { aac: A, approach_speed_knot: 79, engine: Piston, engines: 1, manufacturer: BELLANCA, model: Bellanca Viking, mtow_lb: 3325, wtc: Light }
-  BL8: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: BELLANCA, model: Bellanca 8 Scout, mtow_lb: 2150, wtc: Light }
-  BLCF: { aac: D, approach_speed_knot: 155, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-400LCF Dreamlifter, mtow_lb: 803001, wtc: Heavy }
-  BT36: { aac: A, approach_speed_knot: 73, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 36 Bonanza, mtow_lb: 3850, wtc: Light }
-  C120: { aac: A, approach_speed_knot: 52, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 120, mtow_lb: 1500, wtc: Light }
-  C130: { aac: B, approach_speed_knot: 117, engine: Turboprop, engines: 4, manufacturer: LOCKHEED, model: Lockheed 130 Hercules, mtow_lb: 155000, wtc: Medium }
-  C140: { aac: A, approach_speed_knot: 52, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 140, mtow_lb: 1500, wtc: Light }
-  C150: { aac: A, approach_speed_knot: 55, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 150, mtow_lb: 1600, wtc: Light }
-  C152: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 152, mtow_lb: 1675, wtc: Light }
-  C160: { aac: C, approach_speed_knot: 125, engine: Turboprop, engines: 2, manufacturer: TRANSALL, model: Transall C-160, mtow_lb: 112436, wtc: Medium }
-  C162: { aac: A, approach_speed_knot: 51, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 162 Skycatcher, mtow_lb: 1320, wtc: Light }
-  C17: { aac: B, approach_speed_knot: 115, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing Globemaster 3, mtow_lb: 585000, wtc: Heavy }
-  C170: { aac: A, approach_speed_knot: 59, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 170, mtow_lb: 2200, wtc: Light }
-  C172: { aac: A, approach_speed_knot: 62, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna Skyhawk 172/Cutlass, mtow_lb: 2550, wtc: Light }
-  C175: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 175, mtow_lb: 2450, wtc: Light }
-  C177: { aac: A, approach_speed_knot: 52, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 177 Cardinal, mtow_lb: 2500, wtc: Light }
-  C180: { aac: A, approach_speed_knot: 64, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 180 Skywagon, mtow_lb: 2800, wtc: Light }
-  C182: { aac: A, approach_speed_knot: 65, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna Skylane 182, mtow_lb: 3100, wtc: Light }
-  C185: { aac: A, approach_speed_knot: 64, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 185 Skywagon, mtow_lb: 3350, wtc: Light }
-  C188: { aac: A, approach_speed_knot: 66, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 188, mtow_lb: 3300, wtc: Light }
-  C195: { aac: A, approach_speed_knot: 52, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 195, mtow_lb: 3350, wtc: Light }
-  C206: { aac: A, approach_speed_knot: 70, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 206 Stationair, mtow_lb: 3600, wtc: Light }
-  C207: { aac: A, approach_speed_knot: 71, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 207 Stationair 7, mtow_lb: 3789, wtc: Light }
-  C208: { aac: A, approach_speed_knot: 79, engine: Turboprop, engines: 1, manufacturer: CESSNA, model: Cessna 208 Caravan 1, mtow_lb: 9062, wtc: Light }
-  C210: { aac: A, approach_speed_knot: 85, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 210 Centurion, mtow_lb: 3800, wtc: Light }
-  C212: { aac: A, approach_speed_knot: 81, engine: Turboprop, engines: 2, manufacturer: CASA, model: CASA Aviocar, mtow_lb: 16976, wtc: Medium }
-  C240: { aac: A, approach_speed_knot: 78, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna TTx Model T240, mtow_lb: 3600, wtc: Light }
-  C25A: { aac: B, approach_speed_knot: 114, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation CJ2, mtow_lb: 12500, wtc: Light }
-  C25B: { aac: B, approach_speed_knot: 108, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation CJ3, mtow_lb: 13870, wtc: Light }
-  C25C: { aac: B, approach_speed_knot: 111, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation CJ4, mtow_lb: 17110, wtc: Medium }
-  C25M: { aac: B, approach_speed_knot: 100, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation M2, mtow_lb: 10700, wtc: Light }
-  C303: { aac: A, approach_speed_knot: 90, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 303 Crusader, mtow_lb: 5150, wtc: Light }
-  C30J: { aac: C, approach_speed_knot: 128, engine: Turboprop, engines: 4, manufacturer: LOCKHEED MARTIN, model: "C-130J Super Hercules ; Lockheed", mtow_lb: 155000, wtc: Medium }
-  C310: { aac: A, approach_speed_knot: 87, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 310, mtow_lb: 5500, wtc: Light }
-  C320: { aac: A, approach_speed_knot: 68, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 320 Skyknight, mtow_lb: 4990, wtc: Light }
-  C335: { aac: B, approach_speed_knot: 92, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 335, mtow_lb: 6290, wtc: Light }
-  C340: { aac: B, approach_speed_knot: 94, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 340, mtow_lb: 5990, wtc: Light }
-  C402: { aac: A, approach_speed_knot: 83, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 401/402, mtow_lb: 6300, wtc: Light }
-  C404: { aac: B, approach_speed_knot: 96, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 404 Titan, mtow_lb: 8400, wtc: Light }
-  C414: { aac: B, approach_speed_knot: 95, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna Chancellor 414, mtow_lb: 6750, wtc: Light }
-  C421: { aac: B, approach_speed_knot: 96, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna Golden Eagle 421, mtow_lb: 7450, wtc: Light }
-  C425: { aac: B, approach_speed_knot: 98, engine: Turboprop, engines: 2, manufacturer: CESSNA, model: Cessna 425 Corsair, mtow_lb: 8600, wtc: Light }
-  C441: { aac: B, approach_speed_knot: 98, engine: Turboprop, engines: 2, manufacturer: CESSNA, model: Cessna Conquest, mtow_lb: 9850, wtc: Light }
-  C500: { aac: B, approach_speed_knot: 107, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna 500/Citation I, mtow_lb: 11850, wtc: Light }
-  C501: { aac: B, approach_speed_knot: 107, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna 1SP, mtow_lb: 11850, wtc: Light }
-  C510: { aac: B, approach_speed_knot: 105, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Mustang, mtow_lb: 8645, wtc: Light }
-  C525: { aac: B, approach_speed_knot: 108, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna CitationJet/CJ1, mtow_lb: 10700, wtc: Light }
-  C526: { aac: B, approach_speed_knot: 107, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna 526 CitationJet, mtow_lb: 10700, wtc: Light }
-  C550: { aac: B, approach_speed_knot: 105, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation II/Bravo, mtow_lb: 15100, wtc: Light }
-  C551: { aac: B, approach_speed_knot: 100, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation II/SP, mtow_lb: 14800, wtc: Light }
-  C55B: { aac: B, approach_speed_knot: 117, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Bravo, mtow_lb: 14800, wtc: Light }
-  C560: { aac: B, approach_speed_knot: 103, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation V/Ultra/Encore, mtow_lb: 16300, wtc: Medium }
-  C56X: { aac: B, approach_speed_knot: 116, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Excel/XLS, mtow_lb: 20200, wtc: Medium }
-  C650: { aac: C, approach_speed_knot: 126, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna III/VI/VII, mtow_lb: 23000, wtc: Medium }
-  C680: { aac: B, approach_speed_knot: 108, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Sovereign, mtow_lb: 30300, wtc: Medium }
-  C68A: { aac: B, approach_speed_knot: 100, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Latitude, mtow_lb: 30800, wtc: Medium }
-  C700: { aac: C, approach_speed_knot: 121, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Longitude, mtow_lb: 39500, wtc: Medium }
-  C72R: { aac: A, approach_speed_knot: 62, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 172RG Cutlass RG, mtow_lb: 2450, wtc: Light }
-  C750: { aac: C, approach_speed_knot: 131, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation X, mtow_lb: 36100, wtc: Medium }
-  C77R: { aac: A, approach_speed_knot: 65, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 177 Cardinal RG, mtow_lb: 2800, wtc: Light }
-  C82R: { aac: A, approach_speed_knot: 64, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna Skylane RG, mtow_lb: 3100, wtc: Light }
-  CH7A: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: AERONCA, model: Aeronca 7AC, mtow_lb: 1220, wtc: Light }
-  CH7B: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: BELLANCA, model: Bellanca 7GCBC Citabria, mtow_lb: 1800, wtc: Light }
-  CL30: { aac: C, approach_speed_knot: 126, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier (Canadair) Challenger 300, mtow_lb: 38850, wtc: Medium }
-  CL35: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier Challenger 350, mtow_lb: 40600, wtc: Medium }
-  CL41: { engine: Jet, engines: 1, manufacturer: CANADAIR, model: Canadair 41 Tutor, mtow_lb: 7787, wtc: Light }
-  CL60: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: CANADAIR, model: Canadair Challenger 600/601/604, mtow_lb: 47600, wtc: Medium }
-  CN35: { aac: B, approach_speed_knot: 110, engine: Turboprop, engines: 2, manufacturer: CASA, model: CASA CN-235, mtow_lb: 36376, wtc: Medium }
-  COL3: { aac: A, approach_speed_knot: 78, engine: Piston, engines: 1, manufacturer: LANCAIR-CESSNA, model: Lancair LC-40 Columbia 300, mtow_lb: 3400, wtc: Light }
-  COL4: { aac: A, approach_speed_knot: 78, engine: Piston, engines: 1, manufacturer: LANCAIR-CESSNA, model: Lancair LC-41 Columbia 400, mtow_lb: 3400, wtc: Light }
-  COUR: { engine: Piston, engines: 1, manufacturer: HELIO, model: HELIO U-10 Super Courier, mtow_lb: 3400, wtc: Light }
-  CRJ1: { aac: D, approach_speed_knot: 141, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-100, mtow_lb: 47450, wtc: Medium }
-  CRJ2: { aac: D, approach_speed_knot: 141, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-200, mtow_lb: 47450, wtc: Medium }
-  CRJ7: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-700, mtow_lb: 75000, wtc: Medium }
-  CRJ9: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 141, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-900, mtow_lb: 80500, wtc: Medium }
-  CRUZ: { aac: A, approach_speed_knot: 39, engine: Piston, engines: 1, manufacturer: CZAW, model: CZAW SportCruiser, mtow_lb: 1320, wtc: Light }
-  CVLP: { aac: B, approach_speed_knot: 107, engine: Piston, engines: 2, manufacturer: CONVAIR, model: Convair CV-440 Metropolitan, mtow_lb: 41790, wtc: Medium }
-  CVLT: { aac: B, approach_speed_knot: 107, engine: Turboprop, engines: 2, manufacturer: CONVAIR-CANADAIR, model: "Convair CV-580/600/640, C-131H", mtow_lb: 58500, wtc: Medium }
-  D328: { aac: B, approach_speed_knot: 110, engine: Turboprop, engines: 2, manufacturer: DORNIER, model: Dornier 328 Series, mtow_lb: 30843, wtc: Medium }
-  DA40: { aac: A, approach_speed_knot: 77, engine: Piston, engines: 1, manufacturer: DIAMOND, model: Diamond Star DA40, mtow_lb: 2888, wtc: Light }
-  DA42: { aac: A, approach_speed_knot: 88, engine: Piston, engines: 2, manufacturer: DIAMOND, model: Diamond Twin Star, mtow_lb: 3935, wtc: Light }
-  DC10: { aac: D, approach_speed_knot: 149, engine: Jet, engines: 3, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) DC 10-10/30/40, mtow_lb: 580000, wtc: Heavy }
-  DC3: { aac: B, approach_speed_knot: 97, engine: Piston, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 3, mtow_lb: 25200, wtc: Medium }
-  DC3S: { aac: B, approach_speed_knot: 97, engine: Piston, engines: 2, manufacturer: DOUGLAS, model: Douglas Super DC-3, mtow_lb: 25200, wtc: Medium }
-  DC3T: { aac: B, approach_speed_knot: 95, engine: Turboprop, engines: 2, manufacturer: DOUGLAS/BASLER, model: "Basler, BT-67 Turbo 67", mtow_lb: 28750, wtc: Medium }
-  DC6: { aac: B, approach_speed_knot: 108, engine: Piston, engines: 4, manufacturer: DOUGLAS, model: Douglas DC 6, mtow_lb: 107000, wtc: Medium }
-  DC87: { aac: D, approach_speed_knot: 143, engine: Jet, engines: 4, manufacturer: DOUGLAS, model: Douglas DC-8-70, mtow_lb: 335100, wtc: Heavy }
-  DC91: { aac: C, approach_speed_knot: 132, engine: Jet, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 9-10, mtow_lb: 90700, wtc: Medium }
-  DC93: { aac: C, approach_speed_knot: 132, engine: Jet, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 9-30, mtow_lb: 108000, wtc: Medium }
-  DC95: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 9-50, mtow_lb: 121000, wtc: Medium }
-  DH8A: { aac: B, approach_speed_knot: 92, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada DHC8-100, mtow_lb: 34500, wtc: Medium }
-  DH8B: { aac: B, approach_speed_knot: 92, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada DHC8-200, mtow_lb: 36300, wtc: Medium }
-  DH8C: { aac: B, approach_speed_knot: 99, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada Dash 8/DHC8-300, mtow_lb: 41100, wtc: Medium }
-  DH8D: { aac: C, approach_speed_knot: 125, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada 8/DHC8-400, mtow_lb: 64500, wtc: Medium }
-  DHC2: { aac: A, approach_speed_knot: 51, engine: Piston, engines: 1, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada 2 Mk1 Beaver, mtow_lb: 5100, wtc: Light }
-  DHC6: { aac: A, approach_speed_knot: 74, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada Twin Otter, mtow_lb: 12500, wtc: Light }
-  DHC7: { aac: A, approach_speed_knot: 83, engine: Turboprop, engines: 4, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada DHC-7, mtow_lb: 44000, wtc: Medium }
-  DV20: { aac: A, approach_speed_knot: 59, engine: Piston, engines: 1, manufacturer: DIAMOND, model: Diamond 20 Katana, mtow_lb: 1609, wtc: Light }
-  E110: { aac: B, approach_speed_knot: 92, engine: Turboprop, engines: 2, manufacturer: EMBRAER, model: Embraer EMB110 Bandeirante, mtow_lb: 13010, wtc: Light }
-  E120: { aac: B, approach_speed_knot: 113, engine: Turboprop, engines: 2, manufacturer: EMBRAER, model: Embraer Brasilia EMB 120, mtow_lb: 26433, wtc: Medium }
-  E135: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer ERJ 135/140/Legacy, mtow_lb: 44533, wtc: Medium }
-  E145: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer ERJ-145, mtow_lb: 48502, wtc: Medium }
-  E170: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 170, mtow_lb: 85098, wtc: Medium }
-  E190: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 190, mtow_lb: 110892, wtc: Medium }
-  E195: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 195, mtow_lb: 115280, wtc: Medium }
-  E290: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 190-E2, mtow_lb: 124340, wtc: Medium }
-  E295: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 195-E2, mtow_lb: 135585, wtc: Medium }
-  E35L: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 135BJ Legacy 600, mtow_lb: 44092, wtc: Medium }
-  E45X: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer ERJ 145 XR, mtow_lb: 53131, wtc: Medium }
-  E50P: { aac: B, approach_speed_knot: 100, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 500 Phenom 100, mtow_lb: 10582, wtc: Light }
-  E545: { aac: B, approach_speed_knot: 111, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer EMB-545 Legacy 450, mtow_lb: 35724, wtc: Medium }
-  E550: { aac: B, approach_speed_knot: 113, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Legacy 500/Praetor 600, mtow_lb: 38360, wtc: Medium }
-  E55P: { aac: B, approach_speed_knot: 116, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer Phenom 300, mtow_lb: 17968, wtc: Medium }
-  E75L: { aac: C, approach_speed_knot: 126, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 175 long wing, mtow_lb: 85517, wtc: Medium }
-  E75S: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 175 short wing, mtow_lb: 82673, wtc: Medium }
-  EA50: { aac: B, approach_speed_knot: 91, engine: Jet, engines: 2, manufacturer: ECLIPSE, model: Eclipse 500, mtow_lb: 5950, wtc: Light }
-  ERCO: { aac: A, approach_speed_knot: 55, engine: Piston, engines: 1, manufacturer: ERCO, model: Ercoupe 415, mtow_lb: 1260, wtc: Light }
-  EVOT: { aac: A, approach_speed_knot: 79, engine: Turboprop, engines: 1, manufacturer: LANCAIR, model: Lancair Evolution Turbine, mtow_lb: 4550, wtc: Light }
-  F15: { aac: E, approach_speed_knot: 192, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing F-15 Eagle, mtow_lb: 80998, wtc: Medium }
-  F16: { aac: D, approach_speed_knot: 160, engine: Jet, engines: 1, manufacturer: LOCKHEED-GENERAL DYNAMICS, model: Lockheed F-16 Fighting Falcon, mtow_lb: 42300, wtc: Medium }
-  F18H: { aac: C, approach_speed_knot: 134, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: F/A 18 Hornet, mtow_lb: 56000, wtc: Medium }
-  F18S: { aac: C, approach_speed_knot: 134, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: FA-18E/F Super Hornet, mtow_lb: 66000, wtc: Medium }
-  F22: { aac: D, approach_speed_knot: 145, engine: Jet, engines: 2, manufacturer: LOCKHEED, model: Lockheed Martin L-645 Raptor, mtow_lb: 83500, wtc: Medium }
-  F2TH: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: DASSAULT, model: Dassault Falcon 2000, mtow_lb: 42400, wtc: Medium }
-  F406: { aac: B, approach_speed_knot: 103, engine: Turboprop, engines: 2, manufacturer: REIMS-CESSNA, model: Reims-Cessna F406 Caravan II, mtow_lb: 9850, wtc: Light }
-  F900: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 3, manufacturer: DASSAULT, model: Dassault Falcon 900, mtow_lb: 49000, wtc: Medium }
-  FA10: { aac: B, approach_speed_knot: 107, engine: Jet, engines: 2, manufacturer: DASSAULT, model: "Dassault Falcon/Myst\u00e8re 10", mtow_lb: 18740, wtc: Medium }
-  FA20: { aac: B, approach_speed_knot: 107, engine: Jet, engines: 2, manufacturer: DASSAULT, model: "Dassault Falcon/Myst\u00e8re 20", mtow_lb: 28660, wtc: Medium }
-  FA50: { aac: C, approach_speed_knot: 124, engine: Jet, engines: 3, manufacturer: DASSAULT, model: "Dassault Falcon/Myst\u00e8re 50", mtow_lb: 39700, wtc: Medium }
-  FA7X: { aac: B, approach_speed_knot: 104, engine: Jet, engines: 3, manufacturer: DASSAULT, model: Dassault Falcon 7X, mtow_lb: 70000, wtc: Medium }
-  FA8X: { aac: B, approach_speed_knot: 106, engine: Jet, engines: 3, manufacturer: DASSAULT, model: Dassault Falcon 8X, mtow_lb: 73000, wtc: Medium }
-  FDCT: { aac: A, approach_speed_knot: 51, engine: Piston, engines: 1, manufacturer: FLIGHT DESIGN, model: Flight Design CT, mtow_lb: 1320, wtc: Light }
-  G150: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream G150, mtow_lb: 26100, wtc: Medium }
-  G164: { aac: A, approach_speed_knot: 79, engine: Piston, engines: 1, manufacturer: GRUMMAN AMERICAN, model: "Grumman American\u00a0G164", mtow_lb: 6075, wtc: Light }
-  G280: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream G280, mtow_lb: 39600, wtc: Medium }
-  GA5C: { aac: C, approach_speed_knot: 132, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream Aerospace Gulfstream G7-G500, mtow_lb: 79600, wtc: Medium }
-  GA6C: { aac: C, approach_speed_knot: 129, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream Aerospace Gulfstream G7-G600, mtow_lb: 94600, wtc: Medium }
-  GA7: { aac: A, approach_speed_knot: 82, engine: Piston, engines: 2, manufacturer: GULFSTREAM AMERICAN - GRUMMAN AMERICAN, model: Gulfstream American GA7, mtow_lb: 3800, wtc: Light }
-  GALX: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE-IAI, model: IAI 1126 Galaxy/Gulfstream G200, mtow_lb: 35650, wtc: Medium }
-  GC1: { aac: A, approach_speed_knot: 48, engine: Piston, engines: 1, manufacturer: GLOBE, model: Globe GC-1 Swift, mtow_lb: 1975, wtc: Light }
-  GL5T: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier BD-700 Global 5000, mtow_lb: 92500, wtc: Medium }
-  GL7T: { aac: B, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier BD-700 Global 7500, mtow_lb: 106250, wtc: Medium }
-  GLEX: { aac: C, approach_speed_knot: 131, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier BD-700 Global Express, mtow_lb: 99500, wtc: Medium }
-  GLF2: { aac: C, approach_speed_knot: 139, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream II, mtow_lb: 62000, wtc: Medium }
-  GLF3: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream III, mtow_lb: 69700, wtc: Medium }
-  GLF4: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream IV/G400, mtow_lb: 73200, wtc: Medium }
-  GLF5: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream V, mtow_lb: 90500, wtc: Medium }
-  GLF6: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream G650, mtow_lb: 99600, wtc: Medium }
-  H25A: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: HAWKER SIDDELEY, model: HS 125-1/2/3/400/600, mtow_lb: 25000, wtc: Medium }
-  H25B: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: BRITISH AEROSPACE - HAWKER SIDDELEY, model: BAe HS 125/700-800/Hawker 800, mtow_lb: 28000, wtc: Medium }
-  H25C: { aac: C, approach_speed_knot: 132, engine: Jet, engines: 2, manufacturer: BRITISH AEROSPACE RAYTHEON, model: BAe/Raytheon HS 125-1000, mtow_lb: 31100, wtc: Medium }
-  HA4T: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: HAWKER, model: Hawker 4000, mtow_lb: 39500, wtc: Medium }
-  HAWK: { aac: C, approach_speed_knot: 139, engine: Jet, engines: 1, manufacturer: BRITISH AEROSPACE, model: BAe T-45 Goshawk, mtow_lb: 11244, wtc: Medium }
-  HDJT: { aac: B, approach_speed_knot: 111, engine: Jet, engines: 2, manufacturer: HONDA, model: HONDA HA-420 HondaJet, mtow_lb: 9039, wtc: Light }
-  HUSK: { aac: A, approach_speed_knot: 60, engine: Piston, engines: 1, manufacturer: AVIAT, model: AVIAT Huskey, mtow_lb: 2000, wtc: Light }
-  IL76: { aac: B, approach_speed_knot: 119, engine: Jet, engines: 4, manufacturer: ILYUSHIN, model: Ilyushin IL 76, mtow_lb: 374782, wtc: Heavy }
-  J328: { aac: B, approach_speed_knot: 115, engine: Jet, engines: 2, manufacturer: FAIRCHILD DORNIER, model: Fairchild Dornier 328 Jet, mtow_lb: 34524, wtc: Medium }
-  JS31: { aac: B, approach_speed_knot: 115, engine: Turboprop, engines: 2, manufacturer: BRITISH AEROSPACE, model: BAe 3100 Jetstream 31, mtow_lb: 15322, wtc: Light/Medium }
-  JS32: { aac: B, approach_speed_knot: 109, engine: Turboprop, engines: 2, manufacturer: BRITISH AEROSPACE, model: BAe Jetstream super 31, mtow_lb: 15332, wtc: Medium }
-  JS41: { aac: C, approach_speed_knot: 131, engine: Turboprop, engines: 2, manufacturer: BRITISH AEROSPACE, model: BAe Jetstream 41, mtow_lb: 24000, wtc: Medium }
-  K35R: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing KC-135 Stratotanker, mtow_lb: 322500, wtc: Heavy }
-  KODI: { aac: A, approach_speed_knot: 73, engine: Turboprop, engines: 1, manufacturer: QUEST, model: Quest Kodiak, mtow_lb: 7255, wtc: Light }
-  L29B: { aac: B, approach_speed_knot: 97, engine: Jet, engines: 4, manufacturer: LOCKHEED, model: Lockheed Jetstar 2/731, mtow_lb: 44500, wtc: Medium }
-  L5: { aac: A, approach_speed_knot: 58, engine: Piston, engines: 1, manufacturer: STINSON, model: Stinson L5 Sentinel, mtow_lb: 2050, wtc: Light }
-  L8: { aac: A, approach_speed_knot: 46, engine: Piston, engines: 1, manufacturer: LUSCOMBE, model: Luscombe 8, mtow_lb: 1400, wtc: Light }
-  LA4: { aac: A, approach_speed_knot: 51, engine: Piston, engines: 1, manufacturer: LAKE, model: Lake LA-4, mtow_lb: 2690, wtc: Light }
-  LJ23: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 23, mtow_lb: 12500, wtc: Light }
-  LJ24: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 24, mtow_lb: 13000, wtc: Light }
-  LJ25: { aac: C, approach_speed_knot: 137, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 25, mtow_lb: 15000, wtc: Light }
-  LJ31: { aac: B, approach_speed_knot: 120, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 31, mtow_lb: 15500, wtc: Medium }
-  LJ35: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 35/36, mtow_lb: 18300, wtc: Medium }
-  LJ40: { aac: C, approach_speed_knot: 123, engine: Jet, engines: 2, manufacturer: LEARJET, model: Learjet 40, mtow_lb: 21000, wtc: Medium }
-  LJ45: { aac: C, approach_speed_knot: 123, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 45, mtow_lb: 21500, wtc: Medium }
-  LJ55: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 55, mtow_lb: 19500, wtc: Medium }
-  LJ60: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 60, mtow_lb: 22750, wtc: Medium }
-  LJ70: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: LEARJET, model: Learjet 70, mtow_lb: 21500, wtc: Medium }
-  LJ75: { aac: C, approach_speed_knot: 125, engine: Jet, engines: 2, manufacturer: LEARJET, model: Learjet 75, mtow_lb: 21500, wtc: Medium }
-  LNC4: { aac: A, approach_speed_knot: 81, engine: Piston, engines: 1, manufacturer: LANCAIR, model: Lancair IV, mtow_lb: 3200, wtc: Light }
-  LNP4: { aac: A, approach_speed_knot: 81, engine: Turboprop, engines: 1, manufacturer: LANCAIR, model: Lancair PropJet IV, mtow_lb: 3800, wtc: Light }
-  M20P: { aac: A, approach_speed_knot: 77, engine: Piston, engines: 1, manufacturer: MOONEY, model: Mooney M-20C Ranger, mtow_lb: 3374, wtc: Light }
-  M20T: { aac: A, approach_speed_knot: 77, engine: Piston, engines: 1, manufacturer: MOONEY, model: Mooney M20K Encore/M20M Bravo, mtow_lb: 3368, wtc: Light }
-  M5: { aac: A, approach_speed_knot: 43, engine: Piston, engines: 1, manufacturer: MAULE, model: Maule M-5, mtow_lb: 2300, wtc: Light }
-  MD11: { aac: D, approach_speed_knot: 158, engine: Jet, engines: 3, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 11, mtow_lb: 602500, wtc: Heavy }
-  MD81: { aac: C, approach_speed_knot: 134, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 81, mtow_lb: 140000, wtc: Medium }
-  MD82: { aac: C, approach_speed_knot: 135, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 82, mtow_lb: 149500, wtc: Medium }
-  MD83: { aac: D, approach_speed_knot: 144, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 83, mtow_lb: 160000, wtc: Medium }
-  MD87: { aac: C, approach_speed_knot: 134, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 87, mtow_lb: 149500, wtc: Medium }
-  MD88: { aac: C, approach_speed_knot: 130, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 88, mtow_lb: 149500, wtc: Medium }
-  MD90: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 141, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 90, mtow_lb: 156000, wtc: Medium }
-  MU2: { aac: B, approach_speed_knot: 105, engine: Turboprop, engines: 2, manufacturer: MITSUBISHI, model: Mitsubishi Marquise/Solitaire, mtow_lb: 11574, wtc: Light }
-  MU30: { aac: B, approach_speed_knot: 118, engine: Jet, engines: 2, manufacturer: MITSUBISHI, model: Mitsubishi Diamond/MU300 Diamond, mtow_lb: 14630, wtc: Medium }
-  NAVI: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN-RYAN, model: North American Navion, mtow_lb: 2850, wtc: Light }
-  P180: { aac: C, approach_speed_knot: 121, engine: Turboprop, engines: 2, manufacturer: PIAGGIO, model: Piaggio P-180 Avanti, mtow_lb: 12050, wtc: Light }
-  P210: { aac: A, approach_speed_knot: 75, engine: Piston, engines: 1, manufacturer: RILEY-CESSNA, model: Riley Super P210, mtow_lb: 4000, wtc: Light }
-  P28A: { aac: A, approach_speed_knot: 70, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Cherokee, mtow_lb: 2440, wtc: Light }
-  P28B: { aac: A, approach_speed_knot: 62, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Turbo Dakota, mtow_lb: 3000, wtc: Light }
-  P28R: { aac: A, approach_speed_knot: 73, engine: Piston, engines: 1, manufacturer: PIPER, model: Cherokee Arrow, mtow_lb: 2758, wtc: Light }
-  P28T: { aac: A, approach_speed_knot: 73, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 28T Arrow 4, mtow_lb: 2750, wtc: Light }
-  P3: { aac: C, approach_speed_knot: 134, engine: Turboprop, engines: 4, manufacturer: LOCKHEED, model: Lockheed P-3 Orion, mtow_lb: 135000, wtc: Medium }
-  P32R: { aac: A, approach_speed_knot: 80, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-32R Lance/ Saratoga SP, mtow_lb: 3600, wtc: Light }
-  P32T: { aac: A, approach_speed_knot: 80, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 32T Turbo Lance 2, mtow_lb: 3600, wtc: Light }
-  P46T: { aac: A, approach_speed_knot: 75, engine: Turboprop, engines: 1, manufacturer: PIPER, model: Piper Malibu Meridian, mtow_lb: 5092, wtc: Light }
-  P51: { aac: B, approach_speed_knot: 113, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN, model: North American Mustang, mtow_lb: 12100, wtc: Light }
-  P68: { aac: A, approach_speed_knot: 73, engine: Piston, engines: 2, manufacturer: VULCAN- PARTEVANIA, model: Vulcan Air P68, mtow_lb: 4387, wtc: Light }
-  P750: { aac: A, approach_speed_knot: 72, engine: Turboprop, engines: 1, manufacturer: PACIFIC AEROSPACE, model: Pacific Aerospace P-750 Xstol, mtow_lb: 7500, wtc: Light }
-  P8: { aac: E, approach_speed_knot: 180, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing P-8 Poseidon, mtow_lb: 189200, wtc: Medium }
-  PA11: { aac: A, approach_speed_knot: 46, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-11 Cub Special, mtow_lb: 1220, wtc: Light }
-  PA12: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 12 Supercruiser, mtow_lb: 1750, wtc: Light }
-  PA16: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-16 Clipper, mtow_lb: 1650, wtc: Light }
-  PA18: { aac: A, approach_speed_knot: 48, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 18 Super Cub, mtow_lb: 1750, wtc: Light }
-  PA20: { aac: A, approach_speed_knot: 55, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-20 Pacer, mtow_lb: 1950, wtc: Light }
-  PA22: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 22 Tri-Pacer, mtow_lb: 2000, wtc: Light }
-  PA23: { aac: A, approach_speed_knot: 85, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper PA-23-150/160 Apache, mtow_lb: 4800, wtc: Light }
-  PA24: { aac: A, approach_speed_knot: 75, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-24 Comanche, mtow_lb: 2900, wtc: Light }
-  PA25: { aac: A, approach_speed_knot: 69, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-25 Pawnee, mtow_lb: 2900, wtc: Light }
-  PA27: { aac: B, approach_speed_knot: 91, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Aztec, mtow_lb: 5200, wtc: Light }
-  PA30: { aac: A, approach_speed_knot: 76, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper PA-30 Turbo Twin Comanche/Turbo Twin Comanche, mtow_lb: 3600, wtc: Light }
-  PA31: { aac: B, approach_speed_knot: 95, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Navajo PA-31, mtow_lb: 6500, wtc: Light }
-  PA32: { aac: A, approach_speed_knot: 78, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Cherokee Six, mtow_lb: 3600, wtc: Light }
-  PA34: { aac: A, approach_speed_knot: 81, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper PA-34 Seneca, mtow_lb: 4750, wtc: Light }
-  PA36: { aac: A, approach_speed_knot: 54, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-36 Pawnee Brave, mtow_lb: 4800, wtc: Light }
-  PA38: { aac: A, approach_speed_knot: 60, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Tomahawk PA38, mtow_lb: 1670, wtc: Light }
-  PA44: { aac: A, approach_speed_knot: 66, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Seminole, mtow_lb: 3800, wtc: Light }
-  PA46: { aac: A, approach_speed_knot: 75, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Malibu, mtow_lb: 4340, wtc: Light }
-  PAT4: { aac: B, approach_speed_knot: 100, engine: Turboprop, engines: 2, manufacturer: PIPER, model: Piper PA-31T3-500 T-1040, mtow_lb: 9000, wtc: Light }
-  PAY1: { aac: B, approach_speed_knot: 92, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Cheyenne 1, mtow_lb: 8700, wtc: Light }
-  PAY2: { aac: B, approach_speed_knot: 100, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Cheyenne 2, mtow_lb: 9474, wtc: Light }
-  PAY3: { aac: B, approach_speed_knot: 113, engine: Turboprop, engines: 2, manufacturer: PIPER, model: Piper PA-42-720 Cheyenne 3, mtow_lb: 11200, wtc: Light }
-  PAY4: { aac: B, approach_speed_knot: 109, engine: Turboprop, engines: 2, manufacturer: PIPER, model: Piper Cheyenne 400, mtow_lb: 12050, wtc: Light }
-  PC12: { aac: A, approach_speed_knot: 85, engine: Turboprop, engines: 1, manufacturer: PILATUS, model: Pilatus PC-12, mtow_lb: 10450, wtc: Light }
-  PC24: { aac: B, approach_speed_knot: 107, engine: Jet, engines: 2, manufacturer: PILATUS, model: Pilatus PC-24, mtow_lb: 18300, wtc: Medium }
-  PRM1: { aac: B, approach_speed_knot: 120, engine: Jet, engines: 2, manufacturer: RAYTHEON- HAWKER BEECHCRAFT, model: Raytheon Premier 1/390 Premier 1, mtow_lb: 12500, wtc: Light }
-  R721: { aac: C, approach_speed_knot: 126, engine: Jet, engines: 3, manufacturer: BOEING, model: Boeing 727-100RE Super 27, mtow_lb: 169000, wtc: Medium }
-  R722: { aac: C, approach_speed_knot: 136, engine: Jet, engines: 3, manufacturer: BOEING, model: Boeing 727-200RE Super 27, mtow_lb: 197000, wtc: Medium }
-  RJ1H: { aac: C, approach_speed_knot: 123, engine: Jet, engines: 4, manufacturer: AVRO, model: Avro RJ-100 Avroliner, mtow_lb: 101500, wtc: Medium }
-  RJ85: { aac: C, approach_speed_knot: 122, engine: Jet, engines: 4, manufacturer: AVRO, model: Avro RJ-85 Avroliner, mtow_lb: 97000, wtc: Medium }
-  RV12: { aac: A, approach_speed_knot: 53, engine: Piston, engines: 1, manufacturer: VAN'S, model: Van's RV-12, mtow_lb: 1320, wtc: Light }
-  S108: { aac: A, approach_speed_knot: 70, engine: Piston, engines: 1, manufacturer: STINSON, model: Stinson 108 Voyager, mtow_lb: 2400, wtc: Light }
-  S22T: { aac: A, approach_speed_knot: 77, engine: Piston, engines: 1, manufacturer: CIRRUS, model: Cirrus SR-22 Turbo, mtow_lb: 3600, wtc: Light }
-  SB20: { aac: C, approach_speed_knot: 122, engine: Turboprop, engines: 1, manufacturer: SAAB, model: Saab 2000, mtow_lb: 50706, wtc: Medium }
-  SBR1: { aac: C, approach_speed_knot: 126, engine: Jet, engines: 2, manufacturer: NORTH AMERICAN ROCKWELL, model: North American Rockwell Sabre 40/60, mtow_lb: 20172, wtc: Medium }
-  SBR2: { aac: C, approach_speed_knot: 128, engine: Jet, engines: 2, manufacturer: NORTH AMERICAN ROCKWELL, model: North American Rockwell Sabre 75, mtow_lb: 22994, wtc: Medium }
-  SC7: { aac: B, approach_speed_knot: 91, engine: Turboprop, engines: 2, manufacturer: SHORT, model: Short Skyvan SC7, mtow_lb: 12500, wtc: Light }
-  SF34: { aac: C, approach_speed_knot: 124, engine: Turboprop, engines: 2, manufacturer: SAAB, model: Saab SF 340, mtow_lb: 28000, wtc: Medium }
-  SF50: { aac: A, approach_speed_knot: 87, engine: Jet, engines: 1, manufacturer: CIRRUS, model: Cirrus Vision SF50, mtow_lb: 6000, wtc: Light }
-  SH33: { aac: B, approach_speed_knot: 96, engine: Turboprop, engines: 2, manufacturer: SHORT, model: Shorts 330, mtow_lb: 22900, wtc: Medium }
-  SH36: { aac: B, approach_speed_knot: 104, engine: Turboprop, engines: 2, manufacturer: SHORT, model: Shorts 360, mtow_lb: 27117, wtc: Medium }
-  SR20: { aac: A, approach_speed_knot: 74, engine: Piston, engines: 1, manufacturer: CIRRUS, model: Cirrus SR-20, mtow_lb: 2126, wtc: Light }
-  SR22: { aac: A, approach_speed_knot: 78, engine: Piston, engines: 1, manufacturer: CIRRUS, model: Cirrus SR 22, mtow_lb: 2358, wtc: Light }
-  SU95: { aac: C, approach_speed_knot: 140, engine: Jet, engines: 2, manufacturer: SUKHOI, model: SUKHOI Superjet 100-95, mtow_lb: 101148, wtc: Medium }
-  SW3: { aac: B, approach_speed_knot: 105, engine: Turboprop, engines: 2, manufacturer: FAIRCHILD SWEARINGEN, model: Fairchild Swearingen SA-226T/TB Merlin 3, mtow_lb: 12500, wtc: Light }
-  SW4: { aac: B, approach_speed_knot: 112, engine: Turboprop, engines: 2, manufacturer: FAIRCHILD SWEARINGEN, model: Swearingen SA-227AT Merlin 4, mtow_lb: 15999, wtc: Light/Medium }
-  T210: { aac: A, approach_speed_knot: 73, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna T210 Turbo Centurion, mtow_lb: 3800, wtc: Light }
-  T28: { aac: A, approach_speed_knot: 62, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN, model: North American T-28 Trojan, mtow_lb: 8500, wtc: Light }
-  T34P: { aac: A, approach_speed_knot: 69, engine: Turboprop, engines: 1, manufacturer: BEECH, model: Beech T-34/45 Mentor, mtow_lb: 5500, wtc: Light }
-  T38: { aac: D, approach_speed_knot: 160, engine: Jet, engines: 2, manufacturer: NORTHROP, model: Northrop T-38 Talon, mtow_lb: 12093, wtc: Light }
-  T6: { aac: A, approach_speed_knot: 56, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN, model: North American T-6 Texan, mtow_lb: 5617, wtc: Light }
-  TAYB: { aac: A, approach_speed_knot: 50, engine: Piston, engines: 1, manufacturer: TAYLORCRAFT, model: Taylorcraft BC, mtow_lb: 1500, wtc: Light }
-  TB20: { aac: A, approach_speed_knot: 75, engine: Piston, engines: 1, manufacturer: SOCATA, model: Socata TB-20 Trinidad, mtow_lb: 3080, wtc: Light }
-  TBM7: { aac: A, approach_speed_knot: 74, engine: Turboprop, engines: 1, manufacturer: SOCATA, model: Socata TBM-700/700A, mtow_lb: 6614, wtc: Light }
-  TBM8: { aac: A, approach_speed_knot: 85, engine: Turboprop, engines: 1, manufacturer: SOCATA, model: Socata TBM-850, mtow_lb: 7394, wtc: Light }
-  TBM9: { aac: A, approach_speed_knot: 85, engine: Turboprop, engines: 1, manufacturer: SOCATA, model: Socata TBM-900, mtow_lb: 7394, wtc: Light }
-  TEX2: { aac: B, approach_speed_knot: 103, engine: Turboprop, engines: 1, manufacturer: RAYTHEON, model: Raytheon Texan 2, mtow_lb: 6500, wtc: Light }
-  TOBA: { aac: A, approach_speed_knot: 65, engine: Piston, engines: 1, manufacturer: SOCATA, model: Socata TB-10 Tobago, mtow_lb: 2530, wtc: Light }
-  V22: { engine: Turboshaft, engines: 2, manufacturer: BELL-BOEING, model: Bell V-22 Osprey, mtow_lb: 60500, wtc: Medium }
-  WW24: { aac: C, approach_speed_knot: 129, engine: Jet, engines: 2, manufacturer: IAI, model: IAI 1124 Westwind, mtow_lb: 23500, wtc: Medium }
+  A10: { aac: C, approach_speed_knot: 140, cwt: G, engine: Jet, engines: 2, manufacturer: FAIRCHILD, model: Fairchild A10, mtow_lb: 50045, wtc: Medium }
+  A124: { aac: D, approach_speed_knot: 151, cwt: D, engine: Jet, engines: 4, manufacturer: ANTONOV, model: Antonov AN-124 Ruslan, mtow_lb: 892871, wtc: Heavy }
+  A19N: { aac: C, approach_speed_knot: 130, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A319 Neo, mtow_lb: 166449, wtc: Medium }
+  A20N: { aac: C, approach_speed_knot: 137, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320 Neo, mtow_lb: 174165, wtc: Medium }
+  A21N: { aac: C, approach_speed_knot: 136, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A321 Neo, mtow_lb: 209439, wtc: Medium }
+  A306: { aac: C, approach_speed_knot: 137, cwt: C, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A300 B4-600, mtow_lb: 363760, wtc: Heavy }
+  A30B: { aac: C, approach_speed_knot: 137, cwt: C, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A300-B2, mtow_lb: 363760, wtc: Heavy }
+  A310: { aac: C, approach_speed_knot: 139, cwt: C, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A310, mtow_lb: 317465, wtc: Heavy }
+  A318: { aac: C, approach_speed_knot: 121, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A318, mtow_lb: 149914, wtc: Medium }
+  A319: { aac: C, approach_speed_knot: 126, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A319, mtow_lb: 168653, wtc: Medium }
+  A320: { aac: C, approach_speed_knot: 136, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A320, mtow_lb: 171961, wtc: Medium }
+  A321: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 142, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A321, mtow_lb: 200621, wtc: Medium }
+  A332: { aac: C, approach_speed_knot: 136, cwt: B, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-200, mtow_lb: 533519, wtc: Heavy }
+  A333: { aac: C, approach_speed_knot: 137, cwt: B, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-300, mtow_lb: 533519, wtc: Heavy }
+  A337: { aac: C, approach_speed_knot: 137, cwt: D, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-700 - Beluga XL, mtow_lb: 500449, wtc: Heavy }
+  A338: { aac: C, approach_speed_knot: 140, cwt: D, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-800, mtow_lb: 544542, wtc: Heavy }
+  A339: { aac: C, approach_speed_knot: 140, cwt: D, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A330-900, mtow_lb: 553400, wtc: Heavy }
+  A342: { aac: D, approach_speed_knot: 145, cwt: D, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-200, mtow_lb: 606271, wtc: Heavy }
+  A343: { aac: D, approach_speed_knot: 145, cwt: B, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-300, mtow_lb: 609578, wtc: Heavy }
+  A345: { aac: D, approach_speed_knot: 146, cwt: B, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-500, mtow_lb: 837756, wtc: Heavy }
+  A346: { aac: D, approach_speed_knot: 153, cwt: B, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A340-600, mtow_lb: 837756, wtc: Heavy }
+  A359: { aac: C, approach_speed_knot: 140, cwt: B, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus 350-900, mtow_lb: 617295, wtc: Heavy }
+  A35K: { aac: D, approach_speed_knot: 147, cwt: B, engine: Jet, engines: 2, manufacturer: AIRBUS, model: Airbus A350-1000 XWB, mtow_lb: 696661, wtc: Heavy }
+  A388: { aac: C, approach_speed_knot: 138, cwt: A, engine: Jet, engines: 4, manufacturer: AIRBUS, model: Airbus A380-800, mtow_lb: 1267658, wtc: Super }
+  A400: { aac: C, approach_speed_knot: 130, cwt: D, engine: Turboprop, engines: 4, manufacturer: AIRBUS, model: Airbus A400M Atlas, mtow_lb: 310852, wtc: Heavy }
+  A5: { aac: A, approach_speed_knot: 59, cwt: I, engine: Piston, engines: 1, manufacturer: ICON, model: Icon A-5, mtow_lb: 1510, wtc: Light }
+  AA1: { aac: A, approach_speed_knot: 69, cwt: I, engine: Piston, engines: 1, manufacturer: GRUMMAN AMERICAN, model: Grumman American AA1, mtow_lb: 1500, wtc: Light }
+  AA5: { aac: A, approach_speed_knot: 69, cwt: I, engine: Piston, engines: 1, manufacturer: GRUMMAN AMERICAN, model: Grumman American AA5, mtow_lb: 2200, wtc: Light }
+  AC11: { aac: A, approach_speed_knot: 70, cwt: I, engine: Piston, engines: 1, manufacturer: ROCKWELL, model: Rockwell Commander 112, mtow_lb: 3250, wtc: Light }
+  AC50: { aac: A, approach_speed_knot: 77, cwt: I, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 500, mtow_lb: 6000, wtc: Light }
+  AC56: { aac: B, approach_speed_knot: 97, cwt: I, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 560, mtow_lb: 6000, wtc: Light }
+  AC68: { aac: B, approach_speed_knot: 97, cwt: I, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 680FP, mtow_lb: 8500, wtc: Light }
+  AC6L: { aac: B, approach_speed_knot: 98, cwt: I, engine: Piston, engines: 2, manufacturer: AERO, model: Aero Commander 680FL, mtow_lb: 9000, wtc: Light }
+  AC80: { aac: B, approach_speed_knot: 97, cwt: I, engine: Turboprop, engines: 2, manufacturer: ROCKWELL, model: Rockwell Commander Turbo 680, mtow_lb: 8950, wtc: Light }
+  AC90: { aac: B, approach_speed_knot: 97, cwt: I, engine: Turboprop, engines: 2, manufacturer: GULFSTREAM AEROSPACE-ROCKWELL, model: Gulfstream 690 Commander 690, mtow_lb: 10325, wtc: Light }
+  AC95: { aac: B, approach_speed_knot: 100, cwt: I, engine: Turboprop, engines: 2, manufacturer: GULFSTREAM AEROSPACE-ROCKWELL, model: Gulfstream Jetprop Commander 1000, mtow_lb: 10325, wtc: Light }
+  AEST: { aac: B, approach_speed_knot: 96, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Aero Star, mtow_lb: 6315, wtc: Light }
+  AN12: { aac: C, approach_speed_knot: 127, cwt: F, engine: Turboprop, engines: 4, manufacturer: ANTONOV, model: Antonov AN-12, mtow_lb: 134482, wtc: Medium }
+  AN72: { aac: B, approach_speed_knot: 100, cwt: F, engine: Jet, engines: 2, manufacturer: ANTONOV, model: Antonov AN-74-100/200, mtow_lb: 76060, wtc: Medium }
+  AR11: { aac: A, approach_speed_knot: 49, cwt: I, engine: Piston, engines: 1, manufacturer: AERONCA, model: Aeronca 11 Chief, mtow_lb: 1250, wtc: Light }
+  ASTR: { aac: B, approach_speed_knot: 120, cwt: H, engine: Jet, engines: 2, manufacturer: IAI, model: IAI Astra 1125, mtow_lb: 23500, wtc: Medium }
+  AT3T: { aac: A, approach_speed_knot: 74, cwt: I, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: Air Tractor AT-402, mtow_lb: 9170, wtc: Light }
+  AT43: { aac: B, approach_speed_knot: 104, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 42-300/320, mtow_lb: 36825, wtc: Medium }
+  AT44: { aac: B, approach_speed_knot: 104, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR-42-400, mtow_lb: 36817, wtc: Medium }
+  AT45: { aac: B, approach_speed_knot: 104, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 42-500, mtow_lb: 41005, wtc: Medium }
+  AT46: { aac: B, approach_speed_knot: 104, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 42-600, mtow_lb: 41005, wtc: Medium }
+  AT5T: { aac: A, approach_speed_knot: 77, cwt: I, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: Air Tractor AT-503, mtow_lb: 9600, wtc: Light }
+  AT6T: { aac: B, approach_speed_knot: 92, cwt: I, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: AT-602 Air Tractor, mtow_lb: 12500, wtc: Light }
+  AT72: { aac: B, approach_speed_knot: 114, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR-72-201/202, mtow_lb: 47400, wtc: Medium }
+  AT73: { aac: B, approach_speed_knot: 109, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 72-211/212, mtow_lb: 47399, wtc: Medium }
+  AT75: { aac: B, approach_speed_knot: 120, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR-72-500, mtow_lb: 50265, wtc: Medium }
+  AT76: { aac: B, approach_speed_knot: 113, cwt: G, engine: Turboprop, engines: 2, manufacturer: ATR, model: ATR 72-600/212A, mtow_lb: 50265, wtc: Medium }
+  AT8T: { aac: B, approach_speed_knot: 103, cwt: H, engine: Turboprop, engines: 1, manufacturer: AIR TRACTOR, model: Air Tractor AT-802, mtow_lb: 16000, wtc: Light/Medium }
+  B18T: { aac: A, approach_speed_knot: 87, cwt: I, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech 18 (Turbo), mtow_lb: 9900, wtc: Light }
+  B190: { aac: B, aac_maximum: C, aac_minimum: B, approach_speed_knot: 121, cwt: H, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech 1900/C-12J, mtow_lb: 17120, wtc: Medium }
+  B2: { aac: C, approach_speed_knot: 140, cwt: D, engine: Jet, engines: 4, manufacturer: NORTHROP, model: Northrop B-2 Spirit, mtow_lb: 375998, wtc: Heavy }
+  B350: { aac: B, approach_speed_knot: 107, cwt: H, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech Super King Air 350, mtow_lb: 15000, wtc: Light/Medium }
+  B36T: { aac: A, approach_speed_knot: 73, cwt: I, engine: Piston, engines: 1, manufacturer: ALLISON-BEECH, model: Allison 36 Turbine Bonanza, mtow_lb: 3650, wtc: Light }
+  B37M: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 145, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737 MAX 7, mtow_lb: 177000, wtc: Medium }
+  B38M: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 145, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737 MAX 8, mtow_lb: 181200, wtc: Medium }
+  B39M: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 150, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737 MAX 9, mtow_lb: 194700, wtc: Medium }
+  B461: { aac: C, approach_speed_knot: 121, cwt: G, engine: Jet, engines: 4, manufacturer: BRITISH AEROSPACE, model: BAe 146-100, mtow_lb: 84000, wtc: Medium }
+  B462: { aac: C, approach_speed_knot: 122, cwt: G, engine: Jet, engines: 4, manufacturer: BRITISH AEROSPACE, model: BAe 146 -200, mtow_lb: 93000, wtc: Medium }
+  B52: { aac: D, approach_speed_knot: 141, cwt: D, engine: Jet, engines: 8, manufacturer: BOEING, model: Boeing B-52 Stratofortress, mtow_lb: 488000, wtc: Heavy }
+  B703: { aac: C, approach_speed_knot: 128, cwt: D, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 707-300, mtow_lb: 333600, wtc: Heavy }
+  B712: { aac: C, approach_speed_knot: 139, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 717-200, mtow_lb: 118000, wtc: Medium }
+  B721: { aac: C, approach_speed_knot: 124, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 727-100 (C-22), mtow_lb: 160000, wtc: Medium }
+  B722: { aac: C, approach_speed_knot: 133, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 727-200, mtow_lb: 184800, wtc: Medium }
+  B732: { aac: C, approach_speed_knot: 129, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-200/VC96, mtow_lb: 115500, wtc: Medium }
+  B733: { aac: C, approach_speed_knot: 135, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-300, mtow_lb: 139500, wtc: Medium }
+  B734: { aac: C, approach_speed_knot: 139, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-400, mtow_lb: 150000, wtc: Medium }
+  B735: { aac: C, approach_speed_knot: 128, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-500, mtow_lb: 136000, wtc: Medium }
+  B736: { aac: C, approach_speed_knot: 125, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-600, mtow_lb: 144500, wtc: Medium }
+  B737: { aac: C, approach_speed_knot: 130, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-700, mtow_lb: 154500, wtc: Medium }
+  B738: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-800, mtow_lb: 174200, wtc: Medium }
+  B739: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 149, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 737-900, mtow_lb: 187700, wtc: Medium }
+  B741: { aac: D, approach_speed_knot: 144, cwt: D, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-100, mtow_lb: 750000, wtc: Heavy }
+  B742: { aac: D, approach_speed_knot: 150, cwt: B, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-200, mtow_lb: 833000, wtc: Heavy }
+  B743: { aac: D, approach_speed_knot: 142, cwt: D, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-300, mtow_lb: 833000, wtc: Heavy }
+  B744: { aac: D, approach_speed_knot: 157, cwt: B, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-400, mtow_lb: 910000, wtc: Heavy }
+  B748: { aac: D, approach_speed_knot: 159, cwt: B, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-8, mtow_lb: 987000, wtc: Heavy }
+  B752: { aac: C, approach_speed_knot: 137, cwt: E, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 757-200, mtow_lb: 255500, wtc: Medium }
+  B753: { aac: D, approach_speed_knot: 143, cwt: E, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 757-300, mtow_lb: 270000, wtc: Medium }
+  B762: { aac: C, approach_speed_knot: 135, cwt: C, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 767-200, mtow_lb: 315000, wtc: Heavy }
+  B763: { aac: C, approach_speed_knot: 140, cwt: C, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 767-300, mtow_lb: 412000, wtc: Heavy }
+  B764: { aac: D, approach_speed_knot: 150, cwt: C, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 767-400, mtow_lb: 450000, wtc: Heavy }
+  B772: { aac: C, approach_speed_knot: 140, cwt: B, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-200, mtow_lb: 656000, wtc: Heavy }
+  B773: { aac: D, approach_speed_knot: 149, cwt: B, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-300, mtow_lb: 660000, wtc: Heavy }
+  B778: { aac: D, approach_speed_knot: 152, cwt: D, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-8, mtow_lb: 775000, wtc: Heavy }
+  B779: { aac: D, approach_speed_knot: 154, cwt: D, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-9, mtow_lb: 775000, wtc: Heavy }
+  B77L: { aac: C, approach_speed_knot: 140, cwt: B, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-200LRF/LR, mtow_lb: 766106, wtc: Heavy }
+  B77W: { aac: D, approach_speed_knot: 149, cwt: B, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 777-300ER, mtow_lb: 775000, wtc: Heavy }
+  B788: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, cwt: B, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 787-8 BBJ/Dreamliner, mtow_lb: 502500, wtc: Heavy }
+  B789: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, cwt: B, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 787-9 Dreamliner, mtow_lb: 560000, wtc: Heavy }
+  B78X: { aac: D, approach_speed_knot: 149, cwt: D, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing 787-10 Dreamliner, mtow_lb: 560000, wtc: Heavy }
+  BA11: { aac: C, approach_speed_knot: 133, cwt: F, engine: Jet, engines: 2, manufacturer: BAC, model: BAC 111 One-Eleven, mtow_lb: 87000, wtc: Medium }
+  BCS1: { aac: C, approach_speed_knot: 130, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS-BOMBARDIER, model: Airbus A220-100, mtow_lb: 139100, wtc: Medium }
+  BCS3: { aac: C, approach_speed_knot: 135, cwt: F, engine: Jet, engines: 2, manufacturer: AIRBUS-BOMBARDIER, model: Airbus A220-300, mtow_lb: 156307, wtc: Medium }
+  BE10: { aac: B, approach_speed_knot: 111, cwt: I, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech King Air 100, mtow_lb: 11800, wtc: Light }
+  BE18: { aac: A, approach_speed_knot: 87, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 18, mtow_lb: 9700, wtc: Light }
+  BE19: { aac: A, approach_speed_knot: 65, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech B19 Musketeer, mtow_lb: 2150, wtc: Light }
+  BE20: { aac: B, approach_speed_knot: 107, cwt: I, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech 200 Super King, mtow_lb: 12500, wtc: Light/Medium }
+  BE23: { aac: A, approach_speed_knot: 70, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 23 Sundowner, mtow_lb: 2450, wtc: Light }
+  BE24: { aac: A, approach_speed_knot: 78, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 24 Sierra, mtow_lb: 2750, wtc: Light }
+  BE30: { aac: B, approach_speed_knot: 107, cwt: I, engine: Turboprop, engines: 2, manufacturer: RAYTHEON-BEECH, model: Raytheon 300 Super King Air, mtow_lb: 14000, wtc: Light }
+  BE33: { aac: A, approach_speed_knot: 69, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech Bonanza 33, mtow_lb: 3400, wtc: Light }
+  BE35: { aac: A, approach_speed_knot: 72, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech Bonanza 35, mtow_lb: 3400, wtc: Light }
+  BE36: { aac: A, approach_speed_knot: 77, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech Bonanza 36, mtow_lb: 3650, wtc: Light }
+  BE40: { aac: B, approach_speed_knot: 114, cwt: H, engine: Jet, engines: 2, manufacturer: RAYTHEON-BEECH-HAWKER, model: Raytheon/Beech Beechjet 400/T-1 Jayhawk, mtow_lb: 16100, wtc: Medium }
+  BE50: { aac: A, approach_speed_knot: 80, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beechcraft 50 Twin Bonanza, mtow_lb: 6305, wtc: Light }
+  BE55: { aac: B, approach_speed_knot: 95, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech Baron 55, mtow_lb: 5100, wtc: Light }
+  BE58: { aac: B, approach_speed_knot: 95, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 58 Baron, mtow_lb: 5500, wtc: Light }
+  BE60: { aac: B, approach_speed_knot: 98, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 60 Duke, mtow_lb: 6775, wtc: Light }
+  BE65: { aac: B, approach_speed_knot: 92, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 65 Queen Air, mtow_lb: 7700, wtc: Light }
+  BE70: { aac: B, approach_speed_knot: 92, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 70 Queen Air, mtow_lb: 8200, wtc: Light }
+  BE76: { aac: A, approach_speed_knot: 76, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech 76 Duchess, mtow_lb: 3900, wtc: Light }
+  BE77: { aac: A, approach_speed_knot: 63, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 77 Skipper, mtow_lb: 1675, wtc: Light }
+  BE80: { aac: B, approach_speed_knot: 92, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beech BE-80 Queen Air, mtow_lb: 8000, wtc: Light }
+  BE95: { aac: A, approach_speed_knot: 79, cwt: I, engine: Piston, engines: 2, manufacturer: BEECH, model: Beechcraft 95 Travel Air, mtow_lb: 4200, wtc: Light }
+  BE99: { aac: B, approach_speed_knot: 107, cwt: I, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech Airliner 99, mtow_lb: 11300, wtc: Light }
+  BE9L: { aac: B, approach_speed_knot: 100, cwt: I, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech King Air 90, mtow_lb: 10485, wtc: Light }
+  BE9T: { aac: B, approach_speed_knot: 108, cwt: I, engine: Turboprop, engines: 2, manufacturer: BEECH, model: Beech F90 King Air, mtow_lb: 10950, wtc: Light }
+  BL17: { aac: A, approach_speed_knot: 79, cwt: I, engine: Piston, engines: 1, manufacturer: BELLANCA, model: Bellanca Viking, mtow_lb: 3325, wtc: Light }
+  BL8: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: BELLANCA, model: Bellanca 8 Scout, mtow_lb: 2150, wtc: Light }
+  BLCF: { aac: D, approach_speed_knot: 155, cwt: D, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing 747-400LCF Dreamlifter, mtow_lb: 803001, wtc: Heavy }
+  BT36: { aac: A, approach_speed_knot: 73, cwt: I, engine: Piston, engines: 1, manufacturer: BEECH, model: Beech 36 Bonanza, mtow_lb: 3850, wtc: Light }
+  C120: { aac: A, approach_speed_knot: 52, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 120, mtow_lb: 1500, wtc: Light }
+  C130: { aac: B, approach_speed_knot: 117, cwt: F, engine: Turboprop, engines: 4, manufacturer: LOCKHEED, model: Lockheed 130 Hercules, mtow_lb: 155000, wtc: Medium }
+  C140: { aac: A, approach_speed_knot: 52, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 140, mtow_lb: 1500, wtc: Light }
+  C150: { aac: A, approach_speed_knot: 55, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 150, mtow_lb: 1600, wtc: Light }
+  C152: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 152, mtow_lb: 1675, wtc: Light }
+  C160: { aac: C, approach_speed_knot: 125, cwt: F, engine: Turboprop, engines: 2, manufacturer: TRANSALL, model: Transall C-160, mtow_lb: 112436, wtc: Medium }
+  C162: { aac: A, approach_speed_knot: 51, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 162 Skycatcher, mtow_lb: 1320, wtc: Light }
+  C17: { aac: B, approach_speed_knot: 115, cwt: C, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing Globemaster 3, mtow_lb: 585000, wtc: Heavy }
+  C170: { aac: A, approach_speed_knot: 59, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 170, mtow_lb: 2200, wtc: Light }
+  C172: { aac: A, approach_speed_knot: 62, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna Skyhawk 172/Cutlass, mtow_lb: 2550, wtc: Light }
+  C175: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 175, mtow_lb: 2450, wtc: Light }
+  C177: { aac: A, approach_speed_knot: 52, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 177 Cardinal, mtow_lb: 2500, wtc: Light }
+  C180: { aac: A, approach_speed_knot: 64, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 180 Skywagon, mtow_lb: 2800, wtc: Light }
+  C182: { aac: A, approach_speed_knot: 65, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna Skylane 182, mtow_lb: 3100, wtc: Light }
+  C185: { aac: A, approach_speed_knot: 64, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 185 Skywagon, mtow_lb: 3350, wtc: Light }
+  C188: { aac: A, approach_speed_knot: 66, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 188, mtow_lb: 3300, wtc: Light }
+  C195: { aac: A, approach_speed_knot: 52, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 195, mtow_lb: 3350, wtc: Light }
+  C206: { aac: A, approach_speed_knot: 70, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 206 Stationair, mtow_lb: 3600, wtc: Light }
+  C207: { aac: A, approach_speed_knot: 71, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 207 Stationair 7, mtow_lb: 3789, wtc: Light }
+  C208: { aac: A, approach_speed_knot: 79, cwt: I, engine: Turboprop, engines: 1, manufacturer: CESSNA, model: Cessna 208 Caravan 1, mtow_lb: 9062, wtc: Light }
+  C210: { aac: A, approach_speed_knot: 85, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 210 Centurion, mtow_lb: 3800, wtc: Light }
+  C212: { aac: A, approach_speed_knot: 81, cwt: H, engine: Turboprop, engines: 2, manufacturer: CASA, model: CASA Aviocar, mtow_lb: 16976, wtc: Medium }
+  C240: { aac: A, approach_speed_knot: 78, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna TTx Model T240, mtow_lb: 3600, wtc: Light }
+  C25A: { aac: B, approach_speed_knot: 114, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation CJ2, mtow_lb: 12500, wtc: Light }
+  C25B: { aac: B, approach_speed_knot: 108, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation CJ3, mtow_lb: 13870, wtc: Light }
+  C25C: { aac: B, approach_speed_knot: 111, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation CJ4, mtow_lb: 17110, wtc: Medium }
+  C25M: { aac: B, approach_speed_knot: 100, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation M2, mtow_lb: 10700, wtc: Light }
+  C303: { aac: A, approach_speed_knot: 90, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 303 Crusader, mtow_lb: 5150, wtc: Light }
+  C30J: { aac: C, approach_speed_knot: 128, cwt: F, engine: Turboprop, engines: 4, manufacturer: LOCKHEED MARTIN, model: "C-130J Super Hercules ; Lockheed", mtow_lb: 155000, wtc: Medium }
+  C310: { aac: A, approach_speed_knot: 87, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 310, mtow_lb: 5500, wtc: Light }
+  C320: { aac: A, approach_speed_knot: 68, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 320 Skyknight, mtow_lb: 4990, wtc: Light }
+  C335: { aac: B, approach_speed_knot: 92, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 335, mtow_lb: 6290, wtc: Light }
+  C340: { aac: B, approach_speed_knot: 94, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 340, mtow_lb: 5990, wtc: Light }
+  C402: { aac: A, approach_speed_knot: 83, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 401/402, mtow_lb: 6300, wtc: Light }
+  C404: { aac: B, approach_speed_knot: 96, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna 404 Titan, mtow_lb: 8400, wtc: Light }
+  C414: { aac: B, approach_speed_knot: 95, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna Chancellor 414, mtow_lb: 6750, wtc: Light }
+  C421: { aac: B, approach_speed_knot: 96, cwt: I, engine: Piston, engines: 2, manufacturer: CESSNA, model: Cessna Golden Eagle 421, mtow_lb: 7450, wtc: Light }
+  C425: { aac: B, approach_speed_knot: 98, cwt: I, engine: Turboprop, engines: 2, manufacturer: CESSNA, model: Cessna 425 Corsair, mtow_lb: 8600, wtc: Light }
+  C441: { aac: B, approach_speed_knot: 98, cwt: I, engine: Turboprop, engines: 2, manufacturer: CESSNA, model: Cessna Conquest, mtow_lb: 9850, wtc: Light }
+  C500: { aac: B, approach_speed_knot: 107, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna 500/Citation I, mtow_lb: 11850, wtc: Light }
+  C501: { aac: B, approach_speed_knot: 107, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna 1SP, mtow_lb: 11850, wtc: Light }
+  C510: { aac: B, approach_speed_knot: 105, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Mustang, mtow_lb: 8645, wtc: Light }
+  C525: { aac: B, approach_speed_knot: 108, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna CitationJet/CJ1, mtow_lb: 10700, wtc: Light }
+  C526: { aac: B, approach_speed_knot: 107, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna 526 CitationJet, mtow_lb: 10700, wtc: Light }
+  C550: { aac: B, approach_speed_knot: 105, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation II/Bravo, mtow_lb: 15100, wtc: Light }
+  C551: { aac: B, approach_speed_knot: 100, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation II/SP, mtow_lb: 14800, wtc: Light }
+  C55B: { aac: B, approach_speed_knot: 117, cwt: I, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Bravo, mtow_lb: 14800, wtc: Light }
+  C560: { aac: B, approach_speed_knot: 103, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation V/Ultra/Encore, mtow_lb: 16300, wtc: Medium }
+  C56X: { aac: B, approach_speed_knot: 116, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Excel/XLS, mtow_lb: 20200, wtc: Medium }
+  C650: { aac: C, approach_speed_knot: 126, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna III/VI/VII, mtow_lb: 23000, wtc: Medium }
+  C680: { aac: B, approach_speed_knot: 108, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Sovereign, mtow_lb: 30300, wtc: Medium }
+  C68A: { aac: B, approach_speed_knot: 100, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Latitude, mtow_lb: 30800, wtc: Medium }
+  C700: { aac: C, approach_speed_knot: 121, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation Longitude, mtow_lb: 39500, wtc: Medium }
+  C72R: { aac: A, approach_speed_knot: 62, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 172RG Cutlass RG, mtow_lb: 2450, wtc: Light }
+  C750: { aac: C, approach_speed_knot: 131, cwt: H, engine: Jet, engines: 2, manufacturer: CESSNA, model: Cessna Citation X, mtow_lb: 36100, wtc: Medium }
+  C77R: { aac: A, approach_speed_knot: 65, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna 177 Cardinal RG, mtow_lb: 2800, wtc: Light }
+  C82R: { aac: A, approach_speed_knot: 64, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna Skylane RG, mtow_lb: 3100, wtc: Light }
+  CH7A: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: AERONCA, model: Aeronca 7AC, mtow_lb: 1220, wtc: Light }
+  CH7B: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: BELLANCA, model: Bellanca 7GCBC Citabria, mtow_lb: 1800, wtc: Light }
+  CL30: { aac: C, approach_speed_knot: 126, cwt: H, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier (Canadair) Challenger 300, mtow_lb: 38850, wtc: Medium }
+  CL35: { aac: C, approach_speed_knot: 124, cwt: H, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier Challenger 350, mtow_lb: 40600, wtc: Medium }
+  CL41: { cwt: I, engine: Jet, engines: 1, manufacturer: CANADAIR, model: Canadair 41 Tutor, mtow_lb: 7787, wtc: Light }
+  CL60: { aac: C, approach_speed_knot: 137, cwt: G, engine: Jet, engines: 2, manufacturer: CANADAIR, model: Canadair Challenger 600/601/604, mtow_lb: 47600, wtc: Medium }
+  CN35: { aac: B, approach_speed_knot: 110, cwt: H, engine: Turboprop, engines: 2, manufacturer: CASA, model: CASA CN-235, mtow_lb: 36376, wtc: Medium }
+  COL3: { aac: A, approach_speed_knot: 78, cwt: I, engine: Piston, engines: 1, manufacturer: LANCAIR-CESSNA, model: Lancair LC-40 Columbia 300, mtow_lb: 3400, wtc: Light }
+  COL4: { aac: A, approach_speed_knot: 78, cwt: I, engine: Piston, engines: 1, manufacturer: LANCAIR-CESSNA, model: Lancair LC-41 Columbia 400, mtow_lb: 3400, wtc: Light }
+  COUR: { cwt: I, engine: Piston, engines: 1, manufacturer: HELIO, model: HELIO U-10 Super Courier, mtow_lb: 3400, wtc: Light }
+  CRJ1: { aac: D, approach_speed_knot: 141, cwt: G, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-100, mtow_lb: 47450, wtc: Medium }
+  CRJ2: { aac: D, approach_speed_knot: 141, cwt: G, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-200, mtow_lb: 47450, wtc: Medium }
+  CRJ7: { aac: C, approach_speed_knot: 135, cwt: G, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-700, mtow_lb: 75000, wtc: Medium }
+  CRJ9: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 141, cwt: G, engine: Jet, engines: 2, manufacturer: CANADAIR, model: canadair CRJ-900, mtow_lb: 80500, wtc: Medium }
+  CRUZ: { aac: A, approach_speed_knot: 39, cwt: I, engine: Piston, engines: 1, manufacturer: CZAW, model: CZAW SportCruiser, mtow_lb: 1320, wtc: Light }
+  CVLP: { aac: B, approach_speed_knot: 107, cwt: F, engine: Piston, engines: 2, manufacturer: CONVAIR, model: Convair CV-440 Metropolitan, mtow_lb: 41790, wtc: Medium }
+  CVLT: { aac: B, approach_speed_knot: 107, cwt: F, engine: Turboprop, engines: 2, manufacturer: CONVAIR-CANADAIR, model: "Convair CV-580/600/640, C-131H", mtow_lb: 58500, wtc: Medium }
+  D328: { aac: B, approach_speed_knot: 110, cwt: H, engine: Turboprop, engines: 2, manufacturer: DORNIER, model: Dornier 328 Series, mtow_lb: 30843, wtc: Medium }
+  DA40: { aac: A, approach_speed_knot: 77, cwt: I, engine: Piston, engines: 1, manufacturer: DIAMOND, model: Diamond Star DA40, mtow_lb: 2888, wtc: Light }
+  DA42: { aac: A, approach_speed_knot: 88, cwt: I, engine: Piston, engines: 2, manufacturer: DIAMOND, model: Diamond Twin Star, mtow_lb: 3935, wtc: Light }
+  DC10: { aac: D, approach_speed_knot: 149, cwt: C, engine: Jet, engines: 3, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) DC 10-10/30/40, mtow_lb: 580000, wtc: Heavy }
+  DC3: { aac: B, approach_speed_knot: 97, cwt: H, engine: Piston, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 3, mtow_lb: 25200, wtc: Medium }
+  DC3S: { aac: B, approach_speed_knot: 97, cwt: H, engine: Piston, engines: 2, manufacturer: DOUGLAS, model: Douglas Super DC-3, mtow_lb: 25200, wtc: Medium }
+  DC3T: { aac: B, approach_speed_knot: 95, cwt: H, engine: Turboprop, engines: 2, manufacturer: DOUGLAS/BASLER, model: "Basler, BT-67 Turbo 67", mtow_lb: 28750, wtc: Medium }
+  DC6: { aac: B, approach_speed_knot: 108, cwt: F, engine: Piston, engines: 4, manufacturer: DOUGLAS, model: Douglas DC 6, mtow_lb: 107000, wtc: Medium }
+  DC87: { aac: D, approach_speed_knot: 143, cwt: D, engine: Jet, engines: 4, manufacturer: DOUGLAS, model: Douglas DC-8-70, mtow_lb: 335100, wtc: Heavy }
+  DC91: { aac: C, approach_speed_knot: 132, cwt: G, engine: Jet, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 9-10, mtow_lb: 90700, wtc: Medium }
+  DC93: { aac: C, approach_speed_knot: 132, cwt: F, engine: Jet, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 9-30, mtow_lb: 108000, wtc: Medium }
+  DC95: { aac: C, approach_speed_knot: 135, cwt: F, engine: Jet, engines: 2, manufacturer: DOUGLAS, model: Douglas DC 9-50, mtow_lb: 121000, wtc: Medium }
+  DH8A: { aac: B, approach_speed_knot: 92, cwt: G, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada DHC8-100, mtow_lb: 34500, wtc: Medium }
+  DH8B: { aac: B, approach_speed_knot: 92, cwt: G, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada DHC8-200, mtow_lb: 36300, wtc: Medium }
+  DH8C: { aac: B, approach_speed_knot: 99, cwt: G, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada Dash 8/DHC8-300, mtow_lb: 41100, wtc: Medium }
+  DH8D: { aac: C, approach_speed_knot: 125, cwt: F, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada 8/DHC8-400, mtow_lb: 64500, wtc: Medium }
+  DHC2: { aac: A, approach_speed_knot: 51, cwt: I, engine: Piston, engines: 1, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada 2 Mk1 Beaver, mtow_lb: 5100, wtc: Light }
+  DHC6: { aac: A, approach_speed_knot: 74, cwt: H, engine: Turboprop, engines: 2, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada Twin Otter, mtow_lb: 12500, wtc: Light }
+  DHC7: { aac: A, approach_speed_knot: 83, cwt: F, engine: Turboprop, engines: 4, manufacturer: DEHAVILLAND CANADA, model: DeHavilland Canada DHC-7, mtow_lb: 44000, wtc: Medium }
+  DV20: { aac: A, approach_speed_knot: 59, cwt: I, engine: Piston, engines: 1, manufacturer: DIAMOND, model: Diamond 20 Katana, mtow_lb: 1609, wtc: Light }
+  E110: { aac: B, approach_speed_knot: 92, cwt: I, engine: Turboprop, engines: 2, manufacturer: EMBRAER, model: Embraer EMB110 Bandeirante, mtow_lb: 13010, wtc: Light }
+  E120: { aac: B, approach_speed_knot: 113, cwt: H, engine: Turboprop, engines: 2, manufacturer: EMBRAER, model: Embraer Brasilia EMB 120, mtow_lb: 26433, wtc: Medium }
+  E135: { aac: C, approach_speed_knot: 124, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer ERJ 135/140/Legacy, mtow_lb: 44533, wtc: Medium }
+  E145: { aac: C, approach_speed_knot: 124, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer ERJ-145, mtow_lb: 48502, wtc: Medium }
+  E170: { aac: C, approach_speed_knot: 124, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 170, mtow_lb: 85098, wtc: Medium }
+  E190: { aac: C, approach_speed_knot: 124, cwt: F, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 190, mtow_lb: 110892, wtc: Medium }
+  E195: { aac: C, approach_speed_knot: 135, cwt: F, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 195, mtow_lb: 115280, wtc: Medium }
+  E290: { aac: C, approach_speed_knot: 125, cwt: F, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 190-E2, mtow_lb: 124340, wtc: Medium }
+  E295: { aac: C, approach_speed_knot: 136, cwt: F, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 195-E2, mtow_lb: 135585, wtc: Medium }
+  E35L: { aac: C, approach_speed_knot: 124, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 135BJ Legacy 600, mtow_lb: 44092, wtc: Medium }
+  E45X: { aac: C, approach_speed_knot: 124, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer ERJ 145 XR, mtow_lb: 53131, wtc: Medium }
+  E50P: { aac: B, approach_speed_knot: 100, cwt: I, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 500 Phenom 100, mtow_lb: 10582, wtc: Light }
+  E545: { aac: B, approach_speed_knot: 111, cwt: H, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer EMB-545 Legacy 450, mtow_lb: 35724, wtc: Medium }
+  E550: { aac: B, approach_speed_knot: 113, cwt: H, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Legacy 500/Praetor 600, mtow_lb: 38360, wtc: Medium }
+  E55P: { aac: B, approach_speed_knot: 116, cwt: H, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer Phenom 300, mtow_lb: 17968, wtc: Medium }
+  E75L: { aac: C, approach_speed_knot: 126, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 175 long wing, mtow_lb: 85517, wtc: Medium }
+  E75S: { aac: C, approach_speed_knot: 124, cwt: G, engine: Jet, engines: 2, manufacturer: EMBRAER, model: Embraer 175 short wing, mtow_lb: 82673, wtc: Medium }
+  EA50: { aac: B, approach_speed_knot: 91, cwt: I, engine: Jet, engines: 2, manufacturer: ECLIPSE, model: Eclipse 500, mtow_lb: 5950, wtc: Light }
+  ERCO: { aac: A, approach_speed_knot: 55, cwt: I, engine: Piston, engines: 1, manufacturer: ERCO, model: Ercoupe 415, mtow_lb: 1260, wtc: Light }
+  EVOT: { aac: A, approach_speed_knot: 79, cwt: I, engine: Turboprop, engines: 1, manufacturer: LANCAIR, model: Lancair Evolution Turbine, mtow_lb: 4550, wtc: Light }
+  F15: { aac: E, approach_speed_knot: 192, cwt: G, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing F-15 Eagle, mtow_lb: 80998, wtc: Medium }
+  F16: { aac: D, approach_speed_knot: 160, cwt: G, engine: Jet, engines: 1, manufacturer: LOCKHEED-GENERAL DYNAMICS, model: Lockheed F-16 Fighting Falcon, mtow_lb: 42300, wtc: Medium }
+  F18H: { aac: C, approach_speed_knot: 134, cwt: G, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: F/A 18 Hornet, mtow_lb: 56000, wtc: Medium }
+  F18S: { aac: C, approach_speed_knot: 134, cwt: G, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: FA-18E/F Super Hornet, mtow_lb: 66000, wtc: Medium }
+  F22: { aac: D, approach_speed_knot: 145, cwt: G, engine: Jet, engines: 2, manufacturer: LOCKHEED, model: Lockheed Martin L-645 Raptor, mtow_lb: 83500, wtc: Medium }
+  F2TH: { aac: C, approach_speed_knot: 130, cwt: H, engine: Jet, engines: 2, manufacturer: DASSAULT, model: Dassault Falcon 2000, mtow_lb: 42400, wtc: Medium }
+  F406: { aac: B, approach_speed_knot: 103, cwt: I, engine: Turboprop, engines: 2, manufacturer: REIMS-CESSNA, model: Reims-Cessna F406 Caravan II, mtow_lb: 9850, wtc: Light }
+  F900: { aac: C, approach_speed_knot: 130, cwt: G, engine: Jet, engines: 3, manufacturer: DASSAULT, model: Dassault Falcon 900, mtow_lb: 49000, wtc: Medium }
+  FA10: { aac: B, approach_speed_knot: 107, cwt: H, engine: Jet, engines: 2, manufacturer: DASSAULT, model: "Dassault Falcon/Myst\u00e8re 10", mtow_lb: 18740, wtc: Medium }
+  FA20: { aac: B, approach_speed_knot: 107, cwt: H, engine: Jet, engines: 2, manufacturer: DASSAULT, model: "Dassault Falcon/Myst\u00e8re 20", mtow_lb: 28660, wtc: Medium }
+  FA50: { aac: C, approach_speed_knot: 124, cwt: H, engine: Jet, engines: 3, manufacturer: DASSAULT, model: "Dassault Falcon/Myst\u00e8re 50", mtow_lb: 39700, wtc: Medium }
+  FA7X: { aac: B, approach_speed_knot: 104, cwt: G, engine: Jet, engines: 3, manufacturer: DASSAULT, model: Dassault Falcon 7X, mtow_lb: 70000, wtc: Medium }
+  FA8X: { aac: B, approach_speed_knot: 106, cwt: G, engine: Jet, engines: 3, manufacturer: DASSAULT, model: Dassault Falcon 8X, mtow_lb: 73000, wtc: Medium }
+  FDCT: { aac: A, approach_speed_knot: 51, cwt: I, engine: Piston, engines: 1, manufacturer: FLIGHT DESIGN, model: Flight Design CT, mtow_lb: 1320, wtc: Light }
+  G150: { aac: C, approach_speed_knot: 130, cwt: H, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream G150, mtow_lb: 26100, wtc: Medium }
+  G164: { aac: A, approach_speed_knot: 79, cwt: I, engine: Piston, engines: 1, manufacturer: GRUMMAN AMERICAN, model: "Grumman American\u00a0G164", mtow_lb: 6075, wtc: Light }
+  G280: { aac: C, approach_speed_knot: 125, cwt: H, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream G280, mtow_lb: 39600, wtc: Medium }
+  GA5C: { aac: C, approach_speed_knot: 132, cwt: F, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream Aerospace Gulfstream G7-G500, mtow_lb: 79600, wtc: Medium }
+  GA6C: { aac: C, approach_speed_knot: 129, cwt: F, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream Aerospace Gulfstream G7-G600, mtow_lb: 94600, wtc: Medium }
+  GA7: { aac: A, approach_speed_knot: 82, cwt: I, engine: Piston, engines: 2, manufacturer: GULFSTREAM AMERICAN - GRUMMAN AMERICAN, model: Gulfstream American GA7, mtow_lb: 3800, wtc: Light }
+  GALX: { aac: C, approach_speed_knot: 130, cwt: H, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE-IAI, model: IAI 1126 Galaxy/Gulfstream G200, mtow_lb: 35650, wtc: Medium }
+  GC1: { aac: A, approach_speed_knot: 48, cwt: I, engine: Piston, engines: 1, manufacturer: GLOBE, model: Globe GC-1 Swift, mtow_lb: 1975, wtc: Light }
+  GL5T: { aac: C, approach_speed_knot: 128, cwt: F, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier BD-700 Global 5000, mtow_lb: 92500, wtc: Medium }
+  GL7T: { aac: B, approach_speed_knot: 125, cwt: F, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier BD-700 Global 7500, mtow_lb: 106250, wtc: Medium }
+  GLEX: { aac: C, approach_speed_knot: 131, cwt: F, engine: Jet, engines: 2, manufacturer: BOMBARDIER, model: Bombardier BD-700 Global Express, mtow_lb: 99500, wtc: Medium }
+  GLF2: { aac: C, approach_speed_knot: 139, cwt: G, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream II, mtow_lb: 62000, wtc: Medium }
+  GLF3: { aac: C, approach_speed_knot: 140, cwt: G, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream III, mtow_lb: 69700, wtc: Medium }
+  GLF4: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 144, cwt: G, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream IV/G400, mtow_lb: 73200, wtc: Medium }
+  GLF5: { aac: C, approach_speed_knot: 136, cwt: F, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream V, mtow_lb: 90500, wtc: Medium }
+  GLF6: { aac: C, approach_speed_knot: 137, cwt: F, engine: Jet, engines: 2, manufacturer: GULFSTREAM AEROSPACE, model: Gulfstream G650, mtow_lb: 99600, wtc: Medium }
+  H25A: { aac: C, approach_speed_knot: 125, cwt: H, engine: Jet, engines: 2, manufacturer: HAWKER SIDDELEY, model: HS 125-1/2/3/400/600, mtow_lb: 25000, wtc: Medium }
+  H25B: { aac: C, approach_speed_knot: 137, cwt: H, engine: Jet, engines: 2, manufacturer: BRITISH AEROSPACE - HAWKER SIDDELEY, model: BAe HS 125/700-800/Hawker 800, mtow_lb: 28000, wtc: Medium }
+  H25C: { aac: C, approach_speed_knot: 132, cwt: H, engine: Jet, engines: 2, manufacturer: BRITISH AEROSPACE RAYTHEON, model: BAe/Raytheon HS 125-1000, mtow_lb: 31100, wtc: Medium }
+  HA4T: { aac: C, approach_speed_knot: 128, cwt: H, engine: Jet, engines: 2, manufacturer: HAWKER, model: Hawker 4000, mtow_lb: 39500, wtc: Medium }
+  HAWK: { aac: C, approach_speed_knot: 139, cwt: H, engine: Jet, engines: 1, manufacturer: BRITISH AEROSPACE, model: BAe T-45 Goshawk, mtow_lb: 11244, wtc: Medium }
+  HDJT: { aac: B, approach_speed_knot: 111, cwt: I, engine: Jet, engines: 2, manufacturer: HONDA, model: HONDA HA-420 HondaJet, mtow_lb: 9039, wtc: Light }
+  HUSK: { aac: A, approach_speed_knot: 60, cwt: I, engine: Piston, engines: 1, manufacturer: AVIAT, model: AVIAT Huskey, mtow_lb: 2000, wtc: Light }
+  IL76: { aac: B, approach_speed_knot: 119, cwt: D, engine: Jet, engines: 4, manufacturer: ILYUSHIN, model: Ilyushin IL 76, mtow_lb: 374782, wtc: Heavy }
+  J328: { aac: B, approach_speed_knot: 115, cwt: H, engine: Jet, engines: 2, manufacturer: FAIRCHILD DORNIER, model: Fairchild Dornier 328 Jet, mtow_lb: 34524, wtc: Medium }
+  JS31: { aac: B, approach_speed_knot: 115, cwt: H, engine: Turboprop, engines: 2, manufacturer: BRITISH AEROSPACE, model: BAe 3100 Jetstream 31, mtow_lb: 15322, wtc: Light/Medium }
+  JS32: { aac: B, approach_speed_knot: 109, cwt: H, engine: Turboprop, engines: 2, manufacturer: BRITISH AEROSPACE, model: BAe Jetstream super 31, mtow_lb: 15332, wtc: Medium }
+  JS41: { aac: C, approach_speed_knot: 131, cwt: H, engine: Turboprop, engines: 2, manufacturer: BRITISH AEROSPACE, model: BAe Jetstream 41, mtow_lb: 24000, wtc: Medium }
+  K35R: { aac: C, approach_speed_knot: 135, cwt: C, engine: Jet, engines: 4, manufacturer: BOEING, model: Boeing KC-135 Stratotanker, mtow_lb: 322500, wtc: Heavy }
+  KODI: { aac: A, approach_speed_knot: 73, cwt: I, engine: Turboprop, engines: 1, manufacturer: QUEST, model: Quest Kodiak, mtow_lb: 7255, wtc: Light }
+  L29B: { aac: B, approach_speed_knot: 97, cwt: G, engine: Jet, engines: 4, manufacturer: LOCKHEED, model: Lockheed Jetstar 2/731, mtow_lb: 44500, wtc: Medium }
+  L5: { aac: A, approach_speed_knot: 58, cwt: I, engine: Piston, engines: 1, manufacturer: STINSON, model: Stinson L5 Sentinel, mtow_lb: 2050, wtc: Light }
+  L8: { aac: A, approach_speed_knot: 46, cwt: I, engine: Piston, engines: 1, manufacturer: LUSCOMBE, model: Luscombe 8, mtow_lb: 1400, wtc: Light }
+  LA4: { aac: A, approach_speed_knot: 51, cwt: I, engine: Piston, engines: 1, manufacturer: LAKE, model: Lake LA-4, mtow_lb: 2690, wtc: Light }
+  LJ23: { aac: C, approach_speed_knot: 128, cwt: I, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 23, mtow_lb: 12500, wtc: Light }
+  LJ24: { aac: C, approach_speed_knot: 128, cwt: I, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 24, mtow_lb: 13000, wtc: Light }
+  LJ25: { aac: C, approach_speed_knot: 137, cwt: I, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 25, mtow_lb: 15000, wtc: Light }
+  LJ31: { aac: B, approach_speed_knot: 120, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 31, mtow_lb: 15500, wtc: Medium }
+  LJ35: { aac: C, approach_speed_knot: 128, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 35/36, mtow_lb: 18300, wtc: Medium }
+  LJ40: { aac: C, approach_speed_knot: 123, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Learjet 40, mtow_lb: 21000, wtc: Medium }
+  LJ45: { aac: C, approach_speed_knot: 123, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 45, mtow_lb: 21500, wtc: Medium }
+  LJ55: { aac: C, approach_speed_knot: 125, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 55, mtow_lb: 19500, wtc: Medium }
+  LJ60: { aac: C, approach_speed_knot: 125, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Bombardier Learjet 60, mtow_lb: 22750, wtc: Medium }
+  LJ70: { aac: C, approach_speed_knot: 125, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Learjet 70, mtow_lb: 21500, wtc: Medium }
+  LJ75: { aac: C, approach_speed_knot: 125, cwt: H, engine: Jet, engines: 2, manufacturer: LEARJET, model: Learjet 75, mtow_lb: 21500, wtc: Medium }
+  LNC4: { aac: A, approach_speed_knot: 81, cwt: I, engine: Piston, engines: 1, manufacturer: LANCAIR, model: Lancair IV, mtow_lb: 3200, wtc: Light }
+  LNP4: { aac: A, approach_speed_knot: 81, cwt: I, engine: Turboprop, engines: 1, manufacturer: LANCAIR, model: Lancair PropJet IV, mtow_lb: 3800, wtc: Light }
+  M20P: { aac: A, approach_speed_knot: 77, cwt: I, engine: Piston, engines: 1, manufacturer: MOONEY, model: Mooney M-20C Ranger, mtow_lb: 3374, wtc: Light }
+  M20T: { aac: A, approach_speed_knot: 77, cwt: I, engine: Piston, engines: 1, manufacturer: MOONEY, model: Mooney M20K Encore/M20M Bravo, mtow_lb: 3368, wtc: Light }
+  M5: { aac: A, approach_speed_knot: 43, cwt: I, engine: Piston, engines: 1, manufacturer: MAULE, model: Maule M-5, mtow_lb: 2300, wtc: Light }
+  MD11: { aac: D, approach_speed_knot: 158, cwt: C, engine: Jet, engines: 3, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 11, mtow_lb: 602500, wtc: Heavy }
+  MD81: { aac: C, approach_speed_knot: 134, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 81, mtow_lb: 140000, wtc: Medium }
+  MD82: { aac: C, approach_speed_knot: 135, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 82, mtow_lb: 149500, wtc: Medium }
+  MD83: { aac: D, approach_speed_knot: 144, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 83, mtow_lb: 160000, wtc: Medium }
+  MD87: { aac: C, approach_speed_knot: 134, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 87, mtow_lb: 149500, wtc: Medium }
+  MD88: { aac: C, approach_speed_knot: 130, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 88, mtow_lb: 149500, wtc: Medium }
+  MD90: { aac: D, aac_maximum: D, aac_minimum: C, approach_speed_knot: 141, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING-MCDONNELL DOUGLAS, model: Boeing (Douglas) MD 90, mtow_lb: 156000, wtc: Medium }
+  MU2: { aac: B, approach_speed_knot: 105, cwt: I, engine: Turboprop, engines: 2, manufacturer: MITSUBISHI, model: Mitsubishi Marquise/Solitaire, mtow_lb: 11574, wtc: Light }
+  MU30: { aac: B, approach_speed_knot: 118, cwt: H, engine: Jet, engines: 2, manufacturer: MITSUBISHI, model: Mitsubishi Diamond/MU300 Diamond, mtow_lb: 14630, wtc: Medium }
+  NAVI: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN-RYAN, model: North American Navion, mtow_lb: 2850, wtc: Light }
+  P180: { aac: C, approach_speed_knot: 121, cwt: I, engine: Turboprop, engines: 2, manufacturer: PIAGGIO, model: Piaggio P-180 Avanti, mtow_lb: 12050, wtc: Light }
+  P210: { aac: A, approach_speed_knot: 75, cwt: I, engine: Piston, engines: 1, manufacturer: RILEY-CESSNA, model: Riley Super P210, mtow_lb: 4000, wtc: Light }
+  P28A: { aac: A, approach_speed_knot: 70, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Cherokee, mtow_lb: 2440, wtc: Light }
+  P28B: { aac: A, approach_speed_knot: 62, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Turbo Dakota, mtow_lb: 3000, wtc: Light }
+  P28R: { aac: A, approach_speed_knot: 73, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Cherokee Arrow, mtow_lb: 2758, wtc: Light }
+  P28T: { aac: A, approach_speed_knot: 73, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 28T Arrow 4, mtow_lb: 2750, wtc: Light }
+  P3: { aac: C, approach_speed_knot: 134, cwt: F, engine: Turboprop, engines: 4, manufacturer: LOCKHEED, model: Lockheed P-3 Orion, mtow_lb: 135000, wtc: Medium }
+  P32R: { aac: A, approach_speed_knot: 80, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-32R Lance/ Saratoga SP, mtow_lb: 3600, wtc: Light }
+  P32T: { aac: A, approach_speed_knot: 80, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 32T Turbo Lance 2, mtow_lb: 3600, wtc: Light }
+  P46T: { aac: A, approach_speed_knot: 75, cwt: I, engine: Turboprop, engines: 1, manufacturer: PIPER, model: Piper Malibu Meridian, mtow_lb: 5092, wtc: Light }
+  P51: { aac: B, approach_speed_knot: 113, cwt: I, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN, model: North American Mustang, mtow_lb: 12100, wtc: Light }
+  P68: { aac: A, approach_speed_knot: 73, cwt: I, engine: Piston, engines: 2, manufacturer: VULCAN- PARTEVANIA, model: Vulcan Air P68, mtow_lb: 4387, wtc: Light }
+  P750: { aac: A, approach_speed_knot: 72, cwt: I, engine: Turboprop, engines: 1, manufacturer: PACIFIC AEROSPACE, model: Pacific Aerospace P-750 Xstol, mtow_lb: 7500, wtc: Light }
+  P8: { aac: E, approach_speed_knot: 180, cwt: F, engine: Jet, engines: 2, manufacturer: BOEING, model: Boeing P-8 Poseidon, mtow_lb: 189200, wtc: Medium }
+  PA11: { aac: A, approach_speed_knot: 46, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-11 Cub Special, mtow_lb: 1220, wtc: Light }
+  PA12: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 12 Supercruiser, mtow_lb: 1750, wtc: Light }
+  PA16: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-16 Clipper, mtow_lb: 1650, wtc: Light }
+  PA18: { aac: A, approach_speed_knot: 48, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 18 Super Cub, mtow_lb: 1750, wtc: Light }
+  PA20: { aac: A, approach_speed_knot: 55, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-20 Pacer, mtow_lb: 1950, wtc: Light }
+  PA22: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper 22 Tri-Pacer, mtow_lb: 2000, wtc: Light }
+  PA23: { aac: A, approach_speed_knot: 85, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper PA-23-150/160 Apache, mtow_lb: 4800, wtc: Light }
+  PA24: { aac: A, approach_speed_knot: 75, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-24 Comanche, mtow_lb: 2900, wtc: Light }
+  PA25: { aac: A, approach_speed_knot: 69, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-25 Pawnee, mtow_lb: 2900, wtc: Light }
+  PA27: { aac: B, approach_speed_knot: 91, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Aztec, mtow_lb: 5200, wtc: Light }
+  PA30: { aac: A, approach_speed_knot: 76, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper PA-30 Turbo Twin Comanche/Turbo Twin Comanche, mtow_lb: 3600, wtc: Light }
+  PA31: { aac: B, approach_speed_knot: 95, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Navajo PA-31, mtow_lb: 6500, wtc: Light }
+  PA32: { aac: A, approach_speed_knot: 78, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Cherokee Six, mtow_lb: 3600, wtc: Light }
+  PA34: { aac: A, approach_speed_knot: 81, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper PA-34 Seneca, mtow_lb: 4750, wtc: Light }
+  PA36: { aac: A, approach_speed_knot: 54, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper PA-36 Pawnee Brave, mtow_lb: 4800, wtc: Light }
+  PA38: { aac: A, approach_speed_knot: 60, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Tomahawk PA38, mtow_lb: 1670, wtc: Light }
+  PA44: { aac: A, approach_speed_knot: 66, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Seminole, mtow_lb: 3800, wtc: Light }
+  PA46: { aac: A, approach_speed_knot: 75, cwt: I, engine: Piston, engines: 1, manufacturer: PIPER, model: Piper Malibu, mtow_lb: 4340, wtc: Light }
+  PAT4: { aac: B, approach_speed_knot: 100, cwt: I, engine: Turboprop, engines: 2, manufacturer: PIPER, model: Piper PA-31T3-500 T-1040, mtow_lb: 9000, wtc: Light }
+  PAY1: { aac: B, approach_speed_knot: 92, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Cheyenne 1, mtow_lb: 8700, wtc: Light }
+  PAY2: { aac: B, approach_speed_knot: 100, cwt: I, engine: Piston, engines: 2, manufacturer: PIPER, model: Piper Cheyenne 2, mtow_lb: 9474, wtc: Light }
+  PAY3: { aac: B, approach_speed_knot: 113, cwt: I, engine: Turboprop, engines: 2, manufacturer: PIPER, model: Piper PA-42-720 Cheyenne 3, mtow_lb: 11200, wtc: Light }
+  PAY4: { aac: B, approach_speed_knot: 109, cwt: I, engine: Turboprop, engines: 2, manufacturer: PIPER, model: Piper Cheyenne 400, mtow_lb: 12050, wtc: Light }
+  PC12: { aac: A, approach_speed_knot: 85, cwt: I, engine: Turboprop, engines: 1, manufacturer: PILATUS, model: Pilatus PC-12, mtow_lb: 10450, wtc: Light }
+  PC24: { aac: B, approach_speed_knot: 107, cwt: H, engine: Jet, engines: 2, manufacturer: PILATUS, model: Pilatus PC-24, mtow_lb: 18300, wtc: Medium }
+  PRM1: { aac: B, approach_speed_knot: 120, cwt: I, engine: Jet, engines: 2, manufacturer: RAYTHEON- HAWKER BEECHCRAFT, model: Raytheon Premier 1/390 Premier 1, mtow_lb: 12500, wtc: Light }
+  R721: { aac: C, approach_speed_knot: 126, cwt: F, engine: Jet, engines: 3, manufacturer: BOEING, model: Boeing 727-100RE Super 27, mtow_lb: 169000, wtc: Medium }
+  R722: { aac: C, approach_speed_knot: 136, cwt: F, engine: Jet, engines: 3, manufacturer: BOEING, model: Boeing 727-200RE Super 27, mtow_lb: 197000, wtc: Medium }
+  RJ1H: { aac: C, approach_speed_knot: 123, cwt: G, engine: Jet, engines: 4, manufacturer: AVRO, model: Avro RJ-100 Avroliner, mtow_lb: 101500, wtc: Medium }
+  RJ85: { aac: C, approach_speed_knot: 122, cwt: G, engine: Jet, engines: 4, manufacturer: AVRO, model: Avro RJ-85 Avroliner, mtow_lb: 97000, wtc: Medium }
+  RV12: { aac: A, approach_speed_knot: 53, cwt: I, engine: Piston, engines: 1, manufacturer: VAN'S, model: Van's RV-12, mtow_lb: 1320, wtc: Light }
+  S108: { aac: A, approach_speed_knot: 70, cwt: I, engine: Piston, engines: 1, manufacturer: STINSON, model: Stinson 108 Voyager, mtow_lb: 2400, wtc: Light }
+  S22T: { aac: A, approach_speed_knot: 77, cwt: I, engine: Piston, engines: 1, manufacturer: CIRRUS, model: Cirrus SR-22 Turbo, mtow_lb: 3600, wtc: Light }
+  SB20: { aac: C, approach_speed_knot: 122, cwt: I, engine: Turboprop, engines: 1, manufacturer: SAAB, model: Saab 2000, mtow_lb: 50706, wtc: Medium }
+  SBR1: { aac: C, approach_speed_knot: 126, cwt: H, engine: Jet, engines: 2, manufacturer: NORTH AMERICAN ROCKWELL, model: North American Rockwell Sabre 40/60, mtow_lb: 20172, wtc: Medium }
+  SBR2: { aac: C, approach_speed_knot: 128, cwt: H, engine: Jet, engines: 2, manufacturer: NORTH AMERICAN ROCKWELL, model: North American Rockwell Sabre 75, mtow_lb: 22994, wtc: Medium }
+  SC7: { aac: B, approach_speed_knot: 91, cwt: I, engine: Turboprop, engines: 2, manufacturer: SHORT, model: Short Skyvan SC7, mtow_lb: 12500, wtc: Light }
+  SF34: { aac: C, approach_speed_knot: 124, cwt: G, engine: Turboprop, engines: 2, manufacturer: SAAB, model: Saab SF 340, mtow_lb: 28000, wtc: Medium }
+  SF50: { aac: A, approach_speed_knot: 87, cwt: I, engine: Jet, engines: 1, manufacturer: CIRRUS, model: Cirrus Vision SF50, mtow_lb: 6000, wtc: Light }
+  SH33: { aac: B, approach_speed_knot: 96, cwt: H, engine: Turboprop, engines: 2, manufacturer: SHORT, model: Shorts 330, mtow_lb: 22900, wtc: Medium }
+  SH36: { aac: B, approach_speed_knot: 104, cwt: H, engine: Turboprop, engines: 2, manufacturer: SHORT, model: Shorts 360, mtow_lb: 27117, wtc: Medium }
+  SR20: { aac: A, approach_speed_knot: 74, cwt: I, engine: Piston, engines: 1, manufacturer: CIRRUS, model: Cirrus SR-20, mtow_lb: 2126, wtc: Light }
+  SR22: { aac: A, approach_speed_knot: 78, cwt: I, engine: Piston, engines: 1, manufacturer: CIRRUS, model: Cirrus SR 22, mtow_lb: 2358, wtc: Light }
+  SU95: { aac: C, approach_speed_knot: 140, cwt: F, engine: Jet, engines: 2, manufacturer: SUKHOI, model: SUKHOI Superjet 100-95, mtow_lb: 101148, wtc: Medium }
+  SW3: { aac: B, approach_speed_knot: 105, cwt: I, engine: Turboprop, engines: 2, manufacturer: FAIRCHILD SWEARINGEN, model: Fairchild Swearingen SA-226T/TB Merlin 3, mtow_lb: 12500, wtc: Light }
+  SW4: { aac: B, approach_speed_knot: 112, cwt: H, engine: Turboprop, engines: 2, manufacturer: FAIRCHILD SWEARINGEN, model: Swearingen SA-227AT Merlin 4, mtow_lb: 15999, wtc: Light/Medium }
+  T210: { aac: A, approach_speed_knot: 73, cwt: I, engine: Piston, engines: 1, manufacturer: CESSNA, model: Cessna T210 Turbo Centurion, mtow_lb: 3800, wtc: Light }
+  T28: { aac: A, approach_speed_knot: 62, cwt: I, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN, model: North American T-28 Trojan, mtow_lb: 8500, wtc: Light }
+  T34P: { aac: A, approach_speed_knot: 69, cwt: I, engine: Turboprop, engines: 1, manufacturer: BEECH, model: Beech T-34/45 Mentor, mtow_lb: 5500, wtc: Light }
+  T38: { aac: D, approach_speed_knot: 160, cwt: I, engine: Jet, engines: 2, manufacturer: NORTHROP, model: Northrop T-38 Talon, mtow_lb: 12093, wtc: Light }
+  T6: { aac: A, approach_speed_knot: 56, cwt: I, engine: Piston, engines: 1, manufacturer: NORTH AMERICAN, model: North American T-6 Texan, mtow_lb: 5617, wtc: Light }
+  TAYB: { aac: A, approach_speed_knot: 50, cwt: I, engine: Piston, engines: 1, manufacturer: TAYLORCRAFT, model: Taylorcraft BC, mtow_lb: 1500, wtc: Light }
+  TB20: { aac: A, approach_speed_knot: 75, cwt: I, engine: Piston, engines: 1, manufacturer: SOCATA, model: Socata TB-20 Trinidad, mtow_lb: 3080, wtc: Light }
+  TBM7: { aac: A, approach_speed_knot: 74, cwt: I, engine: Turboprop, engines: 1, manufacturer: SOCATA, model: Socata TBM-700/700A, mtow_lb: 6614, wtc: Light }
+  TBM8: { aac: A, approach_speed_knot: 85, cwt: I, engine: Turboprop, engines: 1, manufacturer: SOCATA, model: Socata TBM-850, mtow_lb: 7394, wtc: Light }
+  TBM9: { aac: A, approach_speed_knot: 85, cwt: I, engine: Turboprop, engines: 1, manufacturer: SOCATA, model: Socata TBM-900, mtow_lb: 7394, wtc: Light }
+  TEX2: { aac: B, approach_speed_knot: 103, cwt: I, engine: Turboprop, engines: 1, manufacturer: RAYTHEON, model: Raytheon Texan 2, mtow_lb: 6500, wtc: Light }
+  TOBA: { aac: A, approach_speed_knot: 65, cwt: I, engine: Piston, engines: 1, manufacturer: SOCATA, model: Socata TB-10 Tobago, mtow_lb: 2530, wtc: Light }
+  V22: { cwt: G, engine: Turboshaft, engines: 2, manufacturer: BELL-BOEING, model: Bell V-22 Osprey, mtow_lb: 60500, wtc: Medium }
+  WW24: { aac: C, approach_speed_knot: 129, cwt: H, engine: Jet, engines: 2, manufacturer: IAI, model: IAI 1124 Westwind, mtow_lb: 23500, wtc: Medium }

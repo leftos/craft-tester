@@ -6072,6 +6072,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6086,6 +6087,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6099,6 +6101,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6112,6 +6115,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6127,6 +6131,7 @@
         ],
         "approachCategory": "D",
         "class": "J",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6142,6 +6147,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "E",
         "suffixes": [
           "/L"
         ],
@@ -6155,6 +6161,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "B",
         "suffixes": [
           "/L"
         ],
@@ -6168,6 +6175,7 @@
         ],
         "approachCategory": "D",
         "class": "J",
+        "cwt": "B",
         "suffixes": [
           "/L"
         ],
@@ -6181,6 +6189,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "C",
         "suffixes": [
           "/L"
         ],
@@ -6194,6 +6203,7 @@
         ],
         "approachCategory": "D",
         "class": "J",
+        "cwt": "C",
         "suffixes": [
           "/L"
         ],
@@ -6207,6 +6217,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "G",
         "suffixes": [
           "/L"
         ],
@@ -6219,6 +6230,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "G",
         "suffixes": [
           "/L"
         ],
@@ -6232,6 +6244,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "H",
         "suffixes": [
           "/L"
         ],
@@ -6244,6 +6257,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6256,6 +6270,7 @@
         ],
         "approachCategory": "C",
         "class": "J",
+        "cwt": "H",
         "suffixes": [
           "/L"
         ],
@@ -6266,6 +6281,7 @@
         "airlines": [],
         "approachCategory": "B",
         "class": "J",
+        "cwt": "I",
         "suffixes": [
           "/L"
         ],
@@ -6276,6 +6292,7 @@
         "airlines": [],
         "approachCategory": "B",
         "class": "J",
+        "cwt": "I",
         "suffixes": [
           "/L"
         ],
@@ -6286,6 +6303,7 @@
         "airlines": [],
         "approachCategory": "B",
         "class": "J",
+        "cwt": "I",
         "suffixes": [
           "/L"
         ],
@@ -6298,6 +6316,7 @@
         ],
         "approachCategory": "B",
         "class": "J",
+        "cwt": "H",
         "suffixes": [
           "/L"
         ],
@@ -6310,6 +6329,7 @@
         ],
         "approachCategory": "C",
         "class": "T",
+        "cwt": "F",
         "suffixes": [
           "/L"
         ],
@@ -6320,6 +6340,7 @@
         "airlines": [],
         "approachCategory": "B",
         "class": "T",
+        "cwt": "H",
         "suffixes": [
           "/G",
           "/L"
@@ -6331,6 +6352,7 @@
         "airlines": [],
         "approachCategory": "B",
         "class": "T",
+        "cwt": "I",
         "suffixes": [
           "/G",
           "/A"
@@ -6342,6 +6364,7 @@
         "airlines": [],
         "approachCategory": "A",
         "class": "T",
+        "cwt": "I",
         "suffixes": [
           "/L",
           "/G"
@@ -6355,6 +6378,7 @@
         ],
         "approachCategory": "A",
         "class": "T",
+        "cwt": "I",
         "suffixes": [
           "/G",
           "/A"
@@ -6366,6 +6390,7 @@
         "airlines": [],
         "approachCategory": "A",
         "class": "P",
+        "cwt": "I",
         "suffixes": [
           "/G",
           "/A",
@@ -6378,6 +6403,7 @@
         "airlines": [],
         "approachCategory": "A",
         "class": "P",
+        "cwt": "I",
         "suffixes": [
           "/G"
         ],
@@ -6388,6 +6414,7 @@
         "airlines": [],
         "approachCategory": "A",
         "class": "P",
+        "cwt": "I",
         "suffixes": [
           "/G",
           "/A"

@@ -449,7 +449,8 @@ def _approach_category(entry: FleetEntry, characteristics: Mapping[str, Aircraft
 
 
 def _fleet_entry(entry: FleetEntry, characteristics: Mapping[str, AircraftCharacteristic]) -> Document:
-    return {
+    """Return one fleet row; ``cwt`` is the FAA category and is absent for a type their table omits."""
+    fleet: Document = {
         "type": entry.type,
         "class": entry.aircraft_class,
         "wtc": entry.wtc,
@@ -457,6 +458,10 @@ def _fleet_entry(entry: FleetEntry, characteristics: Mapping[str, AircraftCharac
         "airlines": list(entry.airlines),
         "approachCategory": _approach_category(entry, characteristics),
     }
+    published = characteristics.get(entry.type)
+    if published is not None:
+        fleet["cwt"] = published.cwt
+    return fleet
 
 
 def _route_where(route: RouteEntry) -> str:
