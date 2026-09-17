@@ -257,8 +257,12 @@ def _plan_row(fields: dict[str, str], where: str) -> PlanRow:
     )
 
 
+def _lines(text: str) -> list[str]:
+    return [line.strip() for line in text.lstrip("﻿").splitlines()]
+
+
 def _cells(text: str) -> list[str]:
-    return [stripped for line in text.lstrip("﻿").splitlines() if (stripped := line.strip())]
+    return [line for line in _lines(text) if line]
 
 
 def _plan_blocks(cells: Sequence[str]) -> Iterator[tuple[str, list[str]]]:
@@ -321,6 +325,49 @@ def _header_end(cells: Sequence[str], where: str) -> int:
     raise ValueError(f"{where}: the text holds no {' | '.join(AMENDMENT_HEADER)} header row; the sheet may no longer be an amendment table")
 
 
+def _amendment_rows(lines: Sequence[str]) -> tuple[list[list[str]], list[str]]:
+    """Split the lines after the header row into whole table rows.
+
+    The text export writes one line per cell and separates rows with a run of blank lines, so an
+    empty cell is a blank line inside a row. Each row is therefore the next ``AMENDMENT_COLUMNS``
+    lines once the run between rows is skipped, which leaves an empty cell in the column it was
+    printed in instead of shifting every later cell one place left.
+
+    Args:
+        lines: The lines after the header, blank ones kept.
+
+    Returns:
+        The whole rows in sheet order, and the cells of a trailing row short of its columns.
+    """
+    rows: list[list[str]] = []
+    index = 0
+    while index < len(lines):
+        while index < len(lines) and not lines[index]:
+            index += 1
+        if index >= len(lines):
+            break
+        row = list(lines[index : index + AMENDMENT_COLUMNS])
+        index += AMENDMENT_COLUMNS
+        if len(row) < AMENDMENT_COLUMNS:
+            return rows, row
+        rows.append(row)
+    return rows, []
+
+
+def _empty_amendment_cells(cells: Sequence[str], number: int) -> list[str]:
+    """Return one clause per empty cell of one amendment row.
+
+    Args:
+        cells: The row's cells, in header order.
+        number: The row's number in the table, counting the header as row 1.
+
+    Returns:
+        A clause naming the row and the column of each empty cell, in column order.
+    """
+    columns = zip(AMENDMENT_HEADER, cells, strict=True)
+    return [f"row {number} ({cells[0]}): the {label} cell is empty" for label, cell in columns if not cell]
+
+
 def _amendment_row(cells: Sequence[str], where: str) -> PlanRow:
     callsign, aircraft_type, destination, altitude, route = cells
     at = f"{where} [{callsign}]"
@@ -350,18 +397,23 @@ def parse_amendment_sheet(text: str, where: str) -> list[PlanRow]:
         document keeps the printed text and is flagged ``truncated``.
 
     Raises:
-        ValueError: The header row is missing, the cells after it do not divide into whole rows, or
-            a value is not the type or altitude it should be.
+        ValueError: The header row is missing, the cells after it do not divide into whole rows, a
+            row leaves a column empty, or a value is not the type or altitude it should be.
     """
-    cells = _cells(text)
-    body = cells[_header_end(cells, where) :]
-    if not body or len(body) % AMENDMENT_COLUMNS:
-        leftover = body[len(body) - len(body) % AMENDMENT_COLUMNS :] if body else []
+    lines = _lines(text)
+    body = lines[_header_end(lines, where) :]
+    rows, leftover = _amendment_rows(body)
+    if leftover:
         raise ValueError(
-            f"{where}: the table holds {len(body)} cell(s) after the header, which is not a whole number of "
-            f"{AMENDMENT_COLUMNS}-cell rows; the cells the last row is short of are {leftover}"
+            f"{where}: the table holds {len(rows)} whole {AMENDMENT_COLUMNS}-cell row(s) after the header and then "
+            f"{leftover}, which is short of a row; the text export of the sheet may have changed shape"
         )
-    return [_amendment_row(body[start : start + AMENDMENT_COLUMNS], where) for start in range(0, len(body), AMENDMENT_COLUMNS)]
+    if not rows:
+        raise ValueError(f"{where}: the table holds no row after the header; the text export of the sheet may have changed shape")
+    empty = [clause for number, cells in enumerate(rows, start=2) for clause in _empty_amendment_cells(cells, number)]
+    if empty:
+        raise ValueError(f"{where}: {'; '.join(empty)}; an amendment row needs every column")
+    return [_amendment_row(cells, where) for cells in rows]
 
 
 def parse_worksheet(worksheet: Worksheet, text: str) -> list[PlanRow]:

@@ -88,6 +88,21 @@ FIRST_FIXTURE = {
     },
 }
 AMENDMENT_SQUAWKS = ["4601", "4602", "4603", "4604", "4605", "4606", "4607", "4610", "4611", "4612", "4613", "4614", "4615"]
+EMPTY_CELL_SHEET = "amendment-empty-altitude"
+EMPTY_CELL_WHERE = "Amendment Practice 1A with an empty Altitude cell"
+EMPTY_CELL_CALLSIGN = "SWA1984"
+EMPTY_CELL_PROBLEM = "row 4 (SWA1984): the Altitude cell is empty"
+EMPTY_CELL_PLAN = PlanRow(
+    callsign="SWA1984",
+    designator="B738",
+    suffix="/L",
+    departure=None,
+    destination="KPDX",
+    altitude_feet=43000,
+    squawk=None,
+    route="TRUKN2 GRTFL MACHU TMBRS2",
+    truncated=False,
+)
 
 
 @pytest.fixture(scope="module")
@@ -160,6 +175,16 @@ def write_settled(tmp_path: Path, fixture: Fixture, **scenario: Any) -> Path:
 def sheet_text(worksheet: Worksheet) -> str:
     """Return the checked-in text export of one worksheet."""
     return (WORKSHEET_TEXT / f"{slug(worksheet.title)}.txt").read_text(encoding="utf-8")
+
+
+def empty_cell_text() -> str:
+    """Return the amendment export whose SWA1984 row prints an empty Altitude cell."""
+    return (WORKSHEET_TEXT / f"{EMPTY_CELL_SHEET}.txt").read_text(encoding="utf-8")
+
+
+def filled_cell_text() -> str:
+    """Return the same export with the empty Altitude cell filled in."""
+    return empty_cell_text().replace("\tKPDX\n\n", "\tKPDX\n\tFL430\n", 1)
 
 
 def rows_of(by_title: dict[str, Worksheet], title: str) -> list[PlanRow]:
@@ -260,6 +285,28 @@ def test_an_amendment_table_becomes_one_row_per_plan(by_title: dict[str, Workshe
         route="TRUKN2 ORRCA Q120 GALLI PARZZ TUVOC LEIDY DNW",
         truncated=False,
     )
+
+
+def test_an_empty_amendment_cell_is_named_by_its_own_row_and_column() -> None:
+    with pytest.raises(ValueError) as error:
+        parse_amendment_sheet(empty_cell_text(), EMPTY_CELL_WHERE)
+    assert EMPTY_CELL_PROBLEM in str(error.value)
+
+
+def test_an_empty_amendment_cell_does_not_shift_the_rows_after_it(by_title: dict[str, Worksheet]) -> None:
+    with pytest.raises(ValueError) as error:
+        parse_amendment_sheet(empty_cell_text(), EMPTY_CELL_WHERE)
+    message = str(error.value)
+    assert EMPTY_CELL_PROBLEM in message
+    callsigns = [row.callsign for row in rows_of(by_title, "Amendment Practice 1A")]
+    assert [name for name in callsigns if name != EMPTY_CELL_CALLSIGN and name in message] == []
+
+
+def test_the_filled_in_cell_parses_to_every_plan_the_sheet_prints(by_title: dict[str, Worksheet]) -> None:
+    rows = parse_amendment_sheet(filled_cell_text(), EMPTY_CELL_WHERE)
+    assert len(rows) == PLAN_COUNTS["Amendment Practice 1A"]
+    assert rows == parse_amendment_sheet(sheet_text(by_title["Amendment Practice 1A"]), "Amendment Practice 1A")
+    assert next(row for row in rows if row.callsign == EMPTY_CELL_CALLSIGN) == EMPTY_CELL_PLAN
 
 
 def test_a_weight_prefix_is_dropped_and_a_cut_off_route_is_flagged(by_title: dict[str, Worksheet]) -> None:
