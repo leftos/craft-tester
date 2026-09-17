@@ -99,8 +99,10 @@ one line and move its record to the archive.
   make the port an env var. Implementer observations, not acted on: `_check_approach_categories` in
   `merge.py` can never fire since `_approach_category` raises first; `scenario/generate.ts` still keys the
   heavy kind on `wtc === 'H'` (correct, the CWT letter is a display value).
-- [ ] **User bug 2026-09-17: "I don't hear anything when clicking read aloud"** on the read-aloud button
-  below. Diagnosed 2026-09-17: Firefox on Windows 11; the button stays pressed a few seconds, no sound.
+- [x] **User bug 2026-09-17: "I don't hear anything when clicking read aloud"** on the read-aloud button
+  below — fixed 2026-09-17 (`9f291d7`), proven with a Playwright probe of real Firefox (David picked, a
+  5.6 s reading, the second box's reading full length after cancelling the first); awaiting the user's
+  retest on the live site. Diagnosed 2026-09-17: Firefox on Windows 11; the button stays pressed a few seconds, no sound.
   Mozilla's own demo in the user's Firefox speaks only with the Windows OneCore voices ("Microsoft David /
   Zira / Mark", not "Desktop"), most listed voices (the "Online (Natural)" and "(Natural)" ones) are silent,
   and Firefox flags no voice `default`, so an utterance with no voice set lands on a silent one. A Playwright
@@ -128,8 +130,11 @@ one line and move its record to the archive.
   `R-RNAV-WAYPOINT` (CIFP waypoint type `W`); `rnavWaypoints` per airport from the CIFP `EA`/`PC` records;
   the route check leaves such a route unresolved for a suffix that cannot fly it and the engine answers with
   the type box raised to the fleet's suffix, judging the rest on that plan; new `rnav_element` drill fault.
-  **Awaiting the user's confirmation** of the re-opened FDX3859 and PXT415 answers and the new
-  `syn-koak-rnav-elements-b738w-klas` fixture (all `pending`, `pnpm -C web propose --pending` prints them).
+  **User confirmed 2026-09-17** the re-opened FDX3859 (B752/L, FL330, OAK6 route) and PXT415 (C25B/L,
+  FL310, CNDEL5 KAYEX route) answers and the new `syn-koak-rnav-elements-b738w-klas` fixture (B738/L alone);
+  settled 2026-09-17 (`9147f8b`); KOAK now has no pending amendment fixture. Implementer observation: the
+  web formatter does not touch JSON fixtures, so their formatting comes from `propose` and
+  `import-worksheets`, not from `fmt:check`.
 - [ ] **User rule 2026-09-16 (FDX3875, KOAK to PHNL via R464): a unidirectional oceanic airway is exempt from
   odd/even parity**, so FL310 westbound on R464 is correct as filed. Data concept: a shared airway table (or rows on
   `route_connections.yaml`'s neighbour) listing the one-way oceanic airways (R463, R464, A220 per the user's notes,
