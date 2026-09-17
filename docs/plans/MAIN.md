@@ -116,17 +116,32 @@ Surveyed 2026-09-17; the survey corrected three of these, noted inline.
   (`archive/koak-v3.md:584-593` says so outright), so this is not a missing citation on an existing row.
   The exemption itself works (`amend/altitude.ts:140-143, 246-251`) but drops the parity `Constraint`
   before it is built, and citations are taken only from broken constraints, so an exempted flight produces
-  none. Needs the row authored beside `A-PARITY` **and** a mechanism chosen — awaiting the user
+  none. **Decided (user 2026-09-17):** author the row beside `A-PARITY` in
+  `shared/phraseology_rules.yaml`, and attach it in `amend/grade.ts:305` for the altitude box whenever the
+  route is on a one-way airway, so the reveal says why the level stood. Precedent for citing a row on a
+  non-amendment verdict is `withNavaidRow` (`amend/grade.ts:231-237`); `altitude.test.ts:180-203` pins the
+  current behaviour
 - [ ] **`LoaData.sources` is joined but never emitted** (`sop/load.py:1617-1633, 1796`); nothing in
-  `merge.py` reads it and `schema.ts` has no field for it. Delete the dead field, or fold it into
-  `provenance.secondarySources` — awaiting the user
-- [ ] **Never-routed TEC rows**, three distinct causes — awaiting the user. (a) KOAK `TEC-KMRY-SFOE-J`,
-  `TEC-KWVI-SFOE-J`, `TEC-KSJC-SFOE-J` begin `OAK#` but exit south over EUGEN/ARTAQ, and SFOE southbound
-  jets are assigned KATFH#/SKYL#, never OAK#. (b) KSFO `TEC-KLVK-SFOW-JT-01` is shadowed by the looser
-  `TEC-KLVK-SFOW-JT` and cannot rescue the non-RNAV case because its route's exit fix ALTAM is in no KSFO
-  gate. (c) KSFO `TEC-KOAK-SFOE-TP` is the bare `GAPP#`, which names no fix. Also: `tecAltitudes.test.ts`
-  reports unroutable rows but filters to those stating `initialAltitudeFeet` (`:203`), which hides three
-  of the five; dropping that filter makes all five visible without changing an assertion
+  `merge.py` reads it and `schema.ts` has no field for it. **Decided (user 2026-09-17): delete the dead
+  field**, with `joined_loa_sources` and its three assertions in `test_tec_loa_load.py`. The transcribed
+  `effective`/`url` go with it; the rows' own `source` prose already names the letters
+- [ ] **A TEC route overrides the SOP assignment** — **new rule concept, user 2026-09-17**, given as the
+  ruling on the five never-routed TEC rows. **This is an engine change, not a generator fix, so it needs a
+  subplan before any code** (repo rule: a correction that cannot be expressed as data adds a rule concept
+  to the plan first). Today `issuable` (`rules/amend/tec.ts:55-67`) re-runs `resolveClearance` on the row's
+  own route and demands the SOP actually issue the departure the row begins on; under the ruling the TEC
+  row wins instead. That alone routes the three KOAK SFOE jet rows (`TEC-KMRY-SFOE-J`, `TEC-KWVI-SFOE-J`,
+  `TEC-KSJC-SFOE-J`), which begin `OAK#` while the SOP assigns KATFH#/SKYL# southbound. **Two of the five
+  are not fixed by it and still need a ruling:**
+  - [ ] `TEC-KLVK-SFOW-JT-01` is shadowed, not unissuable: `TEC-KLVK-SFOW-JT` has `runway_families: []`, so
+    it matches every SFOW J/T including the 01s and `find` (`amend/tec.ts:92-99`) takes it first. The
+    override does not change which row is found. Needs either a specificity order (most-keyed row wins) or
+    a runway family on the looser row. Separately its exit fix ALTAM is in no KSFO gate
+    (`ksfo/sop.yaml:164`), though the override may make that moot
+  - [ ] `TEC-KOAK-SFOE-TP` is the bare `GAPP#` and names no fix, so `parseFiledRoute`
+    (`rules/route.ts:200-202`) rejects it however the row is chosen
+  - [ ] Also worth doing whatever is decided: drop the `initialAltitudeFeet` filter at
+    `tecAltitudes.test.ts:203`, which today hides three of the five from the unroutable-rows report
 - [ ] **TEC rows that name no fix.** **Correction: `RH RV`, `OAK6 RV` and `H090 RV` are not in the repo** —
   they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
   `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
@@ -135,7 +150,11 @@ Surveyed 2026-09-17; the survey corrected three of these, noted inline.
   fix after its head — the sentence `rules/route.ts:200-202` already enforces at runtime, moved to build
   time
 - [ ] **`direction_runway_preference` maps family 10 to 10R** against the 10L prop default
-  (`koak/sop.yaml:110-117`, six entries) — awaiting the user
+  (`koak/sop.yaml:110-117`, six entries). **Decided (user 2026-09-17): correct to 10L** — it matches the
+  P/T class default (`:72, :85`), the north-field geometry, and the west-flow half of the same table, which
+  maps 28 to the north-field 28R; 10R is PAC VALLEY's pavement (`:74, :87`). Blast radius is nil today
+  (every KOAK class is settled by an earlier default), but it is the `RWY-DIRECTION` citation source
+  (`rules/runway.ts:77-86`), so the reveal stops contradicting the row beside it
 - [ ] **Nothing checks that an airline-default row lists a class that airline flies.** Extend
   `_check_runway_defaults` (`merge.py:869-890`), the only place the runway rows and the fleet are joined —
   `sop/load.py` validates `sop.yaml` before `routes.yaml` loads, which is why `_check_runway_airlines` can
