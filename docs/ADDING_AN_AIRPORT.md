@@ -201,11 +201,14 @@ airport-independent data between airports). A code the shared file lacks fails t
 to add it to; add the row there first.
 
 - **`destinations`**: the ICAO codes the airport's scenarios file to, in draw order. The facts sit in
-  `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), `nct: true` for a
-  field inside the NCT terminal polygon (the SimAware TRACON boundary; the NCT SOP's complex tables are
-  not the test: Napa, Concord and Santa Rosa are outside it although NCT staffs their towers, Reno is
-  inside), which is what lets a TEC route to it be issued, and `lat`/`lon` only for airports outside the
-  CIFP (foreign).
+  `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), and `lat`/`lon` only
+  for airports outside the CIFP (foreign). Whether a field is inside NCT, which is what lets a TEC route
+  to it be issued, is never stated by hand: the build ray-casts the field's coordinates against the NCT
+  terminal polygons in `generator/shared/nct_boundary.yaml` (the SimAware TRACON boundary, copied from
+  the `vatsim_control_recs` repository; the NCT SOP's complex tables are not the test: Napa and Santa
+  Rosa are outside it, Reno inside). A field the polygons hold laterally but another facility owns down to
+  the ground states `outside_nct: <reason>` (Concord: Travis Approach's shelf), and the build fails a TEC
+  row to a destination outside NCT and an `outside_nct` on a field the polygons already exclude.
   The build fills US coordinates from CIFP `PA` records and fails on a destination it cannot place.
 - **`airlines`**: the ICAO codes that fly out of the airport, alphabetical. `generator/shared/airlines.yaml`
   holds each code's `telephony` (the spoken callsign), `cargo: true` for an all-cargo carrier (which is

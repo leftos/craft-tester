@@ -334,7 +334,8 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `ui/session.test.ts` (load and draw every listed airport) widened; the exhaustive and fixture suites now
   enumerate KOAK, so their KOAK unresolved-group tables are the first engine-vs-data audit; browser check of the
   airport picker (`select:0=KOAK`) on phone and desktop. ZLA/ZLC `loa.yaml` rows are brief 3c below.
-- [ ] **Brief 2g, NCT from the polygon** (dispatched 2026-09-16 on `wt/nct-polygon` at `4158c2b`): `generator/shared/
+- [x] **Brief 2g, NCT from the polygon** (landed 2026-09-16, `0e14430`; ADR rows are exempt from the TEC check since
+  they leave the terminal area by definition; both data files byte-identical): `generator/shared/
   nct_boundary.yaml` (the eleven SimAware NCT sector polygons, copied from `vatsim_control_recs`
   `data/simaware_boundaries/NCT.json`), `nct_boundary.py` (loader + even-odd ray cast), `nct` computed in `merge.py`
   from the resolved coordinates, the hand `nct:` key rejected, and a build check that fails a TEC row to a destination
