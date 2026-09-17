@@ -295,7 +295,33 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   rows, joined the way `phraseology_rules.yaml` is. The three ZSE rows move to the shared file and both airports'
   `loa.yaml` go away; `data/ksfo.json` and `data/koak.json` are unchanged by the move. Dispatched 2026-09-16 on
   `wt/koak-data` at `69577d2`.
-- [ ] **Brief 3c-ii, ZLA and ZLC rows** into the shared file (after 3c-i; data only). Sources: ZOA–ZLA LOA effective
+- [ ] **Brief 3c-ii status 2026-09-16 — PAUSED, uncommitted in `wt/koak-data` (branch at `7a3b662`; main has moved
+  on to `d85f545`, so rebase the branch and rebuild `data/koak.json` before landing)**: 12 rows written to
+  `generator/shared/loa_rules.yaml` (ZLA: LAX, SMO, LGB+SNA, BUR+VNY, SAN, CRQ, UDD, ONT, LAS, SBA; ZLC: SLC, BOI),
+  two sources, `LOA_RULE_COUNT` 15, generator gates green, both builds `--check` clean. **Blocked by six web
+  failures that are findings, not bugs** (`prek` blocks the commit until they are resolved):
+  1. **Route rules need a class key** (new concept): the LOA's LAX cell routes jets via BURGL/REBRG/… and props
+     west of J1 via AVE/FLW/RZS; with one classless row, KOAK `SNS -> KLAX SNS AVE LAX [PT]` is clean nowhere and
+     the engine test `amend/route.test.ts` "leaves a plan that already files the transition alone" (SWA984, a jet
+     filed `AVE SADDE8`) trips the row. Design: `classes: [J]` / `[P, T]` on a `route` rule (schema, loader,
+     `loaRouteGap`), the prop cells transcribed as their own rows; that jet test then files a conforming route.
+  2. **"Via filed route" for the conventional column** (new concept): the BOI cell is `..NEERO..PRNCS` for RNAV
+     and "via filed route" otherwise, so KSFO `SAC -> KBOI SAC ANAHO [J]` is clean nowhere. Design: `rnav_only:
+     true` on a route rule, skipped for a non-RNAV suffix.
+  3. **Carlsbad**: settled KSFO fixture `ws-amendment-practice-1a-lxj351` (E55P, `GAPP7 EHF LHS V459 SLI V23 OCN`,
+     confirmed correct as filed 2026-09-16) and the library row `YYUNG LEGOZ LEGOZ4 [J]` both name none of the
+     CRQ/NFG cell's BURGL/TILLT/REBRG/LANDO/DERBB/FIM; the pending KOAK twin `ws-amendment-practice-1c-lxj351`
+     flips to unresolved. The LOA text (`.tmp/loa-zoa-zla.txt` lines 295–303) puts EHF under the SAN cell, not
+     CRQ. **Ask the user** whether the CRQ row is missing a column (props? EHF/LHS?) or the fixture and the
+     library route are wrong.
+  4. **Shared rows and unlisted destinations**: `_joined_loa` checks every joined row's destinations against the
+     airport's `routes.yaml`, so the Empire group (CNO, POC, AJO, EMT, RAL, SBD beside ONT) and the ZLC BIL/TWF
+     rows cannot be written until either the check reads the shared destinations file instead (preferred: an LOA
+     fact does not depend on whether a scenario files there) and those fields get shared destination rows, or
+     the rows stay out. Ready transcriptions: BIL `[YLSTN, BAM, REO]`, TWF `[BAM]`.
+  5. Not transcribed, for the user: the ZLA overflight row `SFO/OAK/SJC ALL ..BOILE.. Through ZLA 27` (MMMX is in
+     both route libraries; a `departures: [KOAK, KSFO]` row is writable), `FAT/MRY -> LAX`, `ALL -> SBP`.
+  Original spec: **Brief 3c-ii, ZLA and ZLC rows** into the shared file (after 3c-i; data only). Sources: ZOA–ZLA LOA effective
   2026-04-26 (`.tmp/loa-zoa-zla.txt`, Attachment 1 "Preferred routes and altitudes from ZOA to ZLA", pages 5–7) and
   ZOA–ZLC LOA effective 2025-09-04 (`.tmp/loa-zoa-zlc.txt`, one word per line; 4 e, 4 h, Attachment 1). **Routing
   rows only** (user 2026-09-16: the LOAs' at-or-below altitudes bind the enroute controller before the handoff, not
