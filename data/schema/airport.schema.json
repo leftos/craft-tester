@@ -376,6 +376,62 @@
       },
       "type": "array"
     },
+    "commonArrivals": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "cargo": {
+            "const": true,
+            "type": "boolean"
+          },
+          "classes": {
+            "items": {
+              "enum": [
+                "P",
+                "T",
+                "J"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "destinations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "family": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "transitions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "text",
+          "destinations",
+          "family",
+          "transitions"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
     "departureSectors": {
       "items": {
         "additionalProperties": false,
@@ -1623,6 +1679,7 @@
     "equipmentSuffixes",
     "routeConnections",
     "airways",
+    "commonArrivals",
     "tecRoutes",
     "loaRules",
     "notices",

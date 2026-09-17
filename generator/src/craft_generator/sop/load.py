@@ -18,7 +18,7 @@ shared rows (:func:`joined_loa_rules`), which are checked against the airport on
 
 import re
 from collections.abc import Iterator, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -55,6 +55,7 @@ from craft_generator.sop.model import (
     AltitudeRule,
     AssignmentCondition,
     AssignmentRule,
+    CommonArrival,
     DepartureRunway,
     DepartureSector,
     Destination,
@@ -108,6 +109,7 @@ PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 LOA_RULES_FILE = "loa_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
 AIRWAYS_FILE = "airways.yaml"
+COMMON_ARRIVALS_FILE = "common_arrivals.yaml"
 AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
 NCT_BOUNDARY_FILE = "nct_boundary.yaml"
 DESTINATIONS_FILE = "destinations.yaml"
@@ -125,6 +127,13 @@ _AIRLINE_CODE_PATTERN = re.compile(r"^[A-Z]{3}$")
 _AIRPORT_ICAO_PATTERN = re.compile(r"^[A-Z]{4}$")
 _ROUTE_TOKEN_PATTERN = re.compile(r"^[A-Z0-9]{2,5}$")
 _AIRWAY_ID_PATTERN = re.compile(r"^[A-Z]{1,2}\d{1,3}$")
+_PROCEDURE_FAMILY_PATTERN = re.compile(r"^[A-Z]{3,5}$")
+_DESTINATION_CODE_PATTERN = re.compile(r"^[A-Z0-9]{4}$")
+
+# How a common-arrival row reads its aircraft classes back: the sheet's own words for the two sets it
+# prints, and one word per class for any other set.
+_COMMON_ARRIVAL_CLASS_WORDS = {frozenset({"P", "T"}): "props", frozenset({"J", "T"}): "jets and turboprops"}
+_AIRCRAFT_CLASS_WORDS = {"P": "props", "T": "turboprops", "J": "jets"}
 
 
 def airports_dir() -> Path:
@@ -1028,18 +1037,19 @@ def load_aircraft_types(path: Path) -> dict[str, AircraftType]:
 
 
 def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
-    """Load the destination, airline and aircraft-type tables, the LOA rows and the airways every airport shares.
+    """Load the destination, airline and aircraft-type tables, the LOA rows, airways and common arrivals every airport shares.
 
     Args:
         shared: The ``generator/shared`` directory, i.e. :func:`shared_dir`.
 
     Returns:
         The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into, the
-        inter-ARTCC LOA rows every airport inherits, and the airways whose direction is fixed.
+        inter-ARTCC LOA rows every airport inherits, the airways whose direction is fixed, and the
+        arrivals ZOA puts a flight to the Los Angeles basin on.
 
     Raises:
-        ValueError: One of the five files fails its own checks.
-        OSError: One of the five files is missing.
+        ValueError: One of the six files fails its own checks.
+        OSError: One of the six files is missing.
     """
     return SharedRouteFacts(
         destinations=load_shared_destinations(shared / DESTINATIONS_FILE),
@@ -1047,6 +1057,7 @@ def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
         aircraft_types=load_aircraft_types(shared / AIRCRAFT_TYPES_FILE),
         loa=load_shared_loa_rules(shared / LOA_RULES_FILE),
         airways=load_airways(shared / AIRWAYS_FILE),
+        common_arrivals=load_common_arrivals(shared / COMMON_ARRIVALS_FILE),
     )
 
 
@@ -1302,6 +1313,106 @@ def load_airways(path: Path) -> tuple[Airway, ...]:
     root.finish()
     _check_airways(airways, where)
     return airways
+
+
+def _class_words(classes: Sequence[AircraftClass] | None) -> str:
+    """Return the sheet's word for an aircraft-class set: ``props`` for P and T, ``all`` for none."""
+    if classes is None:
+        return "all"
+    named = _COMMON_ARRIVAL_CLASS_WORDS.get(frozenset(classes))
+    return named if named is not None else " and ".join(_AIRCRAFT_CLASS_WORDS[item] for item in classes)
+
+
+def _listed(values: Sequence[str]) -> str:
+    """Return ``A``, ``A or B`` or ``A, B or C``: the way the sheet reads a cell's entry fixes."""
+    if len(values) < 2:
+        return "".join(values)
+    return f"{', '.join(values[:-1])} or {values[-1]}"
+
+
+def _common_arrival_text(arrival: CommonArrival, note: str | None) -> str:
+    """Return the sheet's cell in words, e.g. ``LAX jets: IRNMN# via BURGL or REBRG (west flow)``."""
+    covered = ", ".join(icao.removeprefix("K") for icao in arrival.destinations)
+    cargo = ", cargo aircraft" if arrival.cargo else ""
+    text = f"{covered} {_class_words(arrival.classes)}{cargo}: {arrival.family}{SID_PLACEHOLDER} via {_listed(arrival.transitions)}"
+    return text if note is None else f"{text} ({note})"
+
+
+def _common_arrival(source: str, row: _Row) -> CommonArrival:
+    destinations = row.texts("destinations")
+    if not destinations:
+        raise ValueError(f"{row.where}.destinations: no airport is named; a row states the destinations the sheet's cell covers")
+    for icao in destinations:
+        if _DESTINATION_CODE_PATTERN.fullmatch(icao) is None:
+            raise ValueError(f"{row.where}.destinations: {icao!r} is not a four-character upper-case airport code, e.g. KLAX")
+    classes = row.optional_choices_or_none("classes", AIRCRAFT_CLASSES)
+    if classes is not None and len(set(classes)) != len(classes):
+        raise ValueError(f"{row.where}.classes: {list(classes)} names a class twice; a row states each of P, T and J at most once")
+    family = row.text("family")
+    if _PROCEDURE_FAMILY_PATTERN.fullmatch(family) is None:
+        raise ValueError(
+            f"{row.where}.family: {family!r} is not an arrival family of three to five upper-case letters, e.g. IRNMN; state it without its revision"
+        )
+    transitions = row.texts("transitions")
+    for transition in transitions:
+        if _PROCEDURE_FAMILY_PATTERN.fullmatch(transition) is None:
+            raise ValueError(f"{row.where}.transitions: {transition!r} is not a transition of three to five upper-case letters, e.g. BURGL or EHF")
+    arrival = CommonArrival(
+        id=f"CA-{destinations[0].removeprefix('K')}-{family}",
+        source=source,
+        text="",
+        destinations=destinations,
+        classes=classes,
+        cargo=row.optional_flag("cargo", default=False) or False,
+        family=family,
+        transitions=transitions,
+    )
+    note = row.optional_text("note")
+    row.finish()
+    return replace(arrival, text=_common_arrival_text(arrival, note))
+
+
+def _check_common_arrivals(arrivals: Sequence[CommonArrival], where: str) -> None:
+    seen: set[str] = set()
+    for arrival in arrivals:
+        if arrival.id in seen:
+            raise ValueError(
+                f"{where} arrivals[{arrival.id}]: the identifier is already stated by an earlier row of this file; "
+                "the engine cites an arrival row by its identifier, so a file states each family once per first destination"
+            )
+        seen.add(arrival.id)
+
+
+def load_common_arrivals(path: Path) -> tuple[CommonArrival, ...]:
+    """Load the common-arrival rows every airport shares.
+
+    Each row is one cell of the ZOA sheet: which arrival of which destinations a flight is put on and
+    at which entry fix. The rows keep the sheet's order, which is the order the engine tries them in.
+    The row's ``id`` is derived as ``CA-<first destination without its leading K>-<family>`` and its
+    ``text`` reads the cell back in words; ``note`` is for the reader of the file and is not carried.
+
+    Args:
+        path: Path to ``generator/shared/common_arrivals.yaml``.
+
+    Returns:
+        One row per cell, in file order, each carrying the file-level source title.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, names no destination or
+            one that is no four-character airport code, repeats an aircraft class, holds a ``family``
+            or a transition that is no three-to-five-letter identifier, or derives one id twice.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    source = root.child("source")
+    title = source.text("title")
+    source.day("dated")
+    source.finish()
+    arrivals = tuple(_common_arrival(title, child) for child in root.children("arrivals"))
+    root.finish()
+    _check_common_arrivals(arrivals, where)
+    return arrivals
 
 
 def _tec_source(row: _Row) -> TecSource:
@@ -1705,7 +1816,8 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
         shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into,
-            the inherited LOA rows and the shared airways, from :func:`load_shared_route_facts`.
+            the inherited LOA rows, the shared airways and the shared common arrivals, from
+            :func:`load_shared_route_facts`.
 
     Returns:
         The loaded and cross-checked inputs.
@@ -1734,4 +1846,5 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         tec=_optional_tec(directory / TEC_FILE, known),
         loa=_joined_loa(directory, shared, sop.airport.icao),
         airways=shared.airways,
+        common_arrivals=shared.common_arrivals,
     )

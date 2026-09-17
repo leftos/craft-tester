@@ -140,6 +140,7 @@ const minimalAirportData: AirportData = {
   equipmentSuffixes: [],
   routeConnections: [],
   airways: [],
+  commonArrivals: [],
   tecRoutes: [],
   loaRules: [],
   notices: [],

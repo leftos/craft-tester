@@ -1658,6 +1658,472 @@
       "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
     }
   ],
+  "commonArrivals": [
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "IRNMN",
+      "id": "CA-LAX-IRNMN",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets: IRNMN# via BURGL or REBRG (west flow)",
+      "transitions": [
+        "BURGL",
+        "REBRG"
+      ]
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "SADDE",
+      "id": "CA-LAX-SADDE",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets: SADDE# via DERBB (west flow, non-RNAV)",
+      "transitions": [
+        "DERBB"
+      ]
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "HUULL",
+      "id": "CA-LAX-HUULL",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets: HUULL# via TOKIO (west flow)",
+      "transitions": [
+        "TOKIO"
+      ]
+    },
+    {
+      "cargo": true,
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "BAYST",
+      "id": "CA-LAX-BAYST",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets, cargo aircraft: BAYST# via BURGL (west flow, cargo aircraft)",
+      "transitions": [
+        "BURGL"
+      ]
+    },
+    {
+      "cargo": true,
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "DIRBY",
+      "id": "CA-LAX-DIRBY",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets, cargo aircraft: DIRBY# via TILLT (west flow, cargo aircraft)",
+      "transitions": [
+        "TILLT"
+      ]
+    },
+    {
+      "cargo": true,
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "LEENA",
+      "id": "CA-LAX-LEENA",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets, cargo aircraft: LEENA# via MCKEY (west flow, cargo aircraft, non-RNAV)",
+      "transitions": [
+        "MCKEY"
+      ]
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "ZUUMA",
+      "id": "CA-LAX-ZUUMA",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets: ZUUMA# via BURGL or REBRG (east flow)",
+      "transitions": [
+        "BURGL",
+        "REBRG"
+      ]
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAX"
+      ],
+      "family": "MOOR",
+      "id": "CA-LAX-MOOR",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX jets: MOOR# via DERBB (east flow, non-RNAV)",
+      "transitions": [
+        "DERBB"
+      ]
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "destinations": [
+        "KLAX",
+        "KSMO"
+      ],
+      "family": "WAYVE",
+      "id": "CA-LAX-WAYVE",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX, SMO props: WAYVE# via EHF or LHS",
+      "transitions": [
+        "EHF",
+        "LHS"
+      ]
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "destinations": [
+        "KLAX",
+        "KSMO"
+      ],
+      "family": "KIMMO",
+      "id": "CA-LAX-KIMMO",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAX, SMO props: KIMMO# via EHF or LHS (non-RNAV; the sheet prints EHS, read as EHF)",
+      "transitions": [
+        "EHF",
+        "LHS"
+      ]
+    },
+    {
+      "destinations": [
+        "KSMO"
+      ],
+      "family": "BONJO",
+      "id": "CA-SMO-BONJO",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SMO all: BONJO# via REBRG, RDHOT or HONZK (the sheet spells HONKZ; the LOA and the CIFP spell HONZK)",
+      "transitions": [
+        "REBRG",
+        "RDHOT",
+        "HONZK"
+      ]
+    },
+    {
+      "destinations": [
+        "KSMO"
+      ],
+      "family": "FERN",
+      "id": "CA-SMO-FERN",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SMO all: FERN# via AVE, FLW or DERBB (non-RNAV)",
+      "transitions": [
+        "AVE",
+        "FLW",
+        "DERBB"
+      ]
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAS"
+      ],
+      "family": "COKTL",
+      "id": "CA-LAS-COKTL",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAS jets: COKTL# via FLCHR",
+      "transitions": [
+        "FLCHR"
+      ]
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destinations": [
+        "KLAS"
+      ],
+      "family": "PUMLE",
+      "id": "CA-LAS-PUMLE",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAS jets: PUMLE# via BTY (non-RNAV)",
+      "transitions": [
+        "BTY"
+      ]
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "destinations": [
+        "KLAS",
+        "KHND"
+      ],
+      "family": "GAMES",
+      "id": "CA-LAS-GAMES",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LAS, HND props: GAMES# via FUULL",
+      "transitions": [
+        "FUULL"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KSAN"
+      ],
+      "family": "COMIX",
+      "id": "CA-SAN-COMIX",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SAN jets and turboprops: COMIX# via LAX or HUULK (west flow)",
+      "transitions": [
+        "LAX",
+        "HUULK"
+      ]
+    },
+    {
+      "destinations": [
+        "KSAN"
+      ],
+      "family": "HUBRD",
+      "id": "CA-SAN-HUBRD",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SAN all: HUBRD# via LAX (west flow, non-RNAV)",
+      "transitions": [
+        "LAX"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KSAN"
+      ],
+      "family": "PLYYA",
+      "id": "CA-SAN-PLYYA",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SAN jets and turboprops: PLYYA# via LAX (east flow)",
+      "transitions": [
+        "LAX"
+      ]
+    },
+    {
+      "destinations": [
+        "KSAN"
+      ],
+      "family": "SHAMU",
+      "id": "CA-SAN-SHAMU",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SAN all: SHAMU# via LAX (east flow, non-RNAV)",
+      "transitions": [
+        "LAX"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KLGB"
+      ],
+      "family": "BAUBB",
+      "id": "CA-LGB-BAUBB",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LGB jets and turboprops: BAUBB# via TILLT (jets and high-performance turboprops)",
+      "transitions": [
+        "TILLT"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KLGB"
+      ],
+      "family": "PCIFC",
+      "id": "CA-LGB-PCIFC",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LGB jets and turboprops: PCIFC# via RDHOT, REBRG or ELLBC (jets and high-performance turboprops)",
+      "transitions": [
+        "RDHOT",
+        "REBRG",
+        "ELLBC"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KSNA"
+      ],
+      "family": "RUKKI",
+      "id": "CA-SNA-RUKKI",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SNA jets and turboprops: RUKKI# via TILLT (jets and high-performance turboprops; the sheet spells RUUKI, the CIFP publishes RUKKI)",
+      "transitions": [
+        "TILLT"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KSNA"
+      ],
+      "family": "OHSEA",
+      "id": "CA-SNA-OHSEA",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "SNA jets and turboprops: OHSEA# via RDHOT, REBRG or ELLBC (jets and high-performance turboprops)",
+      "transitions": [
+        "RDHOT",
+        "REBRG",
+        "ELLBC"
+      ]
+    },
+    {
+      "destinations": [
+        "KLGB",
+        "KSNA"
+      ],
+      "family": "TANDY",
+      "id": "CA-LGB-TANDY",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "LGB, SNA all: TANDY# via FLW",
+      "transitions": [
+        "FLW"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KBUR"
+      ],
+      "family": "ROKKR",
+      "id": "CA-BUR-ROKKR",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "BUR jets and turboprops: ROKKR# via RDHOT, REBRG or HONZK (the sheet spells HONKZ)",
+      "transitions": [
+        "RDHOT",
+        "REBRG",
+        "HONZK"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KBUR"
+      ],
+      "family": "FERN",
+      "id": "CA-BUR-FERN",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "BUR jets and turboprops: FERN# via AVE, FLW or DERBB",
+      "transitions": [
+        "AVE",
+        "FLW",
+        "DERBB"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KVNY"
+      ],
+      "family": "IVINS",
+      "id": "CA-VNY-IVINS",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "VNY jets and turboprops: IVINS# via RDHOT, REBRG or HONZK (the sheet spells HONKZ)",
+      "transitions": [
+        "RDHOT",
+        "REBRG",
+        "HONZK"
+      ]
+    },
+    {
+      "classes": [
+        "J",
+        "T"
+      ],
+      "destinations": [
+        "KVNY"
+      ],
+      "family": "FERN",
+      "id": "CA-VNY-FERN",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "VNY jets and turboprops: FERN# via AVE, FLW or DERBB",
+      "transitions": [
+        "AVE",
+        "FLW",
+        "DERBB"
+      ]
+    },
+    {
+      "classes": [
+        "P",
+        "T"
+      ],
+      "destinations": [
+        "KBUR",
+        "KVNY"
+      ],
+      "family": "WEESL",
+      "id": "CA-BUR-WEESL",
+      "source": "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16",
+      "text": "BUR, VNY props: WEESL# via EHF or NINTY",
+      "transitions": [
+        "EHF",
+        "NINTY"
+      ]
+    }
+  ],
   "departureSectors": [
     {
       "frequency": "120.9",
@@ -2617,6 +3083,11 @@
       "id": "R-ROUTE-BUILD",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; user rules 2026-09-16 (SWA984 amendment plan) and 2026-09-17 (PXT415: WAGES LOSHN off SKYL1)",
       "text": "Before falling back to the vector SID or a heading, route-build: keep a SID the SOP assigns by connecting one of its published transitions, or the fix the SID itself ends on, to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route"
+    },
+    {
+      "id": "R-ARRIVAL",
+      "source": "ZOA Common ZLA Arrivals from ZOA (current as of 2025-01-13); ZOA-ZLA LOA Attachment 1 (effective 2026-04-26); user rules 2026-09-16 (SWA984: an RNAV jet filing the non-RNAV SADDE8 is put on IRNMN2 via BURGL; a missed arrival costs half a point) and 2026-09-17 (NKS510: a non-RNAV jet filing IRNMN2 is put on SKYL1 AVE SADDE8)",
+      "text": "A departure is routed onto an arrival of its destination that its equipment can fly, RNAV or conventional, entered at a transition the common-arrivals table or the letter of agreement names where the route-building connections reach one, fewest changes first; the arrival is a nice-to-have the enroute controller can change on the fly, so a route box left on the arrival as filed costs half a point, not a full one"
     },
     {
       "id": "R-HEADING",

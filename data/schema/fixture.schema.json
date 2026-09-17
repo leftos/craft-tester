@@ -162,6 +162,9 @@
                         ],
                         "type": "string"
                       },
+                      "arrivalSwap": {
+                        "type": "string"
+                      },
                       "box": {
                         "const": "route",
                         "type": "string"

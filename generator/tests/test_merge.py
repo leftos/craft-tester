@@ -272,6 +272,29 @@ def test_the_shared_airways_are_emitted_with_their_direction(ksfo_document: Docu
     assert rows == [{"id": "R463", "oneWay": True}, {"id": "R464", "oneWay": True}, {"id": "A220", "oneWay": True}]
 
 
+def test_the_shared_common_arrivals_are_emitted_with_their_families_and_transitions(ksfo_document: Document, ksfo_build_inputs: BuildInputs) -> None:
+    rows = {row["id"]: row for row in ksfo_document["commonArrivals"]}
+    assert len(rows) == len(ksfo_build_inputs.airport.common_arrivals)
+    irnmn = rows["CA-LAX-IRNMN"]
+    assert (irnmn["family"], irnmn["transitions"], irnmn["classes"]) == ("IRNMN", ["BURGL", "REBRG"], ["J"])
+    assert irnmn["destinations"] == ["KLAX"]
+    assert "cargo" not in irnmn
+    assert rows["CA-LAX-BAYST"]["cargo"] is True
+    assert "classes" not in rows["CA-SMO-BONJO"]
+
+
+def test_a_common_arrival_family_a_library_destination_does_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    unpublished = replace(
+        ksfo_build_inputs.airport.common_arrivals[0],
+        id="CA-LAX-NOPE",
+        family="NOPE",
+        destinations=("KLAX",),
+    )
+    inputs = replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, common_arrivals=(unpublished,)))
+    with pytest.raises(ValueError, match=r"commonArrivals\[CA-LAX-NOPE\]: KLAX publishes no NOPE arrival"):
+        build_airport(inputs)
+
+
 def test_the_loa_rules_keep_their_discriminated_kinds(ksfo_document: Document) -> None:
     rules = {rule["id"]: rule for rule in ksfo_document["loaRules"]}
     assert len(rules) == LOA_RULE_COUNT

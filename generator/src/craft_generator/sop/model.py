@@ -604,13 +604,38 @@ class Airway:
 
 
 @dataclass(frozen=True, slots=True)
+class CommonArrival:
+    """One cell of the ZOA "Common ZLA Arrivals from ZOA" sheet: which arrival a destination is given.
+
+    ``destinations`` are the ICAO codes the cell covers and ``classes`` the subset of ``P``/``T``/``J``
+    it is written for - the sheet's "Props" is ``(P, T)`` and its "Jets & Turboprops" is ``(J, T)``,
+    the reading ``loa_rules.yaml`` uses - with ``None`` for a cell written for every class. ``cargo``
+    marks a cell the sheet limits to cargo aircraft. ``family`` is the arrival family without its
+    revision, because the CIFP publishes the revision on the destination's arrivals, and the row
+    states no RNAV flag for the same reason. ``transitions`` are the entry fixes the cell names, in
+    the sheet's order, and the rows themselves keep the sheet's order, which is the order the engine
+    tries the arrivals in.
+    """
+
+    id: str
+    source: str
+    text: str
+    destinations: tuple[str, ...]
+    classes: tuple[AircraftClass, ...] | None
+    cargo: bool
+    family: str
+    transitions: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class SharedRouteFacts:
     """The facts of a destination, an airline and an aircraft type, the inherited LOA rows and airways.
 
     They live in ``generator/shared/`` and an airport's ``routes.yaml`` lists only codes into them, so
     no fact is copied between airports. ``loa`` is ``shared/loa_rules.yaml``, the inter-ARTCC rows
-    every airport inherits, and ``airways`` is ``shared/airways.yaml``, the airways whose direction
-    the route structure fixes.
+    every airport inherits, ``airways`` is ``shared/airways.yaml``, the airways whose direction
+    the route structure fixes, and ``common_arrivals`` is ``shared/common_arrivals.yaml``, the
+    arrivals ZOA puts a flight to the Los Angeles basin on.
     """
 
     destinations: dict[str, Destination]
@@ -618,6 +643,7 @@ class SharedRouteFacts:
     aircraft_types: dict[str, AircraftType]
     loa: LoaData
     airways: tuple[Airway, ...]
+    common_arrivals: tuple[CommonArrival, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -673,7 +699,9 @@ class AirportInputs:
     emits an empty table for it. ``loa`` is the shared ``loa_rules.yaml`` rows this airport inherits
     joined with the airport's own ``loa.yaml``, so it holds the inherited rows even where the airport
     directory carries no file of its own. ``airways`` is the shared ``airways.yaml`` table every
-    airport inherits unchanged, carried here so the document emits it for the airport being built.
+    airport inherits unchanged, and ``common_arrivals`` the shared ``common_arrivals.yaml`` table it
+    inherits the same way; both are carried here so the document emits them for the airport being
+    built.
     """
 
     icao: str
@@ -683,3 +711,4 @@ class AirportInputs:
     tec: TecData | None
     loa: LoaData
     airways: tuple[Airway, ...]
+    common_arrivals: tuple[CommonArrival, ...]

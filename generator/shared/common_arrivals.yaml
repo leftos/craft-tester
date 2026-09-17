@@ -1,0 +1,44 @@
+# The arrivals ZOA puts a flight to the Los Angeles basin on, one row per cell of the reference
+# sheet. A rerouted departure is put on an arrival of its destination that its equipment can fly, and
+# this table says which arrival that is and which entry fix it is joined at; the row order is the
+# sheet's, so the engine tries the arrivals in the order the sheet prints them.
+# Shared by every airport: which arrival ZOA hands ZLA is a fact of the two centres, not of one
+# field, exactly as `route_connections.yaml` and `airways.yaml` are. An airport inherits every row
+# rather than restating them.
+# The sheet's note: "this table is not an exhaustive list of acceptable routes from ZOA to ZLA; it is
+# intended to be a list of the most common arrivals to major airports".
+# `family` carries no revision, because the CIFP publishes the revision on the destination's
+# `arrivals`, and the file states no RNAV flag for the same reason: the CIFP says whether an arrival
+# is RNAV. `note` is free text for the reader and reaches no airport document.
+source: { title: "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16", dated: 2025-01-13 }
+arrivals:
+  # LAX, jets, west flow first as the sheet lists them
+  - { destinations: [KLAX], classes: [J], family: IRNMN, transitions: [BURGL, REBRG], note: "west flow" }
+  - { destinations: [KLAX], classes: [J], family: SADDE, transitions: [DERBB], note: "west flow, non-RNAV" }
+  - { destinations: [KLAX], classes: [J], family: HUULL, transitions: [TOKIO], note: "west flow" }
+  - { destinations: [KLAX], classes: [J], cargo: true, family: BAYST, transitions: [BURGL], note: "west flow, cargo aircraft" }
+  - { destinations: [KLAX], classes: [J], cargo: true, family: DIRBY, transitions: [TILLT], note: "west flow, cargo aircraft" }
+  - { destinations: [KLAX], classes: [J], cargo: true, family: LEENA, transitions: [MCKEY], note: "west flow, cargo aircraft, non-RNAV" }
+  - { destinations: [KLAX], classes: [J], family: ZUUMA, transitions: [BURGL, REBRG], note: "east flow" }
+  - { destinations: [KLAX], classes: [J], family: MOOR, transitions: [DERBB], note: "east flow, non-RNAV" }
+  - { destinations: [KLAX, KSMO], classes: [P, T], family: WAYVE, transitions: [EHF, LHS] }
+  - { destinations: [KLAX, KSMO], classes: [P, T], family: KIMMO, transitions: [EHF, LHS], note: "non-RNAV; the sheet prints EHS, read as EHF" }
+  - { destinations: [KSMO], family: BONJO, transitions: [REBRG, RDHOT, HONZK], note: "the sheet spells HONKZ; the LOA and the CIFP spell HONZK" }
+  - { destinations: [KSMO], family: FERN, transitions: [AVE, FLW, DERBB], note: "non-RNAV" }
+  - { destinations: [KLAS], classes: [J], family: COKTL, transitions: [FLCHR] }
+  - { destinations: [KLAS], classes: [J], family: PUMLE, transitions: [BTY], note: "non-RNAV" }
+  - { destinations: [KLAS, KHND], classes: [P, T], family: GAMES, transitions: [FUULL] }
+  - { destinations: [KSAN], classes: [J, T], family: COMIX, transitions: [LAX, HUULK], note: "west flow" }
+  - { destinations: [KSAN], family: HUBRD, transitions: [LAX], note: "west flow, non-RNAV" }
+  - { destinations: [KSAN], classes: [J, T], family: PLYYA, transitions: [LAX], note: "east flow" }
+  - { destinations: [KSAN], family: SHAMU, transitions: [LAX], note: "east flow, non-RNAV" }
+  - { destinations: [KLGB], classes: [J, T], family: BAUBB, transitions: [TILLT], note: "jets and high-performance turboprops" }
+  - { destinations: [KLGB], classes: [J, T], family: PCIFC, transitions: [RDHOT, REBRG, ELLBC], note: "jets and high-performance turboprops" }
+  - { destinations: [KSNA], classes: [J, T], family: RUKKI, transitions: [TILLT], note: "jets and high-performance turboprops; the sheet spells RUUKI, the CIFP publishes RUKKI" }
+  - { destinations: [KSNA], classes: [J, T], family: OHSEA, transitions: [RDHOT, REBRG, ELLBC], note: "jets and high-performance turboprops" }
+  - { destinations: [KLGB, KSNA], family: TANDY, transitions: [FLW] }
+  - { destinations: [KBUR], classes: [J, T], family: ROKKR, transitions: [RDHOT, REBRG, HONZK], note: "the sheet spells HONKZ" }
+  - { destinations: [KBUR], classes: [J, T], family: FERN, transitions: [AVE, FLW, DERBB] }
+  - { destinations: [KVNY], classes: [J, T], family: IVINS, transitions: [RDHOT, REBRG, HONZK], note: "the sheet spells HONKZ" }
+  - { destinations: [KVNY], classes: [J, T], family: FERN, transitions: [AVE, FLW, DERBB] }
+  - { destinations: [KBUR, KVNY], classes: [P, T], family: WEESL, transitions: [EHF, NINTY] }

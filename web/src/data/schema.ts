@@ -431,6 +431,28 @@ export const AirwaySchema = z.strictObject({
 });
 
 /**
+ * One cell of the ZOA "Common ZLA Arrivals from ZOA" sheet: the arrival a destination is given.
+ *
+ * `destinations` are the fields the cell covers, `classes` the aircraft classes it is written for -
+ * absent where it covers every class - and `cargo` marks a cell the sheet limits to cargo aircraft,
+ * which `routeLibrary.cargoAirlines` decides. `family` carries no revision, since the destination's
+ * own `arrivals` carry it, and no RNAV flag, since the CIFP says whether an arrival is RNAV.
+ * `transitions` are the entry fixes the cell names, in the sheet's order, and the rows keep the
+ * sheet's order too: it is the order the arrivals are tried in. The rows are a fact of the two
+ * centres rather than of one field, so every airport inherits all of them.
+ */
+export const CommonArrivalSchema = z.strictObject({
+  id: z.string(),
+  source: z.string(),
+  text: z.string(),
+  destinations: z.array(z.string()),
+  classes: z.array(AircraftClassSchema).optional(),
+  cargo: z.literal(true).optional(),
+  family: z.string(),
+  transitions: z.array(z.string()),
+});
+
+/**
  * A transcribed TEC route for an NCT destination, keyed by plan, runway family, and class.
  *
  * `initialAltitudeFeet` is the altitude the TEC route is issued with and `finalAltitudeFeet` the
@@ -645,6 +667,7 @@ export const AirportDataSchema = z.strictObject({
   equipmentSuffixes: z.array(EquipmentSuffixSchema),
   routeConnections: z.array(RouteConnectionSchema),
   airways: z.array(AirwaySchema),
+  commonArrivals: z.array(CommonArrivalSchema),
   tecRoutes: z.array(TecRouteSchema),
   loaRules: z.array(LoaRuleSchema),
   notices: z.array(NoticeSchema),
@@ -738,6 +761,13 @@ export const AmendmentSchema = z.discriminatedUnion('box', [
      * the student is not marked wrong for leaving it alone, nor for writing the proposal in.
      */
     warning: z.boolean().optional(),
+    /**
+     * Set where the proposal puts the flight on another arrival of the destination, or on another
+     * entry to it: the route box as it would have read without that change. A student who writes
+     * that box, or leaves the box as filed where that is the box, has read everything but the
+     * arrival right and earns half credit, the arrival being the enroute controller's to change.
+     */
+    arrivalSwap: z.string().optional(),
     /**
      * The other box this amendment pairs with: the two are two ways to fix the same fault, and
      * either alone is a full answer.
@@ -846,6 +876,7 @@ export type PhraseologyRule = z.infer<typeof PhraseologyRuleSchema>;
 export type EquipmentSuffix = z.infer<typeof EquipmentSuffixSchema>;
 export type RouteConnection = z.infer<typeof RouteConnectionSchema>;
 export type Airway = z.infer<typeof AirwaySchema>;
+export type CommonArrival = z.infer<typeof CommonArrivalSchema>;
 export type TecRoute = z.infer<typeof TecRouteSchema>;
 export type LoaRuleKind = z.infer<typeof LoaRuleKindSchema>;
 export type LoaRule = z.infer<typeof LoaRuleSchema>;

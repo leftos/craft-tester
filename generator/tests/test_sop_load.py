@@ -11,6 +11,7 @@ from craft_generator.sop.load import (
     AIRCRAFT_TYPES_FILE,
     AIRLINES_FILE,
     AIRWAYS_FILE,
+    COMMON_ARRIVALS_FILE,
     DESTINATIONS_FILE,
     LOA_RULES_FILE,
     OVERRIDES_FILE,
@@ -20,6 +21,7 @@ from craft_generator.sop.load import (
     SOP_FILE,
     load_airport,
     load_airways,
+    load_common_arrivals,
     load_overrides,
     load_phraseology_rules,
     load_route_connections,
@@ -42,6 +44,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-RV-NAVAID",
     "R-THEN-AS-FILED",
     "R-ROUTE-BUILD",
+    "R-ARRIVAL",
     "R-HEADING",
     "R-RV-AIRWAY",
     "R-AIRWAY",
@@ -60,6 +63,8 @@ SHARED_PHRASEOLOGY_IDS = [
 KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
 ROUTE_CONNECTION_COUNT = 28
 ROUTE_CONNECTION_SOURCE = "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16"
+COMMON_ARRIVAL_COUNT = 29
+COMMON_ARRIVAL_SOURCE = "Common ZLA Arrivals from ZOA (Oakland ARTCC on VATSIM), current as of 2025-01-13; retrieved 2026-09-16"
 KSFO_TELEPHONY_COUNT = 28
 KSFO_CARGO_AIRLINES = {"FDX", "UPS", "GTI", "ABX", "ATN", "CLX", "CKS", "NCA"}
 # The airlines of each KSFO fleet type, as `routes.yaml` stated them before the facts moved to
@@ -97,6 +102,7 @@ SHARED_FILES = (
     ("aircraft_types", AIRCRAFT_TYPES_FILE),
     ("loa_rules", LOA_RULES_FILE),
     ("airways", AIRWAYS_FILE),
+    ("common_arrivals", COMMON_ARRIVALS_FILE),
 )
 
 
@@ -309,6 +315,48 @@ def test_an_airway_with_a_bad_identifier_is_rejected(tmp_path: Path) -> None:
 
 def test_the_shared_airways_reach_every_airport(ksfo_inputs: AirportInputs) -> None:
     assert [airway.id for airway in ksfo_inputs.airways] == ["R463", "R464", "A220"]
+
+
+def test_the_shared_common_arrivals_load() -> None:
+    arrivals = load_common_arrivals(shared_dir() / COMMON_ARRIVALS_FILE)
+    assert len(arrivals) == COMMON_ARRIVAL_COUNT
+    by_id = {arrival.id: arrival for arrival in arrivals}
+    first = arrivals[0]
+    assert first.id == "CA-LAX-IRNMN"
+    assert (first.family, first.transitions, first.classes, first.cargo) == ("IRNMN", ("BURGL", "REBRG"), ("J",), False)
+    assert first.text == "LAX jets: IRNMN# via BURGL or REBRG (west flow)"
+    assert by_id["CA-SMO-BONJO"].classes is None
+    assert by_id["CA-SMO-BONJO"].text.startswith("SMO all: BONJO# via REBRG, RDHOT or HONZK")
+    assert by_id["CA-LAX-BAYST"].cargo is True
+    assert {arrival.source for arrival in arrivals} == {COMMON_ARRIVAL_SOURCE}
+
+
+def test_a_common_arrival_row_with_an_unknown_class_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / COMMON_ARRIVALS_FILE
+    path.write_text(
+        "source: { title: the sheet, dated: 2025-01-13 }\narrivals:\n"
+        "  - { destinations: [KLAX], classes: [X], family: IRNMN, transitions: [BURGL] }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"arrivals\[0\]\.classes\[0\]: 'X' is not one of"):
+        load_common_arrivals(path)
+
+
+def test_two_common_arrival_rows_for_the_same_family_and_first_destination_are_rejected(tmp_path: Path) -> None:
+    path = tmp_path / COMMON_ARRIVALS_FILE
+    path.write_text(
+        "source: { title: the sheet, dated: 2025-01-13 }\narrivals:\n"
+        "  - { destinations: [KLAX], family: IRNMN, transitions: [BURGL] }\n"
+        "  - { destinations: [KLAX, KSMO], family: IRNMN, transitions: [REBRG] }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"arrivals\[CA-LAX-IRNMN\]: the identifier is already stated by an earlier row"):
+        load_common_arrivals(path)
+
+
+def test_the_shared_common_arrivals_reach_every_airport(ksfo_inputs: AirportInputs) -> None:
+    assert ksfo_inputs.common_arrivals == load_common_arrivals(shared_dir() / COMMON_ARRIVALS_FILE)
+    assert [arrival.id for arrival in ksfo_inputs.common_arrivals[:2]] == ["CA-LAX-IRNMN", "CA-LAX-SADDE"]
 
 
 def test_an_airport_phraseology_id_stated_twice_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:

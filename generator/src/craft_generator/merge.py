@@ -64,7 +64,14 @@ from craft_generator.cifp.records import RunwayRecord
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
 from craft_generator.cifp.stars import CifpStar
 from craft_generator.nct_boundary import NctBoundary
-from craft_generator.sop.load import AIRCRAFT_CHARACTERISTICS_FILE, NCT_BOUNDARY_FILE, RUNWAY_FAMILY_LENGTH, SID_PLACEHOLDER, sid_family_of
+from craft_generator.sop.load import (
+    AIRCRAFT_CHARACTERISTICS_FILE,
+    COMMON_ARRIVALS_FILE,
+    NCT_BOUNDARY_FILE,
+    RUNWAY_FAMILY_LENGTH,
+    SID_PLACEHOLDER,
+    sid_family_of,
+)
 from craft_generator.sop.model import (
     AircraftClass,
     AircraftGroup,
@@ -75,6 +82,7 @@ from craft_generator.sop.model import (
     AltitudeRule,
     AssignmentCondition,
     AssignmentRule,
+    CommonArrival,
     DepartureRunway,
     DepartureSector,
     Destination,
@@ -361,6 +369,19 @@ def _route_connection(connection: RouteConnection) -> Document:
 
 def _airway(airway: Airway) -> Document:
     return {"id": airway.id, "oneWay": airway.one_way}
+
+
+def _common_arrival(arrival: CommonArrival) -> Document:
+    entry: Document = {
+        "id": arrival.id,
+        "source": arrival.source,
+        "text": arrival.text,
+        "destinations": list(arrival.destinations),
+    }
+    _with_optional(entry, classes=_texts(arrival.classes), cargo=arrival.cargo or None)
+    entry["family"] = arrival.family
+    entry["transitions"] = list(arrival.transitions)
+    return entry
 
 
 def _phraseology_rules(shared: Sequence[PhraseologyRule], airport: Sequence[PhraseologyRule]) -> list[Document]:
@@ -1017,6 +1038,27 @@ def _check_fix_spoken(document: Document) -> None:
         raise ValueError(f"fixSpoken: navaid {listed} has no name in the CIFP and no fix_spoken override; add one to overrides.yaml")
 
 
+def _check_common_arrivals(document: Document) -> None:
+    """Check that every common-arrival row names a family its destinations really publish.
+
+    A destination the route library does not hold, or one the CIFP publishes no arrival for - every
+    foreign field - is passed over: there is nothing to hold the row against.
+    """
+    published = {row["icao"]: row["arrivals"] for row in document["routeLibrary"]["destinations"]}
+    for row in document["commonArrivals"]:
+        for icao in row["destinations"]:
+            arrivals = published.get(icao)
+            if not arrivals:
+                continue
+            families = sorted({str(arrival["family"]) for arrival in arrivals})
+            if row["family"] in families:
+                continue
+            raise ValueError(
+                f"commonArrivals[{row['id']}]: {icao} publishes no {row['family']} arrival; it publishes {families}. "
+                f"Correct the family in generator/shared/{COMMON_ARRIVALS_FILE}, or comment the row out where the cycle dropped the procedure"
+            )
+
+
 def _check(document: Document, inputs: BuildInputs) -> None:
     _check_sid_families(document)
     _check_gate_fixes(document)
@@ -1031,6 +1073,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_tec_routes(document)
     _check_tec_heads(document)
     _check_tec_destinations_inside_nct(document)
+    _check_common_arrivals(document)
     _check_fix_spoken(document)
 
 
@@ -1130,6 +1173,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
         "routeConnections": [_route_connection(connection) for connection in inputs.route_connections],
         "airways": [_airway(airway) for airway in inputs.airport.airways],
+        "commonArrivals": [_common_arrival(arrival) for arrival in inputs.airport.common_arrivals],
         "tecRoutes": _tec_routes(inputs),
         "loaRules": _loa_rules(inputs),
         "aircraftClasses": dict(inputs.aircraft_classes),
