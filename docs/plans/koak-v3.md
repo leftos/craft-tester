@@ -358,12 +358,16 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   altitude, exactly**: a facility directive, so 7110.65 4-5-1 parity does not apply; a filed altitude that differs
   is amended to the final altitude, cited on the TEC row, and the parity rule is not consulted (engine: the F
   element in `rules/amend/altitude.ts` and the LOA/parity walk skip when a TEC row applies; clearance mode only
-  draws clean plans, so filed = final there). (2) **The maintain altitude (A element) of a TEC-routed flight is the
-  TEC initial altitude**, the first number: with a DP that publishes a top altitude it reads "climb via SID except
-  maintain (initial)"; without one "maintain (initial), expect (final) (minutes) after departure", no expect clause
-  when initial = final (100/100). The TEC row overrides the SOP altitude row for that flight and is cited in its
-  place. Engine files: `rules/altitude.ts` (the interim resolution takes the TEC row ahead of the SOP rows),
-  `rules/amend/altitude.ts`, `rules/tecRoutes.ts`, `rules/amend/tec.ts`, `web/scripts/propose.ts`; generator
+  draws clean plans, so filed = final there). (2) First answered "the A element is the TEC initial altitude", then
+  refined the same day: **"In theory the TEC initial altitude should match the SOP initial for that SID, if one is
+  provided. It should, in theory, be redundant."** So the SOP altitude row keeps deciding the A element (no TEC
+  override in `rules/altitude.ts`), and the TEC initial altitude becomes an audit: a web test enumerates every TEC
+  row against every flight it routes (config, runway, class, type, suffix; the amend engine's `tecRouteFor` says
+  which row is the flight's) and asserts the altitude the clearance climbs the flight to (`clearedToFeet`: the
+  interim, or the published top on a plain "climb via SID") equals the row's initial altitude; the SOP's cap at the
+  filed altitude makes OAK# jets to SMF (SOP CVS x FL190, TEC 100/100, cruise 10,000) agree. A disagreement is a
+  data finding for the validation loop, listed row by row, never patched in the engine. Engine files:
+  `rules/amend/altitude.ts` (cruise = final), `rules/amend/tec.ts`, `web/scripts/propose.ts`; generator
   `sop/load.py` `load_tec`, `merge.py` `_tec_routes`, `_check_tec_*`; schema + `schema:export`; both data files
   rebuilt; the KSFO worksheet fixtures whose expected altitude changes are findings to list, not to re-settle
   silently. Dispatch after 2g lands (shared loaders, schema and data files); 3b-ii lands after it. **KSFO tool pages
