@@ -334,14 +334,38 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `ui/session.test.ts` (load and draw every listed airport) widened; the exhaustive and fixture suites now
   enumerate KOAK, so their KOAK unresolved-group tables are the first engine-vs-data audit; browser check of the
   airport picker (`select:0=KOAK`) on phone and desktop. ZLA/ZLC `loa.yaml` rows are brief 3c below.
+- [ ] **Brief 2g, NCT from the polygon** (dispatched 2026-09-16 on `wt/nct-polygon` at `4158c2b`): `generator/shared/
+  nct_boundary.yaml` (the eleven SimAware NCT sector polygons, copied from `vatsim_control_recs`
+  `data/simaware_boundaries/NCT.json`), `nct_boundary.py` (loader + even-odd ray cast), `nct` computed in `merge.py`
+  from the resolved coordinates, the hand `nct:` key rejected, and a build check that fails a TEC row to a destination
+  outside NCT. A ray cast over the destinations found the hand flags wrong for one field: **KCCR Concord lies inside the
+  NCT, NCT_DEP and SFO_DEP polygons** (Napa and Santa Rosa outside, Reno inside RNO). **User 2026-09-16: "CCR is part of
+  Travis airspace, NCT overlaps laterally but Travis owns the airspace in a shelf below that to the ground"**, so the
+  polygon alone is not the test: a destination row may state `outside_nct: <reason>` (required text) and the build
+  computes `nct = inside polygon and not outside_nct`; a row that states it for a field the polygon already excludes
+  fails the build (a stale override). KCCR carries it; its TEC rows stay out of `tec.yaml`. Gap noted, not modelled:
+  the Travis shelf is a vertical split the polygon file cannot express, and no other destination is known to sit
+  under one.
 - [ ] **Brief 2f, TEC initial altitude** (user 2026-09-16: "In TEC routes, the first number is the initial/interim
   altitude, and the second number is the final altitude. They're not a range. So 030/090 is 3,000 initial, 9,000
   final."). The KSFO `tec.yaml` header and the plan text below read the band as floor/cap, which is wrong: rename
   `altitude_cap_feet` to `final_altitude_feet` (schema `finalAltitudeFeet`) and add `initial_altitude_feet`
   (`initialAltitudeFeet`, optional) read from the first number; re-read the KSFO rows from the tool (the tool
-  prints both numbers) and the KOAK rows from `.tmp/oak-tec/*.txt`. Open question for the user before the engine
-  reads it: when a TEC route applies, is the clearance's maintain altitude the TEC initial altitude rather than the
-  SOP altitude row (SFOW jets to SMF: SOP OAK# says CVS x FL190, the TEC row says 100/100)?
+  prints both numbers; capture `?dep=SFO&dest=<FAA>` with the Playwright script the way `.tmp/oak-tec/` was) and the
+  KOAK rows from `.tmp/oak-tec/*.txt`. **User rulings 2026-09-16 (after the 3b-ii library test found the FEVTA jet
+  rows amended 10,000 → 9,000 for parity):** (1) **the cruise altitude of a TEC-routed flight is the TEC final
+  altitude, exactly**: a facility directive, so 7110.65 4-5-1 parity does not apply; a filed altitude that differs
+  is amended to the final altitude, cited on the TEC row, and the parity rule is not consulted (engine: the F
+  element in `rules/amend/altitude.ts` and the LOA/parity walk skip when a TEC row applies; clearance mode only
+  draws clean plans, so filed = final there). (2) **The maintain altitude (A element) of a TEC-routed flight is the
+  TEC initial altitude**, the first number: with a DP that publishes a top altitude it reads "climb via SID except
+  maintain (initial)"; without one "maintain (initial), expect (final) (minutes) after departure", no expect clause
+  when initial = final (100/100). The TEC row overrides the SOP altitude row for that flight and is cited in its
+  place. Engine files: `rules/altitude.ts` (the interim resolution takes the TEC row ahead of the SOP rows),
+  `rules/amend/altitude.ts`, `rules/tecRoutes.ts`, `rules/amend/tec.ts`, `web/scripts/propose.ts`; generator
+  `sop/load.py` `load_tec`, `merge.py` `_tec_routes`, `_check_tec_*`; schema + `schema:export`; both data files
+  rebuilt; the KSFO worksheet fixtures whose expected altitude changes are findings to list, not to re-settle
+  silently. Dispatch after 2g and 3b-ii land (shared loaders, schema and data files).
 - [ ] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
   PAO RHV NUQ STS MOD SCK MHR MCC) were captured 2026-09-16 with Playwright into `.tmp/oak-tec/<FAA>.txt`
   (gitignored; re-run `web/.tmp/oak-tec.ts` style script if lost). Findings: the tool prints an altitude band
