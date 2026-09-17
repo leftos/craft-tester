@@ -3,7 +3,7 @@ import { formatAltitude } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
 /** The document the equipment suffix table is published in, quoted when a type box is amended. */
-const SUFFIX_TABLE_SOURCE = 'FAA JO 7110.65 TBL 5-4-1';
+const SUFFIX_TABLE_SOURCE = 'FAA JO 7110.65 TBL 2-3-10';
 
 /**
  * The altitudes a TEC row publishes, written the way the tool prints them.

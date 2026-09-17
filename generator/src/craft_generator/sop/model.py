@@ -648,11 +648,15 @@ class SharedRouteFacts:
 
 @dataclass(frozen=True, slots=True)
 class EquipmentSuffix:
-    """One row of FAA JO 7110.65 table 5-4-1: what an equipment suffix says about an aircraft."""
+    """One row of FAA JO 7110.65 TBL 2-3-10: what an equipment suffix says about an aircraft.
+
+    ``rnav`` and ``gnss`` are ``None`` on the rows the table states no navigation capability for,
+    which every reader takes as not RNAV.
+    """
 
     suffix: str
-    rnav: bool
-    gnss: bool
+    rnav: bool | None
+    gnss: bool | None
     rvsm: bool
     transponder_mode_c: bool
     text: str

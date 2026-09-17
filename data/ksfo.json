@@ -1229,6 +1229,22 @@
       "suffix": "/L",
       "text": "RVSM with GNSS",
       "transponderModeC": true
+    },
+    {
+      "gnss": null,
+      "rnav": null,
+      "rvsm": true,
+      "suffix": "/H",
+      "text": "RVSM, navigation not stated, failed transponder",
+      "transponderModeC": false
+    },
+    {
+      "gnss": null,
+      "rnav": null,
+      "rvsm": true,
+      "suffix": "/O",
+      "text": "RVSM, navigation not stated, failed Mode C",
+      "transponderModeC": false
     }
   ],
   "fixSpoken": {
@@ -1970,6 +1986,11 @@
       "id": "R-NAVAID",
       "source": "FAA JO 7110.65 2-5-2; ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15",
       "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
+    },
+    {
+      "id": "T-MODE-C",
+      "source": "VATSIM Code of Conduct B4(a); VATSIM transponder simulation (standby or Mode A+C only); user, 2026-09-17",
+      "text": "Every aircraft on VATSIM simulates a Mode C transponder, so an equipment suffix without Mode C (/X, /T, /D, /B, /M, /N, /Y, /C, /V, /S, /H, /O) is not filed on the network; the type box carries the suffix the fleet files for the type"
     },
     {
       "id": "A-CLIMB-VIA",

@@ -166,9 +166,22 @@ function connectedRoute(
   };
 }
 
-/** Whether a candidate is one the scope allows a connection search to be run from. */
-function inScope(candidate: UnservedSid, scope: BuildScope): boolean {
-  return scope.kind === 'any' || candidate.sid.family === scope.family;
+/**
+ * How far down the candidate list the scope allows a connection search to be run.
+ *
+ * The candidates are in the SOP's table order, so a row above the filed family is what the table
+ * gives the flight ahead of what it filed; a row below it is one the table only reaches because the
+ * filed procedure was passed over. The filed family is therefore the floor: everything at or above
+ * it may be built on, everything below it may not. A family the candidates do not hold at all puts
+ * the floor nowhere, and nothing is built.
+ *
+ * @param candidates The SIDs of the applicable rows that do not reach the exit element, in order.
+ * @param scope Which candidates may be built on.
+ * @returns The last index a search may run at, `-1` where no candidate is in scope.
+ */
+function scopeLimit(candidates: readonly UnservedSid[], scope: BuildScope): number {
+  if (scope.kind === 'any') return candidates.length - 1;
+  return candidates.findIndex((candidate) => candidate.sid.family === scope.family);
 }
 
 /**
@@ -178,11 +191,13 @@ function inScope(candidate: UnservedSid, scope: BuildScope): boolean {
  * The candidates are the rows `selectSid` passed over, in table order. A row that names a forced
  * transition is built on that transition alone — the SOP sends the flight over it whatever the
  * route files, so nothing about the filed procedure matters, and no scope narrows it. The
- * connection search is narrowed by `scope`: for a flight the SOP gives a procedure it only keeps
- * the family the pilot filed, so a plan filed without one, or filed on the procedure the flight is
- * being given anyway, is not rerouted onto a chain of connecting fixes it never asked for (user
- * decision 2026-09-16); for a flight the SOP sends off on a heading there is no procedure to keep,
- * so every candidate is searched and the first in table order that connects wins. Either way a
+ * connection search is narrowed by `scope`: for a flight the SOP gives a procedure it runs down to
+ * the family the pilot filed and no further, so a row the table puts above that family is built —
+ * it is what the SOP gives the flight, and the filed procedure is not — while a row below it is
+ * left alone, so a plan filed on the SOP's own preferred procedure is never rerouted onto a chain
+ * of connecting fixes it never asked for (user decision 2026-09-16, extended 2026-09-17); for a
+ * flight the SOP sends off on a heading there is no procedure to keep, so every candidate is
+ * searched and the first in table order that connects wins. Either way a
  * candidate is built by connecting one of its published transitions, or the fix the SID itself ends
  * on, to the filed route over the cheat sheet's rows: the chains of fixes that always connect are
  * searched first, so a route that never needs a controller's judgement is preferred over one that
@@ -201,10 +216,11 @@ export function buildRoute(
   scope: BuildScope,
   airport: AirportData,
 ): BuiltRoute | undefined {
-  for (const candidate of candidates) {
+  const limit = scopeLimit(candidates, scope);
+  for (const [index, candidate] of candidates.entries()) {
     const forced = candidate.row.when?.forcedTransition;
     if (forced !== undefined) return forcedRoute(candidate, forced);
-    if (!inScope(candidate, scope)) continue;
+    if (index > limit) continue;
     const built = connectedRoute(candidate, tokens, airport);
     if (built !== undefined) return built;
   }

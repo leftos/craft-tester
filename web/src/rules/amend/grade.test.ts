@@ -17,7 +17,7 @@ const ksfo = ksfoJson as unknown as AirportData;
 
 const citation: RuleCitation = {
   id: 'EQUIP/L',
-  source: 'FAA JO 7110.65 TBL 5-4-1',
+  source: 'FAA JO 7110.65 TBL 2-3-10',
   text: 'RNAV and RVSM',
 };
 

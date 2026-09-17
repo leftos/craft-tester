@@ -1,7 +1,8 @@
-# FAA JO 7110.65 table 5-4-1, aircraft equipment suffixes. Shared by every airport: the table is
+# FAA JO 7110.65 TBL 2-3-10, aircraft equipment suffixes. Shared by every airport: the table is
 # national, so it lives here rather than in `airports/<icao>/`. `rnav` says the aircraft may fly an
 # RNAV departure, `gnss` that its area navigation is satellite based, `rvsm` that it may be cleared
-# FL290-FL410, and `transponder_mode_c` that it reports altitude.
+# FL290-FL410, and `transponder_mode_c` that it reports altitude. `rnav` and `gnss` are null on the
+# rows the table states no navigation capability for, which every reader takes as not RNAV.
 suffixes:
   - { suffix: /X, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "No DME, no transponder" }
   - { suffix: /T, rnav: false, gnss: false, rvsm: false, transponder_mode_c: false, text: "No DME, transponder with no Mode C" }
@@ -21,3 +22,5 @@ suffixes:
   - { suffix: /W, rnav: false, gnss: false, rvsm: true, transponder_mode_c: true, text: "RVSM, no RNAV" }
   - { suffix: /Z, rnav: true, gnss: false, rvsm: true, transponder_mode_c: true, text: "RVSM with RNAV, no GNSS" }
   - { suffix: /L, rnav: true, gnss: true, rvsm: true, transponder_mode_c: true, text: "RVSM with GNSS" }
+  - { suffix: /H, rnav: null, gnss: null, rvsm: true, transponder_mode_c: false, text: "RVSM, navigation not stated, failed transponder" }
+  - { suffix: /O, rnav: null, gnss: null, rvsm: true, transponder_mode_c: false, text: "RVSM, navigation not stated, failed Mode C" }

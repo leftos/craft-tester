@@ -514,10 +514,16 @@
         "additionalProperties": false,
         "properties": {
           "gnss": {
-            "type": "boolean"
+            "type": [
+              "boolean",
+              "null"
+            ]
           },
           "rnav": {
-            "type": "boolean"
+            "type": [
+              "boolean",
+              "null"
+            ]
           },
           "rvsm": {
             "type": "boolean"

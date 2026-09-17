@@ -255,16 +255,19 @@ function procedureReason(
 }
 
 /**
- * How a built reason closes, which is what the build spared the flight.
+ * How a built reason closes, which is what the build did with the procedure the pilot filed.
  *
- * On the procedure path the flight filed the family it is built on, so the build keeps that SID
- * where the vector SID would otherwise have replaced it; on the heading path the SOP assigns no
- * procedure at all, so the build issues one where the flight would otherwise have been vectored.
+ * On the heading path the SOP assigns no procedure at all, so the build issues one where the flight
+ * would otherwise have been vectored. On the procedure path the build keeps the filed SID where the
+ * filed family is the one built on; where the SOP's table puts another row above that family, the
+ * build takes that row's SID instead, and the closing says so rather than claim a SID was kept.
  */
-function builtClosing(scope: BuildScope | undefined): string {
-  return scope?.kind === 'any'
-    ? 'so the SID is issued in place of the heading'
-    : 'so the SID is kept';
+function builtClosing(built: BuiltRoute, scope: BuildScope | undefined): string {
+  if (scope?.kind === 'any') return 'so the SID is issued in place of the heading';
+  if (scope?.kind === 'filed' && scope.family !== undefined && scope.family !== built.sid.family) {
+    return `so it replaces the filed ${scope.family} departure`;
+  }
+  return 'so the SID is kept';
 }
 
 /** How a built reason names where the route left the SID: a transition, or the SID's own end fix. */
@@ -296,7 +299,7 @@ function builtReason(
   return (
     `${built.sid.id} is the procedure the SOP assigns ${flightWords(ctx)} from ${scenario.departureRunway} ` +
     `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${startWords(built)} ` +
-    `and ${links} (route building), ${builtClosing(expected.scope)}`
+    `and ${links} (route building), ${builtClosing(built, expected.scope)}`
   );
 }
 
