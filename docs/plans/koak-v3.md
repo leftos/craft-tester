@@ -347,7 +347,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   fails the build (a stale override). KCCR carries it; its TEC rows stay out of `tec.yaml`. Gap noted, not modelled:
   the Travis shelf is a vertical split the polygon file cannot express, and no other destination is known to sit
   under one.
-- [ ] **Brief 2f, TEC initial altitude** (user 2026-09-16: "In TEC routes, the first number is the initial/interim
+- [x] **Brief 2f, TEC initial altitude** — landed 2026-09-16 in two halves (`745b654` fields and data, then the engine:
+  cruise = final up and down, initial overrides the SOP, single-number rows final-only, the report test
+  `rules/tecAltitudes.test.ts`, the seven untagged OAK jet rows, both route libraries at the TEC finals, SKW2345
+  re-settled to 10,000). Open from its reports, for the validation loop: eight KOAK library rows clean nowhere for
+  route/procedure reasons (`FEVTA FEVTA1 [J]`, `OAK EUGEN [J]` and the KARNN/ALTAM MOD turboprop tails to
+  MRY/WVI, `OAK ARTAQ [J]`, `OSI [PTJ]` to KSFO) and two KOAK TEC rows no flight is routed on (`TEC-KMRY-SFOE-J`,
+  `TEC-KWVI-SFOE-J`: SFOE southbound jets get KATFH, not OAK#). History (user 2026-09-16: "In TEC routes, the first number is the initial/interim
   altitude, and the second number is the final altitude. They're not a range. So 030/090 is 3,000 initial, 9,000
   final."). The KSFO `tec.yaml` header and the plan text below read the band as floor/cap, which is wrong: rename
   `altitude_cap_feet` to `final_altitude_feet` (schema `finalAltitudeFeet`) and add `initial_altitude_feet`
