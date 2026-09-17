@@ -32,6 +32,7 @@ LOA_RULE_COUNT = 3
 TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_CAP_FEET = 6000
+OUTSIDE_NCT_REASON = "Another facility owns a shelf below NCT's lateral boundary down to the ground"
 PARITY_ODD_COURSE_FROM = 20
 PARITY_ODD_COURSE_TO = 199
 
@@ -164,6 +165,32 @@ def test_destination_coordinates_come_from_the_cifp_unless_the_yaml_gives_them(k
     assert (destinations["RKSI"]["lat"], destinations["RKSI"]["lon"]) == (37.469, 126.451)
 
 
+def _with_destination(inputs: BuildInputs, icao: str, **changes: Any) -> BuildInputs:
+    library = inputs.airport.routes
+    destinations = tuple(replace(row, **changes) if row.icao == icao else row for row in library.destinations)
+    return replace(inputs, airport=replace(inputs.airport, routes=replace(library, destinations=destinations)))
+
+
+def test_the_nct_flag_is_computed_from_the_terminal_polygon(ksfo_document: Document) -> None:
+    destinations = _destinations(ksfo_document)
+    assert destinations["KSMF"]["nct"] is True
+    assert destinations["KOAK"]["nct"] is True
+    assert destinations["KSEA"]["nct"] is False
+    assert destinations["KAPC"]["nct"] is False
+
+
+def test_a_field_another_facility_owns_is_outside_nct_although_the_polygon_holds_it(ksfo_build_inputs: BuildInputs, ksfo_document: Document) -> None:
+    assert _destinations(ksfo_document)["KRNO"]["nct"] is True
+    inputs = _with_destination(ksfo_build_inputs, "KRNO", outside_nct=OUTSIDE_NCT_REASON)
+    assert _destinations(build_airport(inputs))["KRNO"]["nct"] is False
+
+
+def test_an_outside_nct_reason_the_polygon_already_excludes_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_destination(ksfo_build_inputs, "KAPC", outside_nct=OUTSIDE_NCT_REASON)
+    with pytest.raises(ValueError, match=r"routes.yaml destinations\[KAPC\]: outside_nct is stated but the NCT terminal polygon already excludes"):
+        build_airport(inputs)
+
+
 def test_the_tec_rows_carry_their_source_cap_and_kind(ksfo_document: Document) -> None:
     rows = {row["id"]: row for row in ksfo_document["tecRoutes"]}
     assert len(rows) == TEC_ROUTE_COUNT
@@ -236,6 +263,35 @@ def test_a_tec_row_on_a_heading_no_aircraft_can_fly_fails_the_build(ksfo_build_i
     inputs = _with_tec_route(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "H000 OAK V6 SAC")
     with pytest.raises(ValueError, match=r"tecRoutes\[TEC-KSMF-SFOW-P-28\]: route begins on 'H000'.*write H001 through H360"):
         build_airport(inputs)
+
+
+def _with_tec_destination(inputs: BuildInputs, row_id: str, destination: str) -> BuildInputs:
+    tec = inputs.airport.tec
+    assert tec is not None
+    routes = tuple(replace(row, destination=destination) if row.id == row_id else row for row in tec.routes)
+    return replace(inputs, airport=replace(inputs.airport, tec=replace(tec, routes=routes)))
+
+
+def test_a_tec_row_to_a_field_outside_the_nct_polygon_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_tec_destination(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "KAPC")
+    with pytest.raises(
+        ValueError,
+        match=r"tec.yaml routes\[TEC-KSMF-SFOW-P-28\]: destination KAPC lies outside the NCT terminal polygon "
+        r"\(generator/shared/nct_boundary.yaml\); a TEC route is issued only to a field inside NCT",
+    ):
+        build_airport(inputs)
+
+
+def test_a_field_another_facility_owns_takes_its_tec_rows_with_it(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_destination(ksfo_build_inputs, "KSMF", outside_nct=OUTSIDE_NCT_REASON)
+    with pytest.raises(ValueError, match=r"tec.yaml routes\[TEC-KSMF-SFOW-J\]: destination KSMF lies outside the NCT terminal polygon"):
+        build_airport(inputs)
+
+
+def test_an_adr_row_is_issued_to_a_field_outside_nct(ksfo_document: Document) -> None:
+    rows = {row["id"]: row for row in ksfo_document["tecRoutes"]}
+    assert rows["ADR-KSAN-SFOW"]["kind"] == "adr"
+    assert _destinations(ksfo_document)["KSAN"]["nct"] is False
 
 
 def test_a_rule_keyed_on_a_tec_route_without_a_dp_that_assigns_one_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:

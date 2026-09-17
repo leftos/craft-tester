@@ -17,9 +17,11 @@ from craft_generator.cifp.sid import CifpSid, group_sids
 from craft_generator.cifp.stars import parse_star_ids
 from craft_generator.cli import fixture_filed_routes
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
+from craft_generator.nct_boundary import NctBoundary, load_nct_boundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
     EQUIPMENT_SUFFIXES_FILE,
+    NCT_BOUNDARY_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
     airport_dir,
@@ -164,6 +166,12 @@ def aircraft_characteristics() -> dict[str, AircraftCharacteristic]:
 
 
 @pytest.fixture(scope="session")
+def nct_boundary() -> NctBoundary:
+    """Return the checked-in NCT terminal polygons every destination's `nct` flag is computed from."""
+    return load_nct_boundary(shared_dir() / NCT_BOUNDARY_FILE)
+
+
+@pytest.fixture(scope="session")
 def ksfo_chart_inputs(sfo_charts: list[ChartRef]) -> dict[str, ChartInput]:
     """Return the chart facts of every KSFO departure chart, keyed by chart name in API order."""
     return {
@@ -180,6 +188,7 @@ def ksfo_build_inputs(
     aircraft_specs_subset: list[dict[str, Any]],
     ksfo_navaids: dict[str, Navaid],
     aircraft_characteristics: dict[str, AircraftCharacteristic],
+    nct_boundary: NctBoundary,
 ) -> BuildInputs:
     """Return every build input of KSFO, read from the checked-in fixtures only."""
     legs, runway_records = ksfo_records
@@ -196,6 +205,7 @@ def ksfo_build_inputs(
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
         phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
         route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),
+        nct_boundary=nct_boundary,
         fixture_routes=fixture_filed_routes("KSFO"),
         provenance=Provenance(
             cycle=FIXTURE_CYCLE,

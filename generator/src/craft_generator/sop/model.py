@@ -380,12 +380,18 @@ class Overrides:
 
 @dataclass(frozen=True, slots=True)
 class Destination:
-    """One destination a scenario can file to."""
+    """One destination a scenario can file to.
+
+    ``outside_nct`` is the reason a field the NCT terminal polygon holds laterally is nonetheless no
+    NCT destination - another facility owns the airspace over it down to the ground - and is ``None``
+    at every field the polygon alone decides. The build computes the ``nct`` flag from the polygon
+    and this reason together; no row states the flag itself.
+    """
 
     icao: str
     spoken: str
     artcc: str
-    nct: bool
+    outside_nct: str | None
     lat: float | None
     lon: float | None
 

@@ -1,12 +1,12 @@
 # The destinations an airport's scenarios can file to: the spoken name, the center whose LOA rules apply
-# to the flight, whether the field is inside NCT, and the coordinates of a field outside the FAA CIFP.
-# None of that depends on the departure airport, so a destination is stated once here and an airport's
-# `routes.yaml` lists only the codes its scenarios file to. US coordinates are filled from CIFP by the
-# generator; a foreign field has nothing to resolve against and gives `lat` and `lon` here.
-# `nct: true` means the field lies inside the NCT terminal polygon (the SimAware TRACON boundary, as
-# vatsim_control_recs computes its "NCT Combined" grouping; user 2026-09-16), not the NCT SOP's complex
-# tables: Napa, Concord and Santa Rosa are outside it although NCT staffs their towers, Reno is inside.
-# The flag gates the TEC route lookup, so a TEC row to a field without it is never issued.
+# to the flight, and the coordinates of a field outside the FAA CIFP. None of that depends on the departure
+# airport, so a destination is stated once here and an airport's `routes.yaml` lists only the codes its
+# scenarios file to. US coordinates are filled from CIFP by the generator; a foreign field has nothing to
+# resolve against and gives `lat` and `lon` here.
+# Whether a field is inside NCT is computed at build time from the terminal polygons of `nct_boundary.yaml`,
+# never flagged by hand. A field the polygon holds laterally but another facility owns down to the ground
+# states `outside_nct` with the reason, and the build treats it as outside. The flag gates the TEC route
+# lookup, so a TEC row to a field without it is never issued.
 destinations:
   CYVR: { spoken: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
   ESSA: { spoken: Stockholm Arlanda, artcc: ZAK, lat: 59.652, lon: 17.919 }
@@ -16,50 +16,50 @@ destinations:
   KBLI: { spoken: Bellingham, artcc: ZSE }
   KBOI: { spoken: Boise, artcc: ZLC }
   KBUR: { spoken: Burbank, artcc: ZLA }
-  KCCR: { spoken: Concord, artcc: ZOA }
+  KCCR: { spoken: Concord, artcc: ZOA, outside_nct: "Travis Approach owns a shelf below NCT's lateral boundary down to the ground over Concord (user, 2026-09-16)" }
   KCRQ: { spoken: Carlsbad, artcc: ZLA }
   KDEN: { spoken: Denver, artcc: ZDV }
   KFAT: { spoken: Fresno, artcc: ZOA }
   KGPZ: { spoken: Grand Rapids Minnesota, artcc: ZMP }
-  KHWD: { spoken: Hayward, artcc: ZOA, nct: true }
+  KHWD: { spoken: Hayward, artcc: ZOA }
   KJAC: { spoken: Jackson Hole, artcc: ZLC }
   KLAS: { spoken: Las Vegas, artcc: ZLA }
   KLAX: { spoken: Los Angeles, artcc: ZLA }
   KLGB: { spoken: Long Beach, artcc: ZLA }
-  KLVK: { spoken: Livermore, artcc: ZOA, nct: true }
-  KMCC: { spoken: McClellan, artcc: ZOA, nct: true }
+  KLVK: { spoken: Livermore, artcc: ZOA }
+  KMCC: { spoken: McClellan, artcc: ZOA }
   KMCI: { spoken: Kansas City, artcc: ZKC }
-  KMHR: { spoken: Mather, artcc: ZOA, nct: true }
-  KMOD: { spoken: Modesto, artcc: ZOA, nct: true }
-  KMRY: { spoken: Monterey, artcc: ZOA, nct: true }
-  KMYV: { spoken: Marysville, artcc: ZOA, nct: true }
-  KNUQ: { spoken: Moffett, artcc: ZOA, nct: true }
-  KOAK: { spoken: Oakland, artcc: ZOA, nct: true }
+  KMHR: { spoken: Mather, artcc: ZOA }
+  KMOD: { spoken: Modesto, artcc: ZOA }
+  KMRY: { spoken: Monterey, artcc: ZOA }
+  KMYV: { spoken: Marysville, artcc: ZOA }
+  KNUQ: { spoken: Moffett, artcc: ZOA }
+  KOAK: { spoken: Oakland, artcc: ZOA }
   KONT: { spoken: Ontario, artcc: ZLA }
-  KOVE: { spoken: Oroville, artcc: ZOA, nct: true }
-  KPAO: { spoken: Palo Alto, artcc: ZOA, nct: true }
+  KOVE: { spoken: Oroville, artcc: ZOA }
+  KPAO: { spoken: Palo Alto, artcc: ZOA }
   KPDX: { spoken: Portland, artcc: ZSE }
   KPHX: { spoken: Phoenix, artcc: ZAB }
-  KRHV: { spoken: Reid-Hillview, artcc: ZOA, nct: true }
-  KRNO: { spoken: Reno, artcc: ZOA, nct: true }
-  KSAC: { spoken: Sacramento Executive, artcc: ZOA, nct: true }
+  KRHV: { spoken: Reid-Hillview, artcc: ZOA }
+  KRNO: { spoken: Reno, artcc: ZOA }
+  KSAC: { spoken: Sacramento Executive, artcc: ZOA }
   KSAN: { spoken: San Diego, artcc: ZLA }
   KSBA: { spoken: Santa Barbara, artcc: ZLA }
-  KSCK: { spoken: Stockton, artcc: ZOA, nct: true }
+  KSCK: { spoken: Stockton, artcc: ZOA }
   KSEA: { spoken: Seattle, artcc: ZSE }
-  KSFO: { spoken: San Francisco, artcc: ZOA, nct: true }
-  KSJC: { spoken: San Jose, artcc: ZOA, nct: true }
+  KSFO: { spoken: San Francisco, artcc: ZOA }
+  KSJC: { spoken: San Jose, artcc: ZOA }
   KSLC: { spoken: Salt Lake City, artcc: ZLC }
-  KSMF: { spoken: Sacramento, artcc: ZOA, nct: true }
+  KSMF: { spoken: Sacramento, artcc: ZOA }
   KSMO: { spoken: Santa Monica, artcc: ZLA }
   KSNA: { spoken: John Wayne, artcc: ZLA }
-  KSQL: { spoken: San Carlos, artcc: ZOA, nct: true }
+  KSQL: { spoken: San Carlos, artcc: ZOA }
   KSTS: { spoken: Santa Rosa, artcc: ZOA }
   KTRK: { spoken: Truckee, artcc: ZOA }
   KUDD: { spoken: Bermuda Dunes, artcc: ZLA }
   KVNY: { spoken: Van Nuys, artcc: ZLA }
-  KWVI: { spoken: Watsonville, artcc: ZOA, nct: true }
+  KWVI: { spoken: Watsonville, artcc: ZOA }
   MMMX: { spoken: Mexico City, artcc: ZLA, lat: 19.436, lon: -99.072 }
-  O88: { spoken: Rio Vista, artcc: ZOA, nct: true }
+  O88: { spoken: Rio Vista, artcc: ZOA }
   PHNL: { spoken: Honolulu, artcc: ZAK }
   RKSI: { spoken: Seoul Incheon, artcc: ZAK, lat: 37.469, lon: 126.451 }

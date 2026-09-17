@@ -291,8 +291,8 @@ def test_overrides_carry_per_runway_facts(ksfo_inputs: AirportInputs) -> None:
 def test_routes_destinations_and_fleet(ksfo_inputs: AirportInputs) -> None:
     routes = ksfo_inputs.routes
     destinations = {destination.icao: destination for destination in routes.destinations}
-    assert destinations["KSEA"].nct is False
-    assert destinations["KSMF"].nct is True
+    assert destinations["KSEA"].outside_nct is None
+    assert destinations["KSMF"].outside_nct is None
     assert (destinations["RKSI"].lat, destinations["RKSI"].lon) == (37.469, 126.451)
     assert destinations["KSEA"].lat is None
     fleet = {entry.type: entry for entry in routes.fleet}
@@ -313,7 +313,10 @@ def test_the_composed_fleet_and_airlines_match_the_curated_library(ksfo_inputs: 
 
 
 def test_the_shared_route_facts_load_and_agree(shared_route_facts: SharedRouteFacts) -> None:
-    assert shared_route_facts.destinations["KSMF"].nct is True
+    assert shared_route_facts.destinations["KSMF"].outside_nct is None
+    assert shared_route_facts.destinations["KCCR"].outside_nct == (
+        "Travis Approach owns a shelf below NCT's lateral boundary down to the ground over Concord (user, 2026-09-16)"
+    )
     assert shared_route_facts.destinations["KPHX"].artcc == "ZAB"
     assert shared_route_facts.airlines["PCM"].cargo is True
     assert shared_route_facts.airlines["UAL"].cargo is False
@@ -321,6 +324,22 @@ def test_the_shared_route_facts_load_and_agree(shared_route_facts: SharedRouteFa
     for airline in shared_route_facts.airlines.values():
         unknown = [designator for designator in airline.types if designator not in shared_route_facts.aircraft_types]
         assert unknown == [], f"{airline.code} flies {unknown}, which {AIRCRAFT_TYPES_FILE} does not state"
+
+
+def test_a_hand_nct_flag_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["nct"] = True
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]: `nct` is computed at build time from generator/shared/nct_boundary\.yaml"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
+def test_an_empty_outside_nct_reason_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KCCR"]["outside_nct"] = "  "
+
+    with pytest.raises(ValueError, match=r"destinations\[KCCR\]\.outside_nct: the key states no reason"):
+        shared_copy(tmp_path, destinations=mutate)
 
 
 def test_sid_family_of_rejects_an_unversioned_id() -> None:

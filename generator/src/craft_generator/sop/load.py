@@ -104,6 +104,7 @@ EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
 AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
+NCT_BOUNDARY_FILE = "nct_boundary.yaml"
 DESTINATIONS_FILE = "destinations.yaml"
 AIRLINES_FILE = "airlines.yaml"
 AIRCRAFT_TYPES_FILE = "aircraft_types.yaml"
@@ -895,12 +896,24 @@ def load_overrides(path: Path) -> Overrides:
     return overrides
 
 
+def _outside_nct(row: _Row) -> str | None:
+    reason = row.optional_text("outside_nct")
+    if reason is not None and not reason.strip():
+        raise ValueError(f"{row.where}.outside_nct: the key states no reason; write which facility owns the airspace over the field instead")
+    return reason
+
+
 def _destination(icao: str, row: _Row) -> Destination:
+    if row.optional_raw("nct") is not None:
+        raise ValueError(
+            f"{row.where}: `nct` is computed at build time from generator/shared/{NCT_BOUNDARY_FILE}, never stated by hand; remove the key, and "
+            "state `outside_nct: <reason>` where another facility owns the airspace over a field that polygon holds"
+        )
     destination = Destination(
         icao=icao,
         spoken=row.text("spoken"),
         artcc=row.text("artcc"),
-        nct=bool(row.optional_flag("nct", default=False)),
+        outside_nct=_outside_nct(row),
         lat=row.optional_decimal("lat"),
         lon=row.optional_decimal("lon"),
     )

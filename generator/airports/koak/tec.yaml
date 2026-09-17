@@ -11,9 +11,11 @@
 # leading `H270`/`H090` is the initial heading the tool issues where the route carries no DP, which
 # is the case SOP 2-1 c describes. `runway_families` is empty on every row: the tool tags a departure
 # runway at KSFO but none at OAK, so a row applies to every departure runway of its plan.
-# A TEC route is issued to a destination inside NCT, which is the destinations the terminal polygon
-# holds. Napa (KAPC), Concord (KCCR) and Santa Rosa (KSTS) lie outside it, so the rows the tool prints
-# for those three fields are not transcribed here.
+# A TEC route is issued to a destination inside NCT, which the build computes from the terminal
+# polygons of `generator/shared/nct_boundary.yaml`. Napa (KAPC) and Santa Rosa (KSTS) lie outside
+# those polygons; Concord (KCCR) lies inside them laterally, but Travis Approach owns a shelf below
+# that boundary down to the ground over the field, so it is no NCT destination either. The rows the
+# tool prints for those three fields are not transcribed here.
 source:
   title: ZOA Reference Tool, TEC/AAR/ADR Routes
   url: https://reference.oakartcc.org/routes

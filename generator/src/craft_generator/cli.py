@@ -40,9 +40,11 @@ from craft_generator.cifp.stars import parse_star_ids
 from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_path, schema_path, validate, write_or_check
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
 from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
+from craft_generator.nct_boundary import load_nct_boundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
     EQUIPMENT_SUFFIXES_FILE,
+    NCT_BOUNDARY_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
     SOP_FILE,
@@ -416,6 +418,7 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
             phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
             route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),
+            nct_boundary=load_nct_boundary(shared_dir() / NCT_BOUNDARY_FILE),
             fixture_routes=fixture_filed_routes(airport),
             provenance=Provenance(
                 cycle=cycle_id,
