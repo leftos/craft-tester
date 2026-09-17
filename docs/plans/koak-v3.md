@@ -105,29 +105,32 @@ J & DH8D QUAKE# or 270° 5,000. SFOE: P/T 090° 3,000; J & DH8D 140°.
 
 ## New rule concepts OAK needs (add to the schema and engine before transcribing)
 
+**All eight landed**, consumed by briefs 1, 2b, 2c, 2e-i/ii/iii and the 3b-i data (`data/koak.json` carries
+`aircraftGroups`, `runways`, `noiseWindows` and 75 TEC rows); kept here for the decisions behind them.
+
 **User decisions 2026-09-16** (AskUserQuestion round): aircraft groups in the SOP YAML; turn direction derived as
 the shorter turn from the runway's magnetic heading; Appendix B noise rows always active inside their window, as at
 SFO (no activation toggle); approach category per fleet type.
 
-- [ ] **Type-specific class**: "J & DH8D" rows treat the Dash 8-400 as a jet for SID assignment but give it its own
+- [x] **Type-specific class**: "J & DH8D" rows treat the Dash 8-400 as a jet for SID assignment but give it its own
   altitude (CVS x 10,000 vs FL190). **Decided**: `aircraft_groups` in the airport YAML mapping a group id to classes
   and/or types (`jets_and_dh8d: {classes: [J], types: [DH8D]}`); assignment and altitude rows may reference a group
   (`groups: [jets_and_dh8d]`) beside or instead of `classes`; KSFO data unchanged.
-- [ ] **Heading departures as a first-class clearance**: OAK issues 090°/270°/315°/runway heading routinely. The
+- [x] **Heading departures as a first-class clearance**: OAK issues 090°/270°/315°/runway heading routinely. The
   runway-heading half landed 2026-09-16 for KSFO (`Procedure.kind === 'heading'`, "via fly runway heading, radar
   vectors (first fix)", [archive/heading-departures.md](./archive/heading-departures.md)). **Decided** for the
   numbered half: `non_dp_heading: 270` on the row; the turn direction is the shorter turn from the departure
   runway's magnetic heading (CIFP `PG` records, emitted per runway), read "via turn left heading two seven zero,
   radar vectors (fix/airway)"; a 180° split fails the build. Altitude "maintain (feet)", expect clause spoken (no
   chart note).
-- [ ] **Plain "climb via SID"** for CNDEL# and HUSSH# (row outcome `climb_via`): already supported by the engine.
-- [ ] **CVS x FL190**: an interim expressed as a flight level; check `speakAltitude` and the altitude row schema.
-- [ ] **Continuation charts**: the chart parser must merge `NAME, CONT.1` text into `NAME` (6 of 17 OAK charts).
-- [ ] **Approach category** ("P, Cat A/B → SALAD#"). **Decided**: `approach_category: A|B|C|D` on fleet rows (from
+- [x] **Plain "climb via SID"** for CNDEL# and HUSSH# (row outcome `climb_via`): already supported by the engine.
+- [x] **CVS x FL190**: an interim expressed as a flight level; check `speakAltitude` and the altitude row schema.
+- [x] **Continuation charts**: the chart parser must merge `NAME, CONT.1` text into `NAME` (6 of 17 OAK charts).
+- [x] **Approach category** ("P, Cat A/B → SALAD#"). **Decided**: `approach_category: A|B|C|D` on fleet rows (from
   the published Vref), and rows may say `approach_categories: [A, B]`.
-- [ ] **Three departure sectors** (Richmond, Sutro, Grove) and "varies" rows resolved by direction: already
+- [x] **Three departure sectors** (Richmond, Sutro, Grove) and "varies" rows resolved by direction: already
   expressible (`direction` on the row).
-- [ ] **Noise abatement**: Appendix B rows are "may be activated". **Decided**: model them as SFO's are, time
+- [x] **Noise abatement**: Appendix B rows are "may be activated". **Decided**: model them as SFO's are, time
   windows always active (`noise_windows` + `when: {noise_window: …}`); no activation toggle.
 
 ## CIFP inventory (read 2026-09-16 from cycle 2609)
@@ -184,7 +187,7 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `heading:runway`, `heading:270`) and `gradeProcedure` compares headings; the route-box reason for a heading
   clearance comes from the row instead of the hard-coded "in the noise window"; `CVS x FL190` spoken as a flight
   level (check `speakAltitude`).
-- [ ] **Brief 3a status 2026-09-16**: the five files are written in `wt/koak-data` (uncommitted; `verify-sop` and
+- [x] **Brief 3a status 2026-09-16**: the five files are written in `wt/koak-data` (uncommitted; `verify-sop` and
   every loader pass, KSFO unchanged) and the build was blocked only by the FAA's "TRANSITON" misspelling on
   SKYLINE ONE CONT.1 (parser tolerance dispatched to `wt/koak-engine`; a dry run with it patched builds KOAK: 12
   SIDs, 59 assignment rows, 20 altitude rows, 2 notices, 45 routes). Review findings beyond the implementer's
@@ -215,7 +218,7 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   row, read between the airline and the class default, `RWY-GROUP-DEFAULT` row required; loader, emitter, importer,
   draw, grader and ATIS; `inAnyGroup` in `classify.ts` is the one membership predicate. Left for 2e-ii: `pickRunway`
   reached six positional parameters.
-- [ ] **Brief 2e-iii, FAA approach categories as shared data** (user 2026-09-16: "cache that in the repo parsed or
+- [x] **Brief 2e-iii, FAA approach categories as shared data** (user 2026-09-16: "cache that in the repo parsed or
   raw"): `craft-gen fetch-aircraft-characteristics` downloads the FAA xlsx (the `aircraft_data` URL) and writes
   `generator/shared/faa_aircraft_characteristics.yaml` (source block with url and fetched date; one entry per ICAO
   code with aac, approach speed, engine class, MTOW, WTC), checked in; `routes.yaml` fleet `approach_category`
@@ -253,7 +256,7 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   inside ZOA, so clearance delivery never caps a filed altitude for an LOA. The `max` LOA rule kind is used by no
   airport and is removed (model, loader, emitter, schema, `rules/amend/altitude.ts`), keeping `parity_rotated`,
   `even`, `odd` and `route`. (4) `pickRunway` takes an options object. Dispatched 2026-09-16 into `wt/koak-engine`.
-- [ ] **Brief 3a, SOP transcription**: `sop.yaml` (v1.7, sentinels; configurations `SFOW`, `OAKE`, `SFOE` as both id
+- [x] **Brief 3a, SOP transcription**: `sop.yaml` (v1.7, sentinels; configurations `SFOW`, `OAKE`, `SFOE` as both id
   and plan, since the TEC tool tags rows `[SFOW]`/`[OAKE]`/`[SFOE]`; training weights 70/20/10; departure runways
   and class defaults from SOP 1-6/2-2 with a `note` and a report question wherever the SOP is silent on which
   parallel; 2-2 a tables as rows with `groups: [jets_and_dh8d]`; 2-2 b headings as `non_dp_heading: <int>` rows;
@@ -277,7 +280,7 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   out of OAK to FAT/VIS/MRY) and in `cargo_airlines`, and C208 in the fleet as a prop flown by PCM. Observation
   from the implementer, not done: nothing checks that a row defaulting an airline lists a class that airline
   flies, so a mis-classed row is silently inert.
-- [ ] **LOA documents** (user 2026-09-16): every LOA PDF is reachable the way `zoa-reference-cli`
+- [x] **LOA documents** (user 2026-09-16): every LOA PDF is reachable the way `zoa-reference-cli`
   (`C:\Users\Leftos\source\repos\zoa-reference-cli`) pulls `procs` / `sop`; use that listing to fetch the ZOA–ZLA and
   ZOA–ZLC LOAs (and any other LOA a KOAK destination needs) before transcribing `loa.yaml` rows. The list is the
   `<select>` on `https://reference.oakartcc.org/procedures` (cached by that CLI at
@@ -475,13 +478,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   is), and a bare number reads the same. No rows for RNO (prop header only), APC and STS (empty groups); SQL timed
   out (KSFO never had San Carlos rows); SAN prints the ADR rows dotted with no altitude. The tool tags SFO runways on
   the SID (`SFO4(1)`, `GAPP7(28)`) and prints `CITTY3` for CIITY3 on SAC/O88 (a tool typo; transcribe CIITY#).
-- [ ] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
+- [x] `tec.yaml`: the route tool pages for 22 destinations (SMF MRY LVK APC WVI MYV OVE O88 SAC SFO SJC CCR HWD SQL
   PAO RHV NUQ STS MOD SCK MHR MCC) were captured 2026-09-16 with Playwright into `.tmp/oak-tec/<FAA>.txt`
   (gitignored; re-run `web/.tmp/oak-tec.ts` style script if lost). Findings: the tool prints an altitude band
   `030/090` (hundreds of feet, floor/cap; KSFO recorded the cap only); **OAKE rows begin on a heading token**
   (`[OAKE] +H270 FEVTA FEVTA1+ 100/100`), so the TEC substitution in `rules/amend/tec.ts` must accept `H<ddd>` at
   the head of a route as the numbered heading the SOP issues there, not a SID placeholder (brief 2 or 3).
-- [ ] `import-worksheets --airport KOAK`; validation loop with the user. **Run 2026-09-16 in `wt/koak-worksheets`**: the
+- [x] `import-worksheets --airport KOAK`; validation loop with the user. **Run 2026-09-16 in `wt/koak-worksheets`**: the
   two phraseology sheets imported (6 + 6 pending fixtures, uncommitted there); the three amendment sheets fail
   (`Amendment Practice 1A [310/330]: aircraft type 'OAK6 OAK ORRCA' is not a designator…`). Cause: the OAK amendment
   sheets carry **four correction cells after the five plan cells** (type, destination, altitude, route corrections:
@@ -508,8 +511,10 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   (`ws-amendment-practice-1a-lxj351` exists under both `fixtures/ksfo/` and `fixtures/koak/`, so `propose <id>`
   is ambiguous: decide whether the importer prefixes new ids with the airport). Backlog: the amendment parser
   still counts five non-blank cells per row, so an empty plan cell would shift every later row.
-- [ ] **KOAK validation loop, started 2026-09-16** (`pnpm -C web propose --pending`, 87 pending across both
-  airports; the log is `.tmp/propose-pending2.log`). Data fix the same day: the KOAK gates lacked the worksheet
+- [ ] **KOAK validation loop, started 2026-09-16** — record below; **state 2026-09-17: 2 of the 50 KOAK
+  fixtures are still pending** (FFT2015, UAL313), both held by the item under this one, and 35 KSFO fixtures
+  remain in the paused KSFO loop (MAIN.md step 21). Started with `pnpm -C web propose --pending`, 87 pending
+  across both airports; the log was `.tmp/propose-pending2.log`. Data fix the same day: the KOAK gates lacked the worksheet
   exit fixes (CCR, RDD, LKV north; SUNNE, CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO south), which blocked six
   jets with `no assignment rule applies to SFOW no-gate runway 30 class J`. Engine gaps found: (1) **route
   building never runs when the SOP falls through to a heading**: `checkHeadingRoute` takes the filed tail, so
@@ -598,9 +603,9 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   transition, so the builder now also starts a chain from a SID's `baseFix`, after its transitions (landed
   2026-09-17: `RouteStart` on `BuiltRoute`, reason "WAGES is its own end fix and WAGES usually connects to
   LOSHN"; PXT415 settled; spoken "Skyline One departure, Wages, direct Loshn, then as filed" through R-AS-FILED).
-  Follow-up data edit: the shared `R-ROUTE-BUILD` row text still says "one of its published transitions"; extend
-  it to the end fix once the navaid brief (which also edits that file) lands. VOI5909's `CNDEL5 KAYEX LOSHN
-  BOILE …` stands.
+  Follow-up data edit **done** (confirmed 2026-09-17): the shared `R-ROUTE-BUILD` row reads "one of its
+  published transitions, or the fix the SID itself ends on" and cites the PXT415 ruling. VOI5909's
+  `CNDEL5 KAYEX LOSHN BOILE …` stands.
   The settled-fixture commit landed 2026-09-16 (25 fixtures; EJA115 carries the route box `OAK6 RBL J1 BTG
   OLM2` beside FL430 since its plan filed no SID). **Amendment rulings
   2026-09-16** (engine answers confirmed, to settle once the ids are renamed; vector-SID proposals gain `OAK` when
@@ -628,6 +633,10 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   `Q174 → FLCHR` connection row); N918AR re-ruled `NIMI6 OAK AVE EHF WAYVE1` (SMO props row held); SWA1254
   re-ruled `OAK6 OAK SAC ANAHO PRNCS SADYL4` as the KSFO library files it (`ANAHO → PRNCS` connection row); the
   KOAK library jet row `RZS LAX HUBRD#` to KSAN becomes `RZS LAX COMIX#`.
+- [ ] **The last two pending KOAK fixtures** (FFT2015 and UAL313, with their KSFO twins) are designed and
+  ruled on in [route-token-repair.md](./route-token-repair.md): read a filed route from the first element
+  that is not the SID's own structure (FFT2015, a scored route amendment), and drop a malformed route token
+  and build across the gap (UAL313, with a `Q124 -> BVL` connection row). Brief A dispatched 2026-09-17.
 - [ ] **New concept (user 2026-09-16): destination amendment box.** AAY218 on Amendment Practice 1A files `KPGI` with
   `KGPI` as the correction; the strip has type, altitude and route boxes only. The user chose a fourth box for the
   destination over importing the plan as corrected. Needs: schema (`amendments[].box: 'destination'`, fixture
