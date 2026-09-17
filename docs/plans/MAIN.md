@@ -37,7 +37,7 @@ one line and move its record to the archive.
 
 ## Inputs to fold into the rules
 
-- [ ] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement"
+- [x] OAK notices for the second-airport backlog: "OAK QUAKE SID: OFF — issue 270 HDG RV first fix for 12/10 jet departures, CFG OAKE"; "OAK SUNNE SID: OFF — issue 120 HDG RV first fix for jet 30 departures, CFG SFOW noise abatement" — landed 2026-09-16 as the two KOAK `notices` rows with their `heading` effect (`3ee592d`)
 
 ## Blockers
 
@@ -46,7 +46,7 @@ None. Worksheets are public Google Docs (ids in the subplan); no browser needed 
 ## Backlog
 
 - [ ] **v2, user steer 2026-09-15: free-text clearance entry** so students practise without dropdown hints. The student types (or dictates) the full spoken clearance; the grader normalises both sides (digits ↔ number words, "flight level three two zero" ↔ "FL320", punctuation, optional words such as "airport") and aligns the text against the CRAFT elements of `speakClearance` so each element is still graded green/red with its citation, plus a per-element diff showing what was said versus expected. Needs a tolerant matcher (per-element regex or token alignment), a decision on how strict wording is (accept "climb via the SID"? "then as filed" vs "direct"?), and the same seed/URL sharing as v1. Plan as a subplan before starting. The acceptable-but-inefficient verdict (step 14, 2026-09-16) is where two spoken-only readings belong once text is graded: "then as filed" after a bare exit fix, and a full route spelled out where the abbreviated form would do; the user decides whether they are acceptable or wrong
-- [ ] **v3, user steer 2026-09-15: KOAK as the second airport** — see [koak-v3.md](./koak-v3.md). Prep done 2026-09-15: OAK ATCT SOP v1.7 downloaded and hashed, 17 DP charts cached, SOP 2-2 tables read, the new rule concepts listed (type-specific class for DH8D, heading departures, hybrid SIDs that are climb-via eligible, continuation charts, approach category, optional noise rows), five OAK worksheets (2 phraseology, 3 amendment) and the S1-OAK-1/2/5 module texts read, the user's "Common Fixes" notes folded in. Next: `generator/airports/koak/worksheets.yaml` + import, CIFP SID inspection, then the rule-concept work
+- [ ] **v3, user steer 2026-09-15: KOAK as the second airport** — see [koak-v3.md](./koak-v3.md). Prep done 2026-09-15: OAK ATCT SOP v1.7 downloaded and hashed, 17 DP charts cached, SOP 2-2 tables read, the new rule concepts listed (type-specific class for DH8D, heading departures, hybrid SIDs that are climb-via eligible, continuation charts, approach category, optional noise rows), five OAK worksheets (2 phraseology, 3 amendment) and the S1-OAK-1/2/5 module texts read, the user's "Common Fixes" notes folded in. Status 2026-09-16: every rule concept and the KOAK data are on main (`3ee592d`, computed NCT membership `0e14430`); in flight: TEC initial/final altitudes (briefs 2f-i/2f-ii, user rulings on the subplan), then KOAK into `data/airports.json` (3b-ii, held in `wt/koak-data`), ZLA/ZLC LOA rows (3c), worksheet import and the validation loop
 - [ ] Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR
 
 ## Open questions (settled by the validation loops, recorded as data toggles)

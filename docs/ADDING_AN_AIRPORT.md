@@ -244,8 +244,12 @@ Both are optional; a directory without them builds with empty tables.
 **`tec.yaml`**: transcribe the route tool by hand (it is a Blazor app with no JSON API; wait a few seconds
 for it to render before reading). One row per printed line: `destination`, `plan`, `classes`,
 `runway_families` (`(1)`/`(28)` tags on the tool; empty means every departure runway of the plan), `route`
-with the SID written as `FAMILY#` so an AIRAC bump does not stale it, `altitude_cap_feet` from the
-trailing hundreds-of-feet figure, and `kind: adr` for assigned departure routes, which are advisory.
+with the SID written as `FAMILY#` so an AIRAC bump does not stale it, the trailing altitude pair as
+`initial_altitude_feet` / `final_altitude_feet` (the tool prints hundreds of feet as `initial/final`: `030/090`
+is 3,000 initial and 9,000 final; a blank final such as `100/` and a bare `060` both mean final = initial, user
+2026-09-16; a row printed with no altitude carries neither key), and `kind: adr` for assigned departure
+routes, which are advisory. The engine flies a TEC-routed flight at the final altitude, parity aside, and
+clears it to maintain the initial altitude in place of the SOP altitude row.
 Every destination must exist in `routes.yaml`; the build also checks that the DP a row begins on is
 published for a runway family the row departs from.
 
