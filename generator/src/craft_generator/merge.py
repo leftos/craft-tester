@@ -522,8 +522,8 @@ def _loa_rule(rule: LoaRule) -> Document:
 
 
 def _loa_rules(inputs: BuildInputs) -> list[Document]:
-    loa = inputs.airport.loa
-    return [] if loa is None else [_loa_rule(rule) for rule in loa.rules]
+    """Emit the LOA rows of the airport, the shared rows it inherits joined with its own by the loader."""
+    return [_loa_rule(rule) for rule in inputs.airport.loa.rules]
 
 
 def _route_library(inputs: BuildInputs) -> Document:

@@ -2,7 +2,8 @@
 
 ``generator/airports/<icao>/`` holds ``sop.yaml`` (:class:`SopData`), ``overrides.yaml``
 (:class:`Overrides`), ``routes.yaml`` (:class:`RouteLibrary`) and the two optional files ``tec.yaml``
-(:class:`TecData`) and ``loa.yaml`` (:class:`LoaData`); :class:`AirportInputs` is all of them loaded
+(:class:`TecData`) and ``loa.yaml`` (:class:`LoaData`, the rows this airport overrides or adds to the
+shared ``generator/shared/loa_rules.yaml``); :class:`AirportInputs` is all of them loaded
 together. ``worksheets.yaml`` (:class:`WorksheetConfig`) is read on its own, by
 ``craft-gen import-worksheets`` only, because no part of the airport document depends on it.
 
@@ -439,19 +440,6 @@ class Airline:
 
 
 @dataclass(frozen=True, slots=True)
-class SharedRouteFacts:
-    """The facts of a destination, an airline and an aircraft type, which hold at every airport.
-
-    They live in ``generator/shared/`` and an airport's ``routes.yaml`` lists only codes into them, so
-    no fact is copied between airports.
-    """
-
-    destinations: dict[str, Destination]
-    airlines: dict[str, Airline]
-    aircraft_types: dict[str, AircraftType]
-
-
-@dataclass(frozen=True, slots=True)
 class RouteEntry:
     """One filed route, keyed by the fix where the aircraft leaves the DP."""
 
@@ -568,6 +556,9 @@ class LoaRule:
 
     ``artcc`` covers every destination whose centre matches, ``destinations`` names airports; a row
     may carry either, both or neither, and neither means the rule covers every departure.
+    ``departures`` names the airports a shared row applies to, for the rows the LOA conditions on the
+    field the flight departs; ``None`` covers every airport. It is a build-time filter and is never
+    emitted.
     """
 
     id: str
@@ -575,15 +566,35 @@ class LoaRule:
     text: str
     artcc: str | None
     destinations: tuple[str, ...] | None
+    departures: tuple[str, ...] | None
     rule: LoaRuleKind
 
 
 @dataclass(frozen=True, slots=True)
 class LoaData:
-    """``loa.yaml``: the letters of agreement and the rule rows transcribed from them."""
+    """The letters of agreement and the rule rows transcribed from them.
+
+    ``shared/loa_rules.yaml`` holds the rows every airport inherits and an airport's own ``loa.yaml``
+    holds what that airport overrides by id or adds; :class:`AirportInputs` carries the two joined.
+    """
 
     sources: tuple[LoaSource, ...]
     rules: tuple[LoaRule, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class SharedRouteFacts:
+    """The facts of a destination, an airline and an aircraft type, and the inherited LOA rows.
+
+    They live in ``generator/shared/`` and an airport's ``routes.yaml`` lists only codes into them, so
+    no fact is copied between airports. ``loa`` is ``shared/loa_rules.yaml``, the inter-ARTCC rows
+    every airport inherits.
+    """
+
+    destinations: dict[str, Destination]
+    airlines: dict[str, Airline]
+    aircraft_types: dict[str, AircraftType]
+    loa: LoaData
 
 
 @dataclass(frozen=True, slots=True)
@@ -635,8 +646,10 @@ class WorksheetConfig:
 class AirportInputs:
     """The YAML files of one airport, loaded and cross-checked against each other.
 
-    ``tec`` and ``loa`` are ``None`` when the airport directory carries no ``tec.yaml`` or
-    ``loa.yaml``; the airport document then emits an empty table for them.
+    ``tec`` is ``None`` when the airport directory carries no ``tec.yaml``; the airport document then
+    emits an empty table for it. ``loa`` is the shared ``loa_rules.yaml`` rows this airport inherits
+    joined with the airport's own ``loa.yaml``, so it holds the inherited rows even where the airport
+    directory carries no file of its own.
     """
 
     icao: str
@@ -644,4 +657,4 @@ class AirportInputs:
     overrides: Overrides
     routes: RouteLibrary
     tec: TecData | None
-    loa: LoaData | None
+    loa: LoaData

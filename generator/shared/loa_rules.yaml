@@ -1,6 +1,11 @@
-# Letter-of-agreement rules that override the default altitude and route checks for departures bound
-# for another center. Each rule cites the LOA and section it came from. `destinations` names airports;
-# `artcc` applies the rule to every destination whose `artcc` in routes.yaml matches.
+# Inter-ARTCC letter-of-agreement rules every airport inherits: they override the default altitude
+# and route checks for departures bound for another center, and the agreement is between two centers
+# rather than a fact of one field. Each rule cites the LOA and the section it came from.
+# `destinations` names airports; `artcc` applies the rule to every destination whose `artcc` in
+# routes.yaml matches; `departures: [KOAK, KSFO]` applies the rule only when the airport being built
+# is listed, for the rows the LOA conditions on the departure field. `departures` is a build-time
+# filter and is never emitted. An airport's own `loa.yaml` overrides a row of the same id with its
+# own source, text and effect, and adds the rows only that airport has.
 sources:
   - id: zoa-zse
     title: Seattle ARTCC and Oakland ARTCC Letter of Agreement

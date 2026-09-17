@@ -11,6 +11,7 @@ from craft_generator.sop.load import (
     AIRCRAFT_TYPES_FILE,
     AIRLINES_FILE,
     DESTINATIONS_FILE,
+    LOA_RULES_FILE,
     OVERRIDES_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
@@ -85,7 +86,12 @@ KSFO_FLEET_AIRLINES = {
     "SR22": set[str](),
     "M20T": set[str](),
 }
-SHARED_FILES = (("destinations", DESTINATIONS_FILE), ("airlines", AIRLINES_FILE), ("aircraft_types", AIRCRAFT_TYPES_FILE))
+SHARED_FILES = (
+    ("destinations", DESTINATIONS_FILE),
+    ("airlines", AIRLINES_FILE),
+    ("aircraft_types", AIRCRAFT_TYPES_FILE),
+    ("loa_rules", LOA_RULES_FILE),
+)
 
 
 def shared_copy(tmp_path: Path, **mutations: Mutation) -> SharedRouteFacts:

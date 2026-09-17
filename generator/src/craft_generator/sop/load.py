@@ -9,9 +9,11 @@ of the clearance. Every message names the file, the row id and the key it came f
 Each file is loaded separately (:func:`load_sop`, :func:`load_overrides`, :func:`load_routes`,
 :func:`load_tec`, :func:`load_loa`), checking what it can see on its own; :func:`load_airport` loads
 them all and adds the checks that span files. The facts of a destination, an airline and an aircraft
-type hold at every airport, so they live in ``generator/shared/`` (:func:`load_shared_route_facts`)
-and ``routes.yaml`` lists only codes into them. ``tec.yaml`` and ``loa.yaml`` are optional - an airport
-without them has no TEC route and no letter-of-agreement rule - and are checked when present.
+type hold at every airport, and so do the inter-ARTCC LOA rows, so they live in ``generator/shared/``
+(:func:`load_shared_route_facts`, :func:`load_shared_loa_rules`) and ``routes.yaml`` lists only codes
+into them. ``tec.yaml`` is optional - an airport without it has no TEC route - and is checked when
+present; ``loa.yaml`` is optional too and holds only what the airport overrides by id or adds to the
+shared rows (:func:`joined_loa_rules`), which are checked against the airport once joined.
 """
 
 import re
@@ -102,6 +104,7 @@ LOA_FILE = "loa.yaml"
 WORKSHEETS_FILE = "worksheets.yaml"
 EQUIPMENT_SUFFIXES_FILE = "equipment_suffixes.yaml"
 PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
+LOA_RULES_FILE = "loa_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
 AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
 NCT_BOUNDARY_FILE = "nct_boundary.yaml"
@@ -117,6 +120,7 @@ _SUFFIX_PATTERN = re.compile(r"^/[A-Z]$")
 _CIFP_ID_PATTERN = re.compile(r"^(?P<family>[A-Z]+)\d+$")
 _DESIGNATOR_PATTERN = re.compile(r"^[A-Z0-9]{2,4}$")
 _AIRLINE_CODE_PATTERN = re.compile(r"^[A-Z]{3}$")
+_AIRPORT_ICAO_PATTERN = re.compile(r"^[A-Z]{4}$")
 _ROUTE_TOKEN_PATTERN = re.compile(r"^[A-Z0-9]{2,5}$")
 
 
@@ -1013,22 +1017,24 @@ def load_aircraft_types(path: Path) -> dict[str, AircraftType]:
 
 
 def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
-    """Load the destination, airline and aircraft-type tables every airport shares.
+    """Load the destination, airline and aircraft-type tables and the LOA rows every airport shares.
 
     Args:
         shared: The ``generator/shared`` directory, i.e. :func:`shared_dir`.
 
     Returns:
-        The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into.
+        The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into, and
+        the inter-ARTCC LOA rows every airport inherits.
 
     Raises:
-        ValueError: One of the three files fails its own checks.
-        OSError: One of the three files is missing.
+        ValueError: One of the four files fails its own checks.
+        OSError: One of the four files is missing.
     """
     return SharedRouteFacts(
         destinations=load_shared_destinations(shared / DESTINATIONS_FILE),
         airlines=load_airlines(shared / AIRLINES_FILE),
         aircraft_types=load_aircraft_types(shared / AIRCRAFT_TYPES_FILE),
+        loa=load_shared_loa_rules(shared / LOA_RULES_FILE),
     )
 
 
@@ -1326,6 +1332,17 @@ def _loa_effect(row: _Row) -> LoaRuleKind:
     return effect
 
 
+def _loa_departures(row: _Row) -> tuple[str, ...] | None:
+    codes = row.optional_texts("departures")
+    for index, code in enumerate(codes or ()):
+        if _AIRPORT_ICAO_PATTERN.fullmatch(code) is None:
+            raise ValueError(
+                f"{row.where}.departures[{index}]: {code!r} is not a four-letter upper-case ICAO airport id, e.g. KOAK; "
+                "`departures` lists the airports the rule applies to when they are the one being built"
+            )
+    return codes
+
+
 def _loa_rule(row: _Row) -> LoaRule:
     rule = LoaRule(
         id=row.text("id"),
@@ -1333,26 +1350,14 @@ def _loa_rule(row: _Row) -> LoaRule:
         text=row.text("text"),
         artcc=row.optional_text("artcc"),
         destinations=row.optional_texts("destinations"),
+        departures=_loa_departures(row),
         rule=_loa_effect(row.child("rule")),
     )
     row.finish()
     return rule
 
 
-def load_loa(path: Path) -> LoaData:
-    """Load and check one airport's ``loa.yaml``.
-
-    Args:
-        path: Path to the file.
-
-    Returns:
-        The letters of agreement and the rule rows transcribed from them.
-
-    Raises:
-        ValueError: The file carries an unknown key, a rule kind the schema does not define, or a
-            rotated-parity course outside 0-359 degrees.
-        OSError: The file is missing.
-    """
+def _loa_data(path: Path) -> LoaData:
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))
     data = LoaData(
@@ -1361,6 +1366,82 @@ def load_loa(path: Path) -> LoaData:
     )
     root.finish()
     return data
+
+
+def load_loa(path: Path) -> LoaData:
+    """Load and check one airport's ``loa.yaml``, i.e. what it overrides by id or adds of its own.
+
+    Args:
+        path: Path to the file.
+
+    Returns:
+        The letters of agreement and the rule rows transcribed from them.
+
+    Raises:
+        ValueError: The file carries an unknown key, a rule kind the schema does not define, a
+            rotated-parity course outside 0-359 degrees, or a malformed ``departures`` code.
+        OSError: The file is missing.
+    """
+    return _loa_data(path)
+
+
+def load_shared_loa_rules(path: Path) -> LoaData:
+    """Load the inter-ARTCC letter-of-agreement rows every airport inherits.
+
+    Args:
+        path: Path to ``generator/shared/loa_rules.yaml``.
+
+    Returns:
+        The letters of agreement and their rule rows, in file order. An airport's own ``loa.yaml``
+        overrides a row of the same id, and a row naming ``departures`` covers only those airports.
+
+    Raises:
+        ValueError: The file carries an unknown key, a rule kind the schema does not define, a
+            rotated-parity course outside 0-359 degrees, or a malformed ``departures`` code.
+        OSError: The file is missing.
+    """
+    return _loa_data(path)
+
+
+def joined_loa_rules(shared: LoaData, airport: LoaData | None, icao: str) -> tuple[LoaRule, ...]:
+    """Join the LOA rows every airport inherits with the rows one airport states itself.
+
+    Args:
+        shared: The inherited rows, in the order ``shared/loa_rules.yaml`` states them.
+        airport: The rows the airport's own ``loa.yaml`` states, or ``None`` where it has no file.
+        icao: The airport being built, which decides whether a row naming ``departures`` applies.
+
+    Returns:
+        The shared rows that cover ``icao``, in shared-file order, each replaced in place by the
+        airport row of the same id where the airport states one, followed by the rows only the
+        airport has, in its file order.
+    """
+    inherited = [rule for rule in shared.rules if rule.departures is None or icao in rule.departures]
+    own = () if airport is None else airport.rules
+    overrides = {rule.id: rule for rule in own}
+    inherited_ids = {rule.id for rule in inherited}
+    rules = [overrides.get(rule.id, rule) for rule in inherited]
+    rules += [rule for rule in own if rule.id not in inherited_ids]
+    return tuple(rules)
+
+
+def joined_loa_sources(shared: LoaData, airport: LoaData | None) -> tuple[LoaSource, ...]:
+    """Join the letters of agreement every airport inherits with those one airport states itself.
+
+    Args:
+        shared: The inherited sources, in the order ``shared/loa_rules.yaml`` states them.
+        airport: The sources the airport's own ``loa.yaml`` states, or ``None`` where it has no file.
+
+    Returns:
+        The shared sources in shared-file order, each replaced in place by the airport source of the
+        same id where the airport states one, followed by the sources only the airport has.
+    """
+    own = () if airport is None else airport.sources
+    overrides = {source.id: source for source in own}
+    inherited_ids = {source.id for source in shared.sources}
+    sources = [overrides.get(source.id, source) for source in shared.sources]
+    sources += [source for source in own if source.id not in inherited_ids]
+    return tuple(sources)
 
 
 def _worksheet(row: _Row) -> Worksheet:
@@ -1492,12 +1573,6 @@ def _check_tec(tec: TecData, known: _Known, where: str) -> None:
         _check_tec_route_families(route, known, at)
 
 
-def _check_loa(loa: LoaData, known: _Known, where: str) -> None:
-    for rule in loa.rules:
-        for destination in rule.destinations or ():
-            _check_destination(destination, known, f"{where} rules[{rule.id}]")
-
-
 def _optional_tec(path: Path, known: _Known) -> TecData | None:
     if not path.is_file():
         return None
@@ -1506,11 +1581,31 @@ def _optional_tec(path: Path, known: _Known) -> TecData | None:
     return tec
 
 
-def _optional_loa(path: Path, known: _Known) -> LoaData | None:
-    if not path.is_file():
-        return None
-    loa = load_loa(path)
-    _check_loa(loa, known, _where(path))
+def _joined_loa(directory: Path, shared: LoaData, icao: str, known: _Known) -> LoaData:
+    """Join the shared LOA rows this airport inherits with its own ``loa.yaml`` and check them.
+
+    Args:
+        directory: The airport directory, which carries a ``loa.yaml`` only where it overrides or
+            adds a row.
+        shared: The rows of ``generator/shared/loa_rules.yaml``.
+        icao: The airport being built, which decides whether a row naming ``departures`` applies.
+        known: The names the airport's other files define, as the LOA rows cite them.
+
+    Returns:
+        The joined sources and rules.
+
+    Raises:
+        ValueError: A row names a destination no ``routes.yaml`` row lists, or the airport's own file
+            fails its own checks.
+    """
+    path = directory / LOA_FILE
+    airport = load_loa(path) if path.is_file() else None
+    loa = LoaData(sources=joined_loa_sources(shared, airport), rules=joined_loa_rules(shared, airport, icao))
+    own = {rule.id for rule in airport.rules} if airport is not None else set()
+    for rule in loa.rules:
+        where = _where(path) if rule.id in own else f"shared/{LOA_RULES_FILE}"
+        for destination in rule.destinations or ():
+            _check_destination(destination, known, f"{where} rules[{rule.id}]")
     return loa
 
 
@@ -1518,12 +1613,13 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
     """Load the YAML files of one airport and check them against each other.
 
     ``sop.yaml``, ``overrides.yaml`` and ``routes.yaml`` are required; ``tec.yaml`` and ``loa.yaml``
-    are loaded when the directory holds them.
+    are loaded when the directory holds them. The LOA rows of ``shared`` that cover this airport are
+    joined with its own ``loa.yaml`` and checked together.
 
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
-        shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into,
-            from :func:`load_shared_route_facts`.
+        shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into
+            and the inherited LOA rows, from :func:`load_shared_route_facts`.
 
     Returns:
         The loaded and cross-checked inputs.
@@ -1549,5 +1645,5 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         overrides=overrides,
         routes=routes,
         tec=_optional_tec(directory / TEC_FILE, known),
-        loa=_optional_loa(directory / LOA_FILE, known),
+        loa=_joined_loa(directory, shared.loa, sop.airport.icao, known),
     )

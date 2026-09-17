@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -6,15 +7,25 @@ from typing import Any
 import pytest
 import yaml
 
-from craft_generator.sop.load import LOA_FILE, OVERRIDES_FILE, ROUTES_FILE, SOP_FILE, TEC_FILE, load_airport, load_tec
-from craft_generator.sop.model import AirportInputs, LoaData, LoaRule, ParityRotatedRule, RouteTokenRule, SharedRouteFacts, TecData, TecRoute
+from craft_generator.sop.load import LOA_FILE, OVERRIDES_FILE, ROUTES_FILE, SOP_FILE, TEC_FILE, airport_dir, load_airport, load_tec
+from craft_generator.sop.model import (
+    AirportInputs,
+    EvenAltitudeRule,
+    LoaRule,
+    ParityRotatedRule,
+    RouteTokenRule,
+    SharedRouteFacts,
+    TecData,
+    TecRoute,
+)
 
 Mutation = Callable[[Any], None]
 
-FILES = (("sop", SOP_FILE), ("overrides", OVERRIDES_FILE), ("routes", ROUTES_FILE), ("tec", TEC_FILE), ("loa", LOA_FILE))
+FILES = (("sop", SOP_FILE), ("overrides", OVERRIDES_FILE), ("routes", ROUTES_FILE), ("tec", TEC_FILE))
 
 TEC_ROUTE_COUNT = 47
 LOA_RULE_COUNT = 3
+SHARED_LOA_RULE_IDS = ["LOA-ZSE-PARITY", "LOA-ZSE-SEA-ROUTE", "LOA-ZSE-PDX-ROUTE"]
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_ALTITUDE_FEET = 6000
 KSMF_JET_ALTITUDE_FEET = 10000
@@ -22,6 +33,16 @@ BELOW_THE_KSMF_JET_INITIAL_FEET = 5000
 PARITY_ODD_COURSE_FROM = 20
 PARITY_ODD_COURSE_TO = 199
 OUT_OF_RANGE_COURSE = 360
+
+KOAK_ONLY_RULE = LoaRule(
+    id="LOA-TEST-KOAK-ONLY",
+    source="a test row",
+    text="Oakland departures to Salt Lake are assigned even altitudes",
+    artcc="ZLC",
+    destinations=None,
+    departures=("KOAK",),
+    rule=EvenAltitudeRule(),
+)
 
 
 def airport_copy(tmp_path: Path, ksfo_dir: Path, **mutations: Mutation) -> Path:
@@ -37,16 +58,22 @@ def airport_copy(tmp_path: Path, ksfo_dir: Path, **mutations: Mutation) -> Path:
     return target
 
 
+def write_loa(directory: Path, rules: list[Any], sources: list[Any] | None = None) -> Path:
+    """Write the airport ``loa.yaml`` a copied airport directory overrides the shared rows with."""
+    data = {"sources": sources or [], "rules": rules}
+    (directory / LOA_FILE).write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    return directory
+
+
+def shared_with(shared: SharedRouteFacts, rule: LoaRule) -> SharedRouteFacts:
+    """Return the shared facts with one more inherited LOA rule."""
+    return replace(shared, loa=replace(shared.loa, rules=(*shared.loa.rules, rule)))
+
+
 def tec_of(inputs: AirportInputs) -> TecData:
     tec = inputs.tec
     assert tec is not None
     return tec
-
-
-def loa_of(inputs: AirportInputs) -> LoaData:
-    loa = inputs.loa
-    assert loa is not None
-    return loa
 
 
 def route_by_id(inputs: AirportInputs, route_id: str) -> TecRoute:
@@ -54,12 +81,12 @@ def route_by_id(inputs: AirportInputs, route_id: str) -> TecRoute:
 
 
 def rule_by_id(inputs: AirportInputs, rule_id: str) -> LoaRule:
-    return next(rule for rule in loa_of(inputs).rules if rule.id == rule_id)
+    return next(rule for rule in inputs.loa.rules if rule.id == rule_id)
 
 
 def test_the_transcribed_tec_and_loa_files_load(ksfo_inputs: AirportInputs) -> None:
     tec = tec_of(ksfo_inputs)
-    loa = loa_of(ksfo_inputs)
+    loa = ksfo_inputs.loa
     assert len(tec.routes) == TEC_ROUTE_COUNT
     assert tec.source.title == "ZOA Reference Tool, TEC/AAR/ADR Routes"
     assert tec.source.transcribed_at == date(2026, 9, 15)
@@ -101,12 +128,16 @@ def test_a_route_rule_carries_its_tokens_and_destinations(ksfo_inputs: AirportIn
     assert (portland.artcc, portland.destinations) == (None, ("KPDX",))
 
 
-def test_an_airport_without_the_optional_files_carries_no_tec_or_loa(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+def test_an_airport_without_the_optional_files_has_no_tec_and_inherits_the_shared_loa_rules(
+    tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts
+) -> None:
     directory = airport_copy(tmp_path, ksfo_dir)
     (directory / TEC_FILE).unlink()
-    (directory / LOA_FILE).unlink()
+    assert not (directory / LOA_FILE).exists()
     inputs = load_airport(directory, shared_route_facts)
-    assert (inputs.tec, inputs.loa) == (None, None)
+    assert inputs.tec is None
+    assert [rule.id for rule in inputs.loa.rules] == SHARED_LOA_RULE_IDS
+    assert [source.id for source in inputs.loa.sources] == ["zoa-zse"]
 
 
 def test_a_tec_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
@@ -165,16 +196,73 @@ def test_a_tec_initial_altitude_above_its_final_one_is_named(tmp_path: Path, ksf
 
 
 def test_a_loa_destination_outside_the_route_library_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
-    def mutate(data: Any) -> None:
-        data["rules"][1]["destinations"] = ["KSEA", "KZZZ"]
-
+    override = {
+        "id": "LOA-ZSE-SEA-ROUTE",
+        "source": "a test row",
+        "text": "SEA arrivals from the Bay",
+        "destinations": ["KSEA", "KZZZ"],
+        "rule": {"kind": "route", "tokens": ["RBL"]},
+    }
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [override])
     with pytest.raises(ValueError, match=r"loa\.yaml rules\[LOA-ZSE-SEA-ROUTE\]: destination 'KZZZ' is in no `destinations` row of routes\.yaml"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, loa=mutate), shared_route_facts)
+        load_airport(directory, shared_route_facts)
 
 
 def test_a_rotated_parity_course_outside_the_compass_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
-    def mutate(data: Any) -> None:
-        data["rules"][0]["rule"]["odd_course_to"] = OUT_OF_RANGE_COURSE
-
+    override = {
+        "id": "LOA-ZSE-PARITY",
+        "source": "a test row",
+        "text": "the rotated hemispheres",
+        "artcc": "ZSE",
+        "rule": {"kind": "parity_rotated", "odd_course_from": PARITY_ODD_COURSE_FROM, "odd_course_to": OUT_OF_RANGE_COURSE},
+    }
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [override])
     with pytest.raises(ValueError, match=r"rules\[LOA-ZSE-PARITY\].rule.odd_course_to: course 360 is not a magnetic course between 0 and 359"):
-        load_airport(airport_copy(tmp_path, ksfo_dir, loa=mutate), shared_route_facts)
+        load_airport(directory, shared_route_facts)
+
+
+def test_an_airport_row_overrides_a_shared_row_by_id_and_adds_its_own(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    override = {
+        "id": "LOA-ZSE-PDX-ROUTE",
+        "source": "a test row",
+        "text": "PDX arrivals from the Bay leave on MOXEE only",
+        "destinations": ["KPDX"],
+        "rule": {"kind": "route", "tokens": ["MOXEE"]},
+    }
+    added = {
+        "id": "LOA-TEST-EXTRA",
+        "source": "a test row",
+        "text": "everything to Salt Lake is even",
+        "artcc": "ZLC",
+        "rule": {"kind": "even"},
+    }
+    source = {"id": "ksfo-local", "title": "A letter only KSFO signs", "effective": date(2026, 9, 16), "url": "https://example.invalid/loa"}
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [override, added], [source])
+    loa = load_airport(directory, shared_route_facts).loa
+    assert [rule.id for rule in loa.rules] == [*SHARED_LOA_RULE_IDS, "LOA-TEST-EXTRA"]
+    assert [source_row.id for source_row in loa.sources] == ["zoa-zse", "ksfo-local"]
+    portland = next(rule for rule in loa.rules if rule.id == "LOA-ZSE-PDX-ROUTE")
+    assert isinstance(portland.rule, RouteTokenRule)
+    assert (portland.rule.tokens, portland.source) == (("MOXEE",), "a test row")
+
+
+def test_a_shared_rule_naming_departures_reaches_only_those_airports(ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    shared = shared_with(shared_route_facts, KOAK_ONLY_RULE)
+    ksfo = [rule.id for rule in load_airport(ksfo_dir, shared).loa.rules]
+    koak = [rule.id for rule in load_airport(airport_dir("KOAK"), shared).loa.rules]
+    assert ksfo == SHARED_LOA_RULE_IDS
+    assert koak == [*SHARED_LOA_RULE_IDS, KOAK_ONLY_RULE.id]
+
+
+def test_a_departures_code_that_is_no_icao_identifier_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    added = {
+        "id": "LOA-TEST-EXTRA",
+        "source": "a test row",
+        "text": "everything to Salt Lake is even",
+        "artcc": "ZLC",
+        "departures": ["OAK"],
+        "rule": {"kind": "even"},
+    }
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [added])
+    with pytest.raises(ValueError, match=r"rules\[LOA-TEST-EXTRA\].departures\[0\]: 'OAK' is not a four-letter upper-case ICAO airport id"):
+        load_airport(directory, shared_route_facts)
