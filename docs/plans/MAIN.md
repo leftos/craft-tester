@@ -50,13 +50,30 @@ Three UI questions the engine already answers correctly; all three are presentat
 - [ ] **An acceptable route box reads backwards for the navaid case.** `ui/results.ts:69` labels every
   `acceptable` verdict `shorter: …` and `:48` counts it "acceptable but inefficient", but where the box is
   acceptable because a radar-vector SID's airport navaid is missing or present, the proposal is the
-  *longer* form. Also: the UI never shows an amendment's `reason`, only its citations, though `reason` is
-  required on three amendment shapes in the schema (`ui/session.ts:79` shows it for unresolved items only)
-- [ ] **Should the corrected strip follow the student's box when it was right?** Today `ui/session.ts:112`
-  reads `drawn.result.corrected`, the engine's plan, always. Seed 83: a student who fixes the route box
-  alone still scores 3 of 3, but the corrected strip shows the engine's type-side fix (`E75L/L` with the
-  filed TRUKN2 route), which a student who fixed the route may find surprising. Raised at the 2026-09-15
-  playtest and never answered
+  *longer* form. `Grade` (`rules/types.ts:193-199`) can already tell the two apart three ways: `element`
+  (only `A.expect` and `BOX.route` ever carry `acceptable`, and only the expect clause is genuinely
+  shorter), the `R-RV-NAVAID` citation that only the navaid case adds (`amend/grade.ts:230-237`), or a
+  token count. `results.test.ts:52-68` and `:88-93` pin the current wording
+- [ ] **The UI never shows an amendment's `reason`, only its citations**, though all three amendment shapes
+  require it (`schema.ts:778, 801, 813`). Survey 2026-09-17 corrects this index: the earlier note that
+  `ui/session.ts:79` shows it "for unresolved items only" was wrong — that line is `Unresolved.reason`
+  (`rules/types.ts:158-162`), the engine's "I could not clear this seed" text, an unrelated type. An
+  amendment's `reason` is shown nowhere at all
+- [ ] **The corrected strip follows the student's boxes where those were right** (user 2026-09-17, choosing
+  this over labelling the engine's plan or drawing both strips). Today `ui/session.ts:112` reads
+  `drawn.result.corrected`, the engine's plan, always. Seed 83: a student who fixes the route box alone
+  still scores 3 of 3, but the corrected strip shows the engine's type-side fix (`E75L/L` with the filed
+  TRUKN2 route). Two things the survey says this needs, neither of which exists:
+  - [ ] Nothing folds `BoxAnswer`s into a `Scenario`. They are free text; `apply` (`amend/engine.ts:82-87`)
+    folds `ResolvedAmendment`s, which carry `proposedFeet`/`proposed`
+  - [ ] **Open question for the user before this is briefed:** the graded clearance is resolved from the
+    engine's corrected plan at session-build time (`ui/session.ts:112`), and `ARCHITECTURE.md:98-101`
+    records why — "the engine's corrected plan, never the student's, so a wrong amendment does not compound
+    into a wrong clearance". Drawing the strip from the student's boxes while grading against the engine's
+    plan makes the strip and the CRAFT form disagree. Does the strip alone follow the student (display
+    only, grading untouched), or does the resolve move too? The recorded rule covers grading, so
+    display-only leaves it intact — but ARCHITECTURE.md still needs a line saying the strip is the
+    exception
 - [ ] **Route row alignment.** The route row's answer and new-value controls start further right than the
   other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes. Left as
   a choice for the user 2026-09-16
@@ -77,21 +94,58 @@ Two gaps where the engine is right but the drill cannot reach it. Gate: aviation
 
 Findings recorded while KOAK landed, none acted on. Gate: generator.
 
-- [ ] **Five altitude restrictions in `data/koak.json` carry `"fix": ""`** (`"between" 1400/2000`), so a
-  restriction exists with nothing to hang it on. KSFO has none. Fix in the chart-text/restriction parser
+Surveyed 2026-09-17; the survey corrected three of these, noted inline.
+
+- [ ] **Five altitude restrictions in `data/koak.json` carry `"fix": ""`** (`"between" 1400/2000`, on
+  COAST9, NUEVO8, OAK6, QUAKE2, SKYL1), so a restriction exists with nothing to hang it on. KSFO has none.
+  **Correction: this is not the chart-text parser.** The legs are CIFP `VD` (heading to a DME distance),
+  which has no fix ident by construction, and `VD` is simply missing from `INITIAL_CLIMB_TERMINATORS`
+  (`cifp/sid.py:31`) beside the `VA`/`CA` it belongs with — KSFO's blank-fix legs are all `VA`/`CA`, which
+  is why it has none. The chart text carries only the gradient note, so nothing is recoverable. Knock-on:
+  COAST9 and NUEVO8 have no other restriction, so `hasCrossingRestrictions` and `climbViaEligible`
+  (`merge.py:670-691`) flip false and their phraseology would drop to "maintain" against the SOP rows that
+  clear NUEVO# "CVS x 10,000" — both need `climb_via_eligible: true` in `koak/overrides.yaml`, the OAK6
+  precedent. `web/src/rules/route.ts:119-129` carries a filter and comment working around the empty fix;
+  they come out with it
 - [ ] **`merge._check_approach_categories` can never fire**: `_fleet_entry` always writes
   `_approach_category(...)`, which raises when it cannot resolve, so the `missing` list is always empty and
-  the guard at `merge.py:1092` is dead. Delete it, or move the check ahead of `_approach_category`
-- [ ] **`A-ONE-WAY-AIRWAY` is cited nowhere**, so the reveal cannot say why a level stood on a one-way
-  oceanic airway
-- [ ] **`LoaData.sources` is joined but never emitted**
-- [ ] **Never-routed TEC rows**: `TEC-KMRY-SFOE-J`, `TEC-KWVI-SFOE-J`, `TEC-KSJC-SFOE-J` at KOAK and
-  `TEC-KLVK-SFOW-JT-01`, `TEC-KOAK-SFOE-TP` at KSFO; eight KOAK library rows are clean nowhere
-- [ ] **TEC rows that name no fix** (`RH RV`, `OAK6 RV`, `H090 RV`)
+  the guard at `merge.py:1092` is dead. Delete it — the "move the check ahead" variant makes
+  `approachCategory` optional in the schema and lets both data files ship fleet rows with no category, so
+  it is a separate concept if the conditional rule is ever wanted
+- [ ] **`A-ONE-WAY-AIRWAY`.** **Correction: the row does not exist** — it was never authored
+  (`archive/koak-v3.md:584-593` says so outright), so this is not a missing citation on an existing row.
+  The exemption itself works (`amend/altitude.ts:140-143, 246-251`) but drops the parity `Constraint`
+  before it is built, and citations are taken only from broken constraints, so an exempted flight produces
+  none. Needs the row authored beside `A-PARITY` **and** a mechanism chosen — awaiting the user
+- [ ] **`LoaData.sources` is joined but never emitted** (`sop/load.py:1617-1633, 1796`); nothing in
+  `merge.py` reads it and `schema.ts` has no field for it. Delete the dead field, or fold it into
+  `provenance.secondarySources` — awaiting the user
+- [ ] **Never-routed TEC rows**, three distinct causes — awaiting the user. (a) KOAK `TEC-KMRY-SFOE-J`,
+  `TEC-KWVI-SFOE-J`, `TEC-KSJC-SFOE-J` begin `OAK#` but exit south over EUGEN/ARTAQ, and SFOE southbound
+  jets are assigned KATFH#/SKYL#, never OAK#. (b) KSFO `TEC-KLVK-SFOW-JT-01` is shadowed by the looser
+  `TEC-KLVK-SFOW-JT` and cannot rescue the non-RNAV case because its route's exit fix ALTAM is in no KSFO
+  gate. (c) KSFO `TEC-KOAK-SFOE-TP` is the bare `GAPP#`, which names no fix. Also: `tecAltitudes.test.ts`
+  reports unroutable rows but filters to those stating `initialAltitudeFeet` (`:203`), which hides three
+  of the five; dropping that filter makes all five visible without changing an assertion
+- [ ] **TEC rows that name no fix.** **Correction: `RH RV`, `OAK6 RV` and `H090 RV` are not in the repo** —
+  they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
+  `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
+  `_check_fix_spoken` would fail on `RV` while silently teaching the speaker to read `RH` as "Arsha NDB",
+  a real navaid. Add `_check_tec_route_tail` beside `_check_tec_heads`, failing a row whose route names no
+  fix after its head — the sentence `rules/route.ts:200-202` already enforces at runtime, moved to build
+  time
 - [ ] **`direction_runway_preference` maps family 10 to 10R** against the 10L prop default
-- [ ] **Nothing checks that an airline-default row lists a class that airline flies**
+  (`koak/sop.yaml:110-117`, six entries) — awaiting the user
+- [ ] **Nothing checks that an airline-default row lists a class that airline flies.** Extend
+  `_check_runway_defaults` (`merge.py:869-890`), the only place the runway rows and the fleet are joined —
+  `sop/load.py` validates `sop.yaml` before `routes.yaml` loads, which is why `_check_runway_airlines` can
+  only check uniqueness. PCM/`[T]` is consistent today, so this is a guard, not a fix
 - [ ] **The amendment worksheet parser counts five non-blank cells**, so an empty plan cell shifts every
-  later row
+  later row. `_cells` (`worksheets.py:260-261`) drops empty lines, so an empty cell disappears rather than
+  becoming an empty string, and `parse_amendment_sheet` slices positionally (`:341-364`). One to four
+  blanks raise, but the message blames the last row — the wrong end of the sheet; **any multiple of five
+  blanks parses silently wrong** and writes corrupt fixtures under callsign-derived filenames. No
+  checked-in fixture exercises it
 
 ## Wave 5 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -202,6 +256,7 @@ One line per step; the full record and the user decisions behind each are in the
   it introduced are in ADDING_AN_AIRPORT.md "Lessons from KOAK"
 - [x] Browser-check tooling: `CRAFT_PREVIEW_URL` picks the preview, so two builds can be checked at once, and
   a button with no text lists by its `aria-label` — 2026-09-17
+- [x] The strip's revision number is left-aligned under the callsign — 2026-09-17
 - [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
   offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
   pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules

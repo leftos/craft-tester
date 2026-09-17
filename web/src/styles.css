@@ -286,7 +286,6 @@ button.primary:disabled {
 }
 
 .strip-revision {
-  align-self: flex-end;
   font-size: 8px;
   line-height: 9px;
 }
