@@ -1,6 +1,6 @@
 # Reading a filed route the pilot typed badly
 
-Subplan of [MAIN.md](./MAIN.md) and [koak-v3.md](./koak-v3.md). The last two pending KOAK worksheet
+Subplan of [MAIN.md](../MAIN.md) and [koak-v3.md](./koak-v3.md). The last two pending KOAK worksheet
 fixtures, and their KSFO twins, file routes whose leading or middle tokens do not name what the engine
 expects. Each needs a rule concept; the user ruled on all three questions 2026-09-17.
 

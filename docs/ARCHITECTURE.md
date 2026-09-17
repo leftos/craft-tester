@@ -93,6 +93,30 @@ airway shape on an airway, clearance mode draws the plan with no procedure token
 amends a filed SID down to the tail and offers the heading as the last procedure option. The spoken
 transmission ends "expect runway (designator)".
 
+### Amendment mode
+
+A session is **amend, then read**. The student corrects the strip, the boxes are graded, and the same
+scenario continues into the CRAFT form for the corrected plan — the *engine's* corrected plan, never the
+student's, so a wrong amendment does not compound into a wrong clearance. Knowing that nothing is wrong is
+half the skill, so "correct as filed" is an explicit answer per box and amending a correct box is a miss;
+draws are up to two faults with a fifth of them clean.
+
+- **The route box holds the whole route, SID token first**, as filed on VATSIM. The form's procedure row
+  is pre-filled from the corrected box and stays editable.
+- **The type box is corrected first** and the altitude and route boxes are judged on that plan, so every
+  box agrees with the reveal. A suffix without Mode C is illegal on VATSIM and is raised to the fleet's
+  first Mode C suffix (`T-MODE-C`).
+- **A plan filed with no SID is a route fault**: the proposed route prepends the SID the clearance engine
+  issues.
+- **The proposed altitude is the highest legal altitude at or below the filed one** — legal meaning it
+  satisfies parity (91.179 or the LOA rotation), the RVSM band for a non-RVSM suffix and the TEC cap at
+  once. A controller does not apply an aircraft's service ceiling, and a one-way oceanic airway is exempt
+  from parity.
+- **The route rule is one rule**: the assigned SID plus the filed tail, or the TEC route where one is
+  obligatory, after `routeBuild.ts` has tried to connect the SOP's SID to the filed route.
+- **Answers are normalised before comparison**: uppercased, whitespace collapsed, the route compared as
+  tokens, and an altitude accepted as `32000`, `32,000`, `FL320` or `320`.
+
 ## Fixture lifecycle
 
 1. `craft-gen import-worksheets` writes worksheet plans to `fixtures/<icao>/worksheets/` as `pending`
@@ -101,6 +125,23 @@ transmission ends "expect runway (designator)".
 2. `pnpm -C web propose <id>` prints the engine's clearance with citations.
 3. The user confirms or corrects; a correction is a YAML edit plus `craft-gen build`.
 4. The fixture gains `expected` and becomes `settled`. Settled fixtures fail the suite when they break.
+
+## Why it is built this way
+
+The choices below were made when the project was scoped and have held since; the reasoning is here because
+the code shows only the outcome.
+
+| decision | choice | why |
+|---|---|---|
+| rules engine location | TypeScript only, `web/src/rules/` | the game grades client-side; a Python mirror would be a second implementation with no consumer. Python does data-integrity checks only |
+| schema source of truth | zod in `web/src/data/schema.ts`, `z.toJSONSchema()` exported to the checked-in `data/schema/*.json`, which the generator validates against | one artifact yields TS types, runtime validation and the JSON Schema Python needs; a sync test fails when the export is stale |
+| SOP tables | hand-transcribed into `sop.yaml`; the build asserts the SOP PDF's sha256 plus sentinel strings | flattened PDF tables are unparseable; hash and sentinels catch drift |
+| rule data vs code | every SOP-derived decision is a row with `id`, `source`, `text`; the engine is a matcher | worksheet corrections become YAML edits, and each graded element cites the rows that decided it |
+| distractors | deterministic: every plausible value drawn from the data | no RNG in grading, and testable |
+| scenarios | generated at runtime from a curated `routes.yaml`, seeded PRNG, seed in the URL hash | reproducible, shareable scenarios for trainer review |
+| aircraft class P/T/J | vNAS `AircraftSpecs.json` `EngineType`, restricted to the curated fleet | public data, already used by the user's yaat project |
+| second airport | a `generator/airports/<icao>/` directory plus a line in `data/airports.json` | no code keyed on one airport |
+| dependencies | Python `pypdf`, `pyyaml`, `jsonschema`; TS `zod` alone at runtime | stdlib `urllib` for HTTP, no UI framework |
 
 ## Conventions
 

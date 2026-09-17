@@ -5,7 +5,7 @@ and the user decisions behind each. The live index is [../MAIN.md](../MAIN.md); 
 were written from `docs/plans/`, so subplans that still live there resolve one directory up. Items
 still open on this date were copied into the live index and are tracked there, not here.
 
-Detailed design, data facts, and rationale: [craft-trainer-v1.md](../craft-trainer-v1.md).
+Detailed design, data facts, and rationale: [craft-trainer-v1.md](./craft-trainer-v1.md).
 
 ## Current focus
 

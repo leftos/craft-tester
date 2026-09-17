@@ -55,7 +55,7 @@ below).
 
 ## Spoken form
 
-- [ ] User decision 2026-09-15: the printed transmission ("On frequency" and "With the route read in
+- [x] User decision 2026-09-15: the printed transmission ("On frequency" and "With the route read in
   full") includes the runway. Placement: a final sentence after the squawk, "Expect runway one right."
   Digits individually per 7110.65 2-4-17, leading zero dropped ("one right", "two eight left")
   (landed 2026-09-15: seed 1 ends "…squawk one zero seven one. Expect runway two eight left.")

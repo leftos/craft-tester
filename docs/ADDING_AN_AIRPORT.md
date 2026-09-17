@@ -320,6 +320,35 @@ Then:
    plan. When confidence is high, switch to the batch table for the rest. Each confirmed fixture gains
    `expected` and flips to `settled`.
 
+## Lessons from KOAK, the second airport
+
+KOAK was the first airport added through this runbook, and it is the proof that a new airport is a YAML
+directory rather than a code change. The rule concepts below were new when it landed; each is now general
+and every airport inherits it.
+
+- **Aircraft groups.** An SOP row often addresses a named set of classes and types ("jets and the DH8D")
+  rather than a class. `aircraftGroups` names the set once and the rows address it by name, so a
+  type-specific rule needs no new rule kind.
+- **Numbered heading departures.** `nonDpHeading` takes a literal heading as well as `runway heading`; the
+  turn direction is derived from the shorter turn off the departure runway's magnetic bearing, which is why
+  the CIFP runway bearings are emitted.
+- **`climb_via_eligible` is an override, not a transcription.** A hybrid SID can be climb-via eligible
+  where the chart publishes a top altitude, so the computed value is right more often than the SOP's prose.
+- **Continuation charts.** A procedure's text can span a `CONT.1` sheet; merge the sheets before parsing or
+  the transitions on the second page go missing.
+- **Approach category** comes from the FAA Aircraft Characteristics Database, cached in `shared/`, never
+  hand-assigned.
+- **Noise rows may be always-active** rather than windowed, and a notice row can turn a SID off entirely
+  and substitute a heading.
+- **NCT membership is computed**, not declared: a destination is inside NCT when its coordinates fall
+  inside the SimAware polygon *and* the row carries no `outside_nct: <reason>`. The reason field exists for
+  a field another facility owns to the ground, which the polygon cannot express.
+- **TEC altitude semantics**: the first number of a route-tool cell is the initial altitude and the second
+  is the final; a single number is final-only. A cruise altitude is the final altitude exactly, with parity
+  not consulted, and a TEC initial altitude overrides the SOP's interim table.
+- **LOA documents** are reachable from the facility's procedures page dropdown; record the file id, not a
+  signed URL.
+
 ## Lessons from KSFO worth carrying over
 
 - The CBT was outdated (it described a retired SID). Date every secondary source and let the SOP win.

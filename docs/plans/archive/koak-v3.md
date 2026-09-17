@@ -1,6 +1,6 @@
 # KOAK as the second airport (v3)
 
-Subplan of [MAIN.md](./MAIN.md). Follows [ADDING_AN_AIRPORT.md](../ADDING_AN_AIRPORT.md); this file records what
+Subplan of [MAIN.md](../MAIN.md). Follows [ADDING_AN_AIRPORT.md](../../ADDING_AN_AIRPORT.md); this file records what
 the OAK sources say and which new rule concepts they need before any YAML is written.
 
 ## Sources gathered 2026-09-15
@@ -118,7 +118,7 @@ SFO (no activation toggle); approach category per fleet type.
   (`groups: [jets_and_dh8d]`) beside or instead of `classes`; KSFO data unchanged.
 - [x] **Heading departures as a first-class clearance**: OAK issues 090°/270°/315°/runway heading routinely. The
   runway-heading half landed 2026-09-16 for KSFO (`Procedure.kind === 'heading'`, "via fly runway heading, radar
-  vectors (first fix)", [archive/heading-departures.md](./archive/heading-departures.md)). **Decided** for the
+  vectors (first fix)", [archive/heading-departures.md](./heading-departures.md)). **Decided** for the
   numbered half: `non_dp_heading: 270` on the row; the turn direction is the shorter turn from the departure
   runway's magnetic heading (CIFP `PG` records, emitted per runway), read "via turn left heading two seven zero,
   radar vectors (fix/airway)"; a 180° split fails the build. Altitude "maintain (feet)", expect clause spoken (no

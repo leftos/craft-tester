@@ -1,6 +1,6 @@
 # Route library as the correctly-filed baseline
 
-Subplan of step 17 in [MAIN.md](./MAIN.md) (the "Route library vs TEC" item). Started 2026-09-16.
+Subplan of step 17 in [MAIN.md](../MAIN.md) (the "Route library vs TEC" item). Started 2026-09-16.
 
 ## Problem
 

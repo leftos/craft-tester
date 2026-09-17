@@ -7,7 +7,7 @@ draw away, and amendment mode cannot answer such a plan.
 
 Sources: FAA JO 7110.65 4-3-2 c 3 phraseology "FLY RUNWAY HEADING"; 4-3-2 c 4 (a) "assign the route
 filed by the pilot when a SID is not established"; OAK ATCT SOP 2-1 c phraseology as recorded in
-[koak-v3.md](../koak-v3.md): "CLEARED TO (airport) AIRPORT, VIA TURN LEFT/RIGHT (heading) / FLY RUNWAY
+[koak-v3.md](./koak-v3.md): "CLEARED TO (airport) AIRPORT, VIA TURN LEFT/RIGHT (heading) / FLY RUNWAY
 HEADING, RADAR VECTORS (first fix/airway)…"; S1-SFO-0 CBT "No SID": departure without a SID is phrased as
 radar vectors to the first filed fix (`sop.yaml` `no_sid.phrasing: radar_vectors_fix`).
 
@@ -90,4 +90,4 @@ radar vectors to the first filed fix (`sop.yaml` `no_sid.phrasing: radar_vectors
    is `runway heading` only), MAIN.md.
 
 Left open: the user confirms the spoken form above, then the fixture is settled. Numbered headings
-("via turn left/right heading (xxx)") come with KOAK's data ([koak-v3.md](../koak-v3.md)).
+("via turn left/right heading (xxx)") come with KOAK's data ([koak-v3.md](./koak-v3.md)).
