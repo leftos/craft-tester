@@ -99,6 +99,15 @@ one line and move its record to the archive.
   make the port an env var. Implementer observations, not acted on: `_check_approach_categories` in
   `merge.py` can never fire since `_approach_category` raises first; `scenario/generate.ts` still keys the
   heavy kind on `wtc === 'H'` (correct, the CWT letter is a display value).
+- [ ] **User bug 2026-09-17: "I don't hear anything when clicking read aloud"** on the read-aloud button
+  below. Diagnosed 2026-09-17: Firefox on Windows 11; the button stays pressed a few seconds, no sound.
+  Mozilla's own demo in the user's Firefox speaks only with the Windows OneCore voices ("Microsoft David /
+  Zira / Mark", not "Desktop"), most listed voices (the "Online (Natural)" and "(Natural)" ones) are silent,
+  and Firefox flags no voice `default`, so an utterance with no voice set lands on a silent one. A Playwright
+  probe (Chrome and Firefox on this machine, `.tmp/tts-probe.mjs`) also showed Firefox cuts an utterance
+  started right after cancelling a speaking one to 0.6 s. **User decision 2026-09-17: auto-pick the voice,
+  no voice UI.** Dispatched (worktree `wt/tts-voice`): pure `pickVoice` preferring an en-US David/Zira/Mark
+  voice, else a plain local en-US one; the next utterance starts from the cancelled one's end event.
 - [x] **User steer 2026-09-17: a TTS icon button on each of the "On frequency" and "With the route read in
   full" boxes** — landed 2026-09-17 (`b1ef6e9`): `ui/speech.ts` reads the box through the browser's Web
   Speech API (en-US, rate 1), `iconButton` in `ui/dom.ts`, pressed state on `aria-pressed`, no button where
@@ -112,17 +121,15 @@ one line and move its record to the archive.
   CIFP `ER` records the generator already downloads (ordered fixes plus high/low, conventional/RNAV, MEA/MAA);
   the vNAS file carries only `id + fixes` and has 224 colliding ids (`J1`, `V6` resolve to foreign routes
   first-wins). Data concept and the rebuild rule still to plan with the user before any engine change.
-- [ ] **User question 2026-09-17: does the engine flag RNAV waypoints and RNAV airways (Q and T routes) filed by
-  a non-RNAV aircraft, or only RNAV procedures?** **User decision 2026-09-17: do both halves in one commit**
-  — see [rnav-route-elements.md](./rnav-route-elements.md). Checked 2026-09-17: procedures only. `rnavCapable` gates
-  SIDs (`rnavRequired`, `sidSelection.ts`), arrivals (`arrival.rnav`, `rules/amend/arrival.ts`) and LOA route
-  rows flagged `rnavOnly` (the KPDX row); `isAirwayToken` in `rules/route.ts` recognises Q and T airways but
-  nothing reads RNAV off them, and fixes carry no waypoint kind in the data. Open as a rule concept, user to
-  decide: (a) Q and T airways are RNAV-only (AIM 5-3-4: Q routes require RNAV 2 with GNSS or DME/DME/IRU, T
-  routes RNAV 2; so /Z or /I with no GNSS may be fine on a Q route, /W, /A and /U are not); (b) a route fix that
-  is a CIFP RNAV waypoint rather than a navaid or an airway intersection, which needs the waypoint kind
-  emitted per fix. The amendment would be the route box (a conventional airway or a navaid route), or the type
-  box where the RNAV-clash pair applies, citing an AIM row.
+- [x] **User question 2026-09-17: does the engine flag RNAV waypoints and RNAV airways (Q and T routes) filed by
+  a non-RNAV aircraft, or only RNAV procedures?** It did procedures only; landed 2026-09-17 (`d06779a`, one
+  commit per the user's decision) — see [rnav-route-elements.md](./rnav-route-elements.md) for the design and
+  the decisions. Shared rows `R-RNAV-AIRWAY` (Q needs RNAV, T and Y need GPS, AIM 5-3-4 c 1) and
+  `R-RNAV-WAYPOINT` (CIFP waypoint type `W`); `rnavWaypoints` per airport from the CIFP `EA`/`PC` records;
+  the route check leaves such a route unresolved for a suffix that cannot fly it and the engine answers with
+  the type box raised to the fleet's suffix, judging the rest on that plan; new `rnav_element` drill fault.
+  **Awaiting the user's confirmation** of the re-opened FDX3859 and PXT415 answers and the new
+  `syn-koak-rnav-elements-b738w-klas` fixture (all `pending`, `pnpm -C web propose --pending` prints them).
 - [ ] **User rule 2026-09-16 (FDX3875, KOAK to PHNL via R464): a unidirectional oceanic airway is exempt from
   odd/even parity**, so FL310 westbound on R464 is correct as filed. Data concept: a shared airway table (or rows on
   `route_connections.yaml`'s neighbour) listing the one-way oceanic airways (R463, R464, A220 per the user's notes,

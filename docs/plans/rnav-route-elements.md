@@ -96,6 +96,18 @@ SID. FDX3859 and PXT415 go back to `pending` with the engine's new answer printe
 route-building unit tests that used `/A` on RNAV-waypoint routes file `/L` instead, since RNAV is not what
 they test.
 
+## Landed 2026-09-17 (`d06779a`, one commit)
+
+Both halves as designed above plus the step B decisions. Implementer deviations accepted: the flipped
+`rules/amend/route.test.ts` cases keep `/A` and read against a copy of the airport with `rnavWaypoints: []`
+(filing `/L` would invert each test's own subject); the re-opened fixtures carry no `expected` block, as every
+other pending fixture does, since `fixtures.test.ts` fails a pending fixture whose expectation already matches
+the engine; the type-box reason names the navigation (`RNAV`, `GPS`, `RNAV and GPS`); the clash reason with
+element clauses reads "the filed CNDEL5 needs RNAV, EBAYE and BURGL are RNAV waypoints, and the route and
+FL350 all stand for a /L flight". Both re-opened worksheets also change their altitude (FDX3859 FL270 →
+FL330, PXT415 FL270 → FL310) because the altitude is now read for the RVSM-approved plan. Left alone: three
+short reason helpers duplicated between `rules/amend/route.ts` and `rules/amend/type.ts`.
+
 ## Out of scope
 
 - Conventional route rebuilding (no J or V airway structure is in the data).
