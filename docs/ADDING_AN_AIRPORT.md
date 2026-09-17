@@ -257,10 +257,15 @@ loop.
 Every destination must exist in `routes.yaml`; the build also checks that the DP a row begins on is
 published for a runway family the row departs from.
 
-**`loa.yaml`**: `sources` (title, effective date, URL) and `rules`, each scoped by `artcc` and/or
-`destinations`, with `rule.kind` one of `parity_rotated`, `even`, `odd`, `max`, `route`. Transcribe the
+**LOA rules** are inter-center agreements, not facts of one field, so they live once in
+`generator/shared/loa_rules.yaml` and every airport inherits them: `sources` (title, effective date, URL)
+and `rules`, each scoped by `artcc` and/or `destinations`, with `rule.kind` one of `parity_rotated`,
+`even`, `odd`, `route`, and an optional `departures: [KOAK, KSFO]` for a row the LOA conditions on the
+departure field (a build-time filter, never emitted). An airport's `loa.yaml` is optional and holds only
+a row it overrides by id or a row only it has, joined the way the phraseology rows are. Transcribe the
 LOA text into `text`, not a paraphrase: the ZOA–ZSE rule the user remembered as "even altitudes" is in
-the LOA a rotated course window, and the row carries the LOA's version.
+the LOA a rotated course window, and the row carries the LOA's version. An LOA's at-or-below altitude
+for a handoff binds the enroute controller, not clearance delivery, so it is not a row (user 2026-09-16).
 
 ## 6. Build, fix, commit
 

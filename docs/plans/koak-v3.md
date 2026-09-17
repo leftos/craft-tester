@@ -287,7 +287,9 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   ZOA–FAT `…/fc2bd476-ae44-11ea-aa39-2a32edb55910`, Pacific Oceanic `…/0810fda5-1c16-11ec-9430-2a32edb55910`. Fetched
   2026-09-16 to `.tmp/loa-zoa-{zla,zlc,fat,nct}.{pdf,txt}` (gitignored). A `craft-gen fetch-loa` command that reads
   the same dropdown is a later item once the LOA rows exist.
-- [ ] **Brief 3c-i, shared LOA rows** (user 2026-09-16: "Shared file, airports inherit"): `generator/shared/loa_rules.yaml`
+- [x] **Brief 3c-i, shared LOA rows** — landed 2026-09-16 (`7a3b662`; `SharedRouteFacts.loa`, `joined_loa_rules`, both
+  data files byte-unchanged; `LoaData.sources` is joined but never emitted, a dead field to look at). Spec (user
+  2026-09-16: "Shared file, airports inherit"): `generator/shared/loa_rules.yaml`
   holds every ZOA LOA source and rule once; a rule may carry `departures: [KOAK, KSFO]` and then applies only when
   the airport being built is listed; an airport's optional `loa.yaml` keeps only overrides by id and airport-only
   rows, joined the way `phraseology_rules.yaml` is. The three ZSE rows move to the shared file and both airports'
