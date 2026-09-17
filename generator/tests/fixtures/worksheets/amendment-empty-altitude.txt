@@ -1,0 +1,146 @@
+﻿San Fransisco Clearance Amendment Practice 1A
+Instructions: The following flight plans will have at most one box incorrect (some may be fully correct). Correct anything that needs to be changed. For the purposes of this exercise, the SFOW (28/01) configuration is active.
+
+
+Callsign
+	Type
+	Dest.
+	Altitude
+	Route
+	N238JP
+	C55B/L
+	KJAC
+	FL320
+	TRUKN2 ORRCA Q120 GALLI PARZZ TUVOC LEIDY DNW
+
+
+
+
+
+
+	SWA984
+	B737/L
+	KLAX
+	FL350
+	SSTIK5 EBAYE AVE SADDE8
+
+
+
+
+
+
+	SWA1984
+	B738/L
+	KPDX
+
+	TRUKN2 GRTFL MACHU TMBRS2
+
+
+
+
+
+
+	JSX201
+	E135/L
+	KLAS
+	FL350
+	WESLA5 NTELL Q162 ESSAA BTY SUNST4
+
+
+
+
+
+
+	AAY218
+	A319/L
+	KGPZ
+	FL360
+	TRUKN2 ORRCA Q120 GALLI BAM J32 ABR FAR
+
+
+
+
+
+
+	XOJ715
+	C750/L
+	KDEN
+	FL430
+	OAK6 SYRAH Q128 JSICA MLF J28 BDROC HAQHY SSKII1
+
+
+
+
+
+
+	SWA1859
+	B737/L
+	KMCI
+	FL410
+	NIITE3 TIPRE Q126 INSLO DTA RLG AKO MCK PWE RBA4
+
+
+
+
+
+
+	KAL65
+	H/B77L/L
+	RKSI
+	FL300
+	RBL J1 OED J501 TOU J523 YZT J502 ANN… (continued)
+
+
+
+
+
+
+	LXJ351
+	E55P/L
+	KCRQ
+	FL390
+	GAPP7 EHF LHS V459 SLI V23 OCN
+
+
+
+
+
+
+	SWA1883
+	B737/L
+	KSAN
+	FL410
+	SEGUL1 YYUNG LAX COMIX2
+
+
+
+
+
+
+	SWA126
+	B737/L
+	KSEA
+	FL330
+	TRUKN2 DEDHD RBL LMT HAWKZ7
+
+
+
+
+
+
+	N172SP
+	C172/G
+	KMYV
+	5000
+	SGD SAC
+
+
+
+
+
+
+	SKW2345
+	E75L/L
+	KSMF
+	FL190
+	SFO4 CCR CCR2
