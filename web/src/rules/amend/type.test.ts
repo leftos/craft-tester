@@ -3,7 +3,6 @@ import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { checkRnavClash, checkSuffix } from '@/rules/amend/type.ts';
 import { classify } from '@/rules/classify.ts';
-import { resolveClearance } from '@/rules/engine.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -49,13 +48,11 @@ function suffixGap(flight: Scenario, airport: AirportData = ksfo) {
   return amendment;
 }
 
-/** The RNAV clash a plan raises, judged against the clearance that plan is read under. */
+/** The RNAV suffix a plan's type box could carry instead, which the engine then judges the pair on. */
 function clash(flight: Scenario, airport: AirportData = ksfo) {
   const ctx = classify(flight, airport);
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
-  const result = resolveClearance(flight, airport);
-  if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-  return checkRnavClash(flight, ctx, result.clearance, airport);
+  return checkRnavClash(flight, ctx, airport);
 }
 
 describe('checkSuffix equipment suffix', () => {
@@ -103,7 +100,7 @@ describe('checkRnavClash RNAV ambiguity', () => {
     expect(amendment?.citations.map((citation) => citation.id)).toEqual(['EQUIP/L']);
   });
 
-  it('offers no RNAV suffix where the SOP assigns that plan another procedure anyway', () => {
+  it('names the RNAV suffix whatever the SOP assigns that plan, the pair being the engine to raise', () => {
     const flight = scenario({
       aircraftType: 'SR22',
       equipmentSuffix: '/A',
@@ -114,6 +111,8 @@ describe('checkRnavClash RNAV ambiguity', () => {
       filedAltitude: 3000,
       localTime: '0023',
     });
-    expect(clash(flight)).toBeUndefined();
+    const amendment = clash(flight);
+    expect(amendment).toMatchObject({ box: 'type', proposed: 'SR22/G' });
+    expect(amendment?.reason).toContain('SSTIK5');
   });
 });

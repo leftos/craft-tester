@@ -9,6 +9,7 @@
   --ok: #1a7f37;
   --bad: #b42318;
   --warn: #b45309;
+  --half: #a16207;
   font-family:
     system-ui,
     -apple-system,
@@ -324,6 +325,10 @@ button.primary:disabled {
   border-left-color: var(--warn);
 }
 
+.verdict.half {
+  border-left-color: var(--half);
+}
+
 .verdict.correct h3,
 .verdict.correct .mark {
   color: var(--ok);
@@ -332,6 +337,11 @@ button.primary:disabled {
 .verdict.acceptable h3,
 .verdict.acceptable .mark {
   color: var(--warn);
+}
+
+.verdict.half h3,
+.verdict.half .mark {
+  color: var(--half);
 }
 
 .verdict .mark {

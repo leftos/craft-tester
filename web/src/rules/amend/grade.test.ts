@@ -36,6 +36,14 @@ const CORRECTED: Scenario = {
   squawk: '4614',
 };
 
+/** The plan as filed, which is the box a student who amended nothing wrote. */
+const FILED: Scenario = {
+  ...CORRECTED,
+  equipmentSuffix: '/Q',
+  filedRoute: 'TRUKN2 MOGEE BVL',
+  filedAltitude: 33000,
+};
+
 const TYPE: ResolvedAmendment = {
   box: 'type',
   proposed: 'B752/L',
@@ -60,6 +68,10 @@ const ROUTE: ResolvedAmendment = {
 /** The RNAV pair: the type box and the route box are two ways to fix the same clash. */
 const PAIRED_TYPE: ResolvedAmendment = { ...TYPE, alternativeTo: 'route' };
 const PAIRED_ROUTE: ResolvedAmendment = { ...ROUTE, alternativeTo: 'type' };
+
+/** The wider pair: the type box against both the altitude box and the route box behind it. */
+const TRIPLE_TYPE: ResolvedAmendment = { ...TYPE, alternativeTo: 'altitude' };
+const TRIPLE_ALTITUDE: ResolvedAmendment = { ...ALTITUDE, alternativeTo: 'type' };
 
 const AS_FILED: BoxAnswer = { kind: 'as_filed' };
 
@@ -160,14 +172,14 @@ const cases: {
 describe('gradeBoxes', () => {
   for (const testCase of cases) {
     it(`grades ${testCase.name}`, () => {
-      const grades = gradeBoxes(testCase.answers, testCase.result, ksfo);
+      const grades = gradeBoxes(testCase.answers, testCase.result, FILED, ksfo);
       expect(grades.map((grade) => grade.box)).toEqual(['type', 'altitude', 'route']);
       expect(grades.map((grade) => grade.verdict)).toEqual(testCase.ok.map(verdictOf));
     });
   }
 
   it('labels a box that needed no amendment as correct as filed', () => {
-    const [type] = gradeBoxes(answers(), result(), ksfo);
+    const [type] = gradeBoxes(answers(), result(), FILED, ksfo);
     expect(type?.expectedLabel).toBe('correct as filed');
     expect(type?.actualLabel).toBe('correct as filed');
     expect(type?.citations).toEqual([]);
@@ -177,6 +189,7 @@ describe('gradeBoxes', () => {
     const grades = gradeBoxes(
       answers({ type: wrote('B752/Q'), altitude: wrote('FL290') }),
       result(TYPE, ALTITUDE, ROUTE),
+      FILED,
       ksfo,
     );
     expect(grades.map((grade) => grade.expectedLabel)).toEqual([
@@ -196,6 +209,7 @@ describe('gradeBoxes', () => {
     const grades = gradeBoxes(
       answers({ type: wrote('B752/L'), route: wrote('SFO5 MOGEE BVL') }),
       result(PAIRED_TYPE, PAIRED_ROUTE),
+      FILED,
       ksfo,
     );
     expect(grades[0]?.expectedLabel).toBe('B752/L');
@@ -204,7 +218,42 @@ describe('gradeBoxes', () => {
   });
 
   it('labels both boxes of a pair with their proposals while neither carries the fix', () => {
-    const grades = gradeBoxes(answers(), result(PAIRED_TYPE, PAIRED_ROUTE), ksfo);
+    const grades = gradeBoxes(answers(), result(PAIRED_TYPE, PAIRED_ROUTE), FILED, ksfo);
+    expect(grades[0]?.expectedLabel).toBe('B752/L');
+    expect(grades[2]?.expectedLabel).toBe('SFO5 MOGEE BVL');
+  });
+
+  it('expects the route and altitude boxes as filed once the type box carries the RNAV fix', () => {
+    const grades = gradeBoxes(
+      answers({ type: wrote('B752/L') }),
+      result(TRIPLE_TYPE, TRIPLE_ALTITUDE, PAIRED_ROUTE),
+      FILED,
+      ksfo,
+    );
+    expect(grades.map((grade) => grade.verdict)).toEqual(['correct', 'correct', 'correct']);
+    expect(grades[1]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+    expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+  });
+
+  it('expects the type box as filed once both other boxes carry the fix', () => {
+    const grades = gradeBoxes(
+      answers({ altitude: wrote('27000'), route: wrote('SFO5 MOGEE BVL') }),
+      result(TRIPLE_TYPE, TRIPLE_ALTITUDE, PAIRED_ROUTE),
+      FILED,
+      ksfo,
+    );
+    expect(grades.map((grade) => grade.verdict)).toEqual(['correct', 'correct', 'correct']);
+    expect(grades[0]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+  });
+
+  it('grades the type and route boxes against their proposals when only the altitude was fixed', () => {
+    const grades = gradeBoxes(
+      answers({ altitude: wrote('27000') }),
+      result(TRIPLE_TYPE, TRIPLE_ALTITUDE, PAIRED_ROUTE),
+      FILED,
+      ksfo,
+    );
+    expect(grades.map((grade) => grade.verdict)).toEqual(['wrong', 'correct', 'wrong']);
     expect(grades[0]?.expectedLabel).toBe('B752/L');
     expect(grades[2]?.expectedLabel).toBe('SFO5 MOGEE BVL');
   });
@@ -235,6 +284,7 @@ describe('gradeBoxes vector-SID navaid', () => {
     const grades = gradeBoxes(
       answers({ route: wrote('SFO5 MOGEE BVL') }),
       navaidResult(NAVAID_ROUTE),
+      FILED,
       ksfo,
     );
     expect(grades[2]?.verdict).toBe('acceptable');
@@ -242,13 +292,18 @@ describe('gradeBoxes vector-SID navaid', () => {
   });
 
   it('accepts a route box that writes the navaid into a route the engine wrote without it', () => {
-    const grades = gradeBoxes(answers({ route: wrote('SFO5 SFO MOGEE BVL') }), result(), ksfo);
+    const grades = gradeBoxes(
+      answers({ route: wrote('SFO5 SFO MOGEE BVL') }),
+      result(),
+      FILED,
+      ksfo,
+    );
     expect(grades[2]?.verdict).toBe('acceptable');
     expect(grades[2]?.citations.map((cited) => cited.id)).toEqual(['R-RV-NAVAID']);
   });
 
   it('accepts the box of a warning amendment the student left as filed', () => {
-    const grades = gradeBoxes(answers(), navaidResult(NAVAID_ROUTE), ksfo);
+    const grades = gradeBoxes(answers(), navaidResult(NAVAID_ROUTE), FILED, ksfo);
     expect(grades[2]?.verdict).toBe('acceptable');
     expect(grades[2]?.actualLabel).toBe('correct as filed');
   });
@@ -257,6 +312,7 @@ describe('gradeBoxes vector-SID navaid', () => {
     const grades = gradeBoxes(
       answers({ route: wrote('SFO5 SFO MOGEE BVL') }),
       navaidResult(NAVAID_ROUTE),
+      FILED,
       ksfo,
     );
     expect(grades[2]?.verdict).toBe('correct');
@@ -266,6 +322,87 @@ describe('gradeBoxes vector-SID navaid', () => {
     const grades = gradeBoxes(
       answers({ route: wrote('SFO5 SFO BVL') }),
       navaidResult(NAVAID_ROUTE),
+      FILED,
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('wrong');
+  });
+});
+
+describe('gradeBoxes arrival routing', () => {
+  /** The plan as filed, bound for Los Angeles over the arrival the proposal swaps away from. */
+  const ARRIVAL_FILED: Scenario = {
+    ...FILED,
+    destination: 'KLAX',
+    filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+  };
+
+  /** The proposal, which adds the transition the SOP forces and swaps the arrival behind it. */
+  const ARRIVAL_ROUTE: ResolvedAmendment = {
+    box: 'route',
+    proposed: 'SSTIK5 SUSEY EBAYE BURGL IRNMN2',
+    arrivalSwap: 'SSTIK5 SUSEY EBAYE AVE SADDE8',
+    reason: 'the arrival the destination publishes for this entry is IRNMN2',
+    citations: [citation],
+  };
+
+  function arrivalResult(amendment: ResolvedAmendment): Extract<AmendmentResult, { ok: true }> {
+    const proposed = amendment.box === 'route' ? amendment.proposed : ARRIVAL_FILED.filedRoute;
+    return {
+      ok: true,
+      amendments: [amendment],
+      corrected: { ...ARRIVAL_FILED, filedRoute: proposed },
+    };
+  }
+
+  it('gives half credit for the pre-change box written into the route box', () => {
+    const grades = gradeBoxes(
+      answers({ route: wrote('SSTIK5 SUSEY EBAYE AVE SADDE8') }),
+      arrivalResult(ARRIVAL_ROUTE),
+      ARRIVAL_FILED,
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('half');
+    expect(grades[2]?.expectedLabel).toBe('SSTIK5 SUSEY EBAYE BURGL IRNMN2');
+    expect(grades[2]?.citations).toEqual([citation]);
+  });
+
+  it('gives half credit for a route box left as filed when the pre-change box is the filed route', () => {
+    const grades = gradeBoxes(
+      answers(),
+      arrivalResult({ ...ARRIVAL_ROUTE, arrivalSwap: ARRIVAL_FILED.filedRoute }),
+      ARRIVAL_FILED,
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('half');
+    expect(grades[2]?.actualLabel).toBe('correct as filed');
+  });
+
+  it('gives half credit for the pre-change box written without the vector navaid', () => {
+    const filed: Scenario = { ...ARRIVAL_FILED, filedRoute: 'SFO5 SFO MOGEE SADDE8' };
+    const amendment: ResolvedAmendment = {
+      ...ARRIVAL_ROUTE,
+      proposed: 'SFO5 SFO MOGEE BURGL IRNMN2',
+      arrivalSwap: 'SFO5 SFO MOGEE SADDE8',
+    };
+    const grades = gradeBoxes(
+      answers({ route: wrote('SFO5 MOGEE SADDE8') }),
+      {
+        ok: true,
+        amendments: [amendment],
+        corrected: { ...filed, filedRoute: 'SFO5 SFO MOGEE BURGL IRNMN2' },
+      },
+      filed,
+      ksfo,
+    );
+    expect(grades[2]?.verdict).toBe('half');
+  });
+
+  it('still marks a route box wrong when the answer is neither the proposal nor the pre-change box', () => {
+    const grades = gradeBoxes(
+      answers({ route: wrote('SSTIK5 SUSEY EBAYE BURGL SADDE8') }),
+      arrivalResult(ARRIVAL_ROUTE),
+      ARRIVAL_FILED,
       ksfo,
     );
     expect(grades[2]?.verdict).toBe('wrong');

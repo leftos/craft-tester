@@ -1,4 +1,4 @@
-import type { AirportData } from '@/data/schema.ts';
+import type { AirportData, Scenario } from '@/data/schema.ts';
 import { withVectorNavaid } from '@/rules/amend/route.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
@@ -17,9 +17,11 @@ export type BoxAnswers = Record<Box, BoxAnswer>;
 /**
  * The verdict for one box: how it was answered, both labels, and the rows that decided it.
  *
- * A box is answered right or not, so a box verdict is `correct` or `wrong`, save for the route box
- * a radar-vector SID's navaid is all that separates from the box the engine wrote: filed either way
- * the plan flies the same route, so that answer is `acceptable`.
+ * A box is answered right or not, so a box verdict is `correct` or `wrong`, save for two route-box
+ * tiers between them. A box a radar-vector SID's navaid is all that separates from the box the
+ * engine wrote is `acceptable`: filed either way the plan flies the same route. A box that reads
+ * the proposal but for the arrival the proposal swaps is `half`: everything but the arrival routing
+ * was read right, and the arrival is the enroute controller's to change.
  */
 export type BoxGrade = {
   box: Box;
@@ -132,39 +134,60 @@ function fixedBoxes(
   return { type: fixedFor('type'), altitude: fixedFor('altitude'), route: fixedFor('route') };
 }
 
+/** The boxes on the other side of the type box: every box that names it as its alternative. */
+function otherSide(amendments: Partial<Record<Box, ResolvedAmendment>>): Box[] {
+  return STRIP_ORDER.filter((box) => amendments[box]?.alternativeTo === 'type');
+}
+
 /**
- * The verdict for one box of an alternative pair, where fixing either box alone is a full answer.
+ * The verdict for one box of an alternative pair, where fixing either side alone is a full answer.
  *
- * Once the other box carries the fix, this one is expected to read as filed, and amending it too is
- * a miss; the box earlier in strip order is the one that carries it when both were amended. While
- * neither box carries it, the plan is still wrong, so both are graded against their proposals.
+ * The pair has the type box on one side and every box that names it on the other: raising the
+ * equipment suffix leaves the plan standing as filed, and amending every other box the plan is
+ * wrong in is the same fix made the other way round. Once the other side carries the fix — every
+ * box of it, where it has more than one — this box is expected to read as filed, and amending it
+ * too is a miss; the type box, which the strip reads first, is the one that carries it where both
+ * sides were amended. While the other side does not carry it, the plan is still wrong, so the box
+ * is graded against its proposal.
  *
  * @param box The box being graded.
  * @param answer What the student put in it.
  * @param amendment The amendment the engine raised for it.
- * @param other The box the amendment pairs with.
- * @param fixed Which boxes the student wrote the proposed value into.
+ * @param ctx Which boxes the student fixed, and the amendment each box carries.
  * @returns The verdict and the label for this box.
  */
 function gradePair(
   box: Box,
   answer: BoxAnswer,
   amendment: ResolvedAmendment,
-  other: Box,
-  fixed: Record<Box, boolean>,
+  ctx: GradeContext,
 ): BoxVerdict {
-  const otherFirst = STRIP_ORDER.indexOf(other) < STRIP_ORDER.indexOf(box);
-  if (fixed[other] && (otherFirst || !fixed[box])) {
+  const others: Box[] = box === 'type' ? otherSide(ctx.amendments) : ['type'];
+  const otherFixed = others.length > 0 && others.every((other) => ctx.fixed[other]);
+  const carries = box === 'type' && ctx.fixed[box];
+  if (otherFixed && !carries) {
     return { verdict: verdictOf(answer.kind === 'as_filed'), expectedLabel: ALTERNATIVE_LABEL };
   }
-  return { verdict: verdictOf(fixed[box]), expectedLabel: proposalLabel(amendment) };
+  return { verdict: verdictOf(ctx.fixed[box]), expectedLabel: proposalLabel(amendment) };
 }
 
-/** What the route box is graded against beyond its own amendment: the box as the plan should read. */
-type RouteRule = { airport: AirportData; expected: string };
+/**
+ * What the route box is graded against beyond its own amendment.
+ *
+ * `expected` is the box as the corrected plan reads it and `filed` the box as the pilot filed it,
+ * which is what a student who left the box alone wrote.
+ */
+type RouteRule = { airport: AirportData; expected: string; filed: string };
 
-/** What the three boxes are graded against: which of them the student fixed, and the route rule. */
-type GradeContext = { fixed: Record<Box, boolean>; route: RouteRule };
+/**
+ * What the three boxes are graded against: which of them the student fixed, what the engine raised
+ * for each, and the route rule.
+ */
+type GradeContext = {
+  fixed: Record<Box, boolean>;
+  amendments: Partial<Record<Box, ResolvedAmendment>>;
+  route: RouteRule;
+};
 
 /** The phraseology row that says the navaid after a vector SID is filed rather than spoken. */
 const VECTOR_NAVAID_ROW = 'R-RV-NAVAID';
@@ -213,36 +236,76 @@ function withNavaidRow(citations: readonly RuleCitation[], airport: AirportData)
   return [...citations, ...row];
 }
 
+/**
+ * Whether a route answer reads the box as it would have read without the arrival the proposal swaps.
+ *
+ * A proposal that puts the flight on another arrival of its destination carries the box it would
+ * otherwise have written, and a student who writes that box — or leaves the box as filed where that
+ * is the box the pilot filed — has read everything but the arrival routing right. The arrival is
+ * the enroute controller's to change, so the answer earns half a point rather than nothing.
+ *
+ * @param box The box being graded, of which only the route box carries a route.
+ * @param answer What the student put in it.
+ * @param amendment The amendment the engine raised for it, where it raised one.
+ * @param rule The route as filed and as the corrected plan reads it, with the airport.
+ * @returns True when the answer earns half credit rather than nothing.
+ */
+function arrivalHalf(
+  box: Box,
+  answer: BoxAnswer,
+  amendment: ResolvedAmendment | undefined,
+  rule: RouteRule,
+): boolean {
+  if (box !== 'route' || amendment?.box !== 'route') return false;
+  const swap = amendment.arrivalSwap;
+  if (swap === undefined) return false;
+  const written = answer.kind === 'as_filed' ? rule.filed : answer.value;
+  return sameRouteButNavaid(written, swap, rule.airport);
+}
+
+/** The tier a missed route box lands in: acceptable first, then half credit, then the miss. */
+function routeTier(base: Verdict, acceptable: boolean, half: boolean): Verdict {
+  if (acceptable) return 'acceptable';
+  return half ? 'half' : base;
+}
+
 /** The verdict for one box before the navaid rule: as filed, the proposal, or one half of a pair. */
 function baseVerdict(
   box: Box,
   answer: BoxAnswer,
   amendment: ResolvedAmendment | undefined,
-  fixed: Record<Box, boolean>,
+  ctx: GradeContext,
 ): BoxVerdict {
   if (amendment === undefined) {
     return { verdict: verdictOf(answer.kind === 'as_filed'), expectedLabel: AS_FILED_LABEL };
   }
-  const other = amendment.alternativeTo;
-  return other === undefined
-    ? { verdict: verdictOf(fixed[box]), expectedLabel: proposalLabel(amendment) }
-    : gradePair(box, answer, amendment, other, fixed);
+  return amendment.alternativeTo === undefined
+    ? { verdict: verdictOf(ctx.fixed[box]), expectedLabel: proposalLabel(amendment) }
+    : gradePair(box, answer, amendment, ctx);
 }
 
-/** The verdict for one box, with a route box the vector navaid alone spoils read as acceptable. */
+/**
+ * The verdict for one box: the base verdict, with the two tiers a missed route box can still earn.
+ *
+ * A box the vector navaid alone spoils is acceptable, and a box that misses only the arrival the
+ * proposal swaps earns half credit; the acceptable reading wins where an answer could be read as
+ * either. Both keep the proposal as the expected label, and only the acceptable one cites a row of
+ * its own.
+ */
 function gradeBox(
   box: Box,
   answer: BoxAnswer,
   amendment: ResolvedAmendment | undefined,
   ctx: GradeContext,
 ): BoxGrade {
-  const base = baseVerdict(box, answer, amendment, ctx.fixed);
-  const acceptable =
-    base.verdict === 'wrong' && navaidAcceptable(box, answer, amendment, ctx.route);
+  const base = baseVerdict(box, answer, amendment, ctx);
+  const missed = base.verdict === 'wrong';
+  const acceptable = missed && navaidAcceptable(box, answer, amendment, ctx.route);
+  const half = missed && arrivalHalf(box, answer, amendment, ctx.route);
   const citations = amendment?.citations ?? [];
   return {
     box,
-    verdict: acceptable ? 'acceptable' : base.verdict,
+    verdict: routeTier(base.verdict, acceptable, half),
     expectedLabel: base.expectedLabel,
     actualLabel: answerLabel(answer),
     citations: acceptable ? withNavaidRow(citations, ctx.route.airport) : citations,
@@ -255,24 +318,32 @@ function gradeBox(
  * A box the engine raised no amendment for is right when the student left it as filed: knowing that
  * nothing is wrong is half the skill the mode trains, and amending a correct box is a miss. A box
  * with an amendment is right when the student wrote the proposed value in it, compared as the strip
- * reads it rather than character by character. A box paired with another as two ways to fix one
- * fault is right when either box alone carries the fix. A route box that names the same route as the
- * corrected plan, the navaid a radar-vector SID is filed with aside, is acceptable either way.
+ * reads it rather than character by character. The type box and the boxes paired with it are two
+ * ways to fix one fault, and either side alone is right. A route box that names the same route as the
+ * corrected plan, the navaid a radar-vector SID is filed with aside, is acceptable either way, and
+ * one that reads the proposal but for the arrival it swaps earns half credit.
  *
  * @param answers What the student answered for every box.
  * @param result The amendments the engine resolved for the same plan.
+ * @param scenario The plan as filed, whose route box is what a student who amended nothing wrote.
  * @param airport The airport data, whose vector SIDs and own navaid decide the route box.
  * @returns One verdict per box, in strip order: type, altitude, route.
  */
 export function gradeBoxes(
   answers: BoxAnswers,
   result: Extract<AmendmentResult, { ok: true }>,
+  scenario: Scenario,
   airport: AirportData,
 ): BoxGrade[] {
   const amendments = byBox(result.amendments);
   const fixed = fixedBoxes(answers, amendments);
-  const route: RouteRule = { airport, expected: result.corrected.filedRoute };
-  return STRIP_ORDER.map((box) => gradeBox(box, answers[box], amendments[box], { fixed, route }));
+  const route: RouteRule = {
+    airport,
+    expected: result.corrected.filedRoute,
+    filed: scenario.filedRoute,
+  };
+  const ctx: GradeContext = { fixed, amendments, route };
+  return STRIP_ORDER.map((box) => gradeBox(box, answers[box], amendments[box], ctx));
 }
 
 /**

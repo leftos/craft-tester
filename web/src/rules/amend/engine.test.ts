@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { resolveAmendedClearance, resolveAmendments } from '@/rules/amend/engine.ts';
@@ -7,6 +8,7 @@ import { speakClearance } from '@/rules/speak.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
@@ -51,14 +53,20 @@ function ual313NonRvsm(): Scenario {
   return scenario({ ...ual313(), equipmentSuffix: '/G' });
 }
 
-/** A plan whose valid non-RNAV suffix clashes with an RNAV departure an RNAV suffix would keep. */
+/**
+ * A plan whose valid non-RNAV suffix clashes with the RNAV departure it files.
+ *
+ * Everything else about it stands for an RNAV flight — the route the SSTIK5 connects onward to and
+ * a flight level with the parity its course wants — so the suffix answers the whole plan and the
+ * pair is raised.
+ */
 function rnavClash(): Scenario {
   return scenario({
     callsign: 'AAL88',
     aircraftType: 'A320',
     equipmentSuffix: '/A',
     destination: 'KLAX',
-    filedRoute: 'SSTIK5 YYUNG LAX COMIX2',
+    filedRoute: 'SSTIK5 SUSEY EBAYE BURGL IRNMN2',
     filedAltitude: 27000,
     departureRunway: '01L',
     squawk: '4602',
@@ -173,7 +181,8 @@ describe('resolveAmendments', () => {
     const [type] = result.amendments;
     if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
     expect(type.proposed).toBe('A320/L');
-    expect(type.reason).toContain('an RNAV suffix would keep the filed SSTIK5');
+    expect(type.reason).toContain('an RNAV suffix would make the plan correct as filed');
+    expect(type.reason).toContain('the filed SSTIK5');
   });
 
   it('corrects one side only of the RNAV pair, the type box the strip reads first', () => {
@@ -240,7 +249,7 @@ describe('resolveAmendments', () => {
       throw new Error('the boxes are not amended');
     expect(type.proposed).toBe('SR22/G');
     expect(type.reason).toContain('suffix /E is not in');
-    expect(type.reason).not.toContain('an RNAV suffix would keep');
+    expect(type.reason).not.toContain('an RNAV suffix would make');
     expect(route.proposed).toBe('GAPP7 SFO EUGEN');
   });
 
@@ -257,6 +266,51 @@ describe('resolveAmendments', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.unresolved.map((item) => item.element)).toContain('BOX.altitude');
+  });
+});
+
+describe('resolveAmendments RNAV pair', () => {
+  /** The Oakland worksheet plan whose /A suffix is the one thing wrong with it, or the only thing right. */
+  function nks510(): Scenario {
+    return {
+      callsign: 'NKS510',
+      aircraftType: 'A320',
+      equipmentSuffix: '/A',
+      destination: 'KLAX',
+      filedRoute: 'CNDEL5 SUSEY EBAYE BURGL IRNMN2',
+      filedAltitude: 35000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      localTime: '1400',
+      dayOfWeek: 'tuesday',
+      squawk: '4611',
+    };
+  }
+
+  it('raises the RNAV pair with the altitude box on its other side when the RNAV plan is clean', () => {
+    const flight = nks510();
+    const result = resolveAmendments(flight, koak);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
+      ['type', 'altitude'],
+      ['altitude', 'type'],
+      ['route', 'type'],
+    ]);
+    const [type, altitude] = result.amendments;
+    if (type?.box !== 'type' || altitude?.box !== 'altitude') {
+      throw new Error('the type and altitude boxes are not both amended');
+    }
+    expect(type.proposed).toBe('A320/L');
+    expect(altitude.proposedFeet).toBe(27000);
+    expect(result.corrected).toEqual({ ...flight, equipmentSuffix: '/L' });
+  });
+
+  it('does not raise the RNAV pair when the RNAV plan still needs an amendment', () => {
+    const result = resolved(scenario({ ...rnavClash(), filedAltitude: 28000 }));
+    expect(result.amendments.map((amendment) => amendment.box)).toEqual(['altitude', 'route']);
+    expect(result.amendments.every((amendment) => amendment.alternativeTo === undefined)).toBe(
+      true,
+    );
   });
 });
 

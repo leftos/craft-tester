@@ -1,6 +1,7 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { checkAltitude } from '@/rules/amend/altitude.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
+import type { TypeAmendment } from '@/rules/amend/type.ts';
 import { checkRnavClash, checkSuffix } from '@/rules/amend/type.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
@@ -88,9 +89,9 @@ function apply(scenario: Scenario, amendment: ResolvedAmendment): Scenario {
 /**
  * Whether the corrected plan carries this amendment, which is one side only of an alternative pair.
  *
- * Either box of a pair alone fixes the fault, so applying both would leave a plan that fixed it
- * twice — an RNAV suffix together with the non-RNAV route the suffix made unnecessary. The box
- * earlier in strip order carries the fix, the same tie-break the pair is graded with.
+ * Either side of a pair alone fixes the fault, so applying both would leave a plan that fixed it
+ * twice — an RNAV suffix together with the non-RNAV route and altitude the suffix made unnecessary.
+ * The box earlier in strip order carries the fix, the same tie-break the pair is graded with.
  *
  * @param amendment One amendment the checks raised.
  * @returns Whether it is applied to the corrected plan.
@@ -101,22 +102,47 @@ function applies(amendment: ResolvedAmendment): boolean {
 }
 
 /**
- * Marks the route amendment as the other half of the RNAV pair the type check raised.
+ * Whether the plan with the RNAV suffix the clash names stands exactly as the pilot filed it.
  *
- * The type check knows that raising the suffix keeps the filed procedure, but only the whole result
- * says whether the route box was in fact amended away from it, so the back link is made here.
+ * The pair is the type box against everything else the plan is wrong in, so it is an ambiguity only
+ * where the suffix answers the whole plan. Where the RNAV plan is itself amended somewhere, that
+ * amendment stands whatever the type box reads, and the suffix is no alternative to it. The check
+ * recurses one level and no further: the RNAV plan is RNAV-capable, so it raises no clash of its
+ * own.
+ *
+ * @param scenario The plan as the type box's own suffix check leaves it.
+ * @param clash The clash the type check named the RNAV suffix in.
+ * @param airport The airport data.
+ * @returns Whether that plan needs no amendment at all.
+ */
+function rnavPlanStands(scenario: Scenario, clash: TypeAmendment, airport: AirportData): boolean {
+  const result = resolveAmendments(apply(scenario, clash), airport);
+  return result.ok && result.amendments.length === 0;
+}
+
+/**
+ * Marks both sides of the RNAV pair: the type box, and every other box the filed plan is wrong in.
+ *
+ * Raising the suffix leaves the plan standing as the pilot filed it, so every box the non-RNAV plan
+ * amends — the route, the altitude, or both — is an alternative to the type box, and amending them
+ * all is the other way round the same fault. The schema links one box per amendment, so the type
+ * box names the first of the others the strip reads and each of them names the type box back.
  *
  * @param amendments Every amendment the checks raised, in strip order.
- * @returns The same amendments, with the route one marked where the pair exists.
+ * @param clash The clash the pair is built around, absent where none was raised.
+ * @returns The same amendments, with both sides marked where the pair exists.
  */
-function pairAlternatives(amendments: ResolvedAmendment[]): ResolvedAmendment[] {
-  const paired = amendments.some(
-    (amendment) => amendment.box === 'type' && amendment.alternativeTo === 'route',
-  );
-  if (!paired) return amendments;
-  return amendments.map((amendment) =>
-    amendment.box === 'route' ? { ...amendment, alternativeTo: 'type' as const } : amendment,
-  );
+function pairAlternatives(
+  amendments: ResolvedAmendment[],
+  clash: TypeAmendment | undefined,
+): ResolvedAmendment[] {
+  if (clash === undefined) return amendments;
+  const first = amendments.find((amendment) => amendment.box !== 'type')?.box;
+  if (first === undefined) return amendments;
+  return amendments.map((amendment) => {
+    if (amendment === clash) return { ...amendment, alternativeTo: first };
+    return amendment.box === 'type' ? amendment : { ...amendment, alternativeTo: 'type' as const };
+  });
 }
 
 /**
@@ -130,12 +156,13 @@ function pairAlternatives(amendments: ResolvedAmendment[]): ResolvedAmendment[] 
  * `corrected` is the plan with every proposal applied in strip order, which means a later amendment
  * for a box overrides an earlier one for it: the type box can carry both the suffix gap and the RNAV
  * clash, and `corrected` therefore carries the RNAV suffix of the second. The RNAV pair is raised
- * only where the plan with that suffix is in fact assigned the procedure the pilot filed; where it
- * is not, the route is simply wrong for the flight and the route box alone amends it. Where the pair
- * is raised and the route box was amended too, the two are marked as alternatives: either one alone
- * fixes the clash, so `corrected` applies the box earlier in strip order and skips the other, the
- * tie-break the two are graded with. Both are still reported, because writing either box is a full
- * answer.
+ * only where the plan with that suffix needs no amendment at all: the suffix is then one answer to
+ * the whole plan, and every box the non-RNAV plan does amend — the route, the altitude, or both —
+ * is the other. Where the RNAV plan is itself amended somewhere, the suffix answers nothing and
+ * those boxes amend the plan on their own. Where the pair is raised, the type box and every box on
+ * the other side are marked as alternatives: `corrected` applies the type box, earliest in strip
+ * order, and skips the rest, the tie-break the two sides are graded with. All of them are still
+ * reported, because either side alone is a full answer.
  *
  * @param scenario The filed flight plan.
  * @param airport The airport data.
@@ -148,7 +175,11 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   if (suffix !== undefined && isUnresolved(suffix)) return { ok: false, unresolved: [suffix] };
   const judged = suffix === undefined ? filed : judge(apply(scenario, suffix), airport);
   if (Array.isArray(judged)) return { ok: false, unresolved: judged };
-  const clash = checkRnavClash(judged.scenario, judged.ctx, judged.clearance, airport);
+  const candidate = checkRnavClash(judged.scenario, judged.ctx, airport);
+  const clash =
+    candidate !== undefined && rnavPlanStands(judged.scenario, candidate, airport)
+      ? candidate
+      : undefined;
   const outcomes: CheckOutcome[] = [
     [suffix, clash].filter((amendment) => amendment !== undefined),
     listed(checkAltitude(judged.scenario, judged.ctx, airport)),
@@ -156,7 +187,7 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   ];
   const { raised, gaps } = collect(outcomes);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
-  const amendments = pairAlternatives(raised);
+  const amendments = pairAlternatives(raised, clash);
   return { ok: true, amendments, corrected: amendments.filter(applies).reduce(apply, scenario) };
 }
 

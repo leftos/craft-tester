@@ -24,7 +24,9 @@ export type FaultKind =
  * Which strip boxes each fault means to make wrong.
  *
  * The RNAV clash takes two boxes because the data does not settle which of them the controller
- * amends: raising the suffix keeps the filed procedure, amending the route drops it.
+ * amends: raising the suffix leaves the plan standing as filed, amending every other box the plan
+ * is then wrong in fixes it the other way round. The clash is drawn outside the RVSM band, so the
+ * other side of it is the route box alone.
  */
 export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   stale_sid: ['route'],
@@ -257,7 +259,13 @@ function unknownSuffix(scenario: Scenario, airport: AirportData): FaultPatch | u
   return letter === undefined ? undefined : { field: 'equipmentSuffix', suffix: `/${letter}` };
 }
 
-/** A suffix without RNAV capability, for a plan that files an RNAV procedure. */
+/**
+ * A suffix without RNAV capability, for a plan that files an RNAV procedure.
+ *
+ * The fault is drawn only outside the RVSM band, so the non-RNAV suffix leaves the altitude box
+ * alone: the other side of the clash is then the route box by itself, and the draw stays at the two
+ * boxes `FAULT_BOXES` says it takes.
+ */
 function rnavClash(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
   const sid = filedSid(scenario, airport);
   if (sid === undefined || !sid.rnavRequired || inRvsmBand(scenario.filedAltitude))

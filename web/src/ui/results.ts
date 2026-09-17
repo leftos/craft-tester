@@ -11,21 +11,42 @@ export type ResultsProps = {
   onRetry: () => void;
 };
 
+/** What a half verdict is worth against the boxes it is scored among. */
+const HALF_CREDIT = 0.5;
+
+/** The count as the score line writes it, the half point as a fraction rather than a decimal. */
+function countLabel(score: number): string {
+  const whole = Math.floor(score);
+  if (whole === score) return `${whole}`;
+  return whole === 0 ? '½' : `${whole}½`;
+}
+
+/** How many verdicts read one way. */
+function countOf(grades: readonly Grade[], verdict: Verdict): number {
+  return grades.filter((grade) => grade.verdict === verdict).length;
+}
+
 /**
  * The line that says how many answers were right.
  *
  * An acceptable answer counts as correct, because it is one: the score line then says how many of
- * them were longer than they needed to be.
+ * them were longer than they needed to be. A half verdict counts as half a box, the arrival routing
+ * being the only thing it missed, and the line says how many of those there were too.
  *
  * @param grades The verdict for every element, or for every box of the strip.
  * @param noun What the verdicts are of, `elements` or `boxes`.
- * @returns The score, e.g. `4 of 5 elements correct, 1 acceptable but inefficient`.
+ * @returns The score, e.g. `4 of 5 elements correct, 1 acceptable but inefficient` or
+ *   `2½ of 3 boxes correct, 1 half credit (arrival routing)`.
  */
 export function scoreLine(grades: readonly Grade[], noun: 'elements' | 'boxes'): string {
-  const correct = grades.filter((grade) => grade.verdict !== 'wrong').length;
-  const acceptable = grades.filter((grade) => grade.verdict === 'acceptable').length;
-  const score = `${correct} of ${grades.length} ${noun} correct`;
-  return acceptable === 0 ? score : `${score}, ${acceptable} acceptable but inefficient`;
+  const acceptable = countOf(grades, 'acceptable');
+  const half = countOf(grades, 'half');
+  const correct = countOf(grades, 'correct') + acceptable + half * HALF_CREDIT;
+  const tails = [
+    ...(half === 0 ? [] : [`${half} half credit (arrival routing)`]),
+    ...(acceptable === 0 ? [] : [`${acceptable} acceptable but inefficient`]),
+  ];
+  return [`${countLabel(correct)} of ${grades.length} ${noun} correct`, ...tails].join(', ');
 }
 
 /** The rows that decided one element, quoted the way the proposal script quotes them. */
@@ -39,11 +60,13 @@ function citationList(citations: readonly RuleCitation[]): HTMLElement {
 
 /**
  * The second line a verdict reads: a correction where it was wrong, the shorter reading where it was
- * acceptable, and nothing at all where it was correct.
+ * acceptable, the box that would have earned the whole point where it earned half, and nothing at
+ * all where it was correct.
  */
 function correctionLine(verdict: Grade): string | undefined {
   if (verdict.verdict === 'wrong') return `correction: ${verdict.expectedLabel}`;
   if (verdict.verdict === 'acceptable') return `shorter: ${verdict.expectedLabel}`;
+  if (verdict.verdict === 'half') return `full credit: ${verdict.expectedLabel}`;
   return undefined;
 }
 
@@ -65,6 +88,12 @@ export function verdictLines(verdict: Grade): {
   };
 }
 
+/** The mark an answer earns beside it: a tick for a full point, a half for half one, else none. */
+function verdictMark(verdict: Verdict): string | undefined {
+  if (verdict === 'wrong') return undefined;
+  return verdict === 'half' ? '½' : '✓';
+}
+
 /**
  * Renders one element's verdict: what the player said, the correction where it was wrong, and why.
  *
@@ -75,7 +104,8 @@ export function renderVerdict(verdict: Grade): HTMLElement {
   const lines = verdictLines(verdict);
   const row = el('div', `verdict ${lines.verdict}`);
   const answer = el('p', 'answer', lines.answer);
-  if (lines.verdict !== 'wrong') answer.append(el('span', 'mark', '✓'));
+  const mark = verdictMark(lines.verdict);
+  if (mark !== undefined) answer.append(el('span', 'mark', mark));
   row.append(el('h3', '', elementLabel(verdict.element)), answer);
   if (lines.correction !== undefined) row.append(el('p', 'expected', lines.correction));
   row.append(citationList(verdict.citations));

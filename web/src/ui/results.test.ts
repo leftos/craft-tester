@@ -25,6 +25,15 @@ const redundantExpect: Grade = {
   citations: [],
 };
 
+/** The route box that reads the proposal but for the arrival it swaps: half a point. */
+const halfRoute: Grade = {
+  element: 'BOX.route',
+  verdict: 'half',
+  expectedLabel: 'SSTIK5 SUSEY EBAYE BURGL IRNMN2',
+  actualLabel: 'SSTIK5 SUSEY EBAYE AVE SADDE8',
+  citations: [],
+};
+
 describe('verdictLines', () => {
   it('marks a correct element and offers no correction', () => {
     const lines = verdictLines(rightRoute);
@@ -57,6 +66,13 @@ describe('verdictLines', () => {
     expect(lines.verdict).toBe('acceptable');
     expect(lines.correction).toBe('shorter: 9,000 will be your final');
   });
+
+  it('offers the full-credit box for a half verdict', () => {
+    const lines = verdictLines(halfRoute);
+    expect(lines.answer).toBe('you said: SSTIK5 SUSEY EBAYE AVE SADDE8');
+    expect(lines.verdict).toBe('half');
+    expect(lines.correction).toBe('full credit: SSTIK5 SUSEY EBAYE BURGL IRNMN2');
+  });
 });
 
 describe('scoreLine', () => {
@@ -83,5 +99,16 @@ describe('scoreLine', () => {
       { ...rightRoute, element: 'BOX.route' },
     ];
     expect(scoreLine(grades, 'boxes')).toBe('2 of 3 boxes correct');
+  });
+
+  it('counts a half verdict as half a box', () => {
+    const grades: Grade[] = [
+      { ...rightRoute, element: 'BOX.type' },
+      { ...rightRoute, element: 'BOX.altitude' },
+      halfRoute,
+    ];
+    expect(scoreLine(grades, 'boxes')).toBe(
+      '2½ of 3 boxes correct, 1 half credit (arrival routing)',
+    );
   });
 });

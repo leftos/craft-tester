@@ -63,7 +63,7 @@ export function amendmentGrades(
   picks: AmendmentPicks,
 ): Grade[] {
   return [
-    ...gradeBoxes(answers, drawn.result, airport).map(boxGradeAsGrade),
+    ...gradeBoxes(answers, drawn.result, drawn.filed, airport).map(boxGradeAsGrade),
     gradeProcedure(picks.procedure, clearance, airport),
     ...grade(picks, clearance),
   ];
@@ -121,7 +121,9 @@ function clearingPanels(
   const corrected = view.drawn.result.corrected;
   return [
     renderStrip(view.drawn.filed, 'Flight plan as filed'),
-    renderBoxVerdicts(gradeBoxes(answers, view.drawn.result, state.airport).map(boxGradeAsGrade)),
+    renderBoxVerdicts(
+      gradeBoxes(answers, view.drawn.result, view.drawn.filed, state.airport).map(boxGradeAsGrade),
+    ),
     renderStrip(corrected, 'Amended flight plan'),
     renderAtis(corrected, state.airport),
     renderCraftForm({

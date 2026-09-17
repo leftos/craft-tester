@@ -1,10 +1,10 @@
-import type { AirportData, EquipmentSuffix, FleetEntry, Scenario, Sid } from '@/data/schema.ts';
+import type { AirportData, EquipmentSuffix, FleetEntry, Scenario } from '@/data/schema.ts';
 import { citeSuffix } from '@/rules/amend/cite.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import type { Classification } from '@/rules/classify.ts';
-import { resolveClearance } from '@/rules/engine.ts';
+import { formatAltitude } from '@/rules/grade.ts';
 import { isSidToken } from '@/rules/route.ts';
-import type { ResolvedClearance, Unresolved } from '@/rules/types.ts';
+import type { Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
 /** The table of equipment suffixes as a reason names it. */
@@ -90,39 +90,23 @@ function filedSid(scenario: Scenario, airport: AirportData) {
   return airport.sids.find((sid) => sid.id === head);
 }
 
-/** Whether the plan with the proposed RNAV suffix is in fact assigned the procedure it filed. */
-function keepsFiledSid(
-  scenario: Scenario,
-  suffix: string,
-  sid: Sid,
-  airport: AirportData,
-): boolean {
-  const result = resolveClearance({ ...scenario, equipmentSuffix: suffix }, airport);
-  if (!result.ok) return false;
-  const procedure = result.clearance.procedure.value;
-  return procedure.kind === 'sid' && procedure.family === sid.family;
-}
-
 /**
  * The second amendment for the type box, raised by a non-RNAV flight filing an RNAV procedure.
  *
  * The plan is wrong in two ways at once and the data does not say which the controller meant: the
- * suffix can be raised to an RNAV one, which keeps the procedure the pilot filed, or the route box
- * can be amended to the procedure a non-RNAV flight is assigned. The pair is only raised where the
- * RNAV suffix does keep the filed procedure; where the SOP assigns the RNAV plan some other
- * departure, raising the suffix is no answer at all and the route box alone amends the plan.
+ * suffix can be raised to an RNAV one, which leaves the plan the pilot filed standing, or every
+ * other box that plan is wrong in can be amended around the suffix it filed. This check names the
+ * suffix only; whether it is the answer to the whole plan is the engine's to decide, because the
+ * pair is raised only where the plan with that suffix needs no amendment at all.
  *
  * @param scenario The plan as the type box's own suffix check leaves it.
  * @param ctx That plan's classification, which carries the RNAV capability the suffix gave it.
- * @param clearance The clearance the engine resolved for that plan, which names the procedure the
- *   route check would put in the box instead.
  * @param airport The airport data.
  * @returns The amendment, or `undefined` when the plan raises no such ambiguity.
  */
 export function checkRnavClash(
   scenario: Scenario,
   ctx: Classification,
-  clearance: ResolvedClearance,
   airport: AirportData,
 ): TypeAmendment | undefined {
   const fleet = fleetFor(scenario, airport);
@@ -130,16 +114,14 @@ export function checkRnavClash(
   const sid = filedSid(scenario, airport);
   if (sid === undefined || !sid.rnavRequired) return undefined;
   const proposed = fleetSuffix(fleet, airport, (row) => row.rnav);
-  if (proposed === undefined || !keepsFiledSid(scenario, proposed.suffix, sid, airport)) {
-    return undefined;
-  }
-  const procedure = clearance.procedure.value;
-  const otherwise = procedure.kind === 'sid' ? procedure.id : 'the runway heading and no procedure';
+  if (proposed === undefined) return undefined;
+  const level = formatAltitude(scenario.filedAltitude);
   return {
     box: 'type',
     proposed: typeBox(scenario, proposed.suffix),
-    reason: `an RNAV suffix would keep the filed ${sid.id}, which the route check otherwise replaces with ${otherwise}`,
-    alternativeTo: 'route',
+    reason:
+      `an RNAV suffix would make the plan correct as filed: the filed ${sid.id}, the route ` +
+      `and ${level} all stand for a ${proposed.suffix} flight`,
     citations: [citeSuffix(proposed.row)],
   };
 }

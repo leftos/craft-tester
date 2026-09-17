@@ -175,10 +175,12 @@ export type PlayerPicks = {
  *
  * `correct` matches the clearance the engine resolved. `acceptable` is a reading the rules allow but
  * that says more than it needs to — the expect clause the SID chart already publishes, or the
- * amended clause where "will be your final" is the answer.
+ * amended clause where "will be your final" is the answer. `half` earns half a point: the answer
+ * read everything but the arrival routing right, the arrival being the enroute controller's to
+ * change.
  * `wrong` is a miss.
  */
-export type Verdict = 'correct' | 'acceptable' | 'wrong';
+export type Verdict = 'correct' | 'acceptable' | 'half' | 'wrong';
 
 /** The verdict for one element: how it was answered, both labels, and the rows that decided it. */
 export type Grade = {
