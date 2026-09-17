@@ -366,7 +366,18 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   which row is the flight's) and asserts the altitude the clearance climbs the flight to (`clearedToFeet`: the
   interim, or the published top on a plain "climb via SID") equals the row's initial altitude; the SOP's cap at the
   filed altitude makes OAK# jets to SMF (SOP CVS x FL190, TEC 100/100, cruise 10,000) agree. A disagreement is a
-  data finding for the validation loop, listed row by row, never patched in the engine. Known consequence for the
+  data finding for the validation loop, listed row by row, never patched in the engine. **Superseded the same day
+  by the 2f-ii audit results**: a single-number tool row (`100/`, bare `110`) records the final only (user: "Final
+  altitude only"), which cleared 13 KSFO and 7 KOAK mismatches; "final exactly, up and down" was re-confirmed against
+  the SKW2345 fixture the user had settled at 9,000 (re-settled to 10,000); and on the two remaining OAKE mismatches
+  (jets to SMF `H270 FEVTA FEVTA1 100/100` vs the SOP's 5,000; DH8D on the turboprop `030/070` row vs the group's
+  5,000) the user ruled **"For now we'll say that TEC initials override the SOP"** and "Tool: 3,000 like other
+  turboprops". So the engine override is back: a TEC row with an initial altitude decides the A element (climb via
+  SID except maintain / maintain at the initial, plain climb via when the initial reaches the published top; expect
+  minutes from `phraseology.nonStandardInterimExpectMinutes`; cited on the TEC row), a single-number row leaves the
+  SOP row in charge, and the audit test becomes a printed report of SOP-vs-TEC differences for the validation loop.
+  Never-routed rows to look at in the loop: KSFO `TEC-KLVK-SFOW-JT-01`, `TEC-KOAK-SFOE-TP`; KOAK `TEC-KMRY-SFOE-J`,
+  `TEC-KWVI-SFOE-J`, `TEC-KSJC-SFOE-J`. Known consequence for the
   validation loop: settled fixture `ws-amendment-practice-1a-skw2345` (KSFO jet to Sacramento filed 10,000, TEC
   `100/`) today expects the altitude amended to 9,000 for parity; under ruling (1) it is correct as filed, so the
   fixture's expected block changes and the user re-confirms it. 2f-i observation: the OAK tool pages for
