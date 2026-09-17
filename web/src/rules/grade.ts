@@ -31,13 +31,8 @@ function expectAnswer(clause: ExpectClause | null): ExpectAnswer {
   return clause.kind === 'final' ? 'final' : clause.minutes;
 }
 
-/**
- * Renders feet with thousands separators, e.g. `10000` as `10,000`.
- *
- * @param feet The altitude in feet.
- * @returns The altitude as it is written on a strip or in a dropdown.
- */
-export function formatFeet(feet: number): string {
+/** Renders feet with thousands separators, e.g. `10000` as `10,000`. */
+function formatFeet(feet: number): string {
   return String(feet).replace(/\B(?=(?:\d{3})+$)/g, ',');
 }
 
@@ -45,7 +40,8 @@ export function formatFeet(feet: number): string {
 const FLIGHT_LEVEL_FLOOR_FEET = 18000;
 
 /**
- * Writes an altitude the way a strip prints it, e.g. `10,000` and `FL330`.
+ * Writes an altitude the way a strip prints it, e.g. `10,000` and `FL330`, which is how every
+ * dropdown, label and citation writes one too.
  *
  * @param feet The altitude in feet.
  * @returns The altitude with thousands separators below 18,000, and as a flight level at or above
@@ -91,7 +87,7 @@ export function routeLabel(route: ResolvedClearance['route']['value']): string {
 export function altitudeLabel(altitude: ResolvedClearance['altitude']['value']): string {
   const { phrase, feet } = altitude;
   if (phrase === 'climb_via') return 'climb via SID';
-  const suffix = feet === undefined ? '' : ` ${formatFeet(feet)}`;
+  const suffix = feet === undefined ? '' : ` ${formatAltitude(feet)}`;
   return phrase === 'maintain' ? `maintain${suffix}` : `climb via SID except maintain${suffix}`;
 }
 
@@ -109,7 +105,7 @@ function delayLabel(minutes: number, amended: boolean): string {
 function finalLabel(feet: number | undefined): string {
   return feet === undefined
     ? 'the filed altitude will be your final'
-    : `${formatFeet(feet)} will be your final`;
+    : `${formatAltitude(feet)} will be your final`;
 }
 
 /**

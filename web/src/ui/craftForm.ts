@@ -2,7 +2,7 @@ import type { AirportData, NonDpHeading, Scenario } from '@/data/schema.ts';
 import {
   altitudeLabel,
   expectChoiceLabel,
-  formatFeet,
+  formatAltitude,
   headingPick,
   routeLabel,
 } from '@/rules/grade.ts';
@@ -116,7 +116,7 @@ function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGrou
         label: 'altitude',
         options: options.altitudeFeet.map((feet) => ({
           value: String(feet),
-          label: formatFeet(feet),
+          label: formatAltitude(feet),
         })),
         value: picks.altitudeFeet === undefined ? undefined : String(picks.altitudeFeet),
         disabled: picks.altitudePhrase === undefined || picks.altitudePhrase === 'climb_via',

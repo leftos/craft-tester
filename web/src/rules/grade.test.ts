@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData } from '@/data/schema.ts';
 import {
+  altitudeLabel,
   expectChoiceLabel,
   formatAltitude,
   grade,
@@ -324,7 +325,7 @@ describe('grade', () => {
     const [, , clause] = grade({ ...correct, expect: 'final' }, expected);
     expect(clause?.verdict).toBe('wrong');
     expect(clause?.expectedLabel).toBe('expect filed altitude 10 minutes after departure');
-    expect(clause?.actualLabel).toBe('35,000 will be your final');
+    expect(clause?.actualLabel).toBe('FL350 will be your final');
   });
 
   it('marks the final reading wrong where the clearance speaks no clause at all', () => {
@@ -544,13 +545,23 @@ describe('expectChoiceLabel', () => {
     expect(expectChoiceLabel('final', { kind: 'final', feet: 9000 }, 9000)).toBe(
       '9,000 will be your final',
     );
-    expect(expectChoiceLabel('final', amendedClause, 32000)).toBe('32,000 will be your final');
+    expect(expectChoiceLabel('final', amendedClause, 32000)).toBe('FL320 will be your final');
   });
 
   it('names the amended altitude in a delay where the clause is the final reading', () => {
     expect(expectChoiceLabel('three_minutes', { kind: 'final', feet: 9000 }, 9000)).toBe(
       'expect amended altitude 3 minutes after departure',
     );
+  });
+});
+
+describe('altitudeLabel', () => {
+  it('writes the feet the phrase speaks in the strip form, a flight level from 18,000 up', () => {
+    expect(altitudeLabel({ phrase: 'maintain', feet: 5000 })).toBe('maintain 5,000');
+    expect(altitudeLabel({ phrase: 'climb_via_except', feet: 23000 })).toBe(
+      'climb via SID except maintain FL230',
+    );
+    expect(altitudeLabel({ phrase: 'climb_via' })).toBe('climb via SID');
   });
 });
 

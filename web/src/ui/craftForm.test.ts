@@ -164,8 +164,15 @@ describe('the expect row', () => {
     return (row.fields[0]?.options ?? []).map((option) => option.label);
   }
 
-  it('names the altitude on the strip in the final choice', () => {
-    expect(expectLabels(scenario, clearance)).toContain('34,000 will be your final');
+  it('names the altitude on the strip in the final choice, as a flight level above 18,000', () => {
+    expect(expectLabels(scenario, clearance)).toContain('FL340 will be your final');
+    const low: ResolvedClearance = {
+      ...clearance,
+      expect: { value: { kind: 'final', feet: 9000 }, citations: [] },
+    };
+    expect(expectLabels({ ...scenario, filedAltitude: 9000 }, low)).toContain(
+      '9,000 will be your final',
+    );
   });
 
   it('names the amended altitude where the altitude box was amended', () => {
@@ -174,8 +181,22 @@ describe('the expect row', () => {
       expect: { value: { kind: 'amended', feet: 32000, minutes: 10 }, citations: [] },
     };
     const labels = expectLabels({ ...scenario, filedAltitude: 32000 }, amended);
-    expect(labels).toContain('32,000 will be your final');
+    expect(labels).toContain('FL320 will be your final');
     expect(labels).toContain('expect amended altitude 10 minutes after departure');
+  });
+});
+
+describe('the altitude row', () => {
+  it('labels every altitude at or above 18,000 as a flight level and the rest in feet', () => {
+    const row = craftGroups(scenario, ksfo, clearance, full, 'given')[3];
+    if (row?.kind !== 'picked') throw new Error('the altitude row is not a picked row');
+    const options = row.fields[1]?.options ?? [];
+    expect(options.map((option) => option.value)).toContain('34000');
+    expect(options.map((option) => option.value)).toContain('10000');
+    for (const option of options) {
+      const feet = Number(option.value);
+      expect(option.label).toBe(feet < 18000 ? feet.toLocaleString('en-US') : `FL${feet / 100}`);
+    }
   });
 });
 

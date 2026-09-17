@@ -1,5 +1,5 @@
 import type { EquipmentSuffix, TecRoute } from '@/data/schema.ts';
-import { formatFeet } from '@/rules/grade.ts';
+import { formatAltitude } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
 /** The document the equipment suffix table is published in, quoted when a type box is amended. */
@@ -17,8 +17,8 @@ const SUFFIX_TABLE_SOURCE = 'FAA JO 7110.65 TBL 5-4-1';
 function altitudes(row: TecRoute): string {
   const { initialAltitudeFeet: initial, finalAltitudeFeet: final } = row;
   if (final === undefined) return '';
-  if (initial === undefined || initial === final) return ` at ${formatFeet(final)}`;
-  return ` ${formatFeet(initial)} initial, ${formatFeet(final)} final`;
+  if (initial === undefined || initial === final) return ` at ${formatAltitude(final)}`;
+  return ` ${formatAltitude(initial)} initial, ${formatAltitude(final)} final`;
 }
 
 /**
