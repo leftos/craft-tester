@@ -69,7 +69,6 @@ from craft_generator.sop.model import (
     LoaRule,
     LoaRuleKind,
     LoaRuleKindName,
-    LoaSource,
     NoiseWindow,
     NonDpHeading,
     NoSid,
@@ -1478,12 +1477,6 @@ def load_tec(path: Path) -> TecData:
     return data
 
 
-def _loa_source(row: _Row) -> LoaSource:
-    source = LoaSource(id=row.text("id"), title=row.text("title"), effective=row.day("effective"), url=row.text("url"))
-    row.finish()
-    return source
-
-
 def _check_course(degrees: int, where: str) -> int:
     if not 0 <= degrees <= COURSE_DEGREES_MAX:
         raise ValueError(f"{where}: course {degrees} is not a magnetic course between 0 and {COURSE_DEGREES_MAX} degrees")
@@ -1547,12 +1540,10 @@ def _loa_rule(row: _Row) -> LoaRule:
 
 
 def _loa_data(path: Path) -> LoaData:
+    """Read the rule rows of one LOA file."""
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))
-    data = LoaData(
-        sources=tuple(_loa_source(child) for child in root.children("sources")),
-        rules=tuple(_loa_rule(child) for child in root.children("rules")),
-    )
+    data = LoaData(rules=tuple(_loa_rule(child) for child in root.children("rules")))
     root.finish()
     return data
 
@@ -1564,7 +1555,7 @@ def load_loa(path: Path) -> LoaData:
         path: Path to the file.
 
     Returns:
-        The letters of agreement and the rule rows transcribed from them.
+        The rule rows transcribed from the letters of agreement.
 
     Raises:
         ValueError: The file carries an unknown key, a rule kind the schema does not define, a
@@ -1581,7 +1572,7 @@ def load_shared_loa_rules(path: Path) -> LoaData:
         path: Path to ``generator/shared/loa_rules.yaml``.
 
     Returns:
-        The letters of agreement and their rule rows, in file order. An airport's own ``loa.yaml``
+        The rule rows of the letters of agreement, in file order. An airport's own ``loa.yaml``
         overrides a row of the same id, and a row naming ``departures`` covers only those airports.
 
     Raises:
@@ -1612,25 +1603,6 @@ def joined_loa_rules(shared: LoaData, airport: LoaData | None, icao: str) -> tup
     rules = [overrides.get(rule.id, rule) for rule in inherited]
     rules += [rule for rule in own if rule.id not in inherited_ids]
     return tuple(rules)
-
-
-def joined_loa_sources(shared: LoaData, airport: LoaData | None) -> tuple[LoaSource, ...]:
-    """Join the letters of agreement every airport inherits with those one airport states itself.
-
-    Args:
-        shared: The inherited sources, in the order ``shared/loa_rules.yaml`` states them.
-        airport: The sources the airport's own ``loa.yaml`` states, or ``None`` where it has no file.
-
-    Returns:
-        The shared sources in shared-file order, each replaced in place by the airport source of the
-        same id where the airport states one, followed by the sources only the airport has.
-    """
-    own = () if airport is None else airport.sources
-    overrides = {source.id: source for source in own}
-    inherited_ids = {source.id for source in shared.sources}
-    sources = [overrides.get(source.id, source) for source in shared.sources]
-    sources += [source for source in own if source.id not in inherited_ids]
-    return tuple(sources)
 
 
 def _worksheet(row: _Row) -> Worksheet:
@@ -1785,7 +1757,7 @@ def _joined_loa(directory: Path, shared: SharedRouteFacts, icao: str) -> LoaData
         icao: The airport being built, which decides whether a row naming ``departures`` applies.
 
     Returns:
-        The joined sources and rules.
+        The joined rules.
 
     Raises:
         ValueError: A row names a destination ``shared/destinations.yaml`` does not hold, or the
@@ -1793,7 +1765,7 @@ def _joined_loa(directory: Path, shared: SharedRouteFacts, icao: str) -> LoaData
     """
     path = directory / LOA_FILE
     airport = load_loa(path) if path.is_file() else None
-    loa = LoaData(sources=joined_loa_sources(shared.loa, airport), rules=joined_loa_rules(shared.loa, airport, icao))
+    loa = LoaData(rules=joined_loa_rules(shared.loa, airport, icao))
     own = {rule.id for rule in airport.rules} if airport is not None else set()
     for rule in loa.rules:
         where = _where(path) if rule.id in own else f"shared/{LOA_RULES_FILE}"
