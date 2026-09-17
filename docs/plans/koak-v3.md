@@ -329,7 +329,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   must end on a fix or an arrival. The `OAK ORRCA` jet rows file 11,000 (the SFOE band `030/110`), the FEVTA rows
   10,000. `direction_runway_preference` for OAKE/SFOE still maps family 10 to 10R while the prop default is 10L; it only
   decides where no default applies (nothing today) and is left for the validation loop.
-- [ ] **Brief 3b-ii, KOAK into the index** (dispatched 2026-09-16 on `wt/koak-data` at `3ee592d`): `data/airports.json`
+- [x] **Brief 3b-ii, KOAK into the index** — landed 2026-09-16 (`69577d2`): suite green at 903 tests with KOAK
+  enumerated (7,296 of 7,296 engine combinations resolve; every KOAK library row clean somewhere; picker checked on
+  phone and desktop, no console errors). Findings for the validation loop: `OAK SUNOL SJC [PT]` files 4,000 on a
+  133° course (odd wanted) and is clean in 3 of 150; `OSI [PTJ]` to KSFO files 5,000 on 216° (even wanted), clean
+  only in OAKE where the `H270 OSI 050/050` row overrides parity; every KMRY/KWVI library row is clean in exactly
+  one plan because each plan has its own TEC tail; `TEC-KMRY-SFOE-J` and `TEC-KWVI-SFOE-J` route no flight. Original
+  brief: `data/airports.json`
   gains KOAK; `schema.test.ts` index assertion, `scenario/library.test.ts` (loop `checkedInAirports()`) and
   `ui/session.test.ts` (load and draw every listed airport) widened; the exhaustive and fixture suites now
   enumerate KOAK, so their KOAK unresolved-group tables are the first engine-vs-data audit; browser check of the

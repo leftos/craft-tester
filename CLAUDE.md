@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-IFR clearance trainer for KSFO (VATSIM ZOA). Two halves: a Python **generator** that emits `data/<icao>.json`
+IFR clearance trainer for KSFO and KOAK (VATSIM ZOA). Two halves: a Python **generator** that emits `data/<icao>.json`
 from FAA CIFP, FAA chart PDFs, and hand-transcribed SOP/TEC/LOA YAML, and a static Vite + TypeScript **web**
 app whose rules engine grades clearances in the browser. Read `docs/ARCHITECTURE.md` before touching either
 half; `docs/plans/MAIN.md` is the task index; `docs/ADDING_AN_AIRPORT.md` is the runbook for a new airport.

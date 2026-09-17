@@ -1,6 +1,6 @@
 # CRAFT Clearance Trainer
 
-A browser game for VATSIM Oakland ARTCC (ZOA) trainees practising IFR departure clearances at KSFO.
+A browser game for VATSIM Oakland ARTCC (ZOA) trainees practising IFR departure clearances at KSFO and KOAK.
 Play it at <https://leftos.github.io/craft-tester/>, deployed from `main` by GitHub Pages.
 
 For simulation use only. Not for real-world navigation or ATC.
