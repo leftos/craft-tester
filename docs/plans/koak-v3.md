@@ -576,7 +576,13 @@ so `climb_via_eligible` becomes an override field rather than a change to the KS
   reach it. **Landed 2026-09-17** (`rules/routeBuild.ts` serves both engines; `resolveClearance` builds on the
   passed-over candidates before a heading unless a TEC row is keyed for the flight; the clearance carries
   `route.value.builtRoute`, `propose` prints `built: …`, the R.route dropdown offers the issued SID's transitions;
-  SWA344 settled). N903JP to settle once the YYUNG → GVO row lands.
+  SWA344 settled; N903JP settled 2026-09-17 once the YYUNG → GVO row landed). The R464 exemption landed
+  2026-09-17 (`generator/shared/airways.yaml`, `airways` on the airport document, `onOneWayAirway` in
+  `rules/amend/altitude.ts`; FDX3875, KAL65, SWA1254, N471RY, N918AR settled; the KSFO FDX3875 twin keeps only
+  its route amendment). Not done: no channel exists for "why this box is right", so the reveal cannot say the
+  level stood because of the one-way airway (the phraseology row `A-ONE-WAY-AIRWAY` was not written); and
+  `AIRWAY_TOKEN` in `rules/route.ts` matches `[JVQT]\d+` only, so R463/R464/A220 are fixes to the clearance
+  engine's route reading.
   **User 2026-09-17**: KAL65 `OAK6 OAK RBL J1 …`, SWA1254 FL410 + `OAK6 OAK SAC ANAHO`, N471RY `NIMI6 OAK SGD`,
   N918AR `NIMI6 OAK AVE` are right (settling with the R464 brief). R464 exemption (FDX3875) dispatched 2026-09-17
   in `wt/koak-data`: shared `airways.yaml` with `one_way` rows R463, R464, A220, emitted as `airways`, and the

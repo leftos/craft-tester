@@ -1,5 +1,18 @@
 {
   "airport": "KOAK",
+  "expected": {
+    "altitude": {
+      "phrase": "climb_via"
+    },
+    "clearedTo": "KSBA",
+    "expect": null,
+    "frequency": "135.1",
+    "route": {
+      "fix": "YYUNG",
+      "template": "transition"
+    },
+    "sidFamily": "CNDEL"
+  },
   "id": "ws-koak-phraseology-practice-2-n903jp",
   "mode": "clearance",
   "scenario": {
@@ -17,7 +30,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation"
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: COAST9 is off by the ZOA notice, so the clearance route-builds onto CNDEL5, Yyung transition, direct Gaviota VOR, then as filed, climb via SID, 135.1"
   },
-  "status": "pending"
+  "status": "settled"
 }
