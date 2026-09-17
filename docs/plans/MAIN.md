@@ -114,20 +114,6 @@ of them, noted inline. Three landed the same day and are in Landed below.
   - **The narrow version fires on live data.** `TEC-KOAK-SFOE-TP` (`ksfo/tec.yaml:72`) is the bare
     `GAPP#` — head and nothing after it — so KSFO would stop building. That row is one of the five
     never-routed ones below, already awaiting a ruling, so this guard is blocked behind it
-- [ ] **The amendment worksheet parser counts five non-blank cells**, so an empty plan cell shifts every
-  later row. `_cells` (`worksheets.py:260-261`) drops empty lines, so an empty cell disappears rather than
-  becoming an empty string, and `parse_amendment_sheet` slices positionally (`:341-364`). One to four
-  blanks raise, but the message blames the last row — the wrong end of the sheet; **any multiple of five
-  blanks parses silently wrong** and writes corrupt fixtures under callsign-derived filenames. No
-  checked-in fixture exercises it. **Measured 2026-09-17** across all four checked-in amendment texts: the
-  export writes one line per cell, separates rows by a run of **six** blank lines, and runs the header row
-  straight into the first data row with no blank run — so an empty cell is a single blank line *inside* a
-  row. **Decided:** split the body into five consecutive non-boundary lines per row, skipping blank runs
-  between rows (no threshold, so interior and trailing empty cells survive); and give `_amendment_row` its
-  own empty-cell error naming the row and the column, collected across the whole table, so one message
-  names every affected row instead of blaming the last one. `parse_altitude("")` raises, so without that
-  per-column error a blank Altitude stops the parse and nothing downstream is observable
-
 ## Wave 4 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
@@ -249,6 +235,13 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] `LoaData.sources` deleted: parsed, joined and never emitted (user ruling). The three LOA letters it
   held keep their URLs as a comment in `shared/loa_rules.yaml`, where whoever re-verifies a row will look,
   rather than as data nothing reads — 2026-09-17
+- [x] An empty amendment-worksheet cell names its row and column instead of shifting the sheet —
+  2026-09-17. `_cells` dropped blank lines, so an empty cell vanished and the positional five-cell slice
+  shifted every later cell left; any multiple of five blanks passed the modulus check and wrote corrupt
+  fixtures silently. Rows are now the next five lines once the six-blank run between them is skipped, and
+  every empty cell in the table is reported in one message. **Two limits by design:** an empty *Callsign*
+  merges into the boundary run and is still unrecoverable, and an empty last cell of the last row raises
+  the short-row error instead, because the export writes no trailing blank run
 - [x] A CIFP `VD` leg is an initial climb, not a crossing restriction, so no SID emits a restriction with
   an empty fix and the `rules/route.ts` filter that worked around five of them is gone; COAST9 and NUEVO8
   take `climb_via_eligible` to hold the "CVS x 10,000" the SOP clears them with. `CD` is the same shape and
