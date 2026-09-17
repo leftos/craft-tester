@@ -74,13 +74,36 @@ Three UI questions the engine already answers correctly; all three are presentat
 
 Two gaps where the engine is right but the drill cannot reach it. Gate: aviation + engine.
 
-- [ ] **The `half` verdict tier is unreachable from a draw.** `scenario/amend.ts` has twelve fault kinds
-  and none is arrival-related, so 4,000 KSFO amendment seeds produce no arrival swap (browser check
-  2026-09-17) and the tier is exercised by fixtures and unit tests only. Add an `arrival_swap` fault kind
-- [ ] **`builtExpectation` does not carry `dropped`.** `rules/amend/route.ts:930` cites `R-SID-STRUCTURE`
-  off `expected.dropped`, but `builtExpectation` (:213) passes only `repair` through, so a route that is
-  both built and structure-prefixed would drop tokens without citing the row that allows it. No fixture
-  reaches it yet
+- [ ] **The `half` verdict tier is unreachable from a draw.** A thirteenth `arrival_swap` fault kind was
+  written 2026-09-17 and **does not draw**; the work is uncommitted in `../craft-tester.wt/amend-reach`.
+  What the attempt established:
+  - The mechanism the first survey proposed — strip RNAV capability from a flight on an RNAV arrival to a
+    sheet-listed destination — **cannot work**. Every eligible library route files inside the RVSM band
+    (29,000–41,000): KSFO's four are 31,000–41,000, KOAK's seven 29,000–35,000. `lackingSuffix` writes
+    `/U`, which is not RVSM-approved, so inside the band the altitude box is raised too — a third box, and
+    `sameBoxes` (`amend.ts:460-466`) throws every such draw away
+  - **Two corrections to that survey**, both checked against the source: `rnav_clash` is already
+    `['type','route']` (`amend.ts:45`), not type-box-only — the type-box-only strippers are
+    `missing_suffix`, `unknown_suffix` and `rnav_element`; and the common-arrivals sheet lists **nine**
+    destinations, not eight (KBUR KHND KLAS KLAX KLGB KSAN KSMO KSNA KVNY, identical in both data files)
+  - **Two ways forward, awaiting the user.** Either write `/W` (RNAV false, Mode C true, RVSM true, present
+    in both equipment tables) in place of `/U` for this fault, which needs a suffix picker or a parameter
+    on `lackingSuffix` that `rnav_clash` and `rnav_element` also use; or — the cheaper one the implementer
+    found — file a *conventional* arrival for an RNAV-capable flight, since `arrivalTrigger` fires on
+    `filed.arrival.rnav !== ctx.rnavCapable` in **both** directions. That is route-box-only, with no suffix
+    strip, no RVSM interaction and no type box
+- [x] **`builtExpectation` does not carry `dropped`** — landed 2026-09-17. The plan understated it: `:930`
+  could not fire for a built expectation even with `dropped` threaded, because `procedureOutcome` returns
+  `builtAmendment` first (`:923`) and that cited `R-SID-STRUCTURE` nowhere. `builtExpectation` now returns
+  `dropped`, the ternary became `structureCitations` used by both paths, and the heading path needed no
+  edit because it already spreads the build. Proven by a KOAK unit test (`CNDEL5 PORTE AVE GVO` to KSBA)
+- [ ] **What the built path's structure clause should name.** Deferred from the above. `builtReason` still
+  does not name the dropped structure, because `structureClause` would name the *assigned* SID and produce
+  a self-contradiction: for the test case it reads "CNDEL5 … and AVE is not one of its transitions, but
+  YYUNG is … , and PORTE lies on the CNDEL5 structure; the route is read from its published transition
+  AVE". The only accurate name is SKYL1 — the SID whose structure carries PORTE and which publishes AVE —
+  and reaching it needs `structureNames` from `rules/route.ts`. Awaiting the user: thread the structure SID
+  through the expectation, reword the clause for the built path, or leave the citation to speak alone
 
 ## Wave 4 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
