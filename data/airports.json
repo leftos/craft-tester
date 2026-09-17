@@ -2,5 +2,9 @@
   {
     "icao": "KSFO",
     "file": "ksfo.json"
+  },
+  {
+    "icao": "KOAK",
+    "file": "koak.json"
   }
 ]

@@ -179,8 +179,14 @@ describe('exported JSON Schema', () => {
 });
 
 describe('AirportsIndexSchema', () => {
-  it('accepts the checked-in airport index', () => {
-    expect(AirportsIndexSchema.parse(airportsIndex)).toEqual([{ icao: 'KSFO', file: 'ksfo.json' }]);
+  it('accepts the checked-in airport index and its file naming', () => {
+    const index = AirportsIndexSchema.parse(airportsIndex);
+    expect(index).toContainEqual({ icao: 'KSFO', file: 'ksfo.json' });
+    expect(index).toContainEqual({ icao: 'KOAK', file: 'koak.json' });
+    const misnamed = index.filter(
+      (entry) => !entry.file.endsWith('.json') || entry.file !== `${entry.icao.toLowerCase()}.json`,
+    );
+    expect(misnamed).toEqual([]);
   });
 });
 

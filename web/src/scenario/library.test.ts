@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import ksfoJson from '@data/ksfo.json';
+import { checkedInAirports } from '@/data/checkedIn.ts';
 import type {
   AirportData,
   DayOfWeek,
@@ -11,8 +11,6 @@ import type {
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type { Unresolved } from '@/rules/types.ts';
-
-const ksfo = ksfoJson as unknown as AirportData;
 
 /** The conditions every combination is composed under: an ordinary weekday afternoon. */
 const LOCAL_TIME = '1300';
@@ -56,10 +54,10 @@ function runwaysOf(config: RunwayConfig, fleet: FleetEntry): string[] {
 }
 
 /** Every combination of configuration, runway, fleet type, suffix and altitude a row may be drawn in. */
-function combinationsOf(route: RouteLibraryEntry): Combination[] {
-  const fleet = ksfo.routeLibrary.fleet.filter((entry) => route.classes.includes(entry.class));
+function combinationsOf(data: AirportData, route: RouteLibraryEntry): Combination[] {
+  const fleet = data.routeLibrary.fleet.filter((entry) => route.classes.includes(entry.class));
   const combinations: Combination[] = [];
-  for (const config of ksfo.runwayConfigs) {
+  for (const config of data.runwayConfigs) {
     for (const entry of fleet) {
       for (const runway of runwaysOf(config, entry)) {
         for (const suffix of entry.suffixes) {
@@ -82,16 +80,22 @@ function gapsOf(gaps: readonly Unresolved[]): string {
  * Why the plan this combination composes is not the correctly-filed one.
  *
  * The plan is composed the way `drawScenario` composes it: the row's tail is put to the clearance
- * engine, and the procedure the engine assigns is written at the head of the route box. The plan is
- * clean when the amendment engine resolves it and has nothing to amend, which is the definition the
- * draw itself rejects a combination by.
+ * engine, and the procedure the engine assigns is written at the head of the route box; a flight the
+ * SOP sends off on a heading with no procedure files the bare tail. The plan is clean when the
+ * amendment engine resolves it and has nothing to amend, which is the definition the draw itself
+ * rejects a combination by.
  *
+ * @param data The airport data the row belongs to.
  * @param route The route library row.
  * @param combination The conditions the row is drawn in.
  * @returns The gap or the first amendment that makes the plan unclean, or `undefined` when the plan
  *   needs no amendment.
  */
-function uncleanReason(route: RouteLibraryEntry, combination: Combination): string | undefined {
+function uncleanReason(
+  data: AirportData,
+  route: RouteLibraryEntry,
+  combination: Combination,
+): string | undefined {
   const filed: Scenario = {
     callsign: callsignFor(combination.fleet),
     aircraftType: combination.fleet.type,
@@ -105,28 +109,27 @@ function uncleanReason(route: RouteLibraryEntry, combination: Combination): stri
     dayOfWeek: DAY_OF_WEEK,
     squawk: SQUAWK,
   };
-  const result = resolveClearance(filed, ksfo);
+  const result = resolveClearance(filed, data);
   if (!result.ok) return gapsOf(result.unresolved);
   const procedure = result.clearance.procedure.value;
-  if (procedure.kind !== 'sid') return 'R.sid: cleared on the runway heading with no procedure';
   const clean: Scenario = {
     ...filed,
-    filedRoute: `${procedure.id} ${route.tail}`,
+    filedRoute: procedure.kind === 'sid' ? `${procedure.id} ${route.tail}` : route.tail,
   };
-  const amended = resolveAmendments(clean, ksfo);
+  const amended = resolveAmendments(clean, data);
   if (!amended.ok) return gapsOf(amended.unresolved);
   const amendment = amended.amendments[0];
   return amendment === undefined ? undefined : `${amendment.box}: ${amendment.reason}`;
 }
 
 /** Runs every combination of one row and counts the clean ones, altitude by altitude. */
-function reportFor(route: RouteLibraryEntry): RowReport {
+function reportFor(data: AirportData, route: RouteLibraryEntry): RowReport {
   const cleanAltitudes = new Set<number>();
   const reasons = new Map<number, string>();
   let clean = 0;
-  const combinations = combinationsOf(route);
+  const combinations = combinationsOf(data, route);
   for (const combination of combinations) {
-    const reason = uncleanReason(route, combination);
+    const reason = uncleanReason(data, route, combination);
     if (reason === undefined) {
       clean += 1;
       cleanAltitudes.add(combination.altitude);
@@ -142,26 +145,29 @@ function label(route: RouteLibraryEntry): string {
   return `${route.exitFix} -> ${route.destination} ${route.tail} [${route.classes.join('')}]`;
 }
 
-const reports: RowReport[] = ksfo.routeLibrary.routes.map(reportFor);
+describe.each(checkedInAirports())(
+  'every $icao route library row is the correct plan somewhere',
+  ({ icao, data }) => {
+    const reports: RowReport[] = data.routeLibrary.routes.map((route) => reportFor(data, route));
 
-describe('every route library row is the correct plan somewhere', () => {
-  for (const report of reports) {
-    it(`${label(report.route)} is clean in at least one combination`, () => {
-      const dirty = report.route.altitudes.filter((feet) => !report.cleanAltitudes.has(feet));
-      const why = dirty.map((feet) => `${feet}: ${report.reasons.get(feet)}`).join('\n');
-      expect(report.clean, why).toBeGreaterThan(0);
-      expect(dirty, why).toEqual([]);
+    for (const report of reports) {
+      it(`${label(report.route)} is clean in at least one combination`, () => {
+        const dirty = report.route.altitudes.filter((feet) => !report.cleanAltitudes.has(feet));
+        const why = dirty.map((feet) => `${feet}: ${report.reasons.get(feet)}`).join('\n');
+        expect(report.clean, why).toBeGreaterThan(0);
+        expect(dirty, why).toEqual([]);
+      });
+    }
+
+    it('reports how often every row is the correct plan', () => {
+      const lines = [...reports]
+        .sort((left, right) => left.clean / left.total - right.clean / right.total)
+        .map(
+          (report) =>
+            `${label(report.route)} altitudes: ${report.route.altitudes.join('/')}: clean ${report.clean} of ${report.total}`,
+        );
+      console.log([`${icao} route library clean rates:`, ...lines].join('\n'));
+      expect(reports.length).toBe(data.routeLibrary.routes.length);
     });
-  }
-
-  it('reports how often every row is the correct plan', () => {
-    const lines = [...reports]
-      .sort((left, right) => left.clean / left.total - right.clean / right.total)
-      .map(
-        (report) =>
-          `${label(report.route)} altitudes: ${report.route.altitudes.join('/')}: clean ${report.clean} of ${report.total}`,
-      );
-    console.log(['route library clean rates:', ...lines].join('\n'));
-    expect(reports.length).toBe(ksfo.routeLibrary.routes.length);
-  });
-});
+  },
+);

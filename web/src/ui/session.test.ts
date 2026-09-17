@@ -80,6 +80,22 @@ describe('the bundled airport data', () => {
   it('refuses an airport the index does not name', () => {
     return expect(loadAirportData('KZZZ')).rejects.toThrow('KZZZ');
   });
+
+  it('loads every airport the index lists as the airport it names', async () => {
+    for (const entry of listAirports()) {
+      const loaded = await loadAirportData(entry.icao);
+      expect(loaded.airport.icao, entry.file).toBe(entry.icao);
+    }
+  });
+
+  it('draws a clearance scenario on every listed airport', async () => {
+    for (const entry of listAirports()) {
+      const loaded = await loadAirportData(entry.icao);
+      const drawn = buildScenario(loaded, SEED, ANY_SCENARIO, 'clearance');
+      const why = drawn.kind === 'unresolved' ? drawn.reasons.join('; ') : '';
+      expect(drawn.kind, `${entry.icao}: ${why}`).toBe('clearance');
+    }
+  });
 });
 
 describe(`the scenario of seed ${SEED}`, () => {
