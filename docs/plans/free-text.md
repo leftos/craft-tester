@@ -100,7 +100,10 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   break), a typed row adds `expected:` wherever it is not fully correct, and filler is `span.filler`. An
   element said before the clearance limit now shows only its own words, not the callsign stretch —
   `25c5be5`, 2026-09-17
-- [ ] 5. **UI**:
+- [ ] 5. **UI**. 5a landed `e288f9b` 2026-09-17: `InputKind` and `SessionSettings` (`scenario/filter.ts`),
+  `i=text`, the remembered input kind (`preferences.ts`), `AppState.input`/`text`, `ClearanceAnswer`,
+  `withText`, `withInputKind`, typed attempts under their own keys, and `gradeText` in both modes' results
+  and revisits. 5b (the controls below) is next:
   - the input-kind switch in both modes and the text box;
   - the `i=text` hash part;
   - `Attempt` and revisit storing text;
