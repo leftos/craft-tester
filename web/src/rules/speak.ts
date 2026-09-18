@@ -64,9 +64,22 @@ const RUNWAY_DESIGNATOR = /^(\d{1,2})([LRC]?)$/;
 /** The word each parallel-runway side letter is spoken as. */
 const RUNWAY_SIDES: Readonly<Record<string, string>> = { L: 'left', R: 'right', C: 'center' };
 
-const UNIT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+/** The English word for each digit, indexed by the digit, as a grouped number speaks it. */
+export const UNIT_WORDS: readonly string[] = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+];
 
-const TEEN_WORDS = [
+/** The English words for ten through nineteen, indexed by the value less ten. */
+export const TEEN_WORDS: readonly string[] = [
   'ten',
   'eleven',
   'twelve',
@@ -79,7 +92,8 @@ const TEEN_WORDS = [
   'nineteen',
 ];
 
-const TENS_WORDS = [
+/** The English words for the tens, indexed by the tens digit; below twenty there is none. */
+export const TENS_WORDS: readonly string[] = [
   '',
   '',
   'twenty',
