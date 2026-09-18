@@ -270,6 +270,26 @@ loop.
 Every destination must exist in `routes.yaml`; the build also checks that the DP a row begins on is
 published for a runway family the row departs from.
 
+**How a `route` is written.** A route is a head followed by fixes and airways, or by `RV` alone, or by
+nothing.
+- **The head** is `FAMILY#`, an initial heading `Hnnn` (001–360), `RH` (runway heading), or a fix or
+  airway.
+- **`RV` alone** is "radar vectors direct" to the destination, for example `RH RV`, `H090 RV` or
+  `OAK# RV`.
+- **Nothing after the head** is allowed only after a radar-vector SID, for example bare `GAPP#`.
+- `RH` and `Hnnn` appear only as the head, and `RV` only as the whole tail. The build rejects any other
+  shape and never looks `RH` or `RV` up as a navaid.
+- The route box keeps `RH`, `Hnnn` and `RV` as written.
+- A vectors-direct row takes its direction, and so its departure sector, from the destination's
+  identifier in the gates, so add that identifier to the right gate. For example, KOAK's north gate
+  lists `SFO` and `HWD`.
+
+**The TEC route overrides the SOP's departure** (user, 2026-09-18; ARCHITECTURE.md "TEC routes"). The
+exceptions are a SID the flight cannot fly or the SOP does not put in use from the runway in this
+configuration, a noise-abatement row, and a notice. The scenario draw and the worksheet importer move a
+flight to a runway its TEC departure is in use from, so every airport needs an `RWY-TEC` phraseology row
+beside its other `RWY-*` rows.
+
 **LOA rules** are inter-center agreements, not facts of one field, so they live once in
 `generator/shared/loa_rules.yaml` and every airport inherits them: `sources` (title, effective date, URL)
 and `rules`, each scoped by `artcc` and/or `destinations`, with `rule.kind` one of `parity_rotated`,
@@ -320,7 +340,12 @@ Then:
    truncated rows in the source; record them in the plan rather than editing the fixtures. A re-import
    never overwrites a fixture you have settled: one whose scenario is unchanged is counted `kept
    (settled)`, and one whose scenario would change is left on disk and named in a non-zero exit, so
-   re-validate it with the user or pass `--overwrite-settled` to downgrade it to pending.
+   re-validate it with the user or pass `--overwrite-settled` to downgrade it to pending. The flag
+   downgrades only the fixtures whose scenario changed. A plan the user rules replaced goes under
+   `corrections:` in `worksheets.yaml`, for example one written before an AIRAC change. Each correction
+   names the `worksheet`, the `callsign`, the replacement `route` and `altitude`, and a `reason`. The
+   importer builds the fixture from it and records the printed plan in the note. A correction whose plan
+   the sheet no longer files fails the import.
 3. Validation loop: `pnpm -C web propose <fixture-id>` prints the engine's clearance with citations. Go
    one fixture at a time with the trainer or trainee who owns the airport. A correction is a YAML edit
    plus a rebuild, never an engine edit; if it cannot be expressed as data, add the rule concept to the

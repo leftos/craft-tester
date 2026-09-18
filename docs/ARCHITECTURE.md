@@ -73,8 +73,8 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
 view shows them. The graded elements are `R.route`, `A.phrase`, `A.expect`, `F` and `RWY`, the
 departure runway: the scenario fixes the runway and the engine explains it (the configuration row plus the
-`RWY-*` mechanism row: an airline default, an aircraft-group default, a class default, a runway issued on request, the direction split
-of the family, else the first runway), so the ATIS can advertise the runways in normal use and the student
+`RWY-*` mechanism row: a runway the flight's TEC route moved it to, an airline default, an aircraft-group default, a class default, a
+runway issued on request, the direction split of the family, else the first runway), so the ATIS can advertise the runways in normal use and the student
 must pick the parallel. The procedure, the clearance limit and the squawk are resolved but not graded. A verdict is
 `correct`, `wrong`, `acceptable` (a reading the rules allow that says more than it needs to, shown
 with the `shorter:` reading, or an amendment-mode route box the radar-vector SID's airport navaid alone
@@ -125,10 +125,54 @@ draws are up to two faults with a fifth of them clean.
   one-way rule in place of parity (any whole thousand at or below FL410, only odd flight levels above
   it), and its altitude box cites `A-ONE-WAY-AIRWAY` whatever the verdict, so the reveal says why a
   level stood.
-- **The route rule is one rule**: the assigned SID plus the filed tail, or the TEC route where one is
-  obligatory, after `routeBuild.ts` has tried to connect the SOP's SID to the filed route.
+- **The route rule is one rule**: the TEC route where one routes the flight (see "TEC routes" below), else
+  the assigned SID plus the filed tail, after `routeBuild.ts` has tried to connect the SOP's SID to the
+  filed route.
 - **Answers are normalised before comparison**: uppercased, whitespace collapsed, the route compared as
   tokens, and an altitude accepted as `32000`, `32,000`, `FL320` or `320`.
+
+### TEC routes
+
+A destination inside NorCal TRACON is flown on its TEC route (`tecRoutes`, transcribed from the ZOA
+route tool), and **the TEC route overrides the SOP's departure** (user, 2026-09-18). The only
+exception is a SID that cannot be used from the runways in use. Equipment, noise abatement and notices
+still win.
+
+- **Which row** (`usableTecRoute`, `rules/tecRoutes.ts`). The flight takes the first row keyed to its
+  destination, plan, runway family and class whose head it can use.
+  - A `FAMILY#` head is usable only when all of these hold:
+    - the family is still published;
+    - its SID lists the runway;
+    - the flight's equipment can fly it (`isFlyable`);
+    - the SOP puts the family in use from that runway family in this configuration (`inUseRows`: an
+      assignment row of the plan names the family and the runway family, and admits the
+      configuration);
+    - no active notice takes the family out of use without naming a heading.
+  - A heading head or a fix head is always usable.
+  - The row is chosen from the data alone. The clearance engine is not asked.
+- **Procedure** (`selectSid`). The assignment table is walked as usual, but read against the TEC route's
+  own exit and direction (`tableRoute`, `engine.ts`), so a plan and the same plan corrected onto its TEC
+  route land on one row.
+  - A noise-abatement row the flight can fly wins, whether it names a heading or a SID, and whether or
+    not its SID serves the exit. A notice heading on the TEC family also wins.
+  - Otherwise the TEC row's SID or heading is issued, citing the TEC row beside the SOP row.
+  - The departure sector comes from the DP, because SOP 2-2 a lists the sector per DP (`dpSectorRow`):
+    the one sector the in-use rows name; failing that, the row matching the direction; failing that,
+    the row the walk reached.
+- **Route box.** The box is the TEC route at the current SID versions, with `RH`, `Hnnn` and `RV` kept
+  as written (`RH RV`, `H270 OSI`). A radar-vector SID is followed by the airport navaid (`GAPP7 SFO`).
+  - Behind a noise or notice heading, the box is the route minus its head.
+  - Behind a noise SID, the box is that SID joined onto the route minus its head, by the route builder.
+  - A route that ends in `RV` right after its head, or that names nothing after a radar-vector SID and
+    the airport navaid, is **radar vectors direct**. Its route element is `radar_vectors_direct` (row
+    `R-RV-DIRECT`, spoken "radar vectors direct"), and it takes its direction from the destination's
+    identifier in the gates.
+- **Runway.** The draw (`tecRunway`, `scenario/generate.ts`) and the worksheet importer apply the same
+  move. A flight with no usable TEC row on its runway moves to the first runway of the configuration
+  that is listed for its class, is not on request for it, and has a usable row; runways of its own
+  family come first. This move outranks every default, and `RWY-TEC` explains it.
+- **Altitude.** The flight is flown at the TEC final altitude exactly, parity aside. A row's initial
+  altitude decides the A element when the row's head is the procedure issued.
 
 ### Free-text grading
 
