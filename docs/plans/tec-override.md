@@ -258,7 +258,7 @@ two cases the heading stands and the route box is the row's route with its head 
     move, a web parity test that every worksheet fixture's runway is a fixed point of `tecRunway`, and the
     on-request exclusion. It also fixed `--overwrite-settled`, which rewrote *every* settled fixture as
     pending, not only the ones whose scenario changed. A run of it had to be reverted by hand.
-  - [ ] **N436MS re-settle (user 2026-09-18):** "It's just an old clearance mode fixture, those worksheets
+  - [x] **N436MS re-settled 2026-09-18 (`6e57be0`, merged in `4135d64`):** "It's just an old clearance mode fixture, those worksheets
     might have not been updated for recent AIRAC changes. Update it to TRUKN2 TRUKN FEVTA FEVTA1 at 10,000
     since it's a clean replacement."
     - The importer has no per-plan correction, so a hand edit would fail CI's `import-worksheets --check`.
