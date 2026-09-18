@@ -178,9 +178,10 @@ function renderBox(
  * Renders the three boxes the student answers before the clearance is read.
  *
  * The strip beside the form is read-only paper, so the form asks for the three boxes in full
- * rather than leaving part of the plan to be edited in place. The panel is built once and every
- * later answer is written into the controls it already holds, so the box a student is typing in
- * survives the keystroke.
+ * rather than leaving part of the plan to be edited in place. The three boxes share one set of
+ * columns, so each box's answer and new value line up under the others'. The panel is built once
+ * and every later answer is written into the controls it already holds, so the box a student is
+ * typing in survives the keystroke.
  *
  * @param props The plan as filed, the answers so far, and the handlers for answer and submit.
  * @returns The amend panel, whose submit button is disabled while a box is still open, and the
@@ -189,18 +190,18 @@ function renderBox(
 export function renderAmendForm(props: AmendFormProps): AmendForm {
   let current = props;
   const panel = el('section', 'panel amend');
-  panel.append(el('h2', '', 'Amend the flight plan'));
+  const rows = el('div', 'amend-boxes');
   const controls: BoxControls[] = [];
   for (const row of boxRows(props.scenario, props.boxes)) {
     const built = renderBox(row, () => current);
-    panel.append(built.node);
+    rows.append(built.node);
     controls.push(built.controls);
   }
   const submit = button('Submit amendments', 'primary', () => {
     current.onSubmit();
   });
   submit.disabled = amendSubmitDisabled(props.boxes);
-  panel.append(submit);
+  panel.append(el('h2', '', 'Amend the flight plan'), rows, submit);
   return {
     node: panel,
     sync: (next) => {
@@ -226,7 +227,7 @@ export function renderBoxVerdicts(grades: readonly Grade[]): HTMLElement {
   panel.append(
     el('h2', '', 'Amendments'),
     ...grades.map((verdict) => renderVerdict(verdict)),
-    el('p', 'score', scoreLine(grades, 'boxes')),
+    el('p', 'score', scoreLine(grades, 'flight plan checks / amendments')),
   );
   return panel;
 }
