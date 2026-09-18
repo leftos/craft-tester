@@ -241,8 +241,15 @@ two cases the heading stands and the route box is the row's route with its head 
     - The `route.test` name "passes over a TEC row that begins on a departure the flight is not issued" is
       stale. That flight now routes on `TEC-KMYV-SFOW-TP-01`.
   - **Split 2026-09-18:**
-    - **2a (web, dispatched):** the draw's TEC move in `drawScenario`, `RWY-TEC` in both `sop.yaml` files
-      and in `explainRunway`, the on-request fix, and the loose ends above.
+    - [x] **2a (web)** landed 2026-09-18 (`17619dd`, merged in `e7333d2`). It covers the draw's TEC move
+      (`tecRunway`), `RWY-TEC` in both `sop.yaml` files and in `mechanismId`, the on-request fix
+      (`requestStands`), and the loose ends above. In a 1,000-seed sample, KSFO moved 16 flights (props to
+      KLVK in 28/01, 28R to 01R) and KOAK moved none.
+      - Settled `syn-trukn2-basefix-ccr-01r` now cites `RWY-TEC` for its runway, where it cited
+        `RWY-DIRECTION`. That's true under ruling 10, since its class default is 28R. Fixtures don't assert
+        runway citations.
+      - **Orchestrator decision, applied in 2b:** the move never lands a flight on a runway its class takes
+        only on request (`onRequestFor`), in both the draw and `explainedByTec`.
     - **2b (next):** port the same move into the Python importer's `departure_runway`
       (`worksheets.py:701`), which needs the TEC rows, `inUseRows`, SID runways and RNAV, suffix
       capability and active notices on the Python side. Then re-import and report the fixtures whose
