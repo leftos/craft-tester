@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
+import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import {
   boxGradeAsGrade,
@@ -14,6 +16,7 @@ import { formatAltitude, verdictOf } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const citation: RuleCitation = {
   id: 'EQUIP/L',
@@ -445,6 +448,54 @@ describe('gradeBoxes arrival routing', () => {
       ksfo,
     );
     expect(grades[2]?.verdict).toBe('wrong');
+  });
+});
+
+describe('gradeBoxes one-way airway', () => {
+  /** FDX3875 of Amendment Practice 2: an MD11 to Honolulu on the oceanic R464, westbound at FL310. */
+  const FDX3875: Scenario = {
+    callsign: 'FDX3875',
+    aircraftType: 'MD11',
+    equipmentSuffix: '/L',
+    destination: 'PHNL',
+    filedRoute: 'BEBOP R464 BILLO R464 BITTA MAGGI3',
+    filedAltitude: 31000,
+    runwayConfigId: 'SFOW',
+    departureRunway: '30',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '4613',
+  };
+
+  /** The boxes of FDX3875, every one answered as filed, graded against what the engine resolves. */
+  function asFiledGrades(airport: AirportData) {
+    const resolved = resolveAmendments(FDX3875, airport);
+    if (!resolved.ok) throw new Error(resolved.unresolved.map((item) => item.reason).join('; '));
+    return gradeBoxes(answers(), resolved, FDX3875, airport);
+  }
+
+  it('cites the one-way airway row on an altitude box left as filed on R464', () => {
+    const grades = asFiledGrades(koak);
+    expect(grades[1]?.verdict).toBe('correct');
+    expect(grades[1]?.citations.map((cited) => cited.id)).toEqual(['A-ONE-WAY-AIRWAY']);
+  });
+
+  it('cites no one-way row on the altitude box when the airway is two-way', () => {
+    const twoWay: AirportData = {
+      ...koak,
+      airways: koak.airways.map((row) => ({ ...row, oneWay: false })),
+    };
+    const grades = asFiledGrades(twoWay);
+    const cited = grades[1]?.citations.map((citation) => citation.id);
+    expect(cited).not.toContain('A-ONE-WAY-AIRWAY');
+    expect(grades[1]?.verdict).toBe('wrong');
+    expect(cited).toContain('A-PARITY');
+  });
+
+  it('cites no one-way row on the route or type box', () => {
+    const grades = asFiledGrades(koak);
+    expect(grades[0]?.citations.map((cited) => cited.id)).not.toContain('A-ONE-WAY-AIRWAY');
+    expect(grades[2]?.citations.map((cited) => cited.id)).not.toContain('A-ONE-WAY-AIRWAY');
   });
 });
 

@@ -36,6 +36,9 @@ const HIGH_SERIES_BASE_FEET: Record<Parity, number> = { odd: 45000, even: 43000 
 
 const HIGH_SERIES_STEP_FEET = 4000;
 
+/** The highest altitude a one-way route takes on the 1,000-ft series; above it only odd levels. */
+const ONE_WAY_SERIES_TOP_FEET = 41000;
+
 /** The RVSM band, inclusive: an aircraft with no RVSM approval is not assigned an altitude in it. */
 const RVSM_FLOOR_FEET = 29000;
 const RVSM_CEILING_FEET = 41000;
@@ -131,15 +134,37 @@ function parityConstraint(
  * Whether the filed route runs on an airway the route structure fixes the direction of.
  *
  * The direction-of-flight rule separates opposing traffic on a two-way route; a one-way airway
- * carries none, so the rule has nothing to separate there and the level the pilot filed stands.
+ * carries none, so the rule has nothing to separate there and `oneWayConstraint` is read instead.
  *
  * @param scenario The filed flight plan, whose route is read token by token.
  * @param airport The airport data, whose `airways` hold the direction of each airway.
  * @returns True when any token of the route names a one-way airway.
  */
-function onOneWayAirway(scenario: Scenario, airport: AirportData): boolean {
+export function onOneWayAirway(scenario: Scenario, airport: AirportData): boolean {
   const oneWay = new Set(airport.airways.filter((row) => row.oneWay).map((row) => row.id));
   return scenario.filedRoute.split(/\s+/).some((token) => oneWay.has(token));
+}
+
+/**
+ * The one-way route constraint, read in place of the direction-of-flight parity.
+ *
+ * A one-way route takes any course at any whole thousand up to `ONE_WAY_SERIES_TOP_FEET`, and
+ * above it only the odd flight levels.
+ *
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @returns The constraint, citing the one-way airway row.
+ */
+function oneWayConstraint(scenario: Scenario, airport: AirportData): Constraint {
+  const filed = formatAltitude(scenario.filedAltitude);
+  return {
+    legal: (feet) =>
+      feet <= ONE_WAY_SERIES_TOP_FEET
+        ? feet % STEP_FEET === 0
+        : feet % (2 * STEP_FEET) === STEP_FEET,
+    reason: `filed ${filed} on a one-way airway above FL410 needs an odd flight level`,
+    citations: citePhraseology(airport, 'A-ONE-WAY-AIRWAY'),
+  };
 }
 
 /**
@@ -202,10 +227,11 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
  * band for a suffix without RVSM approval. The proposal is then the highest altitude at or below the
  * filed one that satisfies both at once, so an amendment never trades one broken rule for another.
  *
- * A route that runs on a one-way airway is not read against the parity at all: that rule separates
- * opposing traffic, of which a one-way route has none, so a westbound oceanic flight keeps the odd
- * level it filed. The RVSM band is unaffected, because it is a question of what the aircraft is
- * approved for rather than of which way it is going.
+ * A route that runs on a one-way airway is read against the one-way constraint in place of the
+ * parity: that rule separates opposing traffic, of which a one-way route has none, so any whole
+ * thousand at or below FL410 stands on any course and a westbound oceanic flight keeps the odd level
+ * it filed; above FL410 the level must be an odd flight level. The RVSM band is unaffected, because
+ * it is a question of what the aircraft is approved for rather than of which way it is going.
  *
  * Only the constraints the *filed* altitude broke are reported and cited: the reason says what is
  * wrong with what the pilot filed, and a rule the filed altitude honours is not part of that, even
@@ -245,7 +271,7 @@ export function checkAltitude(
   }
   const constraints = [
     onOneWayAirway(scenario, airport)
-      ? undefined
+      ? oneWayConstraint(scenario, airport)
       : parityConstraint(scenario, airport, destination),
     rvsmConstraint(scenario, airport),
   ].filter((constraint) => constraint !== undefined);

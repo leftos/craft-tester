@@ -73,17 +73,8 @@ Three UI questions the engine already answers correctly; all three are presentat
 ## Wave 3 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
 Findings recorded while KOAK landed. Gate: generator. Surveyed 2026-09-17; the survey corrected three
-of them, noted inline. Three landed the same day and are in Landed below.
+of them, noted inline. Four landed the same day and are in Landed below.
 
-- [ ] **`A-ONE-WAY-AIRWAY`.** **Correction: the row does not exist** — it was never authored
-  (`archive/koak-v3.md:584-593` says so outright), so this is not a missing citation on an existing row.
-  The exemption itself works (`amend/altitude.ts:140-143, 246-251`) but drops the parity `Constraint`
-  before it is built, and citations are taken only from broken constraints, so an exempted flight produces
-  none. **Decided (user 2026-09-17):** author the row beside `A-PARITY` in
-  `shared/phraseology_rules.yaml`, and attach it in `amend/grade.ts:305` for the altitude box whenever the
-  route is on a one-way airway, so the reveal says why the level stood. Precedent for citing a row on a
-  non-amendment verdict is `withNavaidRow` (`amend/grade.ts:231-237`); `altitude.test.ts:180-203` pins the
-  current behaviour
 - [ ] **A TEC route overrides the SOP assignment** — **new rule concept, user 2026-09-17**, given as the
   ruling on the five never-routed TEC rows. **This is an engine change, not a generator fix, so it needs a
   subplan before any code** (repo rule: a correction that cannot be expressed as data adds a rule concept
@@ -264,6 +255,10 @@ One line per step; the full record and the user decisions behind each are in the
   directions, so filing a conventional arrival for an RNAV flight swaps the arrival with no suffix strip.
   Two survey errors corrected against the source: `rnav_clash` is `['type','route']`, not type-box-only,
   and the common-arrivals sheet lists nine destinations, not eight
+- [x] `A-ONE-WAY-AIRWAY`: a one-way airway is read against TBL 4-5-1's one-way row in place of parity
+  (any whole thousand up to FL410, odd flight levels above, so FL420 on R464 steps down to FL410), and
+  the altitude box of such a route cites the row whatever its verdict, so the reveal says why FDX3875's
+  FL310 stood — 2026-09-17
 - [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
   offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
   pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules

@@ -200,7 +200,8 @@ under `generator/shared/` and this file lists only codes into them (user rule 20
 airport-independent data between airports). A code the shared file lacks fails the load naming the file
 to add it to; add the row there first. The route structure is shared the same way: `generator/shared/airways.yaml`
 marks the airways flown one way only — the Pacific oceanic routes off the Bay — and every airport inherits
-the table, so a level filed on one of them is not read against the odd/even direction-of-flight rule.
+the table, so a level filed on one of them is not read against the odd/even direction-of-flight rule but
+against the one-way rule (`A-ONE-WAY-AIRWAY`: any whole thousand up to FL410, odd flight levels above).
 `generator/shared/common_arrivals.yaml` is the ZOA "Common ZLA Arrivals from ZOA" sheet, one row per cell
 (destinations, classes, cargo mark, arrival family, entry fixes, in the sheet's order): when a flight has to be
 put on another arrival of its destination, the engine tries these rows first, then the LOA's fixes, then any
