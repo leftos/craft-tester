@@ -2,11 +2,20 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { InputKind, Mode } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
+import { procedureOf } from '@/ui/amendPanels.ts';
 import { startApp } from '@/ui/app.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
+import { buildScenario, loadAirportData } from '@/ui/session.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
+
+/**
+ * A KSFO seed whose plan the engine fixes in the type box, with a route amendment as the other side
+ * of the pair: a GL5T filed /U on SAHEY4, which the engine corrects to /L and a student may instead
+ * put on GAPP7.
+ */
+const ALTERNATIVE_SEED = 107;
 
 /** A KSFO seed clearance mode draws a clean clearance from. */
 const CLEARANCE_SEED = 1;
@@ -95,6 +104,15 @@ function buttonNamed(root: ParentNode, label: string): HTMLButtonElement {
 /** The seed part of a hash, e.g. `s=21i3v9`. */
 function seedPartOf(hash: string): string | undefined {
   return hash.split(/[#&]/).find((part) => part.startsWith('s='));
+}
+
+/** The strip panel the page titles with one heading. */
+function stripTitled(root: ParentNode, heading: string): HTMLElement {
+  const found = [...root.querySelectorAll('section.panel.strip')].find(
+    (node) => node.querySelector('h2')?.textContent === heading,
+  );
+  if (!(found instanceof HTMLElement)) throw new Error(`the page has no ${heading} strip`);
+  return found;
 }
 
 /** Answers every box as filed and submits the strip, which opens the form on the corrected plan. */
@@ -235,5 +253,43 @@ describe('the mounted page', () => {
     pressEnter(area);
 
     expect(root.querySelectorAll('.panel.results .verdict')).toHaveLength(11);
+  });
+
+  it('clears the plan the student corrected when an alternative box was fixed', async () => {
+    const airport = await loadAirportData('KSFO');
+    const view = buildScenario(airport, ALTERNATIVE_SEED, ANY_SCENARIO, 'amendment');
+    if (view.kind !== 'amendment') throw new Error(`seed ${ALTERNATIVE_SEED} drew no amendment`);
+    const { filed, result } = view.drawn;
+    const route = result.amendments.find(
+      (amendment) => amendment.box === 'route' && amendment.alternativeTo === 'type',
+    );
+    if (route?.box !== 'route') throw new Error('the seed raises no route alternative to the type');
+    expect(result.corrected.equipmentSuffix).not.toBe(filed.equipmentSuffix);
+    expect(result.corrected.filedRoute).toBe(filed.filedRoute);
+    const procedure = procedureOf({ ...filed, filedRoute: route.proposed }, airport);
+    expect(procedure).toBeDefined();
+    expect(procedure).not.toBe(procedureOf(result.corrected, airport));
+
+    const root = await mountApp(ALTERNATIVE_SEED, 'amendment', 'dropdowns');
+    choose(answerOf(root, 'type'), 'as_filed');
+    choose(answerOf(root, 'altitude'), 'as_filed');
+    choose(answerOf(root, 'route'), 'amended');
+    const input = valueOf(root, 'route');
+    input.value = route.proposed;
+    input.dispatchEvent(new Event('input'));
+    submitOf(root, '.panel.amend').click();
+
+    const amended = stripTitled(root, 'Amended flight plan');
+    const equipment = amended.querySelector('.strip-cell.c1.r2')?.textContent ?? '';
+    expect(equipment.endsWith(`${filed.aircraftType}${filed.equipmentSuffix ?? ''}`)).toBe(true);
+    const routeText = [...amended.querySelectorAll('.strip-route-line')]
+      .map((line) => line.textContent)
+      .join(' ');
+    expect(routeText).toContain(route.proposed);
+    // happy-dom drops an option selected before it is inserted, so the form's first render cannot
+    // be read back; a pick elsewhere writes the state's picks into every dropdown the form built.
+    const shape = selectOf(field(root, 'shape'));
+    choose(shape, firstChoice(shape));
+    expect(selectOf(field(root, 'procedure')).value).toBe(procedure);
   });
 });

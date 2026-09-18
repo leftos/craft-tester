@@ -1,7 +1,6 @@
 import type { Scenario } from '@/data/schema.ts';
-import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
+import type { Box, BoxAnswer, BoxElementGrade } from '@/rules/amend/grade.ts';
 import { formatAltitude } from '@/rules/grade.ts';
-import type { Grade } from '@/rules/types.ts';
 import type { SelectOption } from '@/ui/dom.ts';
 import {
   button,
@@ -222,7 +221,7 @@ export function renderAmendForm(props: AmendFormProps): AmendForm {
  * @param grades The verdict for every box, read as a verdict on a clearance element.
  * @returns The panel of box verdicts, with the count of the boxes answered right.
  */
-export function renderBoxVerdicts(grades: readonly Grade[]): HTMLElement {
+export function renderBoxVerdicts(grades: readonly BoxElementGrade[]): HTMLElement {
   const panel = el('section', 'panel results');
   panel.append(
     el('h2', '', 'Amendments'),

@@ -2,6 +2,8 @@ import airportsIndexJson from '@data/airports.json';
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import { parseAirport, parseAirportsIndex } from '@/data/load.ts';
 import { resolveAmendedClearance } from '@/rules/amend/engine.ts';
+import type { BoxAnswers } from '@/rules/amend/grade.ts';
+import { studentPlan } from '@/rules/amend/grade.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
@@ -78,6 +80,39 @@ function unresolvedView(unresolved: readonly Unresolved[]): ScenarioView {
     kind: 'unresolved',
     reasons: unresolved.map((item) => `${item.element}: ${item.reason}`),
   };
+}
+
+/** The plan an amendment session clears once the strip is submitted, and the clearance read for it. */
+export type ClearedPlan = { plan: Scenario; clearance: ResolvedClearance };
+
+/**
+ * The plan the student clears after the strip, and the clearance the engine reads for it.
+ *
+ * The plan is the filed plan with every box the student got right as they wrote it and every other
+ * box as the engine corrected it, so the strip and the answer key agree and a wrong box never
+ * compounds into the clearance. Where that plan does not resolve, the session clears the engine's
+ * corrected plan instead, whose clearance the view already carries, and says so on the console.
+ *
+ * @param view The amendment session, with the plan as filed and the engine's corrections.
+ * @param answers What the student answered for every box.
+ * @param airport The airport data.
+ * @returns The plan to clear and its clearance.
+ */
+export function clearedPlan(
+  view: Extract<ScenarioView, { kind: 'amendment' }>,
+  answers: BoxAnswers,
+  airport: AirportData,
+): ClearedPlan {
+  const { drawn } = view;
+  const plan = studentPlan(answers, drawn.result, drawn.filed, airport);
+  const result = resolveAmendedClearance(drawn.filed, plan, airport);
+  if (result.ok) return { plan, clearance: result.clearance };
+  const reasons = result.unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
+  console.warn(
+    `the student's corrected plan did not resolve (${reasons}); clearing the engine's corrected ` +
+      'plan instead',
+  );
+  return { plan: drawn.result.corrected, clearance: view.clearance };
 }
 
 /** Draws a plan that is already correct, and the clearance the SOP issues for it. */

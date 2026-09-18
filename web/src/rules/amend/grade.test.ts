@@ -10,6 +10,7 @@ import {
   normaliseRoute,
   normaliseType,
   parseAltitude,
+  studentPlan,
 } from '@/rules/amend/grade.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { formatAltitude, verdictOf } from '@/rules/grade.ts';
@@ -319,6 +320,38 @@ describe('an amend-to answer written the way the strip writes the box', () => {
   });
 });
 
+describe('studentPlan', () => {
+  it('is the corrected plan when every box reads the proposal', () => {
+    const graded = result(TYPE, ALTITUDE, ROUTE);
+    const plan = studentPlan(
+      answers({ type: wrote('B752/L'), altitude: wrote('FL270'), route: wrote('SFO5 MOGEE BVL') }),
+      graded,
+      FILED,
+      ksfo,
+    );
+    expect(plan).toEqual(graded.corrected);
+  });
+
+  it('keeps the filed type and takes the route where the route side of a pair carries the fix', () => {
+    const graded: Extract<AmendmentResult, { ok: true }> = {
+      ok: true,
+      amendments: [PAIRED_TYPE, PAIRED_ROUTE],
+      corrected: { ...FILED, equipmentSuffix: '/L' },
+    };
+    const plan = studentPlan(answers({ route: wrote('SFO5 MOGEE BVL') }), graded, FILED, ksfo);
+    expect(plan.equipmentSuffix).toBe(FILED.equipmentSuffix);
+    expect(plan.filedRoute).toBe(PAIRED_ROUTE.proposed);
+    expect(plan).not.toEqual(graded.corrected);
+  });
+
+  it('takes the corrected altitude where the altitude box was answered wrong', () => {
+    const graded = result(ALTITUDE);
+    const plan = studentPlan(answers({ altitude: wrote('FL310') }), graded, FILED, ksfo);
+    expect(plan.filedAltitude).toBe(graded.corrected.filedAltitude);
+    expect(plan).toEqual({ ...FILED, filedAltitude: graded.corrected.filedAltitude });
+  });
+});
+
 describe('gradeBoxes vector-SID navaid', () => {
   /** The corrected plan of a flight on the SFO5, whose box files the navaid the SID is filed with. */
   const NAVAID_CORRECTED: Scenario = { ...CORRECTED, filedRoute: 'SFO5 SFO MOGEE BVL' };
@@ -386,6 +419,16 @@ describe('gradeBoxes vector-SID navaid', () => {
       ksfo,
     );
     expect(grades[2]?.verdict).toBe('wrong');
+  });
+
+  it('clears the route with the navaid where the route box was acceptable without it', () => {
+    const plan = studentPlan(
+      answers({ route: wrote('SFO5 MOGEE BVL') }),
+      navaidResult(NAVAID_ROUTE),
+      FILED,
+      ksfo,
+    );
+    expect(plan.filedRoute).toBe(NAVAID_CORRECTED.filedRoute);
   });
 });
 
@@ -466,6 +509,17 @@ describe('gradeBoxes arrival routing', () => {
       ksfo,
     );
     expect(grades[2]?.verdict).toBe('wrong');
+  });
+
+  it('clears the corrected route where the route box earned half credit', () => {
+    const graded = arrivalResult(ARRIVAL_ROUTE);
+    const plan = studentPlan(
+      answers({ route: wrote('SSTIK5 SUSEY EBAYE AVE SADDE8') }),
+      graded,
+      ARRIVAL_FILED,
+      ksfo,
+    );
+    expect(plan.filedRoute).toBe(graded.corrected.filedRoute);
   });
 });
 

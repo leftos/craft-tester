@@ -33,7 +33,7 @@ import type { SelectOption } from '@/ui/dom.ts';
 import type { FilterStore, InputKindStore } from '@/ui/preferences.ts';
 import { browserFilterStore, browserInputKindStore } from '@/ui/preferences.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
-import { listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
+import { clearedPlan, listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
 import type { SolvedStore } from '@/ui/solved.ts';
 import { browserSolvedStore } from '@/ui/solved.ts';
 import type { AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
@@ -423,8 +423,10 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     },
     onBoxesSubmit: () => {
       if (state.view.kind !== 'amendment') return;
-      const corrected = state.view.drawn.result.corrected;
-      update(withBoxesSubmitted(state, procedureOf(corrected, state.airport)));
+      const answers = toBoxAnswers(state.boxes);
+      if (answers === undefined) return;
+      const { plan } = clearedPlan(state.view, answers, state.airport);
+      update(withBoxesSubmitted(state, procedureOf(plan, state.airport)));
     },
     onFilter: ({ time, config }) => {
       const { icao } = state.airport.airport;
