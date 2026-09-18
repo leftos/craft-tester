@@ -1091,9 +1091,10 @@ phraseology:
   vector_hybrid_transitions_spoken: false
 
 # The airport's own phraseology rule rows. The CRAFT rows every airport inherits live in
-# `generator/shared/phraseology_rules.yaml`; this file states only the six `RWY-*` rows the engine
+# `generator/shared/phraseology_rules.yaml`; this file states only the seven `RWY-*` rows the engine
 # cites by id to explain the departure runway, in the order the engine tries them: the airline
-# default, then the group default, then the class default, then the rest.
+# default, then the group default, then the class default, then the rest. `RWY-TEC` is tried first
+# where a TEC route moved the flight off a default, and otherwise just before `RWY-FIRST`.
 phraseology_rules:
   - id: RWY-AIRLINE-DEFAULT
     source: "ZOA senior staff via the user, 2026-09-16"
@@ -1110,6 +1111,9 @@ phraseology_rules:
   - id: RWY-DIRECTION
     source: OAK ATCT SOP 1-6 and 2-2
     text: "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction"
+  - id: RWY-TEC
+    source: "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)"
+    text: "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
   - id: RWY-FIRST
     source: OAK ATCT SOP 1-6
     text: "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"

@@ -16,6 +16,7 @@ import { inAnyGroup } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
 import { airlineOf } from '@/rules/runway.ts';
+import { usableTecRouteOn } from '@/rules/tecRoutes.ts';
 import type { ClearanceElement, Procedure, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
@@ -326,7 +327,15 @@ export type RunwayDraw = {
   callsign: string;
   /** The gate direction of the exit fix, or undefined when it has none. */
   direction: Direction | undefined;
+  /**
+   * Whether the flight may be drawn as asking for an on-request runway; false on the draw again of a
+   * flight whose request did not stand.
+   */
+  mayRequest: boolean;
 };
+
+/** The runway drawn for a flight, and whether the flight asked for it. */
+type PickedRunway = { runway: string; requested: boolean };
 
 /**
  * Draws the departure runway: a family the class may use, then the runway that direction departs.
@@ -336,9 +345,10 @@ export type RunwayDraw = {
  * (`defaultForGroups`) and one that defaults its class (`defaultForClasses`), so those aircraft
  * never take the direction-of-turn split. A flight that may ask for an
  * `onRequestFor` runway is drawn as asking for it `ON_REQUEST_CHANCE` of the time, and takes the
- * runways in normal use the rest. Otherwise `directionRunwayPreference` holds the SOP's split, e.g.
- * SFOW northbound off the 01s departing 1R and southbound 1L; a family the table has no entry for
- * falls back to the first runway of it.
+ * runways in normal use the rest; a draw that may not request skips that step without drawing.
+ * Otherwise `directionRunwayPreference` holds the SOP's split, e.g. SFOW northbound off the 01s
+ * departing 1R and southbound 1L; a family the table has no entry for falls back to the first runway
+ * of it.
  *
  * @param rng The seeded generator; the on-request draw advances it.
  * @param draw The flight the runway is drawn for.
@@ -346,8 +356,8 @@ export type RunwayDraw = {
  */
 export function pickRunway(
   rng: Rng,
-  { airport, config, fleet, callsign, direction }: RunwayDraw,
-): { runway: string; requested: boolean } {
+  { airport, config, fleet, callsign, direction, mayRequest }: RunwayDraw,
+): PickedRunway {
   const byAirline = airlineDefaultRunway(config, callsign, fleet.class);
   if (byAirline !== undefined) return { runway: byAirline, requested: false };
   const byGroup = groupDefaultRunway(config, airport, fleet);
@@ -355,7 +365,7 @@ export function pickRunway(
   const defaulted = classDefaultRunway(config, fleet.class);
   if (defaulted !== undefined) return { runway: defaulted, requested: false };
   const requested = onRequestRunway(airport, config, fleet, direction);
-  if (requested !== undefined && rng.next() < ON_REQUEST_CHANCE) {
+  if (mayRequest && requested !== undefined && rng.next() < ON_REQUEST_CHANCE) {
     return { runway: requested, requested: true };
   }
   const families = runwaysByFamily(config, fleet.class);
@@ -440,6 +450,124 @@ export function composedRoute(procedure: Procedure, tail: string, airport: Airpo
 }
 
 /**
+ * The departure runways of the flight's configuration listed for its class, each once, in the
+ * configuration's order, on-request runways included.
+ */
+function listedRunways(scenario: Scenario, airport: AirportData): string[] {
+  const config = airport.runwayConfigs.find((entry) => entry.id === scenario.runwayConfigId);
+  const aircraftClass = airport.aircraftClasses[scenario.aircraftType];
+  if (config === undefined || aircraftClass === undefined) return [];
+  const listed = config.departureRunways
+    .filter((row) => row.classes.includes(aircraftClass))
+    .map((row) => row.runway);
+  return [...new Set(listed)];
+}
+
+/**
+ * The runway a drawn flight departs once its TEC route has been read (user ruling 2026-09-18, "TEC
+ * moves them too").
+ *
+ * A flight a TEC row is usable for off the runway drawn keeps it. Otherwise it moves to the first
+ * other runway of the configuration listed for its class that a row is usable from: the drawn
+ * runway's own family first, then the rest in the configuration's order. A flight no runway gives a
+ * usable row keeps the one drawn, and the SOP's own assignment clears it there. The move outranks the
+ * airline, group and class defaults, and it draws nothing, so a seed still yields one scenario.
+ *
+ * @param scenario The drawn flight plan, on the runway the draw picked.
+ * @param airport The airport data.
+ * @returns The runway the flight departs.
+ */
+export function tecRunway(scenario: Scenario, airport: AirportData): string {
+  const drawn = scenario.departureRunway;
+  if (usableTecRouteOn(drawn, scenario, airport) !== undefined) return drawn;
+  const family = drawn.slice(0, 2);
+  const others = listedRunways(scenario, airport).filter((runway) => runway !== drawn);
+  const ordered = [
+    ...others.filter((runway) => runway.slice(0, 2) === family),
+    ...others.filter((runway) => runway.slice(0, 2) !== family),
+  ];
+  return (
+    ordered.find((runway) => usableTecRouteOn(runway, scenario, airport) !== undefined) ?? drawn
+  );
+}
+
+/**
+ * Whether a flight drawn onto a runway it asked for keeps it (user ruling 2026-09-18).
+ *
+ * The request stands only where the procedure the SOP assigns off the requested runway is a SID
+ * published off that runway family alone, which is how the worksheet importer reads a request: in
+ * KSFO 28/01 that is GNNRR3, SNTNA2 or WESLA5. A flight given a SID published off the runways in
+ * normal use too, or sent off on a heading, takes the runways in normal use instead.
+ *
+ * @param procedure The procedure the clearance engine assigned off the requested runway.
+ * @param runway The requested runway.
+ * @param airport The airport data, whose SIDs list the runways each is published off.
+ * @returns True where the request stands.
+ */
+export function requestStands(procedure: Procedure, runway: string, airport: AirportData): boolean {
+  if (procedure.kind !== 'sid') return false;
+  const sid = airport.sids.find((entry) => entry.id === procedure.id);
+  const family = runway.slice(0, 2);
+  return sid !== undefined && sid.runways.every((published) => published.slice(0, 2) === family);
+}
+
+/**
+ * The drawn plan on the runway it departs: the one picked, or the one its TEC route moves it to.
+ *
+ * A flight drawn as asking for its runway files the request in its remarks, unless its TEC route moved
+ * it, because a moved flight departs the runway its route is in use from, not one it asked for.
+ */
+function placed(drawn: Scenario, picked: PickedRunway, airport: AirportData): Scenario {
+  const runway = tecRunway({ ...drawn, departureRunway: picked.runway }, airport);
+  const requested = picked.requested && runway === picked.runway;
+  return {
+    ...drawn,
+    departureRunway: runway,
+    ...(requested ? { remarks: `REQ RWY ${runway.slice(0, 2)}` } : {}),
+  };
+}
+
+/** A placed plan and the procedure the clearance engine assigned it. */
+type Cleared = { filed: Scenario; procedure: Procedure };
+
+/** Resolves the clearance of a placed plan, or the element that blocked it. */
+function cleared(filed: Scenario, airport: AirportData): Cleared | Unresolved {
+  const result = resolveClearance(filed, airport);
+  if (!result.ok) {
+    return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
+  }
+  return { filed, procedure: result.clearance.procedure.value };
+}
+
+/**
+ * Places the drawn plan on its runway and clears it, drawing the runway again where a request does
+ * not stand.
+ *
+ * The only remark a drawn plan files is its runway request. A request whose procedure is not a SID
+ * published off the requested family alone is dropped: the runway is drawn again without it, moved by
+ * the TEC route as any draw is, and cleared again.
+ *
+ * @param rng The seeded generator; a second runway draw advances it.
+ * @param drawn The drawn plan, before its runway is set.
+ * @param draw The flight the runway was drawn for.
+ * @param picked The runway first drawn.
+ * @returns The placed plan and its procedure, or the element that blocked its clearance.
+ */
+function clearedOnRunway(
+  rng: Rng,
+  drawn: Scenario,
+  draw: RunwayDraw,
+  picked: PickedRunway,
+): Cleared | Unresolved {
+  const { airport } = draw;
+  const first = cleared(placed(drawn, picked, airport), airport);
+  if (isUnresolved(first) || first.filed.remarks === undefined) return first;
+  if (requestStands(first.procedure, first.filed.departureRunway, airport)) return first;
+  const redrawn = pickRunway(rng, { ...draw, mayRequest: false });
+  return cleared(placed(drawn, redrawn, airport), airport);
+}
+
+/**
  * Draws one candidate scenario and runs both engines over it.
  *
  * The filed route is assembled after the clearance engine has spoken, because it names the
@@ -455,6 +583,11 @@ export function composedRoute(procedure: Procedure, tail: string, airport: Airpo
  * altitude are the correctly-filed plan, and a draw where they are not is thrown away. Where the
  * route box alone is what the engine would write differently, the plan takes the route the engine
  * writes rather than being thrown away, because that route is what the flight would have filed.
+ *
+ * Before the clearance is resolved, a flight whose TEC route is not usable off the runway drawn moves
+ * to a runway of the configuration it is usable from (`tecRunway`), and a flight drawn as asking for
+ * a runway keeps the request only where the SOP then assigns it a SID published off the requested
+ * family alone (`requestStands`); otherwise its runway is drawn again without the request.
  *
  * A filter that names a destination narrows the route draw to the route library rows filed to it.
  *
@@ -475,16 +608,18 @@ export function drawScenario(
   const fleet = pickFleet(rng, airport, route);
   const equipmentSuffix = rng.pick(fleet.suffixes);
   const callsign = pickCallsign(rng, fleet);
-  const picked = pickRunway(rng, {
+  const draw: RunwayDraw = {
     airport,
     config,
     fleet,
     callsign,
     direction: directionOf(route.exitFix, airport.gates),
-  });
+    mayRequest: true,
+  };
+  const picked = pickRunway(rng, draw);
   const time = pickTime(rng, filter.time);
   const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
-  const filed: Scenario = {
+  const drawn: Scenario = {
     callsign,
     aircraftType: fleet.type,
     equipmentSuffix,
@@ -496,16 +631,13 @@ export function drawScenario(
     localTime: time.localTime,
     dayOfWeek: time.dayOfWeek,
     squawk: pickSquawk(rng),
-    ...(picked.requested ? { remarks: `REQ RWY ${picked.runway.slice(0, 2)}` } : {}),
     ...(noticesOff ? { activeNotices: [] } : {}),
   };
-  const result = resolveClearance(filed, airport);
-  if (!result.ok) {
-    return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
-  }
+  const result = clearedOnRunway(rng, drawn, draw, picked);
+  if (isUnresolved(result)) return result;
   const composed: Scenario = {
-    ...filed,
-    filedRoute: composedRoute(result.clearance.procedure.value, route.tail, airport),
+    ...result.filed,
+    filedRoute: composedRoute(result.procedure, route.tail, airport),
   };
   const clean = withBuiltRoute(composed, airport);
   return amendmentGap(clean, airport) ?? clean;

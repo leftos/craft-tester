@@ -1,8 +1,7 @@
 import type { AirportData, Destination, LoaRule, LoaRuleKind, Scenario } from '@/data/schema.ts';
-import { citeTec } from '@/rules/amend/cite.ts';
 import { magneticCourse } from '@/rules/amend/course.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
-import { citePhraseology, toCitation } from '@/rules/cite.ts';
+import { citePhraseology, citeTec, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { formatAltitude } from '@/rules/grade.ts';
 import { usableTecRoute } from '@/rules/tecRoutes.ts';

@@ -9,10 +9,8 @@ import type {
   TecRoute,
 } from '@/data/schema.ts';
 import { changeArrival } from '@/rules/amend/arrival.ts';
-import { citeTec } from '@/rules/amend/cite.ts';
-import { tecTokens } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
-import { citePhraseology } from '@/rules/cite.ts';
+import { citePhraseology, citeTec } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import type { RnavElement, RnavNeed } from '@/rules/route.ts';
 import {
@@ -31,7 +29,7 @@ import {
   connectionCitations,
 } from '@/rules/routeBuild.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
-import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type { Procedure, ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
@@ -74,11 +72,14 @@ type RouteCheck = {
  * a reason names the procedure the box itself proposes where that one is among them and the first
  * otherwise: on a built box the route is read past another departure's structure, which the box does
  * have to name. `repair` travels with a box the filed route named something unflyable in, naming
- * what was taken out and how the gap was closed.
+ * what was taken out and how the gap was closed. `joinedTec` travels with a box joined onto a
+ * noise-abatement SID, naming the TEC row whose route the box's tail is: the box is not the row's route
+ * as written, so it is read as a built or filed box, but the amendment still cites the row.
  */
 type ExpectedRoute = {
   tokens: string[];
   tec: TecRoute | undefined;
+  joinedTec?: TecRoute;
   built?: BuiltRoute;
   exitElement?: string;
   scope?: BuildScope;
@@ -397,27 +398,27 @@ function expectedRoute(
   const head = tecHead(tec);
   const sid = airport.sids.find((entry) => entry.id === assigned);
   if (sid !== undefined && head.kind === 'heading') {
-    return joinedExpectation(tokens, scenario, ctx, sid, airport);
+    return { ...joinedExpectation(tokens, scenario, ctx, sid, airport), joinedTec: tec };
   }
   if (sid !== undefined && head.kind === 'family' && sid.family !== head.family) {
-    return joinedExpectation(tokens.slice(1), scenario, ctx, sid, airport);
+    return { ...joinedExpectation(tokens.slice(1), scenario, ctx, sid, airport), joinedTec: tec };
   }
   return { tokens: withVectorNavaid(tokens, airport), tec };
 }
 
 /**
- * The TEC row's citation for a route amendment, unless the clearance's procedure already cites it.
+ * The TEC row's citation for a route amendment, unless the amendment already cites it.
  *
  * A flight issued its TEC route's departure carries the row among the procedure's citations, which
  * the amendment cites first; the row is then cited once.
  *
  * @param tec The TEC row the box was read from, where one was.
- * @param clearance The clearance the engine resolved for the plan.
- * @returns The citation, or none where there is no row or the procedure already cites it.
+ * @param cited The citations the amendment already carries.
+ * @returns The citation, or none where there is no row or the amendment already cites it.
  */
-function tecCitations(tec: TecRoute | undefined, clearance: ResolvedClearance): RuleCitation[] {
+function tecCitations(tec: TecRoute | undefined, cited: readonly RuleCitation[]): RuleCitation[] {
   if (tec === undefined) return [];
-  if (clearance.procedure.citations.some((citation) => citation.id === tec.id)) return [];
+  if (cited.some((citation) => citation.id === tec.id)) return [];
   return [citeTec(tec)];
 }
 
@@ -578,15 +579,16 @@ function builtAmendment(
 ): ResolvedAmendment {
   const malformed = malformedClause(expected);
   const reason = builtReason(built, expected, scenario, ctx);
+  const citations = [
+    ...builtCitations(built, airport),
+    ...structureCitations(expected, airport),
+    ...repairCitations(expected, airport),
+  ];
   return {
     box: 'route',
     proposed: expected.tokens.join(' '),
     reason: malformed === undefined ? reason : `${reason}, and ${malformed}`,
-    citations: [
-      ...builtCitations(built, airport),
-      ...structureCitations(expected, airport),
-      ...repairCitations(expected, airport),
-    ],
+    citations: [...citations, ...tecCitations(expected.joinedTec, citations)],
   };
 }
 
@@ -897,7 +899,7 @@ function headingOutcome(
     citations: [
       ...clearance.procedure.citations,
       ...repairCitations(expected, airport),
-      ...tecCitations(tec, clearance),
+      ...tecCitations(tec, clearance.procedure.citations),
     ],
   };
 }
@@ -1067,7 +1069,7 @@ function procedureOutcome(
       ...clearance.procedure.citations,
       ...structureCitations(expected, airport),
       ...repairCitations(expected, airport),
-      ...tecCitations(expected.tec, clearance),
+      ...tecCitations(expected.tec ?? expected.joinedTec, clearance.procedure.citations),
     ],
   };
 }

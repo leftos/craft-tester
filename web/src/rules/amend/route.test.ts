@@ -547,6 +547,8 @@ describe('checkRoute a TEC route over the SOP assignment', () => {
     const box = amendment(flight).proposed.split(' ');
     expect(box[0]).toBe(niite.id);
     expect(box.slice(-2)).toEqual(['FEVTA', 'FEVTA1']);
+    const cited = citations(flight).filter((id) => id === 'TEC-KSMF-SFOW-J');
+    expect(cited).toEqual(['TEC-KSMF-SFOW-J']);
   });
 
   it('reads the noise row from the TEC route direction, not the direction the plan files', () => {
@@ -760,7 +762,7 @@ describe('checkRoute on the runway heading', () => {
     expect(check(c172({ filedRoute: 'OAK V6 SAC' }))).toBeUndefined();
   });
 
-  it('passes over a TEC row that begins on a departure the flight is not issued', () => {
+  it('routes a noise-window heading on the TEC route after the departure the row begins on', () => {
     const flight = c172({ filedRoute: 'SFO5 OAK V6 SAC' });
     expect(amendment(flight).proposed).toBe('OAK V6 SAC');
   });

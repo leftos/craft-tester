@@ -1,8 +1,6 @@
 import type { AirportData, AssignmentRule, Direction, Scenario } from '@/data/schema.ts';
 import { resolveAltitude } from '@/rules/altitude.ts';
-import { citeTec } from '@/rules/amend/cite.ts';
-import { tecTokens } from '@/rules/amend/tec.ts';
-import { citePhraseology, toCitation } from '@/rules/cite.ts';
+import { citePhraseology, citeTec, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveFrequency } from '@/rules/frequency.ts';
@@ -14,7 +12,7 @@ import { phraseRoute } from '@/rules/routePhrasing.ts';
 import { explainRunway } from '@/rules/runway.ts';
 import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
-import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type {
   EngineResult,
   ResolvedRoute,
@@ -217,7 +215,7 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
         value: scenario.destination,
         citations: citePhraseology(airport, 'C-DEST'),
       },
-      runway: explainRunway(scenario, airport, ctx.aircraftClass, direction),
+      runway: explainRunway(scenario, airport, ctx.aircraftClass, read.direction),
       procedure: {
         value: procedureOf(element.procedure),
         citations: element.citations,

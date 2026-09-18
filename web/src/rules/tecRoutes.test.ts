@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData, RunwayConfig, Scenario, TecRoute } from '@/data/schema.ts';
+import type {
+  AirportData,
+  AssignmentRule,
+  RunwayConfig,
+  Scenario,
+  TecRoute,
+} from '@/data/schema.ts';
+import { checkRoute } from '@/rules/amend/route.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
-import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { resolveClearance } from '@/rules/engine.ts';
+import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -189,5 +197,57 @@ describe('usableTecRoute', () => {
         expect(ksmfRow('28 SO', runway)).toBeUndefined();
       },
     );
+  });
+});
+
+describe('a TEC route that begins on an initial heading', () => {
+  /** The SOP row that clears a flight whose TEC route carries no departure on that same heading. */
+  const assignmentRow: AssignmentRule = {
+    id: 'SFOW-TEC-NO-DP-28',
+    source: 'SFO ATCT SOP 2-1 c',
+    text: 'SFOW: jets on a TEC route with no DP, runway 28 -> heading 270 (no DP)',
+    plan: 'SFOW',
+    direction: 'any',
+    runwayFamilies: ['28'],
+    classes: ['J'],
+    sidFamily: null,
+    nonDpHeading: 270,
+    sector: 'richmond',
+    when: { tecRouteWithoutDp: true },
+  };
+
+  const withNoDpRow: AirportData = {
+    ...airport,
+    assignmentRules: [assignmentRow, ...ksfo.assignmentRules],
+  };
+
+  const flight: Scenario = { ...SCENARIO, filedRoute: 'TRUKN2 FEVTA FEVTA1' };
+
+  /** The classified flight, which the TEC rows are keyed against. */
+  function classified(scenario: Scenario): Classification {
+    const ctx = classify(scenario, withNoDpRow);
+    if (isUnresolved(ctx)) throw new Error(ctx.reason);
+    return ctx;
+  }
+
+  it('leaves the heading out of the route it proposes', () => {
+    expect(tecTokens(headingRow, withNoDpRow)).toEqual(['FEVTA', 'FEVTA1']);
+  });
+
+  it('routes the flight the SOP clears on that heading', () => {
+    const row = usableTecRoute(classified(flight), flight, withNoDpRow);
+    expect(row?.id).toBe('TEC-KSMF-OAKE-J');
+  });
+
+  it('amends the route box to the published route without the heading', () => {
+    const result = resolveClearance(flight, withNoDpRow);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
+    const amendment = checkRoute(flight, classified(flight), result.clearance, withNoDpRow);
+    if (amendment === undefined) throw new Error('the filed route is the one the SOP assigns');
+    if (isUnresolved(amendment)) throw new Error(amendment.reason);
+    if (amendment.box !== 'route') throw new Error(`the check amended the ${amendment.box} box`);
+    expect(amendment.proposed).toBe('FEVTA FEVTA1');
+    expect(amendment.citations.map((citation) => citation.id)).toContain('TEC-KSMF-OAKE-J');
   });
 });
