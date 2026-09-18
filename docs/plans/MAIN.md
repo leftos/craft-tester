@@ -50,6 +50,14 @@ Four UI questions the engine already answers correctly; all four are presentatio
     only, grading untouched), or does the resolve move too? The recorded rule covers grading, so
     display-only leaves it intact — but ARCHITECTURE.md still needs a line saying the strip is the
     exception
+- [ ] **The amendment-mode Results score line splits by half** (user 2026-09-17). Today `resultsBody`
+  (`ui/results.ts`) calls `scoreLine(grades, 'elements')` on the whole session list, so the strip boxes are
+  counted as elements ("2 of 11 elements correct"). The user's wording, slash included (confirmed):
+  "2 of 3 flight plan checks / amendments correct, 0 of 8 CRAFT clearance elements correct". The results
+  and the revisit both show it. In
+  dropdown mode the clearance half is the procedure pick plus the five CRAFT elements (6); typed, it is the
+  eight typed elements. The half-credit and acceptable tails stay with the half they belong to. Clearance
+  mode keeps its one line
 - [ ] **Route row alignment.** The route row's answer and new-value controls start further right than the
   other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes. Left as
   a choice for the user 2026-09-16
