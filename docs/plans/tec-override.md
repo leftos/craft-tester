@@ -291,28 +291,56 @@ A new rule concept, raised mid-plan (user 2026-09-18). Its briefs are planned af
   convention (`R-RV-NAVAID`) is left as it is, so `OAK6 RV` reads `OAK6 OAK RV`. A box without the navaid
   is graded acceptable, as today.
 
-**Rows to transcribe.** These were left out of `koak/tec.yaml` (the comment at `:112-113` and
-`archive/koak-v3.md:395`):
+- **The departure frequency for a vectors-direct row is Richmond** (user 2026-09-18). This covers KOAK to
+  SFO (`RH RV`) and to Hayward (`OAK# RV`, `NIMI# RV`, `H090 RV`). KSFO to KOAK already reads Richmond,
+  because OAK is a KSFO north-gate fix.
+  - **Encoding (orchestrator):** SFO and HWD join KOAK's north gate as the destinations' identifiers.
+  - Checked 2026-09-18: no KOAK library route or fixture exits on SFO, so nothing else moves.
 
-- KOAK→KSFO, SFOW and SFOE: `RH RV`.
-- KOAK→KHWD: `OAK6 RV`, `NIMI5 RV` and `H090 RV`, if KHWD is an NCT destination in
-  `shared/destinations.yaml`.
+**Rows to transcribe.** These come from the route tool, read 2026-09-18; every class is J, T and P unless
+noted. Transcribe `OAK6` as `OAK#` and `NIMI5` as `NIMI#`, since the current KOAK versions are OAK6 and
+NIMI6.
 
-Read the plans, classes and altitudes from the route tool
-(<https://reference.oakartcc.org/routes?dep=OAK&dest=SFO> and `dest=HWD`).
+| Route | Plan | Classes | TEC route | Altitudes |
+| --- | --- | --- | --- | --- |
+| KOAK→KSFO | SFOW | J/T/P | `RH RV` | 050/050 |
+| KOAK→KSFO | SFOE | J/T/P | `RH RV` | 030/040 |
+| KOAK→KSFO | OAKE | J/T/P | `H270 OSI` | 050/050 (already in) |
+| KOAK→KHWD | SFOW | J | `OAK# RV` | 050/050 |
+| KOAK→KHWD | SFOW | T/P | `NIMI# RV` | 030/040 |
+| KOAK→KHWD | SFOE | J/T/P | `H090 RV` | 030/040 |
 
-**Design to plan.** Each item names what reads the tokens today:
+KHWD is in `shared/destinations.yaml` (Hayward), but not in KOAK's `routes.yaml` destinations. It needs
+that entry and a library row.
 
-- **The row grammar in the generator.** A head is `FAMILY#`, `Hnnn`, `RH`, or a fix or airway. After the
-  head comes a route of fixes and airways, or `RV` alone, or nothing when the head is a vector SID.
-  - `RH` and `Hnnn` may appear only as the head, and `RV` only as the last token.
-  - `_check_fix_spoken` must never look `RH` or `RV` up as a navaid, because `RH` is the Arsha NDB.
-  - This grammar replaces MAIN.md's "TEC rows that name no fix" guard.
-  - It carries worked examples and non-examples, checked against every row in both `tec.yaml` files.
-- **The filed-route reader in the engine.** `parseFiledRoute`, `routeFromExitFix` and `tecHead` read `RH`
-  as runway heading, `Hnnn` as a heading, and `RV` as vectors direct.
-  - With no exit fix, the direction comes from the destination's navaid (ruling 3's derivation). A
-    destination whose navaid is in no gate is reported.
-- **Speech and grading.** Add a phraseology row for "radar vectors direct" (source: SOP 2-1 b and this
-  ruling). Update `speak.ts`, the dropdown options and the free-text grader so that "fly runway heading,
-  radar vectors direct" is spoken and graded.
+**Design:**
+
+- **The route template.** Add `radar_vectors_direct` to the schema's route-template enum, with no fix.
+  Then run `schema:export`.
+  - It is spoken "radar vectors direct", through a new shared phraseology row `R-RV-DIRECT` (source:
+    SOP 2-1 b "vectors direct" and this ruling).
+  - `grade.ts` labels it "radar vectors direct"; `options.ts` offers it; the free-text grader
+    recognises it.
+  - A heading departure reads "…via fly runway heading, radar vectors direct".
+- **The TEC tokens.**
+  - `tecHead` reads `RH` as the heading `runway heading`.
+  - `tecTokens` keeps `RH`, `Hnnn` and `RV` in the box, which changes today's heading-dropping.
+  - The airport-navaid convention still applies to a vector SID head, so `OAK# RV` reads `OAK6 OAK RV`.
+- **The filed-route reader.** `parseFiledRoute`/`routeFromExitFix` treat a leading `RH` or `Hnnn` like a
+  procedure token. A route that ends in `RV` right after its head, or that names nothing after a vector
+  SID and the airport navaid (`GAPP7 SFO`), is radar vectors direct. Its direction comes from the
+  destination's identifier in the gates (ruling 3's derivation and the Richmond ruling above).
+  - A destination that is in no gate leaves the flight `Unresolved`, and it is reported.
+- **The generator's row grammar.** It replaces MAIN.md's guard item.
+  - Legal: `TRUKN# TRUKN ALTAM`, `H270 OSI`, `EUGEN`, `RH RV`, `H090 RV`, `OAK# RV`, `NIMI# RV`, and
+    `GAPP#` (a bare radar-vector SID).
+  - Illegal: `RH` alone; `TRUKN#` alone (TRUKN is flown by the pilot, not on vectors); `RV` with no head;
+    `OSI RH` (`RH` only as the head); `RH OSI RV` (`RV` only as the sole token after the head); and
+    `H000 RV` (outside 1–360, as today).
+  - `_check_fix_spoken` never looks up `RH`, `RV` or `Hnnn`.
+- **Order.** Brief P2-A does the engine, schema and phraseology row, tested on injected rows and on the
+  live bare `GAPP#` row, which closes the KSFO SFOE→KOAK gap. Brief P2-B does the generator grammar, the
+  transcription, the gates, the KHWD library row and the rebuild, in the same worktree. It is merged
+  once P2-B is green.
+- **Fixtures.** Settled KOAK fixtures on `H270 …` rows will read `H270 OSI` rather than `OSI` in their route
+  box. The user has ruled on that, so list them for confirmation rather than re-open the question.
