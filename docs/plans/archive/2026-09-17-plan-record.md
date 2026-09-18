@@ -352,3 +352,10 @@ Moved out of MAIN.md by the next hygiene pass (2026-09-17, at `fd05a17`); MAIN.m
     GL5T/U `SAHEY4 NTELL`; the engine fixes the suffix to /L, the student can file `GAPP7 SFO NTELL`) and
     352. `app.test.ts` uses 107. Landed as `studentPlan` (`rules/amend/grade.ts`) and `clearedPlan`
     (`ui/session.ts`), with a `console.warn` fallback to the engine's plan
+- [x] **Cleanup (user 2026-09-17): `selectControl` selects after inserting.** `ui/dom.ts` marks the chosen
+  option `selected` before appending it; happy-dom drops that, so no DOM test can read a dropdown's first
+  render (`app.test.ts` works around it with a "shape" pick). Set `select.value` once the options are in,
+  then drop the workaround
+- [x] **Cleanup (user 2026-09-17): `clearedPlan` resolves once per answer set.** `onBoxesSubmit` and each
+  phase's panels call it again, so an unresolvable plan warns two or three times; memoise it per view and
+  answers
