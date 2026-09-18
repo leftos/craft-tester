@@ -43,7 +43,9 @@ first), `loa_rules.yaml` (the inter-ARTCC LOA sources and rows, joined the same 
 `joined_loa_rules`, with `departures` filtering a row to the airports it names) and
 `route_connections.yaml` (the ZOA route-building cheat sheet, one row per "fix connects onward to fix"
 arrow, emitted as citable `routeConnections` rows), `airways.yaml` (the one-way oceanic airways, emitted
-as `airways`), `common_arrivals.yaml` (the ZOA "Common ZLA Arrivals from ZOA" sheet, one row per cell with
+as `airways`), `navaid_names.yaml` (spoken names for navaids the CIFP does not carry, decommissioned or
+foreign, read between the CIFP names and an airport's `fix_spoken` and emitted into `fixSpoken` only where
+the airport's data or fixtures file the navaid), `common_arrivals.yaml` (the ZOA "Common ZLA Arrivals from ZOA" sheet, one row per cell with
 the destinations, classes, cargo mark, arrival family and entry fixes, emitted as citable `commonArrivals`
 rows in the sheet's order; the build fails when a row names a family a library destination does not
 publish) and `faa_aircraft_characteristics.yaml` (the FAA Aircraft

@@ -40,7 +40,7 @@ from craft_generator.cifp.stars import parse_stars
 from craft_generator.cifp.waypoints import parse_waypoints
 from craft_generator.emit import WriteResult, data_path, dump, fixture_schema_path, schema_path, validate, write_or_check
 from craft_generator.http import cache_dir, fetch_bytes, sha256_hex
-from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport
+from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance, build_airport, gate_coverage
 from craft_generator.nct_boundary import load_nct_boundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
@@ -145,6 +145,7 @@ def build_parser() -> argparse.ArgumentParser:
             sub.add_argument("--cycle", metavar="YYNN", help="AIRAC cycle id, e.g. 2609; defaults to the cycle effective today")
         if name == "build":
             sub.add_argument("--offline", action="store_true", help="use only the download cache, never the network")
+            sub.add_argument("--coverage", action="store_true", help="print the gate fixes no route-library route leaves the DP at")
         if name in {"build", "import-worksheets"}:
             sub.add_argument("--check", action="store_true", help="fail instead of writing when the output differs from the committed file")
         if name == "import-worksheets":
@@ -380,7 +381,24 @@ def _print_build_summary(airport: str, cycle_id: str, effective: date, document:
         print(result.diff, end="")
 
 
-def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool = False, force: bool = False, allow_sop_drift: bool = False) -> int:
+def _print_gate_coverage(document: Document) -> None:
+    uncovered = gate_coverage(document)
+    if uncovered:
+        print(f"coverage: {len(uncovered)} gate fix(es) no route in routeLibrary leaves the DP at: {uncovered}")
+    else:
+        print("coverage: every gate fix has a route in routeLibrary")
+
+
+def build(
+    airport: str,
+    cycle: str | None,
+    *,
+    offline: bool = False,
+    check: bool = False,
+    force: bool = False,
+    allow_sop_drift: bool = False,
+    coverage: bool = False,
+) -> int:
     """Join every source into ``data/<icao>.json``, validated against the schema.
 
     Args:
@@ -390,6 +408,8 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
         check: Compare against the committed file instead of writing it.
         force: Re-download every source.
         allow_sop_drift: Accept a changed SOP sha256 as long as every sentinel still matches.
+        coverage: After the summary, print to stdout the gate fixes no route-library route leaves
+            the DP at, whether or not ``check`` finds a difference.
 
     Returns:
         The process exit status: non-zero when ``check`` finds the committed file out of date.
@@ -436,6 +456,8 @@ def build(airport: str, cycle: str | None, *, offline: bool = False, check: bool
     validate(document, schema_path())
     result = write_or_check(data_path(airport), dump(document), check=check)
     _print_build_summary(airport, cycle_id, effective, document, result)
+    if coverage:
+        _print_gate_coverage(document)
     return EXIT_ERROR if result.status == "differs" else EXIT_OK
 
 
@@ -579,7 +601,13 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
 def _run(args: argparse.Namespace) -> int:
     handlers: dict[str, Callable[[], int]] = {
         "build": lambda: build(
-            args.airport, args.cycle, offline=args.offline, check=args.check, force=args.force, allow_sop_drift=args.allow_sop_drift
+            args.airport,
+            args.cycle,
+            offline=args.offline,
+            check=args.check,
+            force=args.force,
+            allow_sop_drift=args.allow_sop_drift,
+            coverage=args.coverage,
         ),
         "import-worksheets": lambda: import_worksheets(args.airport, check=args.check, force=args.force, overwrite_settled=args.overwrite_settled),
         "fetch-cifp": lambda: fetch_cifp(args.airport, args.cycle, force=args.force),

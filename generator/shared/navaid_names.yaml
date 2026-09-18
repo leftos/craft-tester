@@ -1,0 +1,11 @@
+# Spoken names for navaids the CIFP does not carry that a checked-in route still files: US facilities
+# since decommissioned, and foreign ones. A navaid belongs to the route structure, not to one field, so
+# every airport inherits the table. The CIFP name is read first, then this table, then the airport's own
+# `overrides.yaml` `fix_spoken`, and the later one wins; a row reaches an airport's document only when
+# that airport's data or fixtures file the navaid. Names follow R-NAVAID: the name, then VOR for any
+# VOR, VOR/DME or VORTAC, or NDB.
+source: { title: "FAA VOR MON program update (ECA); AirNav and the Korea AIP ENR 4.1 (SMA, KAE)", dated: 2026-09-17 }
+navaid_names:
+  - { id: ECA, spoken: Manteca VOR, note: "Manteca VOR/DME, Stockton CA, decommissioned 2018-03-29 under the VOR MON program; N436MS files OAK V244 ECA" }
+  - { id: SMA, spoken: Saint Mary's NDB, note: "St. Mary's NDB at St. Mary's, AK (PASM), filed on J179 after Middleton Island" }
+  - { id: KAE, spoken: Gangwon VOR, note: "Gangwon VORTAC at Gangneung, South Korea, filed on B467 and G597 into RKSI" }

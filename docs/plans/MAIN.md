@@ -152,12 +152,6 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
   (`onRequestRunway` keys on class and flight kind only), so seed `f` puts a heavy UPS A306 filing
   `TRUKN CCR CCR2` on 28L in 28/01 with the remark `REQ RWY 28`, and the engine issues GAPP7 radar vectors
   TRUKN at 3,000 because TRUKN is no SNTNA2 transition
-- [ ] **Cleanup (user 2026-09-17: "do all the cleanup").** Remove the leftover worktree folders (done). Merge
-  `altitude.ts`'s two TBL 4-5-1 FL410 constants. Delete the dead half of the TRUKN2 base-fix test pair.
-  Move the gate-coverage warning into a `build --coverage` report. Name ECA (Manteca VOR,
-  decommissioned 2018), SMA (Saint Mary's NDB) and KAE (Gangwon VOR, South Korea) in a new shared
-  `navaid_names.yaml`, since ECA is filed at both airports. The fixtures report that skips when no clearance
-  plan is pending stays: it is conditional by design
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([free-text.md](./free-text.md) decision 9)
@@ -263,6 +257,15 @@ One line per step; the full record and the user decisions behind each are in the
   (any whole thousand up to FL410, odd flight levels above, so FL420 on R464 steps down to FL410), and
   the altitude box of such a route cites the row whatever its verdict, so the reveal says why FDX3875's
   FL310 stood — 2026-09-17
+- [x] Cleanup (user 2026-09-17):
+  - navaids the CIFP does not carry are named once in shared `navaid_names.yaml` (ECA Manteca VOR,
+    decommissioned 2018; SMA Saint Mary's NDB; KAE Gangwon VOR);
+  - the gate-coverage warning is the `build --coverage` report, so both builds print no warnings;
+  - `altitude.ts` has one TBL 4-5-1 FL410 constant, and the RVSM band has one copy;
+  - the dead half of the TRUKN2 base-fix test pair is gone.
+
+  The one skipped test left, the fixtures report over pending clearance plans, is conditional by design —
+  2026-09-17
 - [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
   offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
   pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules

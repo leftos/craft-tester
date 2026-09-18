@@ -29,7 +29,7 @@ uv run pytest -q -m network                          # the fetching tests, desel
 uv run craft-gen fetch-cifp --airport KSFO [--cycle 2609]
 uv run craft-gen fetch-charts --airport KSFO
 uv run craft-gen fetch-aircraft-characteristics [--from aircraft_data.xlsx]   # FAA table -> generator/shared/, no --airport
-uv run craft-gen build --airport KSFO [--cycle 2609] [--offline] [--check]
+uv run craft-gen build --airport KSFO [--cycle 2609] [--offline] [--check] [--coverage]   # --coverage: gate fixes no library route leaves at
 uv run craft-gen verify-sop --airport KSFO
 uv run craft-gen import-worksheets --airport KSFO [--check]
 
@@ -118,7 +118,8 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   marked `@pytest.mark.network` and deselected by default.
 - **Procedures and fixes are spoken by name, never spelled.** The generator emits `fixSpoken` from CIFP
   navaid records; an unnamed navaid on checked data fails the build (one only a worksheet route files
-  warns). A hand `fix_spoken` row in `overrides.yaml` wins.
+  warns). A navaid the CIFP does not carry (decommissioned, or foreign) is named once in
+  `generator/shared/navaid_names.yaml`, and a hand `fix_spoken` row in `overrides.yaml` wins over both.
 
 ## Footguns
 
