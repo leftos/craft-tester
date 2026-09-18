@@ -3267,6 +3267,11 @@
       "text": "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction"
     },
     {
+      "id": "RWY-TEC",
+      "source": "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)",
+      "text": "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
+    },
+    {
       "id": "RWY-FIRST",
       "source": "OAK ATCT SOP 1-6",
       "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"

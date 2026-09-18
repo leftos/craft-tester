@@ -8,6 +8,9 @@ import type {
   TecRoute,
 } from '@/data/schema.ts';
 import type { Classification } from '@/rules/classify.ts';
+import { classify } from '@/rules/classify.ts';
+import type { Unresolved } from '@/rules/types.ts';
+import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** A TEC route's placeholder for the current version of a family, e.g. `TRUKN#`. */
 export const FAMILY_PLACEHOLDER = /^([A-Z]+)#$/;
@@ -50,6 +53,38 @@ export function tecHead(row: TecRoute): TecHead {
     );
   }
   return { kind: 'heading', heading };
+}
+
+/**
+ * Reads a TEC row's route, putting the current version of each family in place of its placeholder.
+ *
+ * A row issued on an initial heading begins on that heading, which is the procedure the clearance
+ * names rather than a token of the route box, so it is dropped and the route follows it.
+ *
+ * @param row The TEC route row the flight is routed on.
+ * @param airport The airport data, whose `sids` carry the versions in force this cycle.
+ * @returns The route as tokens, or `Unresolved` when the row names a family the airport no longer
+ *   publishes, which leaves the row with no route to propose.
+ */
+export function tecTokens(row: TecRoute, airport: AirportData): string[] | Unresolved {
+  const tokens: string[] = [];
+  const written = row.route.trim().split(/\s+/);
+  for (const token of tecHead(row).kind === 'heading' ? written.slice(1) : written) {
+    const family = FAMILY_PLACEHOLDER.exec(token)?.[1];
+    if (family === undefined) {
+      tokens.push(token);
+      continue;
+    }
+    const sid = airport.sids.find((entry) => entry.family === family);
+    if (sid === undefined) {
+      return unresolved(
+        'BOX.route',
+        `${row.id} routes the flight on the ${family} departure, which ${airport.airport.icao} no longer publishes`,
+      );
+    }
+    tokens.push(sid.id);
+  }
+  return tokens;
 }
 
 /**
@@ -185,4 +220,29 @@ export function usableTecRoute(
   return airport.tecRoutes.find(
     (row) => keyedFor(row, ctx, destination) && usable(row, ctx, scenario, airport),
   );
+}
+
+/**
+ * The TEC row that would route the flight were it to depart another runway of its configuration.
+ *
+ * The flight is classified as though it departed that runway, so the runway family its rows are keyed
+ * by, and the families the SOP puts in use from it, are that runway's. This is how the draw finds a
+ * runway a flight's TEC departure is in use from, and how the runway explanation knows the draw moved
+ * it there.
+ *
+ * @param runway The departure runway to read the flight off.
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @returns The row, or `undefined` where no row is usable off that runway, or where the flight cannot
+ *   be classified at all, which the clearance engine reports on its own.
+ */
+export function usableTecRouteOn(
+  runway: string,
+  scenario: Scenario,
+  airport: AirportData,
+): TecRoute | undefined {
+  const moved: Scenario = { ...scenario, departureRunway: runway };
+  const ctx = classify(moved, airport);
+  if (isUnresolved(ctx)) return undefined;
+  return usableTecRoute(ctx, moved, airport);
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type {
   AircraftClass,
@@ -13,15 +14,23 @@ import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { isNoiseWindowActive } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf, flightDirection, isSidToken, parseFiledRoute } from '@/rules/route.ts';
+import { usableTecRouteOn } from '@/rules/tecRoutes.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 import { generateAmendmentScenario } from '@/scenario/amend.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
-import { drawScenario, generateScenario, pickRunway } from '@/scenario/generate.ts';
+import {
+  drawScenario,
+  generateScenario,
+  pickRunway,
+  requestStands,
+  tecRunway,
+} from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 /** The seeds the mix assertions are measured over; the plan requires 0..999 to all generate. */
 const SEEDS = Array.from({ length: 1000 }, (_value, index) => index);
@@ -275,12 +284,16 @@ describe('generateScenario', () => {
     expect(south.filter((entry) => entry.departureRunway !== '01L').map(label)).toEqual([]);
   });
 
-  it('a turboprop in 28/01 departs 28R by default', () => {
+  it('a turboprop in 28/01 departs 28R by default, unless its TEC route moves it off', () => {
     const propsAndTurboprops = drawnIn('28/01', ['P', 'T']);
     expect(propsAndTurboprops.length).toBeGreaterThan(0);
-    expect(
-      propsAndTurboprops.filter((entry) => entry.departureRunway !== '28R').map(label),
-    ).toEqual([]);
+    const offDefault = propsAndTurboprops.filter((entry) => entry.departureRunway !== '28R');
+    const unmoved = offDefault.filter(
+      (entry) =>
+        usableTecRouteOn('28R', entry, ksfo) !== undefined ||
+        usableTecRouteOn(entry.departureRunway, entry, ksfo) === undefined,
+    );
+    expect(unmoved.map(label)).toEqual([]);
   });
 
   it('a jet in 28/01 departs the 01s', () => {
@@ -440,6 +453,7 @@ describe('pickRunway', () => {
       fleet: turbopropFleet(),
       callsign: 'PCM7679',
       direction: 'north',
+      mayRequest: true,
     });
     expect(picked).toStrictEqual({ runway: '28L', requested: false });
   });
@@ -451,6 +465,7 @@ describe('pickRunway', () => {
       fleet: turbopropFleet(),
       callsign: 'SKW1234',
       direction: 'north',
+      mayRequest: true,
     });
     expect(picked).toStrictEqual({ runway: '28R', requested: false });
   });
@@ -462,6 +477,7 @@ describe('pickRunway', () => {
       fleet: dash8Fleet(),
       callsign: 'QXE2451',
       direction: 'north',
+      mayRequest: true,
     });
     expect(picked).toStrictEqual({ runway: '30', requested: false });
   });
@@ -473,6 +489,7 @@ describe('pickRunway', () => {
       fleet: turbopropFleet(),
       callsign: 'SKW1234',
       direction: 'north',
+      mayRequest: true,
     });
     expect(picked).toStrictEqual({ runway: '28R', requested: false });
   });
@@ -484,6 +501,7 @@ describe('pickRunway', () => {
       fleet: turbopropFleet(),
       callsign: 'N483KA',
       direction: 'north',
+      mayRequest: true,
     });
     expect(picked).toStrictEqual({ runway: '28R', requested: false });
   });
@@ -595,4 +613,133 @@ describe('the route the draw files', () => {
       drawn.filter((entry) => entry.filedRoute !== 'NIITE4 GOBBS YYUNG LAX COMIX2').map(label),
     ).toEqual([]);
   });
+});
+
+/** A flight drawn onto a runway, before its TEC route has been read. */
+function drawnFlight(overrides: Partial<Scenario>): Scenario {
+  return {
+    callsign: 'N436MS',
+    aircraftType: 'TBM9',
+    equipmentSuffix: '/L',
+    destination: 'KSMF',
+    filedRoute: 'TRUKN FEVTA FEVTA1',
+    filedAltitude: 10000,
+    runwayConfigId: '28/01',
+    departureRunway: '28R',
+    localTime: '1300',
+    dayOfWeek: 'tuesday',
+    squawk: '4621',
+    ...overrides,
+  };
+}
+
+/** An RNAV jet drawn onto a KSFO runway, before its TEC route has been read. */
+function rnavJet(overrides: Partial<Scenario>): Scenario {
+  return drawnFlight({ callsign: 'SWA1', aircraftType: 'B738', ...overrides });
+}
+
+describe('tecRunway', () => {
+  it('moves a TBM9 to KSMF in 28/01 off its class default 28R to 01R, where TRUKN is in use', () => {
+    expect(tecRunway(drawnFlight({}), ksfo)).toBe('01R');
+  });
+
+  it('keeps an RNAV jet to KLVK on 28L in 28/01, where TEC-KLVK-SFOW-JT-28 is usable', () => {
+    const flight = rnavJet({
+      destination: 'KLVK',
+      filedRoute: 'TRUKN ALTAM',
+      departureRunway: '28L',
+    });
+    expect(tecRunway(flight, ksfo)).toBe('28L');
+  });
+
+  it('keeps an RNAV jet to KSMF on 28L in 28 SO, where TRUKN is in use from no runway', () => {
+    const flight = rnavJet({ runwayConfigId: '28 SO', departureRunway: '28L' });
+    expect(tecRunway(flight, ksfo)).toBe('28L');
+  });
+
+  it('moves an RNAV jet to KSMF in 01/01 off 01L, which TRUKN2 is not published from, to 01R', () => {
+    const flight = rnavJet({ runwayConfigId: '01/01', departureRunway: '01L' });
+    expect(tecRunway(flight, ksfo)).toBe('01R');
+  });
+
+  it('moves a KOAK prop to KMRY in SFOW off 33, which NUEVO8 is not published from, to 28L', () => {
+    const flight = drawnFlight({
+      callsign: 'N172SP',
+      aircraftType: 'C172',
+      equipmentSuffix: '/G',
+      destination: 'KMRY',
+      filedRoute: 'EUGEN',
+      filedAltitude: 7000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '33',
+    });
+    expect(tecRunway(flight, koak)).toBe('28L');
+  });
+});
+
+describe('the on-request draw', () => {
+  it('carries a SID published off the requested runway family alone on every requested draw', () => {
+    const asked = generated.filter((entry) => entry.remarks !== undefined);
+    expect(asked.length).toBeGreaterThan(0);
+    const offFamily = asked.filter((entry) => {
+      const result = resolveClearance(entry, ksfo);
+      if (!result.ok) return true;
+      const procedure = result.clearance.procedure.value;
+      if (procedure.kind !== 'sid') return true;
+      const sid = ksfo.sids.find((row) => row.id === procedure.id);
+      const family = entry.departureRunway.slice(0, 2);
+      return sid === undefined || sid.runways.some((runway) => runway.slice(0, 2) !== family);
+    });
+    expect(offFamily.map(label)).toEqual([]);
+  });
+
+  it('never lets the request of a heavy whose procedure is GAPP7 stand as REQ RWY 28', () => {
+    const heavy = drawnFlight({
+      callsign: 'UPS2896',
+      aircraftType: 'A306',
+      destination: 'KRNO',
+      filedRoute: 'TRUKN CCR CCR2',
+      filedAltitude: 35000,
+      departureRunway: '28L',
+      remarks: 'REQ RWY 28',
+    });
+    const result = resolveClearance(heavy, ksfo);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    const procedure = result.clearance.procedure.value;
+    expect(procedure).toMatchObject({ kind: 'sid', family: 'GAPP' });
+    expect(requestStands(procedure, heavy.departureRunway, ksfo)).toBe(false);
+  });
+});
+
+/** The departure runways of the scenario's configuration listed for its class. */
+function listedRunways(entry: Scenario, airport: AirportData): string[] {
+  const config = airport.runwayConfigs.find((row) => row.id === entry.runwayConfigId);
+  const aircraftClass = airport.aircraftClasses[entry.aircraftType];
+  if (config === undefined || aircraftClass === undefined) {
+    throw new Error(`${label(entry)} has no configuration or class in the data`);
+  }
+  return config.departureRunways
+    .filter((row) => row.classes.includes(aircraftClass))
+    .map((row) => row.runway);
+}
+
+describe('the runway a TEC-routed draw departs', () => {
+  it.each([
+    ['KSFO', ksfo, generated],
+    ['KOAK', koak, SEEDS.map((seed) => generateScenario(createRng(seed), koak, ANY_SCENARIO))],
+  ])(
+    'is one its TEC route is usable from, at %s, wherever a runway of its class has one',
+    (_icao, airport, drawn) => {
+      const routed = drawn.filter((entry) =>
+        listedRunways(entry, airport).some(
+          (runway) => usableTecRouteOn(runway, entry, airport) !== undefined,
+        ),
+      );
+      expect(routed.length).toBeGreaterThan(0);
+      const stranded = routed.filter(
+        (entry) => usableTecRouteOn(entry.departureRunway, entry, airport) === undefined,
+      );
+      expect(stranded.map(label)).toEqual([]);
+    },
+  );
 });

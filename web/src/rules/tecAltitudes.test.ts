@@ -8,10 +8,9 @@ import type {
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
-import { tecTokens } from '@/rules/amend/tec.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
-import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 

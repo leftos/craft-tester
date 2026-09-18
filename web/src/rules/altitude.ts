@@ -7,10 +7,9 @@ import type {
   Sid,
   TecRoute,
 } from '@/data/schema.ts';
-import { citeTec } from '@/rules/amend/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { addresses } from '@/rules/classify.ts';
-import { citePhraseology, toCitation } from '@/rules/cite.ts';
+import { citePhraseology, citeTec, toCitation } from '@/rules/cite.ts';
 import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type {
   Cited,

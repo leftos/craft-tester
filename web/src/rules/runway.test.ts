@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AircraftClass, AirportData, Direction, Scenario } from '@/data/schema.ts';
 import { airlineOf, explainRunway } from '@/rules/runway.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const BASE: Scenario = {
   callsign: 'UAL1',
@@ -251,5 +253,59 @@ describe('explainRunway on the generated KSFO data', () => {
     );
     expect(cited.value).toBe('14L');
     expect(cited.citations.map((citation) => citation.id)).toEqual(['RWY-FIRST']);
+  });
+});
+
+describe('explainRunway for a flight its TEC route decides the runway of', () => {
+  /** The mechanism the explanation cites, after the configuration. */
+  function mechanism(flight: Scenario, airport: AirportData, direction: Direction): string {
+    const aircraftClass = airport.aircraftClasses[flight.aircraftType];
+    if (aircraftClass === undefined) throw new Error(`${flight.aircraftType} has no class`);
+    return explainRunway(flight, airport, aircraftClass, direction).citations.at(-1)?.id ?? '';
+  }
+
+  /** A KOAK SFOW prop to KMRY, whose TEC route begins on NUEVO#, which 33 does not publish. */
+  function kmryProp(departureRunway: string): Scenario {
+    return scenario({
+      callsign: 'N172SP',
+      aircraftType: 'C172',
+      equipmentSuffix: '/G',
+      destination: 'KMRY',
+      filedRoute: 'NUEVO8 EUGEN',
+      filedAltitude: 7000,
+      runwayConfigId: 'SFOW',
+      departureRunway,
+    });
+  }
+
+  it('cites RWY-TEC for the TBM9 to KSMF the draw moves off the 28R class default to 01R', () => {
+    const flight = scenario({
+      callsign: 'N436MS',
+      aircraftType: 'TBM9',
+      destination: 'KSMF',
+      filedRoute: 'TRUKN2 TRUKN FEVTA FEVTA1',
+      filedAltitude: 10000,
+      departureRunway: '01R',
+    });
+    expect(mechanism(flight, ksfo, 'north')).toBe('RWY-TEC');
+  });
+
+  it('keeps RWY-CLASS-DEFAULT for a flight on its class default whose TEC route is usable there', () => {
+    expect(mechanism(kmryProp('28R'), koak, 'south')).toBe('RWY-CLASS-DEFAULT');
+  });
+
+  it('cites RWY-DIRECTION for the 01/01 jet to KSMF on 01R, the runway its northbound turn takes', () => {
+    const flight = scenario({
+      destination: 'KSMF',
+      filedRoute: 'TRUKN2 TRUKN FEVTA FEVTA1',
+      filedAltitude: 10000,
+      runwayConfigId: '01/01',
+      departureRunway: '01R',
+    });
+    expect(mechanism(flight, ksfo, 'north')).toBe('RWY-DIRECTION');
+  });
+
+  it('cites RWY-TEC for a runway only the TEC route explains, another listed runway having no row', () => {
+    expect(mechanism(kmryProp('28L'), koak, 'south')).toBe('RWY-TEC');
   });
 });
