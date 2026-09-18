@@ -65,9 +65,9 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
 
 ## Steps
 
-- [ ] 1. **Structured reading**: `SpokenPart`, `parts`, `fullRouteWords` and `joinSpoken` in
-  `rules/speak.ts`, with every existing reading byte-identical. Dispatched 2026-09-17
-- [ ] 2. **Normaliser**: a new `rules/text/` module. Its tests type every settled fixture's reading two
+- [x] 1. **Structured reading**: `SpokenPart`, `parts`, `fullRouteWords` and `joinSpoken` in
+  `rules/speak.ts`, with every existing reading byte-identical — `845d5f8`, 2026-09-17
+- [ ] 2. **Normaliser** (dispatched 2026-09-17): a new `rules/text/` module. Its tests type every settled fixture's reading two
   ways, in figures ("FL320", "120.9") and in words, and require both to normalise to the same tokens
   as the engine's own reading
 - [ ] 3. **Matcher and grader, clearance mode.** This step includes:

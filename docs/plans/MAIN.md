@@ -28,7 +28,7 @@ Queued next by the user 2026-09-17. Gate: UI. Subplan: [free-text.md](./free-tex
   diff. Interviewed 2026-09-17. The owed ruling is answered: both spoken-only readings are acceptable.
   The rest is ruled too: values plus listed variants, filler acceptable, out of order wrong, C and T
   graded, amendment mode included. The decisions and six steps are in the subplan. Step 1 (structured
-  reading) was dispatched 2026-09-17
+  reading) landed 2026-09-17; step 2 (normaliser) is in flight
 
 ## Wave 2 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
 

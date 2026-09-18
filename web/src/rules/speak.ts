@@ -326,11 +326,43 @@ export type SpeakClearanceInput = {
   sidTransitions: readonly { fix: string; spoken: string }[];
 };
 
-/** The clearance as read on frequency, and the same clearance with the filed route spelled out. */
+/** A CRAFT element of the spoken reading. */
+export type SpokenElement =
+  | 'callsign'
+  | 'C'
+  | 'R.sid'
+  | 'R.route'
+  | 'A.phrase'
+  | 'A.expect'
+  | 'F'
+  | 'T'
+  | 'RWY';
+
+/** One element of the reading and the words it is spoken as, before capitals and full stops. */
+export type SpokenPart = { element: SpokenElement; words: string };
+
+/**
+ * The clearance as read on frequency, and the same clearance with the filed route spelled out.
+ *
+ * `parts` is the abbreviated reading element by element, in spoken order. `fullRouteWords` is the
+ * route element of the full-route reading, which is the abbreviated route's words where the two
+ * readings are the same text and empty where the reading speaks no route.
+ */
 export type SpokenClearance = {
   abbreviated: string;
   fullRoute: string;
+  parts: SpokenPart[];
+  fullRouteWords: string;
 };
+
+/** The elements each sentence of the reading is made of, one list per sentence, in spoken order. */
+const SENTENCE_ELEMENTS: readonly (readonly SpokenElement[])[] = [
+  ['callsign', 'C', 'R.sid', 'R.route'],
+  ['A.phrase'],
+  ['A.expect'],
+  ['F', 'T'],
+  ['RWY'],
+];
 
 function altitudeSentence(clearance: ResolvedClearance): string {
   const { phrase, feet } = clearance.altitude.value;
@@ -348,11 +380,6 @@ function expectSentence(clearance: ResolvedClearance): string {
   const minutes = speakDigits(String(expect.minutes));
   const opening = expect.kind === 'amended' ? 'expect amended' : 'expect';
   return `${opening} ${speakAltitude(expect.feet)} ${minutes} minutes after departure`;
-}
-
-function radioSentence(input: SpeakClearanceInput): string {
-  const frequency = speakFrequency(input.clearance.frequency.value.value);
-  return `departure frequency ${frequency}, squawk ${speakDigits(input.squawk)}`;
 }
 
 /**
@@ -506,21 +533,55 @@ function procedurePhrase(clearance: ResolvedClearance): string {
   return `via ${headingPhrase(procedure.heading, procedure.turn)}`;
 }
 
-function clearedSentence(input: SpeakClearanceInput, routeTail: readonly string[]): string {
-  const callsign = speakCallsign(input.callsign, input.telephony);
-  const parts = [
-    `${callsign}, cleared to ${input.destinationSpoken} airport`,
-    procedurePhrase(input.clearance),
-  ];
+/** The route element's words: the phrase the flight leaves the terminal on, then the route after it. */
+function routeWords(input: SpeakClearanceInput, routeTail: readonly string[]): string {
   const fix = input.clearance.route.value.fix;
-  if (fix !== undefined) parts.push(routeElementPhrase(input, fix));
-  return [...parts, ...routeTail].join(', ');
+  const exitElement = fix === undefined ? [] : [routeElementPhrase(input, fix)];
+  return [...exitElement, ...routeTail].join(', ');
 }
 
-function joinSentences(parts: readonly string[]): string {
-  return parts
-    .filter((part) => part.length > 0)
-    .map((part) => `${capitalizeFirst(part)}.`)
+/** The part for an element the reading leaves out when it has no words. */
+function optionalPart(element: SpokenElement, words: string): SpokenPart[] {
+  return words === '' ? [] : [{ element, words }];
+}
+
+/** The abbreviated reading, element by element, in spoken order. */
+function spokenParts(input: SpeakClearanceInput, route: string): SpokenPart[] {
+  const { clearance } = input;
+  const frequency = speakFrequency(clearance.frequency.value.value);
+  return [
+    { element: 'callsign', words: speakCallsign(input.callsign, input.telephony) },
+    { element: 'C', words: `cleared to ${input.destinationSpoken} airport` },
+    { element: 'R.sid', words: procedurePhrase(clearance) },
+    ...optionalPart('R.route', route),
+    { element: 'A.phrase', words: altitudeSentence(clearance) },
+    ...optionalPart('A.expect', expectSentence(clearance)),
+    { element: 'F', words: `departure frequency ${frequency}` },
+    { element: 'T', words: `squawk ${speakDigits(input.squawk)}` },
+    { element: 'RWY', words: `expect runway ${speakRunway(clearance.runway.value)}` },
+  ];
+}
+
+/**
+ * Rebuilds the flat reading from its parts.
+ *
+ * The callsign, clearance limit, procedure and route are one sentence; the altitude and the expect
+ * clause are a sentence each; the frequency and the squawk share one; the runway closes the reading.
+ * Each sentence opens on a capital and ends on a full stop, and a sentence none of whose elements
+ * is among the parts is left out.
+ *
+ * @param parts The elements of the reading, in spoken order.
+ * @returns The reading as it is shown.
+ */
+export function joinSpoken(parts: readonly SpokenPart[]): string {
+  return SENTENCE_ELEMENTS.map((elements) =>
+    parts
+      .filter((part) => elements.includes(part.element))
+      .map((part) => part.words)
+      .join(', '),
+  )
+    .filter((sentence) => sentence.length > 0)
+    .map((sentence) => `${capitalizeFirst(sentence)}.`)
     .join(' ');
 }
 
@@ -572,23 +633,26 @@ function abbreviatedTail(
  * the two routes run together from, and a route with nothing left to hand over is read in full, so
  * the two forms are then the same text. Both forms close on the departure runway, after the squawk.
  *
+ * `parts` holds the abbreviated reading element by element, so a reading can be lined up with the
+ * CRAFT element each stretch of it speaks; `fullRouteWords` is the route element the full-route
+ * reading puts in its place. Both flat forms are `joinSpoken` of those parts.
+ *
  * @param input The clearance plus the scenario facts the phraseology needs.
- * @returns Both spoken forms of the clearance.
+ * @returns Both spoken forms of the clearance, the parts of the abbreviated one, and the full-route
+ *   reading's route words.
  */
 export function speakClearance(input: SpeakClearanceInput): SpokenClearance {
-  const tail = [
-    altitudeSentence(input.clearance),
-    expectSentence(input.clearance),
-    radioSentence(input),
-    `expect runway ${speakRunway(input.clearance.runway.value)}`,
-  ];
   const route = routeFromExitFix(input.filedRoute, input.airportFaa);
   const full = fullRouteUnits(input, afterExitElement(route));
+  const parts = spokenParts(input, routeWords(input, abbreviatedTail(input, route) ?? full));
+  const fullRouteWords = routeWords(input, full);
+  const fullRouteParts = parts.map((part) =>
+    part.element === 'R.route' ? { ...part, words: fullRouteWords } : part,
+  );
   return {
-    abbreviated: joinSentences([
-      clearedSentence(input, abbreviatedTail(input, route) ?? full),
-      ...tail,
-    ]),
-    fullRoute: joinSentences([clearedSentence(input, full), ...tail]),
+    abbreviated: joinSpoken(parts),
+    fullRoute: joinSpoken(fullRouteParts),
+    parts,
+    fullRouteWords,
   };
 }
