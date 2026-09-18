@@ -12,8 +12,14 @@ export type TimeFilter = 'either' | 'day' | 'night';
  */
 export type Mode = 'clearance' | 'amendment';
 
+/** How the student answers the clearance: by picking from the dropdowns, or by typing it out. */
+export type InputKind = 'dropdowns' | 'text';
+
 /** The hash part amendment mode writes; clearance mode writes none, so its links are unchanged. */
 const AMENDMENT_PART = 'm=amend';
+
+/** The hash part typed answers write; the dropdowns write none, so their links are unchanged. */
+const TEXT_PART = 'i=text';
 
 /** Which runway configurations a scenario may be drawn in: all of them, one plan, or exactly one. */
 export type ConfigFilter =
@@ -30,6 +36,9 @@ export type ConfigFilter =
  * remembered filter, and rides in the hash alone so a share link still reproduces the draw.
  */
 export type ScenarioFilter = { time: TimeFilter; config: ConfigFilter; destination?: string };
+
+/** What a session is drawn under and answered with, which the URL hash carries beside the seed. */
+export type SessionSettings = { filter: ScenarioFilter; mode: Mode; input: InputKind };
 
 /** The shape a `d=` part has to have to be read: an ICAO code, upper case. */
 const DESTINATION_PATTERN = /^[A-Z0-9]{3,4}$/;
@@ -55,21 +64,24 @@ function configParam(config: ConfigFilter): string | undefined {
  * airport the scenario was drawn at instead of the first one the index lists. A filter member that
  * narrows nothing writes no part at all, so an unfiltered scenario shares nothing but the seed and
  * the airport. A forced destination writes its `d=` part like any other member, so the testing aid
- * is shareable even though nothing in the UI offers it.
+ * is shareable even though nothing in the UI offers it. Clearance mode and the dropdowns write no
+ * part at all, so a link written before either choice existed reads the same today.
  *
  * @param icao The airport the scenario was drawn at.
  * @param seed The seed the link restores.
- * @param filter The filter the draw ran under.
- * @param mode The half of the trainer the session runs; clearance mode writes no part at all.
- * @returns The hash, e.g. `#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend`.
+ * @param settings The filter the draw ran under, the half of the trainer the session runs, and how
+ *   the student answers the clearance.
+ * @returns The hash, e.g. `#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend&i=text`.
  */
-export function hashFor(icao: string, seed: number, filter: ScenarioFilter, mode: Mode): string {
+export function hashFor(icao: string, seed: number, settings: SessionSettings): string {
+  const { filter, mode, input } = settings;
   const parts = [seedToHash(seed).slice(1), `a=${icao}`];
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
   if (config !== undefined) parts.push(`c=${config}`);
   if (filter.destination !== undefined) parts.push(`d=${filter.destination}`);
   if (mode === 'amendment') parts.push(AMENDMENT_PART);
+  if (input === 'text') parts.push(TEXT_PART);
   return `#${parts.join('&')}`;
 }
 
@@ -174,6 +186,19 @@ export function airportFromHash(hash: string): string | undefined {
  */
 export function modeFromHash(hash: string): Mode {
   return valueOf(hash, 'm') === 'amend' ? 'amendment' : 'clearance';
+}
+
+/**
+ * Reads the input kind back out of a URL hash.
+ *
+ * Only typed answers name themselves, and a hash that names no input kind, or one this app does not
+ * know, leaves it to the preference this browser remembers.
+ *
+ * @param hash The hash, with or without its leading `#`.
+ * @returns `text` for an `i=text` part, or `undefined` when the hash names no input kind it knows.
+ */
+export function inputKindFromHash(hash: string): InputKind | undefined {
+  return valueOf(hash, 'i') === 'text' ? 'text' : undefined;
 }
 
 /**

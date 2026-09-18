@@ -10,7 +10,11 @@ const AMENDMENT_SEED = 7;
 
 /** Mounts the app on an empty page at one seed, in the half of the trainer the hash names. */
 async function mountApp(seed: number, mode: Mode): Promise<Element> {
-  globalThis.location.hash = hashFor('KSFO', seed, ANY_SCENARIO, mode);
+  globalThis.location.hash = hashFor('KSFO', seed, {
+    filter: ANY_SCENARIO,
+    mode,
+    input: 'dropdowns',
+  });
   const root = document.createElement('div');
   document.body.replaceChildren(root);
   await startApp(root);

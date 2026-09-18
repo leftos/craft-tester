@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
-import type { Mode } from '@/scenario/filter.ts';
-import type { AmendmentPicks } from '@/ui/state.ts';
+import type { InputKind, Mode } from '@/scenario/filter.ts';
+import type { AmendmentPicks, ClearanceAnswer } from '@/ui/state.ts';
 
 /**
  * The shape a remembered attempt has to have to be loaded back.
@@ -30,15 +30,24 @@ const BoxAnswerSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('amended'), value: z.string() }),
 ]);
 
+/** The answers to the three boxes of the strip, as the store writes them. */
+const BoxAnswersSchema = z.strictObject({
+  type: BoxAnswerSchema,
+  altitude: BoxAnswerSchema,
+  route: BoxAnswerSchema,
+});
+
 /** What an amendment attempt stores: the answers to the three boxes, and the clearance after them. */
 const AmendmentAttemptSchema = z.strictObject({
-  boxes: z.strictObject({
-    type: BoxAnswerSchema,
-    altitude: BoxAnswerSchema,
-    route: BoxAnswerSchema,
-  }),
+  boxes: BoxAnswersSchema,
   picks: AmendmentPicksSchema,
 });
+
+/** What a typed clearance attempt stores: the clearance as it was typed. */
+const TypedClearanceSchema = z.strictObject({ text: z.string() });
+
+/** What a typed amendment attempt stores: the answers to the three boxes, and the typed clearance. */
+const TypedAmendmentSchema = z.strictObject({ boxes: BoxAnswersSchema, text: z.string() });
 
 /**
  * Rebuilds the picks from a parsed value, leaving out the optional picks the attempt spoke none of.
@@ -59,22 +68,23 @@ function toPicks(parsed: z.infer<typeof PlayerPicksSchema>): PlayerPicks {
 function toAmendment(parsed: z.infer<typeof AmendmentAttemptSchema>): Attempt {
   const { procedure, ...rest } = parsed.picks;
   const picks: AmendmentPicks = { ...toPicks(rest), procedure };
-  return { kind: 'amendment', boxes: parsed.boxes, picks };
+  return { kind: 'amendment', boxes: parsed.boxes, input: 'dropdowns', picks };
 }
 
 /**
  * What one attempt at a scenario answered, which is what a revisit shows back.
  *
- * A clearance attempt is the CRAFT form alone; an amendment attempt carries the strip answers that
- * came before the form, and the procedure the form picked on the corrected plan.
+ * A clearance attempt is the CRAFT half alone, picked from the dropdowns or typed out; an amendment
+ * attempt carries the strip answers that came before it, and, when it was picked, the procedure
+ * the form picked on the corrected plan.
  */
 export type Attempt =
-  | { kind: 'clearance'; picks: PlayerPicks }
-  | { kind: 'amendment'; boxes: BoxAnswers; picks: AmendmentPicks };
+  | ({ kind: 'clearance' } & ClearanceAnswer<PlayerPicks>)
+  | ({ kind: 'amendment'; boxes: BoxAnswers } & ClearanceAnswer<AmendmentPicks>);
 
 /** Remembers the attempt a viewer already submitted for a scenario, in this browser only. */
 export type SolvedStore = {
-  load(icao: string, seed: number, mode: Mode): Attempt | undefined;
+  load(icao: string, seed: number, mode: Mode, input: InputKind): Attempt | undefined;
   save(icao: string, seed: number, attempt: Attempt): void;
 };
 
@@ -82,32 +92,59 @@ export type SolvedStore = {
 type PicksStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
 /**
- * The storage key one airport's seed is remembered under, in one mode.
+ * The storage key one airport's seed is remembered under, in one mode and one input kind.
  *
- * Clearance mode keeps the key it always had, so a scenario a browser solved before the trainer
- * gained a second mode is still remembered.
+ * Clearance mode and the dropdowns keep the key they always had, so a scenario a browser solved
+ * before the trainer gained a second mode or typed answers is still remembered, and a picked
+ * attempt and a typed attempt at one seed are remembered apart.
  */
-function keyFor(icao: string, seed: number, mode: Mode): string {
-  const scope = mode === 'amendment' ? ':amend' : '';
-  return `craft-tester:solved:${icao}${scope}:${seed}`;
+function keyFor(icao: string, seed: number, mode: Mode, input: InputKind): string {
+  const modeScope = mode === 'amendment' ? ':amend' : '';
+  const inputScope = input === 'text' ? ':text' : '';
+  return `craft-tester:solved:${icao}${modeScope}${inputScope}:${seed}`;
 }
 
-/** Reads one stored value as the attempt its mode stores, or `undefined` where it does not parse. */
-function parseAttempt(raw: string, mode: Mode): Attempt | undefined {
-  const value: unknown = JSON.parse(raw);
-  if (mode === 'amendment') {
-    const parsed = AmendmentAttemptSchema.safeParse(value);
-    return parsed.success ? toAmendment(parsed.data) : undefined;
+/** Reads one stored value as the clearance attempt its input kind stores. */
+function parseClearance(value: unknown, input: InputKind): Attempt | undefined {
+  if (input === 'text') {
+    const parsed = TypedClearanceSchema.safeParse(value);
+    return parsed.success ? { kind: 'clearance', input, text: parsed.data.text } : undefined;
   }
   const parsed = PlayerPicksSchema.safeParse(value);
-  return parsed.success ? { kind: 'clearance', picks: toPicks(parsed.data) } : undefined;
+  return parsed.success ? { kind: 'clearance', input, picks: toPicks(parsed.data) } : undefined;
 }
 
-/** What one attempt is written as: the bare picks for a clearance, both halves for an amendment. */
+/** Reads one stored value as the amendment attempt its input kind stores. */
+function parseAmendment(value: unknown, input: InputKind): Attempt | undefined {
+  if (input === 'text') {
+    const parsed = TypedAmendmentSchema.safeParse(value);
+    return parsed.success
+      ? { kind: 'amendment', boxes: parsed.data.boxes, input, text: parsed.data.text }
+      : undefined;
+  }
+  const parsed = AmendmentAttemptSchema.safeParse(value);
+  return parsed.success ? toAmendment(parsed.data) : undefined;
+}
+
+/**
+ * Reads one stored value as the attempt its mode and input kind store, or `undefined` where it
+ * does not parse.
+ */
+function parseAttempt(raw: string, mode: Mode, input: InputKind): Attempt | undefined {
+  const value: unknown = JSON.parse(raw);
+  return mode === 'amendment' ? parseAmendment(value, input) : parseClearance(value, input);
+}
+
+/**
+ * What one attempt is written as.
+ *
+ * A picked clearance is the bare picks and a picked amendment is `{ boxes, picks }`, as they always
+ * were; a typed clearance is `{ text }` and a typed amendment is `{ boxes, text }`.
+ */
 function storedValue(attempt: Attempt): string {
-  return JSON.stringify(
-    attempt.kind === 'clearance' ? attempt.picks : { boxes: attempt.boxes, picks: attempt.picks },
-  );
+  const answer = attempt.input === 'text' ? { text: attempt.text } : { picks: attempt.picks };
+  if (attempt.kind === 'amendment') return JSON.stringify({ boxes: attempt.boxes, ...answer });
+  return JSON.stringify(attempt.input === 'text' ? answer : attempt.picks);
 }
 
 /**
@@ -129,17 +166,17 @@ export function createSolvedStore(storage: PicksStorage | undefined): SolvedStor
     };
   }
   return {
-    load: (icao, seed, mode) => {
+    load: (icao, seed, mode, input) => {
       try {
-        const raw = storage.getItem(keyFor(icao, seed, mode));
-        return raw === null ? undefined : parseAttempt(raw, mode);
+        const raw = storage.getItem(keyFor(icao, seed, mode, input));
+        return raw === null ? undefined : parseAttempt(raw, mode, input);
       } catch {
         return undefined;
       }
     },
     save: (icao, seed, attempt) => {
       try {
-        storage.setItem(keyFor(icao, seed, attempt.kind), storedValue(attempt));
+        storage.setItem(keyFor(icao, seed, attempt.kind, attempt.input), storedValue(attempt));
       } catch {
         // A storage that refuses the write costs the viewer the reminder, nothing more.
       }

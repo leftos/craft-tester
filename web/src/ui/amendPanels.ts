@@ -3,6 +3,8 @@ import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { boxGradeAsGrade, gradeBoxes } from '@/rules/amend/grade.ts';
 import { grade, gradeProcedure } from '@/rules/grade.ts';
 import { isSidToken } from '@/rules/route.ts';
+import type { TextGrade } from '@/rules/text/grade.ts';
+import { gradeText } from '@/rules/text/grade.ts';
 import type { Grade, ResolvedClearance } from '@/rules/types.ts';
 import type { AmendmentScenario } from '@/scenario/amend.ts';
 import type { AmendFormProps } from '@/ui/amendForm.ts';
@@ -13,8 +15,8 @@ import { renderCraftForm } from '@/ui/craftForm.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { spokenFor } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
-import type { AmendmentPicks, AppState, PickKey } from '@/ui/state.ts';
-import { phaseOf, toAmendmentPicks, toBoxAnswers } from '@/ui/state.ts';
+import type { AmendmentPicks, AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
+import { phaseOf, toAmendmentAnswer, toBoxAnswers } from '@/ui/state.ts';
 import { renderStrip } from '@/ui/strip.ts';
 
 /** The view an amendment session renders from. */
@@ -57,13 +59,16 @@ export function procedureOf(scenario: Scenario, airport: AirportData): string | 
  * Every verdict an amendment session earns, in the order it answered them.
  *
  * The three strip boxes come first, then the procedure the corrected plan assigns, then the rest of
- * the clearance, so one score line covers the whole session.
+ * the clearance, so one score line covers the whole session. A typed clearance is graded against
+ * the engine's reading of the corrected plan, and the procedure it speaks takes the place of the
+ * procedure pick.
  *
  * @param drawn The plan as filed, with the amendments the engine raised for it.
  * @param clearance The clearance the engine resolved for the corrected plan.
  * @param airport The airport data.
  * @param answers What the student answered for every box.
- * @param picks What the student cleared the corrected plan with.
+ * @param answer What the student cleared the corrected plan with: the dropdown picks, the procedure
+ *   among them, or the clearance typed out.
  * @returns The box verdicts followed by the clearance verdicts.
  */
 export function amendmentGrades(
@@ -71,10 +76,16 @@ export function amendmentGrades(
   clearance: ResolvedClearance,
   airport: AirportData,
   answers: BoxAnswers,
-  picks: AmendmentPicks,
-): Grade[] {
+  answer: ClearanceAnswer<AmendmentPicks>,
+): (Grade | TextGrade)[] {
+  const boxes = gradeBoxes(answers, drawn.result, drawn.filed, airport).map(boxGradeAsGrade);
+  if (answer.input === 'text') {
+    const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
+    return [...boxes, ...gradeText(answer.text, spoken, clearance, airport)];
+  }
+  const { picks } = answer;
   return [
-    ...gradeBoxes(answers, drawn.result, drawn.filed, airport).map(boxGradeAsGrade),
+    ...boxes,
     gradeProcedure(picks.procedure, clearance, airport),
     ...grade(picks, clearance),
   ];
@@ -93,7 +104,7 @@ function revisitPanels(
       renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan'),
       renderAtis(drawn.filed, state.airport),
       renderRevisit({
-        grades: amendmentGrades(drawn, clearance, state.airport, attempt.boxes, attempt.picks),
+        grades: amendmentGrades(drawn, clearance, state.airport, attempt.boxes, attempt),
         spoken: spokenFor(drawn.result.corrected, drawn.filed, clearance, state.airport),
         onNext: handlers.onNewScenario,
         onRetry: handlers.onRetry,
@@ -171,7 +182,7 @@ function resultPanels(
   view: AmendmentView,
   handlers: AmendmentHandlers,
   answers: BoxAnswers,
-  picks: AmendmentPicks,
+  answer: ClearanceAnswer<AmendmentPicks>,
 ): Panels {
   const { drawn, clearance } = view;
   const corrected = drawn.result.corrected;
@@ -181,7 +192,7 @@ function resultPanels(
       renderStrip(corrected, state.airport, state.seed, 'Amended flight plan', 1),
       renderAtis(corrected, state.airport),
       renderResults({
-        grades: amendmentGrades(drawn, clearance, state.airport, answers, picks),
+        grades: amendmentGrades(drawn, clearance, state.airport, answers, answer),
         spoken: spokenFor(corrected, view.drawn.filed, clearance, state.airport),
         onNext: handlers.onNewScenario,
         onRetry: handlers.onRetry,
@@ -213,9 +224,9 @@ export function renderAmendmentPanels(
   if (phase === 'amending' || answers === undefined) {
     return amendingPanels(state, view, handlers);
   }
-  const picks = toAmendmentPicks(state.picks);
-  if (phase === 'clearing' || picks === undefined) {
+  const answer = toAmendmentAnswer(state);
+  if (phase === 'clearing' || answer === undefined) {
     return clearingPanels(state, view, handlers, answers);
   }
-  return resultPanels(state, view, handlers, answers, picks);
+  return resultPanels(state, view, handlers, answers, answer);
 }

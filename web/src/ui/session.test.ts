@@ -1,8 +1,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import type { AirportData } from '@/data/schema.ts';
-import { grade } from '@/rules/grade.ts';
+import type { AirportData, Amendment } from '@/data/schema.ts';
+import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
+import { formatAltitude, grade } from '@/rules/grade.ts';
+import type { Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
+import { amendmentGrades } from '@/ui/amendPanels.ts';
 import { activeNotices, atisRows } from '@/ui/atis.ts';
 import { craftGroups } from '@/ui/craftForm.ts';
 import type { CraftField, CraftGroup } from '@/ui/craftForm.ts';
@@ -17,6 +20,26 @@ const SEED = 1;
 
 let airport: AirportData;
 let view: ScenarioView;
+
+/** The settings of a session answered with the dropdowns. */
+function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
+  return { filter, mode, input: 'dropdowns' };
+}
+
+/**
+ * The strip answered the way the engine corrected it: each box the engine amended holds its
+ * proposal, written as the results view expects it, and every other box is left as filed.
+ */
+function correctedAnswers(amendments: readonly Amendment[]): BoxAnswers {
+  const answer = (box: Box): BoxAnswer => {
+    const amendment = amendments.find((candidate) => candidate.box === box);
+    if (amendment === undefined) return { kind: 'as_filed' };
+    const value =
+      amendment.box === 'altitude' ? formatAltitude(amendment.proposedFeet) : amendment.proposed;
+    return { kind: 'amended', value };
+  };
+  return { type: answer('type'), altitude: answer('altitude'), route: answer('route') };
+}
 
 /** The clearance of the seeded scenario, or a failure naming why the engine issued none. */
 function clearanceOf(scenarioView: ScenarioView): ResolvedClearance {
@@ -174,15 +197,36 @@ describe('an amendment scenario', () => {
       expect(drawn.clearance.expect.value?.feet).toBe(drawn.drawn.result.corrected.filedAltitude);
     }
   });
+
+  it('grades a typed clearance of the corrected plan in place of the procedure pick', () => {
+    const seed = SEEDS.find((candidate) => {
+      const { amendments } = amendmentOf(candidate).drawn.result;
+      return amendments.length > 0 && amendments.every((one) => one.alternativeTo === undefined);
+    });
+    if (seed === undefined) throw new Error('no seed of 1 to 20 amends a box without a pair');
+    const { drawn, clearance } = amendmentOf(seed);
+    const answers = correctedAnswers(drawn.result.amendments);
+    const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
+    const grades = amendmentGrades(drawn, clearance, airport, answers, {
+      input: 'text',
+      text: spoken.abbreviated,
+    });
+    const boxes = ['BOX.type', 'BOX.altitude', 'BOX.route'];
+    const typed = ['C', 'R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'T', 'RWY'];
+    const elements = [...boxes, ...typed];
+    expect(
+      grades.map(({ element, verdict }) => `${element} ${verdict}`),
+      `seed ${seed}: ${spoken.abbreviated}`,
+    ).toStrictEqual(elements.map((element) => `${element} correct`));
+  });
 });
 
 describe('the CRAFT form', () => {
   it('keeps the dependent dropdowns disabled until the pick they depend on is made', () => {
     const fields = new Map(
-      fieldsOf(newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance')).map((field) => [
-        field.key,
-        field,
-      ]),
+      fieldsOf(newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'))).map(
+        (field) => [field.key, field],
+      ),
     );
     expect(fields.get('routeFix')?.disabled).toBe(true);
     expect(fields.get('altitudeFeet')?.disabled).toBe(true);
@@ -191,7 +235,7 @@ describe('the CRAFT form', () => {
 
   it('offers the clearance the engine resolved, and grades it green', () => {
     const clearance = clearanceOf(view);
-    let state = newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance');
+    let state = newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'));
     for (const [key, raw] of answerFor(clearance)) state = withPick(state, key, raw);
     const picks = toPlayerPicks(state.picks);
     if (picks === undefined) throw new Error("the engine's own clearance did not fill the form");
@@ -211,7 +255,7 @@ describe('the CRAFT form', () => {
     if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const clearance = view.clearance;
     const [limit, procedure] = groupsOf(
-      newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance'),
+      newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance')),
     );
     if (limit?.kind !== 'given') throw new Error('the first row is not a given row');
     const icao = clearance.clearedTo.value;
@@ -230,7 +274,9 @@ describe('the CRAFT form', () => {
 
   it('shows the squawk as a given row just before the runway', () => {
     if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
-    const groups = groupsOf(newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance'));
+    const groups = groupsOf(
+      newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance')),
+    );
     const squawkAt = groups.findIndex(
       (group) => group.kind === 'given' && group.heading.startsWith('T'),
     );
@@ -246,7 +292,7 @@ describe('the CRAFT form', () => {
   });
 
   it('refuses to submit a form with a dropdown still blank', () => {
-    const state = newSession(airport, SEED, undefined, ANY_SCENARIO, 'clearance');
+    const state = newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'));
     expect(withSubmitted(state).submitted).toBe(false);
   });
 });

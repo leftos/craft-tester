@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
-import { createFilterStore } from '@/ui/preferences.ts';
+import { createFilterStore, createInputKindStore } from '@/ui/preferences.ts';
 
 const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
 
@@ -95,5 +95,52 @@ describe('createFilterStore', () => {
       store.save('KSFO', filter);
     }).not.toThrow();
     expect(store.load('KSFO')).toBeUndefined();
+  });
+});
+
+describe('createInputKindStore', () => {
+  it('loads back each input kind it saved, under one key for the whole browser', () => {
+    const entries = new Map<string, string>();
+    const store = createInputKindStore(mapStorage(entries));
+    expect(store.load()).toBeUndefined();
+    store.save('text');
+    expect(store.load()).toBe('text');
+    expect(entries.get('craft-tester:input')).toBe('"text"');
+    store.save('dropdowns');
+    expect(store.load()).toBe('dropdowns');
+    expect([...entries.keys()]).toStrictEqual(['craft-tester:input']);
+  });
+
+  it('ignores a stored input kind this app does not know', () => {
+    const entries = new Map([['craft-tester:input', '"bogus"']]);
+    expect(createInputKindStore(mapStorage(entries)).load()).toBeUndefined();
+  });
+
+  it('ignores a stored value that is not JSON', () => {
+    const entries = new Map([['craft-tester:input', '{not json']]);
+    expect(createInputKindStore(mapStorage(entries)).load()).toBeUndefined();
+  });
+
+  it('survives a storage that refuses both operations', () => {
+    const store = createInputKindStore({
+      getItem: () => {
+        throw new Error('reads denied');
+      },
+      setItem: () => {
+        throw new Error('quota exceeded');
+      },
+    });
+    expect(() => {
+      store.save('text');
+    }).not.toThrow();
+    expect(store.load()).toBeUndefined();
+  });
+
+  it('remembers nothing at all without a storage', () => {
+    const store = createInputKindStore(undefined);
+    expect(() => {
+      store.save('text');
+    }).not.toThrow();
+    expect(store.load()).toBeUndefined();
   });
 });

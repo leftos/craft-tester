@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ScenarioFilter } from '@/scenario/filter.ts';
+import type { InputKind, ScenarioFilter } from '@/scenario/filter.ts';
 
 /**
  * The shape a remembered filter has to have to be loaded back.
@@ -22,8 +22,8 @@ export type FilterStore = {
   save(icao: string, filter: ScenarioFilter): void;
 };
 
-/** The storage members the store touches, so a test can stand a Map in for the browser's. */
-type FilterStorage = Pick<Storage, 'getItem' | 'setItem'>;
+/** The storage members the stores touch, so a test can stand a Map in for the browser's. */
+type PreferenceStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
 /** The storage key one airport's filter is remembered under. */
 function keyFor(icao: string): string {
@@ -41,7 +41,7 @@ function keyFor(icao: string): string {
  * @param storage The storage to read and write, or `undefined` where the browser offers none.
  * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
  */
-export function createFilterStore(storage: FilterStorage | undefined): FilterStore {
+export function createFilterStore(storage: PreferenceStorage | undefined): FilterStore {
   if (storage === undefined) {
     return {
       load: () => undefined,
@@ -82,5 +82,67 @@ export function browserFilterStore(): FilterStore {
     return createFilterStore(globalThis.localStorage);
   } catch {
     return createFilterStore(undefined);
+  }
+}
+
+/** The shape a remembered input kind has to have to be loaded back. */
+const InputKindSchema = z.enum(['dropdowns', 'text']);
+
+/** The storage key the input kind is remembered under: one per browser, whatever the airport. */
+const INPUT_KEY = 'craft-tester:input';
+
+/** Remembers how a viewer last chose to answer the clearance, in this browser only. */
+export type InputKindStore = { load(): InputKind | undefined; save(input: InputKind): void };
+
+/**
+ * Builds an input-kind store over one storage.
+ *
+ * Remembering the input kind is a convenience, as the filter is, so every failure the storage can
+ * raise — a refused read, a full quota, a value another version wrote — reads as "nothing
+ * remembered", and the caller falls back to the dropdowns.
+ *
+ * @param storage The storage to read and write, or `undefined` where the browser offers none.
+ * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
+ */
+export function createInputKindStore(storage: PreferenceStorage | undefined): InputKindStore {
+  if (storage === undefined) {
+    return {
+      load: () => undefined,
+      save: () => {
+        // Without a storage there is nowhere to remember the input kind.
+      },
+    };
+  }
+  return {
+    load: () => {
+      try {
+        const raw = storage.getItem(INPUT_KEY);
+        if (raw === null) return undefined;
+        const parsed = InputKindSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? parsed.data : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    save: (input) => {
+      try {
+        storage.setItem(INPUT_KEY, JSON.stringify(input));
+      } catch {
+        // A storage that refuses the write costs the viewer the remembered input kind, nothing more.
+      }
+    },
+  };
+}
+
+/**
+ * Builds the input-kind store the page runs on.
+ *
+ * @returns A store over `localStorage`, or one that remembers nothing where reaching it throws.
+ */
+export function browserInputKindStore(): InputKindStore {
+  try {
+    return createInputKindStore(globalThis.localStorage);
+  } catch {
+    return createInputKindStore(undefined);
   }
 }
