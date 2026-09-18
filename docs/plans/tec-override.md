@@ -54,6 +54,39 @@ Subplan for the Wave 1 item in [MAIN.md](./MAIN.md). A new rule concept, so it i
      sector of the first applicable row for that family. That matches the walk's notice branch. No current
      row exercises this, so it is tested on an injected row.
 
+9. **"Can't be used" includes "not in use"** (user 2026-09-18, after brief 1's third report, confirming
+   "Yes, that's the model"). A TEC SID is usable off a runway only where the SOP puts its family in use
+   from that runway family in the current configuration. That means some assignment row with that
+   `sidFamily` and the flight's plan lists the runway family, and its `configs`/`notConfigs` admit the
+   configuration. Direction, exit, audience, RNAV and noise conditions do not count here: equipment is
+   ruling 2's test, and noise is ruling 5's and ruling 8's.
+   - TRUKN, 28/01, 01R: `SFOW-N-TRUKN-01` has no config condition, so it is in use.
+   - TRUKN, 28/01, 28R: the only TRUKN row for the 28s is `SFOW-N-TRUKN-28` (`configs: ["28 RT"]`), so it is
+     not in use.
+   - TRUKN, 28 RT, 28L: in use.
+   - TRUKN, 28 SO: in use from no runway, so the row is skipped and the SOP's SNTNA or GAPP applies.
+   - OAK# in KOAK SFOE off 10/12: in use (the KNUQ/KPAO `OAK# … SUNOL SJC` jet rows already route there),
+     so the three never-routed SFOE jet rows still route.
+   - Heading and fix heads are always usable.
+10. **The runway move outranks the default runways** ("TEC moves them too"). The draw moves a TEC-routed
+    flight to a runway its TEC SID is usable from, even off an airline, group or class default. N436MS
+    (TBM9, 28/01, class default 28R) departs 01R on TRUKN2 and gets re-settled when brief 2 lands.
+11. **Heading-headed rows win over the SOP's heading.** KOAK OAKE props and turboprops to KSFO fly the TEC
+    `H270 OSI`, not `OAK-OAKE-PT-090`'s 090.
+12. **Retarget `syn-sfo5-v6-01r-airway`.** It exists to test "radar vectors to join V6". It keeps its plan
+    and moves to a destination with no TEC row, so it keeps testing the airway phrase.
+
+**Orchestrator decisions from brief 1's third report:**
+
+- **The route the SOP reads.** For a TEC-routed flight, the table walk and the noise search read the
+  direction and exit of the TEC route, not of the route as filed. That is the route the flight will fly,
+  and the old `issuable` read it too. It keeps the first pass and the corrected plan's pass in agreement:
+  seed 971's route box never settled when they disagreed.
+- **Heading heads behind a noise SID.** A heading-headed row cleared on a noise SID gets the same box as a
+  family head: the noise SID joined onto the row's route minus its head.
+- **Old tests.** Tests that asserted the replaced rule are rewritten to the new one. Tests of another
+  feature that happened to use a TEC destination move to a destination with no TEC row, as ruling 12 does.
+
 ## What changes (measured 2026-09-18)
 
 A throwaway enumeration ran every family-headed `kind: tec` row against every flight it is keyed for: each
@@ -65,7 +98,8 @@ classes, filed on the row's own route at 1300 on a Tuesday (no noise window). It
   the SOP gives another answer.
 - **KSFO:** 10 SFOW rows that begin `TRUKN#` (KSMF, KLVK, KMYV, KOVE, KSAC, O88, KOAK) lose every flight off
   28L/28R in 28/01 and in 28 SO, where the SOP assigns SNTNA or GAPP. That is roughly 1,000 enumerated
-  combinations, all of which become TRUKN2. `TEC-KOAK-SFOE-TP` resolves nothing today ("filed route GAPP7
+  combinations. Under the blanket reading all of them became TRUKN2. Under ruling 9 they stay with the
+  SOP, and in 28/01 the draw moves them to the 01s instead. `TEC-KOAK-SFOE-TP` resolves nothing today ("filed route GAPP7
   has no fix after the procedure").
 - **KOAK:**
   - `TEC-KMRY-SFOE-J`, `TEC-KWVI-SFOE-J` and `TEC-KSJC-SFOE-J` lose every flight to the runway-heading
@@ -88,8 +122,9 @@ A TEC row is **usable** by a flight when `keyedFor` holds and:
 
 - a head of `FAMILY#` names a family the airport still publishes, and the flight can fly that SID from the
   runway it is on with the equipment it has (`isFlyable` in `rules/sidSelection.ts:120`: the SID lists the
-  departure runway, and `!sid.rnavRequired || ctx.rnavCapable`), and no active `sid_off` notice without a
-  heading takes the family out of use;
+  departure runway, and `!sid.rnavRequired || ctx.rnavCapable`), the SOP puts the family in use from that
+  runway family in this configuration (ruling 9), and no active `sid_off` notice without a heading takes
+  the family out of use;
 - a heading head (`H270`) or a fix or airway head (`EUGEN`) is always usable.
 
 The flight's TEC row is the first usable row in table order. With a family head, the clearance's procedure
@@ -99,7 +134,9 @@ two cases the heading stands and the route box is the row's route with its head 
 | Flight | TEC row | Result |
 | --- | --- | --- |
 | KOAK SFOE, 10R, RNAV jet to KMRY, 1300 | `TEC-KMRY-SFOE-J` `OAK# OAK EUGEN` | OAK6, box `OAK6 OAK EUGEN` (today: runway heading, the tail stands) |
-| KSFO 28/01, 28L, RNAV heavy jet to KSMF | `TEC-KSMF-SFOW-J` (`TRUKN# …`) | TRUKN2 off 28L (today: GAPP or SNTNA) |
+| KSFO 28 RT, 28L, RNAV jet to KSMF | `TEC-KSMF-SFOW-J` (`TRUKN# …`) | TRUKN2 |
+| KSFO 28/01, 28L, RNAV heavy jet to KSMF | TRUKN is not in use off the 28s in 28/01 (ruling 9) | row skipped on 28L; the draw moves the flight to 01R (ruling 10), which gets TRUKN2 |
+| KSFO 28 SO, RNAV jet to KSMF | TRUKN is in use from no runway | row skipped; the SOP's SNTNA or GAPP applies |
 | KSFO SFOW, 01R, `/A` jet to KLVK | `-JT` skipped (RNAV) → `-JT-01` | SFO5, box `SFO5 V244 ALTAM MOD` |
 | KSFO SFOE, prop to KOAK | `TEC-KOAK-SFOE-TP` `GAPP#` | GAPP7, box `GAPP7 SFO` |
 | KOAK SFOE, RNAV jet to KMRY, 2300 (`sfoe_night`) | `TEC-KMRY-SFOE-J` | noise row: heading 140, box `OAK EUGEN` |
