@@ -84,14 +84,13 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   `39a1929`, 2026-09-17. Its limits, all unexercised by the corpus: a figures piece opens a run of its own,
   so "3 thousand 5 hundred" reads as 3000 and 500; a decimal with a multiplier does not parse; `hundred`
   without `thousand` takes exactly one value before it
-- [ ] 3. **Matcher and grader, clearance mode.** Split in two: **3a landed 2026-09-17** (the seven rows, `RedundantExpect` with its kind, `speakExpect`, the restated reading, C and T as elements); **3b**, the matcher `rules/text/grade.ts`, is in flight. This step includes:
-  - segmentation, the order rule and the per-element verdicts;
-  - new shared phraseology rows for decisions 1, 2, 4, 5, 10, 11 and 12;
-  - a kind on `redundantExpect`, which today carries none, so the acceptable expect wording cannot be
-    rebuilt;
-  - the normaliser reading an inline restatement ("one zero ten thousand"), which today concatenates
-    to 1010000
-- [ ] 4. **Results view**: said against expected per element, with the filler highlighted
+- [x] 3. **Matcher and grader, clearance mode** — `rules/text/grade.ts` `gradeText`, 2026-09-17 (3a
+  `ed5e69f`: the seven rows, `RedundantExpect` with its kind, `speakExpect`, the restated reading, C and T
+  as elements; 3b `875f11a`: the matcher). Every settled clearance fixture's own reading grades all eight
+  elements correct
+- [ ] 4. **Results view**: said against expected per element, with the filler highlighted. An element read
+  out of order before the clearance limit shows the whole leading stretch as said, callsign included
+  (`Squawk three three four two, United three twenty`); the diff should show only the element's own words
 - [ ] 5. **UI**:
   - the input-kind switch in both modes and the text box;
   - the `i=text` hash part;
@@ -99,6 +98,24 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   - in amendment mode, the spoken procedure in place of the `R.sid` pick
 - [ ] 6. **Docs and browser check**: a "Free-text grading" section in ARCHITECTURE.md, and
   `check:browser` on phone and desktop in both modes
+
+## Engineering calls in step 3b (not user rulings; the user may overrule any)
+
+- **Alignment.** Elements are found by a longest-common-subsequence alignment of the typed tokens with
+  the reading's tokens, over up to six candidate readings. The candidates are the base reading, the full
+  route, "then as filed" at a route's end, and the redundant expect clause. The base reading wins ties.
+- **Stray expect clause.** An expect clause said where the reading has none is cut out before alignment,
+  so its "departure" cannot pair with F's.
+- **Tier rows.** An element wrong because a word or value is missing cites only its own rows (plus
+  `S-ORDER` where out of order). Tier rows (`S-FILLER`, `S-GROUP-FORM`, `S-NINER`, `R-FACILITY-WORD` and
+  the candidate rows) appear only on an element whose every word matched.
+- **"Nine".** "Nine" for a digit is wrong only where the reading's own number says "niner". Decision 10's
+  procedure-name exemption therefore covers any number the engine itself speaks as "nine": a chart name
+  (Molen Nine, Coast Nine), a STAR number, an airway group.
+- **Unmatched text.** A text that matches nothing is ignored like a callsign: every element is
+  "(not heard)".
+- **Leading stretch.** An element said before the clearance limit is out of order, and the rest of that
+  stretch is the callsign.
 
 ## Open points
 
