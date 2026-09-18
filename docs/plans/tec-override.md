@@ -254,7 +254,18 @@ two cases the heading stands and the route box is the row's route with its head 
       (`worksheets.py:701`), which needs the TEC rows, `inUseRows`, SID runways and RNAV, suffix
       capability and active notices on the Python side. Then re-import and report the fixtures whose
       runway moves.
-  - After 2b lands, re-settle N436MS with the user (ruling 10: 01R, TRUKN2).
+  - [x] **2b (importer)** landed 2026-09-18 (`f9e4523`, merged in `e7b6245`). The Python port of the
+    move, a web parity test that every worksheet fixture's runway is a fixed point of `tecRunway`, and the
+    on-request exclusion. It also fixed `--overwrite-settled`, which rewrote *every* settled fixture as
+    pending, not only the ones whose scenario changed. A run of it had to be reverted by hand.
+  - [ ] **N436MS re-settle (user 2026-09-18):** "It's just an old clearance mode fixture, those worksheets
+    might have not been updated for recent AIRAC changes. Update it to TRUKN2 TRUKN FEVTA FEVTA1 at 10,000
+    since it's a clean replacement."
+    - The importer has no per-plan correction, so a hand edit would fail CI's `import-worksheets --check`.
+    - **Orchestrator decision:** `worksheets.yaml` gains `corrections:` (sheet, callsign, route,
+      altitude and a required reason). The importer applies each correction before building the fixture,
+      notes it in the fixture, and fails on a correction whose plan isn't on its sheet.
+    - N436MS then settles on the engine's reading of the corrected plan.
 - [ ] **Part 2: `RH`, `RV` and heading tokens.** See the section below. It edits `tecTokens` and the route
   parser, and it closes the interim KOAK gap above.
 - [ ] **Docs (orchestrator):** ARCHITECTURE.md "The route rule is one rule" (`:128-129`) and the
