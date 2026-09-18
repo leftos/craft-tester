@@ -170,17 +170,74 @@ export function textOf(field: HTMLElement): HTMLInputElement {
 }
 
 /**
- * Writes a value and an enabled state into a text box already on screen.
+ * Builds one labelled typing box, several lines tall, for a clearance the student types out.
+ *
+ * Autocomplete, spellcheck and automatic capitals are off, as they are on `textControl`, because
+ * fixes, airways and callsigns are not words a browser knows. Enter submits whatever modifier is
+ * held: the box wraps over several lines, but a clearance is one transmission, so a newline in it
+ * means nothing. A keystroke that is still composing a character is left to the input method.
+ *
+ * @param spec The label, the name, the current value, whether the box is enabled, and the placeholder.
+ * @param onInput Called with the text the box reads back after every keystroke.
+ * @param onEnter Called when Enter is pressed in the box, in place of the newline.
+ * @returns The label element, with the typing box inside it.
+ */
+export function textAreaControl(
+  spec: TextSpec,
+  onInput: (value: string) => void,
+  onEnter: () => void,
+): HTMLLabelElement {
+  const field = el('label', 'field');
+  const area = el('textarea');
+  area.name = spec.name;
+  area.value = spec.value;
+  area.disabled = spec.disabled;
+  area.placeholder = spec.placeholder;
+  area.rows = 3;
+  area.autocomplete = 'off';
+  area.spellcheck = false;
+  area.setAttribute('autocapitalize', 'off');
+  area.addEventListener('input', () => {
+    onInput(area.value);
+  });
+  area.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    onEnter();
+  });
+  field.append(el('span', 'field-label', spec.label), area);
+  return field;
+}
+
+/**
+ * The typing box inside a control `textAreaControl` built.
+ *
+ * @param field The label element the builder returned.
+ * @returns The typing box it wraps.
+ * @throws Error When the element is not one `textAreaControl` built.
+ */
+export function textAreaOf(field: HTMLElement): HTMLTextAreaElement {
+  const area = field.querySelector('textarea');
+  if (area === null) throw new Error('the control holds no typing box');
+  return area;
+}
+
+/**
+ * Writes a value and an enabled state into a text box or a typing box already on screen.
  *
  * The value is written only when it differs from what the box already holds, so the word the
  * student is halfway through typing is never taken from under the caret.
  *
- * @param node The text box to update.
+ * @param node The box to update.
  * @param value The text it should hold.
  * @param disabled Whether it should be enabled.
- * @returns Nothing; the text box is updated in place.
+ * @returns Nothing; the box is updated in place.
  */
-export function syncText(node: HTMLInputElement, value: string, disabled: boolean): void {
+export function syncText(
+  node: HTMLInputElement | HTMLTextAreaElement,
+  value: string,
+  disabled: boolean,
+): void {
   if (node.value !== value) node.value = value;
   node.disabled = disabled;
 }

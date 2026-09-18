@@ -1,20 +1,22 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Mode } from '@/scenario/filter.ts';
+import type { InputKind, Mode } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { startApp } from '@/ui/app.ts';
-import { selectOf, textOf } from '@/ui/dom.ts';
+import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
 
-/** Mounts the app on an empty page at one seed, in the half of the trainer the hash names. */
-async function mountApp(seed: number, mode: Mode): Promise<Element> {
-  globalThis.location.hash = hashFor('KSFO', seed, {
-    filter: ANY_SCENARIO,
-    mode,
-    input: 'dropdowns',
-  });
+/** A KSFO seed clearance mode draws a clean clearance from. */
+const CLEARANCE_SEED = 1;
+
+/**
+ * Mounts the app on an empty page at one seed, in the half of the trainer and the input kind the
+ * hash names; the dropdowns leave the input kind out of the hash, as every link to them does.
+ */
+async function mountApp(seed: number, mode: Mode, input: InputKind): Promise<Element> {
+  globalThis.location.hash = hashFor('KSFO', seed, { filter: ANY_SCENARIO, mode, input });
   const root = document.createElement('div');
   document.body.replaceChildren(root);
   await startApp(root);
@@ -67,6 +69,34 @@ function firstChoice(node: HTMLSelectElement): string {
   return option.value;
 }
 
+/** The typing box the clearance is typed into. */
+function clearanceBox(root: ParentNode): HTMLTextAreaElement {
+  return textAreaOf(field(root, 'clearance'));
+}
+
+/** Types into a box, the way the browser reports what the box now holds. */
+function typeInto(node: HTMLTextAreaElement, text: string): void {
+  node.value = text;
+  node.dispatchEvent(new Event('input'));
+}
+
+/** Presses Enter in a box. */
+function pressEnter(node: HTMLTextAreaElement): void {
+  node.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true }));
+}
+
+/** The button of the page that reads one word. */
+function buttonNamed(root: ParentNode, label: string): HTMLButtonElement {
+  const found = [...root.querySelectorAll('button')].find((node) => node.textContent === label);
+  if (found === undefined) throw new Error(`the page has no ${label} button`);
+  return found;
+}
+
+/** The seed part of a hash, e.g. `s=21i3v9`. */
+function seedPartOf(hash: string): string | undefined {
+  return hash.split(/[#&]/).find((part) => part.startsWith('s='));
+}
+
 /** Answers every box as filed and submits the strip, which opens the form on the corrected plan. */
 function clearTheStrip(root: Element): void {
   for (const box of ['type', 'altitude', 'route']) choose(answerOf(root, box), 'as_filed');
@@ -79,7 +109,7 @@ describe('the mounted page', () => {
   });
 
   it('keeps the text box the student is typing in', async () => {
-    const root = await mountApp(AMENDMENT_SEED, 'amendment');
+    const root = await mountApp(AMENDMENT_SEED, 'amendment', 'dropdowns');
     choose(answerOf(root, 'route'), 'amended');
     const input = valueOf(root, 'route');
     expect(input.disabled).toBe(false);
@@ -94,7 +124,7 @@ describe('the mounted page', () => {
   });
 
   it('writes an answer into the box it was made in', async () => {
-    const root = await mountApp(AMENDMENT_SEED, 'amendment');
+    const root = await mountApp(AMENDMENT_SEED, 'amendment', 'dropdowns');
     const answer = answerOf(root, 'route');
     const input = valueOf(root, 'route');
     expect(input.disabled).toBe(true);
@@ -108,7 +138,7 @@ describe('the mounted page', () => {
   });
 
   it('builds the panels again when the strip is submitted', async () => {
-    const root = await mountApp(AMENDMENT_SEED, 'amendment');
+    const root = await mountApp(AMENDMENT_SEED, 'amendment', 'dropdowns');
     const amend = root.querySelector('.panel.amend');
     expect(amend).not.toBeNull();
     expect(root.querySelector('.panel.craft')).toBeNull();
@@ -120,7 +150,7 @@ describe('the mounted page', () => {
   });
 
   it('writes a pick into the dropdowns the form already built', async () => {
-    const root = await mountApp(AMENDMENT_SEED, 'amendment');
+    const root = await mountApp(AMENDMENT_SEED, 'amendment', 'dropdowns');
     clearTheStrip(root);
     const shape = selectOf(field(root, 'shape'));
     const element = selectOf(field(root, 'fix or airway'));
@@ -132,5 +162,78 @@ describe('the mounted page', () => {
     expect(selectOf(field(root, 'shape'))).toBe(shape);
     expect(shape.value).toBe(template);
     expect(element.disabled).toBe(false);
+  });
+
+  it('switches to typing on the same seed and remembers it', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    const seedPart = seedPartOf(globalThis.location.hash);
+    expect(seedPart).toBeDefined();
+    expect(globalThis.location.hash).not.toContain('i=text');
+
+    choose(selectOf(field(root, 'answer')), 'text');
+
+    expect(seedPartOf(globalThis.location.hash)).toBe(seedPart);
+    expect(globalThis.location.hash).toContain('i=text');
+    expect(root.querySelector('.panel.craft')).toBeNull();
+    expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
+    expect(globalThis.localStorage.getItem('craft-tester:input')).toBe('"text"');
+
+    const again = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    expect(clearanceBox(again)).toBeInstanceOf(HTMLTextAreaElement);
+    expect(again.querySelector('.panel.craft')).toBeNull();
+  });
+
+  it('grades a typed clearance element by element', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
+    expect(submitOf(root, '.panel.typed').disabled).toBe(true);
+    typeInto(clearanceBox(root), 'cleared to');
+    expect(submitOf(root, '.panel.typed').disabled).toBe(false);
+
+    pressEnter(clearanceBox(root));
+
+    expect(root.querySelectorAll('.panel.results .verdict')).toHaveLength(8);
+    const reading = root.querySelector('.panel.results .reveal .spoken')?.textContent ?? '';
+    expect(reading.length).toBeGreaterThan(0);
+
+    buttonNamed(root, 'Retry').click();
+    typeInto(clearanceBox(root), reading);
+    pressEnter(clearanceBox(root));
+
+    const score = root.querySelector('.panel.results .score')?.textContent ?? '';
+    expect(score.startsWith('8 of 8 elements correct')).toBe(true);
+  });
+
+  it('keeps the typing box the student is typing in', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
+    const area = clearanceBox(root);
+    area.focus();
+
+    typeInto(area, 'cleared to San');
+
+    expect(clearanceBox(root)).toBe(area);
+    expect(area.value).toBe('cleared to San');
+    expect(document.activeElement).toBe(area);
+  });
+
+  it('does not submit a blank typing box', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
+    for (const text of ['', '   ']) {
+      typeInto(clearanceBox(root), text);
+      pressEnter(clearanceBox(root));
+      expect(root.querySelector('.panel.typed')).not.toBeNull();
+      expect(root.querySelector('.panel.results')).toBeNull();
+    }
+  });
+
+  it('reads the corrected plan by typing after the strip', async () => {
+    const root = await mountApp(AMENDMENT_SEED, 'amendment', 'text');
+    clearTheStrip(root);
+    const area = clearanceBox(root);
+    expect(root.querySelector('.panel.craft')).toBeNull();
+
+    typeInto(area, 'cleared to');
+    pressEnter(area);
+
+    expect(root.querySelectorAll('.panel.results .verdict')).toHaveLength(11);
   });
 });
