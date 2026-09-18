@@ -216,26 +216,36 @@ two cases the heading stands and the route box is the row's route with its head 
 
 ## Steps
 
-- [ ] **Brief 1: the engine override** (layers A, B, C and F, with the named tests except the two draw
-  ones). Proving commands are scoped to `rules/tecRoutes`, `rules/amend/tec`, `rules/amend/route`,
-  `rules/sidSelection`, `rules/altitude` and `rules/tecAltitudes`. Then
-  `pnpm -C web test rules/fixtures` runs **as a report**: moved fixtures are listed as settled or pending,
-  with old and new values, and none is edited. The report also lists the flights the walk leaves without a
-  sector and the heading-row disagreements (layer A).
-- [ ] **Part 2 (after brief 1): `RH`, `RV` and heading tokens.** See the section below. Plan its briefs
-  after brief 1's report, because it edits `tecTokens` and the route parser that brief 1 leaves in place.
-- [ ] **Review with the user:** every settled fixture brief 1 moves, and any TEC-routed flight still left
-  without a sector. ALTAM is settled: the sector comes from the DP, so it gets no gate.
+- [x] **Brief 1: the engine override** landed 2026-09-18 (`798b88d`, merged in `5e46ff8`). Three dispatches:
+  the first two stopped on gaps (noise SIDs, the walk skipping a noise SID that doesn't serve the exit,
+  the bare `GAPP#` row) that became rulings 8-12 and the SOP 2-2 a sector rule.
+  - The row choice is `usableTecRoute` (`tecRoutes.ts`), with `inUseRows` feeding both ruling 9 and
+    `dpSectorRow` in `sidSelection.ts`. The table reads the TEC route's exit through `tableRoute`
+    (`engine.ts`).
+  - No fixture moved against HEAD. The synthetic moved to KTRK (ruling 12). Two KLVK library rows dropped a
+    3,000 that no TEC-routed flight can file (`routes.yaml:70,73`), following the file's own header rule.
+  - **Interim gap until part 2:** KSFO SFOE props and turboprops to KOAK are `Unresolved` whatever they
+    file ("the SOP reads the TEC route TEC-KOAK-SFOE-TP, but filed route GAPP7 has no fix after the
+    procedure"), so the draw never picks them. At HEAD they got the SOP's answer.
 - [ ] **Brief 2: the runway draw and the on-request draw** (layers D and E, both halves of D plus
   `RWY-TEC`; E is bundled here because it edits the same `pickRunway`/`drawScenario`). Proving commands:
   `scenario/generate`, `rules/runway`, `generator tests/test_worksheets*`, `import-worksheets --check`
   (re-import if runways move, and report any moved fixtures), then `craft-gen build --check` for both
   airports.
+  - `explainRunway` still reads the filed route's direction; it moves to `tableRoute`'s.
+  - Brief 1 left these for brief 2 to pick up:
+    - A box joined onto a noise SID (`joinedExpectation`) cites no TEC row, though its tail is the TEC
+      route's. It should cite the row.
+    - `engine.ts` imports `tecTokens` and `citeTec` from `rules/amend/`. Move them down to `tecRoutes.ts`
+      and `cite.ts`.
+    - The `route.test` name "passes over a TEC row that begins on a departure the flight is not issued" is
+      stale. That flight now routes on `TEC-KMYV-SFOW-TP-01`.
+  - After it lands, re-settle N436MS with the user (ruling 10: 01R, TRUKN2).
+- [ ] **Part 2: `RH`, `RV` and heading tokens.** See the section below. It edits `tecTokens` and the route
+  parser, and it closes the interim KOAK gap above.
 - [ ] **Docs (orchestrator):** ARCHITECTURE.md "The route rule is one rule" (`:128-129`) and the
-  amendment-mode section; ADDING_AN_AIRPORT.md's TEC paragraph (`:257-271`); the `tec.yaml` headers; and
-  the doc comments in `tecRoutes.ts` and `sidSelection.ts`. Then archive this subplan.
-- [ ] **Unblocked afterwards:** MAIN.md's "TEC rows that name no fix" guard. Under ruling 3 a bare
-  radar-vector SID head is a legal row, so the guard's narrow version must accept it.
+  amendment-mode section; ADDING_AN_AIRPORT.md's TEC paragraph (`:257-271`); the `tec.yaml` headers. Then
+  archive this subplan.
 
 ## Part 2: `RH`, `RV` and heading tokens in TEC routes
 

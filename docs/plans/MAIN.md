@@ -30,9 +30,9 @@ of them, noted inline. Four landed the same day and are in Landed below.
   runways". "Can't be used" includes a SID the SOP doesn't put in use off that runway in the
   configuration (ruling 9). Equipment, noise-abatement rows and notices still win, and the draw moves the
   flight to a runway the TEC SID is in use from. The measurement found 71 rows losing flights, not five.
-  **In progress:** brief 1 (the engine) is in the `wt/tec-override` worktree, uncommitted. Its
-  follow-up applies rulings 9, 11 and 12. Brief 2 (the runway draw and the on-request fix) comes next,
-  then part 2 (`RH`, `RV` and heading tokens)
+  **Brief 1 (the engine) landed 2026-09-18 (`5e46ff8`).** Next is brief 2 (the runway draw and the
+  on-request fix), then part 2 (`RH`, `RV` and heading tokens), which also closes the interim gap: KSFO
+  SFOE props to KOAK are unresolved until then
 - [ ] **TEC rows that name no fix: superseded 2026-09-18.** The user ruled that `RH RV`, `H090 RV` and
   `OAK6 RV` are real TEC routes ("fly runway heading, radar vectors direct"), and that the route box keeps
   `RH`, `RV` and `Hnnn`. So these rows get transcribed, and the guard becomes a row grammar that knows the
