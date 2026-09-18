@@ -24,23 +24,12 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 Findings recorded while KOAK landed. Gate: generator. Surveyed 2026-09-17; the survey corrected three
 of them, noted inline. Four landed the same day and are in Landed below.
 
-- [ ] **A TEC route overrides the SOP assignment** — **new rule concept, user 2026-09-17**, given as the
-  ruling on the five never-routed TEC rows. **This is an engine change, not a generator fix, so it needs a
-  subplan before any code** (repo rule: a correction that cannot be expressed as data adds a rule concept
-  to the plan first). Today `issuable` (`rules/amend/tec.ts:55-67`) re-runs `resolveClearance` on the row's
-  own route and demands the SOP actually issue the departure the row begins on; under the ruling the TEC
-  row wins instead. That alone routes the three KOAK SFOE jet rows (`TEC-KMRY-SFOE-J`, `TEC-KWVI-SFOE-J`,
-  `TEC-KSJC-SFOE-J`), which begin `OAK#` while the SOP assigns KATFH#/SKYL# southbound. **Two of the five
-  are not fixed by it and still need a ruling:**
-  - [ ] `TEC-KLVK-SFOW-JT-01` is shadowed, not unissuable: `TEC-KLVK-SFOW-JT` has `runway_families: []`, so
-    it matches every SFOW J/T including the 01s and `find` (`amend/tec.ts:92-99`) takes it first. The
-    override does not change which row is found. Needs either a specificity order (most-keyed row wins) or
-    a runway family on the looser row. Separately its exit fix ALTAM is in no KSFO gate
-    (`ksfo/sop.yaml:164`), though the override may make that moot
-  - [ ] `TEC-KOAK-SFOE-TP` is the bare `GAPP#` and names no fix, so `parseFiledRoute`
-    (`rules/route.ts:200-202`) rejects it however the row is chosen
-  - [ ] Also worth doing whatever is decided: drop the `initialAltitudeFeet` filter at
-    `rules/tecAltitudes.test.ts:203`, which today hides three of the five from the unroutable-rows report
+- [ ] **A TEC route overrides the SOP assignment**: subplan [tec-override.md](./tec-override.md). All
+  rulings are in (user 2026-09-17, and 2026-09-18 for its scope). The override is blanket: "The only time
+  the TEC route can't override is if the SID it suggests literally cannot be used with the only available
+  runways". Equipment, noise-abatement headings and notices still win, and the draw picks a runway the TEC
+  SID is flown from. The measurement found 71 rows losing flights, not five. **Next: brief 1** (engine
+  override plus the on-request draw fix), whose fixture report goes to the user before brief 2
 - [ ] **TEC rows that name no fix.** **Correction: `RH RV`, `OAK6 RV` and `H090 RV` are not in the repo** —
   they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
   `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
@@ -52,8 +41,9 @@ of them, noted inline. Four landed the same day and are in Landed below.
     vocabulary of non-fix markers (`RV`, and `RH`, which is the very navaid the trap is about), and
     "rules are data" makes its home a decision too: a frozenset in `merge.py` or a row in shared YAML
   - **The narrow version fires on live data.** `TEC-KOAK-SFOE-TP` (`ksfo/tec.yaml:72`) is the bare
-    `GAPP#` — head and nothing after it — so KSFO would stop building. That row is one of the five
-    never-routed ones below, already awaiting a ruling, so this guard is blocked behind it
+    `GAPP#`, a head with nothing after it, so KSFO would stop building. **Ruled 2026-09-18**
+    ([tec-override.md](./tec-override.md) ruling 3): that row reads `GAPP7 SFO`, so a bare radar-vector
+    SID head is a legal row and the guard must accept it. The guard waits for the override to land
 
 ## Wave 2 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -100,13 +90,10 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
   `cifp/cycle.py`
-- [ ] **Two playtest observations awaiting a ruling** (2026-09-16, still true): the standing
-  `SFO-SEGUL-OFF` notice is `default_active: true` and notices are cancelled only 20% of draws
-  (`NOTICES_OFF_CHANCE`), so it is in force on 80% of scenarios — is that too often? And the generator's
-  on-request draw does not require a 28-only filed SID the way the importer does
-  (`onRequestRunway` keys on class and flight kind only), so seed `f` puts a heavy UPS A306 filing
-  `TRUKN CCR CCR2` on 28L in 28/01 with the remark `REQ RWY 28`, and the engine issues GAPP7 radar vectors
-  TRUKN at 3,000 because TRUKN is no SNTNA2 transition
+- [ ] **Playtest observation awaiting a ruling** (2026-09-16, still true): the standing `SFO-SEGUL-OFF`
+  notice is `default_active: true` and notices are cancelled only 20% of draws (`NOTICES_OFF_CHANCE`), so it
+  is in force on 80% of scenarios. Is that too often? (The second observation, the on-request draw, was
+  ruled 2026-09-18 and ships in [tec-override.md](./tec-override.md) brief 1, ruling 7.)
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([archive/free-text.md](./archive/free-text.md) decision 9)
