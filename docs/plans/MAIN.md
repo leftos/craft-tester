@@ -19,25 +19,7 @@ finished subplans behind them are in `archive/`.
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
-## Wave 1 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
-
-One item left of the five; the other four landed 2026-09-17 (Landed below). Gate: UI.
-
-- [ ] **The corrected strip follows the student's boxes where those were right** (user 2026-09-17, choosing
-  this over labelling the engine's plan or drawing both strips). Today `ui/session.ts:112` reads
-  `drawn.result.corrected`, the engine's plan, always. Seed 83: a student who fixes the route box alone
-  still scores 3 of 3, but the corrected strip shows the engine's type-side fix (`E75L/L` with the filed
-  TRUKN2 route). Two things the survey says this needs, neither of which exists:
-  - [ ] Nothing folds `BoxAnswer`s into a `Scenario`. They are free text; `apply` (`amend/engine.ts:82-87`)
-    folds `ResolvedAmendment`s, which carry `proposedFeet`/`proposed`
-  - [ ] **Ruled (user 2026-09-17): the clearance follows too.** Once the boxes are submitted, the plan is
-    the filed plan with each box graded `correct` as the student wrote it and every other box (`wrong`,
-    `acceptable`, `half`) as the engine corrected it; the CRAFT clearance is resolved from that plan, so the
-    strip and the answer key always agree, and a wrong box still never compounds because it takes the
-    engine's value. A plan that does not resolve falls back to the engine's. `ARCHITECTURE.md:98-101`
-    ("the engine's corrected plan, never the student's") is restated to match
-
-## Wave 2 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
+## Wave 1 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
 Findings recorded while KOAK landed. Gate: generator. Surveyed 2026-09-17; the survey corrected three
 of them, noted inline. Four landed the same day and are in Landed below.
@@ -72,7 +54,8 @@ of them, noted inline. Four landed the same day and are in Landed below.
   - **The narrow version fires on live data.** `TEC-KOAK-SFOE-TP` (`ksfo/tec.yaml:72`) is the bare
     `GAPP#` — head and nothing after it — so KSFO would stop building. That row is one of the five
     never-routed ones below, already awaiting a ruling, so this guard is blocked behind it
-## Wave 3 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
+
+## Wave 2 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
 
@@ -84,7 +67,7 @@ Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data c
   `shared/airways.yaml`. **Data concept and the rebuild rule still to plan with the user before any engine
   change**; the subplan's three questions are open
 
-## Wave 4 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
+## Wave 3 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
 
 Gate: aviation + UI. The only rule concept KOAK left unbuilt.
 
@@ -96,7 +79,7 @@ Gate: aviation + UI. The only rule concept KOAK left unbuilt.
   answer only), the amendment UI box, the results view, and the importer's correction-cell reading. KGPI
   is in the CIFP cache but not among the 67 rows of `shared/destinations.yaml`, so it needs a data row too
 
-## Wave 5 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
+## Wave 4 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
 
 Paused by user steer 2026-09-16; resume with `pnpm -C web propose --pending`. Gate: aviation, one fixture
 at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build`, never an engine edit.
@@ -203,3 +186,5 @@ One line per step; the full record and the user decisions behind each are in the
   clearance ("CRAFT clearance elements") apart; a route box missing the airport navaid reads `preferred:`
   and `acceptable (airport navaid)`; each box verdict reads its amendment's `why:`; the amend form's rows
   share a grid — 2026-09-17
+- [x] The corrected strip and the CRAFT clearance follow the student's plan: every box graded correct as
+  written, every other box as the engine corrected it (`studentPlan`, `clearedPlan`) — 2026-09-17

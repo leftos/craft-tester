@@ -334,3 +334,21 @@ Moved out of MAIN.md by the next hygiene pass (2026-09-17, at `fd05a17`); MAIN.m
   other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes.
   **Ruled (user 2026-09-17): the grid**, the three rows sharing columns (label | filed | answer | new
   value), phone width still stacked
+- [x] **The corrected strip follows the student's boxes where those were right** (user 2026-09-17, choosing
+  this over labelling the engine's plan or drawing both strips). Today `ui/session.ts:112` reads
+  `drawn.result.corrected`, the engine's plan, always. Seed 83: a student who fixes the route box alone
+  still scores 3 of 3, but the corrected strip shows the engine's type-side fix (`E75L/L` with the filed
+  TRUKN2 route). Two things the survey says this needs, neither of which exists:
+  - [x] Nothing folds `BoxAnswer`s into a `Scenario`. They are free text; `apply` (`amend/engine.ts:82-87`)
+    folds `ResolvedAmendment`s, which carry `proposedFeet`/`proposed`
+  - [x] **Ruled (user 2026-09-17): the clearance follows too.** Once the boxes are submitted, the plan is
+    the filed plan with each box graded `correct` as the student wrote it and every other box (`wrong`,
+    `acceptable`, `half`) as the engine corrected it; the CRAFT clearance is resolved from that plan, so the
+    strip and the answer key always agree, and a wrong box still never compounds because it takes the
+    engine's value. A plan that does not resolve falls back to the engine's. `ARCHITECTURE.md:98-101`
+    ("the engine's corrected plan, never the student's") is restated to match
+  - Correction at landing: seed 83 is not a pair seed. It draws E75L/Y with a type amendment only, and
+    `s=83` in the hash is base 36 (seed 291, no amendments). The pair seeds among 1-400 are 107 (`s=2z`:
+    GL5T/U `SAHEY4 NTELL`; the engine fixes the suffix to /L, the student can file `GAPP7 SFO NTELL`) and
+    352. `app.test.ts` uses 107. Landed as `studentPlan` (`rules/amend/grade.ts`) and `clearedPlan`
+    (`ui/session.ts`), with a `console.warn` fallback to the engine's plan

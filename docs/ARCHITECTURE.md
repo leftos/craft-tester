@@ -103,8 +103,12 @@ transmission ends "expect runway (designator)".
 ### Amendment mode
 
 A session is **amend, then read**. The student corrects the strip, the boxes are graded, and the same
-scenario continues into the CRAFT form for the corrected plan — the *engine's* corrected plan, never the
-student's, so a wrong amendment does not compound into a wrong clearance. Knowing that nothing is wrong is
+scenario continues into the CRAFT form for the corrected plan: every box graded `correct` as the student
+wrote it, every other box as the engine corrected it (`studentPlan`, `rules/amend/grade.ts`; resolved by
+`clearedPlan`, `ui/session.ts`). A wrong amendment therefore never compounds into a wrong clearance, and the
+"Amended flight plan" strip always agrees with the answer key. The two plans differ where one fault has two
+fixes, the type box and a box paired with it as its alternative: a student who takes the other fix clears
+their own plan. A plan that does not resolve falls back to the engine's. Knowing that nothing is wrong is
 half the skill, so "correct as filed" is an explicit answer per box and amending a correct box is a miss;
 draws are up to two faults with a fifth of them clean.
 
