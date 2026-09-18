@@ -30,6 +30,12 @@ Subplan for the Wave 1 item in [MAIN.md](./MAIN.md). A new rule concept, so it i
 7. **On-request runway draws match the importer** (from the Singles playtest item). A draw keeps an
    on-request runway only when the procedure the SOP then assigns is published off the requested runway
    family alone. Otherwise the flight takes the runways in normal use.
+8. **A noise row that assigns a SID wins too, and the TEC tail follows it** (user 2026-09-18, after brief
+   1's first report). Examples are KSFO NIITE (SFOW, 2200–0700, RNAV) and KOAK HUSSH, SLNT and SUNNE. The
+   noise SID stands, and the route box is that SID joined onto the TEC route minus its head, which the
+   route builder connects as it connects any SID to a filed route. The TEC final altitude still applies.
+   Example: an RNAV jet off KSFO 28L at 2300 to KSMF gets NIITE2, and its box is NIITE2 joined onto
+   `TRUKN FEVTA FEVTA1`.
 
 ## What changes (measured 2026-09-18)
 
@@ -81,7 +87,7 @@ two cases the heading stands and the route box is the row's route with its head 
 | KSFO SFOE, prop to KOAK | `TEC-KOAK-SFOE-TP` `GAPP#` | GAPP7, box `GAPP7 SFO` |
 | KOAK SFOE, RNAV jet to KMRY, 2300 (`sfoe_night`) | `TEC-KMRY-SFOE-J` | noise row: heading 140, box `OAK EUGEN` |
 | KSFO 28/01, jet drawn on 01L to a `TRUKN#` destination | `-JT` | the draw puts it on 01R and RWY cites `RWY-TEC` |
-| KSFO 28 RT, a row whose SID is 01s-only (SSTIK5) | — | no runway flies it, so the row is skipped |
+| The user's example: 28 RT or 28 SO, a row whose SID is 01s-only | (no current row: KSFO TEC heads are TRUKN#, CIITY#, SFO# and GAPP#) | no runway flies it, so the row is skipped |
 | KOAK SFOW, prop drawn on 33 to a `NUEVO#` destination | `TEC-…-SFOW-TP` | the draw moves it to 28 or 30, whichever NUEVO8 is published off and the class may use |
 
 ## Design by layer
@@ -100,7 +106,11 @@ two cases the heading stands and the route box is the row's route with its head 
   whose row has a heading head is given that heading. Either way the TEC row is cited. The departure frequency is still the sector of the SOP row the walk reached, because that
   row is keyed on the direction the flight leaves in. Where the walk reaches no row (KLVK `-JT-01`, whose
   exit fix ALTAM is in no KSFO gate, `ksfo/sop.yaml:164`), brief 1 reports the flight. Each one is a data
-  fix to rule on with the user, not a fallback invented in code.
+  fix to rule on with the user, not a fallback invented in code. `engine.ts` `issued` cites the TEC row
+  beside the SOP row, and `builtFor` (`engine.ts:60`) moves to the new row choice with the others.
+  Altitude follows from rulings 5, 6 and 8: on a flight whose noise or notice row stands, that row's
+  altitude row gives the initial altitude (`tecInitialRow` already matches the TEC initial only when the
+  procedure is the row's head), and the TEC final altitude still applies.
 - **C. The route box (`amend/route.ts`).** With A in place, `expectedRoute` and `checkHeadingRoute` route
   the new flights. `tecTokens` drops a family head when the procedure is a heading (rulings 5 and 6), as it
   already drops a heading head. The bare row gets its navaid from `withVectorNavaid`: check that it yields
