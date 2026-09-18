@@ -1,6 +1,6 @@
 import type { NonDpHeading } from '@/data/schema.ts';
 import { isAirwayToken, routeFromExitFix } from '@/rules/route.ts';
-import type { ResolvedClearance, Turn } from '@/rules/types.ts';
+import type { ExpectClause, ResolvedClearance, Turn } from '@/rules/types.ts';
 
 /** A heading is read as three digits, so a two-digit heading is spoken with a leading zero. */
 const HEADING_DIGITS = 3;
@@ -387,13 +387,20 @@ function altitudeSentence(clearance: ResolvedClearance): string {
     : `climb via SID except maintain${spokenFeet}`;
 }
 
-function expectSentence(clearance: ResolvedClearance): string {
-  const expect = clearance.expect.value;
-  if (expect === null) return '';
-  if (expect.kind === 'final') return `${speakAltitude(expect.feet)} will be your final`;
-  const minutes = speakDigits(String(expect.minutes));
-  const opening = expect.kind === 'amended' ? 'expect amended' : 'expect';
-  return `${opening} ${speakAltitude(expect.feet)} ${minutes} minutes after departure`;
+/**
+ * Speaks one expect clause the way the reading does.
+ *
+ * A `filed` clause reads "expect (altitude) (minutes) minutes after departure", an `amended` one
+ * opens on "expect amended" instead, and a `final` clause reads "(altitude) will be your final".
+ *
+ * @param clause The expect clause to speak.
+ * @returns The spoken clause, in lower case.
+ */
+export function speakExpect(clause: ExpectClause): string {
+  if (clause.kind === 'final') return `${speakAltitude(clause.feet)} will be your final`;
+  const minutes = speakDigits(String(clause.minutes));
+  const opening = clause.kind === 'amended' ? 'expect amended' : 'expect';
+  return `${opening} ${speakAltitude(clause.feet)} ${minutes} minutes after departure`;
 }
 
 /**
@@ -563,13 +570,14 @@ function optionalPart(element: SpokenElement, words: string): SpokenPart[] {
 function spokenParts(input: SpeakClearanceInput, route: string): SpokenPart[] {
   const { clearance } = input;
   const frequency = speakFrequency(clearance.frequency.value.value);
+  const expect = clearance.expect.value;
   return [
     { element: 'callsign', words: speakCallsign(input.callsign, input.telephony) },
     { element: 'C', words: `cleared to ${input.destinationSpoken} airport` },
     { element: 'R.sid', words: procedurePhrase(clearance) },
     ...optionalPart('R.route', route),
     { element: 'A.phrase', words: altitudeSentence(clearance) },
-    ...optionalPart('A.expect', expectSentence(clearance)),
+    ...optionalPart('A.expect', expect === null ? '' : speakExpect(expect)),
     { element: 'F', words: `departure frequency ${frequency}` },
     { element: 'T', words: `squawk ${speakDigits(input.squawk)}` },
     { element: 'RWY', words: `expect runway ${speakRunway(clearance.runway.value)}` },

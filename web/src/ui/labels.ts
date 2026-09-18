@@ -3,11 +3,13 @@ import type { ClearanceElement } from '@/rules/types.ts';
 
 /** How the form and the results view name each element of the clearance and each strip box. */
 const ELEMENT_LABELS: Record<ClearanceElement, string> = {
+  C: 'C — clearance limit',
   'R.sid': 'R — procedure',
   'R.route': 'R — route',
   'A.phrase': 'A — altitude',
   'A.expect': 'A — expect',
   F: 'F — frequency',
+  T: 'T — squawk',
   RWY: 'expect runway',
   'BOX.type': 'strip — type',
   'BOX.altitude': 'strip — altitude',

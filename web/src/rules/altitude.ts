@@ -15,6 +15,7 @@ import { keyedTecRoute, tecHead } from '@/rules/tecRoutes.ts';
 import type {
   Cited,
   ExpectClause,
+  RedundantExpect,
   RuleCitation,
   SelectedProcedure,
   Unresolved,
@@ -25,7 +26,7 @@ import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 export type ResolvedAltitude = {
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
   expect: Cited<ExpectClause | null>;
-  redundantExpect: Cited<{ feet: number; minutes: number } | null>;
+  redundantExpect: Cited<RedundantExpect | null>;
 };
 
 /** The altitude phrase and, where one is spoken, the feet it carries. */
@@ -249,7 +250,7 @@ function expectClause(
   minutes: number,
 ): {
   clause: ExpectClause | null;
-  redundant: { feet: number; minutes: number } | null;
+  redundant: RedundantExpect | null;
 } {
   const nothing = { clause: null, redundant: null };
   if (phraseology.expectAltitude === 'never') return nothing;
@@ -260,7 +261,7 @@ function expectClause(
   if (phraseology.expectAltitude === 'unless_chart_publishes_it' && chartMinutes !== null) {
     return {
       clause: null,
-      redundant: { feet: scenario.filedAltitude, minutes: chartMinutes },
+      redundant: { kind: 'filed', feet: scenario.filedAltitude, minutes: chartMinutes },
     };
   }
   return {

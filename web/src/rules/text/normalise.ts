@@ -4,7 +4,13 @@ import { TEEN_WORDS, TENS_WORDS, UNIT_WORDS } from '@/rules/speak.ts';
 /** How a number was given: typed as figures, said digit by digit, or said in group form. */
 export type NumberForm = 'figures' | 'digits' | 'group';
 
-/** One unit of normalised text, with the character span of the original text it came from. */
+/**
+ * One unit of normalised text, with the character span of the original text it came from.
+ *
+ * A number records how it was said: its form, whether a digit nine was said "nine", and whether its
+ * digits were restated in group form right after them (`one zero ten thousand`), which reads as the
+ * digits alone.
+ */
 export type SpokenToken =
   | { kind: 'word'; text: string; start: number; end: number }
   | {
@@ -12,6 +18,7 @@ export type SpokenToken =
       value: string;
       form: NumberForm;
       saidNine: boolean;
+      restated: boolean;
       start: number;
       end: number;
     };
@@ -45,10 +52,19 @@ type NumberPiece = { word: NumberWord; piece: Piece };
 type Reading = { tokens: SpokenToken[]; next: number };
 
 /** Words read in order: the digits they append, and what the words they were said in tell. */
-type Concatenation = { text: string; saidNine: boolean; group: boolean; elements: number };
+type Concatenation = {
+  text: string;
+  saidNine: boolean;
+  group: boolean;
+  elements: number;
+  restated: boolean;
+};
 
-/** A run read as a number: its value, whether a digit nine was said "nine", and any group word. */
-type RunValue = { value: string; saidNine: boolean; group: boolean };
+/**
+ * A run read as a number: its value, whether a digit nine was said "nine", any group word, and
+ * whether its digits were restated in group form.
+ */
+type RunValue = { value: string; saidNine: boolean; group: boolean; restated: boolean };
 
 /** A piece made of two parts one pattern matches, and the tokens those parts read as. */
 type Shape = { pattern: RegExp; read: (head: Piece, tail: Piece) => SpokenToken[] };
@@ -123,6 +139,9 @@ const MIN_IDENTIFIER_LENGTH = 2;
 /** A flight level is three digits, so a digit-word run after "flight level" closes on the third. */
 const FLIGHT_LEVEL_DIGITS = 3;
 
+/** The fewest digit words a restatement opens on: one digit then a group word is a group number. */
+const MIN_RESTATED_DIGITS = 2;
+
 /** The word each runway side letter reads as. */
 const RUNWAY_SIDE_WORDS: Readonly<Record<string, string>> = {
   l: 'left',
@@ -168,6 +187,7 @@ function figuresToken(piece: Piece): SpokenToken {
     value: piece.text.replaceAll(',', ''),
     form: 'figures',
     saidNine: false,
+    restated: false,
     start: piece.start,
     end: piece.end,
   };
@@ -405,7 +425,13 @@ function append(sum: Concatenation, word: NumberWord): void {
  * is `1420`. A unit digit completes the tens word before it, so it never counts as said "nine".
  */
 function concatenate(pieces: readonly NumberPiece[]): Concatenation {
-  const sum: Concatenation = { text: '', saidNine: false, group: false, elements: 0 };
+  const sum: Concatenation = {
+    text: '',
+    saidNine: false,
+    group: false,
+    elements: 0,
+    restated: false,
+  };
   for (const [index, { word }] of pieces.entries()) {
     if (word.kind === 'digit' && isUnit(pieces, index)) {
       sum.text = `${sum.text.slice(0, -1)}${word.digit}`;
@@ -416,15 +442,51 @@ function concatenate(pieces: readonly NumberPiece[]): Concatenation {
   return sum;
 }
 
+function isGroupWord(piece: NumberPiece): boolean {
+  const kind = piece.word.kind;
+  return kind === 'teen' || kind === 'tens';
+}
+
+/**
+ * The body of a run read as a restatement: digit words, then a group form that reads to the same
+ * digits, e.g. `one zero ten` or `four two one five forty-two fifteen`.
+ *
+ * The digits are split off from two words upward, and the first split whose rest holds a group word
+ * and reads back to the digits wins. The restated body is one value, said digit by digit, and only
+ * the digits tell whether a nine was said "nine".
+ */
+function readRestatement(body: readonly NumberPiece[]): Concatenation | undefined {
+  for (let split = MIN_RESTATED_DIGITS; split < body.length; split += 1) {
+    const head = body.slice(0, split);
+    if (!head.every((piece) => piece.word.kind === 'digit')) return undefined;
+    const tail = body.slice(split);
+    const digits = concatenate(head);
+    if (tail.some(isGroupWord) && concatenate(tail).text === digits.text) {
+      return { ...digits, elements: 1, restated: true };
+    }
+  }
+  return undefined;
+}
+
+/** A run's body read as a restatement where it is one, and word by word otherwise. */
+function readBody(body: readonly NumberPiece[]): Concatenation {
+  return readRestatement(body) ?? concatenate(body);
+}
+
 function readPlain(sum: Concatenation): RunValue | undefined {
   if (!PLAIN_NUMBER.test(sum.text)) return undefined;
-  return { value: sum.text, saidNine: sum.saidNine, group: sum.group };
+  return { value: sum.text, saidNine: sum.saidNine, group: sum.group, restated: sum.restated };
 }
 
 /** A run that ends on `hundred` with no `thousand`: one digit or group value times 100. */
 function readHundreds(body: Concatenation): RunValue | undefined {
   if (body.elements !== 1 || !WHOLE_NUMBER.test(body.text)) return undefined;
-  return { value: String(BigInt(body.text) * 100n), saidNine: body.saidNine, group: body.group };
+  return {
+    value: String(BigInt(body.text) * 100n),
+    saidNine: body.saidNine,
+    group: body.group,
+    restated: body.restated,
+  };
 }
 
 /** A run with `thousand`: what it held times 1000, plus any hundreds said after it. */
@@ -435,14 +497,20 @@ function readThousands(body: Concatenation, hundreds: Concatenation): RunValue |
     value: String(BigInt(body.text) * 1000n + extra),
     saidNine: body.saidNine || hundreds.saidNine,
     group: body.group || hundreds.group,
+    restated: body.restated,
   };
 }
 
-/** The value of one run, or undefined when it cannot form a number. */
+/**
+ * The value of one run, or undefined when it cannot form a number.
+ *
+ * The body, every piece before the first multiplier or the whole run where it has none, reads as a
+ * restatement where it is one; a multiplier after it applies to the value it reads to.
+ */
 function readRun(run: readonly NumberPiece[]): RunValue | undefined {
   const at = run.findIndex((piece) => isMultiplier(piece));
-  if (at < 0) return readPlain(concatenate(run));
-  const body = concatenate(run.slice(0, at));
+  if (at < 0) return readPlain(readBody(run));
+  const body = readBody(run.slice(0, at));
   if (run[at]?.word.kind === 'hundred') return readHundreds(body);
   return readThousands(body, concatenate(run.slice(at + 1, -1)));
 }
@@ -466,6 +534,7 @@ function runTokens(run: readonly NumberPiece[]): SpokenToken[] {
       value: value.value,
       form: formOf(first, value),
       saidNine: value.saidNine,
+      restated: value.restated,
       start: first.piece.start,
       end: last.piece.end,
     },
@@ -536,7 +605,8 @@ export function lexiconFor(airport: AirportData): Lexicon {
  * Whitespace, punctuation and a hyphen between letters split the text into pieces. A piece typed in
  * capitals that the lexicon holds becomes its spoken words; a shaped piece (`FL320`, `28L`, `V244`,
  * `HAWKZ7`) becomes its words and its number; a stretch of figures and number words becomes number
- * tokens, each recording how it was said; anything else is a lower-case word. A stretch that cannot
+ * tokens, each recording how it was said, and digits followed by their own group form (`one zero ten
+ * thousand`) read as one restated number; anything else is a lower-case word. A stretch that cannot
  * form a number stays as words. Each token spans the original text it came from.
  *
  * @param text The clearance text, typed or spoken.

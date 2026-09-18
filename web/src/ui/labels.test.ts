@@ -5,22 +5,26 @@ import { aircraftLabel, dayLabel, elementLabel, timeLabel } from '@/ui/labels.ts
 describe('elementLabel', () => {
   it('names every element and every strip box', () => {
     const elements: ClearanceElement[] = [
+      'C',
       'R.sid',
       'R.route',
       'A.phrase',
       'A.expect',
       'F',
+      'T',
       'RWY',
       'BOX.type',
       'BOX.altitude',
       'BOX.route',
     ];
     expect(elements.map((element) => elementLabel(element))).toStrictEqual([
+      'C — clearance limit',
       'R — procedure',
       'R — route',
       'A — altitude',
       'A — expect',
       'F — frequency',
+      'T — squawk',
       'expect runway',
       'strip — type',
       'strip — altitude',

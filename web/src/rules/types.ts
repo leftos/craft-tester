@@ -94,6 +94,14 @@ export type ExpectClause =
   | { kind: 'final'; feet: number };
 
 /**
+ * An expect clause the rules allow as the longer reading beside the one the clearance speaks.
+ *
+ * `filed` is the clause the SID chart already publishes for the pilot; `amended` is the amended
+ * clause beside a `final` reading. A `final` clause is never the redundant one.
+ */
+export type RedundantExpect = Extract<ExpectClause, { kind: 'filed' | 'amended' }>;
+
+/**
  * The route element of a clearance: the shape it is spoken in, the element the flight leaves the
  * terminal on, and the route box a built clearance is read for.
  *
@@ -110,11 +118,12 @@ export type ResolvedRoute = Cited<{ template: RouteTemplate; fix?: string; built
  * row that settled it. `procedure.value` is the SID the assignment row assigns, or the runway
  * heading it clears the flight on where it assigns no procedure.
  * `expect.value.kind` says which of the three readings the clause takes. `redundantExpect` carries
- * the longer expect reading the rules still allow beside the one the clearance speaks: the clause
- * the chart already speaks for the pilot, which a controller may repeat without harm, and the
- * amended clause beside a `final` clause, which says at a delay what the final reading says
- * outright. It is null wherever no longer reading is allowed — an amended or filed clause spoken on
- * its own, a clause dropped for any other reason, a chart that publishes no note.
+ * the longer expect reading the rules still allow beside the one the clearance speaks, with the
+ * kind of clause it is: the `filed` clause the chart already speaks for the pilot, which a
+ * controller may repeat without harm, and the `amended` clause beside a `final` clause, which says
+ * at a delay what the final reading says outright. It is null wherever no longer reading is allowed
+ * — an amended or filed clause spoken on its own, a clause dropped for any other reason, a chart
+ * that publishes no note.
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
@@ -123,7 +132,7 @@ export type ResolvedClearance = {
   route: ResolvedRoute;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;
   expect: Cited<ExpectClause | null>;
-  redundantExpect: Cited<{ feet: number; minutes: number } | null>;
+  redundantExpect: Cited<RedundantExpect | null>;
   frequency: Cited<{ value: string; sectorId: string }>;
 };
 
@@ -133,16 +142,19 @@ export type ResolvedClearance = {
  *
  * Grading covers all the clearance elements but `R.sid`: the flight plan always files the procedure
  * the SOP assigns, so the element is resolved, spoken and reported unresolved under this key, never
- * graded. The `BOX.` keys name the three boxes of the flight progress strip an amendment can change
- * — the type box, the altitude box and the route box — and are what the amendment checks report an
+ * graded. C and T are graded only when the clearance is typed, because the dropdown form gives them.
+ * The `BOX.` keys name the three boxes of the flight progress strip an amendment can change — the
+ * type box, the altitude box and the route box — and are what the amendment checks report an
  * unresolved box under.
  */
 export type ClearanceElement =
+  | 'C'
   | 'R.sid'
   | 'R.route'
   | 'A.phrase'
   | 'A.expect'
   | 'F'
+  | 'T'
   | 'RWY'
   | 'BOX.type'
   | 'BOX.altitude'

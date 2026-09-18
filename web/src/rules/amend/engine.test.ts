@@ -538,7 +538,11 @@ describe('resolveAmendedClearance', () => {
     const { corrected } = resolved(original);
     const result = resolveAmendedClearance(original, corrected, ksfo);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
-    expect(result.clearance.redundantExpect.value).toEqual({ feet: 10000, minutes: 10 });
+    expect(result.clearance.redundantExpect.value).toEqual({
+      kind: 'amended',
+      feet: 10000,
+      minutes: 10,
+    });
     expect(result.clearance.redundantExpect.citations.map((citation) => citation.id)).toEqual([
       'A-FINAL',
     ]);
