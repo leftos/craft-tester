@@ -27,8 +27,8 @@ Queued next by the user 2026-09-17. Gate: UI. Subplan: [free-text.md](./free-tex
   full spoken clearance, and each CRAFT element is graded with its citation and a said-against-expected
   diff. Interviewed 2026-09-17. The owed ruling is answered: both spoken-only readings are acceptable.
   The rest is ruled too: values plus listed variants, filler acceptable, out of order wrong, C and T
-  graded, amendment mode included. The decisions and six steps are in the subplan. Step 1 (structured
-  reading) landed 2026-09-17; step 2 (normaliser) is in flight
+  graded, amendment mode included. The decisions and six steps are in the subplan. Steps 1 (structured
+  reading) and 2 (normaliser) landed 2026-09-17; step 3 (matcher and grader) is next
 
 ## Wave 2 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
 

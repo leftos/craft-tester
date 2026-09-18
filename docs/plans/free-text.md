@@ -67,9 +67,12 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
 
 - [x] 1. **Structured reading**: `SpokenPart`, `parts`, `fullRouteWords` and `joinSpoken` in
   `rules/speak.ts`, with every existing reading byte-identical — `845d5f8`, 2026-09-17
-- [ ] 2. **Normaliser** (dispatched 2026-09-17): a new `rules/text/` module. Its tests type every settled fixture's reading two
-  ways, in figures ("FL320", "120.9") and in words, and require both to normalise to the same tokens
-  as the engine's own reading
+- [x] 2. **Normaliser**: `rules/text/normalise.ts` (`normaliseSpoken`, `lexiconFor`). Text becomes
+  words and number tokens that record the value and how it was said (figures, digits, group form,
+  "nine"), and every settled clearance fixture's reading reads back to its squawk and frequency —
+  `39a1929`, 2026-09-17. Its limits, all unexercised by the corpus: a figures piece opens a run of its own,
+  so "3 thousand 5 hundred" reads as 3000 and 500; a decimal with a multiplier does not parse; `hundred`
+  without `thousand` takes exactly one value before it
 - [ ] 3. **Matcher and grader, clearance mode.** This step includes:
   - segmentation, the order rule and the per-element verdicts;
   - new shared phraseology rows for decisions 1, 2, 4, 5 and 10;
@@ -88,7 +91,10 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
 ## Open points, settled when the step that needs them is briefed
 
 - [ ] "Ten thousand", the group form. 7110.65 2-4-17 b 2 (a) note allows it "for added clarity", as a
-  restatement. Is it right, or acceptable, when the digit form is not said? (step 2)
+  restatement. Is it right, or acceptable, when the digit form is not said? The normaliser records the
+  form (`group`); the verdict is step 3's
 - [ ] The first rows of the variants table: which wordings are equivalent (right) rather than filler
   (acceptable). (step 3)
-- [ ] The tier for "nine" in place of "niner", recorded as acceptable above. (step 3)
+- [ ] The tier for "nine" in place of "niner", recorded as acceptable above, and **whether it applies to a
+  procedure's number**: the data speaks KOAK's COAST9 as "Coast Nine" (its chart name), so the engine's
+  own reading of it sets `saidNine`. (step 3)
