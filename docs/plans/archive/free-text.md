@@ -1,7 +1,7 @@
 # Free-text clearance entry
 
-Landed 2026-09-17 (Wave 1 of [MAIN.md](../MAIN.md)); the design as built is ARCHITECTURE.md "Free-text grading". The student types the whole spoken clearance as an **alternative to** the
-dropdowns (user 2026-09-17: "the dropdowns stay and the student chooses"), so they practise without the
+Landed 2026-09-17 (Wave 1 of [MAIN.md](../MAIN.md)); the design as built is ARCHITECTURE.md "Free-text
+grading". The student types the whole spoken clearance as an **alternative to** the dropdowns (user 2026-09-17: "the dropdowns stay and the student chooses"), so they practise without the
 dropdowns' hints. The grader normalises both sides, aligns the text against the CRAFT elements of the
 engine's reading, and grades each element green or red with its citation, next to a per-element diff of
 what was said against what was expected.
