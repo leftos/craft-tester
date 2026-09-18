@@ -1,5 +1,19 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "altitude": {
+      "feet": 10000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KSMF",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "TRUKN",
+      "template": "as_filed"
+    },
+    "sidFamily": "TRUKN"
+  },
   "id": "ws-ksfo-phraseology-practice-2-n436ms",
   "mode": "clearance",
   "scenario": {
@@ -9,15 +23,15 @@
     "departureRunway": "01R",
     "destination": "KSMF",
     "equipmentSuffix": "/L",
-    "filedAltitude": 11000,
-    "filedRoute": "TRUKN2 TRUKN CCR CCR2",
+    "filedAltitude": 10000,
+    "filedRoute": "TRUKN2 TRUKN FEVTA FEVTA1",
     "localTime": "1400",
     "runwayConfigId": "28/01",
     "squawk": "3342"
   },
   "source": {
     "kind": "worksheet",
-    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 01R, moved there from 28R because its TEC route TEC-KSMF-SFOW-J departs TRUKN# from it and not from 28R (RWY-TEC, user ruling 2026-09-18), pending validation"
+    "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 01R, moved there from 28R because its TEC route TEC-KSMF-SFOW-J departs TRUKN# from it and not from 28R (RWY-TEC, user ruling 2026-09-18), pending validation; plan corrected from TRUKN2 TRUKN CCR CCR2 at 11000 to TRUKN2 TRUKN FEVTA FEVTA1 at 10000: the sheet predates recent AIRAC changes; the plan's TEC route to KSMF is TRUKN2 TRUKN FEVTA FEVTA1 at 10,000, a clean replacement (user 2026-09-18); validated by the user 2026-09-18: a clean replacement plan (TEC route TRUKN2 TRUKN FEVTA FEVTA1 at 10,000), cleared as the engine reads it on 01R"
   },
-  "status": "pending"
+  "status": "settled"
 }

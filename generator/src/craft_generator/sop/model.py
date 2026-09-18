@@ -688,15 +688,33 @@ class Worksheet:
 
 
 @dataclass(frozen=True, slots=True)
+class WorksheetCorrection:
+    """A user ruling that replaces the route and altitude one worksheet plan files.
+
+    ``worksheet`` is the sheet's title and ``callsign`` the plan as the sheet files it; the importer
+    builds the plan's fixture from ``route`` and ``altitude_feet`` instead of what the sheet prints,
+    and records ``reason`` in the fixture's note.
+    """
+
+    worksheet: str
+    callsign: str
+    route: str
+    altitude_feet: int
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
 class WorksheetConfig:
     """``worksheets.yaml``: the trainer worksheets of one airport and the type aliases they file under.
 
     ``type_aliases`` maps a designator a sheet files to the designator vNAS and the fleet use, e.g.
-    ``A32N`` to ``A20N``; a type the sheets spell correctly is not listed.
+    ``A32N`` to ``A20N``; a type the sheets spell correctly is not listed. ``corrections`` are the
+    plans whose filed route and altitude the user has ruled replaced, in file order.
     """
 
     worksheets: tuple[Worksheet, ...]
     type_aliases: dict[str, str]
+    corrections: tuple[WorksheetCorrection, ...]
 
 
 @dataclass(frozen=True, slots=True)
