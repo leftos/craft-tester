@@ -472,6 +472,12 @@ button.primary:disabled {
   margin: 0.15rem 0;
 }
 
+.verdict .answer .filler {
+  color: var(--muted);
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+
 .citations {
   margin: 0.4rem 0 0;
   padding-left: 1.1rem;

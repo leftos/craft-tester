@@ -6,8 +6,15 @@ import { lexiconFor, normaliseSpoken } from '@/rules/text/normalise.ts';
 import type { SpokenToken } from '@/rules/text/normalise.ts';
 import type { Grade, ResolvedClearance, RuleCitation, Verdict } from '@/rules/types.ts';
 
-/** One graded element of a typed clearance, with the stretches of the text it counted as filler. */
-export type TextGrade = Grade & { filler: { start: number; end: number }[] };
+/** A run of the typed text as a result row shows it: words said, filler among them, or the break between two stretches. */
+export type SaidRun = { text: string; kind: 'said' | 'filler' | 'break' };
+
+/**
+ * One graded element of a typed clearance, with what was said for it as runs.
+ *
+ * `said` joins back to `actualLabel` wherever anything was heard, and is empty where nothing was.
+ */
+export type TextGrade = Grade & { said: SaidRun[] };
 
 /** An element a typed clearance is graded on: every element of the reading but the callsign. */
 type GradedElement = Exclude<SpokenElement, 'callsign'>;
@@ -103,6 +110,9 @@ const PLAIN_DECIMAL = /^\d+(?:\.\d+)?$/u;
 
 /** Text between two spans that leaves them adjacent in a label. */
 const LABEL_JOINER = /^[\s\p{P}]*$/u;
+
+/** What a label reads between two stretches of the text that are not adjacent. */
+const LABEL_BREAK = ' … ';
 
 const NOT_HEARD = '(not heard)';
 
@@ -359,28 +369,33 @@ function elementTokens(candidate: Candidate, element: GradedElement): number[] {
   return candidate.tokens.flatMap((token, index) => (token.element === element ? [index] : []));
 }
 
-/** Whether the tokens are a subsequence of the block, in order. */
-function isSubsequence(wanted: readonly CandidateToken[], block: readonly SpokenToken[]): boolean {
-  let found = 0;
+/** An element none of the matches touch, and the tokens of the block that say it whole. */
+type Misplaced = { element: GradedElement; said: SpokenToken[] };
+
+/** The block tokens that say the wanted tokens in order, earliest first, where the block says them all. */
+function subsequenceOf(
+  wanted: readonly CandidateToken[],
+  block: readonly SpokenToken[],
+): SpokenToken[] | undefined {
+  const said: SpokenToken[] = [];
   for (const token of block) {
-    const next = wanted[found];
-    if (next !== undefined && same(token, next)) found += 1;
+    const next = wanted[said.length];
+    if (next !== undefined && same(token, next)) said.push(token);
   }
-  return found === wanted.length;
+  return said.length === wanted.length ? said : undefined;
 }
 
 /** The first element, in grading order, that none of the matches touch and that the block says whole. */
-function outOfOrderElement(block: readonly SpokenToken[], walk: Walk): GradedElement | undefined {
+function outOfOrderElement(block: readonly SpokenToken[], walk: Walk): Misplaced | undefined {
   const { candidate } = walk.alignment;
-  return GRADED_ORDER.find((element) => {
+  for (const element of GRADED_ORDER) {
     const indices = elementTokens(candidate, element);
+    if (indices.length === 0 || indices.some((index) => walk.matched.has(index))) continue;
     const wanted = indices.flatMap((index) => candidate.tokens[index] ?? []);
-    return (
-      indices.length > 0 &&
-      indices.every((index) => !walk.matched.has(index)) &&
-      isSubsequence(wanted, block)
-    );
-  });
+    const said = subsequenceOf(wanted, block);
+    if (said !== undefined) return { element, said };
+  }
+  return undefined;
 }
 
 function isFacilityWord(gap: Gap, before: MatchedToken, expected: ResolvedClearance): boolean {
@@ -426,14 +441,27 @@ function markExtraWords(gap: Gap, span: Span, walk: Walk): void {
   owner.tiers.push(tier(walk.airport, 'acceptable', 'S-FILLER'));
 }
 
+function markMisplaced(element: GradedElement, span: Span, walk: Walk): void {
+  const marks = marksOf(walk.marks, element);
+  marks.outOfOrder = true;
+  marks.blocks.push(span);
+}
+
 /** Marks the block out of order on the element it says whole, where there is one. */
 function markOutOfOrder(block: readonly SpokenToken[], walk: Walk): boolean {
   const misplaced = outOfOrderElement(block, walk);
   if (misplaced === undefined) return false;
-  const marks = marksOf(walk.marks, misplaced);
-  marks.outOfOrder = true;
-  marks.blocks.push(spanOf(block));
+  markMisplaced(misplaced.element, spanOf(block), walk);
   return true;
+}
+
+/**
+ * Marks an element the callsign stretch says whole out of order, on the words that say it: the rest
+ * of the stretch is the callsign.
+ */
+function markLeading(leading: readonly SpokenToken[], walk: Walk): void {
+  const misplaced = outOfOrderElement(leading, walk);
+  if (misplaced !== undefined) markMisplaced(misplaced.element, spanOf(misplaced.said), walk);
 }
 
 /** Puts one gap's unmatched student tokens on the element they belong to. */
@@ -468,7 +496,7 @@ function walkGaps(
   };
   const { student, pairs } = alignment;
   const leading = student.slice(0, pairs[0]?.student ?? student.length);
-  if (leading.length > 0) markOutOfOrder(leading, walk);
+  if (leading.length > 0) markLeading(leading, walk);
   for (const gap of gapsOf(alignment)) {
     if (gap.student.length > 0) markGap(gap, walk);
   }
@@ -540,10 +568,38 @@ function mergeSpans(text: string, spans: readonly Span[]): Span[] {
   return merged;
 }
 
-function actualLabel(text: string, spans: readonly Span[]): string {
-  const merged = mergeSpans(text, spans);
+function actualLabel(text: string, merged: readonly Span[]): string {
   if (merged.length === 0) return NOT_HEARD;
-  return merged.map((span) => text.slice(span.start, span.end)).join(' … ');
+  return merged.map((span) => text.slice(span.start, span.end)).join(LABEL_BREAK);
+}
+
+function pushRun(runs: SaidRun[], text: string, kind: SaidRun['kind']): void {
+  if (text.length > 0) runs.push({ text, kind });
+}
+
+/** One merged span of the text, split at the filler inside it. */
+function spanRuns(text: string, span: Span, filler: readonly Span[]): SaidRun[] {
+  const inside = filler
+    .filter((stretch) => stretch.start >= span.start && stretch.end <= span.end)
+    .sort((a, b) => a.start - b.start);
+  const runs: SaidRun[] = [];
+  let at = span.start;
+  for (const stretch of inside) {
+    const from = Math.max(at, stretch.start);
+    pushRun(runs, text.slice(at, from), 'said');
+    pushRun(runs, text.slice(from, stretch.end), 'filler');
+    at = Math.max(at, stretch.end);
+  }
+  pushRun(runs, text.slice(at, span.end), 'said');
+  return runs;
+}
+
+/** The merged spans as runs, each split at its filler, a break between two spans as the label has one. */
+function saidRuns(text: string, merged: readonly Span[], filler: readonly Span[]): SaidRun[] {
+  return merged.flatMap((span, index) => [
+    ...(index === 0 ? [] : [{ text: LABEL_BREAK, kind: 'break' as const }]),
+    ...spanRuns(text, span, filler),
+  ]);
 }
 
 function expectedLabel(element: GradedElement, spoken: SpokenClearance): string {
@@ -628,11 +684,12 @@ function gradeElement(element: GradedElement, grading: Grading): TextGrade {
     ...marks.filler,
     ...(stray === undefined ? [] : [stray]),
   ];
+  const merged = mergeSpans(text, spans);
   const labels = {
     element,
     expectedLabel: expectedLabel(element, grading.spoken),
-    actualLabel: actualLabel(text, spans),
-    filler: marks.filler,
+    actualLabel: actualLabel(text, merged),
+    said: saidRuns(text, merged, marks.filler),
   };
   const own = OWN_ROWS[element](expected);
   if (indices.length === 0) return emptyElementGrade(labels, stray, own);

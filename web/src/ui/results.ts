@@ -1,4 +1,5 @@
 import type { SpokenClearance } from '@/rules/speak.ts';
+import type { TextGrade } from '@/rules/text/grade.ts';
 import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 import { button, el, iconButton } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -6,7 +7,7 @@ import { readAloud, speechAvailable, stopReading } from '@/ui/speech.ts';
 
 /** Everything the results view shows after the form is submitted. */
 export type ResultsProps = {
-  grades: readonly Grade[];
+  grades: readonly (Grade | TextGrade)[];
   spoken: SpokenClearance;
   onNext: () => void;
   onRetry: () => void;
@@ -71,13 +72,21 @@ function correctionLine(verdict: Grade): string | undefined {
   return undefined;
 }
 
+/** The second line a typed element reads: the expected words wherever it was not fully correct. */
+function expectedLine(verdict: TextGrade): string | undefined {
+  return verdict.verdict === 'correct' ? undefined : `expected: ${verdict.expectedLabel}`;
+}
+
 /**
  * The lines one verdict reads as: the player's answer, and the second line their answer earns.
  *
- * @param verdict The verdict for one element.
- * @returns The answer line, how it was answered, and the correction or the shorter reading.
+ * A typed element's second line is the expected words, shown wherever it was not fully correct; a
+ * picked one's is the correction, the shorter reading or the full-credit box its verdict calls for.
+ *
+ * @param verdict The verdict for one element, picked or typed.
+ * @returns The answer line, how it was answered, and the second line, where there is one.
  */
-export function verdictLines(verdict: Grade): {
+export function verdictLines(verdict: Grade | TextGrade): {
   answer: string;
   verdict: Verdict;
   correction: string | undefined;
@@ -85,7 +94,7 @@ export function verdictLines(verdict: Grade): {
   return {
     answer: `you said: ${verdict.actualLabel}`,
     verdict: verdict.verdict,
-    correction: correctionLine(verdict),
+    correction: 'said' in verdict ? expectedLine(verdict) : correctionLine(verdict),
   };
 }
 
@@ -96,15 +105,30 @@ function verdictMark(verdict: Verdict): string | undefined {
 }
 
 /**
+ * The answer line: what the player said, with the filler of a typed element marked inside it.
+ *
+ * A typed element where nothing was heard reads its label, as a picked one does.
+ */
+function answerLine(verdict: Grade | TextGrade, text: string): HTMLParagraphElement {
+  if (!('said' in verdict) || verdict.said.length === 0) return el('p', 'answer', text);
+  const answer = el('p', 'answer', 'you said: ');
+  for (const run of verdict.said) {
+    answer.append(run.kind === 'filler' ? el('span', 'filler', run.text) : run.text);
+  }
+  return answer;
+}
+
+/**
  * Renders one element's verdict: what the player said, the correction where it was wrong, and why.
  *
- * @param verdict The verdict for one element of the clearance, or for one box of the strip.
+ * @param verdict The verdict for one element of the clearance, picked or typed, or for one box of
+ *   the strip.
  * @returns The verdict row.
  */
-export function renderVerdict(verdict: Grade): HTMLElement {
+export function renderVerdict(verdict: Grade | TextGrade): HTMLElement {
   const lines = verdictLines(verdict);
   const row = el('div', `verdict ${lines.verdict}`);
-  const answer = el('p', 'answer', lines.answer);
+  const answer = answerLine(verdict, lines.answer);
   const mark = verdictMark(lines.verdict);
   if (mark !== undefined) answer.append(el('span', 'mark', mark));
   row.append(el('h3', '', elementLabel(verdict.element)), answer);

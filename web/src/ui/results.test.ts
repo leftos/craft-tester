@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { TextGrade } from '@/rules/text/grade.ts';
 import type { Grade } from '@/rules/types.ts';
 import { scoreLine, verdictLines } from '@/ui/results.ts';
 
@@ -72,6 +73,50 @@ describe('verdictLines', () => {
     expect(lines.answer).toBe('you said: SSTIK5 SUSEY EBAYE AVE SADDE8');
     expect(lines.verdict).toBe('half');
     expect(lines.correction).toBe('full credit: SSTIK5 SUSEY EBAYE BURGL IRNMN2');
+  });
+});
+
+/** A typed altitude with filler in it: acceptable, and read against the words expected. */
+const typedAltitude: TextGrade = {
+  element: 'A.phrase',
+  verdict: 'acceptable',
+  expectedLabel: 'climb via sid',
+  actualLabel: 'Climb via the SID',
+  citations: [],
+  said: [
+    { text: 'Climb via ', kind: 'said' },
+    { text: 'the', kind: 'filler' },
+    { text: ' SID', kind: 'said' },
+  ],
+};
+
+describe('verdictLines on a typed element', () => {
+  it('shows the expected words where the element is wrong', () => {
+    const lines = verdictLines({
+      ...typedAltitude,
+      verdict: 'wrong',
+      actualLabel: 'Climb via',
+      said: [{ text: 'Climb via', kind: 'said' }],
+    });
+    expect(lines.answer).toBe('you said: Climb via');
+    expect(lines.correction).toBe('expected: climb via sid');
+  });
+
+  it('shows the expected words where the element is acceptable, and a picked one keeps the shorter reading', () => {
+    const lines = verdictLines(typedAltitude);
+    expect(lines.answer).toBe('you said: Climb via the SID');
+    expect(lines.correction).toBe('expected: climb via sid');
+    expect(verdictLines(redundantExpect).correction).toBe('shorter: no expect altitude');
+  });
+
+  it('shows no second line where the element is correct', () => {
+    const lines = verdictLines({
+      ...typedAltitude,
+      verdict: 'correct',
+      actualLabel: 'Climb via SID',
+      said: [{ text: 'Climb via SID', kind: 'said' }],
+    });
+    expect(lines.correction).toBeUndefined();
   });
 });
 

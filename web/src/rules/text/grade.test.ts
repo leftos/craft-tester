@@ -117,16 +117,32 @@ function misgraded(
   return grades.length === ELEMENTS.length ? lines : [...lines, `${grades.length} grades`];
 }
 
+/** The labels a grade reads where nothing was heard for its element. */
+const NOTHING_HEARD: readonly string[] = ['(not heard)', 'no expect clause'];
+
+/**
+ * The grades whose said runs do not read back as their label: runs that do not join to it, or runs
+ * present where nothing was heard, or missing where something was.
+ */
+function unjoinedSaid(grades: readonly TextGrade[]): string[] {
+  return grades.flatMap((grade) => {
+    const joined = grade.said.map((run) => run.text).join('');
+    const heard = !NOTHING_HEARD.includes(grade.actualLabel);
+    const reads = heard ? joined === grade.actualLabel : grade.said.length === 0;
+    return reads ? [] : [`${grade.element}: said "${joined}", label "${grade.actualLabel}"`];
+  });
+}
+
 /** What grading one fixture's own readings gets wrong. */
 function corpusProblems(fixture: Fixture): string[] {
   const { airport, clearance, spoken } = realReading(fixture);
   const abbreviated = gradeText(spoken.abbreviated, spoken, clearance, airport);
-  const problems = misgraded(abbreviated, {}).map(
+  const problems = [...misgraded(abbreviated, {}), ...unjoinedSaid(abbreviated)].map(
     (line) => `${fixture.id} "${spoken.abbreviated}": ${line}`,
   );
   if (spoken.fullRoute === spoken.abbreviated) return problems;
   const full = gradeText(spoken.fullRoute, spoken, clearance, airport);
-  const fullProblems = misgraded(full, { 'R.route': 'acceptable' });
+  const fullProblems = [...misgraded(full, { 'R.route': 'acceptable' }), ...unjoinedSaid(full)];
   if (!idsOf(gradeOf(full, 'R.route')).includes('R-FULL-ROUTE')) {
     fullProblems.push('R.route does not cite R-FULL-ROUTE');
   }
@@ -252,7 +268,11 @@ describe('gradeText', () => {
     expect(verdictsOf(climbGrades)).toEqual(verdictsWith({ 'A.phrase': 'acceptable' }));
     const altitude = gradeOf(climbGrades, 'A.phrase');
     expect(idsOf(altitude)).toEqual(['OWN-ALTITUDE', 'S-FILLER']);
-    expect(altitude.filler.map(({ start, end }) => climb.slice(start, end))).toEqual(['the']);
+    expect(altitude.said).toEqual([
+      { text: 'Climb via ', kind: 'said' },
+      { text: 'the', kind: 'filler' },
+      { text: ' SID', kind: 'said' },
+    ]);
 
     const frequency = edited(
       readingOf(),
@@ -262,7 +282,9 @@ describe('gradeText', () => {
     const frequencyGrades = graded(frequency);
     expect(verdictsOf(frequencyGrades)).toEqual(verdictsWith({ F: 'acceptable' }));
     expect(
-      gradeOf(frequencyGrades, 'F').filler.map(({ start, end }) => frequency.slice(start, end)),
+      gradeOf(frequencyGrades, 'F')
+        .said.filter((run) => run.kind === 'filler')
+        .map((run) => run.text),
     ).toEqual(['Your', 'will be']);
   });
 
@@ -346,8 +368,30 @@ describe('gradeText', () => {
     const grades = graded(text);
     expect(verdictsOf(grades)).toEqual(verdictsWith({ T: 'wrong' }));
     expect(idsOf(gradeOf(grades, 'T'))).toEqual(['S-ORDER']);
-    expect(gradeOf(grades, 'T').actualLabel).toContain('Squawk');
+    expect(gradeOf(grades, 'T').actualLabel).toBe('Squawk three three four two');
     expect(gradeOf(grades, 'C').verdict).toBe('correct');
+  });
+
+  it('said runs join back to the label', () => {
+    const text = edited(
+      readingOf(),
+      'Climb via SID. Departure frequency one two zero point niner, squawk three three four two.',
+      'Climb via, squawk three three four two, SID. Departure frequency one two zero point niner.',
+    );
+    const grades = graded(text);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ T: 'wrong' }));
+    const altitude = gradeOf(grades, 'A.phrase');
+    expect(altitude.said.some((run) => run.kind === 'break')).toBe(true);
+    expect(altitude.said).toEqual([
+      { text: 'Climb via', kind: 'said' },
+      { text: ' … ', kind: 'break' },
+      { text: 'SID', kind: 'said' },
+    ]);
+    expect(unjoinedSaid(grades)).toEqual([]);
+
+    const noSquawk = graded(edited(readingOf(), ', squawk three three four two', ''));
+    expect(gradeOf(noSquawk, 'T').said).toEqual([]);
+    expect(unjoinedSaid(noSquawk)).toEqual([]);
   });
 
   it('marks a missing required word, a missing element and a wrong value wrong without touching the neighbours', () => {
