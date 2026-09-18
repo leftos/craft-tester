@@ -373,29 +373,35 @@ export function withMode(
  * The input kind changes how the clearance is answered, not which scenario is drawn, so the seed and
  * the scenario stay; only the clearance answer starts again. Where the browser remembers no attempt
  * at this seed in the new input kind, the strip answers carry over, so a student who has answered
- * the strip can switch how they read the clearance. Where it remembers one, the strip starts again
- * too and the earlier attempt is shown back, as it is on any seed that was answered before.
+ * the strip can switch how they read the clearance, and so does the procedure the submitted strip
+ * opened the form on, so switching back to the dropdowns finds it picked again. Where it remembers
+ * one, the strip and every pick start again too and the earlier attempt is shown back, as it is on
+ * any seed that was answered before.
  *
  * @param state The state before the switch.
  * @param input How the student now answers the clearance.
  * @param previous The attempt an earlier answer at this seed and mode submitted in the new input
  *   kind, or `undefined`.
- * @returns The same scenario answered the new way, with an untouched clearance answer.
+ * @returns The same scenario answered the new way, with an untouched clearance answer but for the
+ *   procedure a carried-over strip settled.
  */
 export function withInputKind(
   state: AppState,
   input: InputKind,
   previous: Attempt | undefined,
 ): AppState {
-  const strip =
+  const carried =
     previous === undefined
-      ? { boxes: state.boxes, boxesSubmitted: state.boxesSubmitted }
-      : { boxes: EMPTY_BOXES, boxesSubmitted: false };
+      ? {
+          boxes: state.boxes,
+          boxesSubmitted: state.boxesSubmitted,
+          picks: { ...EMPTY_PICKS, procedure: state.picks.procedure },
+        }
+      : { boxes: EMPTY_BOXES, boxesSubmitted: false, picks: EMPTY_PICKS };
   return {
     ...state,
-    ...strip,
+    ...carried,
     input,
-    picks: EMPTY_PICKS,
     text: '',
     submitted: false,
     revisit: previous,

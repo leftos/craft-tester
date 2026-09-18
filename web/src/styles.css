@@ -95,7 +95,8 @@ select:disabled {
   color: var(--muted);
 }
 
-input[type='text'] {
+input[type='text'],
+textarea {
   padding: 0.3rem 0.4rem;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -104,7 +105,8 @@ input[type='text'] {
   font: inherit;
 }
 
-input[type='text']:disabled {
+input[type='text']:disabled,
+textarea:disabled {
   background: #eceff3;
   color: var(--muted);
 }
@@ -177,6 +179,7 @@ button.primary:disabled {
 
 .panel.amend,
 .panel.craft,
+.panel.typed,
 .panel.results,
 .panel.unresolved {
   grid-column: 1 / -1;
@@ -364,6 +367,23 @@ button.primary:disabled {
 }
 
 .panel.craft button.primary {
+  margin-top: 0.9rem;
+}
+
+/* The typing box takes the panel's full width under its label, however narrow the screen. */
+.panel.typed .field {
+  width: 100%;
+}
+
+.panel.typed textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 4.5em;
+  resize: vertical;
+}
+
+.panel.typed button.primary {
   margin-top: 0.9rem;
 }
 

@@ -18,6 +18,8 @@ import type { ScenarioView } from '@/ui/session.ts';
 import type { AmendmentPicks, AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
 import { phaseOf, toAmendmentAnswer, toBoxAnswers } from '@/ui/state.ts';
 import { renderStrip } from '@/ui/strip.ts';
+import type { TextFormProps } from '@/ui/textForm.ts';
+import { renderTextForm } from '@/ui/textForm.ts';
 
 /** The view an amendment session renders from. */
 type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
@@ -39,6 +41,7 @@ export type AmendmentHandlers = {
   onPick: (key: PickKey, raw: string) => void;
   onRetry: () => void;
   onSubmit: () => void;
+  onText: (text: string) => void;
 };
 
 /**
@@ -140,6 +143,40 @@ function amendingPanels(state: AppState, view: AmendmentView, handlers: Amendmen
   };
 }
 
+/** The answer form of a corrected plan: the node on screen, and how to write a later state into it. */
+type ClearingForm = { node: HTMLElement; sync: (state: AppState) => void };
+
+/**
+ * The form the corrected plan is cleared in: the typing box where the student types the clearance
+ * out, and otherwise the CRAFT dropdowns with the procedure among the picks.
+ */
+function renderClearingForm(
+  state: AppState,
+  view: AmendmentView,
+  handlers: AmendmentHandlers,
+): ClearingForm {
+  if (state.input === 'text') {
+    const typed = (next: AppState): TextFormProps => ({
+      text: next.text,
+      onText: handlers.onText,
+      onSubmit: handlers.onSubmit,
+    });
+    const form = renderTextForm(typed(state));
+    return { node: form.node, sync: (next) => form.sync(typed(next)) };
+  }
+  const picked = (next: AppState): CraftFormProps => ({
+    scenario: view.drawn.result.corrected,
+    airport: next.airport,
+    clearance: view.clearance,
+    picks: next.picks,
+    procedure: 'picked',
+    onPick: handlers.onPick,
+    onSubmit: handlers.onSubmit,
+  });
+  const form = renderCraftForm(picked(state));
+  return { node: form.node, sync: (next) => form.sync(picked(next)) };
+}
+
 /** Both strips with the box verdicts between them, the ATIS, and the form for the corrected plan. */
 function clearingPanels(
   state: AppState,
@@ -148,16 +185,7 @@ function clearingPanels(
   answers: BoxAnswers,
 ): Panels {
   const corrected = view.drawn.result.corrected;
-  const props = (next: AppState): CraftFormProps => ({
-    scenario: corrected,
-    airport: next.airport,
-    clearance: view.clearance,
-    picks: next.picks,
-    procedure: 'picked',
-    onPick: handlers.onPick,
-    onSubmit: handlers.onSubmit,
-  });
-  const form = renderCraftForm(props(state));
+  const form = renderClearingForm(state, view, handlers);
   return {
     nodes: [
       renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan as filed'),
@@ -170,9 +198,7 @@ function clearingPanels(
       renderAtis(corrected, state.airport),
       form.node,
     ],
-    sync: (next) => {
-      form.sync(props(next));
-    },
+    sync: form.sync,
   };
 }
 

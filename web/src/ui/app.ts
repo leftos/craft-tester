@@ -1,4 +1,4 @@
-import type { AirportData, AirportsIndex } from '@/data/schema.ts';
+import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import { grade } from '@/rules/grade.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
@@ -7,6 +7,7 @@ import { gradeText } from '@/rules/text/grade.ts';
 import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import type {
   ConfigFilter,
+  InputKind,
   Mode,
   ScenarioFilter,
   SessionSettings,
@@ -47,12 +48,16 @@ import {
   withBox,
   withBoxesSubmitted,
   withFilter,
+  withInputKind,
   withMode,
   withPick,
   withRetry,
   withSubmitted,
+  withText,
 } from '@/ui/state.ts';
 import { renderStrip } from '@/ui/strip.ts';
+import type { TextFormProps } from '@/ui/textForm.ts';
+import { renderTextForm } from '@/ui/textForm.ts';
 
 /** What the page's controls call back into. */
 type Actions = {
@@ -61,11 +66,14 @@ type Actions = {
   onBoxesSubmit: () => void;
   /** Narrows the draw to what the dropdowns say; a destination forced by the hash does not survive it. */
   onFilter: (filter: ScenarioFilter) => void;
+  /** Answers the scenario on screen the other way, on the same seed, and remembers the choice. */
+  onInput: (input: InputKind) => void;
   onMode: (mode: Mode) => void;
   onNewScenario: () => void;
   onPick: (key: PickKey, raw: string) => void;
   onRetry: () => void;
   onSubmit: () => void;
+  onText: (text: string) => void;
 };
 
 /** The time-of-day choices, in the order the dropdown offers them. */
@@ -79,6 +87,12 @@ const TIME_OPTIONS: readonly (SelectOption & { value: TimeFilter })[] = [
 const MODE_OPTIONS: readonly (SelectOption & { value: Mode })[] = [
   { value: 'clearance', label: 'Clean clearance' },
   { value: 'amendment', label: 'Amend and clear' },
+];
+
+/** The two ways to answer the clearance, in the order the dropdown offers them. */
+const INPUT_OPTIONS: readonly (SelectOption & { value: InputKind })[] = [
+  { value: 'dropdowns', label: 'Dropdowns' },
+  { value: 'text', label: 'Typed' },
 ];
 
 /**
@@ -142,6 +156,23 @@ function modeControl(state: AppState, actions: Actions): HTMLElement {
   );
 }
 
+/** The dropdown that picks how the clearance is answered: picked from dropdowns, or typed out. */
+function inputControl(state: AppState, actions: Actions): HTMLElement {
+  return selectControl(
+    {
+      label: 'answer',
+      options: INPUT_OPTIONS,
+      value: state.input,
+      disabled: false,
+      placeholder: '—',
+    },
+    (raw) => {
+      const input = INPUT_OPTIONS.find((option) => option.value === raw)?.value ?? 'dropdowns';
+      actions.onInput(input);
+    },
+  );
+}
+
 /** The two dropdowns that narrow the draw: the time of day and the runway configuration. */
 function filterControls(state: AppState, actions: Actions): HTMLElement[] {
   return [
@@ -173,7 +204,7 @@ function filterControls(state: AppState, actions: Actions): HTMLElement[] {
   ];
 }
 
-/** The title, the airport picker, the filters, the new-scenario button, and the shareable seed. */
+/** The title, the airport picker, the mode and answer switches, the filters, the new-scenario button, and the shareable seed. */
 function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
   const header = el('header', 'app-header');
   const controls = el('div', 'controls');
@@ -189,6 +220,7 @@ function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): 
       actions.onAirport,
     ),
     modeControl(state, actions),
+    inputControl(state, actions),
     ...filterControls(state, actions),
     button('New scenario', 'primary', actions.onNewScenario),
   );
@@ -271,8 +303,35 @@ function renderPanels(state: AppState, actions: Actions): Panels {
     );
     return { nodes: panels, sync: undefined };
   }
-  const props = (next: AppState): CraftFormProps => ({
-    scenario: generated,
+  const form = renderClearanceForm(state, generated, clearance, actions);
+  panels.push(form.node);
+  return { nodes: panels, sync: form.sync };
+}
+
+/** The answer form of a clean clearance: the node on screen, and how to write a later state into it. */
+type ClearanceForm = { node: HTMLElement; sync: (state: AppState) => void };
+
+/**
+ * The form a clean clearance is answered in: the typing box where the student types it out, and the
+ * CRAFT dropdowns otherwise.
+ */
+function renderClearanceForm(
+  state: AppState,
+  scenario: Scenario,
+  clearance: ResolvedClearance,
+  actions: Actions,
+): ClearanceForm {
+  if (state.input === 'text') {
+    const typed = (next: AppState): TextFormProps => ({
+      text: next.text,
+      onText: actions.onText,
+      onSubmit: actions.onSubmit,
+    });
+    const form = renderTextForm(typed(state));
+    return { node: form.node, sync: (next) => form.sync(typed(next)) };
+  }
+  const picked = (next: AppState): CraftFormProps => ({
+    scenario,
     airport: next.airport,
     clearance,
     picks: next.picks,
@@ -280,14 +339,8 @@ function renderPanels(state: AppState, actions: Actions): Panels {
     onPick: actions.onPick,
     onSubmit: actions.onSubmit,
   });
-  const form = renderCraftForm(props(state));
-  panels.push(form.node);
-  return {
-    nodes: panels,
-    sync: (next) => {
-      form.sync(props(next));
-    },
-  };
+  const form = renderCraftForm(picked(state));
+  return { node: form.node, sync: (next) => form.sync(picked(next)) };
 }
 
 /** The whole page: the node on screen, and how to write a later state of the same panels into it. */
@@ -380,6 +433,11 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       const seed = randomSeed();
       update(withFilter(state, filter, seed, store.load(icao, seed, state.mode, state.input)));
     },
+    onInput: (input) => {
+      stores.input.save(input);
+      const previous = store.load(state.airport.airport.icao, state.seed, state.mode, input);
+      update(withInputKind(state, input, previous));
+    },
     onMode: (mode) => {
       const seed = randomSeed();
       const previous = store.load(state.airport.airport.icao, seed, mode, state.input);
@@ -400,6 +458,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     onSubmit: () => {
       saveAttempt(state, store);
       update(withSubmitted(state));
+    },
+    onText: (text) => {
+      update(withText(state, text));
     },
   };
 

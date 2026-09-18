@@ -700,7 +700,7 @@ describe('withInputKind', () => {
     expect(after.airport).toBe(before.airport);
     expect(after.filter).toBe(before.filter);
     expect(after.mode).toBe('amendment');
-    expect(after.picks).toStrictEqual(EMPTY_PICKS);
+    expect(after.picks).toStrictEqual({ ...EMPTY_PICKS, procedure: 'TRUKN2' });
     expect(after.text).toBe('');
     expect(after.submitted).toBe(false);
   });
@@ -727,6 +727,21 @@ describe('withInputKind', () => {
     expect(after.boxesSubmitted).toBe(true);
     expect(after.revisit).toBeUndefined();
     expect(phaseOf(after)).toBe('clearing');
+  });
+
+  it('keeps the procedure the submitted strip picked where the strip carries over', () => {
+    const typedOver = withInputKind(clearing(), 'text', undefined);
+    const back = withInputKind(typedOver, 'dropdowns', undefined);
+    expect(back.picks).toStrictEqual({ ...EMPTY_PICKS, procedure: 'TRUKN2' });
+  });
+
+  it('clears the procedure pick where a remembered attempt is shown back', () => {
+    const answers = toBoxAnswers(answeredBoxes);
+    if (answers === undefined) throw new Error('the answered strip did not read back');
+    const previous: Attempt = { kind: 'amendment', boxes: answers, input: 'text', text: TYPED };
+    const after = withInputKind(clearing(), 'text', previous);
+    expect(after.picks.procedure).toBeUndefined();
+    expect(after.picks).toStrictEqual(EMPTY_PICKS);
   });
 
   it('starts the strip again and shows a remembered amendment attempt back', () => {
