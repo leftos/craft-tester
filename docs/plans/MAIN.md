@@ -97,6 +97,13 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 
 ## Singles
 
+- [ ] **Cleanup (user 2026-09-17): `selectControl` selects after inserting.** `ui/dom.ts` marks the chosen
+  option `selected` before appending it; happy-dom drops that, so no DOM test can read a dropdown's first
+  render (`app.test.ts` works around it with a "shape" pick). Set `select.value` once the options are in,
+  then drop the workaround
+- [ ] **Cleanup (user 2026-09-17): `clearedPlan` resolves once per answer set.** `onBoxesSubmit` and each
+  phase's panels call it again, so an unresolvable plan warns two or three times; memoise it per view and
+  answers
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
   `cifp/cycle.py`
