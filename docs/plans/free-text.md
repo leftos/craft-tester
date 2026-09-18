@@ -42,6 +42,14 @@ what was said against what was expected.
     variant, and that one a rule about fixes rather than a string swap, **no variants table is built**.
     The variant is a phraseology row the matcher cites. A table can come later if a second string-level
     variant is ruled.
+13. **The input-kind switch sits in the header beside the mode switch and is remembered** (user
+    2026-09-17): switching keeps the seed, new draws keep it (`i=text`), and a fresh visit restores it the
+    way the filters are restored.
+14. **A typed result row shows what was said for that element on every row, and the expected words only
+    where the element is not fully correct** (user 2026-09-17). Filler is marked inside the said line,
+    muted with a dotted underline.
+15. **Enter submits the typing box** (user 2026-09-17): it wraps over several lines, but a clearance is one
+    transmission, so a newline means nothing. The Submit button works too.
 
 ## Design
 
