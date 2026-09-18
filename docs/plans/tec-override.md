@@ -344,3 +344,11 @@ that entry and a library row.
   once P2-B is green.
 - **Fixtures.** Settled KOAK fixtures on `H270 …` rows will read `H270 OSI` rather than `OSI` in their route
   box. The user has ruled on that, so list them for confirmation rather than re-open the question.
+  - P2-A found no such settled fixture, because every KOAK worksheet is SFOW.
+- **Orchestrator decisions from P2-B's gaps (2026-09-18):**
+  - (A) The build's navaid-name check skips a gate entry that is a route-library destination's FAA
+    identifier (`HWD`), as it already skips the departure airport's. That entry is a stand-in and is never
+    spoken.
+  - (B) A filed route of `RV` alone is radar vectors direct with no procedure filed, read the way a tail
+    filed with no SID is. That lets the KHWD SFOW library row file `RV` and the draw compose `OAK6 OAK RV`.
+    `OSI RV` stays malformed in both the engine and the generator grammar.
