@@ -17,18 +17,20 @@ build substitutes the revision the CIFP publishes, so no revision number is ever
 family the destination does not publish stops the build, as does one whose destination publishes no
 arrival at all, and so does a literal revision written for a destination the FAA file carries. The
 literal form survives only for a destination the file does not carry - every foreign one, where
-nothing can be resolved and the identifier stays hand-maintained. Three conditions only warn, because each is ordinary while the data is
-being built up: a SID no assignment rule ever issues, a gate fix no route in the library uses, and a route tail that ends on an arrival
-an LOA row names for other destinations. The last one only warns because it cannot be proved: an arrival may serve several airports, so
+nothing can be resolved and the identifier stays hand-maintained. Two conditions only warn, because each is ordinary while the data is
+being built up: a SID no assignment rule ever issues, and a route tail that ends on an arrival an LOA row names for other destinations.
+A gate fix no route in the library uses is a known coverage gap rather than a warning; :func:`gate_coverage` lists those fixes and
+``craft-gen build --coverage`` prints them. The route-tail one only warns because it cannot be proved: an arrival may serve several airports, so
 what makes one wrong for a destination is not being published there, and the FAA file carries no procedures at all for a foreign
 destination. A Seattle STAR ending a Vancouver route is a smell the build reports rather than an error it can demonstrate.
 
 ``fixSpoken`` is derived, not transcribed: every two- or three-letter token the route library, the
 TEC rows, the gates, the SID transitions, the shared route connections and the checked-in fixtures
 name is looked up in the CIFP
-navaid table and emitted as the name and its facility word, "Red Bluff VOR". A hand ``fix_spoken``
-row still wins, for the names the CIFP spells badly. A navaid the airport data names and neither
-source names is a build failure, because the speaker would otherwise spell it out letter by letter;
+navaid table and emitted as the name and its facility word, "Red Bluff VOR". A navaid the CIFP does
+not carry, decommissioned or foreign, takes its name from the shared ``navaid_names.yaml`` table, and
+a hand ``fix_spoken`` row wins over both, for the names the CIFP spells badly. A navaid the airport
+data names and no source names is a build failure, because the speaker would otherwise spell it out letter by letter;
 one only a worksheet fixture names is a warning, as those routes are transcribed from the sheets
 rather than curated. Transitions are the exception that keeps their published name: ``spoken`` on a
 transition is the bare navaid name, "Mendocino", because a controller says "Mendocino transition"
@@ -1054,7 +1056,8 @@ def _rnav_waypoints(document: Document, inputs: BuildInputs) -> list[str]:
 def _fix_spoken(document: Document, inputs: BuildInputs) -> dict[str, str]:
     tokens = set(_document_navaid_tokens(document)) | _fixture_navaid_tokens(document, inputs)
     named = {token: inputs.navaids[token].spoken for token in sorted(tokens) if token in inputs.navaids}
-    return {**named, **inputs.airport.overrides.fix_spoken}
+    shared = {row.id: row.spoken for row in inputs.airport.navaid_names if row.id in tokens}
+    return {**named, **shared, **inputs.airport.overrides.fix_spoken}
 
 
 def _check_fix_spoken(document: Document) -> None:
@@ -1062,7 +1065,10 @@ def _check_fix_spoken(document: Document) -> None:
     missing = sorted((token, where) for token, where in _document_navaid_tokens(document).items() if token not in spoken)
     if missing:
         listed = "; ".join(f"{token} (from {where})" for token, where in missing)
-        raise ValueError(f"fixSpoken: navaid {listed} has no name in the CIFP and no fix_spoken override; add one to overrides.yaml")
+        raise ValueError(
+            f"fixSpoken: navaid {listed} has no name in the CIFP and no fix_spoken override; add one to generator/shared/navaid_names.yaml "
+            "for a navaid the CIFP does not carry (decommissioned or foreign), or to overrides.yaml fix_spoken to correct a CIFP spelling"
+        )
 
 
 def _check_common_arrivals(document: Document) -> None:
@@ -1139,15 +1145,27 @@ def _warn_route_arrivals(document: Document) -> None:
             )
 
 
+def gate_coverage(document: Document) -> list[str]:
+    """Return the gate fixes no route of the route library leaves the DP at.
+
+    A gate fix with no route is an ordinary gap while the library is being built up, so the build
+    reports it on request rather than warning about it.
+
+    Args:
+        document: The airport document :func:`build_airport` produced.
+
+    Returns:
+        The gate fixes of every direction that no ``routeLibrary`` route names as its exit fix, sorted.
+    """
+    used = {route["exitFix"] for route in _routes(document)}
+    return sorted(fix for fix in _gate_directions(document) if fix not in used)
+
+
 def _warn(document: Document, inputs: BuildInputs) -> None:
     assigned = {rule["sidFamily"] for rule in document["assignmentRules"]}
     unassigned = sorted(sid["id"] for sid in document["sids"] if sid["family"] not in assigned)
     for sid_id in unassigned:
         print(f"warning: {sid_id} is issued by no assignment rule; the engine can never select it", file=sys.stderr)
-    used = {route["exitFix"] for route in _routes(document)}
-    unused = sorted(fix for fix in _gate_directions(document) if fix not in used)
-    if unused:
-        print(f"warning: {len(unused)} gate fix(es) no route in routeLibrary leaves the DP at: {unused}", file=sys.stderr)
     unnamed = sorted(token for token in _fixture_navaid_tokens(document, inputs) if token not in document["fixSpoken"])
     if unnamed:
         print(f"warning: {len(unnamed)} navaid(s) on worksheet routes have no spoken name: {', '.join(unnamed)}", file=sys.stderr)

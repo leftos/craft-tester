@@ -69,6 +69,7 @@ from craft_generator.sop.model import (
     LoaRule,
     LoaRuleKind,
     LoaRuleKindName,
+    NavaidName,
     NoiseWindow,
     NonDpHeading,
     NoSid,
@@ -108,6 +109,7 @@ PHRASEOLOGY_RULES_FILE = "phraseology_rules.yaml"
 LOA_RULES_FILE = "loa_rules.yaml"
 ROUTE_CONNECTIONS_FILE = "route_connections.yaml"
 AIRWAYS_FILE = "airways.yaml"
+NAVAID_NAMES_FILE = "navaid_names.yaml"
 COMMON_ARRIVALS_FILE = "common_arrivals.yaml"
 AIRCRAFT_CHARACTERISTICS_FILE = "faa_aircraft_characteristics.yaml"
 NCT_BOUNDARY_FILE = "nct_boundary.yaml"
@@ -126,6 +128,7 @@ _AIRLINE_CODE_PATTERN = re.compile(r"^[A-Z]{3}$")
 _AIRPORT_ICAO_PATTERN = re.compile(r"^[A-Z]{4}$")
 _ROUTE_TOKEN_PATTERN = re.compile(r"^[A-Z0-9]{2,5}$")
 _AIRWAY_ID_PATTERN = re.compile(r"^[A-Z]{1,2}\d{1,3}$")
+_NAVAID_ID_PATTERN = re.compile(r"^[A-Z]{2,3}$")
 _PROCEDURE_FAMILY_PATTERN = re.compile(r"^[A-Z]{3,5}$")
 _DESTINATION_CODE_PATTERN = re.compile(r"^[A-Z0-9]{4}$")
 
@@ -1036,19 +1039,20 @@ def load_aircraft_types(path: Path) -> dict[str, AircraftType]:
 
 
 def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
-    """Load the destination, airline and aircraft-type tables, the LOA rows, airways and common arrivals every airport shares.
+    """Load the destination, airline and aircraft-type tables, the LOA rows, airways, common arrivals and navaid names every airport shares.
 
     Args:
         shared: The ``generator/shared`` directory, i.e. :func:`shared_dir`.
 
     Returns:
         The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into, the
-        inter-ARTCC LOA rows every airport inherits, the airways whose direction is fixed, and the
-        arrivals ZOA puts a flight to the Los Angeles basin on.
+        inter-ARTCC LOA rows every airport inherits, the airways whose direction is fixed, the
+        arrivals ZOA puts a flight to the Los Angeles basin on, and the spoken names of the navaids
+        the CIFP does not carry.
 
     Raises:
-        ValueError: One of the six files fails its own checks.
-        OSError: One of the six files is missing.
+        ValueError: One of the seven files fails its own checks.
+        OSError: One of the seven files is missing.
     """
     return SharedRouteFacts(
         destinations=load_shared_destinations(shared / DESTINATIONS_FILE),
@@ -1057,6 +1061,7 @@ def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
         loa=load_shared_loa_rules(shared / LOA_RULES_FILE),
         airways=load_airways(shared / AIRWAYS_FILE),
         common_arrivals=load_common_arrivals(shared / COMMON_ARRIVALS_FILE),
+        navaid_names=load_navaid_names(shared / NAVAID_NAMES_FILE),
     )
 
 
@@ -1312,6 +1317,56 @@ def load_airways(path: Path) -> tuple[Airway, ...]:
     root.finish()
     _check_airways(airways, where)
     return airways
+
+
+def _navaid_name(row: _Row) -> NavaidName:
+    identifier = row.text("id")
+    if _NAVAID_ID_PATTERN.fullmatch(identifier) is None:
+        raise ValueError(f"{row.where}.id: {identifier!r} is not a navaid identifier of two or three upper-case letters, e.g. ECA, SMA or OAK")
+    name = NavaidName(id=identifier, spoken=row.text("spoken"), note=row.text("note"))
+    row.finish()
+    return name
+
+
+def _check_navaid_names(names: Sequence[NavaidName], where: str) -> None:
+    seen: set[str] = set()
+    for name in names:
+        if name.id in seen:
+            raise ValueError(
+                f"{where} navaid_names[{name.id}]: the identifier is already stated by an earlier row of this file; "
+                "the build reads a navaid name by its identifier, so a file states each one once"
+            )
+        seen.add(name.id)
+
+
+def load_navaid_names(path: Path) -> tuple[NavaidName, ...]:
+    """Load the spoken names every airport shares for the navaids the CIFP does not carry.
+
+    The ``source`` block is checked for shape - it records where the names were read from and when -
+    and the ``navaid_names`` rows are what the build names those navaids by in ``fixSpoken``. Nothing
+    cites a row, so the source stays in the file rather than reaching the airport document.
+
+    Args:
+        path: Path to ``generator/shared/navaid_names.yaml``.
+
+    Returns:
+        One row per navaid, in file order.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, holds an ``id`` that is
+            no navaid identifier, or states one identifier twice.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    source = root.child("source")
+    source.text("title")
+    source.day("dated")
+    source.finish()
+    names = tuple(_navaid_name(child) for child in root.children("navaid_names"))
+    root.finish()
+    _check_navaid_names(names, where)
+    return names
 
 
 def _class_words(classes: Sequence[AircraftClass] | None) -> str:
@@ -1788,8 +1843,8 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
         shared: The destination, airline and aircraft-type tables ``routes.yaml`` lists codes into,
-            the inherited LOA rows, the shared airways and the shared common arrivals, from
-            :func:`load_shared_route_facts`.
+            the inherited LOA rows, the shared airways, the shared common arrivals and the shared
+            navaid names, from :func:`load_shared_route_facts`.
 
     Returns:
         The loaded and cross-checked inputs.
@@ -1819,4 +1874,5 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         loa=_joined_loa(directory, shared, sop.airport.icao),
         airways=shared.airways,
         common_arrivals=shared.common_arrivals,
+        navaid_names=shared.navaid_names,
     )

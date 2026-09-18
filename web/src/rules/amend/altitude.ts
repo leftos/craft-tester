@@ -28,20 +28,24 @@ type Constraint = {
 /** Feet below which the direction-of-flight rule is not read; see `parityConstraint`. */
 const PARITY_FLOOR_FEET = 3000;
 
-/** The highest altitude on the 1,000-ft series; above it the 4,000-ft series takes over. */
-const PARITY_SERIES_TOP_FEET = 41000;
+/**
+ * The top of the 1,000-ft series of FAA JO 7110.65 TBL 4-5-1: at and below FL410 the table assigns
+ * cardinal thousands, and above it the 4,000-ft series or, on a one-way route, odd levels.
+ */
+const SERIES_TOP_FEET = 41000;
 
-/** The lowest odd and even altitudes of the 4,000-ft series flown above `PARITY_SERIES_TOP_FEET`. */
+/** The lowest odd and even altitudes of the 4,000-ft series flown above `SERIES_TOP_FEET`. */
 const HIGH_SERIES_BASE_FEET: Record<Parity, number> = { odd: 45000, even: 43000 };
 
 const HIGH_SERIES_STEP_FEET = 4000;
 
-/** The highest altitude a one-way route takes on the 1,000-ft series; above it only odd levels. */
-const ONE_WAY_SERIES_TOP_FEET = 41000;
-
-/** The RVSM band, inclusive: an aircraft with no RVSM approval is not assigned an altitude in it. */
-const RVSM_FLOOR_FEET = 29000;
-const RVSM_CEILING_FEET = 41000;
+/**
+ * The RVSM band, inclusive: an aircraft with no RVSM approval is not assigned an altitude in it.
+ * The band is its own rule (14 CFR 91.180, AIM 4-6-1), whose ceiling only happens to share FL410
+ * with `SERIES_TOP_FEET`.
+ */
+export const RVSM_FLOOR_FEET = 29000;
+export const RVSM_CEILING_FEET = 41000;
 
 /** The steps a proposal walks down in, and the altitude it gives up at. */
 const STEP_FEET = 1000;
@@ -95,7 +99,7 @@ function parityFor(course: number, override: ParityOverride | undefined): Parity
  */
 function isOnSeries(feet: number, parity: Parity): boolean {
   if (feet < PARITY_FLOOR_FEET) return true;
-  if (feet <= PARITY_SERIES_TOP_FEET) {
+  if (feet <= SERIES_TOP_FEET) {
     return feet % (2 * STEP_FEET) === (parity === 'odd' ? STEP_FEET : 0);
   }
   const base = HIGH_SERIES_BASE_FEET[parity];
@@ -148,7 +152,7 @@ export function onOneWayAirway(scenario: Scenario, airport: AirportData): boolea
 /**
  * The one-way route constraint, read in place of the direction-of-flight parity.
  *
- * A one-way route takes any course at any whole thousand up to `ONE_WAY_SERIES_TOP_FEET`, and
+ * A one-way route takes any course at any whole thousand up to `SERIES_TOP_FEET`, and
  * above it only the odd flight levels.
  *
  * @param scenario The filed flight plan.
@@ -159,9 +163,7 @@ function oneWayConstraint(scenario: Scenario, airport: AirportData): Constraint 
   const filed = formatAltitude(scenario.filedAltitude);
   return {
     legal: (feet) =>
-      feet <= ONE_WAY_SERIES_TOP_FEET
-        ? feet % STEP_FEET === 0
-        : feet % (2 * STEP_FEET) === STEP_FEET,
+      feet <= SERIES_TOP_FEET ? feet % STEP_FEET === 0 : feet % (2 * STEP_FEET) === STEP_FEET,
     reason: `filed ${filed} on a one-way airway above FL410 needs an odd flight level`,
     citations: citePhraseology(airport, 'A-ONE-WAY-AIRWAY'),
   };

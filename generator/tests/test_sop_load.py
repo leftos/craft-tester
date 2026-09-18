@@ -14,6 +14,7 @@ from craft_generator.sop.load import (
     COMMON_ARRIVALS_FILE,
     DESTINATIONS_FILE,
     LOA_RULES_FILE,
+    NAVAID_NAMES_FILE,
     OVERRIDES_FILE,
     PHRASEOLOGY_RULES_FILE,
     ROUTE_CONNECTIONS_FILE,
@@ -22,6 +23,7 @@ from craft_generator.sop.load import (
     load_airport,
     load_airways,
     load_common_arrivals,
+    load_navaid_names,
     load_overrides,
     load_phraseology_rules,
     load_route_connections,
@@ -109,6 +111,7 @@ SHARED_FILES = (
     ("loa_rules", LOA_RULES_FILE),
     ("airways", AIRWAYS_FILE),
     ("common_arrivals", COMMON_ARRIVALS_FILE),
+    ("navaid_names", NAVAID_NAMES_FILE),
 )
 
 
@@ -321,6 +324,33 @@ def test_an_airway_with_a_bad_identifier_is_rejected(tmp_path: Path) -> None:
 
 def test_the_shared_airways_reach_every_airport(ksfo_inputs: AirportInputs) -> None:
     assert [airway.id for airway in ksfo_inputs.airways] == ["R463", "R464", "A220"]
+
+
+def test_the_shared_navaid_names_load() -> None:
+    names = load_navaid_names(shared_dir() / NAVAID_NAMES_FILE)
+    assert [(row.id, row.spoken) for row in names] == [("ECA", "Manteca VOR"), ("SMA", "Saint Mary's NDB"), ("KAE", "Gangwon VOR")]
+    assert "decommissioned" in names[0].note
+
+
+def test_a_navaid_name_stated_twice_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / NAVAID_NAMES_FILE
+    path.write_text(
+        "source: { title: the charts, dated: 2026-09-17 }\nnavaid_names:\n"
+        "  - { id: ECA, spoken: Manteca VOR, note: first }\n  - { id: ECA, spoken: Stockton VOR, note: second }\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"navaid_names\[ECA\]: the identifier is already stated by an earlier row"):
+        load_navaid_names(path)
+
+
+def test_a_navaid_name_with_a_bad_identifier_is_rejected(tmp_path: Path) -> None:
+    path = tmp_path / NAVAID_NAMES_FILE
+    path.write_text(
+        'source: { title: the charts, dated: 2026-09-17 }\nnavaid_names:\n  - { id: BEBOP, spoken: Bebop, note: "a fix, not a navaid" }\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"navaid_names\[BEBOP\]\.id: 'BEBOP' is not a navaid identifier"):
+        load_navaid_names(path)
 
 
 def test_the_shared_common_arrivals_load() -> None:

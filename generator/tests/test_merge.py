@@ -4,7 +4,7 @@ from typing import Any
 import pytest
 
 from craft_generator.emit import data_path, dump, schema_path, validate
-from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport
+from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport, gate_coverage
 from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule
 
 SID_COUNT = 12
@@ -594,9 +594,46 @@ def test_a_navaid_the_cifp_does_not_name_fails_the_build(ksfo_build_inputs: Buil
         build_airport(replace(ksfo_build_inputs, navaids=navaids))
 
 
+def test_an_unnamed_navaid_names_both_places_to_add_it(ksfo_build_inputs: BuildInputs) -> None:
+    navaids = {ident: navaid for ident, navaid in ksfo_build_inputs.navaids.items() if ident != "OAK"}
+    with pytest.raises(ValueError) as excinfo:
+        build_airport(replace(ksfo_build_inputs, navaids=navaids))
+    message = str(excinfo.value)
+    assert "generator/shared/navaid_names.yaml" in message
+    assert "overrides.yaml fix_spoken" in message
+
+
 def test_a_navaid_only_a_fixture_names_warns_instead_of_failing(ksfo_build_inputs: BuildInputs, capsys: pytest.CaptureFixture[str]) -> None:
     build_airport(replace(ksfo_build_inputs, fixture_routes=("TRUKN2 DEDHD RBL ZZQ HAWKZ7",)))
     assert "navaid(s) on worksheet routes have no spoken name: ZZQ" in capsys.readouterr().err
+
+
+def test_gate_coverage_lists_the_gates_no_route_leaves_at() -> None:
+    document: Document = {
+        "gates": {"north": ["SYRAH", "DEDHD"], "south": ["WAGES"], "east": ["SAC", "LIN"]},
+        "routeLibrary": {"routes": [{"exitFix": "DEDHD", "destination": "KSEA"}, {"exitFix": "LIN", "destination": "KDEN"}]},
+    }
+    assert gate_coverage(document) == ["SAC", "SYRAH", "WAGES"]
+    document["routeLibrary"]["routes"] += [{"exitFix": fix, "destination": "KLAX"} for fix in ("SAC", "SYRAH", "WAGES")]
+    assert gate_coverage(document) == []
+
+
+def test_a_worksheet_navaid_takes_its_name_from_the_shared_table(ksfo_document: Document) -> None:
+    assert ksfo_document["fixSpoken"]["SMA"] == "Saint Mary's NDB"
+
+
+def test_an_airport_override_beats_the_shared_name(ksfo_build_inputs: BuildInputs) -> None:
+    overrides = replace(ksfo_build_inputs.airport.overrides, fix_spoken={"SMA": "Saint Marys"})
+    document = build_airport(replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, overrides=overrides)))
+    assert document["fixSpoken"]["SMA"] == "Saint Marys"
+    assert document["fixSpoken"]["KAE"] == "Gangwon VOR"
+
+
+def test_a_shared_name_no_route_files_is_not_emitted(ksfo_build_inputs: BuildInputs) -> None:
+    routes = tuple(route for route in ksfo_build_inputs.fixture_routes if "KAE" not in route.split())
+    assert len(routes) < len(ksfo_build_inputs.fixture_routes)
+    document = build_airport(replace(ksfo_build_inputs, fixture_routes=routes))
+    assert "KAE" not in document["fixSpoken"]
 
 
 def test_an_rnav_waypoint_the_data_files_is_listed(ksfo_document: Document) -> None:

@@ -593,6 +593,19 @@ class Airway:
 
 
 @dataclass(frozen=True, slots=True)
+class NavaidName:
+    """One row of ``shared/navaid_names.yaml``: the spoken name of a navaid the CIFP does not carry.
+
+    The build reads it after the CIFP name and before the airport's own ``fix_spoken`` row, for a
+    decommissioned US facility or a foreign one that a checked-in route still files.
+    """
+
+    id: str
+    spoken: str
+    note: str
+
+
+@dataclass(frozen=True, slots=True)
 class CommonArrival:
     """One cell of the ZOA "Common ZLA Arrivals from ZOA" sheet: which arrival a destination is given.
 
@@ -623,8 +636,9 @@ class SharedRouteFacts:
     They live in ``generator/shared/`` and an airport's ``routes.yaml`` lists only codes into them, so
     no fact is copied between airports. ``loa`` is ``shared/loa_rules.yaml``, the inter-ARTCC rows
     every airport inherits, ``airways`` is ``shared/airways.yaml``, the airways whose direction
-    the route structure fixes, and ``common_arrivals`` is ``shared/common_arrivals.yaml``, the
-    arrivals ZOA puts a flight to the Los Angeles basin on.
+    the route structure fixes, ``common_arrivals`` is ``shared/common_arrivals.yaml``, the
+    arrivals ZOA puts a flight to the Los Angeles basin on, and ``navaid_names`` is
+    ``shared/navaid_names.yaml``, the spoken names of the navaids the CIFP does not carry.
     """
 
     destinations: dict[str, Destination]
@@ -633,6 +647,7 @@ class SharedRouteFacts:
     loa: LoaData
     airways: tuple[Airway, ...]
     common_arrivals: tuple[CommonArrival, ...]
+    navaid_names: tuple[NavaidName, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -694,7 +709,8 @@ class AirportInputs:
     directory carries no file of its own. ``airways`` is the shared ``airways.yaml`` table every
     airport inherits unchanged, and ``common_arrivals`` the shared ``common_arrivals.yaml`` table it
     inherits the same way; both are carried here so the document emits them for the airport being
-    built.
+    built. ``navaid_names`` is the shared ``navaid_names.yaml`` table, inherited the same way, from
+    which the document takes the names of the navaids this airport's data or fixtures file.
     """
 
     icao: str
@@ -705,3 +721,4 @@ class AirportInputs:
     loa: LoaData
     airways: tuple[Airway, ...]
     common_arrivals: tuple[CommonArrival, ...]
+    navaid_names: tuple[NavaidName, ...]

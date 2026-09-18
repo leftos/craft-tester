@@ -40,6 +40,11 @@ def test_build_accepts_its_own_flags() -> None:
     assert (args.airport, args.cycle, args.offline, args.check) == ("KSFO", "2609", True, True)
 
 
+def test_build_accepts_coverage() -> None:
+    assert build_parser().parse_args(["build", "--airport", "ksfo", "--coverage"]).coverage is True
+    assert build_parser().parse_args(["build", "--airport", "ksfo"]).coverage is False
+
+
 def test_a_skipped_plan_is_named_under_its_sheet(capsys: pytest.CaptureFixture[str]) -> None:
     _print_sheet_summary("Amendment Practice 1A", [], (SkippedPlan(callsign="AAY218", destination="KPGI"),))
     lines = capsys.readouterr().out.splitlines()

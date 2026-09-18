@@ -188,8 +188,10 @@ One entry per chart name the charts API returns; the build lists the names it is
 transitions and fixtures name out of the CIFP navaid records and speaks it as its name plus its facility
 word ("Red Bluff VOR"), and pronounceable five-letter fixes are read as words, so an entry is needed only
 where the CIFP spells a name badly (`MCK: McCook VOR`, because the file writes `MC COOK`). A row is
-emitted exactly as written and wins over the CIFP. A navaid the airport data names that neither the CIFP
-nor this table names fails the build; one only a worksheet fixture names is a warning.
+emitted exactly as written and wins over the CIFP. A navaid the CIFP does not carry at all, decommissioned
+or foreign (ECA, Manteca VOR), is not an airport fact: name it once in `generator/shared/navaid_names.yaml`,
+which every airport inherits and this table overrides. A navaid the airport data names that no source
+names fails the build; one only a worksheet fixture names is a warning.
 
 ## 4. `routes.yaml`: the scenario library
 
@@ -237,8 +239,9 @@ or comment the row out where a cycle dropped the procedure.
   file `A32N`, which is `A20N` in vNAS, and that alias is still an open item.
 - **`routes`**: keyed by `exit_fix` (where the aircraft leaves the SID), with the `tail` from that fix,
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.
-  Aim for at least one route per gate fix; the build warns on gate fixes no route reaches, and those fixes
-  never appear in a scenario. KSFO shipped with 40 such warnings.
+  Aim for at least one route per gate fix: a fix no route reaches never appears in a scenario.
+  `craft-gen build --coverage` lists them (39 at KSFO and 42 at KOAK on 2026-09-17); it is a report, not
+  a warning, because the gap is ordinary while the library grows.
   A row is drawn only where it is the correctly-filed plan: the scenario generator runs the amendment
   engine over every draw and redraws one that would take any amendment, so a row that is wrong in some
   configuration, class or suffix is simply not drawn there. For a destination inside the TRACON that
@@ -287,12 +290,15 @@ scenario files to; add the field to the shared table first.
 ```sh
 uv run craft-gen build --airport <ICAO>            # writes data/<icao>.json
 uv run craft-gen build --airport <ICAO> --check    # must print "unchanged"
+uv run craft-gen build --airport <ICAO> --coverage # lists the gate fixes no library route reaches
 ```
 
 Integrity failures stop the build with the offending id and the fix. Work through them in order:
 missing override entries, DP families no procedure has, exit fixes in no gate, runways CIFP does not list,
 fleet types vNAS cannot class, destinations CIFP cannot place, TEC rows on an unpublished DP. Warnings
-(SIDs no rule issues, gate fixes no route reaches) are allowed but list them in the plan.
+(SIDs no rule issues, worksheet navaids with no spoken name, route tails on an arrival an LOA names for other
+destinations) are allowed but list them in the plan; the gate fixes no route reaches are the `--coverage`
+report, not a warning.
 
 Then:
 

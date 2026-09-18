@@ -313,24 +313,11 @@ describe('resolveClearance on the generated KSFO data', () => {
     ]);
   });
 
-  const truknBaseFix = ksfo.sids.find((sid) => sid.id === 'TRUKN2')?.baseFix;
-
-  it.skipIf(truknBaseFix === undefined)(
-    'names the base fix and says "then as filed" when the flight leaves on it',
-    () => {
-      const clearance = clearanceFor(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }));
-      expect(assigned(clearance).id).toBe('TRUKN2');
-      expect(clearance.route.value).toEqual({ template: 'as_filed', fix: 'TRUKN' });
-    },
-  );
-
-  it.skipIf(truknBaseFix !== undefined)(
-    'cannot place a flight on a SID base fix while the data has no base fix',
-    () => {
-      const result = resolveClearance(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }), ksfo);
-      expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
-    },
-  );
+  it('names the base fix and says "then as filed" when the flight leaves on it', () => {
+    const clearance = clearanceFor(scenario({ filedRoute: 'TRUKN2 TRUKN CCR CCR2' }));
+    expect(assigned(clearance).id).toBe('TRUKN2');
+    expect(clearance.route.value).toEqual({ template: 'as_filed', fix: 'TRUKN' });
+  });
 
   it('vectors a flight that joins an airway onto a radar-vector SID', () => {
     const clearance = clearanceFor(
