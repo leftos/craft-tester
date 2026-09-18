@@ -1,4 +1,5 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
+import { onOneWayAirway } from '@/rules/amend/altitude.ts';
 import { withVectorNavaid } from '@/rules/amend/route.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
@@ -181,16 +182,20 @@ type RouteRule = { airport: AirportData; expected: string; filed: string };
 
 /**
  * What the three boxes are graded against: which of them the student fixed, what the engine raised
- * for each, and the route rule.
+ * for each, the route rule, and whether the filed route runs on a one-way airway.
  */
 type GradeContext = {
   fixed: Record<Box, boolean>;
   amendments: Partial<Record<Box, ResolvedAmendment>>;
   route: RouteRule;
+  oneWayRoute: boolean;
 };
 
 /** The phraseology row that says the navaid after a vector SID is filed rather than spoken. */
 const VECTOR_NAVAID_ROW = 'R-RV-NAVAID';
+
+/** The phraseology row that says why a one-way route is not read against the parity. */
+const ONE_WAY_AIRWAY_ROW = 'A-ONE-WAY-AIRWAY';
 
 /** Whether two route boxes name the same route, the navaid a vector SID is filed with aside. */
 function sameRouteButNavaid(left: string, right: string, airport: AirportData): boolean {
@@ -231,6 +236,29 @@ function navaidAcceptable(
 function withNavaidRow(citations: readonly RuleCitation[], airport: AirportData): RuleCitation[] {
   const cited = new Set(citations.map((citation) => citation.id));
   const row = citePhraseology(airport, VECTOR_NAVAID_ROW).filter(
+    (citation) => !cited.has(citation.id),
+  );
+  return [...citations, ...row];
+}
+
+/**
+ * The rows a box cites from its amendment, with the one-way airway row on the altitude box of a
+ * flight whose filed route runs on a one-way airway: whether the level stood as filed or was
+ * amended, that row is why the parity was not read against it.
+ *
+ * @param box The box being graded.
+ * @param citations The rows the box's amendment cites, empty where the engine raised none.
+ * @param ctx What the boxes are graded against, which says whether the route is one-way.
+ * @returns The citations, the one-way row appended where the amendment does not already cite it.
+ */
+function withOneWayRow(
+  box: Box,
+  citations: readonly RuleCitation[],
+  ctx: GradeContext,
+): RuleCitation[] {
+  if (box !== 'altitude' || !ctx.oneWayRoute) return [...citations];
+  const cited = new Set(citations.map((citation) => citation.id));
+  const row = citePhraseology(ctx.route.airport, ONE_WAY_AIRWAY_ROW).filter(
     (citation) => !cited.has(citation.id),
   );
   return [...citations, ...row];
@@ -302,7 +330,7 @@ function gradeBox(
   const missed = base.verdict === 'wrong';
   const acceptable = missed && navaidAcceptable(box, answer, amendment, ctx.route);
   const half = missed && arrivalHalf(box, answer, amendment, ctx.route);
-  const citations = amendment?.citations ?? [];
+  const citations = withOneWayRow(box, amendment?.citations ?? [], ctx);
   return {
     box,
     verdict: routeTier(base.verdict, acceptable, half),
@@ -321,12 +349,15 @@ function gradeBox(
  * reads it rather than character by character. The type box and the boxes paired with it are two
  * ways to fix one fault, and either side alone is right. A route box that names the same route as the
  * corrected plan, the navaid a radar-vector SID is filed with aside, is acceptable either way, and
- * one that reads the proposal but for the arrival it swaps earns half credit.
+ * one that reads the proposal but for the arrival it swaps earns half credit. The altitude box of a
+ * flight filed on a one-way airway cites the one-way airway row, whatever its verdict.
  *
  * @param answers What the student answered for every box.
  * @param result The amendments the engine resolved for the same plan.
- * @param scenario The plan as filed, whose route box is what a student who amended nothing wrote.
- * @param airport The airport data, whose vector SIDs and own navaid decide the route box.
+ * @param scenario The plan as filed, whose route box is what a student who amended nothing wrote and
+ *   whose route says whether the flight is on a one-way airway.
+ * @param airport The airport data, whose vector SIDs and own navaid decide the route box and whose
+ *   airways say which of them are one-way.
  * @returns One verdict per box, in strip order: type, altitude, route.
  */
 export function gradeBoxes(
@@ -342,7 +373,12 @@ export function gradeBoxes(
     expected: result.corrected.filedRoute,
     filed: scenario.filedRoute,
   };
-  const ctx: GradeContext = { fixed, amendments, route };
+  const ctx: GradeContext = {
+    fixed,
+    amendments,
+    route,
+    oneWayRoute: onOneWayAirway(scenario, airport),
+  };
   return STRIP_ORDER.map((box) => gradeBox(box, answers[box], amendments[box], ctx));
 }
 

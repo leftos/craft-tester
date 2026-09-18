@@ -204,6 +204,16 @@ describe('checkAltitude on a one-way airway', () => {
     };
     expect(amendment(FDX3875, twoWay).proposedFeet).toBe(30000);
   });
+
+  it('steps an even flight level above FL410 on a one-way airway down to FL410', () => {
+    const flight: Scenario = { ...FDX3875, filedAltitude: 42000 };
+    expect(amendment(flight, koak).proposedFeet).toBe(41000);
+    expect(citations(flight, koak)).toEqual(['A-ONE-WAY-AIRWAY']);
+  });
+
+  it('leaves an odd flight level above FL410 on a one-way airway alone', () => {
+    expect(check({ ...FDX3875, filedAltitude: 43000 }, koak)).toBeUndefined();
+  });
 });
 
 describe('checkAltitude unresolved', () => {

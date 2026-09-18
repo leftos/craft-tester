@@ -110,8 +110,10 @@ draws are up to two faults with a fifth of them clean.
   issues.
 - **The proposed altitude is the highest legal altitude at or below the filed one** — legal meaning it
   satisfies parity (91.179 or the LOA rotation), the RVSM band for a non-RVSM suffix and the TEC cap at
-  once. A controller does not apply an aircraft's service ceiling, and a one-way oceanic airway is exempt
-  from parity.
+  once. A controller does not apply an aircraft's service ceiling. A one-way airway is read against the
+  one-way rule in place of parity (any whole thousand at or below FL410, only odd flight levels above
+  it), and its altitude box cites `A-ONE-WAY-AIRWAY` whatever the verdict, so the reveal says why a
+  level stood.
 - **The route rule is one rule**: the assigned SID plus the filed tail, or the TEC route where one is
   obligatory, after `routeBuild.ts` has tried to connect the SOP's SID to the filed route.
 - **Answers are normalised before comparison**: uppercased, whitespace collapsed, the route compared as
