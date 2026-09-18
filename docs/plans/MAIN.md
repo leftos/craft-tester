@@ -21,19 +21,14 @@ I notice or that users find as they come up" — and queued free-text entry next
 
 ## Wave 1 — Input model and free text (`web/src/ui/app.ts`, then a new input surface)
 
-Queued next by the user 2026-09-17. Gate: UI.
+Queued next by the user 2026-09-17. Gate: UI. Subplan: [free-text.md](./free-text.md).
 
-- [ ] **v2: free-text clearance entry** as an **alternative to** the dropdowns (user 2026-09-17: "the
-  dropdowns stay and the student chooses"), so students practise without dropdown hints. The student types
-  (or dictates) the full spoken clearance; the grader normalises both sides (digits ↔ number words,
-  "flight level three two zero" ↔ "FL320", punctuation, optional words such as "airport") and aligns the
-  text against the CRAFT elements of `speakClearance` so each element is still graded green/red with its
-  citation, plus a per-element diff showing what was said versus expected. Needs a tolerant matcher
-  (per-element regex or token alignment), a decision on how strict wording is (accept "climb via the SID"?
-  "then as filed" vs "direct"?), and the same seed/URL sharing as v1. Plan as a subplan before starting
-  - [ ] **User decision owed before the matcher is written:** the acceptable-but-inefficient verdict is
-    where two spoken-only readings belong once text is graded — "then as filed" after a bare exit fix, and
-    a full route spelled out where the abbreviated form would do. Are they acceptable or wrong?
+- [ ] **v2: free-text clearance entry** as an **alternative to** the dropdowns: the student types the
+  full spoken clearance, and each CRAFT element is graded with its citation and a said-against-expected
+  diff. Interviewed 2026-09-17. The owed ruling is answered: both spoken-only readings are acceptable.
+  The rest is ruled too: values plus listed variants, filler acceptable, out of order wrong, C and T
+  graded, amendment mode included. The decisions and six steps are in the subplan. Step 1 (structured
+  reading) was dispatched 2026-09-17
 
 ## Wave 2 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
 
@@ -157,6 +152,9 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
   (`onRequestRunway` keys on class and flight kind only), so seed `f` puts a heavy UPS A306 filing
   `TRUKN CCR CCR2` on 28L in 28/01 with the remark `REQ RWY 28`, and the engine issues GAPP7 radar vectors
   TRUKN at 3,000 because TRUKN is no SNTNA2 transition
+- [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
+  feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
+  ([free-text.md](./free-text.md) decision 9)
 - [ ] **The read-aloud voice fix awaits the user's retest on the live site** (landed `9f291d7`, proven with
   a Playwright probe of real Firefox; nothing in the repo is gated on it)
 
