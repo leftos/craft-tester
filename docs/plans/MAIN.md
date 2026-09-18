@@ -28,8 +28,8 @@ of them, noted inline. Four landed the same day and are in Landed below.
   rulings are in (user 2026-09-17, and 2026-09-18 for its scope). The override is blanket: "The only time
   the TEC route can't override is if the SID it suggests literally cannot be used with the only available
   runways". Equipment, noise-abatement headings and notices still win, and the draw picks a runway the TEC
-  SID is flown from. The measurement found 71 rows losing flights, not five. **Next: brief 1** (engine
-  override plus the on-request draw fix), whose fixture report goes to the user before brief 2
+  SID is flown from. The measurement found 71 rows losing flights, not five. **Next: brief 1** (the engine
+  override), whose fixture report goes to the user before brief 2 (the runway draw and the on-request fix)
 - [ ] **TEC rows that name no fix.** **Correction: `RH RV`, `OAK6 RV` and `H090 RV` are not in the repo** —
   they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
   `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
@@ -93,7 +93,7 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 - [ ] **Playtest observation awaiting a ruling** (2026-09-16, still true): the standing `SFO-SEGUL-OFF`
   notice is `default_active: true` and notices are cancelled only 20% of draws (`NOTICES_OFF_CHANCE`), so it
   is in force on 80% of scenarios. Is that too often? (The second observation, the on-request draw, was
-  ruled 2026-09-18 and ships in [tec-override.md](./tec-override.md) brief 1, ruling 7.)
+  ruled 2026-09-18 and ships in [tec-override.md](./tec-override.md) brief 2, ruling 7.)
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([archive/free-text.md](./archive/free-text.md) decision 9)

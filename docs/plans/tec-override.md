@@ -92,12 +92,12 @@ two cases the heading stands and the route box is the row's route with its head 
   recursion. Callers: `sidSelection.ts:42` and `:201`, `rules/altitude.ts:153`, `amend/altitude.ts:263`,
   `amend/route.ts:340` and `:774`, and `tecAltitudes.test.ts`. Today the altitude and SID-selection sides
   read the first keyed row while the route side reads the issuable one. After this change all of them read
-  the same row. Heading-headed rows (KOAK OAKE `H270 …`) come within the ruling too; brief 1 reports where
-  a row's heading and the SOP's heading row disagree for a flight, since `tecHeadConflict` makes some of
-  those `Unresolved` today.
+  the same row. Heading-headed rows (KOAK OAKE `H270 …`) come within the blanket ruling too. The flight is
+  issued the row's heading, so that the procedure and the route box always agree. `tecHeadConflict` stays
+  as the data check it is. Brief 1 reports each flight where this changes the SOP's answer.
 - **B. The procedure (`selectSid`).** Walk the table as today. Then, unless the walk ended on a
-  noise-window row or a notice heading, a flight whose TEC row has a family head is given that SID, citing
-  the TEC row. The departure frequency is still the sector of the SOP row the walk reached, because that
+  noise-window row or a notice heading, a flight whose TEC row has a family head is given that SID, and one
+  whose row has a heading head is given that heading. Either way the TEC row is cited. The departure frequency is still the sector of the SOP row the walk reached, because that
   row is keyed on the direction the flight leaves in. Where the walk reaches no row (KLVK `-JT-01`, whose
   exit fix ALTAM is in no KSFO gate, `ksfo/sop.yaml:164`), brief 1 reports the flight. Each one is a data
   fix to rule on with the user, not a fallback invented in code.
@@ -141,15 +141,16 @@ two cases the heading stands and the route box is the row's route with its head 
 
 ## Steps
 
-- [ ] **Brief 1: engine override plus the on-request draw** (layers A, B, C, E, with the named tests
-  except the draw ones). Proving commands are scoped to `rules/tecRoutes`, `rules/amend/tec`,
-  `rules/amend/route`, `rules/sidSelection`, `rules/altitude` and `scenario/generate`. Then
+- [ ] **Brief 1: the engine override** (layers A, B, C and F, with the named tests except the two draw
+  ones). Proving commands are scoped to `rules/tecRoutes`, `rules/amend/tec`, `rules/amend/route`,
+  `rules/sidSelection`, `rules/altitude` and `rules/tecAltitudes`. Then
   `pnpm -C web test rules/fixtures` runs **as a report**: moved fixtures are listed as settled or pending,
   with old and new values, and none is edited. The report also lists the flights the walk leaves without a
   sector and the heading-row disagreements (layer A).
 - [ ] **Review with the user:** every settled fixture brief 1 moves, the sector gaps (ALTAM), and the
   heading-row disagreements.
-- [ ] **Brief 2: the runway draw** (layer D, both halves, plus `RWY-TEC`), and layer F. Proving commands:
+- [ ] **Brief 2: the runway draw and the on-request draw** (layers D and E, both halves of D plus
+  `RWY-TEC`; E is bundled here because it edits the same `pickRunway`/`drawScenario`). Proving commands:
   `scenario/generate`, `rules/runway`, `generator tests/test_worksheets*`, `import-worksheets --check`
   (re-import if runways move, and report any moved fixtures), then `craft-gen build --check` for both
   airports.
