@@ -67,7 +67,7 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 | `data/` | zod schema, loader |
 | `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/routeBuild.ts` route-builds for both engines: before the vector-SID fallback a filed SID whose transition, or own end fix, connects onward to the filed route over `routeConnections` (or a row's forced transition), and before a heading any passed-over SID that does, in amendment mode and in clearance mode alike; its `buildToArrival` runs the same breadth-first search from several sources to a preference-ordered set of arrival entry fixes. `rules/amend/` checks the three strip boxes; `rules/amend/arrival.ts` is the last step of the route check: every proposed box is held against the LOA route rows and, at a destination the ZOA common-arrivals sheet lists, against the flight's equipment, and a flight on the wrong arrival is routed onto one it can fly at an entry fix the sheet, the LOA or the chart names, the amendment carrying `arrivalSwap` (the box without that change) for half credit. `rules/text/` reads a typed clearance: `normalise.ts` turns text into words and numbers that record how each number was said (figures, digits, group form, "nine", a restatement), with capitalised identifiers expanded through the airport's lexicon; `grade.ts` `gradeText` aligns that against the parts of the engine's reading (`speakClearance().parts`) and grades C, R.sid, R.route, A.phrase, A.expect, F, T and RWY, each with what was said for it as runs (filler marked), citing the `S-*` rows and the free-text `R-*` rows (design: `docs/plans/free-text.md`) |
 | `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`; a draw is kept only when the amendment engine finds nothing to amend), amendment-scenario generator (`amend.ts`: up to two faults injected into a clean draw, kept only when the engine amends exactly the boxes they meant), time-of-day, runway-configuration and forced-destination filters in the URL hash, beside the mode (`m=amend`) and the input kind (`i=text`, typed answers; the dropdowns write no part) |
-| `ui/` | header with the mode switch and filters, strip, ATIS panel, CRAFT form, the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort, one key per airport, mode, input kind and seed), remembered filter and input kind (`preferences.ts`). **Render model:** the panels are built again only when the view key changes — airport, seed, filter, mode, input kind and phase (`state.ts`, `viewKey`/`phaseOf`, the latter shared by the panel dispatcher so the two cannot drift) — and every other change is written into the controls already on screen by the `sync` each form returns beside its node. Within one phase the answer form is the only thing that varies: the strips and ATIS follow the scenario, the verdicts read boxes frozen at submit, and the option lists come from `buildOptions`, which is pure in the scenario. That is why a keystroke or a pick leaves its control in place, with its focus and caret, and why no focus-restoring workaround is needed |
+| `ui/` | header with the mode switch, the answer switch (dropdowns or typed) and the filters, strip, ATIS panel, CRAFT form, typing box (`textForm.ts`), the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort, one key per airport, mode, input kind and seed), remembered filter and input kind (`preferences.ts`). **Render model:** the panels are built again only when the view key changes — airport, seed, filter, mode, input kind and phase (`state.ts`, `viewKey`/`phaseOf`, the latter shared by the panel dispatcher so the two cannot drift) — and every other change is written into the controls already on screen by the `sync` each form returns beside its node. Within one phase the answer form is the only thing that varies: the strips and ATIS follow the scenario, the verdicts read boxes frozen at submit, and the option lists come from `buildOptions`, which is pure in the scenario. That is why a keystroke or a pick leaves its control in place, with its focus and caret, and why no focus-restoring workaround is needed |
 | `../scripts/` | Node scripts outside the bundle: `propose.ts` (the engine's clearance for a fixture, with citations), `export-schema.ts`, `browser-check.ts` (Playwright, forced viewport) |
 
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
@@ -121,6 +121,43 @@ draws are up to two faults with a fifth of them clean.
 - **Answers are normalised before comparison**: uppercased, whitespace collapsed, the route compared as
   tokens, and an altitude accepted as `32000`, `32,000`, `FL320` or `320`.
 
+### Free-text grading
+
+The CRAFT half can be answered by typing the whole clearance instead of picking it. The header's
+"answer" select switches between the two on the same seed; the choice rides in the hash as `i=text` and is
+remembered per browser. The dropdowns stay, and the student chooses.
+
+- **The engine's reading is the key.** `speakClearance` returns the abbreviated reading as `parts`, one
+  `{element, words}` per element in spoken order, and the flat strings are joined from them. The typed text
+  is graded against exactly the reading the reveal shows.
+- **Normalising** (`rules/text/normalise.ts`). The text is lowercased and its punctuation dropped. A run of
+  numbers becomes one token that records its value and how it was said. The run may be figures or words,
+  including plain or ICAO digits, group forms, "thousand", "hundred" and "point". An identifier typed in
+  capitals is expanded through the airport's lexicon of fix and procedure names.
+- **Aligning** (`rules/text/grade.ts`). The typed tokens are aligned with every candidate reading by
+  longest common subsequence, and the base reading wins ties. The candidates are the base reading, the
+  route in full, the route closed on "then as filed", and each of those with the redundant expect clause.
+  An expect clause said where the reading has none is cut out before alignment. Words before the first
+  match are the callsign and are not graded.
+- **Verdicts**, per element. Values come first, and a wrong or missing value is wrong. The fixed words come
+  next:
+  - extra words are filler, acceptable (`S-FILLER`);
+  - a group-form restatement after the digits is acceptable, and the group form alone is wrong
+    (`S-GROUP-FORM`);
+  - "nine" where the reading says "niner" is wrong (`S-NINER`), except in a chart name;
+  - the facility word after a bare fix is right (`R-FACILITY-WORD`);
+  - the full route and "then as filed" at the route's end are acceptable (`R-FULL-ROUTE`,
+    `R-THEN-AS-FILED-END`);
+  - an element out of CRAFT order is wrong (`S-ORDER`).
+
+  Typed answers grade eight elements, C and T included, where the dropdowns grade five.
+- **Amendment mode.** After the strip, the typing box takes the place of the CRAFT form. The procedure the
+  student speaks is graded in place of the procedure pick.
+- **Results.** A row shows what was said for its element (`TextGrade.said`: runs of said words, filler
+  and breaks). Wherever the element is not fully correct, the row also shows the expected words.
+- **State.** `AppState.input` and `AppState.text` hold the input kind and the typed clearance. Typed
+  attempts are remembered under their own keys and re-graded on revisit.
+
 ## Fixture lifecycle
 
 1. `craft-gen import-worksheets` writes worksheet plans to `fixtures/<icao>/worksheets/` as `pending`
@@ -147,7 +184,7 @@ the code shows only the outcome.
 | second airport | a `generator/airports/<icao>/` directory plus a line in `data/airports.json` | no code keyed on one airport |
 | language split | Python generator, TypeScript web; the zod schema and its export are the only seam | the generator is an offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page. Reviewed 2026-09-17; it reopens only if a backend appears (accounts, shared progress, one deployment serving many facilities) or dictation moves off the browser's Web Speech API |
 | `half` verdict | fixture-only: no drawn fault produces it | every eligible library route files inside the RVSM band (KSFO's four at FL310-FL410, KOAK's seven at FL290-FL350) and the suffix an arrival fault writes (`/U`) is not RVSM-approved, so the altitude box is raised too and `sameBoxes` discards the draw. If it returns, the cheaper trigger is `arrivalTrigger` on `filed.arrival.rnav !== ctx.rnavCapable` in both directions, so a conventional arrival filed by an RNAV flight swaps with no suffix strip |
-| dependencies | Python `pypdf`, `pyyaml`, `jsonschema`; TS `zod` alone at runtime | stdlib `urllib` for HTTP, no UI framework: the render model above needs no diffing, because the forms hold no dynamic lists — three amend rows, eight CRAFT rows. `happy-dom` is a dev dependency for the mounted-page test only |
+| dependencies | Python `pypdf`, `pyyaml`, `jsonschema`; TS `zod` alone at runtime | stdlib `urllib` for HTTP, no UI framework: the render model above needs no diffing, because the forms hold no dynamic lists — three amend rows, eight CRAFT rows, one typing box. `happy-dom` is a dev dependency for the DOM tests only |
 
 ## Conventions
 

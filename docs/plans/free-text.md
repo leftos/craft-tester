@@ -100,14 +100,10 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   break), a typed row adds `expected:` wherever it is not fully correct, and filler is `span.filler`. An
   element said before the clearance limit now shows only its own words, not the callsign stretch —
   `25c5be5`, 2026-09-17
-- [ ] 5. **UI**. 5a landed `e288f9b` 2026-09-17: `InputKind` and `SessionSettings` (`scenario/filter.ts`),
-  `i=text`, the remembered input kind (`preferences.ts`), `AppState.input`/`text`, `ClearanceAnswer`,
-  `withText`, `withInputKind`, typed attempts under their own keys, and `gradeText` in both modes' results
-  and revisits. 5b (the controls below) is next:
-  - the input-kind switch in both modes and the text box;
-  - the `i=text` hash part;
-  - `Attempt` and revisit storing text;
-  - in amendment mode, the spoken procedure in place of the `R.sid` pick
+- [x] 5. **UI** — 5a `e288f9b` (the input kind in the hash and a remembered preference, typed answers in
+  the state and the attempt store, `gradeText` in both modes' results and revisits) and 5b `3fc76e2` (the
+  header's "answer" select, `renderTextForm` where Enter submits, the typing box after the strip in
+  amendment mode), 2026-09-17
 - [ ] 6. **Docs and browser check**: a "Free-text grading" section in ARCHITECTURE.md, and
   `check:browser` on phone and desktop in both modes
 
