@@ -96,9 +96,10 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   `ed5e69f`: the seven rows, `RedundantExpect` with its kind, `speakExpect`, the restated reading, C and T
   as elements; 3b `875f11a`: the matcher). Every settled clearance fixture's own reading grades all eight
   elements correct
-- [ ] 4. **Results view**: said against expected per element, with the filler highlighted. An element read
-  out of order before the clearance limit shows the whole leading stretch as said, callsign included
-  (`Squawk three three four two, United three twenty`); the diff should show only the element's own words
+- [x] 4. **Results view**: `TextGrade.said` is what was said for the element as runs (said, filler,
+  break), a typed row adds `expected:` wherever it is not fully correct, and filler is `span.filler`. An
+  element said before the clearance limit now shows only its own words, not the callsign stretch —
+  `25c5be5`, 2026-09-17
 - [ ] 5. **UI**:
   - the input-kind switch in both modes and the text box;
   - the `i=text` hash part;
@@ -123,7 +124,7 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
 - **Unmatched text.** A text that matches nothing is ignored like a callsign: every element is
   "(not heard)".
 - **Leading stretch.** An element said before the clearance limit is out of order, and the rest of that
-  stretch is the callsign.
+  stretch is the callsign, so the row shows the element's own words alone.
 
 ## Open points
 

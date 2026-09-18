@@ -79,8 +79,9 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   wired in both `vite.config.ts` and `tsconfig.json`. `web/scripts/*.ts` run under plain Node, so they use
   the package `#src/*` subpath import instead. Never use relative `../` paths across directories.
 - **Tests run in Node.** A test that needs a DOM opts in per file with a `// @vitest-environment happy-dom`
-  docblock on line 1 — `web/src/ui/app.test.ts` is the only one today. There is no global test environment,
-  so `strip.ts`'s `typeof document === 'undefined'` fallbacks stay exercised by the other files.
+  docblock on line 1 — `web/src/ui/app.test.ts` and `web/src/ui/results.dom.test.ts` today. There is no
+  global test environment, so `strip.ts`'s `typeof document === 'undefined'` fallbacks stay exercised by the
+  other files.
 - **Fixtures.** `fixtures/<icao>/synthetic/` is hand-written; `fixtures/<icao>/worksheets/` is written by
   `import-worksheets`. `web/src/rules/fixtures.test.ts` runs every fixture and prints what the engine makes
   of each `pending` one. It is also the **only** guard on amendment reason wording — the unit tests assert
