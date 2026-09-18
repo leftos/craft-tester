@@ -5,7 +5,7 @@
       "feet": 10000,
       "phrase": "climb_via_except"
     },
-    "clearedTo": "KSMF",
+    "clearedTo": "KTRK",
     "expect": null,
     "frequency": "120.9",
     "route": {
@@ -21,7 +21,7 @@
     "callsign": "SKW5412",
     "dayOfWeek": "wednesday",
     "departureRunway": "01R",
-    "destination": "KSMF",
+    "destination": "KTRK",
     "equipmentSuffix": "/L",
     "filedAltitude": 11000,
     "filedRoute": "SFO4 V6 SAC",
@@ -31,7 +31,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "The filed route joins Victor 6 straight off the SID, so the route element is the airway: ZOA CRAFT Phraseology reference, \"RADAR VECTORS TO JOIN (airway)\" (R-RV-AIRWAY). A pilot-nav SID cannot hand a flight to an airway, so the RNAV TRUKN row is passed over and the northbound 01 radar-vector row issues SFO#."
+    "note": "The filed route joins Victor 6 straight off the SID, so the route element is the airway: ZOA CRAFT Phraseology reference, \"RADAR VECTORS TO JOIN (airway)\" (R-RV-AIRWAY). A pilot-nav SID cannot hand a flight to an airway, so the RNAV TRUKN row is passed over and the northbound 01 radar-vector row issues SFO#. Destination moved off KSMF, which has a TEC route, so the plan keeps testing the airway phrase (user 2026-09-18)."
   },
   "status": "settled"
 }

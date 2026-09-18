@@ -7,7 +7,9 @@ import type {
   CommonArrival,
   LoaRule,
   LoaRuleKind,
+  Notice,
   Scenario,
+  TecRoute,
 } from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
 import { classify } from '@/rules/classify.ts';
@@ -477,6 +479,226 @@ describe('checkRoute TRACON destinations', () => {
   });
 });
 
+describe('checkRoute a TEC route over the SOP assignment', () => {
+  function clearanceAt(flight: Scenario, airport: AirportData) {
+    const result = resolveClearance(flight, airport);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    return result.clearance;
+  }
+
+  /** The KSFO RNAV jet off 28L in 28/01 to KSMF, filed on its TEC route. */
+  function ksmfJet(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      destination: 'KSMF',
+      filedRoute: 'TRUKN2 TRUKN FEVTA FEVTA1',
+      filedAltitude: 10000,
+      departureRunway: '28L',
+      ...overrides,
+    });
+  }
+
+  /** The KOAK RNAV jet off 10R in SFOE to KMRY, filed direct to the TEC route's first fix. */
+  function kmryJet(overrides: Partial<Scenario> = {}): Scenario {
+    return scenario({
+      destination: 'KMRY',
+      filedRoute: 'EUGEN',
+      filedAltitude: 11000,
+      runwayConfigId: 'SFOE',
+      departureRunway: '10R',
+      ...overrides,
+    });
+  }
+
+  it('issues TRUKN2 off 28L in 28 RT, where TRUKN is in use, citing the TEC row beside the SOP row', () => {
+    const heavy = { aircraftType: 'B77L', runwayConfigId: '28 RT' };
+    const procedure = clearanceAt(ksmfJet(heavy), ksfo).procedure;
+    expect(procedure.value).toMatchObject({ kind: 'sid', id: 'TRUKN2' });
+    const ids = procedure.citations.map((citation) => citation.id);
+    expect(ksfo.assignmentRules.map((row) => row.id)).toContain(ids[0]);
+    expect(ids[1]).toBe('TEC-KSMF-SFOW-J');
+  });
+
+  it('leaves the SOP answer off 28L in 28/01, where TRUKN is not in use off the 28s', () => {
+    const procedure = clearanceAt(ksmfJet({ aircraftType: 'B77L' }), ksfo).procedure;
+    expect(procedure.value).not.toMatchObject({ kind: 'sid', id: 'TRUKN2' });
+    expect(procedure.citations.map((citation) => citation.id)).not.toContain('TEC-KSMF-SFOW-J');
+  });
+
+  it('issues the TEC row SID over a SOP heading and routes the box on it', () => {
+    const flight = kmryJet();
+    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({ kind: 'sid', id: 'OAK6' });
+    expect(amendmentAt(flight, koak).proposed).toBe('OAK6 OAK EUGEN');
+  });
+
+  it('keeps a noise-window heading and routes the box on the TEC route after its departure', () => {
+    const flight = kmryJet({ localTime: '2300' });
+    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({
+      kind: 'heading',
+      heading: 140,
+    });
+    expect(amendmentAt(flight, koak).proposed).toBe('OAK EUGEN');
+  });
+
+  it('keeps a noise-window SID and joins it onto the TEC route after its departure', () => {
+    const niite = ksfo.sids.find((sid) => sid.family === 'NIITE');
+    if (niite === undefined) throw new Error('KSFO publishes no NIITE departure');
+    const flight = ksmfJet({ runwayConfigId: '28 RT', localTime: '2300', dayOfWeek: 'tuesday' });
+    expect(clearanceAt(flight, ksfo).procedure.value).toMatchObject({ kind: 'sid', id: niite.id });
+    const box = amendment(flight).proposed.split(' ');
+    expect(box[0]).toBe(niite.id);
+    expect(box.slice(-2)).toEqual(['FEVTA', 'FEVTA1']);
+  });
+
+  it('reads the noise row from the TEC route direction, not the direction the plan files', () => {
+    const niite = ksfo.sids.find((sid) => sid.family === 'NIITE');
+    if (niite === undefined) throw new Error('KSFO publishes no NIITE departure');
+    const southbound = ksmfJet({
+      departureRunway: '01R',
+      filedRoute: 'SSTIK5 SUSEY',
+      localTime: '2300',
+    });
+    const procedure = clearanceAt(southbound, ksfo).procedure;
+    expect(procedure.value).toMatchObject({ kind: 'sid', id: niite.id });
+    expect(procedure.citations[0]?.id).toBe('SFOW-NOISE-N-NIITE');
+  });
+
+  it('joins a noise-window SID onto a heading-headed TEC route as onto a family-headed one', () => {
+    const headingRow: TecRoute = {
+      id: 'TEST-KSMF-SFOW-H',
+      source: 'test row',
+      kind: 'tec',
+      destination: 'KSMF',
+      plan: 'SFOW',
+      runwayFamilies: [],
+      classes: ['J'],
+      route: 'H030 TRUKN FEVTA FEVTA1',
+      finalAltitudeFeet: 10000,
+    };
+    const airport: AirportData = { ...ksfo, tecRoutes: [headingRow, ...ksfo.tecRoutes] };
+    const flight = ksmfJet({ departureRunway: '01R', localTime: '2300' });
+    expect(clearanceAt(flight, airport).procedure.value).toMatchObject({
+      kind: 'sid',
+      family: 'NIITE',
+    });
+    expect(amendmentAt(flight, airport).proposed).toBe(amendment(flight).proposed);
+    expect(amendmentAt(flight, airport).proposed.split(' ')[0]).toMatch(/^NIITE\d$/);
+  });
+
+  it.each([
+    ['prop', 'C172'],
+    ['turboprop', 'BE20'],
+  ])('turns a KOAK OAKE %s to KSFO onto the TEC row heading 270, not the SOP 090', (_, type) => {
+    const flight = scenario({
+      callsign: 'N172SP',
+      aircraftType: type,
+      equipmentSuffix: '/G',
+      destination: 'KSFO',
+      filedRoute: 'OSI',
+      filedAltitude: 5000,
+      runwayConfigId: 'OAKE',
+      departureRunway: '10R',
+    });
+    const procedure = clearanceAt(flight, koak).procedure;
+    expect(procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
+    expect(procedure.citations.map((citation) => citation.id)).toContain('TEC-KSFO-OAKE-JTP');
+  });
+
+  it('clears the heading a notice issues for the TEC row family, the box on the route after it', () => {
+    const notice: Notice = {
+      id: 'TEST-TRUKN-OFF',
+      source: 'test notice',
+      dated: '2026-09-18',
+      text: 'TRUKN SID: OFF. Issue 300 HDG',
+      plan: 'SFOW',
+      effect: { kind: 'sid_off', sidFamily: 'TRUKN', heading: 300 },
+      defaultActive: false,
+    };
+    const truknRow: AssignmentRule = {
+      id: 'TEST-SFOW-TRUKN-28',
+      source: 'test row',
+      text: 'SFOW: jets off the 28s -> TRUKN#',
+      plan: 'SFOW',
+      direction: 'any',
+      runwayFamilies: ['28'],
+      classes: ['J'],
+      sidFamily: 'TRUKN',
+      sector: 'richmond',
+    };
+    const airport: AirportData = {
+      ...ksfo,
+      notices: [...ksfo.notices, notice],
+      assignmentRules: [...ksfo.assignmentRules, truknRow],
+    };
+    const flight = ksmfJet({ activeNotices: [notice.id] });
+    const procedure = clearanceAt(flight, airport).procedure;
+    expect(procedure.value).toMatchObject({ kind: 'heading', heading: 300, turn: 'right' });
+    expect(procedure.citations.map((citation) => citation.id)).toEqual([
+      truknRow.id,
+      notice.id,
+      'R-HEADING',
+    ]);
+    expect(amendmentAt(flight, airport).proposed).toBe('TRUKN FEVTA FEVTA1');
+  });
+});
+
+describe('the sector of a departure a TEC route supplies', () => {
+  function clearanceAt(flight: Scenario, airport: AirportData) {
+    const result = resolveClearance(flight, airport);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    return result.clearance;
+  }
+
+  /** The row and sector the clearance hands the flight off on. */
+  function handoff(flight: Scenario, airport: AirportData): [string | undefined, string] {
+    const clearance = clearanceAt(flight, airport);
+    return [clearance.procedure.citations[0]?.id, clearance.frequency.value.sectorId];
+  }
+
+  it('reads SFO# off its one row, Richmond, for a route that leaves over ALTAM in no gate', () => {
+    const flight = scenario({
+      equipmentSuffix: '/A',
+      destination: 'KLVK',
+      filedRoute: 'SFO5 V244 ALTAM MOD',
+      filedAltitude: 5000,
+    });
+    expect(clearanceAt(flight, ksfo).procedure.citations.map((citation) => citation.id)).toContain(
+      'TEC-KLVK-SFOW-JT-01',
+    );
+    expect(handoff(flight, ksfo)).toEqual(['SFOW-N-SFO-01', 'richmond']);
+  });
+
+  it.each([
+    ['KMYV', 'GAPP7 SFO OAK V6 SAC', 'SFOW-N-GAPP-28', 'richmond'],
+    ['KSJC', 'GAPP7 SFO OSI SJC', 'SFOW-S-GAPP', 'sutro'],
+  ])(
+    'reads GAPP# off the 28s to %s by the TEC route direction',
+    (destination, route, row, sector) => {
+      const flight = scenario({
+        callsign: 'N172SP',
+        aircraftType: 'C172',
+        equipmentSuffix: '/A',
+        destination,
+        filedRoute: route,
+        filedAltitude: 5000,
+        departureRunway: '28R',
+      });
+      expect(handoff(flight, ksfo)).toEqual([row, sector]);
+    },
+  );
+
+  it('falls back to the walked row for KOAK SFOE OAK#, which has no row south', () => {
+    const flight = scenario({
+      destination: 'KMRY',
+      filedRoute: 'EUGEN',
+      filedAltitude: 11000,
+      runwayConfigId: 'SFOE',
+      departureRunway: '10R',
+    });
+    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({ kind: 'sid', id: 'OAK6' });
+    expect(handoff(flight, koak)).toEqual(['OAK-B-SFOE-J-RWY-S', 'sutro']);
+  });
+});
+
 describe('checkRoute on the runway heading', () => {
   /** The non-RNAV prop the noise window sends off 01L with no procedure at all (SFOW-NOISE-P-RWY). */
   function c172(overrides: Partial<Scenario> = {}): Scenario {
@@ -495,7 +717,7 @@ describe('checkRoute on the runway heading', () => {
   }
 
   it('amends a plan that files a procedure down to the tail, and says why', () => {
-    const flight = c172();
+    const flight = c172({ destination: 'KTRK' });
     expect(amendment(flight).proposed).toBe('OAK V6 SAC');
     expect(amendment(flight).reason).toBe(
       'SFOW-NOISE-P-RWY sends a non-RNAV piston off 01L on the runway heading with no departure ' +
@@ -522,7 +744,7 @@ describe('checkRoute on the runway heading', () => {
       assignmentRules: [numbered, ...ksfo.assignmentRules],
     };
     const flight = c172({
-      destination: 'KSMF',
+      destination: 'KTRK',
       departureRunway: '28L',
       runwayConfigId: '28 RT',
       localTime: '1400',

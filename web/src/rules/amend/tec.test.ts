@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, AssignmentRule, Scenario, TecRoute } from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
-import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
+import { tecTokens } from '@/rules/amend/tec.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { usableTecRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -71,8 +72,7 @@ describe('a TEC route that begins on an initial heading', () => {
   });
 
   it('routes the flight the SOP clears on that heading', () => {
-    const destination = airport.routeLibrary.destinations.find((row) => row.icao === 'KSMF');
-    const row = tecRouteFor(classified(flight), flight, airport, destination);
+    const row = usableTecRoute(classified(flight), flight, airport);
     expect(row?.id).toBe('TEC-KSMF-OAKE-J');
   });
 

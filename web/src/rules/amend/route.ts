@@ -5,11 +5,12 @@ import type {
   LoaRule,
   RouteConnection,
   Scenario,
+  Sid,
   TecRoute,
 } from '@/data/schema.ts';
 import { changeArrival } from '@/rules/amend/arrival.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
-import { tecRouteFor, tecTokens } from '@/rules/amend/tec.ts';
+import { tecTokens } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
@@ -30,6 +31,7 @@ import {
   connectionCitations,
 } from '@/rules/routeBuild.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
+import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type { Procedure, ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
@@ -323,11 +325,58 @@ function filedScope(filed: FiledRoute): BuildScope {
 }
 
 /**
+ * The TEC route as the box reads it behind a heading, its departure family dropped.
+ *
+ * A noise-abatement heading or a notice's heading replaces the family a row begins on, and the route
+ * follows the heading the way a row issued on an initial heading reads.
+ *
+ * @param tec The TEC row that routes the flight.
+ * @param airport The airport data, whose `sids` carry the versions in force this cycle.
+ * @returns The route as tokens without a departure, or `Unresolved` where the row names a family the
+ *   airport no longer publishes.
+ */
+function tecTail(tec: TecRoute, airport: AirportData): string[] | Unresolved {
+  const tokens = tecTokens(tec, airport);
+  if (isUnresolved(tokens) || tecHead(tec).kind !== 'family') return tokens;
+  return tokens.slice(1);
+}
+
+/**
+ * The box of a flight a noise-abatement row issues another SID than its TEC route begins on.
+ *
+ * The box is built as though the flight had filed that SID and the TEC route after its departure,
+ * scoped to the SID's own family, so the route builder joins the two as it joins any SID to a
+ * filed route; failing a build, the box is the SID followed by that tail.
+ *
+ * @param tail The TEC route without its departure.
+ * @param scenario The filed flight plan.
+ * @param ctx The classified flight.
+ * @param assigned The SID the noise-abatement row issues.
+ * @param airport The airport data.
+ * @returns The box as it should read.
+ */
+function joinedExpectation(
+  tail: readonly string[],
+  scenario: Scenario,
+  ctx: Classification,
+  assigned: Sid,
+  airport: AirportData,
+): ExpectedRoute {
+  const plan: Scenario = { ...scenario, filedRoute: [assigned.id, ...tail].join(' ') };
+  return (
+    builtExpectation(plan, ctx, airport, { kind: 'filed', family: assigned.family }) ??
+    filedExpectation(splitFiled(plan.filedRoute), plan, assigned.id, airport)
+  );
+}
+
+/**
  * The route box as it should read: the TEC route for a TRACON destination, else the route built on
  * the assigned procedure, else that procedure followed by the tail the pilot filed.
  *
- * The TEC route is only one whose departure the SOP would issue this flight; where no row's is,
- * the flight is vectored on its assigned departure and the filed tail stands.
+ * The TEC route is the one that routes the flight. Where it begins on the departure the flight is
+ * issued, or on none, the box is the route as written; where a noise-abatement row issues a SID in
+ * place of the family or the initial heading the route begins on, the box is that SID joined onto
+ * the route after its departure.
  */
 function expectedRoute(
   filed: FiledRoute,
@@ -336,8 +385,7 @@ function expectedRoute(
   assigned: string,
   airport: AirportData,
 ): ExpectedRoute | Unresolved {
-  const destination = destinationRow(airport, scenario.destination);
-  const tec = tecRouteFor(ctx, scenario, airport, destination);
+  const tec = usableTecRoute(ctx, scenario, airport);
   if (tec === undefined) {
     return (
       builtExpectation(scenario, ctx, airport, filedScope(filed)) ??
@@ -345,7 +393,32 @@ function expectedRoute(
     );
   }
   const tokens = tecTokens(tec, airport);
-  return isUnresolved(tokens) ? tokens : { tokens: withVectorNavaid(tokens, airport), tec };
+  if (isUnresolved(tokens)) return tokens;
+  const head = tecHead(tec);
+  const sid = airport.sids.find((entry) => entry.id === assigned);
+  if (sid !== undefined && head.kind === 'heading') {
+    return joinedExpectation(tokens, scenario, ctx, sid, airport);
+  }
+  if (sid !== undefined && head.kind === 'family' && sid.family !== head.family) {
+    return joinedExpectation(tokens.slice(1), scenario, ctx, sid, airport);
+  }
+  return { tokens: withVectorNavaid(tokens, airport), tec };
+}
+
+/**
+ * The TEC row's citation for a route amendment, unless the clearance's procedure already cites it.
+ *
+ * A flight issued its TEC route's departure carries the row among the procedure's citations, which
+ * the amendment cites first; the row is then cited once.
+ *
+ * @param tec The TEC row the box was read from, where one was.
+ * @param clearance The clearance the engine resolved for the plan.
+ * @returns The citation, or none where there is no row or the procedure already cites it.
+ */
+function tecCitations(tec: TecRoute | undefined, clearance: ResolvedClearance): RuleCitation[] {
+  if (tec === undefined) return [];
+  if (clearance.procedure.citations.some((citation) => citation.id === tec.id)) return [];
+  return [citeTec(tec)];
 }
 
 /** The reason a TEC destination's route box reads the published route rather than what was filed. */
@@ -747,11 +820,11 @@ export function loaRouteRows(
  * Failing a build, the box is the tail the pilot filed, so a plan that files a departure procedure
  * is amended down to that tail and a plan that files none is left alone; an element of that tail
  * that names nothing is taken out of it and the fixes either side connected, a flight on a heading
- * being vectored to a route it can fly like any other. A TEC route wins over both,
- * but a row whose route begins on a departure family never applies to such a flight: `tecRouteFor`
- * puts the row's own route to the clearance engine, which answers this flight with a heading rather
- * than with the family the row begins on. A row that begins on an initial heading token is reached
- * where the flight is issued that same heading, and its route, the token dropped, is the box.
+ * being vectored to a route it can fly like any other. A TEC route wins over both. A flight whose
+ * TEC route begins on a departure family is on a heading only where a noise-abatement row or a
+ * notice issued one in the family's place, and the box is the route with the family dropped; a row
+ * that begins on an initial heading token is issued that heading, and its route, the token dropped,
+ * is the box.
  *
  * A box for a destination outside the TRACON then goes through the arrival step, which may put the
  * flight on another arrival of its destination and, where a SID the table passed over reaches an
@@ -770,13 +843,12 @@ function checkHeadingRoute(
   check: RouteCheck,
 ): ResolvedAmendment | undefined | Unresolved {
   const { scenario, ctx, airport } = check;
-  const destination = destinationRow(airport, scenario.destination);
-  const tec = tecRouteFor(ctx, scenario, airport, destination);
+  const tec = usableTecRoute(ctx, scenario, airport);
   const build =
     tec === undefined ? builtExpectation(scenario, ctx, airport, { kind: 'any' }) : undefined;
   const repair = build === undefined ? repairMalformed(filed.tail, airport) : undefined;
   const resolved =
-    tec === undefined ? (build?.tokens ?? repair?.tokens ?? filed.tail) : tecTokens(tec, airport);
+    tec === undefined ? (build?.tokens ?? repair?.tokens ?? filed.tail) : tecTail(tec, airport);
   if (isUnresolved(resolved)) return resolved;
   const expected: ExpectedRoute = {
     ...build,
@@ -825,7 +897,7 @@ function headingOutcome(
     citations: [
       ...clearance.procedure.citations,
       ...repairCitations(expected, airport),
-      ...(tec === undefined ? [] : [citeTec(tec)]),
+      ...tecCitations(tec, clearance),
     ],
   };
 }
@@ -836,9 +908,10 @@ function headingOutcome(
  *
  * The box must read the assigned procedure, at the version in force this cycle, followed by the
  * tail the pilot filed; for a destination inside the TRACON it must read the published TEC route
- * instead, where one begins on a departure the SOP would issue this flight. A row beginning on a
- * departure this flight would not be issued is not a route it can be given, and the box then reads
- * the assigned procedure and the filed tail like any other. That one rule covers a plan filed with no
+ * instead, the first keyed row whose departure the flight can fly off its runway with its equipment.
+ * Where a noise-abatement row or a notice clears such a flight on a heading, the box is the route
+ * after its departure; where a noise-abatement row issues another SID, the box is that SID joined
+ * onto the route after its departure. That one rule covers a plan filed with no
  * procedure, a stale version, another configuration's procedure, and one an operational notice has
  * taken out of use, and the reason says which of those it is. Where the assignment table only
  * reached the procedure it did because the procedure the pilot filed publishes no transition to the
@@ -994,7 +1067,7 @@ function procedureOutcome(
       ...clearance.procedure.citations,
       ...structureCitations(expected, airport),
       ...repairCitations(expected, airport),
-      ...(expected.tec === undefined ? [] : [citeTec(expected.tec)]),
+      ...tecCitations(expected.tec, clearance),
     ],
   };
 }

@@ -1,11 +1,11 @@
 import type { AirportData, Destination, LoaRule, LoaRuleKind, Scenario } from '@/data/schema.ts';
 import { citeTec } from '@/rules/amend/cite.ts';
 import { magneticCourse } from '@/rules/amend/course.ts';
-import { tecRouteFor } from '@/rules/amend/tec.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { formatAltitude } from '@/rules/grade.ts';
+import { usableTecRoute } from '@/rules/tecRoutes.ts';
 import type { RuleCitation, Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
@@ -260,7 +260,7 @@ export function checkAltitude(
       `destination ${scenario.destination} is not in the route library, so the course to it and the rules written for it are unknown`,
     );
   }
-  const tecRow = tecRouteFor(ctx, scenario, airport, destination);
+  const tecRow = usableTecRoute(ctx, scenario, airport);
   const tecFinal = tecRow?.finalAltitudeFeet;
   if (tecRow !== undefined && tecFinal !== undefined) {
     if (scenario.filedAltitude === tecFinal) return undefined;

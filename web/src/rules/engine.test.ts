@@ -321,7 +321,7 @@ describe('resolveClearance on the generated KSFO data', () => {
 
   it('vectors a flight that joins an airway onto a radar-vector SID', () => {
     const clearance = clearanceFor(
-      scenario({ filedRoute: 'SFO4 V6 SAC', destination: 'KSMF', filedAltitude: 11000 }),
+      scenario({ filedRoute: 'SFO4 V6 SAC', destination: 'KTRK', filedAltitude: 11000 }),
     );
     expect(assigned(clearance).family).toBe('SFO');
     expect(clearance.route.value).toEqual({ template: 'radar_vectors_airway', fix: 'V6' });
@@ -420,6 +420,7 @@ describe('resolveClearance on the generated KSFO data', () => {
     const clearance = clearanceFor(
       scenario({
         ...NIGHT_PROP,
+        destination: 'KTRK',
         runwayConfigId: '28 RT',
         departureRunway: '28L',
         localTime: '1400',
