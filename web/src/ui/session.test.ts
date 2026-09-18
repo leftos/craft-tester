@@ -229,7 +229,11 @@ describe('an amendment scenario', () => {
     ).toStrictEqual(elements.map((element) => `${element} correct`));
   });
 
-  it("clears the engine's corrected plan when the student's plan does not resolve", () => {
+  /**
+   * An amendment view whose route amendment proposes a route no navaid data resolves, so the plan
+   * a student who takes every amendment writes cannot be cleared.
+   */
+  function unresolvableView(): Extract<ScenarioView, { kind: 'amendment' }> {
     const seed = SEEDS.find((candidate) => {
       const { amendments } = amendmentOf(candidate).drawn.result;
       return (
@@ -242,12 +246,16 @@ describe('an amendment scenario', () => {
     const amendments = drawnView.drawn.result.amendments.map((one) =>
       one.box === 'route' ? { ...one, proposed: 'ZZZZZ' } : one,
     );
-    const unresolvable: Extract<ScenarioView, { kind: 'amendment' }> = {
+    return {
       ...drawnView,
       drawn: { ...drawnView.drawn, result: { ...drawnView.drawn.result, amendments } },
     };
+  }
+
+  it("clears the engine's corrected plan when the student's plan does not resolve", () => {
+    const unresolvable = unresolvableView();
     const { drawn } = unresolvable;
-    const answers = correctedAnswers(amendments);
+    const answers = correctedAnswers(drawn.result.amendments);
     const plan = studentPlan(answers, drawn.result, drawn.filed, airport);
     expect(plan.filedRoute).toBe('ZZZZZ');
     expect(resolveAmendedClearance(drawn.filed, plan, airport).ok).toBe(false);
@@ -261,6 +269,20 @@ describe('an amendment scenario', () => {
       expect(String(warn.mock.calls[0]?.[0])).toMatch(
         /^the student's corrected plan did not resolve \(/,
       );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('resolves an unresolvable plan once, however often it is cleared', () => {
+    const unresolvable = unresolvableView();
+    const { amendments } = unresolvable.drawn.result;
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const first = clearedPlan(unresolvable, correctedAnswers(amendments), airport);
+      const second = clearedPlan(unresolvable, correctedAnswers(amendments), airport);
+      expect(second).toBe(first);
+      expect(warn).toHaveBeenCalledOnce();
     } finally {
       warn.mockRestore();
     }

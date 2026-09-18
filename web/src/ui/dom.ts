@@ -48,10 +48,9 @@ export function rowList(
 }
 
 /** The blank first option, which reads back as no pick at all. */
-function placeholderOption(spec: SelectSpec): HTMLOptionElement {
-  const option = el('option', '', spec.placeholder);
+function placeholderOption(text: string): HTMLOptionElement {
+  const option = el('option', '', text);
   option.value = '';
-  option.selected = spec.value === undefined;
   return option;
 }
 
@@ -69,13 +68,13 @@ export function selectControl(
   const field = el('label', 'field');
   const select = el('select');
   select.disabled = spec.disabled;
-  select.append(placeholderOption(spec));
+  select.append(placeholderOption(spec.placeholder));
   for (const option of spec.options) {
     const node = el('option', '', option.label);
     node.value = option.value;
-    node.selected = option.value === spec.value;
     select.append(node);
   }
+  select.value = spec.value ?? '';
   select.addEventListener('change', () => {
     onChange(select.value);
   });

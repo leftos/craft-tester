@@ -85,21 +85,15 @@ function unresolvedView(unresolved: readonly Unresolved[]): ScenarioView {
 /** The plan an amendment session clears once the strip is submitted, and the clearance read for it. */
 export type ClearedPlan = { plan: Scenario; clearance: ResolvedClearance };
 
-/**
- * The plan the student clears after the strip, and the clearance the engine reads for it.
- *
- * The plan is the filed plan with every box the student got right as they wrote it and every other
- * box as the engine corrected it, so the strip and the answer key agree and a wrong box never
- * compounds into the clearance. Where that plan does not resolve, the session clears the engine's
- * corrected plan instead, whose clearance the view already carries, and says so on the console.
- *
- * @param view The amendment session, with the plan as filed and the engine's corrections.
- * @param answers What the student answered for every box.
- * @param airport The airport data.
- * @returns The plan to clear and its clearance.
- */
-export function clearedPlan(
-  view: Extract<ScenarioView, { kind: 'amendment' }>,
+/** A session that draws a plan to amend and then clear. */
+type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
+
+/** The plans already cleared for each amendment session, keyed by the box answers they came from. */
+const clearedPlans = new WeakMap<AmendmentView, Map<string, ClearedPlan>>();
+
+/** Resolves the plan the student clears, with no cache in front of it. */
+function resolveClearedPlan(
+  view: AmendmentView,
   answers: BoxAnswers,
   airport: AirportData,
 ): ClearedPlan {
@@ -113,6 +107,41 @@ export function clearedPlan(
       'plan instead',
   );
   return { plan: drawn.result.corrected, clearance: view.clearance };
+}
+
+/**
+ * The plan the student clears after the strip, and the clearance the engine reads for it.
+ *
+ * The plan is the filed plan with every box the student got right as they wrote it and every other
+ * box as the engine corrected it, so the strip and the answer key agree and a wrong box never
+ * compounds into the clearance. Where that plan does not resolve, the session clears the engine's
+ * corrected plan instead, whose clearance the view already carries, and says so on the console.
+ *
+ * The result is cached per view and answers, so clearing the same answers again returns the same
+ * object without resolving or warning again. The airport is not part of the key, because a view is
+ * only ever built for, and cleared with, one airport.
+ *
+ * @param view The amendment session, with the plan as filed and the engine's corrections.
+ * @param answers What the student answered for every box.
+ * @param airport The airport data.
+ * @returns The plan to clear and its clearance.
+ */
+export function clearedPlan(
+  view: AmendmentView,
+  answers: BoxAnswers,
+  airport: AirportData,
+): ClearedPlan {
+  let byAnswers = clearedPlans.get(view);
+  if (byAnswers === undefined) {
+    byAnswers = new Map();
+    clearedPlans.set(view, byAnswers);
+  }
+  const key = JSON.stringify([answers.type, answers.altitude, answers.route]);
+  const cached = byAnswers.get(key);
+  if (cached !== undefined) return cached;
+  const cleared = resolveClearedPlan(view, answers, airport);
+  byAnswers.set(key, cleared);
+  return cleared;
 }
 
 /** Draws a plan that is already correct, and the clearance the SOP issues for it. */
