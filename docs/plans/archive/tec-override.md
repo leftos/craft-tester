@@ -1,7 +1,7 @@
 # A TEC route overrides the SOP assignment
 
-Subplan for the Wave 1 item in [MAIN.md](./MAIN.md). A new rule concept, so it is planned before any code
-(repo rule). Status: rulings in (user 2026-09-18); brief 1 next.
+Subplan for the Wave 1 item in [MAIN.md](../MAIN.md). A new rule concept, so it is planned before any code
+(repo rule). Status: **landed 2026-09-18**; archived.
 
 ## Rulings (user 2026-09-18)
 
@@ -227,7 +227,7 @@ two cases the heading stands and the route box is the row's route with its head 
   - **Interim gap until part 2:** KSFO SFOE props and turboprops to KOAK are `Unresolved` whatever they
     file ("the SOP reads the TEC route TEC-KOAK-SFOE-TP, but filed route GAPP7 has no fix after the
     procedure"), so the draw never picks them. At HEAD they got the SOP's answer.
-- [ ] **Brief 2: the runway draw and the on-request draw** (layers D and E, both halves of D plus
+- [x] **Brief 2: the runway draw and the on-request draw** (layers D and E, both halves of D plus
   `RWY-TEC`; E is bundled here because it edits the same `pickRunway`/`drawScenario`). Proving commands:
   `scenario/generate`, `rules/runway`, `generator tests/test_worksheets*`, `import-worksheets --check`
   (re-import if runways move, and report any moved fixtures), then `craft-gen build --check` for both
@@ -266,9 +266,9 @@ two cases the heading stands and the route box is the row's route with its head 
       altitude and a required reason). The importer applies each correction before building the fixture,
       notes it in the fixture, and fails on a correction whose plan isn't on its sheet.
     - N436MS then settles on the engine's reading of the corrected plan.
-- [ ] **Part 2: `RH`, `RV` and heading tokens.** See the section below. It edits `tecTokens` and the route
+- [x] **Part 2: `RH`, `RV` and heading tokens** landed 2026-09-18 (`483d196`, merged in `210fad9`). See the section below. It edits `tecTokens` and the route
   parser, and it closes the interim KOAK gap above.
-- [ ] **Docs (orchestrator):** ARCHITECTURE.md "The route rule is one rule" (`:128-129`) and the
+- [x] **Docs (orchestrator)** landed in `dd29d90`: ARCHITECTURE.md "The route rule is one rule" (`:128-129`) and the
   amendment-mode section; ADDING_AN_AIRPORT.md's TEC paragraph (`:257-271`); the `tec.yaml` headers. Then
   archive this subplan.
 

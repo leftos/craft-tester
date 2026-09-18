@@ -14,37 +14,13 @@ data facts and rationale now live in [ARCHITECTURE.md](../ARCHITECTURE.md) ("Why
 and "Amendment mode") and [ADDING_AN_AIRPORT.md](../ADDING_AN_AIRPORT.md) ("Lessons from KOAK"); the
 finished subplans behind them are in `archive/`.
 
-**State 2026-09-17.** Both airports are live. KOAK is closed at 51 of 51 fixtures settled. KSFO stands at
-67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
+**State 2026-09-18.** Both airports are live. The generator-data wave closed 2026-09-18 with the TEC
+override ([archive/tec-override.md](./archive/tec-override.md)). KOAK is closed at 51 of 51 fixtures
+settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
-## Wave 1 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
-
-Findings recorded while KOAK landed. Gate: generator. Surveyed 2026-09-17; the survey corrected three
-of them, noted inline. Four landed the same day and are in Landed below.
-
-- [ ] **Push `main` to origin when this wave closes** (user 2026-09-18: "push whenever you get to a good
-  checkpoint at the end of this wave"). That means after the TEC override's briefs 2a and 2b, part 2 and
-  its docs have landed, with the full web suite and the generator gates green on main.
-
-- [ ] **A TEC route overrides the SOP assignment**: subplan [tec-override.md](./tec-override.md). All
-  rulings are in (user 2026-09-17, and 2026-09-18 for its scope). The override is blanket: "The only time
-  the TEC route can't override is if the SID it suggests literally cannot be used with the only available
-  runways". "Can't be used" includes a SID the SOP doesn't put in use off that runway in the
-  configuration (ruling 9). Equipment, noise-abatement rows and notices still win, and the draw moves the
-  flight to a runway the TEC SID is in use from. The measurement found 71 rows losing flights, not five.
-  **Brief 1 (the engine) landed 2026-09-18 (`5e46ff8`).** Next is brief 2 (the runway draw and the
-  on-request fix), then part 2 (`RH`, `RV` and heading tokens), which also closes the interim gap: KSFO
-  SFOE props to KOAK are unresolved until then
-- [ ] **TEC rows that name no fix: superseded 2026-09-18.** The user ruled that `RH RV`, `H090 RV` and
-  `OAK6 RV` are real TEC routes ("fly runway heading, radar vectors direct"), and that the route box keeps
-  `RH`, `RV` and `Hnnn`. So these rows get transcribed, and the guard becomes a row grammar that knows the
-  three tokens and never looks `RH` up as the Arsha NDB. Planned as part 2 of
-  [tec-override.md](./tec-override.md), after brief 1. The 2026-09-17 attempt's findings (a shape test
-  cannot see `RV`, and the bare `GAPP#` row is live data) feed that grammar
-
-## Wave 2 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
+## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
 
@@ -56,7 +32,7 @@ Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data c
   `shared/airways.yaml`. **Data concept and the rebuild rule still to plan with the user before any engine
   change**; the subplan's three questions are open
 
-## Wave 3 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
+## Wave 2 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
 
 Gate: aviation + UI. The only rule concept KOAK left unbuilt.
 
@@ -68,7 +44,7 @@ Gate: aviation + UI. The only rule concept KOAK left unbuilt.
   answer only), the amendment UI box, the results view, and the importer's correction-cell reading. KGPI
   is in the CIFP cache but not among the 67 rows of `shared/destinations.yaml`, so it needs a data row too
 
-## Wave 4 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
+## Wave 3 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
 
 Paused by user steer 2026-09-16; resume with `pnpm -C web propose --pending`. Gate: aviation, one fixture
 at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build`, never an engine edit.
@@ -92,7 +68,7 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 - [ ] **Playtest observation awaiting a ruling** (2026-09-16, still true): the standing `SFO-SEGUL-OFF`
   notice is `default_active: true` and notices are cancelled only 20% of draws (`NOTICES_OFF_CHANCE`), so it
   is in force on 80% of scenarios. Is that too often? (The second observation, the on-request draw, was
-  ruled 2026-09-18 and ships in [tec-override.md](./tec-override.md) brief 2, ruling 7.)
+  ruled 2026-09-18 and landed with the TEC override, [archive/tec-override.md](./archive/tec-override.md) ruling 7.)
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([archive/free-text.md](./archive/free-text.md) decision 9)
@@ -175,3 +151,12 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] The corrected strip and the CRAFT clearance follow the student's plan: every box graded correct as
   written, every other box as the engine corrected it (`studentPlan`, `clearedPlan`) — 2026-09-17
 - [x] Cleanups: `selectControl` sets its value after its options; `clearedPlan` caches per view and answers — `59fe3dc`
+- [x] Worksheet corrections (`corrections:` in `worksheets.yaml`); N436MS files its TEC route — `4135d64`
+- [x] A TEC route overrides the SOP's departure (user rulings 1–12): the row choice from data, the sector
+  per DP (SOP 2-2 a), noise and notices still winning, the draw and the importer moving a flight to its TEC
+  SID's runway (`RWY-TEC`), on-request draws matching the importer, and `--overwrite-settled` downgrading
+  only changed fixtures — `5e46ff8`, `e7333d2`, `e7b6245`
+  ([archive/tec-override.md](./archive/tec-override.md), ARCHITECTURE.md "TEC routes")
+- [x] Radar vectors direct and `RH`/`RV`/`Hnnn` in TEC routes: KOAK's `RH RV` rows to KSFO and its Hayward
+  rows, SFO and HWD as north-gate stand-ins (Richmond), and a TEC row grammar in the build that replaces the
+  "rows that name no fix" guard — `210fad9`
