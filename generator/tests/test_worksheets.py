@@ -23,6 +23,7 @@ from craft_generator.sop.model import (
     TecRoute,
     Worksheet,
     WorksheetConfig,
+    WorksheetCorrection,
 )
 from craft_generator.worksheets import (
     Fixture,
@@ -99,6 +100,9 @@ EMPTY_CELL_SHEET = "amendment-empty-altitude"
 EMPTY_CELL_WHERE = "Amendment Practice 1A with an empty Altitude cell"
 EMPTY_CELL_CALLSIGN = "SWA1984"
 EMPTY_CELL_PROBLEM = "row 4 (SWA1984): the Altitude cell is empty"
+CORRECTED_SHEET = "Phraseology Practice 1A"
+CORRECTION_REASON = "the sheet predates the current route (injected for the test)"
+CORRECTED_ALTITUDE_FEET = 34000
 EMPTY_CELL_PLAN = PlanRow(
     callsign="SWA1984",
     designator="B738",
@@ -144,6 +148,7 @@ class Importer:
     tec_routes: tuple[TecRoute, ...]
     sids: tuple[PublishedSid, ...]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
+    corrections: tuple[WorksheetCorrection, ...]
 
 
 @pytest.fixture(scope="module")
@@ -165,6 +170,7 @@ def importer(
         tec_routes=ksfo_inputs.tec.routes,
         sids=published_sids(ksfo_inputs.icao),
         equipment_suffixes=equipment_suffixes,
+        corrections=worksheet_config.corrections,
     )
 
 
@@ -229,6 +235,7 @@ def import_of(worksheet: Worksheet, importer: Importer, aliases: Mapping[str, st
         tec_routes=importer.tec_routes,
         sids=importer.sids,
         equipment_suffixes=importer.equipment_suffixes,
+        corrections=importer.corrections,
     )
 
 
@@ -664,6 +671,77 @@ def test_type_alias_to_itself_is_rejected(tmp_path: Path, ksfo_dir: Path) -> Non
     path = directory / WORKSHEETS_FILE
     path.write_text((ksfo_dir / WORKSHEETS_FILE).read_text(encoding="utf-8").replace("A32N: A20N", "A32N: A32N"), encoding="utf-8")
     with pytest.raises(ValueError, match=r"ksfo/worksheets\.yaml type_aliases\[A32N\]: the alias reads 'A32N' as itself"):
+        load_worksheets(path)
+
+
+def correction_of(callsign: str, route: str) -> WorksheetCorrection:
+    """Return a correction of one Phraseology Practice 1A plan to a route at the corrected altitude."""
+    return WorksheetCorrection(
+        worksheet=CORRECTED_SHEET, callsign=callsign, route=route, altitude_feet=CORRECTED_ALTITUDE_FEET, reason=CORRECTION_REASON
+    )
+
+
+def corrected_ual320(by_title: dict[str, Worksheet], importer: Importer) -> tuple[Fixture, str]:
+    """Return UAL320's fixture with its northbound route corrected to the southbound route NKS188 files, and that route."""
+    southbound = row_of(by_title, CORRECTED_SHEET, "NKS188").route
+    corrected = replace(importer, corrections=(correction_of("UAL320", southbound),))
+    return fixture_of(sheet_of(by_title[CORRECTED_SHEET], corrected, {}), "UAL320"), southbound
+
+
+def write_worksheets_with_corrections(tmp_path: Path, corrections: Sequence[Mapping[str, Any]]) -> Path:
+    """Write a ``worksheets.yaml`` of one sheet and the given corrections, as JSON, which YAML reads."""
+    directory = tmp_path / "ksfo"
+    directory.mkdir()
+    path = directory / WORKSHEETS_FILE
+    sheet = {"id": "doc-1", "title": CORRECTED_SHEET, "kind": "phraseology", "config": "28/01", "phraseology": "abbreviated"}
+    path.write_text(json.dumps({"worksheets": [sheet], "corrections": list(corrections)}), encoding="utf-8")
+    return path
+
+
+def correction_row(**extra: Any) -> dict[str, Any]:
+    """Return a ``corrections`` row of UAL320, with extra keys merged in."""
+    return {
+        "worksheet": CORRECTED_SHEET,
+        "callsign": "UAL320",
+        "route": "SSTIK5 NTELL",
+        "altitude": CORRECTED_ALTITUDE_FEET,
+        "reason": CORRECTION_REASON,
+        **extra,
+    }
+
+
+def test_a_correction_replaces_route_and_altitude_before_the_runway_is_chosen(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    printed = row_of(by_title, CORRECTED_SHEET, "UAL320")
+    fixture, southbound = corrected_ual320(by_title, importer)
+    scenario = fixture["scenario"]
+    assert (printed.route, printed.altitude_feet) != (southbound, CORRECTED_ALTITUDE_FEET)
+    assert (scenario["filedRoute"], scenario["filedAltitude"]) == (southbound, CORRECTED_ALTITUDE_FEET)
+    assert (scenario["runwayConfigId"], scenario["departureRunway"]) == ("28/01", "01L")
+    assert "the runway configuration 28/01 departs south per direction_runway_preference" in fixture["source"]["note"]
+
+
+def test_a_correction_is_recorded_in_the_note(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    fixture, southbound = corrected_ual320(by_title, importer)
+    assert fixture["source"]["note"].endswith(
+        f"; plan corrected from {FIRST_PLAN.route} at {FIRST_PLAN.altitude_feet} to {southbound} at {CORRECTED_ALTITUDE_FEET}: {CORRECTION_REASON}"
+    )
+
+
+def test_a_correction_whose_callsign_is_not_on_its_sheet_is_stale(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    stale = replace(importer, corrections=(correction_of("UAL999", "SSTIK5 NTELL"),))
+    with pytest.raises(ValueError, match=r"Phraseology Practice 1A: the correction for UAL999 is stale, the sheet files no plan as 'UAL999'"):
+        import_of(by_title[CORRECTED_SHEET], stale, {})
+
+
+def test_a_correction_with_an_unknown_key_is_rejected(tmp_path: Path) -> None:
+    path = write_worksheets_with_corrections(tmp_path, [correction_row(squawk="4601")])
+    with pytest.raises(ValueError, match=r"ksfo/worksheets\.yaml\.corrections\[0\]: unknown key\(s\) \['squawk'\]"):
+        load_worksheets(path)
+
+
+def test_a_second_correction_of_the_same_plan_is_rejected(tmp_path: Path) -> None:
+    path = write_worksheets_with_corrections(tmp_path, [correction_row(), correction_row(altitude=36000)])
+    with pytest.raises(ValueError, match=r"corrections\[1\] \(Phraseology Practice 1A UAL320\): a second correction for the same sheet and callsign"):
         load_worksheets(path)
 
 

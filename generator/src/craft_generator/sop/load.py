@@ -96,6 +96,7 @@ from craft_generator.sop.model import (
     TecSource,
     Worksheet,
     WorksheetConfig,
+    WorksheetCorrection,
 )
 
 SOP_FILE = "sop.yaml"
@@ -322,9 +323,17 @@ class _Row:
         return None if value is None else _Row(self._at(key), value)
 
     def children(self, key: str) -> list["_Row"]:
+        return self._rows(key, self._raw(key))
+
+    def optional_children(self, key: str) -> list["_Row"]:
+        """Read an optional list of mappings; an absent key reads as an empty list."""
+        value = self._optional_raw(key)
+        return [] if value is None else self._rows(key, value)
+
+    def _rows(self, key: str, value: object) -> list["_Row"]:
         at = self._at(key)
         rows: list[_Row] = []
-        for index, item in enumerate(_as_sequence(self._raw(key), at)):
+        for index, item in enumerate(_as_sequence(value, at)):
             label = item.get("id", index) if isinstance(item, Mapping) else index
             rows.append(_Row(f"{at}[{label}]", item))
         return rows
@@ -1681,6 +1690,33 @@ def _check_worksheets(worksheets: Sequence[Worksheet], where: str) -> None:
             seen.add(value)
 
 
+def _worksheet_correction(row: _Row) -> WorksheetCorrection:
+    correction = WorksheetCorrection(
+        worksheet=row.text("worksheet"),
+        callsign=row.text("callsign"),
+        route=row.text("route"),
+        altitude_feet=row.number("altitude"),
+        reason=row.text("reason"),
+    )
+    row.finish()
+    if not correction.reason.strip():
+        raise ValueError(f"{row.where}.reason: the reason is empty; name who ruled the correction and when")
+    return correction
+
+
+def _check_corrections(corrections: Sequence[WorksheetCorrection], worksheets: Sequence[Worksheet], where: str) -> None:
+    titles = {sheet.title for sheet in worksheets}
+    seen: set[tuple[str, str]] = set()
+    for index, correction in enumerate(corrections):
+        at = f"{where}.corrections[{index}] ({correction.worksheet} {correction.callsign})"
+        if correction.worksheet not in titles:
+            raise ValueError(f"{at}: worksheet {correction.worksheet!r} names no sheet under worksheets; use one of {sorted(titles)}")
+        key = (correction.worksheet, correction.callsign)
+        if key in seen:
+            raise ValueError(f"{at}: a second correction for the same sheet and callsign; merge the two into one")
+        seen.add(key)
+
+
 def _check_type_aliases(aliases: Mapping[str, str], where: str) -> None:
     for filed, read_as in aliases.items():
         at = f"{where} type_aliases[{filed}]"
@@ -1698,12 +1734,14 @@ def load_worksheets(path: Path) -> WorksheetConfig:
         path: Path to the file.
 
     Returns:
-        The trainer worksheets in file order and the aircraft type aliases the sheets file under.
+        The trainer worksheets in file order, the aircraft type aliases the sheets file under, and
+        the plan corrections in file order (none when the file has no ``corrections`` key).
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown key, names a sheet kind or a
-            phraseology reading that does not exist, repeats a document id or title, or holds a type
-            alias that is not a designator or that reads a type as itself.
+            phraseology reading that does not exist, repeats a document id or title, holds a type
+            alias that is not a designator or that reads a type as itself, or holds a correction
+            that misses a key, has an empty reason, names no sheet, or repeats a sheet and callsign.
         OSError: The file is missing.
     """
     where = _where(path)
@@ -1712,10 +1750,12 @@ def load_worksheets(path: Path) -> WorksheetConfig:
     config = WorksheetConfig(
         worksheets=tuple(_worksheet(child) for child in root.children("worksheets")),
         type_aliases={} if aliases is None else _text_table(aliases, f"{where}.type_aliases"),
+        corrections=tuple(_worksheet_correction(child) for child in root.optional_children("corrections")),
     )
     root.finish()
     _check_worksheets(config.worksheets, where)
     _check_type_aliases(config.type_aliases, where)
+    _check_corrections(config.corrections, config.worksheets, where)
     return config
 
 

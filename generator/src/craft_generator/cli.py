@@ -622,6 +622,7 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
             tec_routes=tec_routes,
             sids=sids,
             equipment_suffixes=equipment_suffixes,
+            corrections=config.corrections,
         )
         results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in sheet.fixtures.items()]
         for result in results:

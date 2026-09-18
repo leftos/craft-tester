@@ -35,12 +35,16 @@ published for that runway family alone is asking for it.
 The plan's TEC route has the last word on the runway, as it has in the web draw (``tecRunway`` in
 ``web/src/scenario/generate.ts``): a plan no ``tec`` row is usable for off the runway chosen moves to
 a runway of the configuration one is usable off, and the note says so.
+
+A sheet that files a plan the user has ruled out of date is corrected by a ``corrections`` row of
+``worksheets.yaml``: the plan's route and altitude are replaced before its runway is chosen, and the
+note records the plan as the sheet printed it and the ruling's reason.
 """
 
 import json
 import re
 from collections.abc import Collection, Iterator, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -62,6 +66,7 @@ from craft_generator.sop.model import (
     SopData,
     TecRoute,
     Worksheet,
+    WorksheetCorrection,
     WorksheetKind,
 )
 
@@ -1155,6 +1160,28 @@ class SheetImport:
     skipped: tuple[SkippedPlan, ...]
 
 
+def _sheet_corrections(worksheet: Worksheet, rows: Sequence[PlanRow], corrections: Sequence[WorksheetCorrection]) -> dict[str, WorksheetCorrection]:
+    """Return the corrections of this sheet keyed by callsign, failing on one whose plan the sheet does not file."""
+    own = {correction.callsign: correction for correction in corrections if correction.worksheet == worksheet.title}
+    filed = {row.callsign for row in rows}
+    for callsign in own:
+        if callsign not in filed:
+            raise ValueError(
+                f"{worksheet.title}: the correction for {callsign} is stale, the sheet files no plan as {callsign!r}; "
+                "remove it from corrections in worksheets.yaml, or fix its callsign"
+            )
+    return own
+
+
+def _corrected(row: PlanRow, correction: WorksheetCorrection) -> PlanRow:
+    return replace(row, route=correction.route, altitude_feet=correction.altitude_feet, truncated=correction.route.endswith(TRUNCATION_MARKER))
+
+
+def _correction_clause(row: PlanRow, correction: WorksheetCorrection) -> str:
+    """Return the note clause that records the plan as the sheet printed it and the ruling that replaced it."""
+    return f"; plan corrected from {row.route} at {row.altitude_feet} to {correction.route} at {correction.altitude_feet}: {correction.reason}"
+
+
 def sheet_fixtures(
     worksheet: Worksheet,
     text: str,
@@ -1170,11 +1197,14 @@ def sheet_fixtures(
     tec_routes: Sequence[TecRoute],
     sids: Sequence[PublishedSid],
     equipment_suffixes: Sequence[EquipmentSuffix],
+    corrections: Sequence[WorksheetCorrection],
 ) -> SheetImport:
     """Parse one worksheet and build the fixture of every flight plan on it.
 
     A plan filed to a field ``destinations`` does not carry is skipped and named in the return value,
-    because the fixture would state a destination the data has no spoken name or center for.
+    because the fixture would state a destination the data has no spoken name or center for. A plan a
+    correction names is built from the correction's route and altitude, so the runway choice and the
+    fixture both see the corrected plan, and the note records what the sheet printed.
 
     Args:
         worksheet: The worksheet row out of ``worksheets.yaml``.
@@ -1192,6 +1222,8 @@ def sheet_fixtures(
         sids: The procedures the airport publishes, with their families, runways and RNAV
             requirement.
         equipment_suffixes: The equipment suffix table, which says whether a suffix is RNAV.
+        corrections: The plan corrections out of ``worksheets.yaml``, of every sheet; only this
+            sheet's are applied.
 
     Returns:
         One fixture per flight plan whose destination is known, keyed by the file it is written to
@@ -1200,14 +1232,19 @@ def sheet_fixtures(
 
     Raises:
         ValueError: The text does not have the shape the sheet's kind promises, the sheet's runway
-            configuration does not resolve, or two plans on the sheet share a callsign.
+            configuration does not resolve, two plans on the sheet share a callsign, or a correction
+            of this sheet names a callsign the sheet does not file.
     """
     config = sheet_runway_config(worksheet.config, sop.runway_configs, worksheet.title)
     name = slug(worksheet.title)
     directory = fixture_dir(icao)
     fixtures: dict[Path, Fixture] = {}
     skipped: list[SkippedPlan] = []
-    for index, row in enumerate(parse_worksheet(worksheet, text)):
+    rows = parse_worksheet(worksheet, text)
+    own_corrections = _sheet_corrections(worksheet, rows, corrections)
+    for index, printed in enumerate(rows):
+        correction = own_corrections.get(printed.callsign)
+        row = printed if correction is None else _corrected(printed, correction)
         if row.destination not in destinations:
             skipped.append(SkippedPlan(callsign=row.callsign, destination=row.destination))
             continue
@@ -1228,5 +1265,8 @@ def sheet_fixtures(
             sids=sids,
             equipment_suffixes=equipment_suffixes,
         )
-        fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, type_aliases=type_aliases)
+        fixture = fixture_for(worksheet, row, index, icao=icao, runway=runway, type_aliases=type_aliases)
+        if correction is not None:
+            fixture["source"]["note"] += _correction_clause(printed, correction)
+        fixtures[path] = fixture
     return SheetImport(fixtures=fixtures, skipped=tuple(skipped))
