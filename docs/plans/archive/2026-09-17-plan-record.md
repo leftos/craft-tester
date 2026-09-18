@@ -238,3 +238,68 @@ None. Worksheets are public Google Docs (ids in the subplan); no browser needed 
 ## Open questions (settled by the validation loops, recorded as data toggles)
 
 See "Open questions" in [craft-trainer-v1.md](./craft-trainer-v1.md#open-questions-to-settle-from-the-worksheets-encoded-as-data-toggles-not-code).
+
+## Landed after the 2026-09-17 hygiene pass
+
+Moved out of MAIN.md by the next hygiene pass (2026-09-17, at `fd05a17`); MAIN.md keeps one line each.
+
+- [x] The answer form is built once per phase and synced in place, so a keystroke or a pick no longer
+  destroys the control it came from; `focusedInput`/`restoreFocus` are gone and `viewKey`/`phaseOf` decide
+  rebuild-or-sync. No UI framework was needed — the forms hold no dynamic lists. `happy-dom` (dev only)
+  gives `ui/app.ts`, `ui/dom.ts` and `ui/amendPanels.ts` their first tests, which assert node identity
+  across a keystroke — 2026-09-17
+- [x] An airline-default runway row must list a class that airline flies — `_check_runway_defaults`,
+  the only place the runway rows and the fleet are joined. Both readers silently dropped a mismatched
+  row, so it was dead data with no signal — 2026-09-17
+- [x] `LoaData.sources` deleted: parsed, joined and never emitted (user ruling). The three LOA letters it
+  held keep their URLs as a comment in `shared/loa_rules.yaml`, where whoever re-verifies a row will look,
+  rather than as data nothing reads — 2026-09-17
+- [x] An empty amendment-worksheet cell names its row and column instead of shifting the sheet —
+  2026-09-17. `_cells` dropped blank lines, so an empty cell vanished and the positional five-cell slice
+  shifted every later cell left; any multiple of five blanks passed the modulus check and wrote corrupt
+  fixtures silently. Rows are now the next five lines once the six-blank run between them is skipped, and
+  every empty cell in the table is reported in one message. **Two limits by design:** an empty *Callsign*
+  merges into the boundary run and is still unrecoverable, and an empty last cell of the last row raises
+  the short-row error instead, because the export writes no trailing blank run
+- [x] A CIFP `VD` leg is an initial climb, not a crossing restriction, so no SID emits a restriction with
+  an empty fix and the `rules/route.ts` filter that worked around five of them is gone; COAST9 and NUEVO8
+  take `climb_via_eligible` to hold the "CVS x 10,000" the SOP clears them with. `CD` is the same shape and
+  deliberately absent — see CLAUDE.md Footguns — 2026-09-17
+- [x] KOAK's `direction_runway_preference` maps family 10 to 10L, the north-field runway its P/T class
+  default already names, rather than PAC VALLEY's 10R — 2026-09-17 (user ruling)
+- [x] `merge._check_approach_categories` deleted: `_approach_category` writes the key unconditionally and
+  raises first, so the guard could never fire — 2026-09-17
+- [x] A built route that reads past the departure's own structure cites `R-SID-STRUCTURE`, and the reason
+  names the SID whose structure it is — 2026-09-17. Threading `dropped` was not enough: `procedureOutcome`
+  returns `builtAmendment` first, which cited the row nowhere. Two KSFO departures answer PORTE to SUSEY,
+  so `parseFiledRoute` carries every SID that justifies a drop and the clause names the procedure the box
+  proposes where that one is among them, else the SID that does carry it
+- [x] The `half` verdict tier stays fixture-only — closed by the user 2026-09-17 after an `arrival_swap`
+  fault kind would not draw. **Why, so nobody re-opens it blind:** every eligible library route files
+  inside the RVSM band (KSFO's four at 31,000-41,000, KOAK's seven at 29,000-35,000) and the suffix the
+  fault writes (`/U`) is not RVSM-approved, so the altitude box is raised too and `sameBoxes` discards the
+  draw. A drawn swap needs library routes outside the band that neither airport has. The cheaper mechanism
+  if it ever returns: `arrivalTrigger` fires on `filed.arrival.rnav !== ctx.rnavCapable` in **both**
+  directions, so filing a conventional arrival for an RNAV flight swaps the arrival with no suffix strip.
+  Two survey errors corrected against the source: `rnav_clash` is `['type','route']`, not type-box-only,
+  and the common-arrivals sheet lists nine destinations, not eight
+- [x] `A-ONE-WAY-AIRWAY`: a one-way airway is read against TBL 4-5-1's one-way row in place of parity
+  (any whole thousand up to FL410, odd flight levels above, so FL420 on R464 steps down to FL410), and
+  the altitude box of such a route cites the row whatever its verdict, so the reveal says why FDX3875's
+  FL310 stood — 2026-09-17
+- [x] Cleanup (user 2026-09-17):
+  - navaids the CIFP does not carry are named once in shared `navaid_names.yaml` (ECA Manteca VOR,
+    decommissioned 2018; SMA Saint Mary's NDB; KAE Gangwon VOR);
+  - the gate-coverage warning is the `build --coverage` report, so both builds print no warnings;
+  - `altitude.ts` has one TBL 4-5-1 FL410 constant, and the RVSM band has one copy;
+  - the dead half of the TRUKN2 base-fix test pair is gone.
+
+  The one skipped test left, the fixtures report over pending clearance plans, is conditional by design —
+  2026-09-17
+- [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
+  offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
+  pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules
+  engine is TypeScript in the browser; the seam is the zod schema and its checked-in export, with no logic
+  duplicated across it. The one finding was the UI render model, which is Wave 1. **The answer reopens
+  only if** a backend appears (accounts, shared progress, one deployment serving many facilities) or
+  dictation moves off the browser's Web Speech API

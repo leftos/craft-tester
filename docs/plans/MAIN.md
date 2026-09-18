@@ -1,6 +1,6 @@
 # Plan index
 
-<!-- plan-doc-hygiene: 2026-09-17 05281397349f4d2d1c10c5ef7817407b9e422d7e -->
+<!-- plan-doc-hygiene: 2026-09-17 fd05a17 -->
 
 Entry point for anyone continuing this work. **Open items in full, one line per landed step.** When an
 item lands, replace it here with one line and move its record to `archive/`. Open work is grouped into
@@ -32,7 +32,8 @@ Queued next by the user 2026-09-17. Gate: UI. Subplan: [free-text.md](./free-tex
 
 ## Wave 2 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
 
-Three UI questions the engine already answers correctly; all three are presentation. Gate: UI.
+Four UI questions the engine already answers correctly; all four are presentation. Gate: UI. Shares
+`ui/results.ts` with Wave 1 step 4, so the two never run at once.
 
 - [ ] **An acceptable route box reads backwards for the navaid case.** `ui/results.ts:69` labels every
   `acceptable` verdict `shorter: …` and `:48` counts it "acceptable but inefficient", but where the box is
@@ -86,7 +87,7 @@ of them, noted inline. Four landed the same day and are in Landed below.
   - [ ] `TEC-KOAK-SFOE-TP` is the bare `GAPP#` and names no fix, so `parseFiledRoute`
     (`rules/route.ts:200-202`) rejects it however the row is chosen
   - [ ] Also worth doing whatever is decided: drop the `initialAltitudeFeet` filter at
-    `tecAltitudes.test.ts:203`, which today hides three of the five from the unroutable-rows report
+    `rules/tecAltitudes.test.ts:203`, which today hides three of the five from the unroutable-rows report
 - [ ] **TEC rows that name no fix.** **Correction: `RH RV`, `OAK6 RV` and `H090 RV` are not in the repo** —
   they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
   `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
@@ -155,8 +156,6 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([free-text.md](./free-text.md) decision 9)
-- [ ] **The read-aloud voice fix awaits the user's retest on the live site** (landed `9f291d7`, proven with
-  a Playwright probe of real Firefox; nothing in the repo is gated on it)
 
 ## Landed
 
@@ -213,63 +212,15 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] Browser-check tooling: `CRAFT_PREVIEW_URL` picks the preview, so two builds can be checked at once, and
   a button with no text lists by its `aria-label` — 2026-09-17
 - [x] The strip's revision number is left-aligned under the callsign — 2026-09-17
-- [x] The answer form is built once per phase and synced in place, so a keystroke or a pick no longer
-  destroys the control it came from; `focusedInput`/`restoreFocus` are gone and `viewKey`/`phaseOf` decide
-  rebuild-or-sync. No UI framework was needed — the forms hold no dynamic lists. `happy-dom` (dev only)
-  gives `ui/app.ts`, `ui/dom.ts` and `ui/amendPanels.ts` their first tests, which assert node identity
-  across a keystroke — 2026-09-17
-- [x] An airline-default runway row must list a class that airline flies — `_check_runway_defaults`,
-  the only place the runway rows and the fleet are joined. Both readers silently dropped a mismatched
-  row, so it was dead data with no signal — 2026-09-17
-- [x] `LoaData.sources` deleted: parsed, joined and never emitted (user ruling). The three LOA letters it
-  held keep their URLs as a comment in `shared/loa_rules.yaml`, where whoever re-verifies a row will look,
-  rather than as data nothing reads — 2026-09-17
-- [x] An empty amendment-worksheet cell names its row and column instead of shifting the sheet —
-  2026-09-17. `_cells` dropped blank lines, so an empty cell vanished and the positional five-cell slice
-  shifted every later cell left; any multiple of five blanks passed the modulus check and wrote corrupt
-  fixtures silently. Rows are now the next five lines once the six-blank run between them is skipped, and
-  every empty cell in the table is reported in one message. **Two limits by design:** an empty *Callsign*
-  merges into the boundary run and is still unrecoverable, and an empty last cell of the last row raises
-  the short-row error instead, because the export writes no trailing blank run
-- [x] A CIFP `VD` leg is an initial climb, not a crossing restriction, so no SID emits a restriction with
-  an empty fix and the `rules/route.ts` filter that worked around five of them is gone; COAST9 and NUEVO8
-  take `climb_via_eligible` to hold the "CVS x 10,000" the SOP clears them with. `CD` is the same shape and
-  deliberately absent — see CLAUDE.md Footguns — 2026-09-17
-- [x] KOAK's `direction_runway_preference` maps family 10 to 10L, the north-field runway its P/T class
-  default already names, rather than PAC VALLEY's 10R — 2026-09-17 (user ruling)
-- [x] `merge._check_approach_categories` deleted: `_approach_category` writes the key unconditionally and
-  raises first, so the guard could never fire — 2026-09-17
-- [x] A built route that reads past the departure's own structure cites `R-SID-STRUCTURE`, and the reason
-  names the SID whose structure it is — 2026-09-17. Threading `dropped` was not enough: `procedureOutcome`
-  returns `builtAmendment` first, which cited the row nowhere. Two KSFO departures answer PORTE to SUSEY,
-  so `parseFiledRoute` carries every SID that justifies a drop and the clause names the procedure the box
-  proposes where that one is among them, else the SID that does carry it
-- [x] The `half` verdict tier stays fixture-only — closed by the user 2026-09-17 after an `arrival_swap`
-  fault kind would not draw. **Why, so nobody re-opens it blind:** every eligible library route files
-  inside the RVSM band (KSFO's four at 31,000-41,000, KOAK's seven at 29,000-35,000) and the suffix the
-  fault writes (`/U`) is not RVSM-approved, so the altitude box is raised too and `sameBoxes` discards the
-  draw. A drawn swap needs library routes outside the band that neither airport has. The cheaper mechanism
-  if it ever returns: `arrivalTrigger` fires on `filed.arrival.rnav !== ctx.rnavCapable` in **both**
-  directions, so filing a conventional arrival for an RNAV flight swaps the arrival with no suffix strip.
-  Two survey errors corrected against the source: `rnav_clash` is `['type','route']`, not type-box-only,
-  and the common-arrivals sheet lists nine destinations, not eight
-- [x] `A-ONE-WAY-AIRWAY`: a one-way airway is read against TBL 4-5-1's one-way row in place of parity
-  (any whole thousand up to FL410, odd flight levels above, so FL420 on R464 steps down to FL410), and
-  the altitude box of such a route cites the row whatever its verdict, so the reveal says why FDX3875's
-  FL310 stood — 2026-09-17
-- [x] Cleanup (user 2026-09-17):
-  - navaids the CIFP does not carry are named once in shared `navaid_names.yaml` (ECA Manteca VOR,
-    decommissioned 2018; SMA Saint Mary's NDB; KAE Gangwon VOR);
-  - the gate-coverage warning is the `build --coverage` report, so both builds print no warnings;
-  - `altitude.ts` has one TBL 4-5-1 FL410 constant, and the RVSM band has one copy;
-  - the dead half of the TRUKN2 base-fix test pair is gone.
-
-  The one skipped test left, the fixtures report over pending clearance plans, is conditional by design —
-  2026-09-17
-- [x] Stack review 2026-09-17: keep the Python-generator / TypeScript-web split. The generator is an
-  offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where
-  pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page, so the rules
-  engine is TypeScript in the browser; the seam is the zod schema and its checked-in export, with no logic
-  duplicated across it. The one finding was the UI render model, which is Wave 1. **The answer reopens
-  only if** a backend appears (accounts, shared progress, one deployment serving many facilities) or
-  dictation moves off the browser's Web Speech API
+- [x] The answer form is built once per phase and synced in place (render model in ARCHITECTURE.md) — `761fa10`
+- [x] An airline-default runway row must list a class that airline flies (`_check_runway_defaults`) — `fdf310f`
+- [x] `LoaData.sources` deleted; the LOA letter URLs are a comment in `shared/loa_rules.yaml` — `fdf310f`
+- [x] An empty amendment-worksheet cell names its row and column instead of shifting the sheet — `a2fdec4`
+- [x] A CIFP `VD` leg is an initial climb; COAST9 and NUEVO8 take `climb_via_eligible` — `4ed6aaa`
+- [x] KOAK's family 10 maps to 10L (user ruling) — `4ed6aaa`
+- [x] `merge._check_approach_categories` deleted (could never fire) — `4ed6aaa`
+- [x] A built route that reads past the departure's structure cites `R-SID-STRUCTURE` and names the SID — `f855c1a`, `22d3b6e`
+- [x] The `half` verdict stays fixture-only (user, 2026-09-17; why in ARCHITECTURE.md) — `7ffacd0`
+- [x] `A-ONE-WAY-AIRWAY`: a one-way airway is read against TBL 4-5-1's one-way row in place of parity — `303bbdd`
+- [x] Cleanup: shared `navaid_names.yaml`, `build --coverage` report, one FL410 constant, dead test gone — `0f5cc02`, `b80a614`
+- [x] Stack review: keep the Python-generator / TypeScript-web split (ARCHITECTURE.md says when it reopens) — 2026-09-17
