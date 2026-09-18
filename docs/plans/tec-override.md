@@ -240,7 +240,14 @@ two cases the heading stands and the route box is the row's route with its head 
       and `cite.ts`.
     - The `route.test` name "passes over a TEC row that begins on a departure the flight is not issued" is
       stale. That flight now routes on `TEC-KMYV-SFOW-TP-01`.
-  - After it lands, re-settle N436MS with the user (ruling 10: 01R, TRUKN2).
+  - **Split 2026-09-18:**
+    - **2a (web, dispatched):** the draw's TEC move in `drawScenario`, `RWY-TEC` in both `sop.yaml` files
+      and in `explainRunway`, the on-request fix, and the loose ends above.
+    - **2b (next):** port the same move into the Python importer's `departure_runway`
+      (`worksheets.py:701`), which needs the TEC rows, `inUseRows`, SID runways and RNAV, suffix
+      capability and active notices on the Python side. Then re-import and report the fixtures whose
+      runway moves.
+  - After 2b lands, re-settle N436MS with the user (ruling 10: 01R, TRUKN2).
 - [ ] **Part 2: `RH`, `RV` and heading tokens.** See the section below. It edits `tecTokens` and the route
   parser, and it closes the interim KOAK gap above.
 - [ ] **Docs (orchestrator):** ARCHITECTURE.md "The route rule is one rule" (`:128-129`) and the
