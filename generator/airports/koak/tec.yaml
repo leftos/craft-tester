@@ -109,6 +109,14 @@ routes:
   - { id: TEC-KSJC-SFOE-TP, destination: KSJC, plan: SFOE, classes: [T, P], runway_families: [], route: "OAK# OAK SUNOL SJC", initial_altitude_feet: 3000, final_altitude_feet: 4000 }
   # KSQL San Carlos: the tool prints turboprop and prop rows in SFOW only
   - { id: TEC-KSQL-SFOW-TP, destination: KSQL, plan: SFOW, classes: [T, P], runway_families: [], route: "NUEVO# EUGEN OSI",final_altitude_feet: 5000 }
-  # KSFO San Francisco: only the OAKE rows name a fix; the SFOW and SFOE rows the tool prints are
-  # `RH RV`, a runway heading and radar vectors, which is not a route this file can carry
+  # KSFO San Francisco: the SFOW and SFOE rows the tool prints are `RH RV`, which it issues as runway
+  # heading, radar vectors direct to the field (user 2026-09-18); those two rows were read off the
+  # tool on 2026-09-18
+  - { id: TEC-KSFO-SFOW-JTP, destination: KSFO, plan: SFOW, classes: [J, T, P], runway_families: [], route: "RH RV", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KSFO-SFOE-JTP, destination: KSFO, plan: SFOE, classes: [J, T, P], runway_families: [], route: "RH RV", initial_altitude_feet: 3000, final_altitude_feet: 4000 }
   - { id: TEC-KSFO-OAKE-JTP, destination: KSFO, plan: OAKE, classes: [J, T, P], runway_families: [], route: "H270 OSI", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  # KHWD Hayward, read off the tool on 2026-09-18: every row ends in `RV`, radar vectors direct to the
+  # field after its head (user 2026-09-18); the tool prints OAK6 and NIMI5, written here by family
+  - { id: TEC-KHWD-SFOW-J, destination: KHWD, plan: SFOW, classes: [J], runway_families: [], route: "OAK# RV", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
+  - { id: TEC-KHWD-SFOW-TP, destination: KHWD, plan: SFOW, classes: [T, P], runway_families: [], route: "NIMI# RV", initial_altitude_feet: 3000, final_altitude_feet: 4000 }
+  - { id: TEC-KHWD-SFOE-JTP, destination: KHWD, plan: SFOE, classes: [J, T, P], runway_families: [], route: "H090 RV", initial_altitude_feet: 3000, final_altitude_feet: 4000 }

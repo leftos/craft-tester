@@ -8,8 +8,12 @@ import type {
   RouteTemplate,
   Scenario,
 } from '@/data/schema.ts';
+import { checkRoute } from '@/rules/amend/route.ts';
+import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
+import { isUnresolved } from '@/rules/unresolved.ts';
+import { spokenFor } from '@/ui/session.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
@@ -516,5 +520,64 @@ describe('route building before a heading', () => {
     );
     expect(clearance.procedure.value.kind).toBe('heading');
     expect(clearance.route.value.builtRoute).toBeUndefined();
+  });
+});
+
+/** The route box the amendment check proposes for a flight, `undefined` where it reads right. */
+function proposedBox(flight: Scenario, airport: AirportData): string | undefined {
+  const ctx = classify(flight, airport);
+  if (isUnresolved(ctx)) throw new Error(ctx.reason);
+  const result = checkRoute(flight, ctx, clearanceFor(flight, airport), airport);
+  if (result !== undefined && isUnresolved(result)) throw new Error(result.reason);
+  if (result !== undefined && result.box !== 'route') throw new Error(`amended ${result.box}`);
+  return result?.proposed;
+}
+
+describe('radar vectors direct on the bare GAPP# TEC route', () => {
+  const flight = scenario({
+    aircraftType: 'BE20',
+    equipmentSuffix: '/A',
+    destination: 'KOAK',
+    filedRoute: 'GAPP7 SFO',
+    filedAltitude: 3000,
+    runwayConfigId: '10/10',
+    departureRunway: '10L',
+  });
+
+  it('clears a KSFO SFOE turboprop to KOAK on GAPP7, radar vectors direct, on Richmond', () => {
+    const clearance = clearanceFor(flight);
+    expect(assigned(clearance).id).toBe('GAPP7');
+    expect(clearance.route.value).toEqual({ template: 'radar_vectors_direct' });
+    expect(clearance.route.citations.map((citation) => citation.id)).toEqual(['R-RV-DIRECT']);
+    expect(clearance.frequency.value.value).toBe('120.9');
+    expect(spokenFor(flight, flight, clearance, ksfo).abbreviated).toContain(
+      'Gap Seven departure, radar vectors direct',
+    );
+    expect(proposedBox(flight, ksfo)).toBeUndefined();
+  });
+});
+
+describe('radar vectors direct on an RH RV TEC route', () => {
+  const flight = scenario({
+    callsign: 'SWA1',
+    aircraftType: 'B738',
+    destination: 'KSFO',
+    filedRoute: 'RH RV',
+    filedAltitude: 5000,
+    runwayConfigId: 'SFOW',
+    departureRunway: '30',
+  });
+
+  it('clears a KOAK SFOW jet off 30 to KSFO on the runway heading, radar vectors direct', () => {
+    const clearance = clearanceFor(flight, koak);
+    expect(clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 'runway heading' });
+    expect(clearance.route.value).toEqual({ template: 'radar_vectors_direct' });
+    expect(clearance.frequency.value.value).toBe('120.9');
+    expect(clearance.altitude.value).toEqual({ phrase: 'maintain', feet: 5000 });
+    expect(spokenFor(flight, flight, clearance, koak).abbreviated).toContain(
+      'via fly runway heading, radar vectors direct',
+    );
+    expect(proposedBox(flight, koak)).toBeUndefined();
+    expect(proposedBox({ ...flight, filedRoute: 'OAK6 OAK SFO' }, koak)).toBe('RH RV');
   });
 });

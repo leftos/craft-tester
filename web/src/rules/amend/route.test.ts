@@ -1093,3 +1093,19 @@ describe('checkRoute arrivals', () => {
     expect(amendmentAt(cargo, airport).proposed).toBe('GAPP7 SFO OSI SNS SNAXX BAYST1');
   });
 });
+
+describe('checkRoute on the bare GAPP# TEC route', () => {
+  it('boxes a KSFO SFOE turboprop to KOAK as GAPP7 SFO, radar vectors direct', () => {
+    const flight = scenario({
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      destination: 'KOAK',
+      filedRoute: 'OAK',
+      filedAltitude: 3000,
+      runwayConfigId: '19/10',
+      departureRunway: '10R',
+    });
+    expect(amendment(flight).proposed).toBe('GAPP7 SFO');
+    expect(citations(flight)).toContain('TEC-KOAK-SFOE-TP');
+  });
+});

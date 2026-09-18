@@ -141,7 +141,10 @@ gates:
   # HUSSH2 and SLNT3 transitions, the TEC heads that leave to the north and east, and the Altamont
   # corridor (ALTAM, MOD), which the TEC rows work east out of the Bay the way KSFO works OAK.
   # CCR, RDD and LKV are worksheet exit fixes north of the field (KSFO lists them the same way).
-  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY, CCR, RDD, LKV]
+  # SFO and HWD: the user ruled that vectors-direct departures to San Francisco and Hayward get
+  # Richmond (2026-09-18). The destinations' identifiers stand in as gate fixes for those routes; no
+  # other KOAK route exits on the SFO VOR.
+  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY, CCR, RDD, LKV, SFO, HWD]
   # CNDEL5 and KATFH3 transitions (and their common fix PORTE), COAST9 and SKYL1 transitions,
   # NUEVO8 transitions and the fixes the SOP's NUEVO# row names; SUNNE (the SUNNE1 end fix) and the
   # valley and coastal fixes worksheet plans leave on (CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO).

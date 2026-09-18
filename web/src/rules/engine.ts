@@ -8,7 +8,7 @@ import type { ParsedRoute } from '@/rules/route.ts';
 import { flightDirection, parseFiledRoute } from '@/rules/route.ts';
 import type { BuiltRoute } from '@/rules/routeBuild.ts';
 import { buildRoute, builtCitations, builtTokens } from '@/rules/routeBuild.ts';
-import { phraseRoute } from '@/rules/routePhrasing.ts';
+import { phraseRoute, phraseVectorsDirect } from '@/rules/routePhrasing.ts';
 import { explainRunway } from '@/rules/runway.ts';
 import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
@@ -60,7 +60,7 @@ function tableRoute(
   }
   const tokens = tecTokens(tec, airport);
   if (isUnresolved(tokens)) return tokens;
-  const parsed = parseFiledRoute(tokens.join(' '), airport);
+  const parsed = parseFiledRoute(tokens.join(' '), airport, scenario.destination);
   if (isUnresolved(parsed)) {
     return unresolved(
       parsed.element,
@@ -109,10 +109,13 @@ function builtFor(
  * `builtRoute` is the route box a built clearance is read for, which is not the one the pilot filed:
  * it is the SID, the fix the flight leaves it at, the connecting fixes and the filed route from the
  * point the two run together. It is absent wherever the flight flies the route it filed.
+ * `vectorsDirect` is set where the route names no fix after the departure, so the route phrase is
+ * "radar vectors direct" rather than one that names the exit element.
  */
 type Issued = {
   procedure: SelectedProcedure;
   exitElement: string;
+  vectorsDirect: boolean;
   row: AssignmentRule;
   citations: RuleCitation[];
   builtRoute?: string;
@@ -145,6 +148,7 @@ function issued(
     return {
       procedure: { kind: 'sid', sid: built.sid },
       exitElement: built.start.fix,
+      vectorsDirect: false,
       row: built.row,
       citations: [...builtCitations(built, airport), ...notices],
       builtRoute: builtTokens(built, route.tokens).join(' '),
@@ -154,6 +158,7 @@ function issued(
   return {
     procedure,
     exitElement: route.exitElement,
+    vectorsDirect: route.vectorsDirect === true,
     row: selection.row,
     citations: [
       toCitation(selection.row),
@@ -164,8 +169,12 @@ function issued(
   };
 }
 
-/** The route element of the clearance, which a built clearance carries the rebuilt box on. */
+/**
+ * The route element of the clearance, which a built clearance carries the rebuilt box on, and a
+ * route that names no fix after its departure speaks as radar vectors direct.
+ */
 function routeElement(element: Issued, airport: AirportData): ResolvedRoute {
+  if (element.vectorsDirect) return phraseVectorsDirect(airport);
   const phrased = phraseRoute(element.procedure, element.exitElement, airport);
   const { builtRoute } = element;
   if (builtRoute === undefined) return phrased;
@@ -192,7 +201,7 @@ function routeElement(element: Issued, airport: AirportData): ResolvedRoute {
 export function resolveClearance(scenario: Scenario, airport: AirportData): EngineResult {
   const ctx = classify(scenario, airport);
   if (isUnresolved(ctx)) return blocked(ctx);
-  const route = parseFiledRoute(scenario.filedRoute, airport);
+  const route = parseFiledRoute(scenario.filedRoute, airport, scenario.destination);
   if (isUnresolved(route)) return blocked(route);
   const direction = flightDirection(route, airport);
   const read = tableRoute(ctx, route, scenario, airport);

@@ -738,6 +738,7 @@
             "transition",
             "radar_vectors_fix",
             "radar_vectors_airway",
+            "radar_vectors_direct",
             "as_filed"
           ],
           "type": "string"
@@ -1489,6 +1490,7 @@
               "transition",
               "radar_vectors_fix",
               "radar_vectors_airway",
+              "radar_vectors_direct",
               "as_filed"
             ],
             "type": "string"

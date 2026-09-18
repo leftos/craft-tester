@@ -1991,6 +1991,11 @@
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
     },
     {
+      "id": "R-RV-DIRECT",
+      "source": "SOP 2-1 b (\"if a pilot cannot accept one, vectors direct\"); user ruling 2026-09-18",
+      "text": "RADAR VECTORS DIRECT — used when the route names no fix after the departure: a TEC route that ends in RV, or a radar-vector SID with nothing after the airport navaid; the flight is vectored straight to the destination"
+    },
+    {
       "id": "R-AIRWAY",
       "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15; user steer 2026-09-17 (pacing comma)",
       "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically; a comma follows the airway before the fix it leads to, for pacing (Queue one seventy-four, Flchr), where DIRECT (fix) takes none"

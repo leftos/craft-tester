@@ -2,6 +2,7 @@ import type {
   AirportData,
   AssignmentRule,
   Destination,
+  NonDpHeading,
   Notice,
   Scenario,
   Sid,
@@ -18,24 +19,28 @@ export const FAMILY_PLACEHOLDER = /^([A-Z]+)#$/;
 /** The initial heading a TEC route is issued on, as the route tool writes it, e.g. `H270`. */
 const HEADING_TOKEN = /^H(\d{3})$/;
 
+/** The runway heading a TEC route is issued on, as the route tool writes it. */
+const RUNWAY_HEADING_TOKEN = 'RH';
+
 /** The highest magnetic heading a row may name; `H000` and anything above this is a data error. */
 const MAX_HEADING = 360;
 
 /** What a TEC row's route begins on: a departure family, an initial heading, or neither. */
 export type TecHead =
   | { kind: 'family'; family: string }
-  | { kind: 'heading'; heading: number }
+  | { kind: 'heading'; heading: NonDpHeading }
   | { kind: 'none' };
 
 /**
  * Reads what a TEC row's route begins on.
  *
  * A row begins on a departure family where its first token is a placeholder, on an initial heading
- * where it is `H` and three digits, and on neither where it is a fix or an airway. The heading rows
- * are the ones SOP 2-1 c issues a heading for: the route carries no departure procedure at all.
+ * where it is `H` and three digits or `RH`, the runway heading, and on neither where it is a fix or
+ * an airway. The heading rows are the ones SOP 2-1 c issues a heading for: the route carries no
+ * departure procedure at all.
  *
  * @param row The TEC route row.
- * @returns The family, the heading in degrees, or `none`.
+ * @returns The family, the heading in degrees or the runway heading, or `none`.
  * @throws Error When the row begins on a heading token outside 1 to 360 degrees, which no aircraft
  *   can be turned onto and so is a transcription error in the row.
  */
@@ -44,6 +49,7 @@ export function tecHead(row: TecRoute): TecHead {
   if (head === undefined) return { kind: 'none' };
   const family = FAMILY_PLACEHOLDER.exec(head)?.[1];
   if (family !== undefined) return { kind: 'family', family };
+  if (head === RUNWAY_HEADING_TOKEN) return { kind: 'heading', heading: 'runway heading' };
   const digits = HEADING_TOKEN.exec(head)?.[1];
   if (digits === undefined) return { kind: 'none' };
   const heading = Number(digits);
@@ -58,8 +64,11 @@ export function tecHead(row: TecRoute): TecHead {
 /**
  * Reads a TEC row's route, putting the current version of each family in place of its placeholder.
  *
- * A row issued on an initial heading begins on that heading, which is the procedure the clearance
- * names rather than a token of the route box, so it is dropped and the route follows it.
+ * Every other token stands as the row writes it: a row issued on an initial heading keeps that
+ * heading (`H270 OSI`, `RH RV`), and a row that ends in radar vectors keeps its `RV`, because the
+ * route box carries both (user ruling 2026-09-18, "if the TEC route contains a RH, RV, or HXXX, then
+ * include that"). Where a noise-abatement row or a notice issues something else in the head's
+ * place, the box reader drops the head itself.
  *
  * @param row The TEC route row the flight is routed on.
  * @param airport The airport data, whose `sids` carry the versions in force this cycle.
@@ -68,8 +77,7 @@ export function tecHead(row: TecRoute): TecHead {
  */
 export function tecTokens(row: TecRoute, airport: AirportData): string[] | Unresolved {
   const tokens: string[] = [];
-  const written = row.route.trim().split(/\s+/);
-  for (const token of tecHead(row).kind === 'heading' ? written.slice(1) : written) {
+  for (const token of row.route.trim().split(/\s+/)) {
     const family = FAMILY_PLACEHOLDER.exec(token)?.[1];
     if (family === undefined) {
       tokens.push(token);

@@ -364,7 +364,7 @@ function vectorPlan(
 /** The SIDs the assignment table passed over, which a flight on a heading may be issued instead. */
 function candidateSids(context: ArrivalContext): UnservedSid[] {
   const { scenario, ctx, airport } = context;
-  const parsed = parseFiledRoute(scenario.filedRoute, airport);
+  const parsed = parseFiledRoute(scenario.filedRoute, airport, scenario.destination);
   if (isUnresolved(parsed)) return [];
   const direction = flightDirection(parsed, airport);
   return unservedSids(ctx, parsed.exitElement, direction, scenario, airport).filter(

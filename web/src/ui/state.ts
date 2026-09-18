@@ -119,13 +119,33 @@ function expect(raw: string): PlayerPicks['expect'] | undefined {
 }
 
 /**
+ * Whether a route shape names the fix or airway the flight leaves the terminal on.
+ *
+ * Every shape does but "radar vectors direct", which vectors the flight straight to the destination.
+ *
+ * @param template The route shape picked, or `undefined` while none is.
+ * @returns False for the vectors-direct shape, true for every other shape and for no pick at all.
+ */
+export function templateNamesFix(template: RouteTemplate | undefined): boolean {
+  return template !== 'radar_vectors_direct';
+}
+
+/**
  * How each dropdown changes the picks, including the picks its change invalidates.
  *
- * Picking "climb via SID" clears the feet, because that phrase speaks none.
+ * Picking "climb via SID" clears the feet, because that phrase speaks none, and picking "radar
+ * vectors direct" clears the fix, because that shape names none.
  */
 const SETTERS: Record<PickKey, (picks: DraftPicks, raw: string) => DraftPicks> = {
   procedure: (picks, raw) => ({ ...picks, procedure: text(raw) }),
-  routeTemplate: (picks, raw) => ({ ...picks, routeTemplate: routeTemplate(raw) }),
+  routeTemplate: (picks, raw) => {
+    const template = routeTemplate(raw);
+    return {
+      ...picks,
+      routeTemplate: template,
+      routeFix: templateNamesFix(template) ? picks.routeFix : undefined,
+    };
+  },
   routeFix: (picks, raw) => ({ ...picks, routeFix: text(raw) }),
   altitudePhrase: (picks, raw) => {
     const phrase = altitudePhrase(raw);
@@ -156,19 +176,18 @@ export function applyPick(picks: DraftPicks, key: PickKey, raw: string): DraftPi
 /** The dropdowns every clearance needs, whatever the route shape and the altitude phrase. */
 const ALWAYS_REQUIRED = [
   'routeTemplate',
-  'routeFix',
   'altitudePhrase',
   'expect',
   'frequency',
   'runway',
 ] as const;
 
-/** The picks once every dropdown but the feet has a value. */
+/** The picks once every dropdown but the route element and the feet has a value. */
 type FilledPicks = DraftPicks & {
   [K in (typeof ALWAYS_REQUIRED)[number]]: NonNullable<DraftPicks[K]>;
 };
 
-/** Whether every dropdown but the feet has a value; the feet depend on the phrase. */
+/** Whether every dropdown but the route element and the feet has a value; those depend on a shape. */
 function isFilled(picks: DraftPicks): picks is FilledPicks {
   return ALWAYS_REQUIRED.every((key) => picks[key] !== undefined);
 }
@@ -176,19 +195,22 @@ function isFilled(picks: DraftPicks): picks is FilledPicks {
 /**
  * Turns the form's picks into a gradable clearance, once the player has made every pick it needs.
  *
- * Every route shape names the element the flight leaves the terminal on, so the route element is
- * always required; the feet are required by every altitude phrase except "climb via SID".
+ * Every route shape but "radar vectors direct" names the element the flight leaves the terminal on,
+ * so the route element is required by all of them; the feet are required by every altitude phrase
+ * except "climb via SID".
  *
  * @param picks What the player has picked so far.
  * @returns The picks to grade, or `undefined` while a required dropdown is still blank.
  */
 export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
   if (!isFilled(picks)) return undefined;
+  const routeFix = templateNamesFix(picks.routeTemplate) ? picks.routeFix : undefined;
+  if (templateNamesFix(picks.routeTemplate) && routeFix === undefined) return undefined;
   const altitudeFeet = picks.altitudePhrase === 'climb_via' ? undefined : picks.altitudeFeet;
   if (picks.altitudePhrase !== 'climb_via' && altitudeFeet === undefined) return undefined;
   return {
     routeTemplate: picks.routeTemplate,
-    routeFix: picks.routeFix,
+    ...(routeFix === undefined ? {} : { routeFix }),
     altitudePhrase: picks.altitudePhrase,
     expect: picks.expect,
     frequency: picks.frequency,

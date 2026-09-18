@@ -8,6 +8,7 @@ const TEMPLATE_RULE: Record<RouteTemplate, string> = {
   transition: 'R-TRANSITION',
   radar_vectors_fix: 'R-RV-SID',
   radar_vectors_airway: 'R-RV-AIRWAY',
+  radar_vectors_direct: 'R-RV-DIRECT',
   as_filed: 'R-AS-FILED',
 };
 
@@ -89,4 +90,21 @@ export function phraseRoute(
     value: { template, fix: exitElement },
     citations: citePhraseology(airport, ruleFor(procedure, template)),
   };
+}
+
+/**
+ * Phrases the route element of a route that names nothing after its departure.
+ *
+ * A TEC route that ends in `RV`, and a radar-vector SID filed with nothing after the airport navaid,
+ * leave the flight no fix to be vectored to: it is vectored straight to the destination, "radar
+ * vectors direct", whatever the procedure or heading it departs on. The shape names no element.
+ *
+ * @param airport The airport data, for the quotable row.
+ * @returns The route shape, with the phraseology row that decided it.
+ */
+export function phraseVectorsDirect(
+  airport: AirportData,
+): Cited<{ template: RouteTemplate; fix?: string }> {
+  const template: RouteTemplate = 'radar_vectors_direct';
+  return { value: { template }, citations: citePhraseology(airport, TEMPLATE_RULE[template]) };
 }

@@ -554,9 +554,18 @@ function procedurePhrase(clearance: ResolvedClearance): string {
   return `via ${headingPhrase(procedure.heading, procedure.turn)}`;
 }
 
-/** The route element's words: the phrase the flight leaves the terminal on, then the route after it. */
+/** The whole route element of a route that names nothing after its departure (R-RV-DIRECT). */
+const VECTORS_DIRECT = 'radar vectors direct';
+
+/**
+ * The route element's words: the phrase the flight leaves the terminal on, then the route after it.
+ *
+ * A route vectored straight to the destination has no route after the departure to read, so its
+ * words are the vectors-direct phrase alone, in the abbreviated and the full-route reading alike.
+ */
 function routeWords(input: SpeakClearanceInput, routeTail: readonly string[]): string {
-  const fix = input.clearance.route.value.fix;
+  const { template, fix } = input.clearance.route.value;
+  if (template === 'radar_vectors_direct') return VECTORS_DIRECT;
   const exitElement = fix === undefined ? [] : [routeElementPhrase(input, fix)];
   return [...exitElement, ...routeTail].join(', ');
 }

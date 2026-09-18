@@ -2477,7 +2477,9 @@
       "OAKEY",
       "CCR",
       "RDD",
-      "LKV"
+      "LKV",
+      "SFO",
+      "HWD"
     ],
     "oceanic": [
       "ALCOA",
@@ -3125,6 +3127,11 @@
       "id": "R-RV-AIRWAY",
       "source": "ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+    },
+    {
+      "id": "R-RV-DIRECT",
+      "source": "SOP 2-1 b (\"if a pilot cannot accept one, vectors direct\"); user ruling 2026-09-18",
+      "text": "RADAR VECTORS DIRECT — used when the route names no fix after the departure: a TEC route that ends in RV, or a radar-vector SID with nothing after the airport navaid; the flight is vectored straight to the destination"
     },
     {
       "id": "R-AIRWAY",
@@ -5784,6 +5791,43 @@
       {
         "arrivals": [
           {
+            "family": "EMZOH",
+            "id": "EMZOH4",
+            "rnav": true,
+            "transitions": [
+              "RGOOD"
+            ]
+          },
+          {
+            "family": "OAKES",
+            "id": "OAKES3",
+            "rnav": true,
+            "transitions": [
+              "MRLET",
+              "RPARK",
+              "RUSME"
+            ]
+          },
+          {
+            "family": "PXN",
+            "id": "PXN6",
+            "rnav": false,
+            "transitions": [
+              "AVE",
+              "GMN"
+            ]
+          }
+        ],
+        "artcc": "ZOA",
+        "icao": "KHWD",
+        "lat": 37.658931,
+        "lon": -122.121739,
+        "nct": true,
+        "spoken": "Hayward"
+      },
+      {
+        "arrivals": [
+          {
             "family": "BRINY",
             "id": "BRINY2",
             "rnav": false,
@@ -7156,7 +7200,48 @@
         ],
         "destination": "KSFO",
         "exitFix": "OSI",
-        "tail": "OSI"
+        "tail": "H270 OSI"
+      },
+      {
+        "altitudes": [
+          4000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KSFO",
+        "exitFix": "SFO",
+        "tail": "RH RV"
+      },
+      {
+        "altitudes": [
+          4000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KHWD",
+        "exitFix": "HWD",
+        "tail": "RV"
+      },
+      {
+        "altitudes": [
+          4000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KHWD",
+        "exitFix": "HWD",
+        "tail": "H090 RV"
       }
     ],
     "telephony": {
@@ -9216,11 +9301,88 @@
       ],
       "destination": "KSFO",
       "finalAltitudeFeet": 5000,
+      "id": "TEC-KSFO-SFOW-JTP",
+      "initialAltitudeFeet": 5000,
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "RH RV",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSFO",
+      "finalAltitudeFeet": 4000,
+      "id": "TEC-KSFO-SFOE-JTP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "RH RV",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KSFO",
+      "finalAltitudeFeet": 5000,
       "id": "TEC-KSFO-OAKE-JTP",
       "initialAltitudeFeet": 5000,
       "kind": "tec",
       "plan": "OAKE",
       "route": "H270 OSI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KHWD",
+      "finalAltitudeFeet": 5000,
+      "id": "TEC-KHWD-SFOW-J",
+      "initialAltitudeFeet": 5000,
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "OAK# RV",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KHWD",
+      "finalAltitudeFeet": 4000,
+      "id": "TEC-KHWD-SFOW-TP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tec",
+      "plan": "SFOW",
+      "route": "NIMI# RV",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J",
+        "T",
+        "P"
+      ],
+      "destination": "KHWD",
+      "finalAltitudeFeet": 4000,
+      "id": "TEC-KHWD-SFOE-JTP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tec",
+      "plan": "SFOE",
+      "route": "H090 RV",
       "runwayFamilies": [],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     }

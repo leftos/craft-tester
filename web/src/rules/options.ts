@@ -1,5 +1,5 @@
 import type { AirportData, AltitudePhrase, RouteTemplate, Scenario } from '@/data/schema.ts';
-import { isSidToken } from '@/rules/route.ts';
+import { isHeadingToken, isSidToken } from '@/rules/route.ts';
 import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 
 /** Every route shape the form offers, in the order the results view names them. */
@@ -7,6 +7,7 @@ const ROUTE_TEMPLATES: readonly RouteTemplate[] = [
   'transition',
   'radar_vectors_fix',
   'radar_vectors_airway',
+  'radar_vectors_direct',
   'as_filed',
 ];
 
@@ -24,6 +25,9 @@ export const EXPECT_CHOICES: readonly PlayerPicks['expect'][] = [
 
 /** How many fixes of the filed route the route-fix dropdown offers as distractors. */
 const FILED_FIXES_OFFERED = 3;
+
+/** The token a route writes for radar vectors direct to the destination, which names no fix. */
+const RADAR_VECTORS_TOKEN = 'RV';
 
 /** The deterministic dropdown lists the CRAFT form is built from. */
 export type ClearanceOptions = {
@@ -50,16 +54,19 @@ function routeTokens(scenario: Scenario): string[] {
 }
 
 /**
- * The first few elements of the filed route after the procedure token, as route-fix distractors.
+ * The first few elements of the filed route after the procedure or heading token, as route-fix
+ * distractors.
  *
  * An airway is kept, because a route that joins one straight off the SID is cleared on the airway
- * and the form has to offer it as the element to pick.
+ * and the form has to offer it as the element to pick. `RV` is left out: it names no fix, and a
+ * vectors-direct route is picked by its shape alone.
  */
 function filedFixes(scenario: Scenario): string[] {
   const tokens = routeTokens(scenario);
   const first = tokens[0];
-  const afterSid = first !== undefined && isSidToken(first) ? tokens.slice(1) : tokens;
-  return afterSid.slice(0, FILED_FIXES_OFFERED);
+  const headed = first !== undefined && (isSidToken(first) || isHeadingToken(first));
+  const afterSid = headed ? tokens.slice(1) : tokens;
+  return afterSid.filter((token) => token !== RADAR_VECTORS_TOKEN).slice(0, FILED_FIXES_OFFERED);
 }
 
 /**

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type {
   AirportData,
@@ -7,7 +8,7 @@ import type {
   Scenario,
   TecRoute,
 } from '@/data/schema.ts';
-import { checkRoute } from '@/rules/amend/route.ts';
+import { checkRoute, withVectorNavaid } from '@/rules/amend/route.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
@@ -15,6 +16,7 @@ import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const config: RunwayConfig = {
   id: '28 RT',
@@ -230,8 +232,8 @@ describe('a TEC route that begins on an initial heading', () => {
     return ctx;
   }
 
-  it('leaves the heading out of the route it proposes', () => {
-    expect(tecTokens(headingRow, withNoDpRow)).toEqual(['FEVTA', 'FEVTA1']);
+  it('keeps the heading in the route it proposes', () => {
+    expect(tecTokens(headingRow, withNoDpRow)).toEqual(['H270', 'FEVTA', 'FEVTA1']);
   });
 
   it('routes the flight the SOP clears on that heading', () => {
@@ -239,7 +241,7 @@ describe('a TEC route that begins on an initial heading', () => {
     expect(row?.id).toBe('TEC-KSMF-OAKE-J');
   });
 
-  it('amends the route box to the published route without the heading', () => {
+  it('amends the route box to the published route, its heading included', () => {
     const result = resolveClearance(flight, withNoDpRow);
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
@@ -247,7 +249,50 @@ describe('a TEC route that begins on an initial heading', () => {
     if (amendment === undefined) throw new Error('the filed route is the one the SOP assigns');
     if (isUnresolved(amendment)) throw new Error(amendment.reason);
     if (amendment.box !== 'route') throw new Error(`the check amended the ${amendment.box} box`);
-    expect(amendment.proposed).toBe('FEVTA FEVTA1');
+    expect(amendment.proposed).toBe('H270 FEVTA FEVTA1');
     expect(amendment.citations.map((citation) => citation.id)).toContain('TEC-KSMF-OAKE-J');
+  });
+});
+
+describe('tecTokens on the RH, RV and heading tokens', () => {
+  /** The tokens a row reads as at the airport given, failing the test where it names no family. */
+  function tokensOf(route: string, data: AirportData): string[] {
+    const tokens = tecTokens(row({ route }), data);
+    if (isUnresolved(tokens)) throw new Error(tokens.reason);
+    return tokens;
+  }
+
+  it('reads RH RV as RH RV', () => {
+    expect(tokensOf('RH RV', koak).join(' ')).toBe('RH RV');
+  });
+
+  it('reads H090 RV as H090 RV', () => {
+    expect(tokensOf('H090 RV', koak).join(' ')).toBe('H090 RV');
+  });
+
+  it('reads H270 OSI as H270 OSI, keeping the heading', () => {
+    expect(tokensOf('H270 OSI', koak).join(' ')).toBe('H270 OSI');
+  });
+
+  it('reads OAK# RV at KOAK as OAK6 RV, boxed OAK6 OAK RV after the airport navaid', () => {
+    const tokens = tokensOf('OAK# RV', koak);
+    expect(tokens.join(' ')).toBe('OAK6 RV');
+    expect(withVectorNavaid(tokens, koak).join(' ')).toBe('OAK6 OAK RV');
+  });
+
+  it('reads NIMI# RV at KOAK as NIMI6 RV, boxed NIMI6 OAK RV, NIMI6 being a radar-vector SID', () => {
+    expect(koak.sids.find((sid) => sid.id === 'NIMI6')).toMatchObject({
+      kind: 'radar_vectors',
+      routePhrasing: 'radar_vectors_fix',
+    });
+    const tokens = tokensOf('NIMI# RV', koak);
+    expect(tokens.join(' ')).toBe('NIMI6 RV');
+    expect(withVectorNavaid(tokens, koak).join(' ')).toBe('NIMI6 OAK RV');
+  });
+
+  it('reads the bare GAPP# at KSFO as GAPP7, boxed GAPP7 SFO', () => {
+    const tokens = tokensOf('GAPP#', ksfo);
+    expect(tokens.join(' ')).toBe('GAPP7');
+    expect(withVectorNavaid(tokens, ksfo).join(' ')).toBe('GAPP7 SFO');
   });
 });

@@ -344,3 +344,15 @@ describe.each(checkedInAirports())(
     });
   },
 );
+
+describe('KSFO bare GAPP# row to KOAK', () => {
+  it('leaves no flight TEC-KOAK-SFOE-TP routes unresolved, now that it reads radar vectors direct', () => {
+    const ksfo = checkedInAirports().find((entry) => entry.icao === 'KSFO')?.data;
+    const row = ksfo?.tecRoutes.find((entry) => entry.id === 'TEC-KOAK-SFOE-TP');
+    if (ksfo === undefined || row === undefined)
+      throw new Error('KSFO has no TEC-KOAK-SFOE-TP row');
+    const report = auditRow(row, ksfo);
+    expect(report.routed).toBeGreaterThan(0);
+    expect(tallyLines(report.unresolved)).toEqual([]);
+  });
+});
