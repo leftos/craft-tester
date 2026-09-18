@@ -286,10 +286,6 @@ describe('the mounted page', () => {
       .map((line) => line.textContent)
       .join(' ');
     expect(routeText).toContain(route.proposed);
-    // happy-dom drops an option selected before it is inserted, so the form's first render cannot
-    // be read back; a pick elsewhere writes the state's picks into every dropdown the form built.
-    const shape = selectOf(field(root, 'shape'));
-    choose(shape, firstChoice(shape));
     expect(selectOf(field(root, 'procedure')).value).toBe(procedure);
   });
 });
