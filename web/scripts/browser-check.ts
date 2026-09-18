@@ -10,7 +10,8 @@
  * `s=4,a=KOAK,d=KSMF,m=amend`. Each action runs in order before the page is recorded:
  *
  *   select:<index>=<label>   choose an option of the n-th `<select>` on the page by its label
- *   fill:<index>=<text>      type into the n-th text input
+ *   fill:<index>=<text>      type into the n-th text field (text inputs and textareas, in page order)
+ *   press:<key>              press a key on whatever has focus, e.g. `press:Enter` after a `fill`
  *   click:<button text>      press the button with that text
  *
  * The page's text, its selects, inputs and buttons, every console error, and whether it scrolls
@@ -89,9 +90,11 @@ for (const action of actions) {
   } else if (kind === 'fill') {
     const index = Number(rest.slice(0, equals));
     await page
-      .locator('input[type="text"]')
+      .locator('input[type="text"], textarea')
       .nth(index)
       .fill(rest.slice(equals + 1));
+  } else if (kind === 'press') {
+    await page.keyboard.press(rest);
   } else if (kind === 'click') {
     await page.getByRole('button', { name: rest }).first().click();
   } else {
@@ -123,10 +126,9 @@ const recorded = await page.evaluate(() => {
       value: select.value,
       options: [...select.options].map((option) => option.label),
     })),
-    inputs: [...document.querySelectorAll('input')].map((input) => ({
-      type: input.type,
-      value: input.value,
-    })),
+    inputs: [
+      ...document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'),
+    ].map((input) => ({ type: input.type, value: input.value })),
     buttons: [...document.querySelectorAll('button')].map(
       (button) => button.textContent?.trim() || button.getAttribute('aria-label') || '',
     ),
