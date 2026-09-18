@@ -15,7 +15,7 @@ what was said against what was expected.
    to be, which is what `acceptable` already means (`A-EXPECT-REDUNDANT`, `A-FINAL`). It cites a new row.
 3. **Strictness: values plus known variants.** An element is right when its values (fixes, airways,
    procedure, altitude, minutes, frequency, squawk, runway) are in place and its fixed words match the
-   reading or a variant listed as data. Anything else is wrong.
+   reading or a ruled variant (decision 12). Anything else is wrong.
 4. **Filler words make an element acceptable, not wrong.** Examples: "climb via *the* SID", "cleared to
    *the* Seattle airport", "*your* departure frequency *will be* 120.9". The diff highlights the filler.
    A missing required word is still wrong.
@@ -28,9 +28,20 @@ what was said against what was expected.
 9. **Dictation is out of the first cut.** It has its own line in MAIN.md Singles.
 10. **ICAO number pronunciations are accepted without a ding.** "Tree", "fife", "fower" and the rest of
     7110.65 2-4-16 TBL 2-4-1 read as the same digit as the plain word. **The exception is "niner", which
-    is required** (user steer 2026-09-17), so "nine" in its place is dinged. The steer said "ding", not
-    which tier; it is recorded here as **acceptable**, the tier the user chose for filler, until step 3
-    is briefed.
+    is required**: "nine" said for a digit is **wrong** (user 2026-09-17). **A procedure's name is
+    exempt**, because it is spoken as its chart name: "Coast Nine" and "Coast Niner" are both right.
+11. **Group form only as a restatement** (user 2026-09-17, on 7110.65 2-4-17 b 2 (a)). A number the
+    reading speaks digit by digit is right only in digit form ("one zero thousand"). The digits followed by
+    their group form ("one zero ten thousand", "one zero thousand ten thousand") are acceptable but
+    inefficient. The group form alone ("ten thousand") is wrong. Typed figures ("10,000") are right,
+    because a typed number says nothing about how it would be spoken. Numbers the reading speaks in group
+    form (airways, the callsign) take any form.
+12. **One variant is fully correct: the facility word on a bare fix** ("Concord VOR, then as filed" where
+    R-AS-FILED reads "Concord"). "Climb and maintain" and "radar vectors *to* (fix)" are filler. "Runway
+    one right" without "expect" is missing a required word, so it is wrong (user 2026-09-17). With one
+    variant, and that one a rule about fixes rather than a string swap, **no variants table is built**.
+    The variant is a phraseology row the matcher cites. A table can come later if a second string-level
+    variant is ruled.
 
 ## Design
 
@@ -75,10 +86,11 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   without `thousand` takes exactly one value before it
 - [ ] 3. **Matcher and grader, clearance mode.** This step includes:
   - segmentation, the order rule and the per-element verdicts;
-  - new shared phraseology rows for decisions 1, 2, 4, 5 and 10;
-  - the variants table as shared YAML, with its schema and generator loader;
+  - new shared phraseology rows for decisions 1, 2, 4, 5, 10, 11 and 12;
   - a kind on `redundantExpect`, which today carries none, so the acceptable expect wording cannot be
-    rebuilt
+    rebuilt;
+  - the normaliser reading an inline restatement ("one zero ten thousand"), which today concatenates
+    to 1010000
 - [ ] 4. **Results view**: said against expected per element, with the filler highlighted
 - [ ] 5. **UI**:
   - the input-kind switch in both modes and the text box;
@@ -88,13 +100,6 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
 - [ ] 6. **Docs and browser check**: a "Free-text grading" section in ARCHITECTURE.md, and
   `check:browser` on phone and desktop in both modes
 
-## Open points, settled when the step that needs them is briefed
+## Open points
 
-- [ ] "Ten thousand", the group form. 7110.65 2-4-17 b 2 (a) note allows it "for added clarity", as a
-  restatement. Is it right, or acceptable, when the digit form is not said? The normaliser records the
-  form (`group`); the verdict is step 3's
-- [ ] The first rows of the variants table: which wordings are equivalent (right) rather than filler
-  (acceptable). (step 3)
-- [ ] The tier for "nine" in place of "niner", recorded as acceptable above, and **whether it applies to a
-  procedure's number**: the data speaks KOAK's COAST9 as "Coast Nine" (its chart name), so the engine's
-  own reading of it sets `saidNine`. (step 3)
+None. The three raised at step 2 were ruled 2026-09-17: decisions 10, 11 and 12.

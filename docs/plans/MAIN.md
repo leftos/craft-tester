@@ -152,6 +152,12 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
   (`onRequestRunway` keys on class and flight kind only), so seed `f` puts a heavy UPS A306 filing
   `TRUKN CCR CCR2` on 28L in 28/01 with the remark `REQ RWY 28`, and the engine issues GAPP7 radar vectors
   TRUKN at 3,000 because TRUKN is no SNTNA2 transition
+- [ ] **Cleanup (user 2026-09-17: "do all the cleanup").** Remove the leftover worktree folders (done). Merge
+  `altitude.ts`'s two TBL 4-5-1 FL410 constants. Delete the dead half of the TRUKN2 base-fix test pair.
+  Move the gate-coverage warning into a `build --coverage` report. Name ECA (Manteca VOR,
+  decommissioned 2018), SMA (Saint Mary's NDB) and KAE (Gangwon VOR, South Korea) in a new shared
+  `navaid_names.yaml`, since ECA is filed at both airports. The fixtures report that skips when no clearance
+  plan is pending stays: it is conditional by design
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([free-text.md](./free-text.md) decision 9)
