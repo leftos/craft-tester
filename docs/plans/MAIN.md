@@ -24,6 +24,10 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 Findings recorded while KOAK landed. Gate: generator. Surveyed 2026-09-17; the survey corrected three
 of them, noted inline. Four landed the same day and are in Landed below.
 
+- [ ] **Push `main` to origin when this wave closes** (user 2026-09-18: "push whenever you get to a good
+  checkpoint at the end of this wave"). That means after the TEC override's briefs 2a and 2b, part 2 and
+  its docs have landed, with the full web suite and the generator gates green on main.
+
 - [ ] **A TEC route overrides the SOP assignment**: subplan [tec-override.md](./tec-override.md). All
   rulings are in (user 2026-09-17, and 2026-09-18 for its scope). The override is blanket: "The only time
   the TEC route can't override is if the SID it suggests literally cannot be used with the only available
