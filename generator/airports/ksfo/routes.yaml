@@ -67,10 +67,10 @@ routes:
   - { exit_fix: OSI, destination: KMRY, tail: OSI V25 SNS, classes: [P, T], altitudes: [5000] }
   - { exit_fix: EUGEN, destination: KWVI, tail: EUGEN, classes: [P, T], altitudes: [5000] }
   - { exit_fix: OSI, destination: KWVI, tail: OSI V25 SNS, classes: [P, T], altitudes: [5000] }
-  - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN ALTAM, classes: [T, J], altitudes: [3000, 5000] }
+  - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN ALTAM, classes: [T, J], altitudes: [5000] }
   - { exit_fix: TRUKN, destination: KLVK, tail: TRUKN, classes: [P], altitudes: [3000, 5000] }
   - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [3000, 5000] }
-  - { exit_fix: CIITY, destination: KLVK, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
+  - { exit_fix: CIITY, destination: KLVK, tail: CIITY ALTAM, classes: [T, J], altitudes: [5000] }
   - { exit_fix: ORRCA, destination: KOVE, tail: ORRCA, classes: [T, J], altitudes: [7000, 9000] }
   - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000] }
   - { exit_fix: CIITY, destination: KOVE, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }

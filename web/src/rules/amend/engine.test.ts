@@ -219,12 +219,14 @@ describe('resolveAmendments', () => {
     if (type?.box !== 'type' || route?.box !== 'route')
       throw new Error('the boxes are not amended');
     expect(type.proposed).toBe('SR22/G');
-    expect(route.proposed).toBe('SFO5 SFO OAK V6 SAC');
-    expect(route.reason).toContain('the TEC route for a piston in SFOW is SFO5 SFO OAK V6 SAC');
+    expect(route.proposed).toBe('NIITE4 OAK V6 SAC');
+    expect(route.reason).toBe(
+      'MOLEN9 is not the procedure the SOP assigns an RNAV piston from 01R in 01/01; it is NIITE4',
+    );
     expect(route.reason).not.toContain('runway heading');
     const amended = resolveAmendedClearance(flight, result.corrected, ksfo);
     if (!amended.ok) throw new Error(amended.unresolved.map((item) => item.reason).join('; '));
-    expect(assigned(amended.clearance).family).toBe('SFO');
+    expect(assigned(amended.clearance).family).toBe('NIITE');
   });
 
   it('offers no RNAV alternative where the RNAV plan is assigned another procedure anyway', () => {

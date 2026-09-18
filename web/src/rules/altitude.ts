@@ -11,7 +11,7 @@ import { citeTec } from '@/rules/amend/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { addresses } from '@/rules/classify.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
-import { keyedTecRoute, tecHead } from '@/rules/tecRoutes.ts';
+import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type {
   Cited,
   ExpectClause,
@@ -131,17 +131,17 @@ function altitudeValue(
 /**
  * The TEC route row whose initial altitude the clearance is issued with, where one applies.
  *
- * The row is the one keyed to the flight — destination, plan, runway family and class — and it is
- * read only where its route begins on what the flight is in fact cleared on: the departure family it
- * names, or the initial heading it is issued on. A row that begins on a fix or an airway carries no
- * such condition. The keyed row is read rather than the routed one, because the routed one is
- * decided by putting the row's route to the clearance engine, which is this engine.
+ * The row is the one that routes the flight — the first keyed to its destination, plan, runway
+ * family and class whose departure it can use — and it is read only where its route begins on what
+ * the flight is in fact cleared on: the departure family it names, or the initial heading it is
+ * issued on. A noise-abatement row or a notice that clears the flight on something else leaves the
+ * altitude to the SOP rows. A row that begins on a fix or an airway carries no such condition.
  *
  * @param ctx The classified flight.
  * @param procedure The selected SID, or the heading the flight is cleared on.
  * @param scenario The filed flight plan, which names the destination.
  * @param airport The airport data, whose `tecRoutes` hold the transcribed rows.
- * @returns The row, or `undefined` where none is keyed to the flight, the keyed one publishes no
+ * @returns The row, or `undefined` where none routes the flight, the routing one publishes no
  *   initial altitude, or its route begins on a departure this clearance does not issue.
  */
 function tecInitialRow(
@@ -150,7 +150,7 @@ function tecInitialRow(
   scenario: Scenario,
   airport: AirportData,
 ): TecRoute | undefined {
-  const row = keyedTecRoute(ctx, scenario, airport);
+  const row = usableTecRoute(ctx, scenario, airport);
   if (row === undefined || row.initialAltitudeFeet === undefined) return undefined;
   const head = tecHead(row);
   if (head.kind === 'family') {

@@ -1,5 +1,7 @@
 import type { AirportData, AssignmentRule, Direction, Scenario } from '@/data/schema.ts';
 import { resolveAltitude } from '@/rules/altitude.ts';
+import { citeTec } from '@/rules/amend/cite.ts';
+import { tecTokens } from '@/rules/amend/tec.ts';
 import { citePhraseology, toCitation } from '@/rules/cite.ts';
 import type { Classification } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
@@ -12,7 +14,7 @@ import { phraseRoute } from '@/rules/routePhrasing.ts';
 import { explainRunway } from '@/rules/runway.ts';
 import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
-import { keyedTecRoute } from '@/rules/tecRoutes.ts';
+import { tecHead, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type {
   EngineResult,
   ResolvedRoute,
@@ -21,11 +23,53 @@ import type {
   Unresolved,
 } from '@/rules/types.ts';
 import { procedureOf } from '@/rules/types.ts';
-import { isUnresolved } from '@/rules/unresolved.ts';
+import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
 /** Wraps one blocked element as the engine's failure result. */
 function blocked(reason: Unresolved): EngineResult {
   return { ok: false, unresolved: [reason] };
+}
+
+/** The element a route leaves the terminal on and the gate direction that places it. */
+type TableRoute = { exitElement: string; direction: Direction | undefined };
+
+/**
+ * The exit element and gate direction the assignment table and the noise-abatement rows are read
+ * against.
+ *
+ * A flight whose TEC route begins on a departure family or an initial heading flies that route, not
+ * the one it filed, so the SOP reads the route's own exit and direction, read the way a filed route is
+ * read. That keeps a plan and the same plan corrected onto its TEC route on one row. Any other flight
+ * is read on the route it filed. A TEC route with nothing after its departure to leave the terminal
+ * on blocks the route element, as a filed route with none does.
+ *
+ * @param ctx The classified flight.
+ * @param filed The filed route, parsed.
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @returns The exit element and direction to read the table against, or `Unresolved` where the TEC
+ *   route names a family the airport no longer publishes or names no fix to leave on.
+ */
+function tableRoute(
+  ctx: Classification,
+  filed: ParsedRoute,
+  scenario: Scenario,
+  airport: AirportData,
+): TableRoute | Unresolved {
+  const tec = usableTecRoute(ctx, scenario, airport);
+  if (tec === undefined || tecHead(tec).kind === 'none') {
+    return { exitElement: filed.exitElement, direction: flightDirection(filed, airport) };
+  }
+  const tokens = tecTokens(tec, airport);
+  if (isUnresolved(tokens)) return tokens;
+  const parsed = parseFiledRoute(tokens.join(' '), airport);
+  if (isUnresolved(parsed)) {
+    return unresolved(
+      parsed.element,
+      `the SOP reads the TEC route ${tec.id}, but ${parsed.reason}`,
+    );
+  }
+  return { exitElement: parsed.exitElement, direction: flightDirection(parsed, airport) };
 }
 
 /**
@@ -38,10 +82,8 @@ function blocked(reason: Unresolved): EngineResult {
  * own answer rather than no procedure at all. There is no procedure to keep here, so every
  * passed-over candidate is searched.
  *
- * A flight a TEC row is written for is left on its heading: the route it is issued is the published
- * one the row carries, not a chain off the connection cheat sheet. The row is read before the test
- * of whether its departure can be issued, because that test resolves the clearance and would ask
- * this same question again.
+ * A flight a TEC row routes is left on its heading: the route it is issued is the published one the
+ * row carries, not a chain off the connection cheat sheet.
  *
  * @param ctx The classified flight.
  * @param route The filed route, whose exit element no assignable SID serves.
@@ -57,7 +99,7 @@ function builtFor(
   scenario: Scenario,
   airport: AirportData,
 ): BuiltRoute | undefined {
-  if (keyedTecRoute(ctx, scenario, airport) !== undefined) return undefined;
+  if (usableTecRoute(ctx, scenario, airport) !== undefined) return undefined;
   const candidates = unservedSids(ctx, route.exitElement, direction, scenario, airport);
   return buildRoute(route.tokens, candidates, { kind: 'any' }, airport);
 }
@@ -85,6 +127,8 @@ type Issued = {
  * is the candidate's SID, the route phrase names the fix the flight leaves it at rather than the one
  * the plan filed, and the departure frequency is read off the candidate's own row. The notices that
  * took a SID out of use are cited either way, because they are why the table reached this row at all.
+ * A flight issued its TEC route's departure cites the TEC row beside the assignment row, which still
+ * gives the departure frequency.
  *
  * @param selection What the assignment table answered.
  * @param route The filed route.
@@ -115,6 +159,7 @@ function issued(
     row: selection.row,
     citations: [
       toCitation(selection.row),
+      ...(selection.tec === undefined ? [] : [citeTec(selection.tec)]),
       ...notices,
       ...(procedure.kind === 'heading' ? citePhraseology(airport, 'R-HEADING') : []),
     ],
@@ -138,7 +183,9 @@ function routeElement(element: Issued, airport: AirportData): ResolvedRoute {
  * a SID out of use where one changed the outcome. A row that assigns no procedure clears the flight
  * on the runway heading and cites the phraseology row for that reading beside it — but only where no
  * route can be built first: a SID the table passed over, connected onward to the filed route, is
- * issued in the heading's place, and the clearance then carries the route it is read for.
+ * issued in the heading's place, and the clearance then carries the route it is read for. A flight
+ * whose TEC route begins on a departure is placed in the table by that route's exit and direction,
+ * while the route phrase still names what the plan files.
  *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data.
@@ -150,7 +197,9 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
   const route = parseFiledRoute(scenario.filedRoute, airport);
   if (isUnresolved(route)) return blocked(route);
   const direction = flightDirection(route, airport);
-  const selection = selectSid(ctx, route.exitElement, direction, scenario, airport);
+  const read = tableRoute(ctx, route, scenario, airport);
+  if (isUnresolved(read)) return blocked(read);
+  const selection = selectSid(ctx, read.exitElement, read.direction, scenario, airport);
   if (isUnresolved(selection)) return blocked(selection);
   const built =
     selection.procedure.kind === 'heading'
