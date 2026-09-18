@@ -6,6 +6,7 @@ import {
   speakCallsign,
   speakClearance,
   speakDigits,
+  speakExpect,
   speakFix,
   speakFrequency,
   speakRouteToken,
@@ -44,6 +45,20 @@ describe('speakAltitude', () => {
     [32000, 'flight level three two zero'],
   ])('speaks %i as "%s"', (feet, spoken) => {
     expect(speakAltitude(feet)).toBe(spoken);
+  });
+});
+
+describe('speakExpect', () => {
+  it('speaks each kind of expect clause the way the reading does', () => {
+    expect(speakExpect({ kind: 'filed', feet: 34000, minutes: 10 })).toBe(
+      'expect flight level three four zero one zero minutes after departure',
+    );
+    expect(speakExpect({ kind: 'amended', feet: 34000, minutes: 10 })).toBe(
+      'expect amended flight level three four zero one zero minutes after departure',
+    );
+    expect(speakExpect({ kind: 'final', feet: 17000 })).toBe(
+      'one seven thousand will be your final',
+    );
   });
 });
 

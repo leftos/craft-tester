@@ -84,7 +84,7 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   `39a1929`, 2026-09-17. Its limits, all unexercised by the corpus: a figures piece opens a run of its own,
   so "3 thousand 5 hundred" reads as 3000 and 500; a decimal with a multiplier does not parse; `hundred`
   without `thousand` takes exactly one value before it
-- [ ] 3. **Matcher and grader, clearance mode.** This step includes:
+- [ ] 3. **Matcher and grader, clearance mode.** Split in two: **3a landed 2026-09-17** (the seven rows, `RedundantExpect` with its kind, `speakExpect`, the restated reading, C and T as elements); **3b**, the matcher `rules/text/grade.ts`, is in flight. This step includes:
   - segmentation, the order rule and the per-element verdicts;
   - new shared phraseology rows for decisions 1, 2, 4, 5, 10, 11 and 12;
   - a kind on `redundantExpect`, which today carries none, so the acceptable expect wording cannot be

@@ -3207,6 +3207,41 @@
       "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band"
     },
     {
+      "id": "R-THEN-AS-FILED-END",
+      "source": "ZOA CRAFT Phraseology reference; user ruling 2026-09-17 (free-text entry)",
+      "text": "THEN AS FILED spoken where the route is read to its end — nothing is filed after the last fix read, so the reading closes on DIRECT — is acceptable, not wrong: the pilot flies the same route either way, but R-THEN-AS-FILED reads such a route in full"
+    },
+    {
+      "id": "R-FULL-ROUTE",
+      "source": "ZOA CRAFT Phraseology reference; user ruling 2026-09-17 (free-text entry)",
+      "text": "Reading the whole of an amended or built route, where the clearance hands it over as filed from the fix the two routes run together from (R-THEN-AS-FILED), is acceptable, not wrong: the pilot is cleared along the same route, only at greater length than the clearance needs"
+    },
+    {
+      "id": "R-FACILITY-WORD",
+      "source": "FAA JO 7110.65 2-5-2; user ruling 2026-09-17 (free-text entry)",
+      "text": "The facility word spoken after a fix the clearance reads bare (R-AS-FILED) is as right as the bare name: CONCORD VOR, THEN AS FILED names the same navaid as CONCORD, THEN AS FILED"
+    },
+    {
+      "id": "S-FILLER",
+      "source": "user ruling 2026-09-17 (free-text entry)",
+      "text": "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make an element acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss"
+    },
+    {
+      "id": "S-ORDER",
+      "source": "FAA JO 7110.65 4-2-1; user ruling 2026-09-17 (free-text entry)",
+      "text": "Clearance items are issued in the order 7110.65 4-2-1 lists them: clearance limit, departure procedure or vectors, route, altitude, then frequency and beacon code. An element read out of that order is a miss, and the elements marked are the fewest whose removal leaves the rest in order"
+    },
+    {
+      "id": "S-NINER",
+      "source": "FAA JO 7110.65 2-4-16 (TBL 2-4-1); user ruling 2026-09-17 (free-text entry)",
+      "text": "Digits are spoken in the ICAO pronunciation, the digit 9 as NINER: TREE, FIFE, FOWER and the other ICAO forms are as right as the plain words, but NINE said for the digit is a miss. A procedure's name is exempt, because it is spoken as its chart name (Coast Nine)"
+    },
+    {
+      "id": "S-GROUP-FORM",
+      "source": "FAA JO 7110.65 2-4-17 b 2 (a) and its note; user ruling 2026-09-17 (free-text entry)",
+      "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is right only in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement for clarity (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is acceptable but longer than it needs to be; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right"
+    },
+    {
       "id": "RWY-AIRLINE-DEFAULT",
       "source": "ZOA senior staff via the user, 2026-09-16",
       "text": "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"

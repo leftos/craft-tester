@@ -9,10 +9,13 @@ import type { SpokenToken } from '@/rules/text/normalise.ts';
 // spokenFor is the one place the reading's input is assembled from a scenario and its clearance.
 import { spokenFor } from '@/ui/session.ts';
 
-/** A token short enough to assert on: `w:flight`, `n:320/figures`, `n:120.9/digits!9`. */
+/**
+ * A token short enough to assert on: `w:flight`, `n:320/figures`, `n:120.9/digits!9`, and
+ * `n:10000/digits+r` for a restated number.
+ */
 function compact(token: SpokenToken): string {
   if (token.kind === 'word') return `w:${token.text}`;
-  return `n:${token.value}/${token.form}${token.saidNine ? '!9' : ''}`;
+  return `n:${token.value}/${token.form}${token.saidNine ? '!9' : ''}${token.restated ? '+r' : ''}`;
 }
 
 /** The text normalised with an empty lexicon, each token compacted. */
@@ -126,6 +129,29 @@ describe('normaliseSpoken', () => {
       'n:10000/figures',
       'n:10/figures',
       'w:minutes',
+    ]);
+  });
+
+  it('reads the digits then their group form as one restated number', () => {
+    expect(read('one zero ten thousand')).toEqual(['n:10000/digits+r']);
+    expect(read('one one eleven thousand')).toEqual(['n:11000/digits+r']);
+    expect(read('one zero ten')).toEqual(['n:10/digits+r']);
+    expect(read('four two one five forty-two fifteen')).toEqual(['n:4215/digits+r']);
+    expect(read('two eight zero two eighty')).toEqual(['n:280/digits+r']);
+    expect(read('two five twenty-five hundred')).toEqual(['n:2500/digits+r']);
+  });
+
+  it('leaves a run that is more than digits and their group form as it was', () => {
+    expect(read('five one zero ten')).toEqual(['n:51010/group']);
+    expect(read('one zero ten five')).toEqual(['n:10105/group']);
+    expect(read('one zero ten one one eleven')).toEqual(['n:10101111/group']);
+    expect(read('two forty-four')).toEqual(['n:244/group']);
+    expect(read('one two twenty')).toEqual(['n:1220/group']);
+    expect(read('flight level three five zero three fifty')).toEqual([
+      'w:flight',
+      'w:level',
+      'n:350/digits',
+      'n:350/group',
     ]);
   });
 });

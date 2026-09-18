@@ -368,7 +368,7 @@ describe('the expect clause', () => {
     const airport = withExpectAltitude('unless_chart_publishes_it');
     const result = resolve(ctx({}), sid('TRUKN2'), scenario({}), airport);
     expect(result.expect.value).toBeNull();
-    expect(result.redundantExpect.value).toEqual({ feet: 34000, minutes: 10 });
+    expect(result.redundantExpect.value).toEqual({ kind: 'filed', feet: 34000, minutes: 10 });
     expect(result.redundantExpect.citations.map((citation) => citation.id)).toEqual([
       'A-EXPECT-REDUNDANT',
     ]);

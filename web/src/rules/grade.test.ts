@@ -95,7 +95,10 @@ const redundantCitation: RuleCitation = {
 const chartPublishes: ResolvedClearance = {
   ...expected,
   expect: { value: null, citations: [altitudeCitation] },
-  redundantExpect: { value: { feet: 35000, minutes: 10 }, citations: [redundantCitation] },
+  redundantExpect: {
+    value: { kind: 'filed', feet: 35000, minutes: 10 },
+    citations: [redundantCitation],
+  },
 };
 
 const finalCitation: RuleCitation = {
@@ -114,7 +117,10 @@ const speaksFinal: ResolvedClearance = {
 /** The same clearance with the amended clause it allows beside the final reading. */
 const finalWithAmended: ResolvedClearance = {
   ...speaksFinal,
-  redundantExpect: { value: { feet: 9000, minutes: 10 }, citations: [finalCitation] },
+  redundantExpect: {
+    value: { kind: 'amended', feet: 9000, minutes: 10 },
+    citations: [finalCitation],
+  },
 };
 
 const correct: PlayerPicks = {

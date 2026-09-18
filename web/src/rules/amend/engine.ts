@@ -329,7 +329,11 @@ function withAmendedExpect(
   const redundantExpect: ResolvedClearance['redundantExpect'] =
     expect.value.kind === 'final'
       ? {
-          value: { feet: corrected.filedAltitude, minutes: amendedMinutes(clearance, airport) },
+          value: {
+            kind: 'amended',
+            feet: corrected.filedAltitude,
+            minutes: amendedMinutes(clearance, airport),
+          },
           citations: citePhraseology(airport, 'A-FINAL'),
         }
       : { value: null, citations: [] };
