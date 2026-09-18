@@ -451,14 +451,17 @@ export function composedRoute(procedure: Procedure, tail: string, airport: Airpo
 
 /**
  * The departure runways of the flight's configuration listed for its class, each once, in the
- * configuration's order, on-request runways included.
+ * configuration's order.
+ *
+ * A row with an `onRequestFor` list is left out, as `runwaysByFamily` leaves it out: the class takes
+ * that runway only when it asks for it, so a TEC route never moves a flight there.
  */
 function listedRunways(scenario: Scenario, airport: AirportData): string[] {
   const config = airport.runwayConfigs.find((entry) => entry.id === scenario.runwayConfigId);
   const aircraftClass = airport.aircraftClasses[scenario.aircraftType];
   if (config === undefined || aircraftClass === undefined) return [];
   const listed = config.departureRunways
-    .filter((row) => row.classes.includes(aircraftClass))
+    .filter((row) => row.classes.includes(aircraftClass) && row.onRequestFor.length === 0)
     .map((row) => row.runway);
   return [...new Set(listed)];
 }

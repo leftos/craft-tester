@@ -675,6 +675,26 @@ describe('tecRunway', () => {
     });
     expect(tecRunway(flight, koak)).toBe('28L');
   });
+
+  it('never moves a jet in 28/01 onto the 28s, which it takes only on request, though its only usable row is there', () => {
+    const jetRow = ksfo.tecRoutes.find((row) => row.id === 'TEC-KSMF-SFOW-J');
+    if (jetRow === undefined) throw new Error('KSFO no longer carries TEC-KSMF-SFOW-J');
+    const onlyOffThe28s = {
+      ...jetRow,
+      id: 'TEC-KSMF-SFOW-J-28',
+      classes: ['J' as const],
+      runwayFamilies: ['28'],
+      route: 'GAPP# OAK V6 SAC',
+    };
+    const injected: AirportData = {
+      ...ksfo,
+      tecRoutes: [onlyOffThe28s, ...ksfo.tecRoutes.filter((row) => row.destination !== 'KSMF')],
+    };
+    const flight = rnavJet({ departureRunway: '01R' });
+    expect(usableTecRouteOn('28L', flight, injected)?.id).toBe('TEC-KSMF-SFOW-J-28');
+    expect(usableTecRouteOn('01L', flight, injected)).toBeUndefined();
+    expect(tecRunway(flight, injected)).toBe('01R');
+  });
 });
 
 describe('the on-request draw', () => {

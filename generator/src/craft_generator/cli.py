@@ -65,6 +65,7 @@ from craft_generator.sop.model import Overrides, SopSource
 from craft_generator.sop.verify import sop_cache_path, verify_sop_source
 from craft_generator.worksheets import (
     Fixture,
+    PublishedSid,
     SettledFixture,
     SkippedPlan,
     designator_classes,
@@ -491,6 +492,36 @@ def published_sid_runways(airport: str, overrides: Overrides) -> dict[str, tuple
     return published
 
 
+def published_sids(airport: str) -> tuple[PublishedSid, ...]:
+    """Return every procedure of an airport as the built airport document publishes it.
+
+    The document carries what the merge made of the CIFP and ``overrides.yaml`` - each procedure's
+    family, runways and RNAV requirement - and it is what the web engine reads, so the worksheet
+    import's TEC move reads the same. A document that has not been built yet publishes nothing, with
+    a warning, and no plan is moved to its TEC route's runway.
+
+    Args:
+        airport: Four-letter ICAO identifier, e.g. ``KSFO``.
+
+    Returns:
+        The procedures in document order, e.g. ``TRUKN2`` of family ``TRUKN``, published for
+        ``("01R", "28L", "28R")`` and requiring RNAV.
+    """
+    path = data_path(airport)
+    if not path.exists():
+        print(
+            f"warning: {path} has not been built, so no procedure is published and no plan is moved to a runway its TEC route is usable off; "
+            "run craft-gen build first",
+            file=sys.stderr,
+        )
+        return ()
+    document = json.loads(path.read_text(encoding="utf-8"))
+    return tuple(
+        PublishedSid(id=sid["id"], family=sid["family"], runways=tuple(sid["runways"]), rnav_required=sid["rnavRequired"] is True)
+        for sid in document["sids"]
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class _FixtureOutcome:
     """What the import did with one fixture file, and the settled fixture it refused to overwrite."""
@@ -569,6 +600,9 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
     classes = designator_classes(specs, config.type_aliases)
     wake_categories = designator_wtcs(specs, config.type_aliases)
     sid_runways = published_sid_runways(airport, inputs.overrides)
+    sids = published_sids(airport)
+    tec_routes = () if inputs.tec is None else inputs.tec.routes
+    equipment_suffixes = load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE)
     counts: Counter[str] = Counter()
     refused: list[SettledFixture] = []
     print(f"{airport}: {len(config.worksheets)} worksheet(s) -> {fixture_dir(airport)}")
@@ -585,6 +619,9 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
             wake_categories=wake_categories,
             cargo_airlines=inputs.routes.cargo_airlines,
             sid_runways=sid_runways,
+            tec_routes=tec_routes,
+            sids=sids,
+            equipment_suffixes=equipment_suffixes,
         )
         results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in sheet.fixtures.items()]
         for result in results:

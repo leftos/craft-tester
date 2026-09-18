@@ -31,6 +31,10 @@ The request step is SOP 2-1 e: oceanic, Far East and cargo flights need the 28s 
 may be given them while runway 01 is the advertised departure runway. A sheet prints no request, so
 the importer reads one off the flight plan - a cargo, heavy or oceanic flight that filed a procedure
 published for that runway family alone is asking for it.
+
+The plan's TEC route has the last word on the runway, as it has in the web draw (``tecRunway`` in
+``web/src/scenario/generate.ts``): a plan no ``tec`` row is usable for off the runway chosen moves to
+a runway of the configuration one is usable off, and the note says so.
 """
 
 import json
@@ -47,12 +51,16 @@ from craft_generator.sop.load import RUNWAY_FAMILY_LENGTH
 from craft_generator.sop.model import (
     AircraftClass,
     AircraftGroup,
+    AssignmentCondition,
     DepartureRunway,
+    EquipmentSuffix,
     GateDirection,
     Gates,
+    Notice,
     OnRequestKind,
     RunwayConfig,
     SopData,
+    TecRoute,
     Worksheet,
     WorksheetKind,
 )
@@ -106,6 +114,10 @@ _AIRWAY_TOKEN = re.compile(r"^[JVQT]\d+$")
 _SQUAWK_PATTERN = re.compile(r"^[0-7]{4}$")
 _FLIGHT_LEVEL_PATTERN = re.compile(r"^FL(?P<hundreds>\d{2,3})$")
 _SLUG_PATTERN = re.compile(r"[^a-z0-9]+")
+_FAMILY_PLACEHOLDER = re.compile(r"^(?P<family>[A-Z]+)#$")
+
+TEC_ROUTE_KIND = "tec"
+SID_OFF_EFFECT = "sid_off"
 
 _FEET_PER_FLIGHT_LEVEL = 100
 
@@ -505,6 +517,18 @@ class OnRequestRequest:
 
 
 @dataclass(frozen=True, slots=True)
+class TecMove:
+    """The move a plan's TEC route made: the runway the precedence chose, and the row that moved it.
+
+    ``head`` is the first token of the row's route as ``tec.yaml`` writes it, e.g. ``TRUKN#``.
+    """
+
+    from_runway: str
+    route_id: str
+    head: str
+
+
+@dataclass(frozen=True, slots=True)
 class RunwayChoice:
     """The departure runway one plan's fixture carries and what chose it.
 
@@ -515,7 +539,8 @@ class RunwayChoice:
     leaves in place, because the preference is what splits the requested family into one runway. All
     five are ``None`` on the fallback to the configuration's first departure runway.
     ``unclassified_designator`` names the filed type when the vNAS specs do not cover it, so the
-    class and request steps were skipped.
+    class and request steps were skipped. ``tec_move`` is set when the plan's TEC route moved it off
+    the runway those steps chose, and the other five are then ``None``: the move is what chose it.
     """
 
     config_id: str
@@ -526,6 +551,33 @@ class RunwayChoice:
     default_for_class: AircraftClass | None = None
     unclassified_designator: str | None = None
     on_request: OnRequestRequest | None = None
+    tec_move: TecMove | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedSid:
+    """One departure procedure as the built airport document publishes it, for the TEC move to read.
+
+    ``family`` is the versionless name a ``tec.yaml`` route begins on, e.g. ``TRUKN`` for ``TRUKN2``.
+    """
+
+    id: str
+    family: str
+    runways: tuple[str, ...]
+    rnav_required: bool
+
+
+@dataclass(frozen=True, slots=True)
+class _TecFlight:
+    """What the TEC move reads about one plan, and the airport tables it reads them against."""
+
+    destination: str
+    aircraft_class: AircraftClass
+    rnav_capable: bool
+    config: RunwayConfig
+    sop: SopData
+    tec_routes: Sequence[TecRoute]
+    sids: Sequence[PublishedSid]
 
 
 def sheet_runway_config(config_id: str | None, configs: Sequence[RunwayConfig], where: str) -> RunwayConfig:
@@ -698,7 +750,7 @@ def _requested_runway(
     return None
 
 
-def departure_runway(
+def _precedence_runway(
     row: PlanRow,
     config: RunwayConfig,
     sop: SopData,
@@ -708,39 +760,7 @@ def departure_runway(
     cargo_airlines: Sequence[str],
     sid_runways: Mapping[str, Sequence[str]],
 ) -> RunwayChoice:
-    """Return the departure runway one filed plan gets in the sheet's runway configuration.
-
-    The worksheets state the configuration but not the runway, so the runway comes from the plan.
-    A configuration that defaults the plan's airline to a runway (``default_for_airlines`` in
-    ``sop.yaml``) settles it first, for the airline whose ramp sits on the other side of the field.
-    Next comes the group default (``default_for_groups``), which reaches a plan whose class or type
-    an ``aircraft_groups`` row names, e.g. the Dash 8 grouped with the jets. Next comes the class
-    default (``default_for_classes``), e.g. the GA departures off 28R in
-    28/01, which those aircraft take unless their airline or group is defaulted. Next comes the request
-    SOP 2-1 e allows: a cargo, heavy or oceanic plan that filed a procedure published for one runway
-    family alone is read as asking for the configuration's ``on_request_for`` runway of that family,
-    e.g. a freighter filing WESLA# in 28/01, where WESLA# is a 28-only procedure. Otherwise the
-    runway follows the direction the filed route leaves on: ``direction_runway_preference`` splits
-    the parallel runways of the configuration's plan by gate direction, which is what puts a
-    northbound plan on the right-turn runway, and it splits the requested family the same way. A
-    route whose exit fix belongs to no gate, and a direction the preference table says nothing
-    about, fall back to the first departure runway the configuration publishes; so does a plan whose
-    designator the vNAS specs do not cover, which has neither class nor wake category.
-
-    Args:
-        row: The filed plan.
-        config: The sheet's runway configuration from :func:`sheet_runway_config`.
-        sop: The transcribed SOP, for the gates, the preference table and the airport's navaid.
-        aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
-        wake_categories: The wake turbulence category of each designator, from
-            :func:`designator_wtcs`.
-        cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
-        sid_runways: The runways each procedure is published for, keyed by CIFP id.
-
-    Returns:
-        The runway and what chose it: the defaulted airline, the defaulted group, the defaulted
-        class, the request, the gate direction, or none of the five on the fallback.
-    """
+    """Return the runway the airline, group and class defaults, the request and the direction choose."""
     first = config.departure_runways[0].runway
     aircraft_class = aircraft_classes.get(row.designator)
     direction = _gate_direction(exit_fix(row.route, sop.airport.faa), sop.gates)
@@ -765,12 +785,218 @@ def departure_runway(
     return RunwayChoice(config.id, preferred, direction, unclassified_designator=unclassified)
 
 
+def _rnav_capable(suffix: str | None, equipment_suffixes: Sequence[EquipmentSuffix]) -> bool:
+    """Return whether the filed suffix is an RNAV one; no suffix, and one the table leaves blank, are not."""
+    entry = next((entry for entry in equipment_suffixes if entry.suffix == suffix), None)
+    return entry is not None and entry.rnav is True
+
+
+def _route_head(route: TecRoute) -> str:
+    tokens = route.route.split()
+    return tokens[0] if tokens else ""
+
+
+def _keyed_for(route: TecRoute, flight: _TecFlight, runway_family: str) -> bool:
+    """Return whether a row is written for this plan's destination, plan, runway family and class."""
+    if route.kind != TEC_ROUTE_KIND or route.destination != flight.destination or route.plan != flight.config.plan:
+        return False
+    if route.runway_families and runway_family not in route.runway_families:
+        return False
+    return flight.aircraft_class in route.classes
+
+
+def _admits(condition: AssignmentCondition | None, config_id: str) -> bool:
+    if condition is None:
+        return True
+    if condition.configs is not None and config_id not in condition.configs:
+        return False
+    return condition.not_configs is None or config_id not in condition.not_configs
+
+
+def _in_use(family: str, flight: _TecFlight, runway_family: str) -> bool:
+    """Return whether some assignment row puts the family in use from the runway family in this configuration.
+
+    Such a row is of the plan's plan, assigns the family, lists the runway family, and admits the
+    configuration by its ``configs`` and ``not_configs``; its direction, exits, audience, RNAV
+    condition and noise window are not read (user ruling 2026-09-18, "not in use").
+    """
+    return any(
+        rule.sid_family == family
+        and rule.plan == flight.config.plan
+        and runway_family in rule.runway_families
+        and _admits(rule.when, flight.config.id)
+        for rule in flight.sop.assignment_rules
+    )
+
+
+def _sid_off_notice(family: str, flight: _TecFlight) -> Notice | None:
+    """Return the first notice in force that takes the family out of use for the plan.
+
+    A worksheet fixture names no notices, so the engine applies the ones ``sop.yaml`` makes active by
+    default, and so does the move.
+    """
+    return next(
+        (
+            notice
+            for notice in flight.sop.notices
+            if notice.default_active
+            and notice.plan == flight.config.plan
+            and notice.effect.kind == SID_OFF_EFFECT
+            and notice.effect.sid_family == family
+        ),
+        None,
+    )
+
+
+def _usable(route: TecRoute, flight: _TecFlight, runway: str) -> bool:
+    """Return whether the plan can be issued what a keyed row begins on, off this runway.
+
+    A ``FAMILY#`` head is usable where the family is published, its SID lists the runway, the plan's
+    suffix can fly it, the SOP puts it in use from the runway's family in this configuration, and no
+    notice in force takes it out of use without a heading in its place. A heading or fix head is
+    always usable.
+    """
+    found = _FAMILY_PLACEHOLDER.fullmatch(_route_head(route))
+    if found is None:
+        return True
+    family = found.group("family")
+    sid = next((entry for entry in flight.sids if entry.family == family), None)
+    if sid is None or runway not in sid.runways or (sid.rnav_required and not flight.rnav_capable):
+        return False
+    if not _in_use(family, flight, runway[:RUNWAY_FAMILY_LENGTH]):
+        return False
+    notice = _sid_off_notice(family, flight)
+    return notice is None or notice.effect.heading is not None
+
+
+def _usable_tec_route(flight: _TecFlight, runway: str) -> TecRoute | None:
+    """Return the first row, in table order, keyed for the plan off this runway and usable by it.
+
+    There is no test that the destination lies inside NCT: the build rejects a ``tec`` row to a
+    destination outside the NCT terminal polygon (``_check_tec_destinations_inside_nct`` in
+    ``merge.py``), so a row keyed for the plan already names an NCT destination.
+    """
+    runway_family = runway[:RUNWAY_FAMILY_LENGTH]
+    return next((route for route in flight.tec_routes if _keyed_for(route, flight, runway_family) and _usable(route, flight, runway)), None)
+
+
+def _move_candidates(flight: _TecFlight, chosen: str) -> list[str]:
+    """Return the other runways listed for the class, not on request for it: the chosen family first, then the rest in order."""
+    listed: list[str] = []
+    for entry in flight.config.departure_runways:
+        if flight.aircraft_class in entry.classes and not entry.on_request_for and entry.runway != chosen and entry.runway not in listed:
+            listed.append(entry.runway)
+    family = chosen[:RUNWAY_FAMILY_LENGTH]
+    return [runway for runway in listed if runway[:RUNWAY_FAMILY_LENGTH] == family] + [
+        runway for runway in listed if runway[:RUNWAY_FAMILY_LENGTH] != family
+    ]
+
+
+def _tec_moved(choice: RunwayChoice, flight: _TecFlight) -> RunwayChoice:
+    """Return the choice, or the runway the plan's TEC route moves it to, as ``tecRunway`` in ``scenario/generate.ts`` does."""
+    if _usable_tec_route(flight, choice.runway) is not None:
+        return choice
+    for runway in _move_candidates(flight, choice.runway):
+        route = _usable_tec_route(flight, runway)
+        if route is not None:
+            return RunwayChoice(choice.config_id, runway, None, tec_move=TecMove(choice.runway, route.id, _route_head(route)))
+    return choice
+
+
+def departure_runway(
+    row: PlanRow,
+    config: RunwayConfig,
+    sop: SopData,
+    *,
+    aircraft_classes: Mapping[str, AircraftClass],
+    wake_categories: Mapping[str, str],
+    cargo_airlines: Sequence[str],
+    sid_runways: Mapping[str, Sequence[str]],
+    tec_routes: Sequence[TecRoute],
+    sids: Sequence[PublishedSid],
+    equipment_suffixes: Sequence[EquipmentSuffix],
+) -> RunwayChoice:
+    """Return the departure runway one filed plan gets in the sheet's runway configuration.
+
+    The worksheets state the configuration but not the runway, so the runway comes from the plan.
+    A configuration that defaults the plan's airline to a runway (``default_for_airlines`` in
+    ``sop.yaml``) settles it first, for the airline whose ramp sits on the other side of the field.
+    Next comes the group default (``default_for_groups``), which reaches a plan whose class or type
+    an ``aircraft_groups`` row names, e.g. the Dash 8 grouped with the jets. Next comes the class
+    default (``default_for_classes``), e.g. the GA departures off 28R in
+    28/01, which those aircraft take unless their airline or group is defaulted. Next comes the request
+    SOP 2-1 e allows: a cargo, heavy or oceanic plan that filed a procedure published for one runway
+    family alone is read as asking for the configuration's ``on_request_for`` runway of that family,
+    e.g. a freighter filing WESLA# in 28/01, where WESLA# is a 28-only procedure. Otherwise the
+    runway follows the direction the filed route leaves on: ``direction_runway_preference`` splits
+    the parallel runways of the configuration's plan by gate direction, which is what puts a
+    northbound plan on the right-turn runway, and it splits the requested family the same way. A
+    route whose exit fix belongs to no gate, and a direction the preference table says nothing
+    about, fall back to the first departure runway the configuration publishes; so does a plan whose
+    designator the vNAS specs do not cover, which has neither class nor wake category.
+
+    The plan's TEC route then has the last word (user ruling 2026-09-18, "TEC moves them too"), as
+    it has in the web draw. A plan a ``tec`` row is usable for off the runway chosen keeps it.
+    Otherwise it moves to the first other runway of the configuration listed for its class, and not
+    on request for it, that a row is usable off: the chosen runway's family first, then the rest in
+    the configuration's order. A plan no runway gives a usable row keeps the one chosen, and a moved
+    plan is no longer read as requesting its runway.
+
+    Args:
+        row: The filed plan.
+        config: The sheet's runway configuration from :func:`sheet_runway_config`.
+        sop: The transcribed SOP, for the gates, the preference table, the airport's navaid, and the
+            assignment rows and notices that put a TEC route's departure in use.
+        aircraft_classes: The aircraft class of each designator, from :func:`designator_classes`.
+        wake_categories: The wake turbulence category of each designator, from
+            :func:`designator_wtcs`.
+        cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
+        sid_runways: The runways each procedure is published for, keyed by CIFP id.
+        tec_routes: The TEC and ADR rows out of ``tec.yaml``, in table order.
+        sids: The procedures the airport publishes, with their families, runways and RNAV
+            requirement.
+        equipment_suffixes: The equipment suffix table, which says whether the plan's suffix is RNAV.
+
+    Returns:
+        The runway and what chose it: the defaulted airline, the defaulted group, the defaulted
+        class, the request, the gate direction, none of the five on the fallback, or the TEC move.
+    """
+    choice = _precedence_runway(
+        row,
+        config,
+        sop,
+        aircraft_classes=aircraft_classes,
+        wake_categories=wake_categories,
+        cargo_airlines=cargo_airlines,
+        sid_runways=sid_runways,
+    )
+    aircraft_class = aircraft_classes.get(row.designator)
+    if aircraft_class is None:
+        return choice
+    flight = _TecFlight(
+        destination=row.destination,
+        aircraft_class=aircraft_class,
+        rnav_capable=_rnav_capable(row.suffix, equipment_suffixes),
+        config=config,
+        sop=sop,
+        tec_routes=tec_routes,
+        sids=sids,
+    )
+    return _tec_moved(choice, flight)
+
+
 def _squawk_for(row: PlanRow, index: int) -> str:
     return row.squawk if row.squawk is not None else format(FIRST_SQUAWK + index, "04o")
 
 
 def _chose_the_runway(choice: RunwayChoice) -> str:
     """Return the reason clause of the note, opened by the punctuation that introduces it."""
+    if choice.tec_move is not None:
+        move = choice.tec_move
+        return (
+            f", moved there from {move.from_runway} because its TEC route {move.route_id} departs {move.head} from it "
+            f"and not from {move.from_runway} (RWY-TEC, user ruling 2026-09-18)"
+        )
     if choice.on_request is not None:
         request = choice.on_request
         return (
@@ -878,8 +1104,9 @@ def settled_fixture_at(path: Path, fixture: Fixture, *, overwrite_settled: bool)
     Args:
         path: The fixture file the import is about to write.
         fixture: The regenerated fixture document.
-        overwrite_settled: Stand the guard down, so the caller writes the pending document over the
-            settled one.
+        overwrite_settled: Stand the guard down for a settled fixture whose scenario changed, so the
+            caller writes the pending document over it. A settled fixture whose scenario is unchanged
+            is kept either way, because rewriting it would throw its validation away for nothing.
 
     Returns:
         ``None`` when the guard stands down, the path holds no file, or the committed fixture is not
@@ -889,12 +1116,14 @@ def settled_fixture_at(path: Path, fixture: Fixture, *, overwrite_settled: bool)
     Raises:
         ValueError: The committed fixture is not a JSON object, or carries no ``scenario``.
     """
-    if overwrite_settled or not path.exists():
+    if not path.exists():
         return None
     body = _fixture_on_disk(path)
     if body.get("status") != SETTLED_STATUS:
         return None
     changed = _scenario_changes(body.get("scenario"), fixture["scenario"], path)
+    if overwrite_settled and changed:
+        return None
     return SettledFixture(id=str(body.get("id", path.stem)), path=path, changed_fields=changed)
 
 
@@ -938,6 +1167,9 @@ def sheet_fixtures(
     wake_categories: Mapping[str, str],
     cargo_airlines: Sequence[str],
     sid_runways: Mapping[str, Sequence[str]],
+    tec_routes: Sequence[TecRoute],
+    sids: Sequence[PublishedSid],
+    equipment_suffixes: Sequence[EquipmentSuffix],
 ) -> SheetImport:
     """Parse one worksheet and build the fixture of every flight plan on it.
 
@@ -956,6 +1188,10 @@ def sheet_fixtures(
             :func:`designator_wtcs`.
         cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
         sid_runways: The runways each procedure is published for, keyed by CIFP id.
+        tec_routes: The TEC and ADR rows out of ``tec.yaml``, in table order.
+        sids: The procedures the airport publishes, with their families, runways and RNAV
+            requirement.
+        equipment_suffixes: The equipment suffix table, which says whether a suffix is RNAV.
 
     Returns:
         One fixture per flight plan whose destination is known, keyed by the file it is written to
@@ -988,6 +1224,9 @@ def sheet_fixtures(
             wake_categories=wake_categories,
             cargo_airlines=cargo_airlines,
             sid_runways=sid_runways,
+            tec_routes=tec_routes,
+            sids=sids,
+            equipment_suffixes=equipment_suffixes,
         )
         fixtures[path] = fixture_for(worksheet, row, index, icao=icao, runway=runway, type_aliases=type_aliases)
     return SheetImport(fixtures=fixtures, skipped=tuple(skipped))
