@@ -157,10 +157,21 @@ two cases the heading stands and the route box is the row's route with its head 
   as the data check it is. Brief 1 reports each flight where this changes the SOP's answer.
 - **B. The procedure (`selectSid`).** Walk the table as today. Then, unless the walk ended on a
   noise-window row or a notice heading, a flight whose TEC row has a family head is given that SID, and one
-  whose row has a heading head is given that heading. Either way the TEC row is cited. The departure frequency is still the sector of the SOP row the walk reached, because that
-  row is keyed on the direction the flight leaves in. Where the walk reaches no row (KLVK `-JT-01`, whose
-  exit fix ALTAM is in no KSFO gate, `ksfo/sop.yaml:164`), brief 1 reports the flight. Each one is a data
-  fix to rule on with the user, not a fallback invented in code. `engine.ts` `issued` cites the TEC row
+  whose row has a heading head is given that heading. Either way the TEC row is cited.
+  - **The departure frequency comes from the DP, per SOP 2-2 a** (user 2026-09-18, who pointed to the
+    table: it lists the departure sector per DP). Take the in-use rows for the TEC family (ruling 9's
+    rows, noise rows excluded).
+    - If they name one sector, that is the sector.
+    - If they name several, use the row whose direction matches the TEC route's.
+    - If that still doesn't decide it, use the sector of the row the walk reached. Otherwise the flight is
+      `Unresolved`.
+  - Examples:
+    - SFO# (north>richmond only) is Richmond, so `TEC-KLVK-SFOW-JT-01` (`SFO# V244 ALTAM MOD`) resolves
+      with **no ALTAM gate added**.
+    - GAPP# (Richmond, Sutro, Sutro) is decided by direction.
+    - KOAK SFOE OAK# (north and oceanic rows only) on the southbound `OAK# OAK EUGEN` falls to the walk's
+      south row, so Sutro.
+  - `engine.ts` `issued` cites the TEC row
   beside the SOP row, and `builtFor` (`engine.ts:60`) moves to the new row choice with the others.
   Altitude follows from rulings 5, 6 and 8: on a flight whose noise or notice row stands, that row's
   altitude row gives the initial altitude (`tecInitialRow` already matches the TEC initial only when the
@@ -213,8 +224,8 @@ two cases the heading stands and the route box is the row's route with its head 
   sector and the heading-row disagreements (layer A).
 - [ ] **Part 2 (after brief 1): `RH`, `RV` and heading tokens.** See the section below. Plan its briefs
   after brief 1's report, because it edits `tecTokens` and the route parser that brief 1 leaves in place.
-- [ ] **Review with the user:** every settled fixture brief 1 moves, the sector gaps (ALTAM), and the
-  heading-row disagreements.
+- [ ] **Review with the user:** every settled fixture brief 1 moves, and any TEC-routed flight still left
+  without a sector. ALTAM is settled: the sector comes from the DP, so it gets no gate.
 - [ ] **Brief 2: the runway draw and the on-request draw** (layers D and E, both halves of D plus
   `RWY-TEC`; E is bundled here because it edits the same `pickRunway`/`drawScenario`). Proving commands:
   `scenario/generate`, `rules/runway`, `generator tests/test_worksheets*`, `import-worksheets --check`
