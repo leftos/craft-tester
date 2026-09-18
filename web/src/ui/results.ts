@@ -1,3 +1,4 @@
+import type { BoxElementGrade } from '@/rules/amend/grade.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { TextGrade } from '@/rules/text/grade.ts';
 import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
@@ -29,26 +30,66 @@ function countOf(grades: readonly Grade[], verdict: Verdict): number {
 }
 
 /**
+ * Whether an acceptable verdict is a route box the radar-vector SID's airport navaid alone separates
+ * from the box the engine wrote, which is the only way a route box is acceptable.
+ */
+function isNavaidAcceptable(grade: Grade): boolean {
+  return grade.verdict === 'acceptable' && grade.element === 'BOX.route';
+}
+
+/** Whether a verdict is on a box of the strip rather than on an element of the clearance. */
+function isBoxGrade(grade: Grade): boolean {
+  return grade.element.startsWith('BOX.');
+}
+
+/**
  * The line that says how many answers were right.
  *
  * An acceptable answer counts as correct, because it is one: the score line then says how many of
- * them were longer than they needed to be. A half verdict counts as half a box, the arrival routing
- * being the only thing it missed, and the line says how many of those there were too.
+ * them were route boxes filed without the airport navaid, and how many were longer than they needed
+ * to be. A half verdict counts as half a box, the arrival routing being the only thing it missed,
+ * and the line says how many of those there were too.
  *
  * @param grades The verdict for every element, or for every box of the strip.
- * @param noun What the verdicts are of, `elements` or `boxes`.
+ * @param noun What the verdicts are of: `elements` for a clearance alone, `flight plan checks /
+ *   amendments` for the boxes of the strip, `CRAFT clearance elements` for the clearance read after
+ *   them.
  * @returns The score, e.g. `4 of 5 elements correct, 1 acceptable but inefficient` or
- *   `2½ of 3 boxes correct, 1 half credit (arrival routing)`.
+ *   `2½ of 3 flight plan checks / amendments correct, 1 half credit (arrival routing)` or
+ *   `3 of 3 flight plan checks / amendments correct, 1 acceptable (airport navaid)`.
  */
-export function scoreLine(grades: readonly Grade[], noun: 'elements' | 'boxes'): string {
+export function scoreLine(
+  grades: readonly Grade[],
+  noun: 'elements' | 'flight plan checks / amendments' | 'CRAFT clearance elements',
+): string {
   const acceptable = countOf(grades, 'acceptable');
+  const navaid = grades.filter(isNavaidAcceptable).length;
+  const inefficient = acceptable - navaid;
   const half = countOf(grades, 'half');
   const correct = countOf(grades, 'correct') + acceptable + half * HALF_CREDIT;
   const tails = [
     ...(half === 0 ? [] : [`${half} half credit (arrival routing)`]),
-    ...(acceptable === 0 ? [] : [`${acceptable} acceptable but inefficient`]),
+    ...(navaid === 0 ? [] : [`${navaid} acceptable (airport navaid)`]),
+    ...(inefficient === 0 ? [] : [`${inefficient} acceptable but inefficient`]),
   ];
   return [`${countLabel(correct)} of ${grades.length} ${noun} correct`, ...tails].join(', ');
+}
+
+/**
+ * The score line of a whole session: the clearance alone, or the strip boxes and then the clearance.
+ *
+ * An amendment session grades the boxes of the strip before the clearance, and the two are counted
+ * apart, each with its own tails, so a box is never counted as a clearance element.
+ *
+ * @param grades The verdicts of the session, the strip boxes (if any) ahead of the clearance.
+ * @returns The score, e.g. `2 of 3 elements correct`, or `2 of 3 flight plan checks / amendments
+ *   correct, 0 of 8 CRAFT clearance elements correct` where the session graded the strip.
+ */
+export function sessionScoreLine(grades: readonly Grade[]): string {
+  const boxGrades = grades.filter(isBoxGrade);
+  if (boxGrades.length === 0) return scoreLine(grades, 'elements');
+  const clearanceGrades = grades.filter((grade) => !isBoxGrade(grade));
+  return `${scoreLine(boxGrades, 'flight plan checks / amendments')}, ${scoreLine(clearanceGrades, 'CRAFT clearance elements')}`;
 }
 
 /** The rows that decided one element, quoted the way the proposal script quotes them. */
@@ -61,12 +102,14 @@ function citationList(citations: readonly RuleCitation[]): HTMLElement {
 }
 
 /**
- * The second line a verdict reads: a correction where it was wrong, the shorter reading where it was
- * acceptable, the box that would have earned the whole point where it earned half, and nothing at
- * all where it was correct.
+ * The second line a verdict reads: a correction where it was wrong, the reading it could have been
+ * where it was acceptable (the preferred route box, with the airport navaid, for a route box; the
+ * shorter reading for anything else), the box that would have earned the whole point where it
+ * earned half, and nothing at all where it was correct.
  */
 function correctionLine(verdict: Grade): string | undefined {
   if (verdict.verdict === 'wrong') return `correction: ${verdict.expectedLabel}`;
+  if (isNavaidAcceptable(verdict)) return `preferred: ${verdict.expectedLabel}`;
   if (verdict.verdict === 'acceptable') return `shorter: ${verdict.expectedLabel}`;
   if (verdict.verdict === 'half') return `full credit: ${verdict.expectedLabel}`;
   return undefined;
@@ -81,20 +124,26 @@ function expectedLine(verdict: TextGrade): string | undefined {
  * The lines one verdict reads as: the player's answer, and the second line their answer earns.
  *
  * A typed element's second line is the expected words, shown wherever it was not fully correct; a
- * picked one's is the correction, the shorter reading or the full-credit box its verdict calls for.
+ * picked one's is the correction, the shorter reading (the preferred one, for a route box the
+ * airport navaid alone separates) or the full-credit box its verdict calls for.
  *
- * @param verdict The verdict for one element, picked or typed.
- * @returns The answer line, how it was answered, and the second line, where there is one.
+ * A box of the strip the engine raised an amendment for also reads why it was amended.
+ *
+ * @param verdict The verdict for one element, picked or typed, or for one box of the strip.
+ * @returns The answer line, how it was answered, the second line, where there is one, and the
+ *   reason for the box's amendment, where there is one.
  */
-export function verdictLines(verdict: Grade | TextGrade): {
+export function verdictLines(verdict: Grade | TextGrade | BoxElementGrade): {
   answer: string;
   verdict: Verdict;
   correction: string | undefined;
+  why: string | undefined;
 } {
   return {
     answer: `you said: ${verdict.actualLabel}`,
     verdict: verdict.verdict,
     correction: 'said' in verdict ? expectedLine(verdict) : correctionLine(verdict),
+    why: 'reason' in verdict && verdict.reason !== undefined ? `why: ${verdict.reason}` : undefined,
   };
 }
 
@@ -119,13 +168,14 @@ function answerLine(verdict: Grade | TextGrade, text: string): HTMLParagraphElem
 }
 
 /**
- * Renders one element's verdict: what the player said, the correction where it was wrong, and why.
+ * Renders one element's verdict: what the player said, the correction where it was wrong, the
+ * reason a box of the strip was amended, and the rows that decided it.
  *
  * @param verdict The verdict for one element of the clearance, picked or typed, or for one box of
  *   the strip.
  * @returns The verdict row.
  */
-export function renderVerdict(verdict: Grade | TextGrade): HTMLElement {
+export function renderVerdict(verdict: Grade | TextGrade | BoxElementGrade): HTMLElement {
   const lines = verdictLines(verdict);
   const row = el('div', `verdict ${lines.verdict}`);
   const answer = answerLine(verdict, lines.answer);
@@ -133,6 +183,7 @@ export function renderVerdict(verdict: Grade | TextGrade): HTMLElement {
   if (mark !== undefined) answer.append(el('span', 'mark', mark));
   row.append(el('h3', '', elementLabel(verdict.element)), answer);
   if (lines.correction !== undefined) row.append(el('p', 'expected', lines.correction));
+  if (lines.why !== undefined) row.append(el('p', 'why', lines.why));
   row.append(citationList(verdict.citations));
   return row;
 }
@@ -199,7 +250,7 @@ function revealPanel(spoken: SpokenClearance): HTMLElement {
 /** The score, a verdict per element with its citations, and the spoken reveal. */
 function resultsBody(props: ResultsProps): HTMLElement[] {
   return [
-    el('p', 'score', scoreLine(props.grades, 'elements')),
+    el('p', 'score', sessionScoreLine(props.grades)),
     ...props.grades.map((verdict) => renderVerdict(verdict)),
     revealPanel(props.spoken),
   ];

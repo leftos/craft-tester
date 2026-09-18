@@ -16,7 +16,8 @@ export type BoxAnswer = { kind: 'as_filed' } | { kind: 'amended'; value: string 
 export type BoxAnswers = Record<Box, BoxAnswer>;
 
 /**
- * The verdict for one box: how it was answered, both labels, and the rows that decided it.
+ * The verdict for one box: how it was answered, both labels, the rows that decided it, and the
+ * reason the engine gave for the box's amendment, which is `undefined` where it raised none.
  *
  * A box is answered right or not, so a box verdict is `correct` or `wrong`, save for two route-box
  * tiers between them. A box a radar-vector SID's navaid is all that separates from the box the
@@ -30,7 +31,11 @@ export type BoxGrade = {
   expectedLabel: string;
   actualLabel: string;
   citations: RuleCitation[];
+  reason: string | undefined;
 };
+
+/** A box verdict keyed by the element it reports under, carrying the reason for the box's amendment. */
+export type BoxElementGrade = Grade & { reason: string | undefined };
 
 /** How a box was answered, and what the answer should have been. */
 type BoxVerdict = { verdict: Verdict; expectedLabel: string };
@@ -337,6 +342,7 @@ function gradeBox(
     expectedLabel: base.expectedLabel,
     actualLabel: answerLabel(answer),
     citations: acceptable ? withNavaidRow(citations, ctx.route.airport) : citations,
+    reason: amendment?.reason,
   };
 }
 
@@ -390,9 +396,10 @@ export function gradeBoxes(
  * under, e.g. `BOX.altitude`.
  *
  * @param grade The verdict for one box of the strip.
- * @returns The same verdict, keyed by the element the box reports under.
+ * @returns The same verdict, keyed by the element the box reports under, with the reason for the
+ *   box's amendment kept.
  */
-export function boxGradeAsGrade(grade: BoxGrade): Grade {
+export function boxGradeAsGrade(grade: BoxGrade): BoxElementGrade {
   const { box, ...rest } = grade;
   return { element: `BOX.${box}`, ...rest };
 }

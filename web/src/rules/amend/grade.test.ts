@@ -181,6 +181,24 @@ describe('gradeBoxes', () => {
     });
   }
 
+  it('carries the reason of the amendment each box was graded against', () => {
+    const grades = gradeBoxes(answers(), result(TYPE, ALTITUDE, ROUTE), FILED, ksfo);
+    expect(grades.map((grade) => grade.reason)).toEqual([
+      'suffix /Q is not in the table',
+      'FL330 is inside RVSM airspace',
+      'TRUKN2 is not the procedure the SOP assigns',
+    ]);
+  });
+
+  it('carries no reason for a box the engine raised no amendment for', () => {
+    const grades = gradeBoxes(answers(), result(ALTITUDE), FILED, ksfo);
+    expect(grades.map((grade) => grade.reason)).toEqual([
+      undefined,
+      'FL330 is inside RVSM airspace',
+      undefined,
+    ]);
+  });
+
   it('labels a box that needed no amendment as correct as filed', () => {
     const [type] = gradeBoxes(answers(), result(), FILED, ksfo);
     expect(type?.expectedLabel).toBe('correct as filed');
@@ -507,6 +525,7 @@ describe('boxGradeAsGrade', () => {
       expectedLabel: 'FL270',
       actualLabel: 'correct as filed',
       citations: [citation],
+      reason: 'FL330 is inside RVSM airspace',
     });
     expect(verdict).toStrictEqual({
       element: 'BOX.altitude',
@@ -514,6 +533,7 @@ describe('boxGradeAsGrade', () => {
       expectedLabel: 'FL270',
       actualLabel: 'correct as filed',
       citations: [citation],
+      reason: 'FL330 is inside RVSM airspace',
     });
   });
 
@@ -526,6 +546,7 @@ describe('boxGradeAsGrade', () => {
           expectedLabel: '',
           actualLabel: '',
           citations: [],
+          reason: undefined,
         }).element,
     );
     expect(elements).toStrictEqual(['BOX.type', 'BOX.altitude', 'BOX.route']);
