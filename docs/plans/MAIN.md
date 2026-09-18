@@ -30,20 +30,12 @@ of them, noted inline. Four landed the same day and are in Landed below.
   runways". Equipment, noise-abatement headings and notices still win, and the draw picks a runway the TEC
   SID is flown from. The measurement found 71 rows losing flights, not five. **Next: brief 1** (the engine
   override), whose fixture report goes to the user before brief 2 (the runway draw and the on-request fix)
-- [ ] **TEC rows that name no fix.** **Correction: `RH RV`, `OAK6 RV` and `H090 RV` are not in the repo** —
-  they were deliberately left out of `koak/tec.yaml:112-113` and the decision is recorded at
-  `archive/koak-v3.md:395`. What is left is a guard: nothing stops such a row being transcribed, and
-  `_check_fix_spoken` would fail on `RV` while silently teaching the speaker to read `RH` as "Arsha NDB",
-  a real navaid. **Attempted 2026-09-17 and stopped — the guard is harder than this line had it:**
-  - **A shape test does not catch the rows that motivate it.** `RV` matches `_NAVAID_TOKEN`
-    (`[A-Z]{2,3}`, `merge.py:123`), so `RH RV`, `OAK6 RV` and `H090 RV` all *pass* "is there a fix after
-    the head". Only "nothing after the head" and "only airways after the head" fail. Catching them needs a
-    vocabulary of non-fix markers (`RV`, and `RH`, which is the very navaid the trap is about), and
-    "rules are data" makes its home a decision too: a frozenset in `merge.py` or a row in shared YAML
-  - **The narrow version fires on live data.** `TEC-KOAK-SFOE-TP` (`ksfo/tec.yaml:72`) is the bare
-    `GAPP#`, a head with nothing after it, so KSFO would stop building. **Ruled 2026-09-18**
-    ([tec-override.md](./tec-override.md) ruling 3): that row reads `GAPP7 SFO`, so a bare radar-vector
-    SID head is a legal row and the guard must accept it. The guard waits for the override to land
+- [ ] **TEC rows that name no fix: superseded 2026-09-18.** The user ruled that `RH RV`, `H090 RV` and
+  `OAK6 RV` are real TEC routes ("fly runway heading, radar vectors direct"), and that the route box keeps
+  `RH`, `RV` and `Hnnn`. So these rows get transcribed, and the guard becomes a row grammar that knows the
+  three tokens and never looks `RH` up as the Arsha NDB. Planned as part 2 of
+  [tec-override.md](./tec-override.md), after brief 1. The 2026-09-17 attempt's findings (a shape test
+  cannot see `RV`, and the bare `GAPP#` row is live data) feed that grammar
 
 ## Wave 2 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 

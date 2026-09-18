@@ -16,8 +16,15 @@ Subplan for the Wave 1 item in [MAIN.md](./MAIN.md). A new rule concept, so it i
    vectors direct"). No specificity order, no data change: RNAV J/T to KLVK in SFOW keep
    `TEC-KLVK-SFOW-JT` (`TRUKN# TRUKN ALTAM`), and a non-RNAV one falls to `-01` (`SFO# V244 ALTAM MOD`) or
    `-28` (`GAPP# OAK V244 ALTAM MOD`).
-3. **Bare `GAPP#` (`TEC-KOAK-SFOE-TP`) reads `GAPP7 SFO`, then vectors.** It is read the way every vector
-   SID is filed, with the airport navaid after it (`R-RV-NAVAID`).
+3. **Bare `GAPP#` (`TEC-KOAK-SFOE-TP`) reads `GAPP7 SFO`, spoken "radar vectors direct"** (user
+   2026-09-18, twice). The box is filed the way every vector SID is, with the airport navaid after it
+   (`R-RV-NAVAID`). With no fix after the navaid, the clearance reads the user's words, "radar vectors
+   direct": vectors straight to the destination.
+   - **Orchestrator derivation, told to the user:** the direction, and so the departure frequency, comes
+     from the destination's own navaid where that is a gate fix. OAK is in the KSFO north gate, so
+     Richmond. Where it is in no gate, the flight is `Unresolved` and reported.
+   - It needs a new phraseology row (rules are data), so it belongs to **part 2** below, not brief 1.
+     `routeFromExitFix` (`rules/route.ts:113-118`) reads `GAPP7 SFO` as having no exit today.
 4. **Runway: the draw picks a usable runway.** The scenario generator and the worksheet importer put a
    TEC-routed flight on a runway its TEC SID is published from, and the engine explains that runway with a
    new `RWY-TEC` row. The engine never moves a flight. A scenario that still lands on a runway the SID is
@@ -34,8 +41,18 @@ Subplan for the Wave 1 item in [MAIN.md](./MAIN.md). A new rule concept, so it i
    1's first report). Examples are KSFO NIITE (SFOW, 2200–0700, RNAV) and KOAK HUSSH, SLNT and SUNNE. The
    noise SID stands, and the route box is that SID joined onto the TEC route minus its head, which the
    route builder connects as it connects any SID to a filed route. The TEC final altitude still applies.
-   Example: an RNAV jet off KSFO 28L at 2300 to KSMF gets NIITE2, and its box is NIITE2 joined onto
+   Example: an RNAV jet off KSFO 28L at 2300 to KSMF gets NIITE4, and its box is NIITE4 joined onto
    `TRUKN FEVTA FEVTA1`.
+   - **How the engine reads it** (orchestrator, from brief 1's second report). NIITE4 has no TRUKN
+     transition, so the table walk passes the noise row by, because it reads only rows whose SID serves the
+     exit. For a TEC-routed flight, the first applicable noise-window row in table order wins whenever the
+     flight can fly its procedure (`isFlyable` for a SID, and exit service is not required). That row
+     supplies the sector and the citation.
+   - The box is built as though the flight had filed `<noise SID> <TEC tail>`, with the build scope set to
+     the noise family.
+   - A notice that turns the TEC row's own family off and names a heading gives that heading, with the
+     sector of the first applicable row for that family. That matches the walk's notice branch. No current
+     row exercises this, so it is tested on an injected row.
 
 ## What changes (measured 2026-09-18)
 
@@ -157,6 +174,8 @@ two cases the heading stands and the route box is the row's route with its head 
   `pnpm -C web test rules/fixtures` runs **as a report**: moved fixtures are listed as settled or pending,
   with old and new values, and none is edited. The report also lists the flights the walk leaves without a
   sector and the heading-row disagreements (layer A).
+- [ ] **Part 2 (after brief 1): `RH`, `RV` and heading tokens.** See the section below. Plan its briefs
+  after brief 1's report, because it edits `tecTokens` and the route parser that brief 1 leaves in place.
 - [ ] **Review with the user:** every settled fixture brief 1 moves, the sector gaps (ALTAM), and the
   heading-row disagreements.
 - [ ] **Brief 2: the runway draw and the on-request draw** (layers D and E, both halves of D plus
@@ -169,3 +188,48 @@ two cases the heading stands and the route box is the row's route with its head 
   the doc comments in `tecRoutes.ts` and `sidSelection.ts`. Then archive this subplan.
 - [ ] **Unblocked afterwards:** MAIN.md's "TEC rows that name no fix" guard. Under ruling 3 a bare
   radar-vector SID head is a legal row, so the guard's narrow version must accept it.
+
+## Part 2: `RH`, `RV` and heading tokens in TEC routes
+
+A new rule concept, raised mid-plan (user 2026-09-18). Its briefs are planned after brief 1 lands.
+
+**Rulings (user 2026-09-18):**
+
+- "Some TEC routes are literally `RH RV` meaning 'fly runway heading, radar vectors direct'." So a row that
+  ends in `RV`, or names nothing after a vector SID (bare `GAPP#`, ruling 3), is a legal TEC route: radar
+  vectors direct to the destination. It is no longer a row a guard should reject.
+- The route box: "If the TEC route contains a RH, RV, or HXXX, then include that." The box keeps those
+  tokens as the row writes them:
+  - `RH RV` reads `RH RV`, and `H090 RV` reads `H090 RV`;
+  - `H270 FEVTA FEVTA1` reads `H270 FEVTA FEVTA1`. Today `tecTokens` drops the heading, so settled KOAK
+    fixtures on heading rows will move; list them for the user;
+  - a row with none of the three tokens is unchanged: bare `GAPP#` stays `GAPP7 SFO` (ruling 3).
+- **Orchestrator reading, to confirm with the user when part 2's report comes back:** the airport-navaid
+  convention (`R-RV-NAVAID`) is left as it is, so `OAK6 RV` reads `OAK6 OAK RV`. A box without the navaid
+  is graded acceptable, as today.
+
+**Rows to transcribe.** These were left out of `koak/tec.yaml` (the comment at `:112-113` and
+`archive/koak-v3.md:395`):
+
+- KOAK→KSFO, SFOW and SFOE: `RH RV`.
+- KOAK→KHWD: `OAK6 RV`, `NIMI5 RV` and `H090 RV`, if KHWD is an NCT destination in
+  `shared/destinations.yaml`.
+
+Read the plans, classes and altitudes from the route tool
+(<https://reference.oakartcc.org/routes?dep=OAK&dest=SFO> and `dest=HWD`).
+
+**Design to plan.** Each item names what reads the tokens today:
+
+- **The row grammar in the generator.** A head is `FAMILY#`, `Hnnn`, `RH`, or a fix or airway. After the
+  head comes a route of fixes and airways, or `RV` alone, or nothing when the head is a vector SID.
+  - `RH` and `Hnnn` may appear only as the head, and `RV` only as the last token.
+  - `_check_fix_spoken` must never look `RH` or `RV` up as a navaid, because `RH` is the Arsha NDB.
+  - This grammar replaces MAIN.md's "TEC rows that name no fix" guard.
+  - It carries worked examples and non-examples, checked against every row in both `tec.yaml` files.
+- **The filed-route reader in the engine.** `parseFiledRoute`, `routeFromExitFix` and `tecHead` read `RH`
+  as runway heading, `Hnnn` as a heading, and `RV` as vectors direct.
+  - With no exit fix, the direction comes from the destination's navaid (ruling 3's derivation). A
+    destination whose navaid is in no gate is reported.
+- **Speech and grading.** Add a phraseology row for "radar vectors direct" (source: SOP 2-1 b and this
+  ruling). Update `speak.ts`, the dropdown options and the free-text grader so that "fly runway heading,
+  radar vectors direct" is spoken and graded.
