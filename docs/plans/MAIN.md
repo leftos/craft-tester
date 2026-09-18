@@ -29,12 +29,16 @@ Four UI questions the engine already answers correctly; all four are presentatio
   *longer* form. `Grade` (`rules/types.ts:193-199`) can already tell the two apart three ways: `element`
   (only `A.expect` and `BOX.route` ever carry `acceptable`, and only the expect clause is genuinely
   shorter), the `R-RV-NAVAID` citation that only the navaid case adds (`amend/grade.ts:230-237`), or a
-  token count. `results.test.ts:52-68` and `:88-93` pin the current wording
+  token count. `results.test.ts:52-68` and `:88-93` pin the current wording. **Ruled (user 2026-09-17):**
+  the navaid case reads `preferred: <route>` and its score tail `1 acceptable (airport navaid)`; the
+  expect clause keeps `shorter:` and `acceptable but inefficient`
 - [ ] **The UI never shows an amendment's `reason`, only its citations**, though all three amendment shapes
   require it (`schema.ts:778, 801, 813`). Survey 2026-09-17 corrects this index: the earlier note that
   `ui/session.ts:79` shows it "for unresolved items only" was wrong — that line is `Unresolved.reason`
   (`rules/types.ts:158-162`), the engine's "I could not clear this seed" text, an unrelated type. An
-  amendment's `reason` is shown nowhere at all
+  amendment's `reason` is shown nowhere at all. **Ruled (user 2026-09-17):** a `why: <reason>` line in each
+  strip-box verdict row, under the correction and above the citations, in the post-submit Amendments
+  panel, the results and the revisit; a box the engine left alone shows none
 - [ ] **The corrected strip follows the student's boxes where those were right** (user 2026-09-17, choosing
   this over labelling the engine's plan or drawing both strips). Today `ui/session.ts:112` reads
   `drawn.result.corrected`, the engine's plan, always. Seed 83: a student who fixes the route box alone
@@ -42,14 +46,12 @@ Four UI questions the engine already answers correctly; all four are presentatio
   TRUKN2 route). Two things the survey says this needs, neither of which exists:
   - [ ] Nothing folds `BoxAnswer`s into a `Scenario`. They are free text; `apply` (`amend/engine.ts:82-87`)
     folds `ResolvedAmendment`s, which carry `proposedFeet`/`proposed`
-  - [ ] **Open question for the user before this is briefed:** the graded clearance is resolved from the
-    engine's corrected plan at session-build time (`ui/session.ts:112`), and `ARCHITECTURE.md:98-101`
-    records why — "the engine's corrected plan, never the student's, so a wrong amendment does not compound
-    into a wrong clearance". Drawing the strip from the student's boxes while grading against the engine's
-    plan makes the strip and the CRAFT form disagree. Does the strip alone follow the student (display
-    only, grading untouched), or does the resolve move too? The recorded rule covers grading, so
-    display-only leaves it intact — but ARCHITECTURE.md still needs a line saying the strip is the
-    exception
+  - [ ] **Ruled (user 2026-09-17): the clearance follows too.** Once the boxes are submitted, the plan is
+    the filed plan with each box graded `correct` as the student wrote it and every other box (`wrong`,
+    `acceptable`, `half`) as the engine corrected it; the CRAFT clearance is resolved from that plan, so the
+    strip and the answer key always agree, and a wrong box still never compounds because it takes the
+    engine's value. A plan that does not resolve falls back to the engine's. `ARCHITECTURE.md:98-101`
+    ("the engine's corrected plan, never the student's") is restated to match
 - [ ] **The amendment-mode Results score line splits by half** (user 2026-09-17). Today `resultsBody`
   (`ui/results.ts`) calls `scoreLine(grades, 'elements')` on the whole session list, so the strip boxes are
   counted as elements ("2 of 11 elements correct"). The user's wording, slash included (confirmed):
@@ -59,8 +61,9 @@ Four UI questions the engine already answers correctly; all four are presentatio
   eight typed elements. The half-credit and acceptable tails stay with the half they belong to. Clearance
   mode keeps its one line
 - [ ] **Route row alignment.** The route row's answer and new-value controls start further right than the
-  other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes. Left as
-  a choice for the user 2026-09-16
+  other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes.
+  **Ruled (user 2026-09-17): the grid**, the three rows sharing columns (label | filed | answer | new
+  value), phone width still stacked
 
 ## Wave 2 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
