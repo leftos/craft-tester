@@ -3,7 +3,7 @@ import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { EXPECT_CHOICES } from '@/rules/options.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
-import type { Mode, ScenarioFilter } from '@/scenario/filter.ts';
+import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import { hashFor } from '@/scenario/filter.ts';
 import { buildScenario } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
@@ -72,14 +72,21 @@ export type AppState = {
   filter: ScenarioFilter;
   /** Which half the session trains; the URL hash carries it beside the seed and the filter. */
   mode: Mode;
+  /** How the student answers the clearance; the URL hash carries it beside the mode. */
+  input: InputKind;
   view: ScenarioView;
   picks: DraftPicks;
+  /** The clearance typed so far, exactly as typed; only typed answers read it. */
+  text: string;
   /** What the student has answered for the strip boxes, which amendment mode grades first. */
   boxes: DraftBoxes;
   /** Whether the box answers are in; the CRAFT form clears the corrected plan once they are. */
   boxesSubmitted: boolean;
   submitted: boolean;
-  /** The attempt an earlier answer at this seed and mode submitted, where the browser remembers one. */
+  /**
+   * The attempt an earlier answer at this seed, mode and input kind submitted, where the browser
+   * remembers one.
+   */
   revisit: Attempt | undefined;
 };
 
@@ -205,6 +212,42 @@ export function toAmendmentPicks(picks: DraftPicks): AmendmentPicks | undefined 
   return { ...player, procedure: picks.procedure };
 }
 
+/** How the CRAFT half of an attempt was answered: the dropdown picks, or the clearance typed out. */
+export type ClearanceAnswer<P> = { input: 'dropdowns'; picks: P } | { input: 'text'; text: string };
+
+/** The typed answer, once there is more than whitespace to grade. */
+function typedAnswer(text: string): { input: 'text'; text: string } | undefined {
+  return text.trim().length === 0 ? undefined : { input: 'text', text };
+}
+
+/**
+ * Turns a clearance session's answer into a gradable one, whichever way the student gives it.
+ *
+ * @param state The session so far.
+ * @returns The dropdown picks once every required one is made, or the typed clearance exactly as
+ *   typed once it is more than whitespace; `undefined` until then.
+ */
+export function toClearanceAnswer(state: AppState): ClearanceAnswer<PlayerPicks> | undefined {
+  if (state.input === 'text') return typedAnswer(state.text);
+  const picks = toPlayerPicks(state.picks);
+  return picks === undefined ? undefined : { input: 'dropdowns', picks };
+}
+
+/**
+ * Turns an amendment session's clearance into a gradable one, whichever way the student gives it.
+ *
+ * A typed clearance speaks the procedure itself, so it needs no procedure pick.
+ *
+ * @param state The session so far.
+ * @returns The dropdown picks once every required one is made, the procedure among them, or the
+ *   typed clearance exactly as typed once it is more than whitespace; `undefined` until then.
+ */
+export function toAmendmentAnswer(state: AppState): ClearanceAnswer<AmendmentPicks> | undefined {
+  if (state.input === 'text') return typedAnswer(state.text);
+  const picks = toAmendmentPicks(state.picks);
+  return picks === undefined ? undefined : { input: 'dropdowns', picks };
+}
+
 /**
  * Applies one box answer.
  *
@@ -240,25 +283,28 @@ export function toBoxAnswers(boxes: DraftBoxes): BoxAnswers | undefined {
  *
  * @param airport The airport data.
  * @param seed The scenario seed.
- * @param previous The attempt an earlier answer at this seed and mode submitted, or `undefined`.
- * @param filter The time of day and runway configurations the draw is narrowed to.
- * @param mode Which half the session trains.
+ * @param previous The attempt an earlier answer at this seed, mode and input kind submitted, or
+ *   `undefined`.
+ * @param settings The time of day and runway configurations the draw is narrowed to, the half the
+ *   session trains, and how the student answers the clearance.
  * @returns The state the page renders from.
  */
 export function newSession(
   airport: AirportData,
   seed: number,
   previous: Attempt | undefined,
-  filter: ScenarioFilter,
-  mode: Mode,
+  settings: SessionSettings,
 ): AppState {
+  const { filter, mode, input } = settings;
   return {
     airport,
     seed,
     filter,
     mode,
+    input,
     view: buildScenario(airport, seed, filter, mode),
     picks: EMPTY_PICKS,
+    text: '',
     boxes: EMPTY_BOXES,
     boxesSubmitted: false,
     submitted: false,
@@ -275,8 +321,10 @@ export function newSession(
  * @param state The state before the change.
  * @param filter The filter the player now asks for.
  * @param seed The seed of the fresh scenario, which the caller draws.
- * @param previous The attempt an earlier answer at that seed and mode submitted, or `undefined`.
- * @returns A new session on the same airport and in the same mode, with an untouched form.
+ * @param previous The attempt an earlier answer at that seed, mode and input kind submitted, or
+ *   `undefined`.
+ * @returns A new session on the same airport, in the same mode and answered the same way, with an
+ *   untouched form.
  */
 export function withFilter(
   state: AppState,
@@ -284,7 +332,11 @@ export function withFilter(
   seed: number,
   previous: Attempt | undefined,
 ): AppState {
-  return newSession(state.airport, seed, previous, filter, state.mode);
+  return newSession(state.airport, seed, previous, {
+    filter,
+    mode: state.mode,
+    input: state.input,
+  });
 }
 
 /**
@@ -297,8 +349,10 @@ export function withFilter(
  * @param state The state before the change.
  * @param mode The half the player now asks for.
  * @param seed The seed of the fresh scenario, which the caller draws.
- * @param previous The attempt an earlier answer at that seed and mode submitted, or `undefined`.
- * @returns A new session on the same airport under the same filter, with an untouched form.
+ * @param previous The attempt an earlier answer at that seed, mode and input kind submitted, or
+ *   `undefined`.
+ * @returns A new session on the same airport under the same filter and answered the same way, with
+ *   an untouched form.
  */
 export function withMode(
   state: AppState,
@@ -306,20 +360,61 @@ export function withMode(
   seed: number,
   previous: Attempt | undefined,
 ): AppState {
-  return newSession(state.airport, seed, previous, state.filter, mode);
+  return newSession(state.airport, seed, previous, {
+    filter: state.filter,
+    mode,
+    input: state.input,
+  });
+}
+
+/**
+ * Answers the scenario on screen the other way: typed out instead of picked, or the reverse.
+ *
+ * The input kind changes how the clearance is answered, not which scenario is drawn, so the seed and
+ * the scenario stay; only the clearance answer starts again. Where the browser remembers no attempt
+ * at this seed in the new input kind, the strip answers carry over, so a student who has answered
+ * the strip can switch how they read the clearance. Where it remembers one, the strip starts again
+ * too and the earlier attempt is shown back, as it is on any seed that was answered before.
+ *
+ * @param state The state before the switch.
+ * @param input How the student now answers the clearance.
+ * @param previous The attempt an earlier answer at this seed and mode submitted in the new input
+ *   kind, or `undefined`.
+ * @returns The same scenario answered the new way, with an untouched clearance answer.
+ */
+export function withInputKind(
+  state: AppState,
+  input: InputKind,
+  previous: Attempt | undefined,
+): AppState {
+  const strip =
+    previous === undefined
+      ? { boxes: state.boxes, boxesSubmitted: state.boxesSubmitted }
+      : { boxes: EMPTY_BOXES, boxesSubmitted: false };
+  return {
+    ...state,
+    ...strip,
+    input,
+    picks: EMPTY_PICKS,
+    text: '',
+    submitted: false,
+    revisit: previous,
+  };
 }
 
 /**
  * Answers this scenario again, from a revisit or from the results of the attempt just submitted.
  *
  * @param state The state before the retry.
- * @returns The same scenario with an untouched strip and form, and nothing revealed.
+ * @returns The same scenario with an untouched strip, form and typed clearance, and nothing
+ *   revealed.
  */
 export function withRetry(state: AppState): AppState {
   return {
     ...state,
     revisit: undefined,
     picks: EMPTY_PICKS,
+    text: '',
     boxes: EMPTY_BOXES,
     boxesSubmitted: false,
     submitted: false,
@@ -337,6 +432,18 @@ export function withRetry(state: AppState): AppState {
 export function withPick(state: AppState, key: PickKey, raw: string): AppState {
   if (state.submitted) return state;
   return { ...state, picks: applyPick(state.picks, key, raw) };
+}
+
+/**
+ * Writes the clearance typed so far into the session.
+ *
+ * @param state The state before the keystroke.
+ * @param text Everything the typing box now holds, exactly as typed.
+ * @returns The state after the keystroke; a submitted clearance takes no further typing.
+ */
+export function withText(state: AppState, text: string): AppState {
+  if (state.submitted) return state;
+  return { ...state, text };
 }
 
 /**
@@ -368,20 +475,21 @@ export function withBoxesSubmitted(state: AppState, procedure: string | undefine
 }
 
 /**
- * Submits the form, which is refused while a required dropdown is still blank.
+ * Submits the clearance, which is refused while a required dropdown is still blank or, for a typed
+ * answer, while nothing but whitespace is typed.
  *
  * Amendment mode grades the picked procedure too, and clears a plan the student has already
  * corrected, so it is refused while the procedure is blank or the strip is still open.
  *
  * @param state The state before the submission.
- * @returns The state with the form submitted, or the same state when the form is incomplete.
+ * @returns The state with the clearance submitted, or the same state when it is incomplete.
  */
 export function withSubmitted(state: AppState): AppState {
   if (state.mode === 'amendment') {
-    if (!state.boxesSubmitted || toAmendmentPicks(state.picks) === undefined) return state;
+    if (!state.boxesSubmitted || toAmendmentAnswer(state) === undefined) return state;
     return { ...state, submitted: true };
   }
-  if (toPlayerPicks(state.picks) === undefined) return state;
+  if (toClearanceAnswer(state) === undefined) return state;
   return { ...state, submitted: true };
 }
 
@@ -406,14 +514,14 @@ export type Phase =
 function amendmentPhase(state: AppState): Phase {
   if (state.revisit?.kind === 'amendment' && !state.submitted) return 'amendment-revisit';
   if (!state.boxesSubmitted || toBoxAnswers(state.boxes) === undefined) return 'amending';
-  if (!state.submitted || toAmendmentPicks(state.picks) === undefined) return 'clearing';
+  if (!state.submitted || toAmendmentAnswer(state) === undefined) return 'clearing';
   return 'amendment-results';
 }
 
 /** The phase a clearance session is in: the earlier attempt, the results, or the form. */
 function clearancePhase(state: AppState): Phase {
   if (state.revisit?.kind === 'clearance' && !state.submitted) return 'clearance-revisit';
-  if (state.submitted && toPlayerPicks(state.picks) !== undefined) return 'clearance-results';
+  if (state.submitted && toClearanceAnswer(state) !== undefined) return 'clearance-results';
   return 'clearance-form';
 }
 
@@ -432,15 +540,16 @@ export function phaseOf(state: AppState): Phase {
  * Identity of the panel set on screen: panels are rebuilt when it changes and synced when it does not.
  *
  * Everything the panels are built from is either in the key or held constant by it: the scenario
- * comes from the airport, the seed, the filter and the mode, and the hash that shares it names all
- * four, so the panels answer to nothing else while the key holds. What varies under one key is the
- * form's picks and the strip's answers, which the panels write into the controls they already built.
+ * comes from the airport, the seed, the filter and the mode, the input kind decides whether the
+ * clearance is picked or typed, and the hash that shares it names all five, so the panels answer to
+ * nothing else while the key holds. What varies under one key is the form's picks, the typed
+ * clearance and the strip's answers, which the panels write into the controls they already built.
  *
  * @param state The state the page renders from.
  * @returns The key; two states that render the same panel set share it.
  */
 export function viewKey(state: AppState): string {
-  const hash = hashFor(state.airport.airport.icao, state.seed, state.filter, state.mode);
+  const hash = hashFor(state.airport.airport.icao, state.seed, state);
   return `${hash}|${phaseOf(state)}`;
 }
 
@@ -450,18 +559,17 @@ export function viewKey(state: AppState): string {
  * @param href The page's current URL.
  * @param icao The airport the scenario was drawn at, which the link reopens.
  * @param seed The seed the link restores.
- * @param filter The filter the link restores with it, so the seed draws the same scenario.
- * @param mode The half of the trainer the link opens in.
- * @returns The same URL with the airport, the seed, the filter and the mode in its hash.
+ * @param settings The filter the link restores with it, so the seed draws the same scenario, the
+ *   half of the trainer it opens in, and how the clearance is answered there.
+ * @returns The same URL with the airport, the seed and the settings in its hash.
  */
 export function shareLink(
   href: string,
   icao: string,
   seed: number,
-  filter: ScenarioFilter,
-  mode: Mode,
+  settings: SessionSettings,
 ): string {
   const url = new URL(href);
-  url.hash = hashFor(icao, seed, filter, mode);
+  url.hash = hashFor(icao, seed, settings);
   return url.toString();
 }

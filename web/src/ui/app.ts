@@ -1,13 +1,24 @@
 import type { AirportData, AirportsIndex } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import { grade } from '@/rules/grade.ts';
-import type { ConfigFilter, Mode, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
+import type { SpokenClearance } from '@/rules/speak.ts';
+import type { TextGrade } from '@/rules/text/grade.ts';
+import { gradeText } from '@/rules/text/grade.ts';
+import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
+import type {
+  ConfigFilter,
+  Mode,
+  ScenarioFilter,
+  SessionSettings,
+  TimeFilter,
+} from '@/scenario/filter.ts';
 import {
   ANY_SCENARIO,
   airportFromHash,
   filterFromHash,
   hasFilterParams,
   hashFor,
+  inputKindFromHash,
   modeFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
@@ -18,20 +29,20 @@ import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, selectControl } from '@/ui/dom.ts';
 import type { SelectOption } from '@/ui/dom.ts';
-import type { FilterStore } from '@/ui/preferences.ts';
-import { browserFilterStore } from '@/ui/preferences.ts';
+import type { FilterStore, InputKindStore } from '@/ui/preferences.ts';
+import { browserFilterStore, browserInputKindStore } from '@/ui/preferences.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
 import type { SolvedStore } from '@/ui/solved.ts';
 import { browserSolvedStore } from '@/ui/solved.ts';
-import type { AppState, PickKey } from '@/ui/state.ts';
+import type { AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
 import {
   newSession,
   phaseOf,
   shareLink,
-  toAmendmentPicks,
+  toAmendmentAnswer,
   toBoxAnswers,
-  toPlayerPicks,
+  toClearanceAnswer,
   viewKey,
   withBox,
   withBoxesSubmitted,
@@ -71,18 +82,18 @@ const MODE_OPTIONS: readonly (SelectOption & { value: Mode })[] = [
 ];
 
 /**
- * Puts the airport, the seed, the filter and the mode in the hash, so a reload and a link both
- * restore them.
+ * Puts the airport, the seed, the filter, the mode and the input kind in the hash, so a reload and
+ * a link both restore them.
  */
-function writeHash(icao: string, seed: number, filter: ScenarioFilter, mode: Mode): void {
-  globalThis.history.replaceState(null, '', hashFor(icao, seed, filter, mode));
+function writeHash(icao: string, seed: number, settings: SessionSettings): void {
+  globalThis.history.replaceState(null, '', hashFor(icao, seed, settings));
 }
 
 /** The link that shares the scenario on screen, shown as the hash it adds. */
-function shareControl(icao: string, seed: number, filter: ScenarioFilter, mode: Mode): HTMLElement {
+function shareControl(icao: string, seed: number, settings: SessionSettings): HTMLElement {
   const wrapper = el('p', 'share');
-  const link = el('a', '', hashFor(icao, seed, filter, mode));
-  link.href = shareLink(globalThis.location.href, icao, seed, filter, mode);
+  const link = el('a', '', hashFor(icao, seed, settings));
+  link.href = shareLink(globalThis.location.href, icao, seed, settings);
   wrapper.append(el('span', 'share-label', 'scenario link'), link);
   return wrapper;
 }
@@ -184,7 +195,7 @@ function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): 
   header.append(
     el('h1', '', 'CRAFT Clearance Trainer'),
     controls,
-    shareControl(state.airport.airport.icao, state.seed, state.filter, state.mode),
+    shareControl(state.airport.airport.icao, state.seed, state),
   );
   return header;
 }
@@ -200,6 +211,21 @@ function renderUnresolved(reasons: readonly string[], onNext: () => void): HTMLE
     button('New scenario', 'primary', onNext),
   );
   return panel;
+}
+
+/**
+ * The verdicts a clearance answer earns: the picks graded as picked, or the typed clearance graded
+ * against the engine's reading of the same clearance.
+ */
+function clearanceGrades(
+  answer: ClearanceAnswer<PlayerPicks>,
+  spoken: SpokenClearance,
+  clearance: ResolvedClearance,
+  airport: AirportData,
+): (Grade | TextGrade)[] {
+  return answer.input === 'text'
+    ? gradeText(answer.text, spoken, clearance, airport)
+    : grade(answer.picks, clearance);
 }
 
 /** The strip, the ATIS, and then either the form or the results. */
@@ -221,22 +247,24 @@ function renderPanels(state: AppState, actions: Actions): Panels {
   ];
   const revisit = state.revisit;
   if (phase === 'clearance-revisit' && revisit?.kind === 'clearance') {
+    const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderRevisit({
-        grades: grade(revisit.picks, clearance),
-        spoken: spokenFor(generated, generated, clearance, state.airport),
+        grades: clearanceGrades(revisit, spoken, clearance, state.airport),
+        spoken,
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
     );
     return { nodes: panels, sync: undefined };
   }
-  const picks = toPlayerPicks(state.picks);
-  if (phase === 'clearance-results' && picks !== undefined) {
+  const answer = toClearanceAnswer(state);
+  if (phase === 'clearance-results' && answer !== undefined) {
+    const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderResults({
-        grades: grade(picks, clearance),
-        spoken: spokenFor(generated, generated, clearance, state.airport),
+        grades: clearanceGrades(answer, spoken, clearance, state.airport),
+        spoken,
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
@@ -276,26 +304,27 @@ function renderApp(state: AppState, index: AirportsIndex, actions: Actions): Pag
 }
 
 /** Everything `mount` remembers between renders that is not the state itself. */
-type Stores = { solved: SolvedStore; filter: FilterStore };
+type Stores = { solved: SolvedStore; filter: FilterStore; input: InputKindStore };
 
 /**
  * Remembers the attempt the student just submitted, so a revisit of the seed shows it back.
  *
  * An amendment attempt is the strip answers and the clearance that followed them; a form still
- * missing a pick is not an attempt at all and is not written.
+ * missing a pick, or a typing box holding nothing but whitespace, is not an attempt at all and is
+ * not written.
  */
 function saveAttempt(state: AppState, store: SolvedStore): void {
   const { icao } = state.airport.airport;
   if (state.mode === 'amendment') {
     const boxes = toBoxAnswers(state.boxes);
-    const picks = toAmendmentPicks(state.picks);
-    if (boxes !== undefined && picks !== undefined) {
-      store.save(icao, state.seed, { kind: 'amendment', boxes, picks });
+    const answer = toAmendmentAnswer(state);
+    if (boxes !== undefined && answer !== undefined) {
+      store.save(icao, state.seed, { kind: 'amendment', boxes, ...answer });
     }
     return;
   }
-  const picks = toPlayerPicks(state.picks);
-  if (picks !== undefined) store.save(icao, state.seed, { kind: 'clearance', picks });
+  const answer = toClearanceAnswer(state);
+  if (answer !== undefined) store.save(icao, state.seed, { kind: 'clearance', ...answer });
 }
 
 /** The panels on screen, and the view key they were built for. */
@@ -316,7 +345,7 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 
   const update = (next: AppState): void => {
     state = next;
-    writeHash(state.airport.airport.icao, state.seed, state.filter, state.mode);
+    writeHash(state.airport.airport.icao, state.seed, state);
     const key = viewKey(state);
     if (built === undefined || built.key !== key) {
       const page = renderApp(state, index, actions);
@@ -331,8 +360,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     onAirport: (icao) => {
       void loadAirportData(icao).then((airport) => {
         const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
-        const previous = store.load(icao, state.seed, state.mode);
-        update(newSession(airport, state.seed, previous, filter, state.mode));
+        const { mode, input } = state;
+        const previous = store.load(icao, state.seed, mode, input);
+        update(newSession(airport, state.seed, previous, { filter, mode, input }));
       });
     },
     onBox: (box, answer) => {
@@ -348,18 +378,18 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       const filter: ScenarioFilter = { time, config };
       stores.filter.save(icao, filter);
       const seed = randomSeed();
-      update(withFilter(state, filter, seed, store.load(icao, seed, state.mode)));
+      update(withFilter(state, filter, seed, store.load(icao, seed, state.mode, state.input)));
     },
     onMode: (mode) => {
       const seed = randomSeed();
-      const previous = store.load(state.airport.airport.icao, seed, mode);
+      const previous = store.load(state.airport.airport.icao, seed, mode, state.input);
       update(withMode(state, mode, seed, previous));
     },
     onNewScenario: () => {
       const seed = randomSeed();
       const { icao } = state.airport.airport;
-      const previous = store.load(icao, seed, state.mode);
-      update(newSession(state.airport, seed, previous, state.filter, state.mode));
+      const previous = store.load(icao, seed, state.mode, state.input);
+      update(newSession(state.airport, seed, previous, state));
     },
     onPick: (key, raw) => {
       update(withPick(state, key, raw));
@@ -384,7 +414,8 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
  * names no airport does. A link that names a filter opens under that filter, so a shared scenario
  * reads the same to whoever opens it; a link that names none falls back to the filter this browser
  * last chose. The hash names the half of the trainer the link opens in, which is clearance mode
- * unless it says so.
+ * unless it says so. It names typed answers too; a link that does not falls back to the way this
+ * browser last chose to answer, and to the dropdowns where it remembers none.
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
@@ -400,10 +431,15 @@ export async function startApp(root: Element): Promise<void> {
   const airport = await loadAirportData(entry.icao);
   const seed = seedFromHash(hash) ?? randomSeed();
   const mode = modeFromHash(hash);
-  const stores = { solved: browserSolvedStore(), filter: browserFilterStore() };
+  const stores: Stores = {
+    solved: browserSolvedStore(),
+    filter: browserFilterStore(),
+    input: browserInputKindStore(),
+  };
   const filter = hasFilterParams(hash)
     ? filterFromHash(hash)
     : (stores.filter.load(entry.icao) ?? ANY_SCENARIO);
-  const previous = stores.solved.load(entry.icao, seed, mode);
-  mount(root, index, newSession(airport, seed, previous, filter, mode), stores);
+  const input = inputKindFromHash(hash) ?? stores.input.load() ?? 'dropdowns';
+  const previous = stores.solved.load(entry.icao, seed, mode, input);
+  mount(root, index, newSession(airport, seed, previous, { filter, mode, input }), stores);
 }
