@@ -134,7 +134,8 @@ function movedOffDefault(
 
 /**
  * Whether the flight's TEC route explains a runway no default, request or direction does: a row is
- * usable off it, and some runway of the configuration listed for the class has none.
+ * usable off it, and some runway of the configuration listed for the class has none. A runway the
+ * class takes only on request is not one the draw moves a flight to, so it is not counted.
  */
 function explainedByTec(
   airport: AirportData,
@@ -144,7 +145,7 @@ function explainedByTec(
 ): boolean {
   if (!hasTecRoute(scenario.departureRunway, scenario, airport)) return false;
   const listed = config.departureRunways
-    .filter((row) => row.classes.includes(aircraftClass))
+    .filter((row) => row.classes.includes(aircraftClass) && row.onRequestFor.length === 0)
     .map((row) => row.runway);
   return [...new Set(listed)].some((runway) => !hasTecRoute(runway, scenario, airport));
 }

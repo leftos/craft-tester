@@ -13,6 +13,7 @@ import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { toExpectedAmendments } from '@/rules/amend/types.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { toExpectedClearance } from '@/rules/types.ts';
+import { tecRunway } from '@/scenario/generate.ts';
 
 /** Every checked-in airport, keyed by ICAO, so a fixture is graded against the field it names. */
 const airports = new Map<string, AirportData>(
@@ -269,6 +270,30 @@ describe.skipIf(pendingAmendments.length === 0)('pending amendment fixtures', ()
         agrees,
         `pending fixture ${fixture.id} now matches the engine; confirm it with the user and promote it to settled`,
       ).toBe(false);
+    });
+  }
+});
+
+/** A fixture the worksheet importer writes, under `fixtures/<icao>/worksheets/`. */
+const WORKSHEET_FIXTURE_PATH = /\/fixtures\/[^/]+\/worksheets\/[^/]+\.json$/;
+
+const worksheetFixtures: Fixture[] = loaded
+  .filter((entry) => WORKSHEET_FIXTURE_PATH.test(entry.path))
+  .map((entry) => (entry.parsed.success ? entry.parsed.data : undefined))
+  .filter((fixture) => fixture !== undefined);
+
+// The importer ends its runway choice on the TEC move the draw makes (user ruling 2026-09-18, "TEC
+// moves them too"), so every runway it writes is one the draw's move leaves where it is.
+describe('worksheet fixture runways', () => {
+  it('finds the worksheet fixtures', () => {
+    expect(worksheetFixtures.length).toBeGreaterThan(0);
+  });
+
+  for (const fixture of worksheetFixtures) {
+    it(`${fixture.id} departs a runway the draw's TEC move keeps it on`, () => {
+      expect(tecRunway(fixture.scenario, airportOf(fixture))).toBe(
+        fixture.scenario.departureRunway,
+      );
     });
   }
 });

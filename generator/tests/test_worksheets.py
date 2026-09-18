@@ -1,30 +1,37 @@
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 import pytest
 
-from craft_generator.cli import published_sid_runways
+from craft_generator.cli import published_sid_runways, published_sids
 from craft_generator.emit import dump, fixture_schema_path, validate, write_or_check
 from craft_generator.sop.load import WORKSHEETS_FILE, airport_dir, load_worksheets
 from craft_generator.sop.model import (
     AircraftClass,
     AircraftGroup,
     AirportInputs,
+    EquipmentSuffix,
+    Notice,
+    NoticeEffect,
     RunwayConfig,
     SharedRouteFacts,
     SopData,
+    TecRoute,
     Worksheet,
     WorksheetConfig,
 )
 from craft_generator.worksheets import (
     Fixture,
     PlanRow,
+    PublishedSid,
     RunwayChoice,
     SheetImport,
     SkippedPlan,
+    TecMove,
     departure_runway,
     designator_classes,
     designator_wtcs,
@@ -134,6 +141,9 @@ class Importer:
     wake_categories: Mapping[str, str]
     sid_runways: Mapping[str, Sequence[str]]
     destinations: frozenset[str]
+    tec_routes: tuple[TecRoute, ...]
+    sids: tuple[PublishedSid, ...]
+    equipment_suffixes: tuple[EquipmentSuffix, ...]
 
 
 @pytest.fixture(scope="module")
@@ -143,13 +153,18 @@ def importer(
     worksheet_config: WorksheetConfig,
     aircraft_classes: dict[str, AircraftClass],
     shared_route_facts: SharedRouteFacts,
+    equipment_suffixes: tuple[EquipmentSuffix, ...],
 ) -> Importer:
+    assert ksfo_inputs.tec is not None
     return Importer(
         inputs=ksfo_inputs,
         classes=aircraft_classes,
         wake_categories=designator_wtcs(aircraft_specs_subset, worksheet_config.type_aliases),
         sid_runways=published_sid_runways(ksfo_inputs.icao, ksfo_inputs.overrides),
         destinations=frozenset(shared_route_facts.destinations),
+        tec_routes=ksfo_inputs.tec.routes,
+        sids=published_sids(ksfo_inputs.icao),
+        equipment_suffixes=equipment_suffixes,
     )
 
 
@@ -211,6 +226,9 @@ def import_of(worksheet: Worksheet, importer: Importer, aliases: Mapping[str, st
         wake_categories=importer.wake_categories,
         cargo_airlines=importer.inputs.routes.cargo_airlines,
         sid_runways=importer.sid_runways,
+        tec_routes=importer.tec_routes,
+        sids=importer.sids,
+        equipment_suffixes=importer.equipment_suffixes,
     )
 
 
@@ -234,18 +252,26 @@ def plan_row(callsign: str, designator: str, route: str) -> PlanRow:
     )
 
 
-def runway_of(importer: Importer, config_id: str, row: PlanRow) -> RunwayChoice:
-    """Return the departure runway one plan gets in one runway configuration."""
-    config = next(entry for entry in importer.inputs.sop.runway_configs if entry.id == config_id)
+def choose_runway(importer: Importer, config: RunwayConfig, sop: SopData, row: PlanRow) -> RunwayChoice:
+    """Return the departure runway one plan gets in a runway configuration under a SOP."""
     return departure_runway(
         row,
         config,
-        importer.inputs.sop,
+        sop,
         aircraft_classes=importer.classes,
         wake_categories=importer.wake_categories,
         cargo_airlines=importer.inputs.routes.cargo_airlines,
         sid_runways=importer.sid_runways,
+        tec_routes=importer.tec_routes,
+        sids=importer.sids,
+        equipment_suffixes=importer.equipment_suffixes,
     )
+
+
+def runway_of(importer: Importer, config_id: str, row: PlanRow) -> RunwayChoice:
+    """Return the departure runway one plan gets in one runway configuration."""
+    config = next(entry for entry in importer.inputs.sop.runway_configs if entry.id == config_id)
+    return choose_runway(importer, config, importer.inputs.sop, row)
 
 
 def fixture_of(fixtures: dict[Path, Fixture], callsign: str) -> Fixture:
@@ -384,15 +410,7 @@ def _pcm_default_config(importer: Importer) -> RunwayConfig:
 
 
 def _runway_in(importer: Importer, config: RunwayConfig, row: PlanRow) -> RunwayChoice:
-    return departure_runway(
-        row,
-        config,
-        importer.inputs.sop,
-        aircraft_classes=importer.classes,
-        wake_categories=importer.wake_categories,
-        cargo_airlines=importer.inputs.routes.cargo_airlines,
-        sid_runways=importer.sid_runways,
-    )
+    return choose_runway(importer, config, importer.inputs.sop, row)
 
 
 def test_airline_default_beats_the_class_default(by_title: dict[str, Worksheet], importer: Importer) -> None:
@@ -428,15 +446,7 @@ def _group_default_sop(importer: Importer) -> SopData:
 
 def _runway_under(importer: Importer, sop: SopData, row: PlanRow) -> RunwayChoice:
     config = next(entry for entry in sop.runway_configs if entry.id == "28/01")
-    return departure_runway(
-        row,
-        config,
-        sop,
-        aircraft_classes=importer.classes,
-        wake_categories=importer.wake_categories,
-        cargo_airlines=importer.inputs.routes.cargo_airlines,
-        sid_runways=importer.sid_runways,
-    )
+    return choose_runway(importer, config, sop, row)
 
 
 def test_group_default_beats_the_class_default(by_title: dict[str, Worksheet], importer: Importer) -> None:
@@ -512,6 +522,67 @@ def test_unknown_designator_skips_the_class_default(
     assert fixture["source"]["note"].endswith("; type B350 is not in the vNAS specs, so the class default was not applied")
 
 
+def tec_plan(callsign: str, designator: str, suffix: str | None, destination: str, route: str) -> PlanRow:
+    """Return a filed plan to a destination the TEC table routes, for the TEC move to read."""
+    return PlanRow(
+        callsign=callsign,
+        designator=designator,
+        suffix=suffix,
+        departure="KSFO",
+        destination=destination,
+        altitude_feet=10000,
+        squawk="4621",
+        route=route,
+        truncated=False,
+    )
+
+
+def test_tec_route_moves_a_tbm9_to_ksmf_off_its_class_default_28r_to_01r(by_title: dict[str, Worksheet], importer: Importer) -> None:
+    row = tec_plan("N436MS", "TBM9", "/L", "KSMF", "TRUKN FEVTA FEVTA1")
+    choice = runway_of(importer, "28/01", row)
+    assert importer.classes["TBM9"] == "T"
+    assert (choice.runway, choice.default_for_class, choice.on_request) == ("01R", None, None)
+    assert choice.tec_move == TecMove(from_runway="28R", route_id="TEC-KSMF-SFOW-J", head="TRUKN#")
+    fixture = fixture_for(by_title["Phraseology Practice 2"], row, 0, icao="KSFO", runway=choice, type_aliases={})
+    assert fixture["source"]["note"].endswith(
+        "so this is 01R, moved there from 28R because its TEC route TEC-KSMF-SFOW-J departs TRUKN# from it and not from 28R "
+        "(RWY-TEC, user ruling 2026-09-18), pending validation"
+    )
+
+
+def test_tec_route_keeps_an_rnav_jet_to_klvk_on_the_28_its_request_gives_it(importer: Importer) -> None:
+    choice = runway_of(importer, "28/01", tec_plan("KAL65", "A306", "/L", "KLVK", "SNTNA2 SNTNA ALTAM"))
+    assert choice.on_request is not None
+    assert (choice.runway, choice.on_request.kind, choice.tec_move) == ("28L", "heavy", None)
+
+
+def test_tec_route_keeps_an_rnav_jet_to_ksmf_in_28_so_where_trukn_is_in_use_from_no_runway(importer: Importer) -> None:
+    choice = runway_of(importer, "28 SO", tec_plan("UAL1", "A320", "/L", "KSMF", "TRUKN FEVTA FEVTA1"))
+    assert (choice.runway, choice.direction, choice.tec_move) == ("28L", "north", None)
+
+
+def test_a_non_rnav_suffix_skips_an_rnav_tec_row(importer: Importer) -> None:
+    choice = runway_of(importer, "28/01", tec_plan("N436MS", "TBM9", "/A", "KSMF", "TRUKN FEVTA FEVTA1"))
+    assert (choice.runway, choice.default_for_class, choice.tec_move) == ("28R", "T", None)
+
+
+def test_a_default_active_sid_off_notice_without_a_heading_skips_the_tec_row(importer: Importer) -> None:
+    sop = importer.inputs.sop
+    trukn_off = Notice(
+        id="SFO-TRUKN-OFF",
+        source="injected for the test",
+        dated=date(2026, 9, 18),
+        text="TRUKN DP not in use",
+        plan="SFOW",
+        effect=NoticeEffect(kind="sid_off", sid_family="TRUKN", heading=None),
+        default_active=True,
+    )
+    row = tec_plan("N436MS", "TBM9", "/L", "KSMF", "TRUKN FEVTA FEVTA1")
+    config = next(entry for entry in sop.runway_configs if entry.id == "28/01")
+    choice = choose_runway(importer, config, replace(sop, notices=(*sop.notices, trukn_off)), row)
+    assert (choice.runway, choice.default_for_class, choice.tec_move) == ("28R", "T", None)
+
+
 def test_settled_fixture_with_same_scenario_is_kept(turboprop_fixture: Fixture, tmp_path: Path) -> None:
     path = write_settled(tmp_path, turboprop_fixture)
     settled = settled_fixture_at(path, turboprop_fixture, overwrite_settled=False)
@@ -536,6 +607,13 @@ def test_overwrite_flag_downgrades_a_settled_fixture(turboprop_fixture: Fixture,
     written = json.loads(path.read_text(encoding="utf-8"))
     assert (written["status"], "expected" in written) == ("pending", False)
     assert written["scenario"]["departureRunway"] == turboprop_fixture["scenario"]["departureRunway"]
+
+
+def test_overwrite_flag_keeps_a_settled_fixture_whose_scenario_is_unchanged(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    path = write_settled(tmp_path, turboprop_fixture)
+    settled = settled_fixture_at(path, turboprop_fixture, overwrite_settled=True)
+    assert settled is not None
+    assert settled.changed_fields == ()
 
 
 def test_a_worksheet_plan_becomes_a_pending_fixture(worksheet_config: WorksheetConfig, importer: Importer) -> None:
