@@ -51,6 +51,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-ARRIVAL",
     "R-HEADING",
     "R-RV-AIRWAY",
+    "R-RV-DIRECT",
     "R-AIRWAY",
     "R-NAVAID",
     "R-RNAV-AIRWAY",

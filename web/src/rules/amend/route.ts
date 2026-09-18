@@ -225,7 +225,7 @@ function builtExpectation(
   airport: AirportData,
   scope: BuildScope,
 ): ExpectedRoute | undefined {
-  const parsed = parseFiledRoute(scenario.filedRoute, airport);
+  const parsed = parseFiledRoute(scenario.filedRoute, airport, scenario.destination);
   if (isUnresolved(parsed)) return undefined;
   const repair = repairMalformed(parsed.tokens, airport);
   const tokens = repair?.tokens ?? parsed.tokens;
@@ -257,7 +257,7 @@ type StructureDrop = { dropped: string[]; exitElement: string; structureSids?: s
  *   on, and the element after them.
  */
 function structureDrop(scenario: Scenario, airport: AirportData): StructureDrop {
-  const parsed = parseFiledRoute(scenario.filedRoute, airport);
+  const parsed = parseFiledRoute(scenario.filedRoute, airport, scenario.destination);
   if (isUnresolved(parsed)) return { dropped: [], exitElement: '' };
   return {
     dropped: parsed.droppedStructureTokens ?? [],
@@ -326,20 +326,26 @@ function filedScope(filed: FiledRoute): BuildScope {
 }
 
 /**
- * The TEC route as the box reads it behind a heading, its departure family dropped.
+ * The TEC route as the box reads it behind a heading.
  *
- * A noise-abatement heading or a notice's heading replaces the family a row begins on, and the route
- * follows the heading the way a row issued on an initial heading reads.
+ * A row issued on the heading the flight is cleared on keeps that heading, which the box carries
+ * (`H270 OSI`, `RH RV`). A noise-abatement heading or a notice's heading that replaces what a row
+ * begins on, its departure family or another heading, is not flown on the row's head, so the head is
+ * dropped and the route follows the heading issued.
  *
  * @param tec The TEC row that routes the flight.
+ * @param procedure The heading the clearance issues.
  * @param airport The airport data, whose `sids` carry the versions in force this cycle.
- * @returns The route as tokens without a departure, or `Unresolved` where the row names a family the
- *   airport no longer publishes.
+ * @returns The route as tokens, or `Unresolved` where the row names a family the airport no longer
+ *   publishes.
  */
-function tecTail(tec: TecRoute, airport: AirportData): string[] | Unresolved {
+function tecTail(tec: TecRoute, procedure: Procedure, airport: AirportData): string[] | Unresolved {
   const tokens = tecTokens(tec, airport);
-  if (isUnresolved(tokens) || tecHead(tec).kind !== 'family') return tokens;
-  return tokens.slice(1);
+  const head = tecHead(tec);
+  if (isUnresolved(tokens) || head.kind === 'none') return tokens;
+  const flown =
+    head.kind === 'heading' && procedure.kind === 'heading' && procedure.heading === head.heading;
+  return flown ? tokens : tokens.slice(1);
 }
 
 /**
@@ -398,7 +404,7 @@ function expectedRoute(
   const head = tecHead(tec);
   const sid = airport.sids.find((entry) => entry.id === assigned);
   if (sid !== undefined && head.kind === 'heading') {
-    return { ...joinedExpectation(tokens, scenario, ctx, sid, airport), joinedTec: tec };
+    return { ...joinedExpectation(tokens.slice(1), scenario, ctx, sid, airport), joinedTec: tec };
   }
   if (sid !== undefined && head.kind === 'family' && sid.family !== head.family) {
     return { ...joinedExpectation(tokens.slice(1), scenario, ctx, sid, airport), joinedTec: tec };
@@ -825,8 +831,8 @@ export function loaRouteRows(
  * being vectored to a route it can fly like any other. A TEC route wins over both. A flight whose
  * TEC route begins on a departure family is on a heading only where a noise-abatement row or a
  * notice issued one in the family's place, and the box is the route with the family dropped; a row
- * that begins on an initial heading token is issued that heading, and its route, the token dropped,
- * is the box.
+ * that begins on an initial heading token is issued that heading, and its route, the token kept, is
+ * the box.
  *
  * A box for a destination outside the TRACON then goes through the arrival step, which may put the
  * flight on another arrival of its destination and, where a SID the table passed over reaches an
@@ -850,7 +856,9 @@ function checkHeadingRoute(
     tec === undefined ? builtExpectation(scenario, ctx, airport, { kind: 'any' }) : undefined;
   const repair = build === undefined ? repairMalformed(filed.tail, airport) : undefined;
   const resolved =
-    tec === undefined ? (build?.tokens ?? repair?.tokens ?? filed.tail) : tecTail(tec, airport);
+    tec === undefined
+      ? (build?.tokens ?? repair?.tokens ?? filed.tail)
+      : tecTail(tec, check.clearance.procedure.value, airport);
   if (isUnresolved(resolved)) return resolved;
   const expected: ExpectedRoute = {
     ...build,

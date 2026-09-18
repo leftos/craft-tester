@@ -420,6 +420,37 @@ describe('gradeText', () => {
     expect(idsOf(gradeOf(grades, 'R.route'))).toEqual(['OWN-ROUTE', 'R-THEN-AS-FILED-END']);
   });
 
+  /** A flight cleared on the runway heading, radar vectors direct, as an `RH RV` TEC route issues. */
+  const vectorsDirect = input({
+    clearance: clearance({
+      procedure: {
+        kind: 'heading',
+        heading: 'runway heading',
+        turn: undefined,
+        spoken: 'fly runway heading',
+      },
+      route: { template: 'radar_vectors_direct' },
+      altitude: { phrase: 'maintain', feet: 5000 },
+    }),
+    filedRoute: 'RH RV',
+  });
+
+  it('grades "radar vectors direct" correct on a vectors-direct clearance', () => {
+    const reading = readingOf(vectorsDirect);
+    expect(reading).toContain('via fly runway heading, radar vectors direct.');
+    const grades = graded(reading, vectorsDirect);
+    expect(verdictsOf(grades)).toEqual(verdictsWith());
+    expect(idsOf(gradeOf(grades, 'R.route'))).toEqual(['OWN-ROUTE']);
+  });
+
+  it('does not take the "direct" of radar vectors direct for the closing "direct" of a route read to its end', () => {
+    const reading = readingOf(vectorsDirect);
+    const said = edited(reading, 'radar vectors direct.', 'radar vectors, then as filed.');
+    const route = gradeOf(graded(said, vectorsDirect), 'R.route');
+    expect(['correct', 'acceptable']).not.toContain(route.verdict);
+    expect(idsOf(route)).not.toContain('R-THEN-AS-FILED-END');
+  });
+
   it('grades the expect clause the chart already publishes acceptable, and a clause nobody wants wrong', () => {
     const redundant = input({
       clearance: clearance({ redundantExpect: { kind: 'filed', feet: 34000, minutes: 10 } }),

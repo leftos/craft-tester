@@ -1,10 +1,11 @@
+import re
 from dataclasses import replace
 from typing import Any
 
 import pytest
 
 from craft_generator.emit import data_path, dump, schema_path, validate
-from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport, gate_coverage
+from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport, gate_coverage, tec_route_grammar_error
 from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule
 
 SID_COUNT = 12
@@ -356,6 +357,76 @@ def test_a_tec_row_on_a_heading_no_aircraft_can_fly_fails_the_build(ksfo_build_i
     inputs = _with_tec_route(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "H000 OAK V6 SAC")
     with pytest.raises(ValueError, match=r"tecRoutes\[TEC-KSMF-SFOW-P-28\]: route begins on 'H000'.*write H001 through H360"):
         build_airport(inputs)
+
+
+def _vector_families(document: Document) -> frozenset[str]:
+    return frozenset(sid["family"] for sid in document["sids"] if sid["routePhrasing"] == "radar_vectors_fix")
+
+
+@pytest.mark.parametrize(
+    "route",
+    ["TRUKN# TRUKN ALTAM", "H270 OSI", "EUGEN", "RH RV", "H090 RV", "OAK# RV", "NIMI# RV", "GAPP#"],
+    ids=["dp-fixes", "heading-fix", "fix-alone", "runway-heading-vectors", "heading-vectors", "oak-vectors", "nimi-vectors", "bare-vector-dp"],
+)
+def test_a_tec_route_the_grammar_reads(route: str, ksfo_document: Document) -> None:
+    assert tec_route_grammar_error(route, _vector_families(ksfo_document)) is None
+
+
+@pytest.mark.parametrize(
+    ("route", "reason"),
+    [
+        ("RH", r"nothing follows 'RH'"),
+        ("TRUKN#", r"nothing follows 'TRUKN#', which is flown by the pilot"),
+        ("RV", r"route begins on 'RV', which has no head"),
+        ("OSI RH", r"route carries 'RH' after its head"),
+        ("RH OSI RV", r"route carries 'RV' beside other tokens"),
+        ("H000 RV", r"route begins on 'H000', which is no magnetic heading"),
+        ("OSI RV", r"route carries 'RV' after the fix or airway 'OSI'"),
+    ],
+    ids=[
+        "heading-alone",
+        "pilot-nav-dp-alone",
+        "vectors-without-head",
+        "runway-heading-after-head",
+        "vectors-among-fixes",
+        "heading-out-of-range",
+        "vectors-after-a-fix-head",
+    ],
+)
+def test_a_tec_route_the_grammar_rejects(route: str, reason: str, ksfo_document: Document) -> None:
+    error = tec_route_grammar_error(route, _vector_families(ksfo_document))
+    assert error is not None
+    assert re.match(reason, error)
+
+
+def test_a_tec_row_that_breaks_the_grammar_fails_the_build_naming_the_row(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_tec_route(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "RH")
+    with pytest.raises(ValueError, match=r"tecRoutes\[TEC-KSMF-SFOW-P-28\]: nothing follows 'RH'"):
+        build_airport(inputs)
+
+
+def test_a_runway_heading_vectors_row_asks_for_no_navaid_name(ksfo_build_inputs: BuildInputs) -> None:
+    document = build_airport(_with_tec_route(ksfo_build_inputs, "TEC-KSMF-SFOW-P-28", "RH RV"))
+    assert {row["id"]: row["route"] for row in document["tecRoutes"]}["TEC-KSMF-SFOW-P-28"] == "RH RV"
+    assert "RH" not in document["fixSpoken"]
+    assert "RV" not in document["fixSpoken"]
+
+
+def _with_north_gate_fix(inputs: BuildInputs, fix: str) -> BuildInputs:
+    gates = inputs.airport.sop.gates
+    return _with_sop(inputs, gates=replace(gates, north=(*gates.north, fix)))
+
+
+def test_a_destination_identifier_in_a_gate_asks_for_no_navaid_name(ksfo_build_inputs: BuildInputs) -> None:
+    document = build_airport(_with_north_gate_fix(ksfo_build_inputs, "LVK"))
+    assert "LVK" in document["gates"]["north"]
+    assert "KLVK" in _destinations(document)
+    assert "LVK" not in document["fixSpoken"]
+
+
+def test_an_unnamed_gate_fix_that_is_no_destination_still_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    with pytest.raises(ValueError, match=r"fixSpoken: navaid ZZZ \(from gates.north\) has no name"):
+        build_airport(_with_north_gate_fix(ksfo_build_inputs, "ZZZ"))
 
 
 def _with_tec_destination(inputs: BuildInputs, row_id: str, destination: str) -> BuildInputs:

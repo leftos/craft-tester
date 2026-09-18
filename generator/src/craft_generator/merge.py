@@ -27,7 +27,8 @@ destination. A Seattle STAR ending a Vancouver route is a smell the build report
 ``fixSpoken`` is derived, not transcribed: every two- or three-letter token the route library, the
 TEC rows, the gates, the SID transitions, the shared route connections and the checked-in fixtures
 name is looked up in the CIFP
-navaid table and emitted as the name and its facility word, "Red Bluff VOR". A navaid the CIFP does
+navaid table, except ``RH`` and ``RV``, the runway heading and radar vectors a route writes in a
+fix's place, and emitted as the name and its facility word, "Red Bluff VOR". A navaid the CIFP does
 not carry, decommissioned or foreign, takes its name from the shared ``navaid_names.yaml`` table, and
 a hand ``fix_spoken`` row wins over both, for the names the CIFP spells badly. A navaid the airport
 data names and no source names is a build failure, because the speaker would otherwise spell it out letter by letter;
@@ -129,6 +130,9 @@ _PROCEDURE_TOKEN = re.compile(r"(?P<family>[A-Z]{3,5})\d+")
 _PROCEDURE_FAMILY_TOKEN = re.compile(rf"(?P<family>[A-Z]{{3,5}}){re.escape(SID_PLACEHOLDER)}")
 _HEADING_TOKEN = re.compile(r"H\d{3}")
 _HEADING_DEGREES = range(1, 361)
+_RUNWAY_HEADING_TOKEN = "RH"
+_RADAR_VECTORS_TOKEN = "RV"
+_VECTOR_ROUTE_PHRASING = "radar_vectors_fix"
 
 
 @dataclass(frozen=True, slots=True)
@@ -783,9 +787,9 @@ def _fixes_needing_a_gate(document: Document) -> list[tuple[str, str]]:
     wanted = [(transition["fix"], f"sids[{sid['id']}].transitions") for sid in document["sids"] for transition in sid["transitions"]]
     wanted += [(route["exitFix"], f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}].exitFix") for route in _routes(document)]
     wanted += [
-        (route["tail"].split()[0], f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}].tail")
+        (_fix_tokens(route["tail"])[0], f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}].tail")
         for route in _routes(document)
-        if route["tail"].split()
+        if _fix_tokens(route["tail"])
     ]
     return wanted
 
@@ -965,17 +969,89 @@ def _check_tec_routes(document: Document) -> None:
         _check_tec_route_runways(row, sids, plans)
 
 
-def _leading_token(route: str) -> str:
+def _is_heading_token(token: str) -> bool:
+    """Whether a route token is a heading the route departs on: ``RH``, the runway heading, or ``Hnnn``."""
+    return token == _RUNWAY_HEADING_TOKEN or _HEADING_TOKEN.fullmatch(token) is not None
+
+
+def _is_vector_token(token: str) -> bool:
+    """Whether a route token is a heading or ``RV``, radar vectors, rather than a fix, an airway or a procedure."""
+    return token == _RADAR_VECTORS_TOKEN or _is_heading_token(token)
+
+
+def _fix_tokens(route: str) -> list[str]:
+    """Return the tokens of a route that name something, leaving out ``RH``, ``RV`` and ``Hnnn``.
+
+    ``RH`` is also the identifier of the Arsha NDB, so a navaid lookup must never see these tokens.
+    """
+    return [token for token in route.split() if not _is_vector_token(token)]
+
+
+def _vector_sid_families(document: Document) -> frozenset[str]:
+    """Return the DP families flown on radar vectors, the ones filed with the airport navaid after them."""
+    return frozenset(sid["family"] for sid in document["sids"] if sid["routePhrasing"] == _VECTOR_ROUTE_PHRASING)
+
+
+def _empty_tail_error(head: str, vector_families: frozenset[str]) -> str | None:
+    if _is_heading_token(head):
+        return f"nothing follows {head!r}; a heading is followed by fixes and airways, or by RV alone for radar vectors direct"
+    family = _PROCEDURE_FAMILY_TOKEN.fullmatch(head)
+    if family is not None and family.group("family") not in vector_families:
+        return (
+            f"nothing follows {head!r}, which is flown by the pilot rather than on radar vectors; only a radar-vector DP stands bare, "
+            "so add the fixes and airways the route files, or RV alone"
+        )
+    return None
+
+
+def _tail_error(head: str, tail: Sequence[str]) -> str | None:
+    misplaced = next((token for token in tail if _is_heading_token(token)), None)
+    if misplaced is not None:
+        return f"route carries {misplaced!r} after its head; RH and a heading Hnnn stand only at the head of a route"
+    if _RADAR_VECTORS_TOKEN not in tail:
+        return None
+    if len(tail) > 1:
+        return "route carries 'RV' beside other tokens after its head; RV stands only alone after the head, as in 'RH RV'"
+    if _is_heading_token(head) or _PROCEDURE_FAMILY_TOKEN.fullmatch(head) is not None:
+        return None
+    return f"route carries 'RV' after the fix or airway {head!r}; RV follows only RH, a heading Hnnn or a DP family"
+
+
+def tec_route_grammar_error(route: str, vector_families: frozenset[str]) -> str | None:
+    """Return why a TEC route breaks the row grammar, or None where it reads.
+
+    A route is a head, then either fixes and airways, ``RV`` alone, or nothing. The head is a DP
+    family (``TRUKN#``), a heading ``H001`` through ``H360``, ``RH`` for the runway heading, or a fix
+    or an airway. ``RH`` and ``Hnnn`` stand only as the head, and ``RV`` only as the whole tail after
+    a heading or a DP family, never after a fix or an airway. A heading or a DP family flown by the
+    pilot is never followed by nothing; a radar-vector DP family is, and the flight is then vectored
+    direct to the destination.
+
+    Args:
+        route: The route as ``tec.yaml`` writes it, e.g. ``H270 OSI`` or ``OAK# RV``.
+        vector_families: The DP families whose SID is flown on radar vectors.
+
+    Returns:
+        The reason the route is malformed, or None.
+    """
     tokens = route.split()
-    return tokens[0] if tokens else ""
+    if not tokens:
+        return "the route is empty; write a head, then fixes and airways or RV"
+    head, tail = tokens[0], tokens[1:]
+    if head == _RADAR_VECTORS_TOKEN:
+        return "route begins on 'RV', which has no head to follow; write RH, a heading Hnnn or a DP family before it"
+    if _HEADING_TOKEN.fullmatch(head) and int(head[1:]) not in _HEADING_DEGREES:
+        return f"route begins on {head!r}, which is no magnetic heading; write H001 through H360"
+    return _tail_error(head, tail) if tail else _empty_tail_error(head, vector_families)
 
 
 def _check_tec_heads(document: Document) -> None:
-    """Check the initial heading a TEC row begins on, and the rules keyed on such a row."""
+    """Check every TEC row against the route grammar, and the rules keyed on a row that begins on a heading."""
+    vector_families = _vector_sid_families(document)
     for row in document["tecRoutes"]:
-        token = _leading_token(str(row["route"]))
-        if _HEADING_TOKEN.fullmatch(token) and int(token[1:]) not in _HEADING_DEGREES:
-            raise ValueError(f"tecRoutes[{row['id']}]: route begins on {token!r}, which is no magnetic heading; write H001 through H360")
+        error = tec_route_grammar_error(str(row["route"]), vector_families)
+        if error is not None:
+            raise ValueError(f"tecRoutes[{row['id']}]: {error}")
     for rule in document["assignmentRules"]:
         if rule.get("when", {}).get("tecRouteWithoutDp") is not True or rule["sidFamily"] is None:
             continue
@@ -1014,14 +1090,25 @@ def _check_outside_nct(document: Document, inputs: BuildInputs) -> None:
         )
 
 
+def _destination_identifiers(document: Document) -> frozenset[str]:
+    """Return the FAA identifier of every route-library destination, the ICAO code without its leading ``K``.
+
+    A gate entry that is one of these stands in for the exit fix of a route vectored direct to that
+    destination; a vectors-direct phrase never speaks it, so it asks for no navaid name.
+    """
+    icaos = [str(row["icao"]) for row in document["routeLibrary"]["destinations"]]
+    return frozenset(icao[1:] if len(icao) == 4 and icao.startswith("K") else icao for icao in icaos)
+
+
 def _route_navaid_tokens(document: Document) -> list[tuple[str, str]]:
     wanted: list[tuple[str, str]] = []
     for route in _routes(document):
-        wanted += [(token, f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}].tail") for token in str(route["tail"]).split()]
+        wanted += [(token, f"routeLibrary.routes[{route['exitFix']} -> {route['destination']}].tail") for token in _fix_tokens(str(route["tail"]))]
     for row in document["tecRoutes"]:
-        wanted += [(token, f"tecRoutes[{row['id']}].route") for token in str(row["route"]).split()]
+        wanted += [(token, f"tecRoutes[{row['id']}].route") for token in _fix_tokens(str(row["route"]))]
+    stand_ins = _destination_identifiers(document)
     for direction, fixes in document["gates"].items():
-        wanted += [(fix, f"gates.{direction}") for fix in fixes]
+        wanted += [(fix, f"gates.{direction}") for fix in fixes if fix not in stand_ins]
     for sid in document["sids"]:
         wanted += [(transition["fix"], f"sids[{sid['id']}].transitions") for transition in sid["transitions"]]
     for connection in document["routeConnections"]:
@@ -1041,7 +1128,7 @@ def _document_navaid_tokens(document: Document) -> dict[str, str]:
 
 def _fixture_navaid_tokens(document: Document, inputs: BuildInputs) -> set[str]:
     """Return every navaid the checked-in fixtures file that the airport data itself does not name."""
-    tokens = {token for route in inputs.fixture_routes for token in route.split() if _NAVAID_TOKEN.fullmatch(token)}
+    tokens = {token for route in inputs.fixture_routes for token in _fix_tokens(route) if _NAVAID_TOKEN.fullmatch(token)}
     return tokens - {document["airport"]["faa"]}
 
 

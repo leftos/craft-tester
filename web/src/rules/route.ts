@@ -15,6 +15,15 @@ const AIRWAY_TOKEN = /^[A-Z]\d{1,3}$/;
 /** An identifier as a flight plan writes one: upper-case letters and digits, and nothing else. */
 const IDENT_TOKEN = /^[A-Z0-9]+$/;
 
+/** The runway heading a route departs on, as a TEC route writes it at its head. */
+const RUNWAY_HEADING_TOKEN = 'RH';
+
+/** An initial heading a route departs on, as a TEC route writes it at its head, e.g. `H270`. */
+const HEADING_TOKEN = /^H\d{3}$/;
+
+/** The radar vectors a route ends in where it names no fix after its departure. */
+const RADAR_VECTORS_TOKEN = 'RV';
+
 /** What flying one element of a route takes: RNAV capability, or the GPS a T or Y route needs. */
 export type RnavNeed = 'rnav' | 'gnss';
 
@@ -37,6 +46,9 @@ const DIRECTIONS: readonly Direction[] = ['north', 'south', 'oceanic'];
  * the transition they are read to. Two departures out of the same airport often fly over the same
  * fix to the same transition, so more than one SID can justify the same drop, and an amendment
  * naming the fixes picks the procedure it is itself proposing where that one is among them.
+ * `vectorsDirect` is set on a route that names no fix after its departure and is vectored straight
+ * to the destination; its exit element, exit fix and only token are then the destination's
+ * identifier, which is the gate the departure frequency is read from.
  */
 export type ParsedRoute = {
   filedSidToken?: string;
@@ -45,6 +57,7 @@ export type ParsedRoute = {
   exitElement: string;
   exitFix: string;
   tokens: string[];
+  vectorsDirect?: boolean;
 };
 
 /**
@@ -55,6 +68,21 @@ export type ParsedRoute = {
  */
 export function isSidToken(token: string): boolean {
   return SID_TOKEN.test(token);
+}
+
+/**
+ * Whether a route token is a heading the route departs on rather than a fix or a procedure.
+ *
+ * @param token One token of a filed route.
+ * @returns True for `RH`, the runway heading, and for `H270`; false for `HWD`, `H27` and `TRUKN2`.
+ */
+export function isHeadingToken(token: string): boolean {
+  return token === RUNWAY_HEADING_TOKEN || HEADING_TOKEN.test(token);
+}
+
+/** Whether a route token is what the route departs on: a procedure or a heading. */
+function isDepartureToken(token: string): boolean {
+  return isSidToken(token) || isHeadingToken(token);
 }
 
 /**
@@ -101,9 +129,11 @@ function splitRoute(filedRoute: string): string[] {
  * Takes the filed route from its exit fix onwards.
  *
  * A leading procedure token is stripped whether or not it is the procedure the flight will get, so
- * a stale or wrong SID does not change the exit fix. The airport's own navaid is skipped where it
- * is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`. The first token of the result is the element the
- * flight leaves the terminal on: a fix, or an airway when the route joins one straight off the SID.
+ * a stale or wrong SID does not change the exit fix, and so is a leading heading token, `RH` or
+ * `H270`, which a TEC route departs on in a procedure's place. The airport's own navaid is skipped
+ * where it is filed next, e.g. `SFO` in `WESLA5 SFO SUSEY`. The first token of the result is the
+ * element the flight leaves the terminal on: a fix, or an airway when the route joins one straight
+ * off the SID.
  *
  * @param filedRoute The route string as filed.
  * @param airportFaa The departure airport's own navaid identifier, e.g. `SFO`.
@@ -113,8 +143,97 @@ function splitRoute(filedRoute: string): string[] {
 export function routeFromExitFix(filedRoute: string, airportFaa: string): string[] {
   const filed = splitRoute(filedRoute);
   const first = filed[0];
-  const afterSid = first !== undefined && isSidToken(first) ? filed.slice(1) : filed;
-  return afterSid[0] === airportFaa ? afterSid.slice(1) : afterSid;
+  const afterHead = first !== undefined && isDepartureToken(first) ? filed.slice(1) : filed;
+  return afterHead[0] === airportFaa ? afterHead.slice(1) : afterHead;
+}
+
+/**
+ * The identifier a destination airport is known by in the gates: its FAA code, the ICAO code
+ * without the leading `K` (`KOAK` is `OAK`).
+ */
+function destinationIdent(icao: string): string {
+  return icao.length === 4 && icao.startsWith('K') ? icao.slice(1) : icao;
+}
+
+/**
+ * The token a filed route carries where it cannot stand, named for the reason.
+ *
+ * A heading token stands only at the head of the route, and `RV` only as the sole element after the
+ * departure: `OSI RH` and `RH OSI RV` are malformed.
+ *
+ * @param headed Whether the route begins on a procedure or a heading.
+ * @param afterHead The route after that head and the airport's own navaid.
+ * @returns The token, or `undefined` where every token stands where it may.
+ */
+function misplacedToken(headed: boolean, afterHead: readonly string[]): string | undefined {
+  const heading = afterHead.find((token) => isHeadingToken(token));
+  if (heading !== undefined) return heading;
+  const vectorsDirect = headed && afterHead.length === 1;
+  return afterHead.includes(RADAR_VECTORS_TOKEN) && !vectorsDirect
+    ? RADAR_VECTORS_TOKEN
+    : undefined;
+}
+
+/**
+ * Whether a route names no fix after its departure, and so is vectored straight to the destination.
+ *
+ * That is a route whose head is followed by `RV` alone (`RH RV`, `H090 RV`, `OAK6 OAK RV`), or one
+ * that files a radar-vector SID with nothing after it but the airport's own navaid (`GAPP7 SFO`,
+ * `GAPP7`). A radar-vector SID is one filed with the airport navaid after it (R-RV-NAVAID), read by
+ * family so a stale version reads as the current one.
+ */
+function isVectorsDirect(
+  head: string | undefined,
+  afterHead: readonly string[],
+  airport: AirportData,
+): boolean {
+  if (head === undefined || !isDepartureToken(head)) return false;
+  if (afterHead.length === 1) return afterHead[0] === RADAR_VECTORS_TOKEN;
+  if (afterHead.length > 0 || !isSidToken(head)) return false;
+  const sid = airport.sids.find((entry) => entry.family === head.slice(0, -1));
+  return sid?.routePhrasing === 'radar_vectors_fix';
+}
+
+/**
+ * Whether a route is `RV` and nothing else: radar vectors direct with no procedure filed, the way a
+ * route library tail reads before the SOP's procedure is put in front of it.
+ */
+function isBareVectors(tokens: readonly string[]): boolean {
+  return tokens.length === 1 && tokens[0] === RADAR_VECTORS_TOKEN;
+}
+
+/**
+ * The parsed route of a flight vectored straight to its destination.
+ *
+ * The destination's identifier stands in for the exit fix, so the gate it is in gives the direction
+ * of flight and the departure frequency (user ruling 2026-09-18: Richmond for KSFO to KOAK).
+ *
+ * @param filedRoute The route string as filed, named in the reason where the identifier is no gate.
+ * @param filedSidToken The procedure the route files, where it files one.
+ * @param destination The destination's ICAO code.
+ * @param airport The airport data, whose gates place the identifier.
+ * @returns The parsed route, or `Unresolved` where the destination's identifier is in no gate.
+ */
+function vectorsDirectRoute(
+  filedRoute: string,
+  filedSidToken: string | undefined,
+  destination: string,
+  airport: AirportData,
+): ParsedRoute | Unresolved {
+  const ident = destinationIdent(destination);
+  if (directionOf(ident, airport.gates) === undefined) {
+    return unresolved(
+      'R.route',
+      `filed route "${filedRoute}" is radar vectors direct to ${destination}, but ${ident} is in no departure gate of ${airport.airport.icao}, so nothing gives the direction of flight`,
+    );
+  }
+  return {
+    ...(filedSidToken === undefined ? {} : { filedSidToken }),
+    exitElement: ident,
+    exitFix: ident,
+    tokens: [ident],
+    vectorsDirect: true,
+  };
 }
 
 /**
@@ -189,20 +308,44 @@ function structurePrefix(tokens: readonly string[], airport: AirportData): Struc
  * transitions further along, and `droppedStructureTokens` records what was dropped, with
  * `structureSids` the SIDs it was dropped on, so an amendment can name both. A route that joins an
  * airway straight off the SID leaves on that airway, and the fix the airway leads to is what places
- * the flight in a departure gate. A route with no fix at all
- * after the procedure blocks the route element: there is nothing to pick a gate, and so a SID, from.
+ * the flight in a departure gate.
+ *
+ * A route that names no fix after its departure — `RV` alone after it, or a radar-vector SID with
+ * nothing after the airport navaid — is radar vectors direct, read from the destination's
+ * identifier. So is a route that is `RV` and nothing else: it files no procedure, as a tail filed
+ * without its SID files none, and the SOP or the TEC route supplies one. Any other route with no fix
+ * at all after the procedure blocks the route element: there is nothing to pick a gate, and so a
+ * SID, from. So does a heading token anywhere but at the head, and an `RV` anywhere but alone after
+ * the departure or alone in the route (`OSI RV` and `OAK RV` are malformed).
  *
  * @param filedRoute The route string as filed.
- * @param airport The airport data, for the airport's own navaid identifier and its SIDs.
- * @returns The parsed route, or `Unresolved` when nothing usable follows the procedure token.
+ * @param airport The airport data, for the airport's own navaid identifier, its SIDs and its gates.
+ * @param destination The destination's ICAO code, whose identifier a vectors-direct route exits on.
+ * @returns The parsed route, or `Unresolved` when nothing usable follows the procedure token, a token
+ *   stands where it cannot, or a vectors-direct destination is in no gate.
  */
 export function parseFiledRoute(
   filedRoute: string,
   airport: AirportData,
+  destination: string,
 ): ParsedRoute | Unresolved {
-  const first = splitRoute(filedRoute)[0];
+  const whole = splitRoute(filedRoute);
+  if (isBareVectors(whole)) {
+    return vectorsDirectRoute(filedRoute, undefined, destination, airport);
+  }
+  const first = whole[0];
   const filedSidToken = first !== undefined && isSidToken(first) ? first : undefined;
   const filed = routeFromExitFix(filedRoute, airport.airport.faa);
+  const misplaced = misplacedToken(first !== undefined && isDepartureToken(first), filed);
+  if (misplaced !== undefined) {
+    return unresolved(
+      'R.route',
+      `filed route "${filedRoute}" carries ${misplaced} where it cannot stand: a heading token stands only at the head of a route, and RV only alone after the departure`,
+    );
+  }
+  if (isVectorsDirect(first, filed, airport)) {
+    return vectorsDirectRoute(filedRoute, filedSidToken, destination, airport);
+  }
   const prefix = structurePrefix(filed, airport);
   const dropped = filed.slice(0, prefix.length);
   const tokens = filed.slice(dropped.length);

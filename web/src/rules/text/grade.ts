@@ -1,4 +1,4 @@
-import type { AirportData } from '@/data/schema.ts';
+import type { AirportData, RouteTemplate } from '@/data/schema.ts';
 import { citePhraseology } from '@/rules/cite.ts';
 import { speakExpect } from '@/rules/speak.ts';
 import type { SpokenClearance, SpokenElement, SpokenPart } from '@/rules/speak.ts';
@@ -149,10 +149,16 @@ function withWords(
   return parts.map((part) => (part.element === element ? { ...part, words } : part));
 }
 
-/** The route readings a candidate may take, in the order ties are broken. */
+/**
+ * The route readings a candidate may take, in the order ties are broken.
+ *
+ * A route vectored straight to its destination has no closing "direct" to trade for "then as filed":
+ * the "direct" of "radar vectors direct" is the vectors, not the end of a route read in full.
+ */
 function routeReadings(
   parts: readonly GradedPart[],
   fullRouteWords: string,
+  template: RouteTemplate,
 ): { option: RouteOption; parts: GradedPart[] }[] {
   const base = { option: 'base' as const, parts: [...parts] };
   const words = parts.find((part) => part.element === 'R.route')?.words;
@@ -160,7 +166,7 @@ function routeReadings(
   if (words !== fullRouteWords) {
     return [base, { option: 'full', parts: withWords(parts, 'R.route', fullRouteWords) }];
   }
-  if (!CLOSING_DIRECT.test(words)) return [base];
+  if (template === 'radar_vectors_direct' || !CLOSING_DIRECT.test(words)) return [base];
   const end = words.replace(CLOSING_DIRECT, 'then as filed');
   return [base, { option: 'end', parts: withWords(parts, 'R.route', end) }];
 }
@@ -184,12 +190,15 @@ function tagged(parts: readonly GradedPart[]): CandidateToken[] {
 function candidatesFor(spoken: SpokenClearance, expected: ResolvedClearance): Candidate[] {
   const parts = spoken.parts.filter(isGradedPart);
   const redundant = expected.redundantExpect.value;
-  return routeReadings(parts, spoken.fullRouteWords).flatMap(({ option, parts: routeParts }) => {
-    const base: Candidate = { route: option, expect: 'base', tokens: tagged(routeParts) };
-    if (redundant === null) return [base];
-    const redundantParts = withExpect(routeParts, speakExpect(redundant));
-    return [base, { route: option, expect: 'redundant', tokens: tagged(redundantParts) }];
-  });
+  const { template } = expected.route.value;
+  return routeReadings(parts, spoken.fullRouteWords, template).flatMap(
+    ({ option, parts: routeParts }) => {
+      const base: Candidate = { route: option, expect: 'base', tokens: tagged(routeParts) };
+      if (redundant === null) return [base];
+      const redundantParts = withExpect(routeParts, speakExpect(redundant));
+      return [base, { route: option, expect: 'redundant', tokens: tagged(redundantParts) }];
+    },
+  );
 }
 
 function isWord(token: SpokenToken | undefined, text: string): boolean {

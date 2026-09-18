@@ -26,12 +26,14 @@ export const DirectionSchema = z.enum(['north', 'south', 'oceanic']);
  * Shape of the route element of a clearance, and of the phrase used to speak it.
  *
  * `radar_vectors_airway` is the form a route that joins an airway straight off the SID takes, and
- * its `fix` carries the airway token rather than a fix.
+ * its `fix` carries the airway token rather than a fix. `radar_vectors_direct` is the form a route
+ * that names nothing after its departure takes, and it carries no `fix` at all.
  */
 export const RouteTemplateSchema = z.enum([
   'transition',
   'radar_vectors_fix',
   'radar_vectors_airway',
+  'radar_vectors_direct',
   'as_filed',
 ]);
 

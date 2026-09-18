@@ -14,7 +14,7 @@ import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl, selectOf, syncButton, syncSelect } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
-import { toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
+import { templateNamesFix, toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
 
 /** The blank choice every dropdown opens on. */
 const PLACEHOLDER = '—';
@@ -63,8 +63,9 @@ function plainOptions(values: readonly string[]): SelectOption[] {
 /**
  * The route: the shape of the element, and the fix or airway the shape names.
  *
- * The element dropdown stays disabled until the shape is picked; the elements on offer are the
- * transitions of the filed procedure together with the first fixes of the filed route.
+ * The element dropdown stays disabled until the shape is picked, and on the one shape that names no
+ * element, "radar vectors direct"; the elements on offer are the transitions of the filed procedure
+ * together with the first fixes of the filed route.
  */
 function routeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
   return {
@@ -87,7 +88,7 @@ function routeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
         label: 'fix or airway',
         options: plainOptions(options.routeFixes),
         value: picks.routeFix,
-        disabled: picks.routeTemplate === undefined,
+        disabled: picks.routeTemplate === undefined || !templateNamesFix(picks.routeTemplate),
         placeholder: PLACEHOLDER,
       },
     ],

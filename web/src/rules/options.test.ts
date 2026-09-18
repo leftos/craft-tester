@@ -53,6 +53,7 @@ describe('buildOptions', () => {
       'transition',
       'radar_vectors_fix',
       'radar_vectors_airway',
+      'radar_vectors_direct',
       'as_filed',
     ]);
     expect(options.altitudePhrases).toEqual(['climb_via', 'climb_via_except', 'maintain']);
@@ -112,6 +113,13 @@ describe('buildOptions', () => {
       'V244',
       'ALTAM',
     ]);
+  });
+
+  it('offers neither the heading nor RV of a vectors-direct route as a route fix', () => {
+    expect(buildOptions(scenario({ filedRoute: 'RH RV' }), ksfo, onHeading).routeFixes).toEqual([]);
+    expect(buildOptions(scenario({ filedRoute: 'H090 RV' }), ksfo, onHeading).routeFixes).toEqual(
+      [],
+    );
   });
 
   it('offers the airway a route joins straight off the SID as a route element', () => {

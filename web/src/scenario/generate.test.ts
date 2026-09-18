@@ -81,7 +81,7 @@ function exitFixOf(entry: Scenario): string {
  * the first fix of its route is not what the SOP assigned it its runway for.
  */
 function directionFor(entry: Scenario): Direction | undefined {
-  const parsed = parseFiledRoute(entry.filedRoute, ksfo);
+  const parsed = parseFiledRoute(entry.filedRoute, ksfo, entry.destination);
   return isUnresolved(parsed) ? undefined : flightDirection(parsed, ksfo);
 }
 

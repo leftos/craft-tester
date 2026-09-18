@@ -61,6 +61,7 @@ const ROUTE_PHRASES: Record<RouteTemplate, string> = {
   transition: 'transition',
   radar_vectors_fix: 'radar vectors',
   radar_vectors_airway: 'radar vectors to join',
+  radar_vectors_direct: 'radar vectors direct',
   as_filed: '(no prefix)',
 };
 
@@ -146,7 +147,8 @@ export function expectChoiceLabel(
 /**
  * The route element matches when the template matches and, where one is spoken, the element too.
  *
- * Every shape names an element now, "as filed" included, so the fix is always compared.
+ * Every shape but "radar vectors direct" names an element, "as filed" included, so the fix is always
+ * compared; on that one shape both the pick and the clearance name none.
  */
 function routeOk(picks: PlayerPicks, route: ResolvedClearance['route']['value']): boolean {
   return picks.routeTemplate === route.template && picks.routeFix === route.fix;
