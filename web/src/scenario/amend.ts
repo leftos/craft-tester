@@ -1,4 +1,5 @@
 import type { AirportData, Destination, EquipmentSuffix, Scenario, Sid } from '@/data/schema.ts';
+import { RVSM_CEILING_FEET, RVSM_FLOOR_FEET } from '@/rules/amend/altitude.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
@@ -90,10 +91,6 @@ const MAX_BOXES = 2;
 
 /** How many draws may be thrown away before the generator gives up on the airport data. */
 const MAX_ATTEMPTS = 50;
-
-/** The RVSM band, inclusive, which the suffix faults are written around. */
-const RVSM_FLOOR_FEET = 29000;
-const RVSM_CEILING_FEET = 41000;
 
 /** The step the altitude faults move the filed altitude by. */
 const STEP_FEET = 1000;
