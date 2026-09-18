@@ -17,24 +17,11 @@ finished subplans behind them are in `archive/`.
 **State 2026-09-17.** Both airports are live. KOAK is closed at 51 of 51 fixtures settled. KSFO stands at
 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
-I notice or that users find as they come up" — and queued free-text entry next.
+I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
-## Wave 1 — Input model and free text (`web/src/ui/app.ts`, then a new input surface)
+## Wave 1 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
 
-Queued next by the user 2026-09-17. Gate: UI. Subplan: [free-text.md](./free-text.md).
-
-- [ ] **v2: free-text clearance entry** as an **alternative to** the dropdowns: the student types the
-  full spoken clearance, and each CRAFT element is graded with its citation and a said-against-expected
-  diff. Interviewed 2026-09-17. The owed ruling is answered: both spoken-only readings are acceptable.
-  The rest is ruled too: values plus listed variants, filler acceptable, out of order wrong, C and T
-  graded, amendment mode included. The decisions and six steps are in the subplan. Steps 1-5 (structured
-  reading, normaliser, matcher and grader, results view, UI) landed 2026-09-17; step 6 (docs and browser
-  check) is next
-
-## Wave 2 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
-
-Four UI questions the engine already answers correctly; all four are presentation. Gate: UI. Shares
-`ui/results.ts` with Wave 1 step 4, so the two never run at once.
+Four UI questions the engine already answers correctly; all four are presentation. Gate: UI.
 
 - [ ] **An acceptable route box reads backwards for the navaid case.** `ui/results.ts:69` labels every
   `acceptable` verdict `shorter: …` and `:48` counts it "acceptable but inefficient", but where the box is
@@ -67,7 +54,7 @@ Four UI questions the engine already answers correctly; all four are presentatio
   other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes. Left as
   a choice for the user 2026-09-16
 
-## Wave 3 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
+## Wave 2 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
 Findings recorded while KOAK landed. Gate: generator. Surveyed 2026-09-17; the survey corrected three
 of them, noted inline. Four landed the same day and are in Landed below.
@@ -102,7 +89,7 @@ of them, noted inline. Four landed the same day and are in Landed below.
   - **The narrow version fires on live data.** `TEC-KOAK-SFOE-TP` (`ksfo/tec.yaml:72`) is the bare
     `GAPP#` — head and nothing after it — so KSFO would stop building. That row is one of the five
     never-routed ones below, already awaiting a ruling, so this guard is blocked behind it
-## Wave 4 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
+## Wave 3 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
 
@@ -114,7 +101,7 @@ Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data c
   `shared/airways.yaml`. **Data concept and the rebuild rule still to plan with the user before any engine
   change**; the subplan's three questions are open
 
-## Wave 5 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
+## Wave 4 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
 
 Gate: aviation + UI. The only rule concept KOAK left unbuilt.
 
@@ -126,7 +113,7 @@ Gate: aviation + UI. The only rule concept KOAK left unbuilt.
   answer only), the amendment UI box, the results view, and the importer's correction-cell reading. KGPI
   is in the CIFP cache but not among the 67 rows of `shared/destinations.yaml`, so it needs a data row too
 
-## Wave 6 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
+## Wave 5 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
 
 Paused by user steer 2026-09-16; resume with `pnpm -C web propose --pending`. Gate: aviation, one fixture
 at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build`, never an engine edit.
@@ -156,7 +143,7 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
   TRUKN at 3,000 because TRUKN is no SNTNA2 transition
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
-  ([free-text.md](./free-text.md) decision 9)
+  ([archive/free-text.md](./archive/free-text.md) decision 9)
 
 ## Landed
 
@@ -225,3 +212,7 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] `A-ONE-WAY-AIRWAY`: a one-way airway is read against TBL 4-5-1's one-way row in place of parity — `303bbdd`
 - [x] Cleanup: shared `navaid_names.yaml`, `build --coverage` report, one FL410 constant, dead test gone — `0f5cc02`, `b80a614`
 - [x] Stack review: keep the Python-generator / TypeScript-web split (ARCHITECTURE.md says when it reopens) — 2026-09-17
+- [x] v2: free-text clearance entry — the student types the whole clearance as an alternative to the
+  dropdowns, graded element by element with what was said, filler marked; the header's "answer" switch is
+  remembered; both modes — 2026-09-17 ([archive/free-text.md](./archive/free-text.md), ARCHITECTURE.md
+  "Free-text grading")

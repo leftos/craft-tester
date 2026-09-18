@@ -1,6 +1,6 @@
 # Free-text clearance entry
 
-Wave 1 of [MAIN.md](./MAIN.md). The student types the whole spoken clearance as an **alternative to** the
+Landed 2026-09-17 (Wave 1 of [MAIN.md](../MAIN.md)); the design as built is ARCHITECTURE.md "Free-text grading". The student types the whole spoken clearance as an **alternative to** the
 dropdowns (user 2026-09-17: "the dropdowns stay and the student chooses"), so they practise without the
 dropdowns' hints. The grader normalises both sides, aligns the text against the CRAFT elements of the
 engine's reading, and grades each element green or red with its citation, next to a per-element diff of
@@ -104,7 +104,9 @@ corpus is the engine's own output, built through `spokenFor` (`ui/session.ts`) o
   the state and the attempt store, `gradeText` in both modes' results and revisits) and 5b `3fc76e2` (the
   header's "answer" select, `renderTextForm` where Enter submits, the typing box after the strip in
   amendment mode), 2026-09-17
-- [ ] 6. **Docs and browser check**: a "Free-text grading" section in ARCHITECTURE.md, and
+- [x] 6. **Docs and browser check** — ARCHITECTURE.md "Free-text grading"; `check:browser` fills textareas
+  and takes `press:<key>` (`83b3ff9`); typed runs in both modes on phone and desktop reached results with no
+  console errors and no sideways scroll, 2026-09-17. Planned: a "Free-text grading" section in ARCHITECTURE.md, and
   `check:browser` on phone and desktop in both modes
 
 ## Engineering calls in step 3b (not user rulings; the user may overrule any)

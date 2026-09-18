@@ -19,7 +19,7 @@ pnpm -C web test -t "climb via"               # tests whose name matches
 pnpm -C web schema:export                     # regenerate data/schema/*.json from web/src/data/schema.ts
 pnpm -C web propose <fixture-id> | --pending  # engine's clearance for a fixture, with citations
 pnpm -C web exec playwright install chromium  # once per machine, for the browser check
-pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:4=(no prefix)" "fill:2=…" "click:Submit clearance"]
+pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:4=(no prefix)" "fill:0=…" "press:Enter" "click:Submit clearance"]
 
 # generator (uv, Python 3.13)
 cd generator && uv sync
@@ -44,11 +44,12 @@ network. CI does not run `craft-gen build`; `build --check` is a local step befo
 **Browser checks run under Playwright, not the Claude in Chrome extension** (user decision 2026-09-16), so the
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
 then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
-survive pnpm on Windows), runs the actions, and writes the page text, selects, buttons, console errors, whether
+survive pnpm on Windows), runs the actions (`fill:<n>` counts text inputs and textareas together, in page order;
+`press:Enter` presses a key on whatever has focus), and writes the page text, selects, buttons, console errors, whether
 the page scrolls sideways and a full-page screenshot to `.tmp/browser-check/`. The hash carries the airport in
 its `a=<ICAO>` part (every link the app writes has one; a missing or unknown one opens the first airport of the
 index) and takes an undocumented `d=<ICAO>` part that forces the drawn destination in both modes
-(`s=4,a=KOAK,d=KSMF,m=amend`), so a destination is checked directly instead of drawing until the RNG lands on
+(`s=4,a=KOAK,d=KSMF,m=amend`; `i=text` opens the typing box), so a destination is checked directly instead of drawing until the RNG lands on
 it; it is never shown in the UI or remembered. `CRAFT_PREVIEW_URL` points the run at another preview
 (`pnpm -C web preview --port 4174` plus `CRAFT_PREVIEW_URL=http://localhost:4174/craft-tester/`), so two builds
 can be checked side by side. A button with no text lists by its `aria-label`, which is how the icon buttons read.
