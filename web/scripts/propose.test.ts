@@ -20,7 +20,12 @@ const clearanceView: ProposalView = {
         citations: [{ id: 'C-DEST', source: 'FAA JO 7110.65 4-3-2 a', text: 'CLEARED TO (dest)' }],
       },
     ],
-    spoken: { abbreviated: 'Abbreviated form.', fullRoute: 'Full route form.' },
+    spoken: {
+      abbreviated: 'Abbreviated form.',
+      fullRoute: 'Full route form.',
+      parts: [],
+      fullRouteWords: '',
+    },
     expected: { sidFamily: 'TRUKN', clearedTo: 'KSEA' },
   },
 };

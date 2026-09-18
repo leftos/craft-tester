@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   asFiledJoin,
+  joinSpoken,
   speakAltitude,
   speakCallsign,
   speakClearance,
@@ -663,5 +664,70 @@ describe('speakClearance', () => {
     expect(speakClearance(input({ callsign: 'N483KA' })).abbreviated).toContain(
       'November four eight three kilo alpha, cleared to Seattle airport,',
     );
+  });
+});
+
+describe('speakClearance parts', () => {
+  it('reads the clearance as its parts, in CRAFT order', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          procedure: {
+            kind: 'heading',
+            heading: 'runway heading',
+            turn: undefined,
+            spoken: 'fly runway heading',
+          },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+          altitude: { phrase: 'maintain', feet: 5000 },
+          expect: { kind: 'filed', feet: 9000, minutes: 10 },
+        }),
+        callsign: 'N172SP',
+        destinationSpoken: 'Yuba County',
+        filedRoute: 'OAK V6 SAC',
+        sidTransitions: [],
+      }),
+    );
+    expect(spoken.parts).toEqual([
+      { element: 'callsign', words: 'November one seven two sierra papa' },
+      { element: 'C', words: 'cleared to Yuba County airport' },
+      { element: 'R.sid', words: 'via fly runway heading' },
+      { element: 'R.route', words: 'radar vectors Oakland VOR, then as filed' },
+      { element: 'A.phrase', words: 'maintain five thousand' },
+      { element: 'A.expect', words: 'expect niner thousand one zero minutes after departure' },
+      { element: 'F', words: 'departure frequency one two zero point niner' },
+      { element: 'T', words: 'squawk three three four two' },
+      { element: 'RWY', words: 'expect runway one right' },
+    ]);
+  });
+
+  it('carries the full-route words where the amended route is handed over as filed', () => {
+    const spoken = speakClearance(
+      input({
+        clearance: clearance({
+          procedure: { kind: 'sid', id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+          route: { template: 'radar_vectors_fix', fix: 'OAK' },
+        }),
+        filedRoute: 'GAPP7 OAK V6 SAC V23 YUBBA',
+        originalRoute: 'GAPP7 SGD V6 SAC V23 YUBBA',
+      }),
+    );
+    const route = spoken.parts.find((part) => part.element === 'R.route');
+    expect(route?.words).toBe(
+      'radar vectors Oakland VOR, Victor six, Sacramento VOR, then as filed',
+    );
+    expect(spoken.fullRouteWords).toBe(
+      'radar vectors Oakland VOR, Victor six, Sacramento VOR, Victor twenty-three, Yubba, direct',
+    );
+    const fullParts = spoken.parts.map((part) =>
+      part.element === 'R.route' ? { ...part, words: spoken.fullRouteWords } : part,
+    );
+    expect(spoken.fullRoute).toBe(joinSpoken(fullParts));
+  });
+
+  it('leaves out the expect part where no expect clause is spoken', () => {
+    const spoken = speakClearance(input());
+    expect(spoken.parts.map((part) => part.element)).not.toContain('A.expect');
+    expect(joinSpoken(spoken.parts)).toBe(spoken.abbreviated);
   });
 });
