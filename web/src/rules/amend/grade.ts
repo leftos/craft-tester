@@ -1,5 +1,6 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { onOneWayAirway } from '@/rules/amend/altitude.ts';
+import { applyAmendment } from '@/rules/amend/engine.ts';
 import { withVectorNavaid } from '@/rules/amend/route.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
@@ -386,6 +387,78 @@ export function gradeBoxes(
     oneWayRoute: onOneWayAirway(scenario, airport),
   };
   return STRIP_ORDER.map((box) => gradeBox(box, answers[box], amendments[box], ctx));
+}
+
+/**
+ * The plan with one box read as the engine corrected it.
+ *
+ * @param plan The plan the boxes before this one have been written into.
+ * @param box The box to read from the corrected plan.
+ * @param corrected The plan with the engine's amendments applied.
+ * @returns The plan with the field the box writes copied from the corrected plan.
+ */
+function withCorrectedBox(plan: Scenario, box: Box, corrected: Scenario): Scenario {
+  if (box === 'type') return { ...plan, equipmentSuffix: corrected.equipmentSuffix };
+  if (box === 'altitude') return { ...plan, filedAltitude: corrected.filedAltitude };
+  return { ...plan, filedRoute: corrected.filedRoute };
+}
+
+/**
+ * The plan with one correct box read as the student wrote it.
+ *
+ * A box left as filed keeps the filed value. A box amended and graded correct wrote the value the
+ * engine proposes for it, so it is read as that amendment.
+ *
+ * @param plan The plan the boxes before this one have been written into.
+ * @param box The box, which was graded correct.
+ * @param answer What the student put in it.
+ * @param amendment The amendment the engine raised for the box, where it raised one.
+ * @returns The plan with the box written in.
+ * @throws Error When the box was amended though the engine raised no amendment for it, which a
+ *   correct verdict never allows.
+ */
+function withStudentBox(
+  plan: Scenario,
+  box: Box,
+  answer: BoxAnswer,
+  amendment: ResolvedAmendment | undefined,
+): Scenario {
+  if (answer.kind === 'as_filed') return plan;
+  if (amendment === undefined) {
+    throw new Error(
+      `the ${box} box was graded correct for "${answer.value}", but the engine raised no ` +
+        'amendment for it to match',
+    );
+  }
+  return applyAmendment(plan, amendment);
+}
+
+/**
+ * The plan the student's strip describes once graded.
+ *
+ * Every box graded `correct` is taken as the student wrote it, and every other box as the engine
+ * corrected it, so a wrong answer never reaches the plan. The two differ where the student fixed the
+ * other side of an alternative pair: the corrected plan carries the type box's fix, and the
+ * student's plan carries the fix they wrote.
+ *
+ * @param answers What the student answered for every box.
+ * @param result The amendments the engine resolved for the same plan.
+ * @param scenario The plan as filed, which every box starts from.
+ * @param airport The airport data the boxes are graded with.
+ * @returns The filed plan with every box written in, in strip order.
+ */
+export function studentPlan(
+  answers: BoxAnswers,
+  result: Extract<AmendmentResult, { ok: true }>,
+  scenario: Scenario,
+  airport: AirportData,
+): Scenario {
+  const grades = gradeBoxes(answers, result, scenario, airport);
+  const amendments = byBox(result.amendments);
+  return grades.reduce((plan, { box, verdict }) => {
+    if (verdict !== 'correct') return withCorrectedBox(plan, box, result.corrected);
+    return withStudentBox(plan, box, answers[box], amendments[box]);
+  }, scenario);
 }
 
 /**

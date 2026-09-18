@@ -79,7 +79,7 @@ function collect(outcomes: readonly CheckOutcome[]): {
  * @param amendment The amendment to apply.
  * @returns The amended plan.
  */
-function apply(scenario: Scenario, amendment: ResolvedAmendment): Scenario {
+export function applyAmendment(scenario: Scenario, amendment: ResolvedAmendment): Scenario {
   if (amendment.box === 'altitude') return { ...scenario, filedAltitude: amendment.proposedFeet };
   if (amendment.box === 'route') return { ...scenario, filedRoute: amendment.proposed };
   const suffix = SUFFIX_TAIL.exec(amendment.proposed)?.[0];
@@ -116,7 +116,7 @@ function applies(amendment: ResolvedAmendment): boolean {
  * @returns Whether that plan needs no amendment at all.
  */
 function rnavPlanStands(scenario: Scenario, clash: TypeAmendment, airport: AirportData): boolean {
-  const result = resolveAmendments(apply(scenario, clash), airport);
+  const result = resolveAmendments(applyAmendment(scenario, clash), airport);
   return result.ok && result.amendments.length === 0;
 }
 
@@ -176,7 +176,7 @@ function rnavElementResult(
 ): AmendmentResult | undefined {
   const type = checkRnavElements(judged.scenario, judged.ctx, airport);
   if (type === undefined) return undefined;
-  const rnav = judge(apply(judged.scenario, type), airport);
+  const rnav = judge(applyAmendment(judged.scenario, type), airport);
   if (Array.isArray(rnav)) return { ok: false, unresolved: rnav };
   const { raised, gaps } = collect([
     listed(checkAltitude(rnav.scenario, rnav.ctx, airport)),
@@ -184,7 +184,7 @@ function rnavElementResult(
   ]);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
   const amendments = [...(suffix === undefined ? [] : [suffix]), type, ...raised];
-  return { ok: true, amendments, corrected: amendments.reduce(apply, scenario) };
+  return { ok: true, amendments, corrected: amendments.reduce(applyAmendment, scenario) };
 }
 
 /**
@@ -223,7 +223,7 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   if (Array.isArray(filed)) return { ok: false, unresolved: filed };
   const suffix = checkSuffix(scenario, airport);
   if (suffix !== undefined && isUnresolved(suffix)) return { ok: false, unresolved: [suffix] };
-  const judged = suffix === undefined ? filed : judge(apply(scenario, suffix), airport);
+  const judged = suffix === undefined ? filed : judge(applyAmendment(scenario, suffix), airport);
   if (Array.isArray(judged)) return { ok: false, unresolved: judged };
   const route = checkRoute(judged.scenario, judged.ctx, judged.clearance, airport);
   if (isRnavGap(route)) {
@@ -245,7 +245,11 @@ export function resolveAmendments(scenario: Scenario, airport: AirportData): Ame
   const { raised, gaps } = collect(outcomes);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
   const amendments = pairAlternatives(raised, clash);
-  return { ok: true, amendments, corrected: amendments.filter(applies).reduce(apply, scenario) };
+  return {
+    ok: true,
+    amendments,
+    corrected: amendments.filter(applies).reduce(applyAmendment, scenario),
+  };
 }
 
 /**

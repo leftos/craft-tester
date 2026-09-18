@@ -1,6 +1,8 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { AirportData, Amendment } from '@/data/schema.ts';
+import { resolveAmendedClearance } from '@/rules/amend/engine.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
+import { studentPlan } from '@/rules/amend/grade.ts';
 import { formatAltitude, grade } from '@/rules/grade.ts';
 import type { Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
@@ -9,7 +11,13 @@ import { amendmentGrades } from '@/ui/amendPanels.ts';
 import { activeNotices, atisRows } from '@/ui/atis.ts';
 import { craftGroups } from '@/ui/craftForm.ts';
 import type { CraftField, CraftGroup } from '@/ui/craftForm.ts';
-import { buildScenario, listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
+import {
+  buildScenario,
+  clearedPlan,
+  listAirports,
+  loadAirportData,
+  spokenFor,
+} from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import type { AppState, PickKey } from '@/ui/state.ts';
 import { newSession, toPlayerPicks, withPick, withSubmitted } from '@/ui/state.ts';
@@ -207,7 +215,8 @@ describe('an amendment scenario', () => {
     const { drawn, clearance } = amendmentOf(seed);
     const answers = correctedAnswers(drawn.result.amendments);
     const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
-    const grades = amendmentGrades(drawn, clearance, airport, answers, {
+    const cleared = { plan: drawn.result.corrected, clearance };
+    const grades = amendmentGrades(drawn, cleared, airport, answers, {
       input: 'text',
       text: spoken.abbreviated,
     });
@@ -218,6 +227,43 @@ describe('an amendment scenario', () => {
       grades.map(({ element, verdict }) => `${element} ${verdict}`),
       `seed ${seed}: ${spoken.abbreviated}`,
     ).toStrictEqual(elements.map((element) => `${element} correct`));
+  });
+
+  it("clears the engine's corrected plan when the student's plan does not resolve", () => {
+    const seed = SEEDS.find((candidate) => {
+      const { amendments } = amendmentOf(candidate).drawn.result;
+      return (
+        amendments.some((one) => one.box === 'route') &&
+        amendments.every((one) => one.alternativeTo === undefined)
+      );
+    });
+    if (seed === undefined) throw new Error('no seed of 1 to 20 amends the route without a pair');
+    const drawnView = amendmentOf(seed);
+    const amendments = drawnView.drawn.result.amendments.map((one) =>
+      one.box === 'route' ? { ...one, proposed: 'ZZZZZ' } : one,
+    );
+    const unresolvable: Extract<ScenarioView, { kind: 'amendment' }> = {
+      ...drawnView,
+      drawn: { ...drawnView.drawn, result: { ...drawnView.drawn.result, amendments } },
+    };
+    const { drawn } = unresolvable;
+    const answers = correctedAnswers(amendments);
+    const plan = studentPlan(answers, drawn.result, drawn.filed, airport);
+    expect(plan.filedRoute).toBe('ZZZZZ');
+    expect(resolveAmendedClearance(drawn.filed, plan, airport).ok).toBe(false);
+
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const cleared = clearedPlan(unresolvable, answers, airport);
+      expect(cleared.plan).toBe(drawn.result.corrected);
+      expect(cleared.clearance).toBe(unresolvable.clearance);
+      expect(warn).toHaveBeenCalledOnce();
+      expect(String(warn.mock.calls[0]?.[0])).toMatch(
+        /^the student's corrected plan did not resolve \(/,
+      );
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
 
