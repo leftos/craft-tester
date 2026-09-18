@@ -303,3 +303,34 @@ Moved out of MAIN.md by the next hygiene pass (2026-09-17, at `fd05a17`); MAIN.m
   duplicated across it. The one finding was the UI render model, which is Wave 1. **The answer reopens
   only if** a backend appears (accounts, shared progress, one deployment serving many facilities) or
   dictation moves off the browser's Web Speech API
+
+## Wave 1 items landed 2026-09-17 (results view and amendment form)
+
+- [x] **An acceptable route box reads backwards for the navaid case.** `ui/results.ts:69` labels every
+  `acceptable` verdict `shorter: …` and `:48` counts it "acceptable but inefficient", but where the box is
+  acceptable because a radar-vector SID's airport navaid is missing or present, the proposal is the
+  *longer* form. `Grade` (`rules/types.ts:193-199`) can already tell the two apart three ways: `element`
+  (only `A.expect` and `BOX.route` ever carry `acceptable`, and only the expect clause is genuinely
+  shorter), the `R-RV-NAVAID` citation that only the navaid case adds (`amend/grade.ts:230-237`), or a
+  token count. `results.test.ts:52-68` and `:88-93` pin the current wording. **Ruled (user 2026-09-17):**
+  the navaid case reads `preferred: <route>` and its score tail `1 acceptable (airport navaid)`; the
+  expect clause keeps `shorter:` and `acceptable but inefficient`
+- [x] **The UI never shows an amendment's `reason`, only its citations**, though all three amendment shapes
+  require it (`schema.ts:778, 801, 813`). Survey 2026-09-17 corrects this index: the earlier note that
+  `ui/session.ts:79` shows it "for unresolved items only" was wrong — that line is `Unresolved.reason`
+  (`rules/types.ts:158-162`), the engine's "I could not clear this seed" text, an unrelated type. An
+  amendment's `reason` is shown nowhere at all. **Ruled (user 2026-09-17):** a `why: <reason>` line in each
+  strip-box verdict row, under the correction and above the citations, in the post-submit Amendments
+  panel, the results and the revisit; a box the engine left alone shows none
+- [x] **The amendment-mode Results score line splits by half** (user 2026-09-17). Today `resultsBody`
+  (`ui/results.ts`) calls `scoreLine(grades, 'elements')` on the whole session list, so the strip boxes are
+  counted as elements ("2 of 11 elements correct"). The user's wording, slash included (confirmed):
+  "2 of 3 flight plan checks / amendments correct, 0 of 8 CRAFT clearance elements correct". The results
+  and the revisit both show it. In
+  dropdown mode the clearance half is the procedure pick plus the five CRAFT elements (6); typed, it is the
+  eight typed elements. The half-credit and acceptable tails stay with the half they belong to. Clearance
+  mode keeps its one line
+- [x] **Route row alignment.** The route row's answer and new-value controls start further right than the
+  other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes.
+  **Ruled (user 2026-09-17): the grid**, the three rows sharing columns (label | filed | answer | new
+  value), phone width still stacked

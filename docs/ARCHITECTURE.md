@@ -76,10 +76,15 @@ departure runway: the scenario fixes the runway and the engine explains it (the 
 `RWY-*` mechanism row: an airline default, an aircraft-group default, a class default, a runway issued on request, the direction split
 of the family, else the first runway), so the ATIS can advertise the runways in normal use and the student
 must pick the parallel. The procedure, the clearance limit and the squawk are resolved but not graded. A verdict is
-`correct`, `wrong`, `acceptable` (a reading the rules allow that says more than it needs to, counted
-as correct in the score line but shown in its own colour) or `half` (an amendment-mode route box that
+`correct`, `wrong`, `acceptable` (a reading the rules allow that says more than it needs to, shown
+with the `shorter:` reading, or an amendment-mode route box the radar-vector SID's airport navaid alone
+separates from the engine's, shown with the `preferred:` one; counted as correct in the score line but
+shown in its own colour) or `half` (an amendment-mode route box that
 reads the proposal but for the arrival the engine swapped, half a box in the score line: the arrival is
-the enroute controller's to change). The engine reports the longer reading it
+the enroute controller's to change). An amendment session's score line counts the strip boxes ("flight
+plan checks / amendments") and the clearance ("CRAFT clearance elements") apart, each with its own tails
+(`half credit (arrival routing)`, `acceptable (airport navaid)`, `acceptable but inefficient`), and each
+box verdict reads the engine's `reason` for the box's amendment as a `why:` line. The engine reports the longer reading it
 allows as `redundantExpect` beside the clause it speaks, with its own `kind` (`filed` or `amended`, so it can be spoken): the expect clause a SID chart already publishes
 (accepted at the chart's delay, citing `A-EXPECT-REDUNDANT`), and the amended clause beside a "will be
 your final" reading (accepted at the delay that clause would carry, citing `A-FINAL`). The expect clause

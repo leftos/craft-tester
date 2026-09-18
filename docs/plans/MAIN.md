@@ -21,24 +21,8 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
 ## Wave 1 — Amendment UI and the results view (`web/src/ui/{results,session,amendForm,amendPanels}.ts`, `styles.css`)
 
-Four UI questions the engine already answers correctly; all four are presentation. Gate: UI.
+One item left of the five; the other four landed 2026-09-17 (Landed below). Gate: UI.
 
-- [ ] **An acceptable route box reads backwards for the navaid case.** `ui/results.ts:69` labels every
-  `acceptable` verdict `shorter: …` and `:48` counts it "acceptable but inefficient", but where the box is
-  acceptable because a radar-vector SID's airport navaid is missing or present, the proposal is the
-  *longer* form. `Grade` (`rules/types.ts:193-199`) can already tell the two apart three ways: `element`
-  (only `A.expect` and `BOX.route` ever carry `acceptable`, and only the expect clause is genuinely
-  shorter), the `R-RV-NAVAID` citation that only the navaid case adds (`amend/grade.ts:230-237`), or a
-  token count. `results.test.ts:52-68` and `:88-93` pin the current wording. **Ruled (user 2026-09-17):**
-  the navaid case reads `preferred: <route>` and its score tail `1 acceptable (airport navaid)`; the
-  expect clause keeps `shorter:` and `acceptable but inefficient`
-- [ ] **The UI never shows an amendment's `reason`, only its citations**, though all three amendment shapes
-  require it (`schema.ts:778, 801, 813`). Survey 2026-09-17 corrects this index: the earlier note that
-  `ui/session.ts:79` shows it "for unresolved items only" was wrong — that line is `Unresolved.reason`
-  (`rules/types.ts:158-162`), the engine's "I could not clear this seed" text, an unrelated type. An
-  amendment's `reason` is shown nowhere at all. **Ruled (user 2026-09-17):** a `why: <reason>` line in each
-  strip-box verdict row, under the correction and above the citations, in the post-submit Amendments
-  panel, the results and the revisit; a box the engine left alone shows none
 - [ ] **The corrected strip follows the student's boxes where those were right** (user 2026-09-17, choosing
   this over labelling the engine's plan or drawing both strips). Today `ui/session.ts:112` reads
   `drawn.result.corrected`, the engine's plan, always. Seed 83: a student who fixes the route box alone
@@ -52,18 +36,6 @@ Four UI questions the engine already answers correctly; all four are presentatio
     strip and the answer key always agree, and a wrong box still never compounds because it takes the
     engine's value. A plan that does not resolve falls back to the engine's. `ARCHITECTURE.md:98-101`
     ("the engine's corrected plan, never the student's") is restated to match
-- [ ] **The amendment-mode Results score line splits by half** (user 2026-09-17). Today `resultsBody`
-  (`ui/results.ts`) calls `scoreLine(grades, 'elements')` on the whole session list, so the strip boxes are
-  counted as elements ("2 of 11 elements correct"). The user's wording, slash included (confirmed):
-  "2 of 3 flight plan checks / amendments correct, 0 of 8 CRAFT clearance elements correct". The results
-  and the revisit both show it. In
-  dropdown mode the clearance half is the procedure pick plus the five CRAFT elements (6); typed, it is the
-  eight typed elements. The half-credit and acceptable tails stay with the half they belong to. Clearance
-  mode keeps its one line
-- [ ] **Route row alignment.** The route row's answer and new-value controls start further right than the
-  other two rows'; a grid instead of a flex row would align them, at the cost of the narrow boxes.
-  **Ruled (user 2026-09-17): the grid**, the three rows sharing columns (label | filed | answer | new
-  value), phone width still stacked
 
 ## Wave 2 — Generator data defects (`generator/src/craft_generator/`, `generator/shared/`, `generator/airports/koak/`)
 
@@ -227,3 +199,7 @@ One line per step; the full record and the user decisions behind each are in the
   dropdowns, graded element by element with what was said, filler marked; the header's "answer" switch is
   remembered; both modes — 2026-09-17 ([archive/free-text.md](./archive/free-text.md), ARCHITECTURE.md
   "Free-text grading")
+- [x] Amendment results: the score line counts the strip ("flight plan checks / amendments") and the
+  clearance ("CRAFT clearance elements") apart; a route box missing the airport navaid reads `preferred:`
+  and `acceptable (airport navaid)`; each box verdict reads its amendment's `why:`; the amend form's rows
+  share a grid — 2026-09-17
