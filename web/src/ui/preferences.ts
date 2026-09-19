@@ -146,3 +146,65 @@ export function browserInputKindStore(): InputKindStore {
     return createInputKindStore(undefined);
   }
 }
+
+/** The shape a remembered full route choice has to have to be loaded back. */
+const FullRouteSchema = z.boolean();
+
+/** The storage key the full route choice is remembered under: one per browser, as the input is. */
+const FULL_ROUTE_KEY = 'craft-tester:full-route';
+
+/** Remembers whether a viewer last held themselves to the full route, in this browser only. */
+export type FullRouteStore = { load(): boolean | undefined; save(fullRoute: boolean): void };
+
+/**
+ * Builds a full-route store over one storage.
+ *
+ * Remembering the choice is a convenience, as the input kind is, so every failure the storage can
+ * raise — a refused read, a full quota, a value another version wrote — reads as "nothing
+ * remembered", and the caller falls back to the reading spoken on frequency.
+ *
+ * @param storage The storage to read and write, or `undefined` where the browser offers none.
+ * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
+ */
+export function createFullRouteStore(storage: PreferenceStorage | undefined): FullRouteStore {
+  if (storage === undefined) {
+    return {
+      load: () => undefined,
+      save: () => {
+        // Without a storage there is nowhere to remember the full route choice.
+      },
+    };
+  }
+  return {
+    load: () => {
+      try {
+        const raw = storage.getItem(FULL_ROUTE_KEY);
+        if (raw === null) return undefined;
+        const parsed = FullRouteSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? parsed.data : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    save: (fullRoute) => {
+      try {
+        storage.setItem(FULL_ROUTE_KEY, JSON.stringify(fullRoute));
+      } catch {
+        // A storage that refuses the write costs the viewer the remembered choice, nothing more.
+      }
+    },
+  };
+}
+
+/**
+ * Builds the full-route store the page runs on.
+ *
+ * @returns A store over `localStorage`, or one that remembers nothing where reaching it throws.
+ */
+export function browserFullRouteStore(): FullRouteStore {
+  try {
+    return createFullRouteStore(globalThis.localStorage);
+  } catch {
+    return createFullRouteStore(undefined);
+  }
+}

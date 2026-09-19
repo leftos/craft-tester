@@ -80,6 +80,14 @@ h3 {
   text-transform: uppercase;
 }
 
+/* A checkbox stands under its label like a dropdown, lifted to sit level with the row of them. */
+.field.checkbox input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0 0 0.4rem;
+  align-self: flex-start;
+}
+
 select {
   max-width: 100%;
   padding: 0.3rem 0.4rem;

@@ -31,7 +31,7 @@ let view: ScenarioView;
 
 /** The settings of a session answered with the dropdowns. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns' };
+  return { filter, mode, input: 'dropdowns', fullRoute: false };
 }
 
 /**
@@ -216,9 +216,13 @@ describe('an amendment scenario', () => {
     const answers = correctedAnswers(drawn.result.amendments);
     const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
     const cleared = { plan: drawn.result.corrected, clearance };
-    const grades = amendmentGrades(drawn, cleared, airport, answers, {
-      input: 'text',
-      text: spoken.abbreviated,
+    const grades = amendmentGrades({
+      drawn,
+      cleared,
+      airport,
+      answers,
+      answer: { input: 'text', text: spoken.abbreviated },
+      routeReading: 'abbreviated',
     });
     const boxes = ['BOX.type', 'BOX.altitude', 'BOX.route'];
     const typed = ['C', 'R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'T', 'RWY'];

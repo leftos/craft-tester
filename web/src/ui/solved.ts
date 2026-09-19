@@ -82,25 +82,34 @@ export type Attempt =
   | ({ kind: 'clearance' } & ClearanceAnswer<PlayerPicks>)
   | ({ kind: 'amendment'; boxes: BoxAnswers } & ClearanceAnswer<AmendmentPicks>);
 
+/**
+ * Which attempt at one seed a key names: the half of the trainer it was made in, how it was
+ * answered, and whether it was held to the route read to its end.
+ */
+export type SolvedScope = { mode: Mode; input: InputKind; fullRoute: boolean };
+
 /** Remembers the attempt a viewer already submitted for a scenario, in this browser only. */
 export type SolvedStore = {
-  load(icao: string, seed: number, mode: Mode, input: InputKind): Attempt | undefined;
-  save(icao: string, seed: number, attempt: Attempt): void;
+  load(icao: string, seed: number, scope: SolvedScope): Attempt | undefined;
+  save(icao: string, seed: number, attempt: Attempt, fullRoute: boolean): void;
 };
 
 /** The storage members the store touches, so a test can stand a Map in for the browser's. */
 type PicksStorage = Pick<Storage, 'getItem' | 'setItem'>;
 
 /**
- * The storage key one airport's seed is remembered under, in one mode and one input kind.
+ * The storage key one airport's seed is remembered under, in one mode, input kind and reading.
  *
  * Clearance mode and the dropdowns keep the key they always had, so a scenario a browser solved
  * before the trainer gained a second mode or typed answers is still remembered, and a picked
- * attempt and a typed attempt at one seed are remembered apart.
+ * attempt and a typed attempt at one seed are remembered apart. A full route clearance scopes
+ * itself further, under `:text:frc`, because the same typed words grade differently under the two
+ * readings; the dropdowns cannot be held to one, so they scope as they always did.
  */
-function keyFor(icao: string, seed: number, mode: Mode, input: InputKind): string {
-  const modeScope = mode === 'amendment' ? ':amend' : '';
-  const inputScope = input === 'text' ? ':text' : '';
+function keyFor(icao: string, seed: number, scope: SolvedScope): string {
+  const modeScope = scope.mode === 'amendment' ? ':amend' : '';
+  const readingScope = scope.fullRoute ? ':text:frc' : ':text';
+  const inputScope = scope.input === 'text' ? readingScope : '';
   return `craft-tester:solved:${icao}${modeScope}${inputScope}:${seed}`;
 }
 
@@ -166,17 +175,18 @@ export function createSolvedStore(storage: PicksStorage | undefined): SolvedStor
     };
   }
   return {
-    load: (icao, seed, mode, input) => {
+    load: (icao, seed, scope) => {
       try {
-        const raw = storage.getItem(keyFor(icao, seed, mode, input));
-        return raw === null ? undefined : parseAttempt(raw, mode, input);
+        const raw = storage.getItem(keyFor(icao, seed, scope));
+        return raw === null ? undefined : parseAttempt(raw, scope.mode, scope.input);
       } catch {
         return undefined;
       }
     },
-    save: (icao, seed, attempt) => {
+    save: (icao, seed, attempt, fullRoute) => {
       try {
-        storage.setItem(keyFor(icao, seed, attempt.kind, attempt.input), storedValue(attempt));
+        const scope = { mode: attempt.kind, input: attempt.input, fullRoute };
+        storage.setItem(keyFor(icao, seed, scope), storedValue(attempt));
       } catch {
         // A storage that refuses the write costs the viewer the reminder, nothing more.
       }

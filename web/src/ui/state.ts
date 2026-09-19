@@ -74,6 +74,11 @@ export type AppState = {
   mode: Mode;
   /** How the student answers the clearance; the URL hash carries it beside the mode. */
   input: InputKind;
+  /**
+   * Whether the student is held to the route read to its end, as a full route clearance takes; the
+   * URL hash carries it beside the input kind. Only a typed answer can be held to it.
+   */
+  fullRoute: boolean;
   view: ScenarioView;
   picks: DraftPicks;
   /** The clearance typed so far, exactly as typed; only typed answers read it. */
@@ -308,7 +313,7 @@ export function toBoxAnswers(boxes: DraftBoxes): BoxAnswers | undefined {
  * @param previous The attempt an earlier answer at this seed, mode and input kind submitted, or
  *   `undefined`.
  * @param settings The time of day and runway configurations the draw is narrowed to, the half the
- *   session trains, and how the student answers the clearance.
+ *   session trains, how the student answers the clearance, and the reading they are held to.
  * @returns The state the page renders from.
  */
 export function newSession(
@@ -317,13 +322,14 @@ export function newSession(
   previous: Attempt | undefined,
   settings: SessionSettings,
 ): AppState {
-  const { filter, mode, input } = settings;
+  const { filter, mode, input, fullRoute } = settings;
   return {
     airport,
     seed,
     filter,
     mode,
     input,
+    fullRoute,
     view: buildScenario(airport, seed, filter, mode),
     picks: EMPTY_PICKS,
     text: '',
@@ -358,6 +364,7 @@ export function withFilter(
     filter,
     mode: state.mode,
     input: state.input,
+    fullRoute: state.fullRoute,
   });
 }
 
@@ -386,6 +393,7 @@ export function withMode(
     filter: state.filter,
     mode,
     input: state.input,
+    fullRoute: state.fullRoute,
   });
 }
 
@@ -424,10 +432,37 @@ export function withInputKind(
     ...state,
     ...carried,
     input,
+    fullRoute: input === 'text' && state.fullRoute,
     text: '',
     submitted: false,
     revisit: previous,
   };
+}
+
+/**
+ * Holds the scenario on screen to the route read to its end, or lets it back to the reading spoken
+ * on frequency.
+ *
+ * Only a typed clearance knows a full reading, so ticking the box while the dropdowns are up answers
+ * the scenario by typing instead, exactly as a switch of input kind does. The two readings grade the
+ * same words differently, so an attempt the browser remembers under the new reading is shown back
+ * and the clearance answer starts again; where it remembers none, the clearance typed so far stays,
+ * because the box changes what those words are held to rather than asking a new question.
+ *
+ * @param state The state before the change.
+ * @param fullRoute Whether the student is now held to the full route.
+ * @param previous The attempt an earlier answer at this seed and mode submitted under the reading
+ *   now asked for, or `undefined`.
+ * @returns The same scenario answered by typing, held to the reading asked for.
+ */
+export function withFullRoute(
+  state: AppState,
+  fullRoute: boolean,
+  previous: Attempt | undefined,
+): AppState {
+  const typed = withInputKind(state, 'text', previous);
+  const keepsText = previous === undefined && state.input === 'text';
+  return { ...typed, fullRoute, text: keepsText ? state.text : '' };
 }
 
 /**
@@ -569,8 +604,8 @@ export function phaseOf(state: AppState): Phase {
  *
  * Everything the panels are built from is either in the key or held constant by it: the scenario
  * comes from the airport, the seed, the filter and the mode, the input kind decides whether the
- * clearance is picked or typed, and the hash that shares it names all five, so the panels answer to
- * nothing else while the key holds. What varies under one key is the form's picks, the typed
+ * clearance is picked or typed, the full route flag decides which reading grades it, and the hash
+ * that shares it names all six, so the panels answer to nothing else while the key holds. What varies under one key is the form's picks, the typed
  * clearance and the strip's answers, which the panels write into the controls they already built.
  *
  * @param state The state the page renders from.

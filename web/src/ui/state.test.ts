@@ -7,6 +7,7 @@ import {
   airportFromHash,
   ANY_SCENARIO,
   filterFromHash,
+  fullRouteFromHash,
   inputKindFromHash,
   modeFromHash,
 } from '@/scenario/filter.ts';
@@ -31,6 +32,7 @@ import {
   withBox,
   withBoxesSubmitted,
   withFilter,
+  withFullRoute,
   withInputKind,
   withMode,
   withPick,
@@ -41,12 +43,17 @@ import {
 
 /** The settings of a session answered with the dropdowns. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns' };
+  return { filter, mode, input: 'dropdowns', fullRoute: false };
 }
 
 /** The settings of a session answered by typing the clearance out. */
 function typed(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'text' };
+  return { filter, mode, input: 'text', fullRoute: false };
+}
+
+/** The settings of a session typed out and held to the full route. */
+function fullRoute(filter: ScenarioFilter, mode: Mode): SessionSettings {
+  return { filter, mode, input: 'text', fullRoute: true };
 }
 
 const full: DraftPicks = {
@@ -493,6 +500,18 @@ describe('viewKey', () => {
     const fresh = newSession(airport, FRESH_SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'));
     expect(viewKey(fresh)).not.toBe(viewKey(session));
   });
+
+  it('differs between a typed answer and a full route one', () => {
+    const session = newSession(
+      airport,
+      CLEARANCE_SEED,
+      undefined,
+      typed(ANY_SCENARIO, 'clearance'),
+    );
+    const ticked = withFullRoute(session, true, undefined);
+    expect(viewKey(ticked)).not.toBe(viewKey(session));
+    expect(viewKey(withFullRoute(ticked, false, undefined))).toBe(viewKey(session));
+  });
 });
 
 describe('shareLink', () => {
@@ -565,6 +584,25 @@ describe('shareLink', () => {
       shareLink('https://leftos.dev/craft-tester/', 'KSFO', 1, typed(ANY_SCENARIO, 'amendment')),
     ).toBe('https://leftos.dev/craft-tester/#s=1&a=KSFO&m=amend&i=text');
   });
+
+  it('carries the full route clearance, in either half of the trainer', () => {
+    const link = shareLink(
+      'https://leftos.dev/craft-tester/',
+      'KSFO',
+      1,
+      fullRoute(ANY_SCENARIO, 'clearance'),
+    );
+    expect(link).toBe('https://leftos.dev/craft-tester/#s=1&a=KSFO&i=text&r=full');
+    expect(fullRouteFromHash(new URL(link).hash)).toBe(true);
+    expect(
+      shareLink(
+        'https://leftos.dev/craft-tester/',
+        'KSFO',
+        1,
+        fullRoute(ANY_SCENARIO, 'amendment'),
+      ),
+    ).toBe('https://leftos.dev/craft-tester/#s=1&a=KSFO&m=amend&i=text&r=full');
+  });
 });
 
 describe('answering by typing the clearance out', () => {
@@ -579,7 +617,7 @@ describe('answering by typing the clearance out', () => {
 
   /** A clearance session on a seed the engine clears, answered in the given input kind. */
   function clearance(input: SessionSettings['input']): AppState {
-    const settings = { filter: ANY_SCENARIO, mode: 'clearance', input } as const;
+    const settings = { filter: ANY_SCENARIO, mode: 'clearance', input, fullRoute: false } as const;
     const session = newSession(airport, CLEARANCE_SEED, undefined, settings);
     expect(session.view.kind).toBe('clearance');
     return session;
@@ -665,6 +703,37 @@ describe('answering by typing the clearance out', () => {
     expect(retried.text).toBe('');
     expect(retried.submitted).toBe(false);
     expect(retried.input).toBe('text');
+  });
+
+  it('ticking full route from the dropdowns switches to typed answers', () => {
+    const picked = clearance('dropdowns');
+    expect(picked.fullRoute).toBe(false);
+    const ticked = withFullRoute(picked, true, undefined);
+    expect(ticked.fullRoute).toBe(true);
+    expect(ticked.input).toBe('text');
+    expect(ticked.seed).toBe(picked.seed);
+    expect(ticked.view).toBe(picked.view);
+    expect(ticked.text).toBe('');
+    expect(ticked.submitted).toBe(false);
+    expect(ticked.revisit).toBeUndefined();
+  });
+
+  it('switching to the dropdowns unticks full route', () => {
+    const ticked = withFullRoute(clearance('text'), true, undefined);
+    const picked = withInputKind(ticked, 'dropdowns', undefined);
+    expect(picked.input).toBe('dropdowns');
+    expect(picked.fullRoute).toBe(false);
+    expect(withInputKind(picked, 'text', undefined).fullRoute).toBe(false);
+  });
+
+  it('keeps the text typed so far when full route is toggled', () => {
+    const typing = withText(clearance('text'), TYPED);
+    const ticked = withFullRoute(typing, true, undefined);
+    expect(ticked.text).toBe(TYPED);
+    expect(ticked.fullRoute).toBe(true);
+    const unticked = withFullRoute(ticked, false, undefined);
+    expect(unticked.text).toBe(TYPED);
+    expect(unticked.fullRoute).toBe(false);
   });
 });
 

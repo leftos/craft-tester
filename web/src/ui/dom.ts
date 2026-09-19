@@ -117,6 +117,63 @@ export function syncSelect(
   node.disabled = disabled;
 }
 
+/** Everything one labelled checkbox needs to render: the label, its state, and its tooltip. */
+export type CheckboxSpec = { label: string; checked: boolean; title: string };
+
+/**
+ * Builds one labelled checkbox, which sits in a row of dropdowns like one of them.
+ *
+ * The box is inside its label, so the words above it are what a screen reader reads it as, and the
+ * title says what ticking it does, which the label alone has no room for.
+ *
+ * @param spec The label, whether the box is ticked, and the tooltip.
+ * @param onChange Called with the state the box reads back after every change.
+ * @returns The label element, with the checkbox inside it.
+ */
+export function checkboxControl(
+  spec: CheckboxSpec,
+  onChange: (checked: boolean) => void,
+): HTMLLabelElement {
+  const field = el('label', 'field checkbox');
+  field.title = spec.title;
+  const box = el('input');
+  box.type = 'checkbox';
+  box.checked = spec.checked;
+  box.addEventListener('change', () => {
+    onChange(box.checked);
+  });
+  field.append(el('span', 'field-label', spec.label), box);
+  return field;
+}
+
+/**
+ * The checkbox inside a control `checkboxControl` built.
+ *
+ * @param field The label element the builder returned.
+ * @returns The checkbox it wraps.
+ * @throws Error When the element is not one `checkboxControl` built.
+ */
+export function checkboxOf(field: HTMLElement): HTMLInputElement {
+  const box = field.querySelector('input[type="checkbox"]');
+  if (!(box instanceof HTMLInputElement)) throw new Error('the control holds no checkbox');
+  return box;
+}
+
+/**
+ * Writes a state into a checkbox already on screen.
+ *
+ * The state is written only when it differs from what the box already reads, as a dropdown's value
+ * is, so a control the student just clicked is left alone.
+ *
+ * @param control The label element the builder returned.
+ * @param checked Whether the box should be ticked.
+ * @returns Nothing; the checkbox is updated in place.
+ */
+export function syncCheckbox(control: HTMLElement, checked: boolean): void {
+  const box = checkboxOf(control);
+  if (box.checked !== checked) box.checked = checked;
+}
+
 /** Everything one labelled text box needs to render. */
 export type TextSpec = {
   label: string;

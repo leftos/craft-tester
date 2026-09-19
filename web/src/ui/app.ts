@@ -2,7 +2,7 @@ import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import { grade } from '@/rules/grade.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
-import type { TextGrade } from '@/rules/text/grade.ts';
+import type { RouteReading, TextGrade } from '@/rules/text/grade.ts';
 import { gradeText } from '@/rules/text/grade.ts';
 import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import type {
@@ -17,6 +17,7 @@ import {
   ANY_SCENARIO,
   airportFromHash,
   filterFromHash,
+  fullRouteFromHash,
   hasFilterParams,
   hashFor,
   inputKindFromHash,
@@ -28,10 +29,14 @@ import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
-import { button, el, selectControl } from '@/ui/dom.ts';
+import { button, checkboxControl, el, selectControl } from '@/ui/dom.ts';
 import type { SelectOption } from '@/ui/dom.ts';
-import type { FilterStore, InputKindStore } from '@/ui/preferences.ts';
-import { browserFilterStore, browserInputKindStore } from '@/ui/preferences.ts';
+import type { FilterStore, FullRouteStore, InputKindStore } from '@/ui/preferences.ts';
+import {
+  browserFilterStore,
+  browserFullRouteStore,
+  browserInputKindStore,
+} from '@/ui/preferences.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { clearedPlan, listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
 import type { SolvedStore } from '@/ui/solved.ts';
@@ -48,6 +53,7 @@ import {
   withBox,
   withBoxesSubmitted,
   withFilter,
+  withFullRoute,
   withInputKind,
   withMode,
   withPick,
@@ -66,6 +72,11 @@ type Actions = {
   onBoxesSubmit: () => void;
   /** Narrows the draw to what the dropdowns say; a destination forced by the hash does not survive it. */
   onFilter: (filter: ScenarioFilter) => void;
+  /**
+   * Holds the scenario on screen to the route read to its end, or lets it back to the reading
+   * spoken on frequency, and remembers the choice. Ticking it answers by typing.
+   */
+  onFullRoute: (fullRoute: boolean) => void;
   /** Answers the scenario on screen the other way, on the same seed, and remembers the choice. */
   onInput: (input: InputKind) => void;
   onMode: (mode: Mode) => void;
@@ -173,6 +184,18 @@ function inputControl(state: AppState, actions: Actions): HTMLElement {
   );
 }
 
+/** The checkbox that holds the student to the route read to its end, which is typed out. */
+function fullRouteControl(state: AppState, actions: Actions): HTMLElement {
+  return checkboxControl(
+    {
+      label: 'full route',
+      checked: state.fullRoute,
+      title: 'Grade the route read in full, as on a full route clearance (FRC)',
+    },
+    actions.onFullRoute,
+  );
+}
+
 /** The two dropdowns that narrow the draw: the time of day and the runway configuration. */
 function filterControls(state: AppState, actions: Actions): HTMLElement[] {
   return [
@@ -204,7 +227,7 @@ function filterControls(state: AppState, actions: Actions): HTMLElement[] {
   ];
 }
 
-/** The title, the airport picker, the mode and answer switches, the filters, the new-scenario button, and the shareable seed. */
+/** The title, the airport picker, the mode, answer and full route switches, the filters, the new-scenario button, and the shareable seed. */
 function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
   const header = el('header', 'app-header');
   const controls = el('div', 'controls');
@@ -221,6 +244,7 @@ function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): 
     ),
     modeControl(state, actions),
     inputControl(state, actions),
+    fullRouteControl(state, actions),
     ...filterControls(state, actions),
     button('New scenario', 'primary', actions.onNewScenario),
   );
@@ -254,9 +278,10 @@ function clearanceGrades(
   spoken: SpokenClearance,
   clearance: ResolvedClearance,
   airport: AirportData,
+  routeReading: RouteReading,
 ): (Grade | TextGrade)[] {
   return answer.input === 'text'
-    ? gradeText(answer.text, spoken, clearance, airport, 'abbreviated')
+    ? gradeText(answer.text, spoken, clearance, airport, routeReading)
     : grade(answer.picks, clearance);
 }
 
@@ -282,7 +307,13 @@ function renderPanels(state: AppState, actions: Actions): Panels {
     const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderRevisit({
-        grades: clearanceGrades(revisit, spoken, clearance, state.airport),
+        grades: clearanceGrades(
+          revisit,
+          spoken,
+          clearance,
+          state.airport,
+          state.fullRoute ? 'full' : 'abbreviated',
+        ),
         spoken,
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
@@ -295,7 +326,13 @@ function renderPanels(state: AppState, actions: Actions): Panels {
     const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderResults({
-        grades: clearanceGrades(answer, spoken, clearance, state.airport),
+        grades: clearanceGrades(
+          answer,
+          spoken,
+          clearance,
+          state.airport,
+          state.fullRoute ? 'full' : 'abbreviated',
+        ),
         spoken,
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
@@ -357,7 +394,12 @@ function renderApp(state: AppState, index: AirportsIndex, actions: Actions): Pag
 }
 
 /** Everything `mount` remembers between renders that is not the state itself. */
-type Stores = { solved: SolvedStore; filter: FilterStore; input: InputKindStore };
+type Stores = {
+  solved: SolvedStore;
+  filter: FilterStore;
+  input: InputKindStore;
+  fullRoute: FullRouteStore;
+};
 
 /**
  * Remembers the attempt the student just submitted, so a revisit of the seed shows it back.
@@ -372,12 +414,14 @@ function saveAttempt(state: AppState, store: SolvedStore): void {
     const boxes = toBoxAnswers(state.boxes);
     const answer = toAmendmentAnswer(state);
     if (boxes !== undefined && answer !== undefined) {
-      store.save(icao, state.seed, { kind: 'amendment', boxes, ...answer });
+      store.save(icao, state.seed, { kind: 'amendment', boxes, ...answer }, state.fullRoute);
     }
     return;
   }
   const answer = toClearanceAnswer(state);
-  if (answer !== undefined) store.save(icao, state.seed, { kind: 'clearance', ...answer });
+  if (answer !== undefined) {
+    store.save(icao, state.seed, { kind: 'clearance', ...answer }, state.fullRoute);
+  }
 }
 
 /** The panels on screen, and the view key they were built for. */
@@ -413,9 +457,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     onAirport: (icao) => {
       void loadAirportData(icao).then((airport) => {
         const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
-        const { mode, input } = state;
-        const previous = store.load(icao, state.seed, mode, input);
-        update(newSession(airport, state.seed, previous, { filter, mode, input }));
+        const { mode, input, fullRoute } = state;
+        const previous = store.load(icao, state.seed, { mode, input, fullRoute });
+        update(newSession(airport, state.seed, previous, { filter, mode, input, fullRoute }));
       });
     },
     onBox: (box, answer) => {
@@ -433,22 +477,35 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       const filter: ScenarioFilter = { time, config };
       stores.filter.save(icao, filter);
       const seed = randomSeed();
-      update(withFilter(state, filter, seed, store.load(icao, seed, state.mode, state.input)));
+      const { mode, input, fullRoute } = state;
+      update(withFilter(state, filter, seed, store.load(icao, seed, { mode, input, fullRoute })));
+    },
+    onFullRoute: (fullRoute) => {
+      const { icao } = state.airport.airport;
+      stores.fullRoute.save(fullRoute);
+      if (fullRoute) stores.input.save('text');
+      const scope = { mode: state.mode, input: 'text', fullRoute } as const;
+      update(withFullRoute(state, fullRoute, store.load(icao, state.seed, scope)));
     },
     onInput: (input) => {
       stores.input.save(input);
-      const previous = store.load(state.airport.airport.icao, state.seed, state.mode, input);
+      const fullRoute = input === 'text' && state.fullRoute;
+      if (input === 'dropdowns') stores.fullRoute.save(false);
+      const scope = { mode: state.mode, input, fullRoute };
+      const previous = store.load(state.airport.airport.icao, state.seed, scope);
       update(withInputKind(state, input, previous));
     },
     onMode: (mode) => {
       const seed = randomSeed();
-      const previous = store.load(state.airport.airport.icao, seed, mode, state.input);
+      const { input, fullRoute } = state;
+      const previous = store.load(state.airport.airport.icao, seed, { mode, input, fullRoute });
       update(withMode(state, mode, seed, previous));
     },
     onNewScenario: () => {
       const seed = randomSeed();
       const { icao } = state.airport.airport;
-      const previous = store.load(icao, seed, state.mode, state.input);
+      const { mode, input, fullRoute } = state;
+      const previous = store.load(icao, seed, { mode, input, fullRoute });
       update(newSession(state.airport, seed, previous, state));
     },
     onPick: (key, raw) => {
@@ -470,6 +527,25 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 }
 
 /**
+ * Whether a session opens held to the route read to its end.
+ *
+ * A link that asks for a full route clearance opens on one; a link that names typed answers without
+ * asking for one opens on the reading spoken on frequency, so a shared link reads the same to
+ * whoever opens it; a link that names no input kind at all follows what this browser last chose.
+ * The dropdowns cannot be held to the full route, so they never open on one.
+ *
+ * @param hash The hash the page opened on, with or without its leading `#`.
+ * @param input The input kind the session opens in.
+ * @param remembered What this browser last chose, or `undefined` where it remembers nothing.
+ * @returns True when the session opens with the full route box ticked.
+ */
+function opensFullRoute(hash: string, input: InputKind, remembered: boolean | undefined): boolean {
+  if (input !== 'text') return false;
+  if (fullRouteFromHash(hash)) return true;
+  return inputKindFromHash(hash) === undefined && (remembered ?? false);
+}
+
+/**
  * Starts the trainer: loads the airport the URL names, or the first of the index when it names
  * none, and renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
  *
@@ -478,7 +554,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
  * reads the same to whoever opens it; a link that names none falls back to the filter this browser
  * last chose. The hash names the half of the trainer the link opens in, which is clearance mode
  * unless it says so. It names typed answers too; a link that does not falls back to the way this
- * browser last chose to answer, and to the dropdowns where it remembers none.
+ * browser last chose to answer, and to the dropdowns where it remembers none. A link asking for a
+ * full route clearance opens typed and held to it, and one that names no input kind at all leaves
+ * the full route box to the choice this browser last made.
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
@@ -498,11 +576,14 @@ export async function startApp(root: Element): Promise<void> {
     solved: browserSolvedStore(),
     filter: browserFilterStore(),
     input: browserInputKindStore(),
+    fullRoute: browserFullRouteStore(),
   };
   const filter = hasFilterParams(hash)
     ? filterFromHash(hash)
     : (stores.filter.load(entry.icao) ?? ANY_SCENARIO);
   const input = inputKindFromHash(hash) ?? stores.input.load() ?? 'dropdowns';
-  const previous = stores.solved.load(entry.icao, seed, mode, input);
-  mount(root, index, newSession(airport, seed, previous, { filter, mode, input }), stores);
+  const fullRoute = opensFullRoute(hash, input, stores.fullRoute.load());
+  const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute });
+  const settings = { filter, mode, input, fullRoute };
+  mount(root, index, newSession(airport, seed, previous, settings), stores);
 }

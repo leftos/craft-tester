@@ -178,6 +178,28 @@ function corpusProblems(fixture: Fixture): string[] {
   ];
 }
 
+/** What holding one fixture's own readings to the full route gets wrong. */
+function fullRouteProblems(fixture: Fixture): string[] {
+  const { airport, clearance, spoken } = realReading(fixture);
+  const full = gradeText(spoken.fullRoute, spoken, clearance, airport, 'full');
+  const problems = [...misgraded(full, {}), ...unjoinedSaid(full)].map(
+    (line) => `${fixture.id} "${spoken.fullRoute}": ${line}`,
+  );
+  if (spoken.fullRoute === spoken.abbreviated) return problems;
+  const abbreviated = gradeText(spoken.abbreviated, spoken, clearance, airport, 'full');
+  const shortProblems = [
+    ...misgraded(abbreviated, { 'R.route': 'wrong' }),
+    ...unjoinedSaid(abbreviated),
+  ];
+  if (!idsOf(gradeOf(abbreviated, 'R.route')).includes('R-FRC')) {
+    shortProblems.push('R.route does not cite R-FRC');
+  }
+  return [
+    ...problems,
+    ...shortProblems.map((line) => `${fixture.id} "${spoken.abbreviated}": ${line}`),
+  ];
+}
+
 const telephony = { UAL: 'United' };
 
 const fixSpoken = { CCR: 'Concord VOR', RBL: 'Red Bluff VOR' };
@@ -268,6 +290,11 @@ describe('gradeText', () => {
   it("grades the engine's own reading correct in every element, for every settled clearance fixture", () => {
     expect(settledClearances.length).toBeGreaterThan(0);
     expect(settledClearances.flatMap((fixture) => corpusProblems(fixture))).toEqual([]);
+  });
+
+  it('reads every settled fixture in full as right, and its shorter reading as R-FRC', () => {
+    expect(settledClearances.length).toBeGreaterThan(0);
+    expect(settledClearances.flatMap((fixture) => fullRouteProblems(fixture))).toEqual([]);
   });
 
   it('grades a clearance typed in figures and identifiers correct', () => {
