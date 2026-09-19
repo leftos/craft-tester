@@ -23,7 +23,8 @@ landed the same day as a header checkbox. The generator-data wave closed 2026-09
 override ([archive/tec-override.md](./archive/tec-override.md)). KOAK is closed at 51 of 51 fixtures
 settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
-I notice or that users find as they come up". Free-text entry landed 2026-09-17.
+I notice or that users find as they come up". Free-text entry landed 2026-09-17. AJ's two reports of
+2026-09-19 (a route longer than the strip, "nine" against "three" and "five") landed the same day.
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -169,3 +170,5 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] Cleanup after typed names: the joined-airway label says "airway"; an unread field goes — `25ff3d7`
 - [x] Full route clearance mode (AJ Norell and the user): a typed-answer checkbox in both modes, `R-FRC`, `FRC` on the strip, `r=full` — `458fe43` ([archive/full-route-clearance.md](./archive/full-route-clearance.md))
 - [x] The joined airway is spoken bare, "radar vectors to join Victor six": the word "airway" reversed the same day (7110.65 2-6-4, 4-4-1 a, 2-5-1 a) — `0de5e2d`
+- [x] Tester feedback, AJ Norell, 2026-09-19: a strip that trimmed its route behind `***` prints the whole filed route on an `RTE` line under the paper, in both modes (the user chose it over a taller strip, an always-on line and a tap to expand) — `811e66a`
+- [x] Tester feedback, AJ Norell, 2026-09-19: "nine" for the digit is acceptable, not a miss, the row still saying to say niner (user ruling, against TBL 2-4-1 listing NIN-ER beside TREE and FIFE; `S-NINER`) — `6019db8`
