@@ -45,6 +45,7 @@ import type { AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
 import {
   newSession,
   phaseOf,
+  routeReadingOf,
   shareLink,
   toAmendmentAnswer,
   toBoxAnswers,
@@ -299,7 +300,10 @@ function renderPanels(state: AppState, actions: Actions): Panels {
   const phase = phaseOf(state);
   const { generated, clearance } = state.view;
   const panels = [
-    renderStrip(generated, state.airport, state.seed, 'Flight plan'),
+    renderStrip(generated, state.airport, state.seed, 'Flight plan', {
+      revision: undefined,
+      frc: state.fullRoute,
+    }),
     renderAtis(generated, state.airport),
   ];
   const revisit = state.revisit;
@@ -307,14 +311,9 @@ function renderPanels(state: AppState, actions: Actions): Panels {
     const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderRevisit({
-        grades: clearanceGrades(
-          revisit,
-          spoken,
-          clearance,
-          state.airport,
-          state.fullRoute ? 'full' : 'abbreviated',
-        ),
+        grades: clearanceGrades(revisit, spoken, clearance, state.airport, routeReadingOf(state)),
         spoken,
+        routeReading: routeReadingOf(state),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),
@@ -326,14 +325,9 @@ function renderPanels(state: AppState, actions: Actions): Panels {
     const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderResults({
-        grades: clearanceGrades(
-          answer,
-          spoken,
-          clearance,
-          state.airport,
-          state.fullRoute ? 'full' : 'abbreviated',
-        ),
+        grades: clearanceGrades(answer, spoken, clearance, state.airport, routeReadingOf(state)),
         spoken,
+        routeReading: routeReadingOf(state),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
       }),

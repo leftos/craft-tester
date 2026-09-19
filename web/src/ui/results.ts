@@ -1,6 +1,6 @@
 import type { BoxElementGrade } from '@/rules/amend/grade.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
-import type { SaidRun, TextGrade } from '@/rules/text/grade.ts';
+import type { RouteReading, SaidRun, TextGrade } from '@/rules/text/grade.ts';
 import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 import { button, el, iconButton } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
@@ -12,6 +12,8 @@ import { diffWords } from '@/ui/wordDiff.ts';
 export type ResultsProps = {
   grades: readonly (Grade | TextGrade)[];
   spoken: SpokenClearance;
+  /** The reading the student was held to, which is the one the reveal shows on frequency. */
+  routeReading: RouteReading;
   onNext: () => void;
   onRetry: () => void;
 };
@@ -344,11 +346,17 @@ function spokenBox(heading: string, text: string): HTMLElement {
 /**
  * The clearance as it is read on frequency, and the same clearance with the route read in full.
  *
- * A route with nothing to hand over as filed is read in full on frequency, and the second block
- * would then repeat the first word for word, so it is left out.
+ * A student held to the full route was answering a strip marked FRC, where the route read to its
+ * end is what the controller says on frequency, so that reading is the only one shown. Otherwise
+ * the reading in full follows the one spoken, except where a route with nothing to hand over as
+ * filed makes the second block repeat the first word for word, and it is left out.
  */
-function revealPanel(spoken: SpokenClearance): HTMLElement {
+function revealPanel(spoken: SpokenClearance, routeReading: RouteReading): HTMLElement {
   const panel = el('div', 'reveal');
+  if (routeReading === 'full') {
+    panel.append(spokenBox('On frequency', spoken.fullRoute));
+    return panel;
+  }
   panel.append(spokenBox('On frequency', spoken.abbreviated));
   if (spoken.abbreviated !== spoken.fullRoute) {
     panel.append(spokenBox('With the route read in full', spoken.fullRoute));
@@ -361,7 +369,7 @@ function resultsBody(props: ResultsProps): HTMLElement[] {
   return [
     el('p', 'score', sessionScoreLine(props.grades)),
     ...props.grades.map((verdict) => renderVerdict(verdict)),
-    revealPanel(props.spoken),
+    revealPanel(props.spoken, props.routeReading),
   ];
 }
 
@@ -378,7 +386,8 @@ function actionRow(props: ResultsProps): HTMLElement {
 /**
  * Renders the results: a verdict per element with its citations, then the spoken reveal.
  *
- * @param props The verdicts, the spoken clearance, and the handlers for retry and next scenario.
+ * @param props The verdicts, the spoken clearance, the reading the student was held to, and the
+ *   handlers for retry and next scenario.
  * @returns The results panel.
  */
 export function renderResults(props: ResultsProps): HTMLElement {
@@ -390,7 +399,8 @@ export function renderResults(props: ResultsProps): HTMLElement {
 /**
  * Renders a scenario this browser has already answered, with the earlier result behind a spoiler.
  *
- * @param props The verdicts of the earlier answer, the spoken clearance, and the two handlers.
+ * @param props The verdicts of the earlier answer, the spoken clearance, the reading the student
+ *   was held to, and the two handlers.
  * @returns The revisit panel.
  */
 export function renderRevisit(props: ResultsProps): HTMLElement {

@@ -22,6 +22,7 @@ import {
   EMPTY_PICKS,
   newSession,
   phaseOf,
+  routeReadingOf,
   shareLink,
   toAmendmentAnswer,
   toAmendmentPicks,
@@ -734,6 +735,13 @@ describe('answering by typing the clearance out', () => {
     const unticked = withFullRoute(ticked, false, undefined);
     expect(unticked.text).toBe(TYPED);
     expect(unticked.fullRoute).toBe(false);
+  });
+
+  it('reads a ticked full route as the full reading, and anything else as the abbreviated one', () => {
+    const typing = clearance('text');
+    expect(routeReadingOf(typing)).toBe('abbreviated');
+    expect(routeReadingOf(withFullRoute(typing, true, undefined))).toBe('full');
+    expect(routeReadingOf(clearance('dropdowns'))).toBe('abbreviated');
   });
 });
 

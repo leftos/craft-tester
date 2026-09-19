@@ -2,6 +2,7 @@ import type { AirportData, AltitudePhrase, RouteTemplate } from '@/data/schema.t
 import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { EXPECT_CHOICES } from '@/rules/options.ts';
+import type { RouteReading } from '@/rules/text/grade.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
 import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import { hashFor } from '@/scenario/filter.ts';
@@ -465,6 +466,11 @@ export function withFullRoute(
   return { ...typed, fullRoute, text: keepsText ? state.text : '' };
 }
 
+/** The reading a typed clearance is graded against: the route read to its end, or the one spoken. */
+export function routeReadingOf(state: AppState): RouteReading {
+  return state.fullRoute ? 'full' : 'abbreviated';
+}
+
 /**
  * Answers this scenario again, from a revisit or from the results of the attempt just submitted.
  *
@@ -605,8 +611,9 @@ export function phaseOf(state: AppState): Phase {
  * Everything the panels are built from is either in the key or held constant by it: the scenario
  * comes from the airport, the seed, the filter and the mode, the input kind decides whether the
  * clearance is picked or typed, the full route flag decides which reading grades it, and the hash
- * that shares it names all six, so the panels answer to nothing else while the key holds. What varies under one key is the form's picks, the typed
- * clearance and the strip's answers, which the panels write into the controls they already built.
+ * that shares it names all six, so the panels answer to nothing else while the key holds. What
+ * varies under one key is the form's picks, the typed clearance and the strip's answers, which the
+ * panels write into the controls they already built.
  *
  * @param state The state the page renders from.
  * @returns The key; two states that render the same panel set share it.

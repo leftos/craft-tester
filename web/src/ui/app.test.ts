@@ -138,6 +138,11 @@ function stripTitled(root: ParentNode, heading: string): HTMLElement {
   return found;
 }
 
+/** The remarks cell of a strip, empty where the strip prints none. */
+function remarksOf(strip: ParentNode): string {
+  return strip.querySelector('.strip-remarks')?.textContent ?? '';
+}
+
 /**
  * A KSFO clearance seed whose route reads two ways, with the reading spoken on frequency.
  *
@@ -304,6 +309,32 @@ describe('the mounted page', () => {
     expect(selectOf(field(root, 'answer')).value).toBe('text');
     expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
     expect(globalThis.location.hash).toContain('i=text&r=full');
+  });
+
+  it('shows FRC on the strip while full route is ticked', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
+    expect(remarksOf(stripTitled(root, 'Flight plan'))).not.toContain('FRC');
+
+    tick(checkbox(root, 'full route'), true);
+    expect(remarksOf(stripTitled(root, 'Flight plan')).startsWith('FRC')).toBe(true);
+
+    choose(selectOf(field(root, 'answer')), 'dropdowns');
+    expect(remarksOf(stripTitled(root, 'Flight plan'))).not.toContain('FRC');
+  });
+
+  it('shows FRC on every strip of an amendment while full route is ticked', async () => {
+    const root = await mountSession(AMENDMENT_SEED, {
+      filter: ANY_SCENARIO,
+      mode: 'amendment',
+      input: 'text',
+      fullRoute: true,
+    });
+    expect(remarksOf(stripTitled(root, 'Flight plan')).startsWith('FRC')).toBe(true);
+
+    clearTheStrip(root);
+
+    expect(remarksOf(stripTitled(root, 'Flight plan as filed')).startsWith('FRC')).toBe(true);
+    expect(remarksOf(stripTitled(root, 'Amended flight plan')).startsWith('FRC')).toBe(true);
   });
 
   it('grades the abbreviated reading wrong once full route is ticked', async () => {

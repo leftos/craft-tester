@@ -142,7 +142,7 @@ describe(`the scenario of seed ${SEED}`, () => {
   it('fills the strip and the ATIS from the scenario', () => {
     if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const scenario = view.generated;
-    const strip = stripFields(scenario, airport, SEED);
+    const strip = stripFields(scenario, airport, SEED, { revision: undefined, frc: false });
     expect(strip.callsign).toBe(scenario.callsign);
     expect(strip.equipment).toContain(`${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`);
     expect(strip.depDest).toBe(`${airport.airport.icao} ${scenario.destination}`);

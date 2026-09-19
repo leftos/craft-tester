@@ -146,34 +146,6 @@ export function checkboxControl(
   return field;
 }
 
-/**
- * The checkbox inside a control `checkboxControl` built.
- *
- * @param field The label element the builder returned.
- * @returns The checkbox it wraps.
- * @throws Error When the element is not one `checkboxControl` built.
- */
-export function checkboxOf(field: HTMLElement): HTMLInputElement {
-  const box = field.querySelector('input[type="checkbox"]');
-  if (!(box instanceof HTMLInputElement)) throw new Error('the control holds no checkbox');
-  return box;
-}
-
-/**
- * Writes a state into a checkbox already on screen.
- *
- * The state is written only when it differs from what the box already reads, as a dropdown's value
- * is, so a control the student just clicked is left alone.
- *
- * @param control The label element the builder returned.
- * @param checked Whether the box should be ticked.
- * @returns Nothing; the checkbox is updated in place.
- */
-export function syncCheckbox(control: HTMLElement, checked: boolean): void {
-  const box = checkboxOf(control);
-  if (box.checked !== checked) box.checked = checked;
-}
-
 /** Everything one labelled text box needs to render. */
 export type TextSpec = {
   label: string;

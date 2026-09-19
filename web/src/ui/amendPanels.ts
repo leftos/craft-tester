@@ -16,7 +16,8 @@ import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { clearedPlan, spokenFor } from '@/ui/session.ts';
 import type { ClearedPlan, ScenarioView } from '@/ui/session.ts';
 import type { AmendmentPicks, AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
-import { phaseOf, toAmendmentAnswer, toBoxAnswers } from '@/ui/state.ts';
+import { phaseOf, routeReadingOf, toAmendmentAnswer, toBoxAnswers } from '@/ui/state.ts';
+import type { StripMarks } from '@/ui/strip.ts';
 import { renderStrip } from '@/ui/strip.ts';
 import type { TextFormProps } from '@/ui/textForm.ts';
 import { renderTextForm } from '@/ui/textForm.ts';
@@ -56,6 +57,16 @@ export function procedureOf(scenario: Scenario, airport: AirportData): string | 
   const token = scenario.filedRoute.split(/\s+/)[0];
   if (token === undefined || !isSidToken(token)) return undefined;
   return airport.sids.some((sid) => sid.id === token) ? token : undefined;
+}
+
+/** The marks of the strip as filed: no amendment number, and FRC while the box is ticked. */
+function asFiled(state: AppState): StripMarks {
+  return { revision: undefined, frc: state.fullRoute };
+}
+
+/** The marks of the amended strip: the first amendment, and FRC while the box is ticked. */
+function amended(state: AppState): StripMarks {
+  return { revision: 1, frc: state.fullRoute };
 }
 
 /**
@@ -115,7 +126,7 @@ function revisitPanels(
   const cleared = clearedPlan(view, attempt.boxes, state.airport);
   return {
     nodes: [
-      renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan'),
+      renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan', asFiled(state)),
       renderAtis(drawn.filed, state.airport),
       renderRevisit({
         grades: amendmentGrades({
@@ -124,9 +135,10 @@ function revisitPanels(
           airport: state.airport,
           answers: attempt.boxes,
           answer: attempt,
-          routeReading: state.fullRoute ? 'full' : 'abbreviated',
+          routeReading: routeReadingOf(state),
         }),
         spoken: spokenFor(cleared.plan, drawn.filed, cleared.clearance, state.airport),
+        routeReading: routeReadingOf(state),
         onNext: handlers.onNewScenario,
         onRetry: handlers.onRetry,
       }),
@@ -151,7 +163,7 @@ function amendingPanels(state: AppState, view: AmendmentView, handlers: Amendmen
   const form = renderAmendForm(props(state));
   return {
     nodes: [
-      renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan'),
+      renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan', asFiled(state)),
       renderAtis(view.drawn.filed, state.airport),
       form.node,
     ],
@@ -209,13 +221,19 @@ function clearingPanels(
   const form = renderClearingForm(state, cleared, handlers);
   return {
     nodes: [
-      renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan as filed'),
+      renderStrip(
+        view.drawn.filed,
+        state.airport,
+        state.seed,
+        'Flight plan as filed',
+        asFiled(state),
+      ),
       renderBoxVerdicts(
         gradeBoxes(answers, view.drawn.result, view.drawn.filed, state.airport).map(
           boxGradeAsGrade,
         ),
       ),
-      renderStrip(cleared.plan, state.airport, state.seed, 'Amended flight plan', 1),
+      renderStrip(cleared.plan, state.airport, state.seed, 'Amended flight plan', amended(state)),
       renderAtis(cleared.plan, state.airport),
       form.node,
     ],
@@ -238,8 +256,8 @@ function resultPanels(
   const cleared = clearedPlan(view, answers, state.airport);
   return {
     nodes: [
-      renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan as filed'),
-      renderStrip(cleared.plan, state.airport, state.seed, 'Amended flight plan', 1),
+      renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan as filed', asFiled(state)),
+      renderStrip(cleared.plan, state.airport, state.seed, 'Amended flight plan', amended(state)),
       renderAtis(cleared.plan, state.airport),
       renderResults({
         grades: amendmentGrades({
@@ -248,9 +266,10 @@ function resultPanels(
           airport: state.airport,
           answers,
           answer,
-          routeReading: state.fullRoute ? 'full' : 'abbreviated',
+          routeReading: routeReadingOf(state),
         }),
         spoken: spokenFor(cleared.plan, drawn.filed, cleared.clearance, state.airport),
+        routeReading: routeReadingOf(state),
         onNext: handlers.onNewScenario,
         onRetry: handlers.onRetry,
       }),
