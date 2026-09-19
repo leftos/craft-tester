@@ -141,6 +141,17 @@ describe('stripFields', () => {
     expect(stripFields(long, ksfo, 1, FRC).routeLines.length).toBe(2);
   });
 
+  it('carries the full route only when the strip trimmed it', () => {
+    const spaced = { ...FILED, filedRoute: `  ${LONG_ROUTE.replace(/ /g, '   ')}  ` };
+    const trimmed = stripFields(spaced, ksfo, 1, AS_FILED);
+    expect(trimmed.routeLines.join(' ')).toContain('***');
+    expect(trimmed.fullRoute).toBe(LONG_ROUTE);
+    expect(stripFields(FILED, ksfo, 1, AS_FILED).fullRoute).toBeUndefined();
+    const underFrc = stripFields({ ...FILED, filedRoute: LONG_ROUTE }, ksfo, 1, FRC);
+    expect(underFrc.routeLines.length).toBe(2);
+    expect(underFrc.fullRoute).toBe(LONG_ROUTE);
+  });
+
   it('prints the amendment number only on a strip that carries one', () => {
     expect(stripFields(FILED, ksfo, 1, AS_FILED).revision).toBeUndefined();
     expect(stripFields(FILED, ksfo, 1, { revision: 1, frc: false }).revision).toBe(1);
@@ -149,30 +160,49 @@ describe('stripFields', () => {
 
 describe('routeLines', () => {
   it('prints a short route on one line', () => {
-    expect(routeLines('KSFO', ['SSTIK4', 'SNS'], 'KLAX', 40, 3)).toStrictEqual([
+    expect(routeLines('KSFO', ['SSTIK4', 'SNS'], 'KLAX', 40, 3).lines).toStrictEqual([
       'KSFO SSTIK4 SNS KLAX',
     ]);
   });
 
   it('wraps a longer route across the lines of the cell', () => {
     expect(
-      routeLines('KSFO', ['OSI', 'SAC', 'MOD', 'LIN', 'AVE', 'BURDE'], 'KLAX', 14, 3),
+      routeLines('KSFO', ['OSI', 'SAC', 'MOD', 'LIN', 'AVE', 'BURDE'], 'KLAX', 14, 3).lines,
     ).toStrictEqual(['KSFO OSI SAC', 'MOD LIN AVE', 'BURDE KLAX']);
   });
 
   it('drops tokens from the tail of the body, with a *** in their place', () => {
     expect(
-      routeLines('KSFO', ['OSI', 'SAC', 'MOD', 'LIN', 'AVE', 'BURDE'], 'KLAX', 14, 2),
+      routeLines('KSFO', ['OSI', 'SAC', 'MOD', 'LIN', 'AVE', 'BURDE'], 'KLAX', 14, 2).lines,
     ).toStrictEqual(['KSFO OSI SAC', 'MOD *** KLAX']);
   });
 
   it('falls back to the departure and the destination alone', () => {
-    expect(routeLines('KSFO', ['AAAAAAAAAA', 'BBBBBBBBBB'], 'KLAX', 13, 1)).toStrictEqual([
+    expect(routeLines('KSFO', ['AAAAAAAAAA', 'BBBBBBBBBB'], 'KLAX', 13, 1).lines).toStrictEqual([
       'KSFO *** KLAX',
     ]);
   });
 
   it('prints a route with nothing filed between the airports', () => {
-    expect(routeLines('KSFO', [], 'KLAX', 20, 3)).toStrictEqual(['KSFO KLAX']);
+    expect(routeLines('KSFO', [], 'KLAX', 20, 3).lines).toStrictEqual(['KSFO KLAX']);
+  });
+
+  it('reports nothing trimmed for a route that fits', () => {
+    const short = routeLines('KSFO', ['SSTIK4', 'SNS'], 'KLAX', 40, 3);
+    expect(short.trimmed).toBe(false);
+    expect(short.lines).toStrictEqual(['KSFO SSTIK4 SNS KLAX']);
+    const wrapped = routeLines('KSFO', ['OSI', 'SAC', 'MOD', 'LIN', 'AVE', 'BURDE'], 'KLAX', 14, 3);
+    expect(wrapped.trimmed).toBe(false);
+    expect(wrapped.lines).toStrictEqual(['KSFO OSI SAC', 'MOD LIN AVE', 'BURDE KLAX']);
+    expect(routeLines('KSFO', [], 'KLAX', 20, 3).trimmed).toBe(false);
+  });
+
+  it('reports a trimmed route, down to the last resort', () => {
+    const dropped = routeLines('KSFO', ['OSI', 'SAC', 'MOD', 'LIN', 'AVE', 'BURDE'], 'KLAX', 14, 2);
+    expect(dropped.trimmed).toBe(true);
+    expect(dropped.lines).toStrictEqual(['KSFO OSI SAC', 'MOD *** KLAX']);
+    const lastResort = routeLines('KSFO', ['AAAAAAAAAA', 'BBBBBBBBBB'], 'KLAX', 13, 1);
+    expect(lastResort.trimmed).toBe(true);
+    expect(lastResort.lines).toStrictEqual(['KSFO *** KLAX']);
   });
 });
