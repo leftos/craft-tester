@@ -878,10 +878,14 @@ function spellingTiers(student: SpokenToken, expected: SpokenToken, airport: Air
   return student.text === expected.text ? [] : [tier(airport, 'correct', 'S-SPELLING')];
 }
 
-/** The tiers a matched number pair sets: group form and a restatement against digits, and "nine". */
+/**
+ * The tiers a matched number pair sets: group form and a restatement against digits, and "nine"
+ * said for a digit the reading speaks as "niner", which is acceptable rather than a miss.
+ */
 function numberTiers(student: SpokenToken, expected: SpokenToken, airport: AirportData): Tier[] {
   if (student.kind !== 'number' || expected.kind !== 'number') return [];
-  const niner = student.saidNine && !expected.saidNine ? [tier(airport, 'wrong', 'S-NINER')] : [];
+  const niner =
+    student.saidNine && !expected.saidNine ? [tier(airport, 'acceptable', 'S-NINER')] : [];
   return [...groupFormTiers(student, expected, airport), ...niner];
 }
 
@@ -1334,7 +1338,7 @@ function tierRemarks(parts: ElementParts, grading: Grading): string[] {
     ...parts.marks.tiers,
   ];
   return [
-    ...(hasTier(tiers, 'S-NINER', 'wrong') ? [REMARKS.niner] : []),
+    ...(hasTier(tiers, 'S-NINER', 'acceptable') ? [REMARKS.niner] : []),
     ...(hasTier(tiers, 'S-GROUP-FORM', 'wrong') ? [REMARKS.groupForm] : []),
     ...(hasTier(tiers, 'S-GROUP-FORM', 'acceptable') ? [REMARKS.restated] : []),
   ];

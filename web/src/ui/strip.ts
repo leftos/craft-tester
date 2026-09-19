@@ -60,6 +60,11 @@ export type StripFields = {
   /** The departure and the destination, e.g. `KOAK KLAS`. */
   depDest: string;
   routeLines: readonly string[];
+  /**
+   * The filed route token by token, without the departure and the destination, present only where
+   * the route cell was too small to print it whole.
+   */
+  fullRoute: string | undefined;
   remarks: string | undefined;
 };
 
@@ -116,7 +121,8 @@ function wrapTokens(tokens: readonly string[], perLine: number): string[] {
  * @param dest The destination airport identifier.
  * @param perLine How many characters fit on one line of the route cell.
  * @param maxLines How many lines the route cell has, which is one fewer when remarks are filed.
- * @returns The lines of the route cell, at most `maxLines` of them once anything was dropped.
+ * @returns The lines of the route cell, at most `maxLines` of them once anything was dropped, and
+ *   whether any token was dropped to fit them.
  */
 export function routeLines(
   dep: string,
@@ -124,14 +130,14 @@ export function routeLines(
   dest: string,
   perLine: number,
   maxLines: number,
-): string[] {
+): { lines: string[]; trimmed: boolean } {
   const full = wrapTokens([dep, ...tokens, dest], perLine);
-  if (tokens.length === 0 || full.length <= maxLines) return full;
+  if (tokens.length === 0 || full.length <= maxLines) return { lines: full, trimmed: false };
   for (let keep = tokens.length - 1; keep > 0; keep -= 1) {
-    const trimmed = wrapTokens([dep, ...tokens.slice(0, keep), '***', dest], perLine);
-    if (trimmed.length <= maxLines) return trimmed;
+    const lines = wrapTokens([dep, ...tokens.slice(0, keep), '***', dest], perLine);
+    if (lines.length <= maxLines) return { lines, trimmed: true };
   }
-  return wrapTokens([dep, '***', dest], perLine);
+  return { lines: wrapTokens([dep, '***', dest], perLine), trimmed: true };
 }
 
 /** The FNV-1a hash of a string, which is what the barcode pattern is drawn from. */
@@ -203,6 +209,13 @@ export function stripFields(
   const { revision } = marks;
   const remarks = remarksOf(scenario, marks.frc);
   const tokens = scenario.filedRoute.split(/\s+/).filter((token) => token.length > 0);
+  const route = routeLines(
+    airport.airport.icao,
+    tokens,
+    scenario.destination,
+    charsPerLine(),
+    remarks === undefined ? 3 : 2,
+  );
   return {
     callsign: scenario.callsign,
     revision,
@@ -213,13 +226,8 @@ export function stripFields(
     proposed: `P${scenario.localTime}`,
     altitude: String(Math.round(scenario.filedAltitude / 100)).padStart(3, '0'),
     depDest: `${airport.airport.icao} ${scenario.destination}`,
-    routeLines: routeLines(
-      airport.airport.icao,
-      tokens,
-      scenario.destination,
-      charsPerLine(),
-      remarks === undefined ? 3 : 2,
-    ),
+    routeLines: route.lines,
+    fullRoute: route.trimmed ? tokens.join(' ') : undefined,
     remarks,
   };
 }
@@ -272,6 +280,15 @@ function routeCell(fields: StripFields): HTMLDivElement {
   if (fields.remarks !== undefined) {
     node.append(el('div', 'strip-remarks', fields.remarks));
   }
+  return node;
+}
+
+/** The route line printed under the paper, which carries the tokens the route cell had no room for. */
+function fullRouteLine(fullRoute: string): HTMLDivElement {
+  const node = el('div', 'strip-full-route');
+  const label = el('span', 'strip-full-route-label', 'RTE');
+  label.title = 'Full route';
+  node.append(label, el('span', 'strip-full-route-text', fullRoute));
   return node;
 }
 
@@ -339,7 +356,8 @@ function scaleToFit(wrapper: HTMLElement, grid: HTMLElement): void {
  * Renders the flight plan as a paper flight progress strip.
  *
  * Amendment mode shows two strips at once, the plan as filed and the plan as amended, so the panel
- * is headed by the caller rather than by the strip itself.
+ * is headed by the caller rather than by the strip itself. A route the paper had no room for is
+ * printed whole under the paper, so every token the clearance is graded against stays readable.
  *
  * @param scenario The drawn flight plan.
  * @param airport The airport data.
@@ -357,9 +375,11 @@ export function renderStrip(
 ): HTMLElement {
   const panel = el('section', 'panel strip');
   const paper = el('div', 'strip-paper');
-  const grid = stripGrid(stripFields(scenario, airport, seed, marks));
+  const fields = stripFields(scenario, airport, seed, marks);
+  const grid = stripGrid(fields);
   paper.append(grid);
   panel.append(el('h2', '', heading), paper);
+  if (fields.fullRoute !== undefined) panel.append(fullRouteLine(fields.fullRoute));
   scaleToFit(paper, grid);
   return panel;
 }

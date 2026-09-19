@@ -3245,8 +3245,8 @@
     },
     {
       "id": "S-NINER",
-      "source": "FAA JO 7110.65 2-4-16 (TBL 2-4-1); user ruling 2026-09-17 (free-text entry)",
-      "text": "Digits are spoken in the ICAO pronunciation, the digit 9 as NINER: TREE, FIFE, FOWER and the other ICAO forms are as right as the plain words, but NINE said for the digit is a miss. A procedure's name is exempt, because it is spoken as its chart name (Coast Nine)"
+      "source": "FAA JO 7110.65 2-4-16 (TBL 2-4-1); user rulings 2026-09-17 (free-text entry) and 2026-09-19 (NINE acceptable)",
+      "text": "Digits are spoken in the ICAO pronunciation, the digit 9 as NINER. TREE, FIFE, FOWER and the other ICAO forms are as right as the plain words. NINE said for the digit is acceptable, since TBL 2-4-1 lists NIN-ER beside TREE and FIFE and no plain word is held to a miss, but NINER is what is said on frequency. A procedure's name is exempt, because it is spoken as its chart name (Coast Nine)"
     },
     {
       "id": "S-GROUP-FORM",

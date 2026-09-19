@@ -335,6 +335,28 @@ button.primary:disabled {
   text-overflow: ellipsis;
 }
 
+.strip-full-route {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin-top: 0.4rem;
+}
+
+.strip-full-route-label {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.strip-full-route-text {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
 .notices {
   margin: 0.7rem 0 0;
   padding-left: 1.1rem;

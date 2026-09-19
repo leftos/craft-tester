@@ -373,10 +373,10 @@ describe('gradeText', () => {
     expect(gradeOf(grades, 'R.route').actualLabel).toBe('Concord VOR, then as filed');
   });
 
-  it('grades "nine" for a digit wrong, and a procedure\'s own Nine right', () => {
+  it('grades "nine" for a digit acceptable, and a procedure\'s own Nine right', () => {
     const text = edited(readingOf(), 'one two zero point niner', 'one two zero point nine');
     const grades = graded(text);
-    expect(verdictsOf(grades)).toEqual(verdictsWith({ F: 'wrong' }));
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ F: 'acceptable' }));
     expect(idsOf(gradeOf(grades, 'F'))).toEqual(['OWN-F', 'S-NINER']);
 
     // No settled clearance fixture flies COAST9 (the ZOA notice route-builds it onto CNDEL5), so the
@@ -1022,11 +1022,22 @@ describe('the marks and the remarks of a typed grade', () => {
     expect(sid.remarks).toEqual([]);
   });
 
-  it('marks the whole number said with "nine" and says to say niner', () => {
+  it('leaves a number said with "nine" unmarked and says to say niner', () => {
     const grades = fdxGraded((reading) => edited(reading, 'point niner', 'point nine'));
     const frequency = gradeOf(grades, 'F');
-    expect(markedRuns(frequency)).toEqual(['wrong:one two zero point nine']);
+    expect(markedRuns(frequency)).toEqual([]);
     expect(frequency.remarks).toEqual(['say niner, not nine']);
+    expect(frequency.verdict).toBe('acceptable');
+  });
+
+  it('holds a group form said with "nine" wrong all the same', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'one two zero point niner', 'one twenty point nine'),
+    );
+    const frequency = gradeOf(grades, 'F');
+    expect(frequency.verdict).toBe('wrong');
+    expect(idsOf(frequency)).toContain('S-GROUP-FORM');
+    expect(frequency.remarks).toEqual(['say niner, not nine', 'group form alone — say the digits']);
   });
 
   it('marks a number said in group form alone and says to say the digits', () => {
