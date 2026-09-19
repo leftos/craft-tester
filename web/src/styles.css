@@ -169,7 +169,11 @@ button.primary:disabled {
   background: var(--panel);
 }
 
+/* The strip stays in view while the form below it is filled in. */
 .panel.strip {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   grid-column: 1;
 }
 
@@ -487,6 +491,14 @@ button.primary:disabled {
   color: var(--muted);
   text-decoration: underline dotted;
   text-underline-offset: 0.2em;
+}
+
+/* The words of the reading the player never said; the row already carries the verdict's colour. */
+.verdict .expected .missed {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
 }
 
 .citations {

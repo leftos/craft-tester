@@ -2111,6 +2111,11 @@
       "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is right only in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement for clarity (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is acceptable but longer than it needs to be; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right"
     },
     {
+      "id": "S-SPELLING",
+      "source": "user ruling 2026-09-18 (free-text entry)",
+      "text": "Typing stands in for speaking, so a word typed a letter or two away from the word the reading has (DEPARTURE with a letter dropped, SQUAWK with two letters swapped, SACRAMENTO with a wrong vowel) is that word: one edit for a word of five to eight letters, two for a longer one, none for a shorter one. A typed word that is itself a word of the phraseology, or of a fix, procedure or airport name, is read as typed, and a number is never guessed at"
+    },
+    {
       "id": "RWY-CLASS-DEFAULT",
       "source": "SFO ATCT SOP 1-7; user review 2026-09-15 (N483KA)",
       "text": "The configuration departs this aircraft class from this runway by default, before the direction-of-turn split: in 28/01, props and turboprops depart 28R at intersection Echo, a short taxi from the north ramp"

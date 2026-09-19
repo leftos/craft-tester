@@ -15,6 +15,7 @@ const typedAltitude: TextGrade = {
     { text: 'the', kind: 'filler' },
     { text: ' SID', kind: 'said' },
   ],
+  expected: [{ text: 'climb via sid', missed: false }],
 };
 
 const typedCorrect: TextGrade = {
@@ -22,6 +23,20 @@ const typedCorrect: TextGrade = {
   verdict: 'correct',
   actualLabel: 'Climb via SID',
   said: [{ text: 'Climb via SID', kind: 'said' }],
+};
+
+/** A typed procedure whose second word was never said, as the runs of a wrong element mark it. */
+const typedMissedWord: TextGrade = {
+  element: 'R.sid',
+  verdict: 'wrong',
+  expectedLabel: 'Oakland Six departure',
+  actualLabel: 'Oakland Six',
+  citations: [],
+  said: [{ text: 'Oakland Six', kind: 'said' }],
+  expected: [
+    { text: 'Oakland Six ', missed: false },
+    { text: 'departure', missed: true },
+  ],
 };
 
 function partOf(row: HTMLElement, selector: string): Element {
@@ -49,5 +64,13 @@ describe('renderVerdict on a typed element', () => {
     const row = renderVerdict(typedCorrect);
     expect(row.querySelector('.expected')).toBeNull();
     expect(partOf(row, '.answer').textContent).toBe('you said: Climb via SID✓');
+  });
+
+  it('marks the words never said inside the expected line', () => {
+    const expected = partOf(renderVerdict(typedMissedWord), 'p.expected');
+    expect(expected.textContent).toBe('expected: Oakland Six departure');
+    const missed = expected.querySelectorAll('strong.missed');
+    expect(missed).toHaveLength(1);
+    expect(missed[0]?.textContent).toBe('departure');
   });
 });

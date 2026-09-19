@@ -117,7 +117,10 @@ function correctionLine(verdict: Grade): string | undefined {
 
 /** The second line a typed element reads: the expected words wherever it was not fully correct. */
 function expectedLine(verdict: TextGrade): string | undefined {
-  return verdict.verdict === 'correct' ? undefined : `expected: ${verdict.expectedLabel}`;
+  if (verdict.verdict === 'correct') return undefined;
+  const runs = verdict.expected;
+  const words = runs.length === 0 ? verdict.expectedLabel : runs.map((run) => run.text).join('');
+  return `expected: ${words}`;
 }
 
 /**
@@ -168,6 +171,23 @@ function answerLine(verdict: Grade | TextGrade, text: string): HTMLParagraphElem
 }
 
 /**
+ * The second line: the expected words of a typed element, the ones never said marked inside them.
+ *
+ * A picked element, and a typed one whose grade carries no runs, read as the plain line.
+ */
+function expectedParagraph(
+  verdict: Grade | TextGrade | BoxElementGrade,
+  text: string,
+): HTMLParagraphElement {
+  if (!('expected' in verdict) || verdict.expected.length === 0) return el('p', 'expected', text);
+  const line = el('p', 'expected', 'expected: ');
+  for (const run of verdict.expected) {
+    line.append(run.missed ? el('strong', 'missed', run.text) : run.text);
+  }
+  return line;
+}
+
+/**
  * Renders one element's verdict: what the player said, the correction where it was wrong, the
  * reason a box of the strip was amended, and the rows that decided it.
  *
@@ -182,7 +202,7 @@ export function renderVerdict(verdict: Grade | TextGrade | BoxElementGrade): HTM
   const mark = verdictMark(lines.verdict);
   if (mark !== undefined) answer.append(el('span', 'mark', mark));
   row.append(el('h3', '', elementLabel(verdict.element)), answer);
-  if (lines.correction !== undefined) row.append(el('p', 'expected', lines.correction));
+  if (lines.correction !== undefined) row.append(expectedParagraph(verdict, lines.correction));
   if (lines.why !== undefined) row.append(el('p', 'why', lines.why));
   row.append(citationList(verdict.citations));
   return row;

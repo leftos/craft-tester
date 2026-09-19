@@ -509,3 +509,156 @@ describe('gradeText', () => {
     expect(idsOf(gradeOf(grades, 'F'))).toEqual(['OWN-F']);
   });
 });
+
+/** A settled KOAK practice reading, typed against its own airport, its SID, name and squawk in it. */
+const FDX_PRACTICE = 'ws-koak-phraseology-practice-1a-fdx354';
+
+/** The practice reading as typed, with one stretch of it edited. */
+function fdxGraded(edit: (reading: string) => string): TextGrade[] {
+  const { airport, clearance: resolved, spoken } = settledReading(FDX_PRACTICE);
+  return gradeText(edit(spoken.abbreviated), spoken, resolved, airport);
+}
+
+/** The misspellings these tests type: a row that spelt one would have the matcher read it as typed. */
+const MISSPELLINGS: readonly string[] = ['depature', 'sqawk', 'sacremento'];
+
+/** The elements whose citations quote the spelling row. */
+function spellingCiters(grades: readonly TextGrade[]): string[] {
+  return grades
+    .filter((grade) => idsOf(grade).includes('S-SPELLING'))
+    .map((grade) => grade.element);
+}
+
+describe('gradeText on a word typed a letter or two away from the reading', () => {
+  it('a misspelt fixed word is the word, citing S-SPELLING', () => {
+    const grades = fdxGraded((reading) => edited(reading, ' departure,', ' depature,'));
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['R.sid']);
+  });
+
+  it('a misspelt squawk anchor is the word', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'squawk', 'sqawk'));
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['T']);
+  });
+
+  it('a misspelt name is the name', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'Seattle', 'Seatle'));
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['C']);
+  });
+
+  it('a word too far from the reading is still a miss', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'squawk', 'sqwk'));
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ T: 'wrong' }));
+    expect(spellingCiters(grades)).toEqual([]);
+  });
+
+  it('a misspelt number word is not guessed at', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'squawk three three four two', 'squawk thre three four two'),
+    );
+    expect(gradeOf(grades, 'T').verdict).toBe('wrong');
+  });
+
+  it('a reading typed exactly cites no spelling row', () => {
+    const grades = fdxGraded((reading) => reading);
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual([]);
+  });
+
+  it("the spelling row's own text does not shield a misspelling", () => {
+    const spelt = [...airports].flatMap(([icao, data]) =>
+      data.phraseologyRules.flatMap((rule) => {
+        const words = new Set(rule.text.toLowerCase().match(/[a-z]+/gu) ?? []);
+        return MISSPELLINGS.filter((word) => words.has(word)).map(
+          (word) => `${icao} ${rule.id}: "${word}"`,
+        );
+      }),
+    );
+    expect(spelt).toEqual([]);
+  });
+});
+
+/** What the expected runs of one grade get wrong: how they join, how they alternate, what they mark. */
+function expectedProblems(grades: readonly TextGrade[]): string[] {
+  return grades.flatMap((grade) => {
+    const runs = grade.expected;
+    const problems: string[] = [];
+    const joined = runs.map((run) => run.text).join('');
+    if (joined !== grade.expectedLabel) {
+      problems.push(`joins to "${joined}", label "${grade.expectedLabel}"`);
+    }
+    if (runs.some((run) => run.text === '')) problems.push('has an empty run');
+    if (runs.some((run, index) => index > 0 && run.missed === runs[index - 1]?.missed)) {
+      problems.push('has two neighbouring runs alike');
+    }
+    if (grade.verdict !== 'wrong' && runs.some((run) => run.missed)) {
+      problems.push(`marks a word on a grade that is ${grade.verdict}`);
+    }
+    return problems.map((line) => `${grade.element}: ${line}`);
+  });
+}
+
+/** The expected runs of one fixture's own abbreviated and full readings. */
+function expectedCorpusProblems(fixture: Fixture): string[] {
+  const { airport, clearance, spoken } = realReading(fixture);
+  const readings = [
+    spoken.abbreviated,
+    ...(spoken.fullRoute === spoken.abbreviated ? [] : [spoken.fullRoute]),
+  ];
+  return readings.flatMap((reading) =>
+    expectedProblems(gradeText(reading, spoken, clearance, airport)).map(
+      (line) => `${fixture.id} "${reading}": ${line}`,
+    ),
+  );
+}
+
+describe('the expected words of a typed grade', () => {
+  it('marks the anchor word the student never said', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'squawk', 'sqwk'));
+    expect(gradeOf(grades, 'T').expected).toEqual([
+      { text: 'squawk', missed: true },
+      { text: ' three three four two', missed: false },
+    ]);
+  });
+
+  it('marks the value the student said another value for', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'squawk three three four two', 'squawk three three four one'),
+    );
+    expect(gradeOf(grades, 'T').expected).toEqual([
+      { text: 'squawk ', missed: false },
+      { text: 'three three four two', missed: true },
+    ]);
+  });
+
+  it('merges the words of a closing clause left out into one mark', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'radar vectors Dedhd, then as filed', 'radar vectors Dedhd'),
+    );
+    expect(gradeOf(grades, 'R.route').expected).toEqual([
+      { text: 'radar vectors Dedhd, ', missed: false },
+      { text: 'then as filed', missed: true },
+    ]);
+  });
+
+  it('marks nothing on an element nothing was heard for', () => {
+    const grades = fdxGraded((reading) => edited(reading, ', squawk three three four two', ''));
+    const squawk = gradeOf(grades, 'T');
+    expect(squawk.verdict).toBe('wrong');
+    expect(squawk.expected).toEqual([{ text: 'squawk three three four two', missed: false }]);
+  });
+
+  it('marks nothing on a reading typed exactly', () => {
+    const grades = fdxGraded((reading) => reading);
+    expect(grades.map((grade) => grade.expected)).toEqual(
+      grades.map((grade) => [{ text: grade.expectedLabel, missed: false }]),
+    );
+  });
+
+  it('joins, alternates and marks nothing over every settled reading', () => {
+    expect(settledClearances.length).toBeGreaterThan(0);
+    expect(settledClearances.flatMap((fixture) => expectedCorpusProblems(fixture))).toEqual([]);
+  });
+});

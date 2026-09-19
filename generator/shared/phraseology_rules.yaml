@@ -111,3 +111,6 @@ phraseology_rules:
   - id: S-GROUP-FORM
     source: "FAA JO 7110.65 2-4-17 b 2 (a) and its note; user ruling 2026-09-17 (free-text entry)"
     text: "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is right only in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement for clarity (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is acceptable but longer than it needs to be; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right"
+  - id: S-SPELLING
+    source: "user ruling 2026-09-18 (free-text entry)"
+    text: "Typing stands in for speaking, so a word typed a letter or two away from the word the reading has (DEPARTURE with a letter dropped, SQUAWK with two letters swapped, SACRAMENTO with a wrong vowel) is that word: one edit for a word of five to eight letters, two for a longer one, none for a shorter one. A typed word that is itself a word of the phraseology, or of a fix, procedure or airport name, is read as typed, and a number is never guessed at"

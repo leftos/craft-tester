@@ -13,10 +13,13 @@
  *   fill:<index>=<text>      type into the n-th text field (text inputs and textareas, in page order)
  *   press:<key>              press a key on whatever has focus, e.g. `press:Enter` after a `fill`
  *   click:<button text>      press the button with that text
+ *   scroll:<pixels>          scroll the page down to that offset
  *
  * The page's text, its selects, inputs and buttons, every console error, and whether it scrolls
  * sideways are written to `.tmp/browser-check/<name>-<viewport>.json` next to a full-page
- * screenshot, and the essentials are printed. Playwright's Chromium must be installed once with
+ * screenshot and a `-view` screenshot of the viewport alone, which is the one that shows what stays
+ * pinned after a `scroll`. The flight-plan panel's top edge in the viewport is recorded as `stripTop`,
+ * and the essentials are printed. Playwright's Chromium must be installed once with
  * `pnpm -C web exec playwright install chromium`.
  *
  * `CRAFT_PREVIEW_URL` overrides the preview the run opens, so two previews on different ports can
@@ -41,6 +44,8 @@ type Report = {
   overflow: boolean;
   scrollWidth: number;
   innerWidth: number;
+  scrollY: number;
+  stripTop: number;
   overflowing: string[];
   text: string;
   selects: { value: string; options: string[] }[];
@@ -97,6 +102,8 @@ for (const action of actions) {
     await page.keyboard.press(rest);
   } else if (kind === 'click') {
     await page.getByRole('button', { name: rest }).first().click();
+  } else if (kind === 'scroll') {
+    await page.evaluate((top) => window.scrollTo(0, top), Number(rest));
   } else {
     console.error(`unknown action ${action}`);
     usage();
@@ -120,6 +127,10 @@ const recorded = await page.evaluate(() => {
     overflow: document.documentElement.scrollWidth > window.innerWidth,
     scrollWidth: document.documentElement.scrollWidth,
     innerWidth: window.innerWidth,
+    scrollY: Math.round(window.scrollY),
+    stripTop: Math.round(
+      document.querySelector('.panel.strip')?.getBoundingClientRect().top ?? NaN,
+    ),
     overflowing,
     text: document.body.innerText,
     selects: [...document.querySelectorAll('select')].map((select) => ({
@@ -136,6 +147,7 @@ const recorded = await page.evaluate(() => {
 });
 const report: Report = { ...recorded, errors };
 
+await page.screenshot({ path: `${OUT_DIR}/${name}-${viewportName}-view.png` });
 await page.screenshot({ path: `${OUT_DIR}/${name}-${viewportName}.png`, fullPage: true });
 await writeFile(`${OUT_DIR}/${name}-${viewportName}.json`, JSON.stringify(report, null, 2));
 await browser.close();
@@ -144,6 +156,7 @@ console.log(`hash: ${report.hash}`);
 console.log(
   `overflow: ${report.overflow} (scrollWidth ${report.scrollWidth}, innerWidth ${report.innerWidth})`,
 );
+console.log(`scrollY: ${report.scrollY}, stripTop: ${report.stripTop}`);
 if (report.overflowing.length > 0)
   console.log(`overflowing:\n  ${report.overflowing.join('\n  ')}`);
 console.log(

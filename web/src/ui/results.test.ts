@@ -130,6 +130,7 @@ const typedAltitude: TextGrade = {
     { text: 'the', kind: 'filler' },
     { text: ' SID', kind: 'said' },
   ],
+  expected: [{ text: 'climb via sid', missed: false }],
 };
 
 describe('verdictLines on a typed element', () => {
