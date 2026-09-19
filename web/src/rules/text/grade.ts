@@ -3,18 +3,23 @@ import { citePhraseology } from '@/rules/cite.ts';
 import { speakExpect } from '@/rules/speak.ts';
 import type { SpokenClearance, SpokenElement, SpokenPart } from '@/rules/speak.ts';
 import { lexiconFor, normaliseSpoken } from '@/rules/text/normalise.ts';
-import type { SpokenToken } from '@/rules/text/normalise.ts';
+import type { Lexicon, SpokenToken } from '@/rules/text/normalise.ts';
+import { isNearMiss } from '@/rules/text/spelling.ts';
 import type { Grade, ResolvedClearance, RuleCitation, Verdict } from '@/rules/types.ts';
 
 /** A run of the typed text as a result row shows it: words said, filler among them, or the break between two stretches. */
 export type SaidRun = { text: string; kind: 'said' | 'filler' | 'break' };
 
+/** A run of the words the reading has, as a result row shows it: said, or never said at all. */
+export type ExpectedRun = { text: string; missed: boolean };
+
 /**
  * One graded element of a typed clearance, with what was said for it as runs.
  *
  * `said` joins back to `actualLabel` wherever anything was heard, and is empty where nothing was.
+ * `expected` joins back to the words the element was graded against, the ones never said marked.
  */
-export type TextGrade = Grade & { said: SaidRun[] };
+export type TextGrade = Grade & { said: SaidRun[]; expected: ExpectedRun[] };
 
 /** An element a typed clearance is graded on: every element of the reading but the callsign. */
 type GradedElement = Exclude<SpokenElement, 'callsign'>;
@@ -46,8 +51,13 @@ type ExpectOption = 'base' | 'redundant';
 /** A token of a candidate reading, tagged with the element it speaks. */
 type CandidateToken = { token: SpokenToken; element: GradedElement };
 
-/** One reading the typed text is aligned against. */
-type Candidate = { route: RouteOption; expect: ExpectOption; tokens: CandidateToken[] };
+/** One reading the typed text is aligned against, as its parts' words and as their tokens. */
+type Candidate = {
+  route: RouteOption;
+  expect: ExpectOption;
+  parts: GradedPart[];
+  tokens: CandidateToken[];
+};
 
 /** A student token matched with a candidate token, by their indices. */
 type Pair = { student: number; candidate: number };
@@ -97,6 +107,7 @@ type Walk = {
   marks: Map<GradedElement, GapMarks>;
   expected: ResolvedClearance;
   airport: AirportData;
+  vocabulary: ReadonlySet<string>;
 };
 
 /** The route reading's closing "direct", which "then as filed" may take the place of. */
@@ -107,6 +118,9 @@ const FACILITY_WORDS: ReadonlySet<string> = new Set(['vor', 'ndb']);
 
 /** A number written plainly, whose leading and trailing zeros do not change its value. */
 const PLAIN_DECIMAL = /^\d+(?:\.\d+)?$/u;
+
+/** A run of letters inside a phraseology row, which is a word the phraseology has. */
+const LETTER_RUN = /[a-z]+/gu;
 
 /** Text between two spans that leaves them adjacent in a label. */
 const LABEL_JOINER = /^[\s\p{P}]*$/u;
@@ -193,12 +207,58 @@ function candidatesFor(spoken: SpokenClearance, expected: ResolvedClearance): Ca
   const { template } = expected.route.value;
   return routeReadings(parts, spoken.fullRouteWords, template).flatMap(
     ({ option, parts: routeParts }) => {
-      const base: Candidate = { route: option, expect: 'base', tokens: tagged(routeParts) };
+      const base: Candidate = {
+        route: option,
+        expect: 'base',
+        parts: routeParts,
+        tokens: tagged(routeParts),
+      };
       if (redundant === null) return [base];
       const redundantParts = withExpect(routeParts, speakExpect(redundant));
-      return [base, { route: option, expect: 'redundant', tokens: tagged(redundantParts) }];
+      return [
+        base,
+        {
+          route: option,
+          expect: 'redundant',
+          parts: redundantParts,
+          tokens: tagged(redundantParts),
+        },
+      ];
     },
   );
+}
+
+function addWords(words: Set<string>, tokens: readonly SpokenToken[]): void {
+  for (const token of tokens) {
+    if (token.kind === 'word') words.add(token.text);
+  }
+}
+
+/**
+ * Every word a typed word is read as typed against, rather than as a misspelling of another.
+ *
+ * The words of every candidate reading, the words the airport's fixes, procedures and destinations
+ * are spoken as, and every letter run of its phraseology rows.
+ */
+function vocabularyOf(
+  candidates: readonly Candidate[],
+  lexicon: Lexicon,
+  airport: AirportData,
+): ReadonlySet<string> {
+  const words = new Set<string>();
+  for (const candidate of candidates) {
+    addWords(
+      words,
+      candidate.tokens.map((tagged) => tagged.token),
+    );
+  }
+  for (const spoken of Object.values(lexicon)) {
+    addWords(words, normaliseSpoken(spoken, {}));
+  }
+  for (const rule of airport.phraseologyRules) {
+    for (const run of rule.text.toLowerCase().matchAll(LETTER_RUN)) words.add(run[0]);
+  }
+  return words;
 }
 
 function isWord(token: SpokenToken | undefined, text: string): boolean {
@@ -241,12 +301,19 @@ function samePlainDecimal(student: string, expected: string): boolean {
 /**
  * Whether a student token says what a candidate token says.
  *
- * Words compare by text. Numbers compare by value, and plain decimals by numeric value too, except
- * in the squawk, whose leading zeros count.
+ * Words compare by text, a word typed a letter or two away from the word read saying that word
+ * (`S-SPELLING`). Numbers compare by value, and plain decimals by numeric value too, except in the
+ * squawk, whose leading zeros count.
  */
-function same(student: SpokenToken, candidate: CandidateToken): boolean {
+function same(
+  student: SpokenToken,
+  candidate: CandidateToken,
+  vocabulary: ReadonlySet<string>,
+): boolean {
   const expected = candidate.token;
-  if (student.kind === 'word') return expected.kind === 'word' && student.text === expected.text;
+  if (student.kind === 'word') {
+    return expected.kind === 'word' && isNearMiss(student.text, expected.text, vocabulary);
+  }
   if (expected.kind === 'word') return false;
   if (student.value === expected.value) return true;
   return candidate.element !== 'T' && samePlainDecimal(student.value, expected.value);
@@ -257,23 +324,25 @@ function sameAt(
   candidate: readonly CandidateToken[],
   i: number,
   j: number,
+  vocabulary: ReadonlySet<string>,
 ): boolean {
   const said = student[i];
   const wanted = candidate[j];
-  return said !== undefined && wanted !== undefined && same(said, wanted);
+  return said !== undefined && wanted !== undefined && same(said, wanted, vocabulary);
 }
 
 /** The longest common subsequence lengths over every pair of suffixes, as a lookup. */
 function suffixLengths(
   student: readonly SpokenToken[],
   candidate: readonly CandidateToken[],
+  vocabulary: ReadonlySet<string>,
 ): (i: number, j: number) => number {
   const width = candidate.length + 1;
   const table = Array.from({ length: (student.length + 1) * width }, () => 0);
   const at = (i: number, j: number): number => table[i * width + j] ?? 0;
   for (let i = student.length - 1; i >= 0; i -= 1) {
     for (let j = candidate.length - 1; j >= 0; j -= 1) {
-      const matched = sameAt(student, candidate, i, j) ? 1 + at(i + 1, j + 1) : 0;
+      const matched = sameAt(student, candidate, i, j, vocabulary) ? 1 + at(i + 1, j + 1) : 0;
       table[i * width + j] = Math.max(matched, at(i + 1, j), at(i, j + 1));
     }
   }
@@ -281,13 +350,17 @@ function suffixLengths(
 }
 
 /** Aligns the student tokens with a candidate's as a longest common subsequence, earliest match first. */
-function align(student: readonly SpokenToken[], candidate: readonly CandidateToken[]): Pair[] {
-  const at = suffixLengths(student, candidate);
+function align(
+  student: readonly SpokenToken[],
+  candidate: readonly CandidateToken[],
+  vocabulary: ReadonlySet<string>,
+): Pair[] {
+  const at = suffixLengths(student, candidate, vocabulary);
   const pairs: Pair[] = [];
   let i = 0;
   let j = 0;
   while (i < student.length && j < candidate.length) {
-    if (sameAt(student, candidate, i, j) && at(i, j) === 1 + at(i + 1, j + 1)) {
+    if (sameAt(student, candidate, i, j, vocabulary) && at(i, j) === 1 + at(i + 1, j + 1)) {
       pairs.push({ student: i, candidate: j });
       i += 1;
       j += 1;
@@ -306,7 +379,11 @@ function spanOf(tokens: readonly SpokenToken[]): Span {
 }
 
 /** A candidate aligned with the typed text, a stray expect clause cut first where it has no clause. */
-function alignCandidate(candidate: Candidate, tokens: readonly SpokenToken[]): Alignment {
+function alignCandidate(
+  candidate: Candidate,
+  tokens: readonly SpokenToken[],
+  vocabulary: ReadonlySet<string>,
+): Alignment {
   const hasExpect = candidate.tokens.some((token) => token.element === 'A.expect');
   const clause = hasExpect ? undefined : strayExpect(tokens);
   if (clause === undefined) {
@@ -314,20 +391,23 @@ function alignCandidate(candidate: Candidate, tokens: readonly SpokenToken[]): A
       candidate,
       student: [...tokens],
       stray: undefined,
-      pairs: align(tokens, candidate.tokens),
+      pairs: align(tokens, candidate.tokens, vocabulary),
     };
   }
   const student = [...tokens.slice(0, clause.from), ...tokens.slice(clause.to + 1)];
   const stray = spanOf(tokens.slice(clause.from, clause.to + 1));
-  return { candidate, student, stray, pairs: align(student, candidate.tokens) };
+  return { candidate, student, stray, pairs: align(student, candidate.tokens, vocabulary) };
 }
 
 /** The candidate with the most matches, the earliest winning a tie. */
 function bestAlignment(
   candidates: readonly Candidate[],
   tokens: readonly SpokenToken[],
+  vocabulary: ReadonlySet<string>,
 ): Alignment {
-  const [first, ...rest] = candidates.map((candidate) => alignCandidate(candidate, tokens));
+  const [first, ...rest] = candidates.map((candidate) =>
+    alignCandidate(candidate, tokens, vocabulary),
+  );
   if (first === undefined)
     throw new Error('gradeText: the reading yields no candidate to grade against');
   return rest.reduce(
@@ -385,11 +465,12 @@ type Misplaced = { element: GradedElement; said: SpokenToken[] };
 function subsequenceOf(
   wanted: readonly CandidateToken[],
   block: readonly SpokenToken[],
+  vocabulary: ReadonlySet<string>,
 ): SpokenToken[] | undefined {
   const said: SpokenToken[] = [];
   for (const token of block) {
     const next = wanted[said.length];
-    if (next !== undefined && same(token, next)) said.push(token);
+    if (next !== undefined && same(token, next, vocabulary)) said.push(token);
   }
   return said.length === wanted.length ? said : undefined;
 }
@@ -401,7 +482,7 @@ function outOfOrderElement(block: readonly SpokenToken[], walk: Walk): Misplaced
     const indices = elementTokens(candidate, element);
     if (indices.length === 0 || indices.some((index) => walk.matched.has(index))) continue;
     const wanted = indices.flatMap((index) => candidate.tokens[index] ?? []);
-    const said = subsequenceOf(wanted, block);
+    const said = subsequenceOf(wanted, block, walk.vocabulary);
     if (said !== undefined) return { element, said };
   }
   return undefined;
@@ -495,6 +576,7 @@ function walkGaps(
   alignment: Alignment,
   expected: ResolvedClearance,
   airport: AirportData,
+  vocabulary: ReadonlySet<string>,
 ): Map<GradedElement, GapMarks> {
   const walk: Walk = {
     alignment,
@@ -502,6 +584,7 @@ function walkGaps(
     marks: new Map(),
     expected,
     airport,
+    vocabulary,
   };
   const { student, pairs } = alignment;
   const leading = student.slice(0, pairs[0]?.student ?? student.length);
@@ -510,6 +593,12 @@ function walkGaps(
     if (gap.student.length > 0) markGap(gap, walk);
   }
   return walk.marks;
+}
+
+/** The tier a matched word pair sets: a word typed a letter or two away is the word it says. */
+function spellingTiers(student: SpokenToken, expected: SpokenToken, airport: AirportData): Tier[] {
+  if (student.kind !== 'word' || expected.kind !== 'word') return [];
+  return student.text === expected.text ? [] : [tier(airport, 'correct', 'S-SPELLING')];
 }
 
 /** The tiers a matched number pair sets: group form and a restatement against digits, and "nine". */
@@ -611,6 +700,28 @@ function saidRuns(text: string, merged: readonly Span[], filler: readonly Span[]
   ]);
 }
 
+function pushExpected(runs: ExpectedRun[], text: string, missed: boolean): void {
+  if (text.length > 0) runs.push({ text, missed });
+}
+
+/** The words of one element, the spans never said marked, the text around them left plain. */
+function markedExpected(words: string, missed: readonly Span[]): ExpectedRun[] {
+  const runs: ExpectedRun[] = [];
+  let at = 0;
+  for (const span of mergeSpans(words, missed)) {
+    pushExpected(runs, words.slice(at, span.start), false);
+    pushExpected(runs, words.slice(span.start, span.end), true);
+    at = span.end;
+  }
+  pushExpected(runs, words.slice(at), false);
+  return runs;
+}
+
+/** The whole label as one run nobody missed, and no run at all where the reading has no words. */
+function wholeExpected(label: string): ExpectedRun[] {
+  return label === '' ? [] : [{ text: label, missed: false }];
+}
+
 function expectedLabel(element: GradedElement, spoken: SpokenClearance): string {
   const words = spoken.parts.find((part) => part.element === element)?.words;
   if (words !== undefined) return words;
@@ -640,6 +751,38 @@ function matchedPairs(
   });
 }
 
+/** The element's candidate tokens no student token matched, as spans of the candidate's own words. */
+function missedSpans(indices: readonly number[], grading: Grading): Span[] {
+  return indices.flatMap((index) => {
+    if (grading.matchedBy.has(index)) return [];
+    const token = grading.alignment.candidate.tokens[index]?.token;
+    return token === undefined ? [] : [{ start: token.start, end: token.end }];
+  });
+}
+
+/**
+ * The words an element was graded against, the ones the student never said marked.
+ *
+ * Words are marked only where some of the element's words were heard and others were not: an
+ * element nothing was heard for, and one said in the wrong place, say nothing by marking every word
+ * of them. The marks are cut from the chosen candidate's own words, which are the reading's own but
+ * for a route read in full or closed on "then as filed", or a redundant expect clause.
+ */
+function expectedFor(
+  element: GradedElement,
+  indices: readonly number[],
+  marks: GapMarks,
+  grading: Grading,
+): ExpectedRun[] {
+  const label = expectedLabel(element, grading.spoken);
+  const missed = missedSpans(indices, grading);
+  if (marks.outOfOrder || missed.length === 0 || missed.length === indices.length) {
+    return wholeExpected(label);
+  }
+  const words = grading.alignment.candidate.parts.find((part) => part.element === element)?.words;
+  return words === undefined ? wholeExpected(label) : markedExpected(words, missed);
+}
+
 /** The verdict and rows of an element every token of which matched. */
 function matchedVerdict(
   element: GradedElement,
@@ -650,6 +793,7 @@ function matchedVerdict(
   const { airport, expected, alignment } = grading;
   const tiers = [
     ...pairs.flatMap((pair) => numberTiers(pair.student, pair.expected, airport)),
+    ...pairs.flatMap((pair) => spellingTiers(pair.student, pair.expected, airport)),
     ...marks.tiers,
     ...candidateTiers(element, grading),
   ];
@@ -699,6 +843,7 @@ function gradeElement(element: GradedElement, grading: Grading): TextGrade {
     expectedLabel: expectedLabel(element, grading.spoken),
     actualLabel: actualLabel(text, merged),
     said: saidRuns(text, merged, marks.filler),
+    expected: expectedFor(element, indices, marks, grading),
   };
   const own = OWN_ROWS[element](expected);
   if (indices.length === 0) return emptyElementGrade(labels, stray, own);
@@ -730,8 +875,11 @@ export function gradeText(
   expected: ResolvedClearance,
   airport: AirportData,
 ): TextGrade[] {
-  const tokens = normaliseSpoken(text, lexiconFor(airport));
-  const alignment = bestAlignment(candidatesFor(spoken, expected), tokens);
+  const lexicon = lexiconFor(airport);
+  const tokens = normaliseSpoken(text, lexicon);
+  const candidates = candidatesFor(spoken, expected);
+  const vocabulary = vocabularyOf(candidates, lexicon, airport);
+  const alignment = bestAlignment(candidates, tokens, vocabulary);
   const matchedBy = new Map<number, SpokenToken>();
   for (const pair of alignment.pairs) {
     const student = alignment.student[pair.student];
@@ -743,7 +891,7 @@ export function gradeText(
     expected,
     airport,
     alignment,
-    marks: walkGaps(alignment, expected, airport),
+    marks: walkGaps(alignment, expected, airport, vocabulary),
     matchedBy,
   };
   return GRADED_ORDER.map((element) => gradeElement(element, grading));
