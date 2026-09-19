@@ -4,8 +4,9 @@ import type { InputKind, Mode, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { procedureOf } from '@/ui/amendPanels.ts';
 import { startApp } from '@/ui/app.ts';
+import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
-import { buildScenario, loadAirportData, spokenFor } from '@/ui/session.ts';
+import { buildScenario, clearedPlan, loadAirportData, spokenFor } from '@/ui/session.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
@@ -159,6 +160,32 @@ async function twoWaySeed(): Promise<{ seed: number; abbreviated: string }> {
     if (spoken.fullRoute !== spoken.abbreviated) return { seed, abbreviated: spoken.abbreviated };
   }
   throw new Error('no KSFO clearance seed up to 60 reads its route two ways');
+}
+
+/** The remark a route handed over as filed leaves on a clearance the student reads in full. */
+const FRC_REMARK = '"then as filed" said on a full route clearance — read the route to its end';
+
+/** The strip left exactly as filed, which is what `clearTheStrip` answers. */
+const AS_FILED: BoxAnswers = {
+  type: { kind: 'as_filed' },
+  altitude: { kind: 'as_filed' },
+  route: { kind: 'as_filed' },
+};
+
+/**
+ * A KSFO amendment seed whose plan, cleared as filed, reads its route two ways, with the reading
+ * spoken on frequency.
+ */
+async function twoWayAmendment(): Promise<{ seed: number; abbreviated: string }> {
+  const airport = await loadAirportData('KSFO');
+  for (let seed = 1; seed <= 60; seed += 1) {
+    const view = buildScenario(airport, seed, ANY_SCENARIO, 'amendment');
+    if (view.kind !== 'amendment') continue;
+    const cleared = clearedPlan(view, AS_FILED, airport);
+    const spoken = spokenFor(cleared.plan, view.drawn.filed, cleared.clearance, airport);
+    if (spoken.fullRoute !== spoken.abbreviated) return { seed, abbreviated: spoken.abbreviated };
+  }
+  throw new Error('no KSFO amendment seed up to 60 reads its route two ways');
 }
 
 /** Answers every box as filed and submits the strip, which opens the form on the corrected plan. */
@@ -350,10 +377,63 @@ describe('the mounted page', () => {
     pressEnter(clearanceBox(root));
 
     const results = root.querySelector('.panel.results')?.textContent ?? '';
-    expect(results).toContain(
-      '"then as filed" said on a full route clearance — read the route to its end',
-    );
+    expect(results).toContain(FRC_REMARK);
     expect(results).toContain('R-FRC');
+  });
+
+  it('grades a typed amendment against the full route once full route is ticked', async () => {
+    const { seed, abbreviated } = await twoWayAmendment();
+    const root = await mountApp(seed, 'amendment', 'text');
+
+    tick(checkbox(root, 'full route'), true);
+    clearTheStrip(root);
+    typeInto(clearanceBox(root), abbreviated);
+    pressEnter(clearanceBox(root));
+
+    const results = root.querySelector('.panel.results')?.textContent ?? '';
+    expect(results, `seed ${seed}: ${abbreviated}`).toContain(FRC_REMARK);
+    expect(results).toContain('R-FRC');
+  });
+
+  it('opens a typed link unticked even where this browser remembers full route', async () => {
+    globalThis.localStorage.setItem('craft-tester:full-route', 'true');
+
+    const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO&i=text`);
+
+    expect(checkbox(root, 'full route').checked).toBe(false);
+    expect(globalThis.location.hash).not.toContain('r=full');
+  });
+
+  it('opens a bare link ticked where this browser remembers typed answers and full route', async () => {
+    globalThis.localStorage.setItem('craft-tester:input', '"text"');
+    globalThis.localStorage.setItem('craft-tester:full-route', 'true');
+
+    const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO`);
+
+    expect(checkbox(root, 'full route').checked).toBe(true);
+    expect(selectOf(field(root, 'answer')).value).toBe('text');
+    expect(globalThis.location.hash).toContain('r=full');
+  });
+
+  it('shows a full route attempt back on revisit, graded against the full route', async () => {
+    const { seed, abbreviated } = await twoWaySeed();
+    const settings = {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: true,
+    } as const;
+    const root = await mountSession(seed, settings);
+    typeInto(clearanceBox(root), abbreviated);
+    pressEnter(clearanceBox(root));
+
+    const again = await mountSession(seed, settings);
+    const revisit = again.querySelector('.panel.results.revisit');
+    expect(revisit).not.toBeNull();
+    expect(revisit?.textContent ?? '').toContain(FRC_REMARK);
+
+    const unticked = await mountSession(seed, { ...settings, fullRoute: false });
+    expect(unticked.querySelector('.panel.results.revisit')).toBeNull();
   });
 
   it('keeps the typing box the student is typing in', async () => {

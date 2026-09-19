@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { checkedInAirports } from '@/data/checkedIn.ts';
 import type { AirportData, Fixture } from '@/data/schema.ts';
 import { FixtureSchema } from '@/data/schema.ts';
+import { citePhraseology } from '@/rules/cite.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { SpeakClearanceInput, SpokenClearance } from '@/rules/speak.ts';
@@ -1118,6 +1119,38 @@ function fdxReading(text: (spoken: SpokenClearance) => string, reading: RouteRea
   return gradeText(text(spoken), spoken, resolved, airport, reading);
 }
 
+/** The full route's words with everything from its last element on handed over as filed. */
+function handedOver(words: string): string {
+  const units = words.split(', ').filter((unit) => unit !== 'direct');
+  return [...units.slice(0, -1), 'then as filed'].join(', ');
+}
+
+/** The "direct" that leads a route unit to the fix it names. */
+const DIRECT_PREFIX = /^direct /u;
+
+/** One unit of the full route between the departure phrase and its close, and the fix it names. */
+function midRouteUnit(words: string): { unit: string; fix: string } {
+  const unit = words.split(', ')[1];
+  if (unit === undefined) throw new Error(`"${words}" reads as one element`);
+  return { unit, fix: unit.replace(DIRECT_PREFIX, '') };
+}
+
+/** The grades without the row a full route clearance always cites, to line the two readings up. */
+function withoutFrc(grades: readonly TextGrade[]): TextGrade[] {
+  return grades.map((grade) => ({
+    ...grade,
+    citations: grade.citations.filter((citation) => citation.id !== 'R-FRC'),
+  }));
+}
+
+/** The words a grade was held to that the student never said. */
+function missedWords(grade: TextGrade): string {
+  return grade.expected
+    .filter((run) => run.missed)
+    .map((run) => run.text)
+    .join(' ');
+}
+
 describe('a full route clearance', () => {
   it('reads the full route as fully right, with no remark', () => {
     const { spoken } = settledReading(FDX_PRACTICE);
@@ -1129,7 +1162,7 @@ describe('a full route clearance', () => {
     expect(route.verdict).toBe('correct');
     expect(route.remarks).toEqual([]);
     expect(idsOf(route)).not.toContain('R-FULL-ROUTE');
-    expect(idsOf(route)).not.toContain('R-FRC');
+    expect(idsOf(route)).toContain('R-FRC');
   });
 
   it('grades the abbreviated reading wrong and cites R-FRC', () => {
@@ -1166,7 +1199,7 @@ describe('a full route clearance', () => {
     expect(others(full)).toEqual(others(abbreviated));
   });
 
-  it('grades the same as today where the student is held to the abbreviated reading', () => {
+  it('still accepts the full route where the student is held to the abbreviated reading', () => {
     const route = gradeOf(
       fdxReading((reading) => reading.fullRoute, 'abbreviated'),
       'R.route',
@@ -1176,13 +1209,103 @@ describe('a full route clearance', () => {
     expect(route.remarks).toEqual(['the route read in full — the shorter reading is enough']);
   });
 
+  it('cites R-FRC when the handover is typed with a word missing', () => {
+    const route = gradeOf(
+      fdxReading((reading) => edited(reading.abbreviated, 'then as filed', 'as filed'), 'full'),
+      'R.route',
+    );
+    expect(route.verdict).toBe('wrong');
+    expect(idsOf(route)).toContain('R-FRC');
+    expect(route.remarks).toContain(FRC_REMARK);
+  });
+
+  it('grades "then as filed" said after a complete full reading wrong', () => {
+    const route = gradeOf(
+      fdxReading(
+        (reading) =>
+          edited(
+            reading.fullRoute,
+            reading.fullRouteWords,
+            `${reading.fullRouteWords}, then as filed`,
+          ),
+        'full',
+      ),
+      'R.route',
+    );
+    expect(route.verdict).toBe('wrong');
+    expect(idsOf(route)).toContain('R-FRC');
+    expect(route.remarks).toContain(FRC_REMARK);
+  });
+
+  it('cites R-FRC on a partial reading that ends on "then as filed"', () => {
+    const route = gradeOf(
+      fdxReading(
+        (reading) =>
+          edited(reading.fullRoute, reading.fullRouteWords, handedOver(reading.fullRouteWords)),
+        'full',
+      ),
+      'R.route',
+    );
+    expect(route.verdict).toBe('wrong');
+    expect(idsOf(route)).toContain('R-FRC');
+    expect(route.remarks).toContain(FRC_REMARK);
+    expect(route.remarks.length).toBeGreaterThan(1);
+  });
+
+  it('leaves a full reading with a dropped fix to its missed words, with no FRC remark', () => {
+    const { spoken } = settledReading(FDX_PRACTICE);
+    const { unit, fix } = midRouteUnit(spoken.fullRouteWords);
+    const route = gradeOf(
+      fdxReading((reading) => edited(reading.fullRoute, `${unit}, `, ''), 'full'),
+      'R.route',
+    );
+    expect(route.verdict).toBe('wrong');
+    expect(route.remarks).not.toContain(FRC_REMARK);
+    expect(idsOf(route)).toContain('R-FRC');
+    expect(missedWords(route)).toContain(fix);
+  });
+
+  it('gives a tie between the two readings to the full route', () => {
+    const reading = settledReading(FDX_PRACTICE);
+    const said = readingWithout(reading, 'R.route');
+    const route = gradeOf(
+      gradeText(said, reading.spoken, reading.clearance, reading.airport, 'full'),
+      'R.route',
+    );
+    expect(route.verdict).toBe('wrong');
+    expect(route.actualLabel).toBe('(not heard)');
+    expect(route.remarks).toEqual(['not heard']);
+    expect(route.expectedLabel).toBe(reading.spoken.fullRouteWords);
+  });
+
+  it('cites R-FRC and never R-THEN-AS-FILED on a full route clearance', () => {
+    const { airport, clearance: resolved, spoken } = settledReading(FDX_PRACTICE);
+    const asFiled: ResolvedClearance = {
+      ...resolved,
+      route: {
+        ...resolved.route,
+        citations: [...resolved.route.citations, ...citePhraseology(airport, 'R-THEN-AS-FILED')],
+      },
+    };
+    const full = gradeOf(gradeText(spoken.fullRoute, spoken, asFiled, airport, 'full'), 'R.route');
+    expect(idsOf(full)).toContain('R-FRC');
+    expect(idsOf(full)).not.toContain('R-THEN-AS-FILED');
+    const abbreviated = gradeOf(
+      gradeText(spoken.abbreviated, spoken, asFiled, airport, 'abbreviated'),
+      'R.route',
+    );
+    expect(idsOf(abbreviated)).toContain('R-THEN-AS-FILED');
+    expect(idsOf(abbreviated)).not.toContain('R-FRC');
+  });
+
   it('holds a route with nothing after its transition to the same words either way', () => {
     const speakInput = input({ filedRoute: 'TRUKN2 DEDHD' });
     const spoken = speakClearance(speakInput);
     expect(spoken.fullRoute).toBe(spoken.abbreviated);
     const grades = gradedAs(spoken.abbreviated, 'full', speakInput);
     expect(gradeOf(grades, 'R.route').verdict).toBe('correct');
-    expect(grades).toEqual(gradedAs(spoken.abbreviated, 'abbreviated', speakInput));
+    expect(idsOf(gradeOf(grades, 'R.route'))).toContain('R-FRC');
+    expect(withoutFrc(grades)).toEqual(gradedAs(spoken.abbreviated, 'abbreviated', speakInput));
   });
 });
 

@@ -233,6 +233,49 @@ describe('an amendment scenario', () => {
     ).toStrictEqual(elements.map((element) => `${element} correct`));
   });
 
+  /** One verdict of an amendment session, whichever way the clearance was answered. */
+  type AmendmentGrade = ReturnType<typeof amendmentGrades>[number];
+
+  /** The route verdict of an amendment session. */
+  function routeGrade(grades: readonly AmendmentGrade[]): AmendmentGrade {
+    const found = grades.find((one) => one.element === 'R.route');
+    if (found === undefined) throw new Error('the session graded no route');
+    return found;
+  }
+
+  it("holds an amendment's typed clearance to the full route while full route is ticked", () => {
+    const seed = SEEDS.find((candidate) => {
+      const { drawn, clearance } = amendmentOf(candidate);
+      const { amendments, corrected } = drawn.result;
+      if (amendments.length === 0 || amendments.some((one) => one.alternativeTo !== undefined)) {
+        return false;
+      }
+      const spoken = spokenFor(corrected, drawn.filed, clearance, airport);
+      return spoken.fullRoute !== spoken.abbreviated;
+    });
+    if (seed === undefined) {
+      throw new Error('no seed of 1 to 20 amends a plan whose route is handed over as filed');
+    }
+    const { drawn, clearance } = amendmentOf(seed);
+    const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
+    const session = {
+      drawn,
+      cleared: { plan: drawn.result.corrected, clearance },
+      airport,
+      answers: correctedAnswers(drawn.result.amendments),
+      routeReading: 'full',
+    } as const;
+    const handedOver = routeGrade(
+      amendmentGrades({ ...session, answer: { input: 'text', text: spoken.abbreviated } }),
+    );
+    expect(handedOver.verdict, `seed ${seed}: ${spoken.abbreviated}`).toBe('wrong');
+    expect(handedOver.citations.map((citation) => citation.id)).toContain('R-FRC');
+    const readInFull = routeGrade(
+      amendmentGrades({ ...session, answer: { input: 'text', text: spoken.fullRoute } }),
+    );
+    expect(readInFull.verdict, `seed ${seed}: ${spoken.fullRoute}`).toBe('correct');
+  });
+
   /**
    * An amendment view whose route amendment proposes a route no navaid data resolves, so the plan
    * a student who takes every amendment writes cannot be cleared.

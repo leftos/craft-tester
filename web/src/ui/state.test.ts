@@ -737,6 +737,37 @@ describe('answering by typing the clearance out', () => {
     expect(unticked.fullRoute).toBe(false);
   });
 
+  it('shows a remembered full route attempt back and starts the answer again', () => {
+    const previous: Attempt = { kind: 'clearance', input: 'text', text: TYPED };
+    const ticked = withFullRoute(withText(clearance('text'), TYPED), true, previous);
+    expect(ticked.fullRoute).toBe(true);
+    expect(ticked.text).toBe('');
+    expect(ticked.revisit).toStrictEqual(previous);
+    expect(ticked.submitted).toBe(false);
+    expect(phaseOf(ticked)).toBe('clearance-revisit');
+  });
+
+  it('goes back to the form when full route is toggled on a submitted answer', () => {
+    const submitted = withSubmitted(withText(clearance('text'), TYPED));
+    expect(phaseOf(submitted)).toBe('clearance-results');
+    const ticked = withFullRoute(submitted, true, undefined);
+    expect(ticked.fullRoute).toBe(true);
+    expect(ticked.submitted).toBe(false);
+    expect(ticked.text).toBe(TYPED);
+    expect(phaseOf(ticked)).toBe('clearance-form');
+  });
+
+  it('carries full route into a new mode and a new filter', () => {
+    const night: ScenarioFilter = { time: 'night', config: { kind: 'plan', plan: 'SFOE' } };
+    const ticked = withFullRoute(clearance('text'), true, undefined);
+    const amended = withMode(ticked, 'amendment', AMENDMENT_SEED, undefined);
+    expect(amended.fullRoute).toBe(true);
+    expect(amended.input).toBe('text');
+    const filtered = withFilter(ticked, night, CLEARANCE_SEED, undefined);
+    expect(filtered.fullRoute).toBe(true);
+    expect(filtered.input).toBe('text');
+  });
+
   it('reads a ticked full route as the full reading, and anything else as the abbreviated one', () => {
     const typing = clearance('text');
     expect(routeReadingOf(typing)).toBe('abbreviated');
