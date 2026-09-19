@@ -62,10 +62,15 @@ The row, after `R-FULL-ROUTE` in `generator/shared/phraseology_rules.yaml`:
 Brief 1 — the row and the grader (`generator/shared/`, `generator/tests/test_sop_load.py`, `data/*.json`,
 `web/src/rules/text/grade.ts` and its test, the two call sites passing `'abbreviated'`):
 
-- [ ] 1. `R-FRC` in `phraseology_rules.yaml`, `SHARED_PHRASEOLOGY_IDS`, both airports rebuilt
-- [ ] 2. `gradeText(…, routeReading)`, the candidates, tiers, remark and `expected:` under `'full'`
+- [x] 1. `R-FRC` in `phraseology_rules.yaml`, `SHARED_PHRASEOLOGY_IDS`, both airports rebuilt
+- [x] 2. `gradeText(…, routeReading)`, the candidates, tiers, remark and `expected:` under `'full'` —
+  `85b6e78`. The miss is keyed by a predicate (`handsOverRoute`: the chosen reading's route words differ
+  from the full route), so a route with nothing to hand over grades the same under both readings. Under
+  `'full'` a handed-over route shows the whole full route as `expected:` in one unmarked run: marking the
+  words never said would take a second alignment
 
-Brief 2 — the switch (`scenario/filter.ts`, `ui/state.ts`, `ui/preferences.ts`, `ui/solved.ts`, `ui/dom.ts`,
+Brief 2, dispatched as 2a (steps 3–4, plus a corpus test: every settled fixture read in full is right
+under `'full'`, and its shorter reading is `R-FRC`) and 2b (steps 5–6) — the switch (`scenario/filter.ts`, `ui/state.ts`, `ui/preferences.ts`, `ui/solved.ts`, `ui/dom.ts`,
 `ui/app.ts`, `ui/amendPanels.ts`, `ui/strip.ts`, `ui/results.ts`, `scripts/browser-check.ts`):
 
 - [ ] 3. The setting, the hash part, the preference, the solved key

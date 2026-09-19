@@ -33,8 +33,9 @@ design and the steps: [full-route-clearance.md](./full-route-clearance.md). Gate
 - [ ] **A full route clearance mode** (AJ Norell and the user, 2026-09-18): a header checkbox, typed answers
   only, both modes; with it ticked the route is read to its end, "then as filed" is wrong (`R-FRC`,
   7110.65 4-3-3 b and g 1), and the strip shows `FRC` as its first remark
-  - [ ] Brief 1: the `R-FRC` row and `gradeText`'s `routeReading` (steps 1–2)
-  - [ ] Brief 2: the setting, the checkbox, the strip, the reveal, `check:<label>` (steps 3–6)
+  - [x] Brief 1: the `R-FRC` row and `gradeText`'s `routeReading` (steps 1–2) — `85b6e78` on `full-route`
+  - [ ] Brief 2a: the setting, the hash, the preference, the solved key, the checkbox (steps 3–4)
+  - [ ] Brief 2b: the strip, the reveal, `check:<label>`, the browser runs (steps 5–6)
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
