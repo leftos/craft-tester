@@ -37,10 +37,14 @@ const documents = import.meta.glob<unknown>('../../../../fixtures/**/*.json', {
   import: 'default',
 });
 
-const settledClearances: Fixture[] = Object.values(documents)
+/** Every fixture the glob loads and the schema parses, whatever mode it is written for. */
+const parsedFixtures: Fixture[] = Object.values(documents)
   .map((json) => FixtureSchema.safeParse(json))
-  .flatMap((parsed) => (parsed.success ? [parsed.data] : []))
-  .filter((fixture) => fixture.mode === 'clearance' && fixture.status === 'settled');
+  .flatMap((parsed) => (parsed.success ? [parsed.data] : []));
+
+const settledClearances: Fixture[] = parsedFixtures.filter(
+  (fixture) => fixture.mode === 'clearance' && fixture.status === 'settled',
+);
 
 /** The elements a typed clearance is graded on, in the order `gradeText` returns them. */
 const ELEMENTS: readonly ClearanceElement[] = [
@@ -100,6 +104,28 @@ function settledReading(id: string): RealReading {
   const fixture = settledClearances.find((candidate) => candidate.id === id);
   if (fixture === undefined) throw new Error(`${id} is not a settled clearance fixture`);
   return realReading(fixture);
+}
+
+/** A fixture of any mode, by id, resolved and spoken for real. */
+function fixtureReading(id: string): RealReading {
+  const fixture = parsedFixtures.find((candidate) => candidate.id === id);
+  if (fixture === undefined) throw new Error(`${id} is not a fixture under fixtures/`);
+  return realReading(fixture);
+}
+
+/** The abbreviated reading with one element's words cut out of it, however they are capitalised. */
+function readingWithout(reading: RealReading, element: ClearanceElement): string {
+  const { abbreviated, parts } = reading.spoken;
+  const words = parts.find((part) => part.element === element)?.words;
+  if (words === undefined) throw new Error(`${reading.fixture.id}: the reading has no ${element}`);
+  const at = abbreviated.toLowerCase().indexOf(words.toLowerCase());
+  if (at === -1) throw new Error(`${reading.fixture.id}: "${words}" is not in "${abbreviated}"`);
+  return abbreviated.slice(0, at) + abbreviated.slice(at + words.length);
+}
+
+/** A text graded against a fixture's own reading and clearance. */
+function gradedAgainst(reading: RealReading, text: string): TextGrade[] {
+  return gradeText(text, reading.spoken, reading.clearance, reading.airport);
 }
 
 /** The elements whose verdict is not the one wanted, each with what was said and expected. */
@@ -660,5 +686,45 @@ describe('the expected words of a typed grade', () => {
   it('joins, alternates and marks nothing over every settled reading', () => {
     expect(settledClearances.length).toBeGreaterThan(0);
     expect(settledClearances.flatMap((fixture) => expectedCorpusProblems(fixture))).toEqual([]);
+  });
+});
+
+/** The settled fixtures whose expect clause ends on the word the frequency opens with. */
+const AFTER_DEPARTURE_READINGS: readonly string[] = [
+  'syn-koak-rnav-elements-b738w-klas',
+  'ws-koak-amendment-practice-2-fdx3875',
+  'ws-koak-amendment-practice-2-jsx203',
+  'ws-koak-amendment-practice-2-n858ee',
+];
+
+/** The one of those readings the word-level tests type against. */
+const RNAV_ELEMENTS = 'syn-koak-rnav-elements-b738w-klas';
+
+describe('gradeText where the expect clause ends on the word the frequency opens with', () => {
+  it.each(AFTER_DEPARTURE_READINGS)(
+    'an expect clause left out costs the expect clause alone (%s)',
+    (id) => {
+      const reading = fixtureReading(id);
+      const grades = gradedAgainst(reading, readingWithout(reading, 'A.expect'));
+      expect(misgraded(grades, { 'A.expect': 'wrong' })).toEqual([]);
+      expect(gradeOf(grades, 'A.expect').actualLabel.toLowerCase()).not.toContain('departure');
+    },
+  );
+
+  it('the departure frequency keeps its own words when the expect clause is said', () => {
+    const reading = fixtureReading(RNAV_ELEMENTS);
+    const grades = gradedAgainst(reading, reading.spoken.abbreviated);
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(gradeOf(grades, 'F').actualLabel).toMatch(/^Departure frequency/u);
+  });
+
+  it('adjacent words stay with their element', () => {
+    const reading = fixtureReading(RNAV_ELEMENTS);
+    const typed = edited(
+      readingWithout(reading, 'A.expect'),
+      'Departure frequency',
+      'departure frequency',
+    );
+    expect(gradeOf(gradedAgainst(reading, typed), 'F').verdict).toBe('correct');
   });
 });

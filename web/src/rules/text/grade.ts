@@ -331,43 +331,91 @@ function sameAt(
   return said !== undefined && wanted !== undefined && same(said, wanted, vocabulary);
 }
 
-/** The longest common subsequence lengths over every pair of suffixes, as a lookup. */
-function suffixLengths(
+/** How well an alignment does: the matches it makes, and how many of them follow another match. */
+type Score = { matches: number; adjacent: number };
+
+/** The score of an alignment that matches nothing. */
+const NO_MATCHES: Score = { matches: 0, adjacent: 0 };
+
+/** Ranks two scores: more matches wins, and among equals more adjacent matches. */
+function compareScores(a: Score, b: Score): number {
+  return a.matches - b.matches || a.adjacent - b.adjacent;
+}
+
+/** The better of two scores, the first winning a tie. */
+function better(a: Score, b: Score): Score {
+  return compareScores(b, a) > 0 ? b : a;
+}
+
+/** A suffix's score with one more match at its head, which is adjacent after a matched pair. */
+function withMatch(rest: Score, afterMatch: boolean): Score {
+  return { matches: rest.matches + 1, adjacent: rest.adjacent + (afterMatch ? 1 : 0) };
+}
+
+/**
+ * The best score of every pair of suffixes, in both states, as a lookup.
+ *
+ * `afterMatch` says the pair before the cell is a match, which is what a match at the cell needs to
+ * be adjacent to, so the two states are scored side by side: the same suffixes score differently
+ * depending on whether the match at their head has a match behind it.
+ */
+type SuffixScores = (i: number, j: number, afterMatch: boolean) => Score;
+
+function suffixScores(
   student: readonly SpokenToken[],
   candidate: readonly CandidateToken[],
   vocabulary: ReadonlySet<string>,
-): (i: number, j: number) => number {
+): SuffixScores {
   const width = candidate.length + 1;
-  const table = Array.from({ length: (student.length + 1) * width }, () => 0);
-  const at = (i: number, j: number): number => table[i * width + j] ?? 0;
+  const size = (student.length + 1) * width;
+  const joined = Array.from({ length: size }, () => NO_MATCHES);
+  const alone = Array.from({ length: size }, () => NO_MATCHES);
+  const at: SuffixScores = (i, j, afterMatch) =>
+    (afterMatch ? joined : alone)[i * width + j] ?? NO_MATCHES;
   for (let i = student.length - 1; i >= 0; i -= 1) {
     for (let j = candidate.length - 1; j >= 0; j -= 1) {
-      const matched = sameAt(student, candidate, i, j, vocabulary) ? 1 + at(i + 1, j + 1) : 0;
-      table[i * width + j] = Math.max(matched, at(i + 1, j), at(i, j + 1));
+      const skipped = better(at(i + 1, j, false), at(i, j + 1, false));
+      const rest = sameAt(student, candidate, i, j, vocabulary)
+        ? at(i + 1, j + 1, true)
+        : undefined;
+      joined[i * width + j] = rest === undefined ? skipped : better(withMatch(rest, true), skipped);
+      alone[i * width + j] = rest === undefined ? skipped : better(withMatch(rest, false), skipped);
     }
   }
   return at;
 }
 
-/** Aligns the student tokens with a candidate's as a longest common subsequence, earliest match first. */
+/**
+ * Aligns the student tokens with a candidate's, as many of them matched as can be.
+ *
+ * Among the alignments that match the most tokens, the one with the most adjacent matches wins: two
+ * neighbouring typed words that say two neighbouring words of the reading belong together, so a word
+ * the reading says twice goes to the placement its neighbour speaks as well. Full ties go to the
+ * earliest match.
+ */
 function align(
   student: readonly SpokenToken[],
   candidate: readonly CandidateToken[],
   vocabulary: ReadonlySet<string>,
 ): Pair[] {
-  const at = suffixLengths(student, candidate, vocabulary);
+  const at = suffixScores(student, candidate, vocabulary);
   const pairs: Pair[] = [];
   let i = 0;
   let j = 0;
+  let afterMatch = false;
   while (i < student.length && j < candidate.length) {
-    if (sameAt(student, candidate, i, j, vocabulary) && at(i, j) === 1 + at(i + 1, j + 1)) {
+    const taken = sameAt(student, candidate, i, j, vocabulary)
+      ? withMatch(at(i + 1, j + 1, true), afterMatch)
+      : undefined;
+    if (taken !== undefined && compareScores(taken, at(i, j, afterMatch)) === 0) {
       pairs.push({ student: i, candidate: j });
       i += 1;
       j += 1;
-    } else if (at(i + 1, j) >= at(i, j + 1)) {
-      i += 1;
+      afterMatch = true;
     } else {
-      j += 1;
+      if (compareScores(at(i + 1, j, false), at(i, j + 1, false)) >= 0) i += 1;
+      else j += 1;
+      afterMatch = false;
     }
   }
   return pairs;
