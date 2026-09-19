@@ -242,10 +242,10 @@ describe('grade', () => {
     };
     const [route] = grade(picks, airway);
     expect(route?.verdict).toBe('correct');
-    expect(route?.expectedLabel).toBe('radar vectors to join V6 airway');
+    expect(route?.expectedLabel).toBe('radar vectors to join V6');
     const [wrongAirway] = grade({ ...picks, routeFix: 'V244' }, airway);
     expect(wrongAirway?.verdict).toBe('wrong');
-    expect(wrongAirway?.actualLabel).toBe('radar vectors to join V244 airway');
+    expect(wrongAirway?.actualLabel).toBe('radar vectors to join V244');
   });
 
   it('ignores the feet on a plain climb via SID', () => {

@@ -840,22 +840,23 @@ describe('gradeText on a field typed as its code', () => {
 const AIRWAY_PRACTICE = 'ws-koak-phraseology-practice-2-n436ms';
 
 describe('gradeText on the airway a clearance is vectored to join', () => {
-  it('grades the joined airway said with its word correct', () => {
+  it('grades the joined airway said bare correct', () => {
     const reading = settledReading(AIRWAY_PRACTICE);
-    expect(reading.spoken.abbreviated).toContain('radar vectors to join Victor six airway');
+    expect(reading.spoken.abbreviated).toContain('radar vectors to join Victor six');
+    expect(reading.spoken.abbreviated).not.toContain('Victor six airway');
     const grades = gradedAgainst(reading, reading.spoken.abbreviated);
     expect(misgraded(grades, {})).toEqual([]);
     expect(gradeOf(grades, 'R.route').remarks).toEqual([]);
   });
 
-  it('misses the word "airway" left off the joined airway', () => {
+  it('keeps the word "airway" said after the joined airway filler', () => {
     const reading = settledReading(AIRWAY_PRACTICE);
     const grades = gradedAgainst(
       reading,
-      edited(reading.spoken.abbreviated, 'Victor six airway', 'Victor six'),
+      edited(reading.spoken.abbreviated, 'Victor six', 'Victor six airway'),
     );
-    expect(misgraded(grades, { 'R.route': 'wrong' })).toEqual([]);
-    expect(gradeOf(grades, 'R.route').remarks).toEqual(['missed: "airway"']);
+    expect(misgraded(grades, { 'R.route': 'acceptable' })).toEqual([]);
+    expect(idsOf(gradeOf(grades, 'R.route'))).toContain('S-FILLER');
   });
 
   it('keeps the word said after an airway that connects two fixes filler', () => {
