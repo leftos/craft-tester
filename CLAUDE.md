@@ -45,13 +45,14 @@ network. CI does not run `craft-gen build`; `build --check` is a local step befo
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
 then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
 survive pnpm on Windows), runs the actions (`fill:<n>` counts text inputs and textareas together, in page order;
-`press:Enter` presses a key on whatever has focus; `scroll:600` scrolls the page down to that offset), and writes the
+`press:Enter` presses a key on whatever has focus; `check:full route` ticks the checkbox of that label;
+`scroll:600` scrolls the page down to that offset), and writes the
 page text, selects, buttons, console errors, whether the page scrolls sideways, a full-page screenshot and a `-view`
 screenshot of the viewport alone to `.tmp/browser-check/`. Only the `-view` shot shows what stays pinned after a
 scroll; the printed `stripTop` is the flight-plan panel's top edge in the viewport, `0` while it is pinned. The hash carries the airport in
 its `a=<ICAO>` part (every link the app writes has one; a missing or unknown one opens the first airport of the
 index) and takes an undocumented `d=<ICAO>` part that forces the drawn destination in both modes
-(`s=4,a=KOAK,d=KSMF,m=amend`; `i=text` opens the typing box), so a destination is checked directly instead of drawing until the RNG lands on
+(`s=4,a=KOAK,d=KSMF,m=amend`; `i=text` opens the typing box, `r=full` opens it held to the full route), so a destination is checked directly instead of drawing until the RNG lands on
 it; it is never shown in the UI or remembered. `CRAFT_PREVIEW_URL` points the run at another preview
 (`pnpm -C web preview --port 4174` plus `CRAFT_PREVIEW_URL=http://localhost:4174/craft-tester/`), so two builds
 can be checked side by side. A button with no text lists by its `aria-label`, which is how the icon buttons read.

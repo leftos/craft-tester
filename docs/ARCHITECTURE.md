@@ -67,7 +67,7 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 | `data/` | zod schema, loader |
 | `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/routeBuild.ts` route-builds for both engines: before the vector-SID fallback a filed SID whose transition, or own end fix, connects onward to the filed route over `routeConnections` (or a row's forced transition), and before a heading any passed-over SID that does, in amendment mode and in clearance mode alike; its `buildToArrival` runs the same breadth-first search from several sources to a preference-ordered set of arrival entry fixes. `rules/amend/` checks the three strip boxes; `rules/amend/arrival.ts` is the last step of the route check: every proposed box is held against the LOA route rows and, at a destination the ZOA common-arrivals sheet lists, against the flight's equipment, and a flight on the wrong arrival is routed onto one it can fly at an entry fix the sheet, the LOA or the chart names, the amendment carrying `arrivalSwap` (the box without that change) for half credit. `rules/text/` reads a typed clearance: `normalise.ts` turns text into words and numbers that record how each number was said (figures, digits, group form, "nine", a restatement), with identifiers, typed in any case, expanded through the airport's lexicon; `grade.ts` `gradeText` aligns that against the parts of the engine's reading (`speakClearance().parts`) and grades C, R.sid, R.route, A.phrase, A.expect, F, T and RWY, each with what was said for it as runs (filler marked), citing the `S-*` rows and the free-text `R-*` rows (see "Free-text grading" below) |
 | `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`; a draw is kept only when the amendment engine finds nothing to amend), amendment-scenario generator (`amend.ts`: up to two faults injected into a clean draw, kept only when the engine amends exactly the boxes they meant), time-of-day, runway-configuration and forced-destination filters in the URL hash, beside the mode (`m=amend`) and the input kind (`i=text`, typed answers; the dropdowns write no part) |
-| `ui/` | header with the mode switch, the answer switch (dropdowns or typed) and the filters, strip, ATIS panel, CRAFT form, typing box (`textForm.ts`), the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort, one key per airport, mode, input kind and seed), remembered filter and input kind (`preferences.ts`). **Render model:** the panels are built again only when the view key changes — airport, seed, filter, mode, input kind and phase (`state.ts`, `viewKey`/`phaseOf`, the latter shared by the panel dispatcher so the two cannot drift) — and every other change is written into the controls already on screen by the `sync` each form returns beside its node. Within one phase the answer form is the only thing that varies: the strips and ATIS follow the scenario, the verdicts read boxes frozen at submit, and the option lists come from `buildOptions`, which is pure in the scenario. That is why a keystroke or a pick leaves its control in place, with its focus and caret, and why no focus-restoring workaround is needed |
+| `ui/` | header with the mode switch, the answer switch (dropdowns or typed), the full route checkbox and the filters, strip, ATIS panel, CRAFT form, typing box (`textForm.ts`), the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort, one key per airport, mode, input kind, reading held to and seed), remembered filter, input kind and full route choice (`preferences.ts`). **Render model:** the panels are built again only when the view key changes — airport, seed, filter, mode, input kind, full route flag and phase (`state.ts`, `viewKey`/`phaseOf`, the latter shared by the panel dispatcher so the two cannot drift) — and every other change is written into the controls already on screen by the `sync` each form returns beside its node. Within one phase the answer form is the only thing that varies: the strips and ATIS follow the scenario, the verdicts read boxes frozen at submit, and the option lists come from `buildOptions`, which is pure in the scenario. That is why a keystroke or a pick leaves its control in place, with its focus and caret, and why no focus-restoring workaround is needed |
 | `../scripts/` | Node scripts outside the bundle: `propose.ts` (the engine's clearance for a fixture, with citations), `export-schema.ts`, `browser-check.ts` (Playwright, forced viewport) |
 
 Every engine output element carries `RuleCitation[]` pointing at the data rows that decided it; the results
@@ -252,8 +252,27 @@ remembered per browser. The dropdowns stay, and the student chooses.
   (`TextGrade.expected`: runs cut from the winning candidate's own words for the element). The words
   never said are marked, but only where the element is wrong and some of it was heard: an element not
   heard at all, or said out of order, marks nothing, because marking every word says nothing.
-- **State.** `AppState.input` and `AppState.text` hold the input kind and the typed clearance. Typed
-  attempts are remembered under their own keys and re-graded on revisit.
+- **Full route clearance.** The header's "full route" checkbox holds the student to the route read to its
+  end (user rulings 2026-09-18). It is a typed-answer setting: the dropdown form's route element is one
+  transition pick and cannot hold a route, so ticking the box answers by typing and choosing the dropdowns
+  unticks it. It applies in both halves, rides in the hash as `r=full` (a link carrying it opens typed; a link
+  with `i=text` alone opens unticked, so a shared link grades the same for whoever opens it) and is remembered
+  per browser. `gradeText` takes the reading as a required `RouteReading`. Under `'full'` the full reading is
+  the first candidate and is simply right. A handover grades `R.route` wrong with the remark `"then as
+  filed" said on a full route clearance`, however it was typed: either the winning reading's route words are
+  not the full route's (the abbreviated reading, or a closing "then as filed"), or the student said "filed"
+  at all, since a clearance says it nowhere else. `expected:` is then the whole route in one unmarked run,
+  since marking the words never said would take a second alignment. `R-FRC` (7110.65 4-3-3 b and g 1) is
+  the deciding row and is cited on `R.route` under `'full'` right or wrong, in place of the
+  `R-THEN-AS-FILED` row amendment mode adds, which says the opposite. A route with nothing to hand over
+  grades the same under both readings, and `R-FULL-ROUTE` and `R-THEN-AS-FILED-END` are cited only under
+  `'abbreviated'`. Every strip drawn while
+  the box is ticked carries `FRC` as its first remark (`StripMarks.frc`; the scenario is untouched), and the
+  reveal shows the full reading alone. A corpus test reads every settled fixture in full as right and its
+  shorter reading as `R-FRC`.
+- **State.** `AppState.input`, `AppState.fullRoute` and `AppState.text` hold the input kind, the reading the
+  student is held to and the typed clearance. Typed attempts are remembered under their own keys, a full
+  route attempt apart from a plain typed one (`:text:frc`), and re-graded on revisit.
 
 ## Fixture lifecycle
 

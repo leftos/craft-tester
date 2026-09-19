@@ -18,24 +18,12 @@ finished subplans behind them are in `archive/`.
 
 **State 2026-09-18.** Both airports are live. Tester feedback from AJ Norell (typed spelling, what a red
 row says, the pinned strip) landed the same day and left nothing open; the user's own typed-answer reports
-(names, case, joined numbers, spelt identifiers) landed after it, and AJ's full-route-clearance mode is
-the current focus ("Now"). The generator-data wave closed 2026-09-18 with the TEC
+(names, case, joined numbers, spelt identifiers) landed after it, and AJ's full-route-clearance mode
+landed the same day as a header checkbox. The generator-data wave closed 2026-09-18 with the TEC
 override ([archive/tec-override.md](./archive/tec-override.md)). KOAK is closed at 51 of 51 fixtures
 settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17.
-
-## Now — Full route clearance mode (`web/src/rules/`, `web/src/ui/`, `shared/phraseology_rules.yaml`)
-
-Prioritised by the user 2026-09-18, ahead of the waves. Subplan with the four rulings, the citation, the
-design and the steps: [full-route-clearance.md](./full-route-clearance.md). Gate: aviation + UI.
-
-- [ ] **A full route clearance mode** (AJ Norell and the user, 2026-09-18): a header checkbox, typed answers
-  only, both modes; with it ticked the route is read to its end, "then as filed" is wrong (`R-FRC`,
-  7110.65 4-3-3 b and g 1), and the strip shows `FRC` as its first remark
-  - [x] Brief 1: the `R-FRC` row and `gradeText`'s `routeReading` (steps 1–2) — `85b6e78` on `full-route`
-  - [ ] Brief 2a: the setting, the hash, the preference, the solved key, the checkbox (steps 3–4)
-  - [ ] Brief 2b: the strip, the reveal, `check:<label>`, the browser runs (steps 5–6)
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -81,7 +69,17 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
-  `cifp/cycle.py`
+  `cifp/cycle.py`. Mapped 2026-09-18: `build` fetches everything it needs through the cache and takes one
+  `--airport` at a time (loop over `data/airports.json`); its output is byte-stable, so a PR diff is the
+  cycle's real changes; actions are pinned by full sha with `persist-credentials: false`. **Two decisions
+  for the user before a brief**: the repo has no PR-opening pattern (no workflow holds
+  `pull-requests: write`; pick the token and the action), and `build` verifies the SOP PDF, which
+  ADDING_AN_AIRPORT.md says is placed in the cache by hand, so an unattended runner may not be able to
+  build. Also undecided: `build` without `--cycle` takes the cycle containing today, which can 404 on
+  the effective date if the FAA publishes late
+- [ ] **ADDING_AN_AIRPORT.md says CI runs `craft-gen build --check`; it does not** (`ci.yml` runs only
+  `import-worksheets --check` over the network). Correct the runbook, or add the step once the AIRAC
+  workflow settles how CI reaches the cache
 - [ ] **Playtest observation awaiting a ruling** (2026-09-16, still true): the standing `SFO-SEGUL-OFF`
   notice is `default_active: true` and notices are cancelled only 20% of draws (`NOTICES_OFF_CHANCE`), so it
   is in force on 80% of scenarios. Is that too often? (The second observation, the on-request draw, was
@@ -169,3 +167,4 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] A results row says what was wrong; the remark labels are matcher constants, not YAML rows — `ae2218d`
 - [x] Typed names: any case, full/short/also field names, joined numbers, `R-RV-AIRWAY`, spelt fixes — `b3d2405`, `17c68b7`, `7763420`, `4cc29fe` ([archive/typed-names.md](./archive/typed-names.md))
 - [x] Cleanup after typed names: the joined-airway label says "airway"; an unread field goes — `25ff3d7`
+- [x] Full route clearance mode (AJ Norell and the user): a typed-answer checkbox in both modes, `R-FRC`, `FRC` on the strip, `r=full` — `458fe43` ([archive/full-route-clearance.md](./archive/full-route-clearance.md))

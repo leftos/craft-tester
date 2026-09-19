@@ -1,4 +1,4 @@
-# Full route clearance mode
+# Full route clearance mode (landed 2026-09-18)
 
 AJ Norell asked for it 2026-09-18 and the user agreed: "I should have a proper full route clearance mode",
 then defined it the same day: "the same as our current clearances, but with a checkbox so that the student
@@ -73,10 +73,22 @@ Brief 2, dispatched as 2a (steps 3–4, plus a corpus test: every settled fixtur
 under `'full'`, and its shorter reading is `R-FRC`) and 2b (steps 5–6) — the switch (`scenario/filter.ts`, `ui/state.ts`, `ui/preferences.ts`, `ui/solved.ts`, `ui/dom.ts`,
 `ui/app.ts`, `ui/amendPanels.ts`, `ui/strip.ts`, `ui/results.ts`, `scripts/browser-check.ts`):
 
-- [ ] 3. The setting, the hash part, the preference, the solved key
-- [ ] 4. The header checkbox, wired to both graders
-- [ ] 5. `FRC` on the strip; the reveal's single box
-- [ ] 6. `check:<label>` in the browser check, then a phone and a desktop run in both modes
+- [x] 3. The setting, the hash part, the preference, the solved key — `2d49288`
+- [x] 4. The header checkbox, wired to both graders — `2d49288`
+- [x] 5. `FRC` on the strip; the reveal's single box — `445be7f`
+- [x] 6. `check:<label>` in the browser check, then a phone and a desktop run in both modes — `445be7f`; four
+  runs, none scrolls sideways, no console errors
 
-Orchestrator after brief 2: ARCHITECTURE.md "Free-text grading" and the `ui/` row, CLAUDE.md's
-`check:browser` paragraph (`check:` and `r=full`), MAIN.md, this file to `archive/`.
+Brief 3 — the review of `f4999db..445be7f` (read-only, 2026-09-18). No defect in the invariant or the solved
+keys. In the grader, `R-FRC` was reached only by a perfectly typed handover, and amendment mode still cited
+`R-THEN-AS-FILED`:
+
+- [x] 7. (`20d5af4`) A handover is the winning reading handing the route over **or** the student saying "filed" at all;
+  it grades `R.route` wrong with `R-FRC` and the remark whether or not every token matched. Under `'full'`
+  `R-FRC` is always cited on `R.route` and `R-THEN-AS-FILED` never is
+- [x] 8. (`20d5af4`) The tests the review found missing: amendment mode graded under `'full'`, the imperfect readings,
+  `withFullRoute` with a remembered attempt and on a submitted answer, the two `opensFullRoute` branches,
+  a revisit under the `:text:frc` scope. Declined: an `uncheck:` verb (nothing needs it)
+
+Merged to main as `458fe43` on 2026-09-18. The design now lives in ARCHITECTURE.md "Free-text grading"
+(the "Full route clearance" bullet) and the `ui/` module row; `check:<label>` and `r=full` are in CLAUDE.md.
