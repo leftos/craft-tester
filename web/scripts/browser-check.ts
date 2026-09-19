@@ -13,6 +13,7 @@
  *   fill:<index>=<text>      type into the n-th text field (text inputs and textareas, in page order)
  *   press:<key>              press a key on whatever has focus, e.g. `press:Enter` after a `fill`
  *   click:<button text>      press the button with that text
+ *   check:<label>            tick the checkbox that reads that label
  *   scroll:<pixels>          scroll the page down to that offset
  *
  * The page's text, its selects, inputs and buttons, every console error, and whether it scrolls
@@ -49,7 +50,7 @@ type Report = {
   overflowing: string[];
   text: string;
   selects: { value: string; options: string[] }[];
-  inputs: { type: string; value: string }[];
+  inputs: { type: string; value: string; checked: boolean }[];
   buttons: string[];
   errors: string[];
 };
@@ -60,6 +61,9 @@ function isViewportName(value: string): value is ViewportName {
 
 function usage(): never {
   console.error('usage: pnpm -C web check:browser <name> <hash> [phone|desktop] [action...]');
+  console.error(
+    'actions: select:<n>=<label> fill:<n>=<text> press:<key> click:<text> check:<label> scroll:<px>',
+  );
   process.exit(2);
 }
 
@@ -102,6 +106,8 @@ for (const action of actions) {
     await page.keyboard.press(rest);
   } else if (kind === 'click') {
     await page.getByRole('button', { name: rest }).first().click();
+  } else if (kind === 'check') {
+    await page.getByRole('checkbox', { name: rest }).first().check();
   } else if (kind === 'scroll') {
     await page.evaluate((top) => window.scrollTo(0, top), Number(rest));
   } else {
@@ -139,7 +145,11 @@ const recorded = await page.evaluate(() => {
     })),
     inputs: [
       ...document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'),
-    ].map((input) => ({ type: input.type, value: input.value })),
+    ].map((input) => ({
+      type: input.type,
+      value: input.value,
+      checked: input instanceof HTMLInputElement && input.checked,
+    })),
     buttons: [...document.querySelectorAll('button')].map(
       (button) => button.textContent?.trim() || button.getAttribute('aria-label') || '',
     ),

@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { InputKind, Mode } from '@/scenario/filter.ts';
+import type { InputKind, Mode, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { procedureOf } from '@/ui/amendPanels.ts';
 import { startApp } from '@/ui/app.ts';
+import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
-import { buildScenario, loadAirportData } from '@/ui/session.ts';
+import { buildScenario, clearedPlan, loadAirportData, spokenFor } from '@/ui/session.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
@@ -25,7 +26,17 @@ const CLEARANCE_SEED = 1;
  * hash names; the dropdowns leave the input kind out of the hash, as every link to them does.
  */
 async function mountApp(seed: number, mode: Mode, input: InputKind): Promise<Element> {
-  globalThis.location.hash = hashFor('KSFO', seed, { filter: ANY_SCENARIO, mode, input });
+  return mountSession(seed, { filter: ANY_SCENARIO, mode, input, fullRoute: false });
+}
+
+/** Mounts the app on an empty page at one seed, from the settings a link carries. */
+async function mountSession(seed: number, settings: SessionSettings): Promise<Element> {
+  return mountHash(hashFor('KSFO', seed, settings));
+}
+
+/** Mounts the app on an empty page from a hash written by hand. */
+async function mountHash(hash: string): Promise<Element> {
+  globalThis.location.hash = hash;
   const root = document.createElement('div');
   document.body.replaceChildren(root);
   await startApp(root);
@@ -63,6 +74,19 @@ function submitOf(root: ParentNode, panel: string): HTMLButtonElement {
   const node = root.querySelector(`${panel} button.primary`);
   if (!(node instanceof HTMLButtonElement)) throw new Error(`${panel} has no submit button`);
   return node;
+}
+
+/** The checkbox of the header control that reads one label. */
+function checkbox(root: ParentNode, label: string): HTMLInputElement {
+  const node = field(root, label).querySelector('input[type="checkbox"]');
+  if (!(node instanceof HTMLInputElement)) throw new Error(`the page has no ${label} checkbox`);
+  return node;
+}
+
+/** Ticks or unticks a checkbox, the way the browser reports the change the student made. */
+function tick(node: HTMLInputElement, checked: boolean): void {
+  node.checked = checked;
+  node.dispatchEvent(new Event('change'));
 }
 
 /** Picks one choice of a dropdown, the way the browser reports a choice the student made. */
@@ -113,6 +137,55 @@ function stripTitled(root: ParentNode, heading: string): HTMLElement {
   );
   if (!(found instanceof HTMLElement)) throw new Error(`the page has no ${heading} strip`);
   return found;
+}
+
+/** The remarks cell of a strip, empty where the strip prints none. */
+function remarksOf(strip: ParentNode): string {
+  return strip.querySelector('.strip-remarks')?.textContent ?? '';
+}
+
+/**
+ * A KSFO clearance seed whose route reads two ways, with the reading spoken on frequency.
+ *
+ * Most plans read the same either way — a route the SID covers to its end has nothing left to hand
+ * over as filed — so the seed the full route clearance is checked on is the first one that does
+ * differ rather than a number written down here.
+ */
+async function twoWaySeed(): Promise<{ seed: number; abbreviated: string }> {
+  const airport = await loadAirportData('KSFO');
+  for (let seed = 1; seed <= 60; seed += 1) {
+    const view = buildScenario(airport, seed, ANY_SCENARIO, 'clearance');
+    if (view.kind !== 'clearance') continue;
+    const spoken = spokenFor(view.generated, view.generated, view.clearance, airport);
+    if (spoken.fullRoute !== spoken.abbreviated) return { seed, abbreviated: spoken.abbreviated };
+  }
+  throw new Error('no KSFO clearance seed up to 60 reads its route two ways');
+}
+
+/** The remark a route handed over as filed leaves on a clearance the student reads in full. */
+const FRC_REMARK = '"then as filed" said on a full route clearance — read the route to its end';
+
+/** The strip left exactly as filed, which is what `clearTheStrip` answers. */
+const AS_FILED: BoxAnswers = {
+  type: { kind: 'as_filed' },
+  altitude: { kind: 'as_filed' },
+  route: { kind: 'as_filed' },
+};
+
+/**
+ * A KSFO amendment seed whose plan, cleared as filed, reads its route two ways, with the reading
+ * spoken on frequency.
+ */
+async function twoWayAmendment(): Promise<{ seed: number; abbreviated: string }> {
+  const airport = await loadAirportData('KSFO');
+  for (let seed = 1; seed <= 60; seed += 1) {
+    const view = buildScenario(airport, seed, ANY_SCENARIO, 'amendment');
+    if (view.kind !== 'amendment') continue;
+    const cleared = clearedPlan(view, AS_FILED, airport);
+    const spoken = spokenFor(cleared.plan, view.drawn.filed, cleared.clearance, airport);
+    if (spoken.fullRoute !== spoken.abbreviated) return { seed, abbreviated: spoken.abbreviated };
+  }
+  throw new Error('no KSFO amendment seed up to 60 reads its route two ways');
 }
 
 /** Answers every box as filed and submits the strip, which opens the form on the corrected plan. */
@@ -219,6 +292,148 @@ describe('the mounted page', () => {
 
     const score = root.querySelector('.panel.results .score')?.textContent ?? '';
     expect(score.startsWith('8 of 8 elements correct')).toBe(true);
+  });
+
+  it('ticks full route, switches to typing and remembers it', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    expect(globalThis.location.hash).not.toContain('r=full');
+    expect(checkbox(root, 'full route').checked).toBe(false);
+
+    tick(checkbox(root, 'full route'), true);
+
+    expect(globalThis.location.hash).toContain('i=text&r=full');
+    const answer = selectOf(field(root, 'answer'));
+    expect(answer.value).toBe('text');
+    expect(answer.selectedOptions[0]?.textContent).toBe('Typed');
+    expect(checkbox(root, 'full route').checked).toBe(true);
+    expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
+    expect(globalThis.localStorage.getItem('craft-tester:full-route')).toBe('true');
+    expect(globalThis.localStorage.getItem('craft-tester:input')).toBe('"text"');
+  });
+
+  it('unticks full route when the answer goes back to the dropdowns', async () => {
+    const root = await mountSession(CLEARANCE_SEED, {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: true,
+    });
+    expect(checkbox(root, 'full route').checked).toBe(true);
+
+    choose(selectOf(field(root, 'answer')), 'dropdowns');
+
+    expect(globalThis.location.hash).not.toContain('r=full');
+    expect(globalThis.location.hash).not.toContain('i=text');
+    expect(checkbox(root, 'full route').checked).toBe(false);
+    expect(root.querySelector('.panel.craft')).not.toBeNull();
+    expect(globalThis.localStorage.getItem('craft-tester:full-route')).toBe('false');
+  });
+
+  it('opens typed with full route ticked from a link that carries r=full', async () => {
+    const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO&r=full`);
+
+    expect(checkbox(root, 'full route').checked).toBe(true);
+    expect(selectOf(field(root, 'answer')).value).toBe('text');
+    expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
+    expect(globalThis.location.hash).toContain('i=text&r=full');
+  });
+
+  it('shows FRC on the strip while full route is ticked', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
+    expect(remarksOf(stripTitled(root, 'Flight plan'))).not.toContain('FRC');
+
+    tick(checkbox(root, 'full route'), true);
+    expect(remarksOf(stripTitled(root, 'Flight plan')).startsWith('FRC')).toBe(true);
+
+    choose(selectOf(field(root, 'answer')), 'dropdowns');
+    expect(remarksOf(stripTitled(root, 'Flight plan'))).not.toContain('FRC');
+  });
+
+  it('shows FRC on every strip of an amendment while full route is ticked', async () => {
+    const root = await mountSession(AMENDMENT_SEED, {
+      filter: ANY_SCENARIO,
+      mode: 'amendment',
+      input: 'text',
+      fullRoute: true,
+    });
+    expect(remarksOf(stripTitled(root, 'Flight plan')).startsWith('FRC')).toBe(true);
+
+    clearTheStrip(root);
+
+    expect(remarksOf(stripTitled(root, 'Flight plan as filed')).startsWith('FRC')).toBe(true);
+    expect(remarksOf(stripTitled(root, 'Amended flight plan')).startsWith('FRC')).toBe(true);
+  });
+
+  it('grades the abbreviated reading wrong once full route is ticked', async () => {
+    const { seed, abbreviated } = await twoWaySeed();
+    const root = await mountSession(seed, {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: true,
+    });
+
+    typeInto(clearanceBox(root), abbreviated);
+    pressEnter(clearanceBox(root));
+
+    const results = root.querySelector('.panel.results')?.textContent ?? '';
+    expect(results).toContain(FRC_REMARK);
+    expect(results).toContain('R-FRC');
+  });
+
+  it('grades a typed amendment against the full route once full route is ticked', async () => {
+    const { seed, abbreviated } = await twoWayAmendment();
+    const root = await mountApp(seed, 'amendment', 'text');
+
+    tick(checkbox(root, 'full route'), true);
+    clearTheStrip(root);
+    typeInto(clearanceBox(root), abbreviated);
+    pressEnter(clearanceBox(root));
+
+    const results = root.querySelector('.panel.results')?.textContent ?? '';
+    expect(results, `seed ${seed}: ${abbreviated}`).toContain(FRC_REMARK);
+    expect(results).toContain('R-FRC');
+  });
+
+  it('opens a typed link unticked even where this browser remembers full route', async () => {
+    globalThis.localStorage.setItem('craft-tester:full-route', 'true');
+
+    const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO&i=text`);
+
+    expect(checkbox(root, 'full route').checked).toBe(false);
+    expect(globalThis.location.hash).not.toContain('r=full');
+  });
+
+  it('opens a bare link ticked where this browser remembers typed answers and full route', async () => {
+    globalThis.localStorage.setItem('craft-tester:input', '"text"');
+    globalThis.localStorage.setItem('craft-tester:full-route', 'true');
+
+    const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO`);
+
+    expect(checkbox(root, 'full route').checked).toBe(true);
+    expect(selectOf(field(root, 'answer')).value).toBe('text');
+    expect(globalThis.location.hash).toContain('r=full');
+  });
+
+  it('shows a full route attempt back on revisit, graded against the full route', async () => {
+    const { seed, abbreviated } = await twoWaySeed();
+    const settings = {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: true,
+    } as const;
+    const root = await mountSession(seed, settings);
+    typeInto(clearanceBox(root), abbreviated);
+    pressEnter(clearanceBox(root));
+
+    const again = await mountSession(seed, settings);
+    const revisit = again.querySelector('.panel.results.revisit');
+    expect(revisit).not.toBeNull();
+    expect(revisit?.textContent ?? '').toContain(FRC_REMARK);
+
+    const unticked = await mountSession(seed, { ...settings, fullRoute: false });
+    expect(unticked.querySelector('.panel.results.revisit')).toBeNull();
   });
 
   it('keeps the typing box the student is typing in', async () => {

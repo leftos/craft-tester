@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
 import type { BoxElementGrade } from '@/rules/amend/grade.ts';
-import type { TextGrade } from '@/rules/text/grade.ts';
+import type { SpokenClearance } from '@/rules/speak.ts';
+import type { RouteReading, TextGrade } from '@/rules/text/grade.ts';
 import type { Grade } from '@/rules/types.ts';
-import { renderVerdict } from '@/ui/results.ts';
+import { renderResults, renderVerdict } from '@/ui/results.ts';
 
 /** A typed altitude with filler in it: acceptable, and read against the words expected. */
 const typedAltitude: TextGrade = {
@@ -108,6 +109,29 @@ const wrongBox: BoxElementGrade = {
   reason: 'the altitude is wrong for direction of flight',
 };
 
+/** A clearance whose route reads one way on frequency and another read to its end. */
+const spoken: SpokenClearance = {
+  abbreviated: 'cleared to Las Vegas airport via the SSTIK Four departure, then as filed',
+  fullRoute: 'cleared to Las Vegas airport via the SSTIK Four departure, Salinas, direct',
+  parts: [],
+  fullRouteWords: 'SSTIK Four departure Salinas direct',
+};
+
+/** The reveal of a results panel rendered for one reading: one box per reading it shows. */
+function revealBoxes(routeReading: RouteReading): { heading: string; text: string }[] {
+  const panel = renderResults({
+    grades: [typedCorrect],
+    spoken,
+    routeReading,
+    onNext: () => undefined,
+    onRetry: () => undefined,
+  });
+  return [...panel.querySelectorAll('.reveal .spoken-box')].map((box) => ({
+    heading: box.querySelector('h3')?.textContent ?? '',
+    text: box.querySelector('.spoken')?.textContent ?? '',
+  }));
+}
+
 function partOf(row: Element, selector: string): Element {
   const found = row.querySelector(selector);
   if (found === null) throw new Error(`the row has no ${selector}`);
@@ -173,6 +197,23 @@ describe('renderVerdict on a typed element', () => {
   it('several remarks are joined', () => {
     const row = renderVerdict({ ...typedWrongValue, remarks: ['a', 'b'] });
     expect(partOf(row, 'p.remarks').textContent).toBe('a · b');
+  });
+});
+
+describe('the reveal', () => {
+  it('reveals the full reading alone on a full route clearance', () => {
+    const boxes = revealBoxes('full');
+    expect(boxes).toHaveLength(1);
+    expect(boxes[0]?.heading).toBe('On frequency');
+    expect(boxes[0]?.text).toBe(spoken.fullRoute);
+  });
+
+  it('reveals both readings where the student is held to the abbreviated one', () => {
+    const boxes = revealBoxes('abbreviated');
+    expect(boxes).toStrictEqual([
+      { heading: 'On frequency', text: spoken.abbreviated },
+      { heading: 'With the route read in full', text: spoken.fullRoute },
+    ]);
   });
 });
 

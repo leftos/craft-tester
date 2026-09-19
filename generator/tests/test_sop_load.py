@@ -70,6 +70,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "A-RVSM",
     "R-THEN-AS-FILED-END",
     "R-FULL-ROUTE",
+    "R-FRC",
     "R-FACILITY-WORD",
     "S-FILLER",
     "S-ORDER",

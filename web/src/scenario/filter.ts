@@ -21,6 +21,9 @@ const AMENDMENT_PART = 'm=amend';
 /** The hash part typed answers write; the dropdowns write none, so their links are unchanged. */
 const TEXT_PART = 'i=text';
 
+/** The hash part a full route clearance writes; every other link is unchanged. */
+const FULL_ROUTE_PART = 'r=full';
+
 /** Which runway configurations a scenario may be drawn in: all of them, one plan, or exactly one. */
 export type ConfigFilter =
   | { kind: 'any' }
@@ -37,8 +40,18 @@ export type ConfigFilter =
  */
 export type ScenarioFilter = { time: TimeFilter; config: ConfigFilter; destination?: string };
 
-/** What a session is drawn under and answered with, which the URL hash carries beside the seed. */
-export type SessionSettings = { filter: ScenarioFilter; mode: Mode; input: InputKind };
+/**
+ * What a session is drawn under and answered with, which the URL hash carries beside the seed.
+ *
+ * `fullRoute` holds the student to the route read to its end, which only the typed grader knows, so
+ * it is set only while the clearance is answered by typing it out.
+ */
+export type SessionSettings = {
+  filter: ScenarioFilter;
+  mode: Mode;
+  input: InputKind;
+  fullRoute: boolean;
+};
 
 /** The shape a `d=` part has to have to be read: an ICAO code, upper case. */
 const DESTINATION_PATTERN = /^[A-Z0-9]{3,4}$/;
@@ -69,12 +82,12 @@ function configParam(config: ConfigFilter): string | undefined {
  *
  * @param icao The airport the scenario was drawn at.
  * @param seed The seed the link restores.
- * @param settings The filter the draw ran under, the half of the trainer the session runs, and how
- *   the student answers the clearance.
- * @returns The hash, e.g. `#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend&i=text`.
+ * @param settings The filter the draw ran under, the half of the trainer the session runs, how the
+ *   student answers the clearance, and whether they are held to the full route.
+ * @returns The hash, e.g. `#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend&i=text&r=full`.
  */
 export function hashFor(icao: string, seed: number, settings: SessionSettings): string {
-  const { filter, mode, input } = settings;
+  const { filter, mode, input, fullRoute } = settings;
   const parts = [seedToHash(seed).slice(1), `a=${icao}`];
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
@@ -82,6 +95,7 @@ export function hashFor(icao: string, seed: number, settings: SessionSettings): 
   if (filter.destination !== undefined) parts.push(`d=${filter.destination}`);
   if (mode === 'amendment') parts.push(AMENDMENT_PART);
   if (input === 'text') parts.push(TEXT_PART);
+  if (input === 'text' && fullRoute) parts.push(FULL_ROUTE_PART);
   return `#${parts.join('&')}`;
 }
 
@@ -192,13 +206,29 @@ export function modeFromHash(hash: string): Mode {
  * Reads the input kind back out of a URL hash.
  *
  * Only typed answers name themselves, and a hash that names no input kind, or one this app does not
- * know, leaves it to the preference this browser remembers.
+ * know, leaves it to the preference this browser remembers. A full route clearance is typed out, so
+ * a hash asking for one names typed answers whether or not it carries an `i=` part of its own.
  *
  * @param hash The hash, with or without its leading `#`.
- * @returns `text` for an `i=text` part, or `undefined` when the hash names no input kind it knows.
+ * @returns `text` for an `i=text` or an `r=full` part, or `undefined` when the hash names no input
+ *   kind it knows.
  */
 export function inputKindFromHash(hash: string): InputKind | undefined {
+  if (fullRouteFromHash(hash)) return 'text';
   return valueOf(hash, 'i') === 'text' ? 'text' : undefined;
+}
+
+/**
+ * Reads the full route clearance back out of a URL hash.
+ *
+ * Only a full route clearance names itself, so a hash without an `r=` part, and one whose value
+ * this app does not know, both open on the reading spoken on frequency.
+ *
+ * @param hash The hash, with or without its leading `#`.
+ * @returns True for an `r=full` part, false for anything else.
+ */
+export function fullRouteFromHash(hash: string): boolean {
+  return valueOf(hash, 'r') === 'full';
 }
 
 /**

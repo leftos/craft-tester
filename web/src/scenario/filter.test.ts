@@ -6,6 +6,7 @@ import {
   airportFromHash,
   filterFromHash,
   hasFilterParams,
+  fullRouteFromHash,
   hashFor,
   inputKindFromHash,
   matchesConfig,
@@ -15,7 +16,17 @@ import { seedFromHash } from '@/scenario/rng.ts';
 
 /** The settings of a session answered with the dropdowns, which write no input part. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns' };
+  return { filter, mode, input: 'dropdowns', fullRoute: false };
+}
+
+/** The settings of a session answered by typing the clearance out. */
+function typed(filter: ScenarioFilter, mode: Mode): SessionSettings {
+  return { filter, mode, input: 'text', fullRoute: false };
+}
+
+/** The settings of a session typed out and held to the full route. */
+function fullRoute(filter: ScenarioFilter, mode: Mode): SessionSettings {
+  return { filter, mode, input: 'text', fullRoute: true };
 }
 
 /** A runway configuration with nothing in it but the id and the plan the filter reads. */
@@ -196,19 +207,15 @@ describe('the input kind in the hash', () => {
   });
 
   it('names typed answers last, after the mode', () => {
-    expect(hashFor('KSFO', 1, { filter: ANY_SCENARIO, mode: 'clearance', input: 'text' })).toBe(
-      '#s=1&a=KSFO&i=text',
-    );
-    expect(hashFor('KSFO', 1, { filter: ANY_SCENARIO, mode: 'amendment', input: 'text' })).toBe(
-      '#s=1&a=KSFO&m=amend&i=text',
-    );
-    expect(hashFor('KOAK', 123_456_789, { filter: night, mode: 'amendment', input: 'text' })).toBe(
+    expect(hashFor('KSFO', 1, typed(ANY_SCENARIO, 'clearance'))).toBe('#s=1&a=KSFO&i=text');
+    expect(hashFor('KSFO', 1, typed(ANY_SCENARIO, 'amendment'))).toBe('#s=1&a=KSFO&m=amend&i=text');
+    expect(hashFor('KOAK', 123_456_789, typed(night, 'amendment'))).toBe(
       '#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend&i=text',
     );
   });
 
   it('round-trips typed answers beside the seed, the filter and the mode', () => {
-    const hash = hashFor('KSFO', 123_456_789, { filter: night, mode: 'amendment', input: 'text' });
+    const hash = hashFor('KSFO', 123_456_789, typed(night, 'amendment'));
     expect(inputKindFromHash(hash)).toBe('text');
     expect(seedFromHash(hash)).toBe(123_456_789);
     expect(filterFromHash(hash)).toStrictEqual(night);
@@ -228,6 +235,41 @@ describe('the input kind in the hash', () => {
   it('leaves the input kind out of the filter parts', () => {
     expect(hasFilterParams('#s=1&a=KSFO&i=text')).toBe(false);
     expect(filterFromHash('#s=1&a=KSFO&i=text')).toStrictEqual(ANY_SCENARIO);
+  });
+});
+
+describe('the full route clearance in the hash', () => {
+  const night: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
+
+  it('writes r=full after i=text and reads it back', () => {
+    expect(hashFor('KSFO', 1, fullRoute(ANY_SCENARIO, 'clearance'))).toBe(
+      '#s=1&a=KSFO&i=text&r=full',
+    );
+    const hash = hashFor('KOAK', 123_456_789, fullRoute(night, 'amendment'));
+    expect(hash).toBe('#s=21i3v9&a=KOAK&t=night&c=id:28%2F01&m=amend&i=text&r=full');
+    expect(fullRouteFromHash(hash)).toBe(true);
+    expect(inputKindFromHash(hash)).toBe('text');
+    expect(hasFilterParams(hash)).toBe(true);
+    expect(filterFromHash(hash)).toStrictEqual(night);
+  });
+
+  it('opens typed from a hash that carries r=full alone', () => {
+    expect(fullRouteFromHash('#s=1&a=KSFO&r=full')).toBe(true);
+    expect(inputKindFromHash('#s=1&a=KSFO&r=full')).toBe('text');
+    expect(fullRouteFromHash('s=1&r=full')).toBe(true);
+    expect(hasFilterParams('#s=1&a=KSFO&r=full')).toBe(false);
+  });
+
+  it('writes no r=full for the dropdowns', () => {
+    expect(hashFor('KSFO', 1, dropdowns(ANY_SCENARIO, 'clearance'))).toBe('#s=1&a=KSFO');
+    expect(hashFor('KSFO', 1, { ...dropdowns(ANY_SCENARIO, 'amendment'), fullRoute: true })).toBe(
+      '#s=1&a=KSFO&m=amend',
+    );
+    expect(hashFor('KSFO', 1, typed(ANY_SCENARIO, 'clearance'))).toBe('#s=1&a=KSFO&i=text');
+    expect(fullRouteFromHash('#s=1&a=KSFO&i=text')).toBe(false);
+    expect(fullRouteFromHash('')).toBe(false);
+    expect(fullRouteFromHash('#s=1&a=KSFO&r=bogus')).toBe(false);
+    expect(fullRouteFromHash('#s=1&a=KSFO&r=')).toBe(false);
   });
 });
 

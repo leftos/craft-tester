@@ -117,6 +117,35 @@ export function syncSelect(
   node.disabled = disabled;
 }
 
+/** Everything one labelled checkbox needs to render: the label, its state, and its tooltip. */
+export type CheckboxSpec = { label: string; checked: boolean; title: string };
+
+/**
+ * Builds one labelled checkbox, which sits in a row of dropdowns like one of them.
+ *
+ * The box is inside its label, so the words above it are what a screen reader reads it as, and the
+ * title says what ticking it does, which the label alone has no room for.
+ *
+ * @param spec The label, whether the box is ticked, and the tooltip.
+ * @param onChange Called with the state the box reads back after every change.
+ * @returns The label element, with the checkbox inside it.
+ */
+export function checkboxControl(
+  spec: CheckboxSpec,
+  onChange: (checked: boolean) => void,
+): HTMLLabelElement {
+  const field = el('label', 'field checkbox');
+  field.title = spec.title;
+  const box = el('input');
+  box.type = 'checkbox';
+  box.checked = spec.checked;
+  box.addEventListener('change', () => {
+    onChange(box.checked);
+  });
+  field.append(el('span', 'field-label', spec.label), box);
+  return field;
+}
+
 /** Everything one labelled text box needs to render. */
 export type TextSpec = {
   label: string;

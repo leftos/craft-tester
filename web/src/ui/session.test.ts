@@ -31,7 +31,7 @@ let view: ScenarioView;
 
 /** The settings of a session answered with the dropdowns. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns' };
+  return { filter, mode, input: 'dropdowns', fullRoute: false };
 }
 
 /**
@@ -142,7 +142,7 @@ describe(`the scenario of seed ${SEED}`, () => {
   it('fills the strip and the ATIS from the scenario', () => {
     if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
     const scenario = view.generated;
-    const strip = stripFields(scenario, airport, SEED);
+    const strip = stripFields(scenario, airport, SEED, { revision: undefined, frc: false });
     expect(strip.callsign).toBe(scenario.callsign);
     expect(strip.equipment).toContain(`${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`);
     expect(strip.depDest).toBe(`${airport.airport.icao} ${scenario.destination}`);
@@ -216,9 +216,13 @@ describe('an amendment scenario', () => {
     const answers = correctedAnswers(drawn.result.amendments);
     const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
     const cleared = { plan: drawn.result.corrected, clearance };
-    const grades = amendmentGrades(drawn, cleared, airport, answers, {
-      input: 'text',
-      text: spoken.abbreviated,
+    const grades = amendmentGrades({
+      drawn,
+      cleared,
+      airport,
+      answers,
+      answer: { input: 'text', text: spoken.abbreviated },
+      routeReading: 'abbreviated',
     });
     const boxes = ['BOX.type', 'BOX.altitude', 'BOX.route'];
     const typed = ['C', 'R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'T', 'RWY'];
@@ -227,6 +231,49 @@ describe('an amendment scenario', () => {
       grades.map(({ element, verdict }) => `${element} ${verdict}`),
       `seed ${seed}: ${spoken.abbreviated}`,
     ).toStrictEqual(elements.map((element) => `${element} correct`));
+  });
+
+  /** One verdict of an amendment session, whichever way the clearance was answered. */
+  type AmendmentGrade = ReturnType<typeof amendmentGrades>[number];
+
+  /** The route verdict of an amendment session. */
+  function routeGrade(grades: readonly AmendmentGrade[]): AmendmentGrade {
+    const found = grades.find((one) => one.element === 'R.route');
+    if (found === undefined) throw new Error('the session graded no route');
+    return found;
+  }
+
+  it("holds an amendment's typed clearance to the full route while full route is ticked", () => {
+    const seed = SEEDS.find((candidate) => {
+      const { drawn, clearance } = amendmentOf(candidate);
+      const { amendments, corrected } = drawn.result;
+      if (amendments.length === 0 || amendments.some((one) => one.alternativeTo !== undefined)) {
+        return false;
+      }
+      const spoken = spokenFor(corrected, drawn.filed, clearance, airport);
+      return spoken.fullRoute !== spoken.abbreviated;
+    });
+    if (seed === undefined) {
+      throw new Error('no seed of 1 to 20 amends a plan whose route is handed over as filed');
+    }
+    const { drawn, clearance } = amendmentOf(seed);
+    const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
+    const session = {
+      drawn,
+      cleared: { plan: drawn.result.corrected, clearance },
+      airport,
+      answers: correctedAnswers(drawn.result.amendments),
+      routeReading: 'full',
+    } as const;
+    const handedOver = routeGrade(
+      amendmentGrades({ ...session, answer: { input: 'text', text: spoken.abbreviated } }),
+    );
+    expect(handedOver.verdict, `seed ${seed}: ${spoken.abbreviated}`).toBe('wrong');
+    expect(handedOver.citations.map((citation) => citation.id)).toContain('R-FRC');
+    const readInFull = routeGrade(
+      amendmentGrades({ ...session, answer: { input: 'text', text: spoken.fullRoute } }),
+    );
+    expect(readInFull.verdict, `seed ${seed}: ${spoken.fullRoute}`).toBe('correct');
   });
 
   /**

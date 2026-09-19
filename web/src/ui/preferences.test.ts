@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
-import { createFilterStore, createInputKindStore } from '@/ui/preferences.ts';
+import { createFilterStore, createFullRouteStore, createInputKindStore } from '@/ui/preferences.ts';
 
 const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
 
@@ -142,5 +142,43 @@ describe('createInputKindStore', () => {
       store.save('text');
     }).not.toThrow();
     expect(store.load()).toBeUndefined();
+  });
+});
+
+describe('createFullRouteStore', () => {
+  it('remembers the full route choice', () => {
+    const entries = new Map<string, string>();
+    const store = createFullRouteStore(mapStorage(entries));
+    expect(store.load()).toBeUndefined();
+    store.save(true);
+    expect(store.load()).toBe(true);
+    expect(entries.get('craft-tester:full-route')).toBe('true');
+    store.save(false);
+    expect(store.load()).toBe(false);
+    expect([...entries.keys()]).toStrictEqual(['craft-tester:full-route']);
+  });
+
+  it('reads a malformed full route value as nothing remembered', () => {
+    for (const raw of ['"true"', '1', '{not json', 'null']) {
+      const entries = new Map([['craft-tester:full-route', raw]]);
+      expect(createFullRouteStore(mapStorage(entries)).load()).toBeUndefined();
+    }
+    const refused = createFullRouteStore({
+      getItem: () => {
+        throw new Error('reads denied');
+      },
+      setItem: () => {
+        throw new Error('quota exceeded');
+      },
+    });
+    expect(() => {
+      refused.save(true);
+    }).not.toThrow();
+    expect(refused.load()).toBeUndefined();
+    const none = createFullRouteStore(undefined);
+    expect(() => {
+      none.save(true);
+    }).not.toThrow();
+    expect(none.load()).toBeUndefined();
   });
 });

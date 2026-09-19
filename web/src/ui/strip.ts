@@ -37,6 +37,12 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 /** One bar of the printed barcode: where it starts, and how wide it is. */
 export type BarcodeBar = { x: number; width: number };
 
+/**
+ * What the controller's pen adds to a strip: the amendment number printed under the callsign, and
+ * whether the strip carries the FRC remark of a full route clearance.
+ */
+export type StripMarks = { revision: number | undefined; frc: boolean };
+
 /** Every field the paper strip prints, written the way the strip writes it. */
 export type StripFields = {
   callsign: string;
@@ -168,10 +174,15 @@ function equipmentOf(scenario: Scenario, airport: AirportData): string {
   return `${prefix}${scenario.aircraftType}${scenario.equipmentSuffix ?? ''}`;
 }
 
-/** The remarks the flight filed, or nothing at all where it filed none. */
-function remarksOf(scenario: Scenario): string | undefined {
+/**
+ * The remarks cell: `FRC` first on a full route clearance, then whatever the flight filed, and
+ * nothing at all where an ordinary clearance was filed without remarks.
+ */
+function remarksOf(scenario: Scenario, frc: boolean): string | undefined {
   const remarks = scenario.remarks;
-  return remarks === undefined || remarks.length === 0 ? undefined : remarks;
+  const filed = remarks === undefined || remarks.length === 0 ? undefined : remarks;
+  if (!frc) return filed;
+  return filed === undefined ? 'FRC' : `FRC ${filed}`;
 }
 
 /**
@@ -180,16 +191,17 @@ function remarksOf(scenario: Scenario): string | undefined {
  * @param scenario The drawn flight plan.
  * @param airport The airport data, which names the departure and the fleet's FAA wake categories.
  * @param seed The scenario seed, which the computer identification is derived from.
- * @param revision The amendment number, printed under the callsign; absent on a strip as filed.
+ * @param marks The amendment number the strip was amended under, and whether it carries FRC.
  * @returns The fields, written the way the strip prints them.
  */
 export function stripFields(
   scenario: Scenario,
   airport: AirportData,
   seed: number,
-  revision?: number,
+  marks: StripMarks,
 ): StripFields {
-  const remarks = remarksOf(scenario);
+  const { revision } = marks;
+  const remarks = remarksOf(scenario, marks.frc);
   const tokens = scenario.filedRoute.split(/\s+/).filter((token) => token.length > 0);
   return {
     callsign: scenario.callsign,
@@ -333,7 +345,7 @@ function scaleToFit(wrapper: HTMLElement, grid: HTMLElement): void {
  * @param airport The airport data.
  * @param seed The scenario seed.
  * @param heading The heading over the strip, e.g. `Flight plan`.
- * @param revision The amendment number, printed under the callsign; absent on a strip as filed.
+ * @param marks The amendment number the strip was amended under, and whether it carries FRC.
  * @returns The strip panel.
  */
 export function renderStrip(
@@ -341,11 +353,11 @@ export function renderStrip(
   airport: AirportData,
   seed: number,
   heading: string,
-  revision?: number,
+  marks: StripMarks,
 ): HTMLElement {
   const panel = el('section', 'panel strip');
   const paper = el('div', 'strip-paper');
-  const grid = stripGrid(stripFields(scenario, airport, seed, revision));
+  const grid = stripGrid(stripFields(scenario, airport, seed, marks));
   paper.append(grid);
   panel.append(el('h2', '', heading), paper);
   scaleToFit(paper, grid);
