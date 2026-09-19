@@ -62,6 +62,21 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
   is two numbers — so the join belongs in `gradeText`, driven by the reading: adjacent typed number
   tokens whose values concatenate to a number the reading says are read as that one number
 
+- [ ] **A navaid spelt phonetically** (user report, same day): "radar vectors sierra alpha uniform direct"
+  against `radar vectors Sausalito VOR, direct` read `missed: "Sausalito VOR" · not in the reading: "sierra
+  alpha uniform"`. The matcher does not see that the three words spell `SAU`. The repo rule is that fixes
+  are spoken by name, never spelt, so the tier is a ruling to take to the user (right, acceptable with its
+  own remark, or wrong but named as "spelt, say the name"); either way the normaliser has to read a run of
+  phonetic-alphabet words that spells a lexicon key as that identifier
+  - **User rulings 2026-09-18:** fully correct, no remark — 7110.65 2-5-2 a 1 gives "the name or phonetic
+    alphabet equivalent (location identifier) of a NAVAID when using it in a routing" as equals ("V6
+    Victor Whiskey Victor (Waterville) V45 Jackson"); and the same for a five-letter fix spelt letter by
+    letter, which goes beyond the paragraph on the user's say. `R-NAVAID`'s text gains the alternative
+    (YAML + build). Design: in `normalise.ts` a run of two or more phonetic-alphabet words is read
+    longest-first as a lexicon key (then expanded like the typed identifier), else a run of exactly five
+    as the fix's word; "victor"/"tango" before a number stay the airway word. Goes out after the grader
+    step, which holds the tree
+
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.

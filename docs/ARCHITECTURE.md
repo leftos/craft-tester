@@ -191,13 +191,27 @@ remembered per browser. The dropdowns stay, and the student chooses.
   lexicon, so an identifier that spells a word cannot take it over: a number word is always a number, and
   a word one of the candidate readings says is read as typed (`gradeText` leaves those keys out of the
   lexicon it reads the typed text with).
+- **Joining numbers** (`rules/text/grade.ts`, `joinNumbers`). The normaliser ends a number run at typed
+  figures, which keeps "expect 10000 one zero minutes" two numbers, so a squawk typed `00 six two`
+  arrives as `00` and `62`. Before aligning, consecutive typed numbers whose values concatenate to a
+  number some candidate reading says are read as that one number (longest run first; a word between two
+  numbers keeps them apart). The joined number is figures where every piece was, group form where any
+  piece was, so "00 sixty-two" still falls under `S-GROUP-FORM`.
 - **Aligning** (`rules/text/grade.ts`). The typed tokens are aligned with every candidate reading by
   longest common subsequence, and the base reading wins ties. Within one reading, among the alignments
   with the most matches the one with the most adjacent matches wins (two neighbouring typed words on two
   neighbouring words of the reading), then the earliest: a word the reading says twice goes where its
   neighbour is said too, so a student who leaves out "expect … after departure" keeps the "departure" of
   "departure frequency" on F. The candidates are the base reading, the
-  route in full, the route closed on "then as filed", and each of those with the redundant expect clause.
+  route in full, the route closed on "then as filed", each of those with the redundant expect clause, and
+  each of those again with the field under every name its destination row lists (`spoken`, `short`,
+  `also`). A name candidate is the field itself: it lowers no tier and adds no remark or citation, where
+  a longer route or a redundant clause grades acceptable. Among candidates with the same number of matches
+  the one that leaves the fewest of its own clearance-limit words unsaid wins, then the earliest, so
+  "cleared to Sacramento airport" is the short name said whole and not the full name with
+  "International" missed; the route and expect axes share their C words, so they still break ties
+  earliest-first. Because the names' words are words of a reading, a lexicon key that spells one is
+  read as typed on that clearance: "Sea-Tac" is the field, not the SEA VOR.
   An expect clause said where the reading has none is cut out before alignment. Words before the first
   match are the callsign and are not graded.
 - **Verdicts**, per element. Values come first, and a wrong or missing value is wrong. The fixed words come

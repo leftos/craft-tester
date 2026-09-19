@@ -62,6 +62,9 @@ type RouteOption = 'base' | 'full' | 'end';
 /** How a candidate reads the expect clause: as spoken, or as the redundant clause the rules allow. */
 type ExpectOption = 'base' | 'redundant';
 
+/** How a candidate names the field: as the reading names it, or by another name its row lists. */
+type NameOption = 'read' | 'other';
+
 /** A token of a candidate reading, tagged with the element it speaks. */
 type CandidateToken = { token: SpokenToken; element: GradedElement };
 
@@ -69,6 +72,7 @@ type CandidateToken = { token: SpokenToken; element: GradedElement };
 type Candidate = {
   route: RouteOption;
   expect: ExpectOption;
+  name: NameOption;
   parts: GradedPart[];
   tokens: CandidateToken[];
 };
@@ -143,6 +147,9 @@ const PLAIN_DECIMAL = /^\d+(?:\.\d+)?$/u;
 
 /** A run of letters inside a phraseology row, which is a word the phraseology has. */
 const LETTER_RUN = /[a-z]+/gu;
+
+/** The fewest typed numbers a join takes: one number already says itself. */
+const MIN_JOINED_PIECES = 2;
 
 /** Text between two spans that leaves them adjacent in a label. */
 const LABEL_JOINER = /^[\s\p{P}]*$/u;
@@ -245,31 +252,66 @@ function tagged(parts: readonly GradedPart[]): CandidateToken[] {
   );
 }
 
-/** Every candidate reading, route-major, the base reading first. */
-function candidatesFor(spoken: SpokenClearance, expected: ResolvedClearance): Candidate[] {
-  const parts = spoken.parts.filter(isGradedPart);
+/** The expect readings a candidate may take: as spoken, and the redundant clause where one is allowed. */
+function expectReadings(
+  parts: readonly GradedPart[],
+  expected: ResolvedClearance,
+): { option: ExpectOption; parts: GradedPart[] }[] {
+  const base = { option: 'base' as const, parts: [...parts] };
   const redundant = expected.redundantExpect.value;
+  if (redundant === null) return [base];
+  return [base, { option: 'redundant', parts: withExpect(parts, speakExpect(redundant)) }];
+}
+
+/** The clearance limit sentence, as the reading speaks it, around one name of the field. */
+function limitWords(name: string): string {
+  return `cleared to ${name} airport`;
+}
+
+/**
+ * The names a candidate may call the field by, in the order ties are broken.
+ *
+ * The reading's own name comes first, then every other name the destination's row lists: its full
+ * name, its short name and the names it also goes by are each the field itself, so a clearance that
+ * names the field by any of them names the field.
+ */
+function nameReadings(
+  parts: readonly GradedPart[],
+  expected: ResolvedClearance,
+  airport: AirportData,
+): { option: NameOption; parts: GradedPart[] }[] {
+  const base = { option: 'read' as const, parts: [...parts] };
+  const words = parts.find((part) => part.element === 'C')?.words;
+  const row = airport.routeLibrary.destinations.find(
+    (destination) => destination.icao === expected.clearedTo.value,
+  );
+  if (words === undefined || row === undefined) return [base];
+  const named = [row.spoken, row.short, ...row.also].map(limitWords);
+  const others = named.filter((said, index) => said !== words && named.indexOf(said) === index);
+  return [
+    base,
+    ...others.map((said) => ({ option: 'other' as const, parts: withWords(parts, 'C', said) })),
+  ];
+}
+
+/** Every candidate reading, route-major, the base reading first. */
+function candidatesFor(
+  spoken: SpokenClearance,
+  expected: ResolvedClearance,
+  airport: AirportData,
+): Candidate[] {
+  const parts = spoken.parts.filter(isGradedPart);
   const { template } = expected.route.value;
-  return routeReadings(parts, spoken.fullRouteWords, template).flatMap(
-    ({ option, parts: routeParts }) => {
-      const base: Candidate = {
-        route: option,
-        expect: 'base',
-        parts: routeParts,
-        tokens: tagged(routeParts),
-      };
-      if (redundant === null) return [base];
-      const redundantParts = withExpect(routeParts, speakExpect(redundant));
-      return [
-        base,
-        {
-          route: option,
-          expect: 'redundant',
-          parts: redundantParts,
-          tokens: tagged(redundantParts),
-        },
-      ];
-    },
+  return routeReadings(parts, spoken.fullRouteWords, template).flatMap((route) =>
+    expectReadings(route.parts, expected).flatMap((expect) =>
+      nameReadings(expect.parts, expected, airport).map((name) => ({
+        route: route.option,
+        expect: expect.option,
+        name: name.option,
+        parts: name.parts,
+        tokens: tagged(name.parts),
+      })),
+    ),
   );
 }
 
@@ -321,6 +363,91 @@ function vocabularyOf(
     for (const run of rule.text.toLowerCase().matchAll(LETTER_RUN)) words.add(run[0]);
   }
   return words;
+}
+
+/** Every value a candidate reading says as a number. */
+function candidateNumbers(candidates: readonly Candidate[]): ReadonlySet<string> {
+  const values = new Set<string>();
+  for (const candidate of candidates) {
+    for (const { token } of candidate.tokens) {
+      if (token.kind === 'number') values.add(token.value);
+    }
+  }
+  return values;
+}
+
+/** The number tokens from `from` on, up to the first token that is not one. */
+function numberRun(tokens: readonly SpokenToken[], from: number): NumberToken[] {
+  const run: NumberToken[] = [];
+  for (let index = from; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    if (token?.kind !== 'number') break;
+    run.push(token);
+  }
+  return run;
+}
+
+/** The longest run of numbers from `from` whose digits, in order, spell a number a reading says. */
+function joinableAt(
+  tokens: readonly SpokenToken[],
+  from: number,
+  values: ReadonlySet<string>,
+): NumberToken[] | undefined {
+  const run = numberRun(tokens, from);
+  for (let length = run.length; length >= MIN_JOINED_PIECES; length -= 1) {
+    const pieces = run.slice(0, length);
+    if (values.has(digitsOf(pieces))) return pieces;
+  }
+  return undefined;
+}
+
+function digitsOf(pieces: readonly NumberToken[]): string {
+  return pieces.map((piece) => piece.value).join('');
+}
+
+/** How a number typed in pieces was said: figures where every piece was, group where any piece was. */
+function joinedForm(pieces: readonly NumberToken[]): NumberToken['form'] {
+  if (pieces.some((piece) => piece.form === 'group')) return 'group';
+  return pieces.every((piece) => piece.form === 'figures') ? 'figures' : 'digits';
+}
+
+/** The pieces of one number as the single number they spell, spanning all of them. */
+function joinedNumber(pieces: readonly NumberToken[]): SpokenToken {
+  const span = spanOf(pieces);
+  return {
+    kind: 'number',
+    value: digitsOf(pieces),
+    form: joinedForm(pieces),
+    saidNine: pieces.some((piece) => piece.saidNine),
+    restated: false,
+    start: span.start,
+    end: span.end,
+  };
+}
+
+/**
+ * The typed tokens with the pieces of one number read as that number.
+ *
+ * A number run ends at typed figures, which keeps "expect 10000 one zero minutes" two numbers, so a
+ * squawk typed `00 six two` arrives in pieces; where consecutive numbers spell a number one of the
+ * readings says, they are that one number. The longest run wins at each place, and a word between
+ * two numbers keeps them apart.
+ */
+function joinNumbers(tokens: readonly SpokenToken[], values: ReadonlySet<string>): SpokenToken[] {
+  const joined: SpokenToken[] = [];
+  let index = 0;
+  while (index < tokens.length) {
+    const pieces = joinableAt(tokens, index, values);
+    if (pieces !== undefined) {
+      joined.push(joinedNumber(pieces));
+      index += pieces.length;
+      continue;
+    }
+    const token = tokens[index];
+    if (token !== undefined) joined.push(token);
+    index += 1;
+  }
+  return joined;
 }
 
 function isWord(token: SpokenToken | undefined, text: string): boolean {
@@ -509,7 +636,27 @@ function alignCandidate(
   return { candidate, student, stray, pairs: align(student, candidate.tokens, vocabulary) };
 }
 
-/** The candidate with the most matches, the earliest winning a tie. */
+/** How many of a candidate's own clearance limit tokens nothing typed said. */
+function unsaidLimitTokens(alignment: Alignment): number {
+  const said = new Set(alignment.pairs.map((pair) => pair.candidate));
+  return alignment.candidate.tokens.filter(
+    (token, index) => token.element === 'C' && !said.has(index),
+  ).length;
+}
+
+/**
+ * The better of two aligned candidates: the one that matches more tokens, and among equals the one
+ * that leaves fewer of its own clearance limit words unsaid, so a field named by a shorter name its
+ * row lists is that name rather than the longer one with words never said.
+ */
+function betterAligned(best: Alignment, alignment: Alignment): Alignment {
+  if (alignment.pairs.length !== best.pairs.length) {
+    return alignment.pairs.length > best.pairs.length ? alignment : best;
+  }
+  return unsaidLimitTokens(alignment) < unsaidLimitTokens(best) ? alignment : best;
+}
+
+/** The candidate that reads the typed text best, the earliest winning a tie. */
 function bestAlignment(
   candidates: readonly Candidate[],
   tokens: readonly SpokenToken[],
@@ -520,10 +667,7 @@ function bestAlignment(
   );
   if (first === undefined)
     throw new Error('gradeText: the reading yields no candidate to grade against');
-  return rest.reduce(
-    (best, alignment) => (alignment.pairs.length > best.pairs.length ? alignment : best),
-    first,
-  );
+  return rest.reduce(betterAligned, first);
 }
 
 function matchedAt(alignment: Alignment, pair: Pair | undefined): MatchedToken | undefined {
@@ -1169,8 +1313,10 @@ function gradeElement(element: GradedElement, grading: Grading): TextGrade {
  * Grades a typed clearance element by element against the engine's reading.
  *
  * The text is aligned with every candidate reading (the reading as spoken, the route in full or
- * closed on "then as filed", the redundant expect clause) and graded against the one it matches
- * best. Unmatched words between matches are read as an element out of order, a value said in place
+ * closed on "then as filed", the redundant expect clause, the field under each name its row lists)
+ * and graded against the one it matches best, which is the one that matches the most tokens and,
+ * among equals, leaves fewest of its own clearance limit words unsaid. Unmatched words between
+ * matches are read as an element out of order, a value said in place
  * of another, a facility word, a restated number or filler; words before the first match are the
  * callsign and are not graded, unless they say a whole element out of order.
  *
@@ -1187,8 +1333,9 @@ export function gradeText(
   airport: AirportData,
 ): TextGrade[] {
   const lexicon = lexiconFor(airport);
-  const candidates = candidatesFor(spoken, expected);
-  const tokens = normaliseSpoken(text, typedLexicon(lexicon, candidates));
+  const candidates = candidatesFor(spoken, expected, airport);
+  const typed = normaliseSpoken(text, typedLexicon(lexicon, candidates));
+  const tokens = joinNumbers(typed, candidateNumbers(candidates));
   const vocabulary = vocabularyOf(candidates, lexicon, airport);
   const alignment = bestAlignment(candidates, tokens, vocabulary);
   const matchedBy = new Map<number, SpokenToken>();

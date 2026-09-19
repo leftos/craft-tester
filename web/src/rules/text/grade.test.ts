@@ -639,6 +639,136 @@ describe('gradeText on an identifier typed in place of the words it is spoken as
   });
 });
 
+/** The practice reading with the field named another way, in place of the name the reading reads. */
+function namedGraded(name: string): TextGrade[] {
+  return fdxGraded((reading) => edited(reading, 'Seattle-Tacoma International', name));
+}
+
+/** The rows the clearance limit cites when the reading is typed as read. */
+function limitCitations(): string[] {
+  return idsOf(
+    gradeOf(
+      fdxGraded((reading) => reading),
+      'C',
+    ),
+  );
+}
+
+describe('gradeText on a field named by another name its row lists', () => {
+  it('the name the reading reads is the name', () => {
+    const grades = fdxGraded((reading) => reading);
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(gradeOf(grades, 'C').remarks).toEqual([]);
+    expect(limitCitations().length).toBeGreaterThan(0);
+  });
+
+  it.each(['Seattle', 'Seattle-Tacoma', 'Sea-Tac', 'sea-tac'])(
+    'the field named "%s" is the field itself',
+    (name) => {
+      const grades = namedGraded(name);
+      expect(misgraded(grades, {})).toEqual([]);
+      const limit = gradeOf(grades, 'C');
+      expect(limit.remarks).toEqual([]);
+      expect(idsOf(limit)).toEqual(limitCitations());
+    },
+  );
+
+  it('a word no name of the row holds is filler beside the name it does hold', () => {
+    const grades = namedGraded('the Seattle metro');
+    expect(misgraded(grades, { C: 'acceptable' })).toEqual([]);
+    const limit = gradeOf(grades, 'C');
+    expect(idsOf(limit)).toEqual([...limitCitations(), 'S-FILLER']);
+    expect(limit.remarks).toEqual(['extra words: the, metro']);
+  });
+
+  it('another field is the wrong field', () => {
+    expect(misgraded(namedGraded('Portland'), { C: 'wrong' })).toEqual([]);
+  });
+
+  it('a name typed a letter away from one the row lists is that name', () => {
+    const grades = namedGraded('Seatle');
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['C']);
+  });
+});
+
+/** A hand-built reading whose squawk carries a leading zero, so its digits can be typed in pieces. */
+const leadingZeroSquawk = input({ squawk: '0062' });
+
+/** The leading-zero reading with the squawk it reads typed another way. */
+function squawkGraded(said: string): TextGrade[] {
+  return graded(
+    edited(readingOf(leadingZeroSquawk), 'squawk zero zero six two', said),
+    leadingZeroSquawk,
+  );
+}
+
+describe('gradeText on a number typed in pieces', () => {
+  it('reads the pieces of a squawk as the one number they spell', () => {
+    const grades = squawkGraded('sqawk 00 six two');
+    expect(misgraded(grades, {})).toEqual([]);
+    const squawk = gradeOf(grades, 'T');
+    expect(idsOf(squawk)).toEqual(['S-SPELLING']);
+    expect(squawk.remarks).toEqual([]);
+  });
+
+  it.each(['squawk 00 62', 'squawk 0 0 six two'])('reads "%s" as the squawk', (said) => {
+    expect(misgraded(squawkGraded(said), {})).toEqual([]);
+  });
+
+  it('holds a squawk whose pieces end in a group form to what a group form alone reads as', () => {
+    const joined = gradeOf(squawkGraded('squawk 00 sixty-two'), 'T');
+    const whole = gradeOf(
+      graded(edited(readingOf(), 'squawk three three four two', 'squawk thirty-three forty-two')),
+      'T',
+    );
+    expect(whole.verdict).toBe('wrong');
+    expect(joined.verdict).toBe(whole.verdict);
+    expect(idsOf(joined)).toEqual(idsOf(whole));
+    expect(joined.remarks).toEqual(whole.remarks);
+  });
+
+  it('joins nothing where the pieces spell no number the reading says', () => {
+    const tenThousand = input({
+      clearance: clearance({ redundantExpect: { kind: 'filed', feet: 10000, minutes: 10 } }),
+    });
+    const said = edited(
+      readingOf(tenThousand),
+      'Climb via SID. ',
+      'Climb via SID. Expect 10000 one zero minutes after departure. ',
+    );
+    const grades = graded(said, tenThousand);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'A.expect': 'acceptable' }));
+    expect(idsOf(gradeOf(grades, 'A.expect'))).toEqual(['OWN-REDUNDANT']);
+  });
+});
+
+/** The practice reading with the field typed as its code and the procedure as its identifier. */
+function codedGraded(limit: string): TextGrade[] {
+  return fdxGraded((reading) =>
+    edited(
+      edited(reading, 'cleared to Seattle-Tacoma International airport', limit),
+      'Oakland Six departure',
+      'oak6 depature',
+    ),
+  );
+}
+
+describe('gradeText on a field typed as its code', () => {
+  it('names the word left out and nothing else', () => {
+    const grades = codedGraded('cleared to ksea');
+    expect(misgraded(grades, { C: 'wrong' })).toEqual([]);
+    expect(gradeOf(grades, 'C').remarks).toEqual(['missed: "airport"']);
+    expect(spellingCiters(grades)).toEqual(['R.sid']);
+  });
+
+  it('grades the code with the word said correct', () => {
+    const grades = codedGraded('cleared to ksea airport');
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['R.sid']);
+  });
+});
+
 /** What the expected runs of one grade get wrong: how they join, how they alternate, what they mark. */
 function expectedProblems(grades: readonly TextGrade[]): string[] {
   return grades.flatMap((grade) => {
