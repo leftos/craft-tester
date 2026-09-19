@@ -65,7 +65,7 @@ airport is adding that directory and a line in `data/airports.json`; the step-by
 | directory | job |
 |---|---|
 | `data/` | zod schema, loader |
-| `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/routeBuild.ts` route-builds for both engines: before the vector-SID fallback a filed SID whose transition, or own end fix, connects onward to the filed route over `routeConnections` (or a row's forced transition), and before a heading any passed-over SID that does, in amendment mode and in clearance mode alike; its `buildToArrival` runs the same breadth-first search from several sources to a preference-ordered set of arrival entry fixes. `rules/amend/` checks the three strip boxes; `rules/amend/arrival.ts` is the last step of the route check: every proposed box is held against the LOA route rows and, at a destination the ZOA common-arrivals sheet lists, against the flight's equipment, and a flight on the wrong arrival is routed onto one it can fly at an entry fix the sheet, the LOA or the chart names, the amendment carrying `arrivalSwap` (the box without that change) for half credit. `rules/text/` reads a typed clearance: `normalise.ts` turns text into words and numbers that record how each number was said (figures, digits, group form, "nine", a restatement), with capitalised identifiers expanded through the airport's lexicon; `grade.ts` `gradeText` aligns that against the parts of the engine's reading (`speakClearance().parts`) and grades C, R.sid, R.route, A.phrase, A.expect, F, T and RWY, each with what was said for it as runs (filler marked), citing the `S-*` rows and the free-text `R-*` rows (see "Free-text grading" below) |
+| `rules/` | clearance engine: classify → parse route → select SID → phrase route → resolve altitude → frequency → explain runway; `options`, `grade`, `speak`. `rules/routeBuild.ts` route-builds for both engines: before the vector-SID fallback a filed SID whose transition, or own end fix, connects onward to the filed route over `routeConnections` (or a row's forced transition), and before a heading any passed-over SID that does, in amendment mode and in clearance mode alike; its `buildToArrival` runs the same breadth-first search from several sources to a preference-ordered set of arrival entry fixes. `rules/amend/` checks the three strip boxes; `rules/amend/arrival.ts` is the last step of the route check: every proposed box is held against the LOA route rows and, at a destination the ZOA common-arrivals sheet lists, against the flight's equipment, and a flight on the wrong arrival is routed onto one it can fly at an entry fix the sheet, the LOA or the chart names, the amendment carrying `arrivalSwap` (the box without that change) for half credit. `rules/text/` reads a typed clearance: `normalise.ts` turns text into words and numbers that record how each number was said (figures, digits, group form, "nine", a restatement), with identifiers, typed in any case, expanded through the airport's lexicon; `grade.ts` `gradeText` aligns that against the parts of the engine's reading (`speakClearance().parts`) and grades C, R.sid, R.route, A.phrase, A.expect, F, T and RWY, each with what was said for it as runs (filler marked), citing the `S-*` rows and the free-text `R-*` rows (see "Free-text grading" below) |
 | `scenario/` | seeded PRNG, clearance-scenario generator (configurations drawn by `runwayConfigs[].trainingWeight`; a draw is kept only when the amendment engine finds nothing to amend), amendment-scenario generator (`amend.ts`: up to two faults injected into a clean draw, kept only when the engine amends exactly the boxes they meant), time-of-day, runway-configuration and forced-destination filters in the URL hash, beside the mode (`m=amend`) and the input kind (`i=text`, typed answers; the dropdowns write no part) |
 | `ui/` | header with the mode switch, the answer switch (dropdowns or typed) and the filters, strip, ATIS panel, CRAFT form, typing box (`textForm.ts`), the amendment strip with its answer controls (`amendPanels.ts`, `amendForm.ts`), results, revisit spoiler, solved-scenario store (`solved.ts`, localStorage, best effort, one key per airport, mode, input kind and seed), remembered filter and input kind (`preferences.ts`). **Render model:** the panels are built again only when the view key changes — airport, seed, filter, mode, input kind and phase (`state.ts`, `viewKey`/`phaseOf`, the latter shared by the panel dispatcher so the two cannot drift) — and every other change is written into the controls already on screen by the `sync` each form returns beside its node. Within one phase the answer form is the only thing that varies: the strips and ATIS follow the scenario, the verdicts read boxes frozen at submit, and the option lists come from `buildOptions`, which is pure in the scenario. That is why a keystroke or a pick leaves its control in place, with its focus and caret, and why no focus-restoring workaround is needed |
 | `../scripts/` | Node scripts outside the bundle: `propose.ts` (the engine's clearance for a fixture, with citations), `export-schema.ts`, `browser-check.ts` (Playwright, forced viewport) |
@@ -185,15 +185,39 @@ remembered per browser. The dropdowns stay, and the student chooses.
   is graded against exactly the reading the reveal shows.
 - **Normalising** (`rules/text/normalise.ts`). The text is lowercased and its punctuation dropped. A run of
   numbers becomes one token that records its value and how it was said. The run may be figures or words,
-  including plain or ICAO digits, group forms, "thousand", "hundred" and "point". An identifier typed in
-  capitals is expanded through the airport's lexicon of fix and procedure names.
+  including plain or ICAO digits, group forms, "thousand", "hundred" and "point". An identifier (`NIMI6`,
+  `sac`, `ksmf`) is expanded through the airport's lexicon of fix, procedure and destination names
+  whatever its case: capitalisation never changes a grade (user, 2026-09-18). Two things outrank the
+  lexicon, so an identifier that spells a word cannot take it over: a number word is always a number, and
+  a word one of the candidate readings says is read as typed (`gradeText` leaves those keys out of the
+  lexicon it reads the typed text with).
+  A run of two or more spelling-alphabet words is the identifier it spells, fully right and with no
+  remark (`R-NAVAID`; 7110.65 2-5-2 a 1 gives "the name or phonetic alphabet equivalent" of a navaid in a
+  routing, and the user extended it to a five-letter fix, 2026-09-18): the longest stretch the lexicon
+  holds reads as that key's spoken words ("sierra alpha uniform" is "Sausalito VOR"), and five letters
+  it misses read as the fix's own word. One such word alone spells nothing, so "victor six" stays an
+  airway, also right after a spelt navaid. `x-ray` typed with a hyphen is not read; `xray` is.
+- **Joining numbers** (`rules/text/grade.ts`, `joinNumbers`). The normaliser ends a number run at typed
+  figures, which keeps "expect 10000 one zero minutes" two numbers, so a squawk typed `00 six two`
+  arrives as `00` and `62`. Before aligning, consecutive typed numbers whose values concatenate to a
+  number some candidate reading says are read as that one number (longest run first; a word between two
+  numbers keeps them apart). The joined number is figures where every piece was, group form where any
+  piece was, so "00 sixty-two" still falls under `S-GROUP-FORM`.
 - **Aligning** (`rules/text/grade.ts`). The typed tokens are aligned with every candidate reading by
   longest common subsequence, and the base reading wins ties. Within one reading, among the alignments
   with the most matches the one with the most adjacent matches wins (two neighbouring typed words on two
   neighbouring words of the reading), then the earliest: a word the reading says twice goes where its
   neighbour is said too, so a student who leaves out "expect … after departure" keeps the "departure" of
   "departure frequency" on F. The candidates are the base reading, the
-  route in full, the route closed on "then as filed", and each of those with the redundant expect clause.
+  route in full, the route closed on "then as filed", each of those with the redundant expect clause, and
+  each of those again with the field under every name its destination row lists (`spoken`, `short`,
+  `also`). A name candidate is the field itself: it lowers no tier and adds no remark or citation, where
+  a longer route or a redundant clause grades acceptable. Among candidates with the same number of matches
+  the one that leaves the fewest of its own clearance-limit words unsaid wins, then the earliest, so
+  "cleared to Sacramento airport" is the short name said whole and not the full name with
+  "International" missed; the route and expect axes share their C words, so they still break ties
+  earliest-first. Because the names' words are words of a reading, a lexicon key that spells one is
+  read as typed on that clearance: "Sea-Tac" is the field, not the SEA VOR.
   An expect clause said where the reading has none is cut out before alignment. Words before the first
   match are the callsign and are not graded.
 - **Verdicts**, per element. Values come first, and a wrong or missing value is wrong. The fixed words come

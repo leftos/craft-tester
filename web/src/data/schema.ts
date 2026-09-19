@@ -554,6 +554,10 @@ export const ArrivalSchema = z.strictObject({
 /**
  * A destination airport with the coordinates and ARTCC the altitude checks need.
  *
+ * `spoken` is the field's full name, the one the engine reads. `short` is the name the amendment
+ * reasons use, and repeats `spoken` at a field that goes by its full name alone. `also` is every
+ * further name a typed clearance may give the field - local usage among them - each grading as the
+ * name itself; it is empty where the field has none.
  * `nct` marks a destination inside NorCal TRACON, which is where the TEC route rows apply.
  * `arrivals` is every arrival the field publishes, empty for a field the FAA file carries no
  * procedures for - every foreign one - and for one that publishes no arrival at all.
@@ -561,6 +565,8 @@ export const ArrivalSchema = z.strictObject({
 export const DestinationSchema = z.strictObject({
   icao: z.string(),
   spoken: z.string(),
+  short: z.string(),
+  also: z.array(z.string()),
   lat: z.number().min(-90).max(90),
   lon: z.number().min(-180).max(180),
   artcc: z.string(),

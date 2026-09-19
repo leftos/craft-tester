@@ -67,15 +67,33 @@ describe('normaliseSpoken', () => {
     expect(read('HAWKZ7')).toEqual(['w:hawkz', 'n:7/figures']);
   });
 
-  it('expands a capitalised identifier the lexicon holds, and only a capitalised one', () => {
+  it('expands an identifier the lexicon holds, however it is capitalised', () => {
     const lexicon = { SAC: 'Sacramento VOR', KSEA: 'Seattle' };
-    const tokens = normaliseSpoken('SAC', lexicon);
-    expect(tokens.map(compact)).toEqual(['w:sacramento', 'w:vor']);
-    expect(tokens.map(({ start, end }) => [start, end])).toEqual([
-      [0, 3],
-      [0, 3],
+    for (const typed of ['SAC', 'sac', 'Sac']) {
+      const tokens = normaliseSpoken(typed, lexicon);
+      expect(tokens.map(compact)).toEqual(['w:sacramento', 'w:vor']);
+      expect(tokens.map(({ start, end }) => [start, end])).toEqual([
+        [0, 3],
+        [0, 3],
+      ]);
+    }
+  });
+
+  it('expands a procedure identifier in lower case, and splits one the lexicon misses', () => {
+    const lexicon = { NIMI6: 'Nimitz Six' };
+    const spoken = ['w:nimitz', 'n:6/digits'];
+    expect(normaliseSpoken('NIMI6', lexicon).map(compact)).toEqual(spoken);
+    expect(normaliseSpoken('nimi6', lexicon).map(compact)).toEqual(spoken);
+    expect(normaliseSpoken('Nimi6', lexicon).map(compact)).toEqual(spoken);
+    expect(normaliseSpoken('hawkz7', lexicon).map(compact)).toEqual(['w:hawkz', 'n:7/figures']);
+  });
+
+  it('reads a number word as a number even where the lexicon holds it', () => {
+    const lexicon = { TEN: 'Tenville VOR' };
+    expect(normaliseSpoken('one zero ten thousand', lexicon).map(compact)).toEqual([
+      'n:10000/digits+r',
     ]);
-    expect(normaliseSpoken('sac', lexicon).map(compact)).toEqual(['w:sac']);
+    expect(normaliseSpoken('ten thousand', lexicon).map(compact)).toEqual(['n:10000/group']);
   });
 
   it('ends a number run at punctuation', () => {
@@ -156,6 +174,73 @@ describe('normaliseSpoken', () => {
   });
 });
 
+describe('normaliseSpoken on an identifier spelt in the phonetic alphabet', () => {
+  it('reads a spelt navaid identifier as the navaid, whatever its case', () => {
+    const lexicon = { SAU: 'Sausalito VOR' };
+    for (const typed of ['sierra alpha uniform', 'Sierra Alpha Uniform']) {
+      const tokens = normaliseSpoken(typed, lexicon);
+      expect(tokens.map(compact)).toEqual(['w:sausalito', 'w:vor']);
+      expect(tokens.map(({ start, end }) => [start, end])).toEqual([
+        [0, typed.length],
+        [0, typed.length],
+      ]);
+    }
+  });
+
+  it('reads both spellings of alfa and juliett', () => {
+    const lexicon = { SAU: 'Sausalito VOR', SJC: 'San Jose' };
+    const sausalito = ['w:sausalito', 'w:vor'];
+    const sanJose = ['w:san', 'w:jose'];
+    expect(normaliseSpoken('sierra alfa uniform', lexicon).map(compact)).toEqual(sausalito);
+    expect(normaliseSpoken('sierra alpha uniform', lexicon).map(compact)).toEqual(sausalito);
+    expect(normaliseSpoken('sierra juliett charlie', lexicon).map(compact)).toEqual(sanJose);
+    expect(normaliseSpoken('sierra juliet charlie', lexicon).map(compact)).toEqual(sanJose);
+  });
+
+  it('takes the longest run the lexicon holds and leaves the airway after it', () => {
+    const lexicon = { SAC: 'Sacramento VOR' };
+    expect(normaliseSpoken('sierra alpha charlie victor six', lexicon).map(compact)).toEqual([
+      'w:sacramento',
+      'w:vor',
+      'w:victor',
+      'n:6/digits',
+    ]);
+  });
+
+  it('reads five letters the lexicon misses as the fix they spell', () => {
+    const typed = 'delta echo delta hotel delta';
+    const tokens = normaliseSpoken(typed, {});
+    expect(tokens.map(compact)).toEqual(['w:dedhd']);
+    expect(tokens.map(({ start, end }) => [start, end])).toEqual([[0, typed.length]]);
+  });
+
+  it('spells the first five letters and leaves the airway after them', () => {
+    expect(read('delta echo delta hotel delta victor six')).toEqual([
+      'w:dedhd',
+      'w:victor',
+      'n:6/digits',
+    ]);
+  });
+
+  it('leaves one phonetic word alone, so an airway is its word and its number', () => {
+    expect(read('victor six')).toEqual(['w:victor', 'n:6/digits']);
+    expect(read('tango two ten')).toEqual(['w:tango', 'n:210/group']);
+  });
+
+  it('leaves a short run that spells nothing as the words themselves', () => {
+    expect(read('mike oscar')).toEqual(['w:mike', 'w:oscar']);
+  });
+
+  it('ends the run at a comma', () => {
+    const lexicon = { SAU: 'Sausalito VOR' };
+    expect(normaliseSpoken('sierra alpha, uniform', lexicon).map(compact)).toEqual([
+      'w:sierra',
+      'w:alpha',
+      'w:uniform',
+    ]);
+  });
+});
+
 /** Every checked-in airport, keyed by ICAO, so a fixture is read against the field it names. */
 const airports = new Map<string, AirportData>(
   checkedInAirports().map((entry) => [entry.icao, entry.data]),
@@ -177,7 +262,7 @@ describe('lexiconFor', () => {
     expect(lexicon['OSI']).toBe('Woodside VOR');
     expect(gap?.spoken).toMatch(/^Gap /);
     expect(lexicon[gap?.id ?? '']).toBe(gap?.spoken);
-    expect(lexicon['KSEA']).toBe('Seattle');
+    expect(lexicon['KSEA']).toBe('Seattle-Tacoma International');
   });
 });
 

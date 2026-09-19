@@ -15,7 +15,9 @@ and "Amendment mode") and [ADDING_AN_AIRPORT.md](../ADDING_AN_AIRPORT.md) ("Less
 finished subplans behind them are in `archive/`.
 
 **State 2026-09-18.** Both airports are live. Tester feedback from AJ Norell (typed spelling, what a red
-row says, the pinned strip) landed the same day and left nothing open. The generator-data wave closed 2026-09-18 with the TEC
+row says, the pinned strip) landed the same day and left nothing open; the user's own typed-answer reports
+(names, case, joined numbers, spelt identifiers) landed after it, and AJ's full-route-clearance mode is
+open under Singles. The generator-data wave closed 2026-09-18 with the TEC
 override ([archive/tec-override.md](./archive/tec-override.md)). KOAK is closed at 51 of 51 fixtures
 settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
@@ -62,6 +64,16 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
     proposal
 
 ## Singles
+
+- [ ] **A full route clearance mode** (AJ Norell, 2026-09-18; the user agreed: "I should have a proper full
+  route clearance mode"). Today the full route is only a by-product: an amended route is read in full when
+  the amendment needs it, the dropdown results show both readings, and a typed full route on a clean plan
+  grades acceptable, not right (`R-FULL-ROUTE`, remark "the route read in full — the shorter reading is
+  enough"). A mode where the full route IS the expected reading needs planning with the user before any
+  code: what triggers it (a header switch like `m=amend`, or a drawn pilot request / FRC remark on the
+  strip), whether it applies to both clearance and amendment mode, how `R-FULL-ROUTE` and
+  `R-THEN-AS-FILED-END` grade inside it ("then as filed" becomes the miss), which 7110.65 4-3-2 paragraph
+  the new row cites, and what the dropdown form offers for the route
 
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
@@ -172,3 +184,11 @@ One line per step; the full record and the user decisions behind each are in the
   near-miss words in `you said:` and names the kind of miss in a remark line; a dropdown row marks the words
   that differ between the pick and the clearance; strip boxes unchanged. The remark labels are matcher
   constants, not YAML rows (they name what the matcher saw; the deciding rule is still cited) — `ae2218d`
+- [x] Typed names (user reports, 2026-09-18; [archive/typed-names.md](./archive/typed-names.md)): a typed
+  identifier reads the same in any case (`nimi6`, `kmcc oak6`) — `b3d2405`; a destination carries its full
+  FAA name (read in the clearance), a `short` name (kept by the amendment reasons, so no settled reason
+  moved) and `also` names, and a typed clearance may say any of them as the name itself ("Sacramento
+  Metro") — `17c68b7`, `7763420`; a number typed in pieces is one number where the pieces spell a number
+  the reading says ("squawk 00 six two") — `7763420`; "radar vectors to join Victor six airway"
+  (`R-RV-AIRWAY`), and a navaid or five-letter fix spelt in the phonetic alphabet is fully right
+  (`R-NAVAID`, 7110.65 2-5-2 a 1) — `4cc29fe`

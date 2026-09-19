@@ -530,7 +530,7 @@ function routeElementPhrase(input: SpeakClearanceInput, fix: string): string {
   if (template === 'transition') return `${speakTransition(input, fix)} transition`;
   if (template === 'radar_vectors_fix') return `radar vectors ${speakFix(fix, input.fixSpoken)}`;
   if (template === 'radar_vectors_airway') {
-    return `radar vectors to join ${speakRouteToken(fix, input.fixSpoken)}`;
+    return `radar vectors to join ${speakRouteToken(fix, input.fixSpoken)} airway`;
   }
   return speakBareFix(input, fix);
 }

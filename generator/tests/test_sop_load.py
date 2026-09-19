@@ -480,6 +480,75 @@ def test_an_empty_outside_nct_reason_is_rejected(tmp_path: Path) -> None:
         shared_copy(tmp_path, destinations=mutate)
 
 
+def test_a_destination_loads_its_other_names_in_the_order_the_row_lists_them(shared_route_facts: SharedRouteFacts) -> None:
+    assert shared_route_facts.destinations["KSMF"].also == ("Sacramento Metro",)
+    assert shared_route_facts.destinations["KSEA"].also == ("Seattle-Tacoma", "Sea-Tac")
+
+
+def test_a_destination_loads_the_short_name_its_reasons_use(shared_route_facts: SharedRouteFacts) -> None:
+    assert shared_route_facts.destinations["KSMF"].short == "Sacramento"
+    assert shared_route_facts.destinations["KSEA"].short == "Seattle"
+
+
+def test_a_destination_row_without_a_short_name_takes_the_spoken_one(shared_route_facts: SharedRouteFacts) -> None:
+    chino = shared_route_facts.destinations["KCNO"]
+    assert (chino.spoken, chino.short) == ("Chino", "Chino")
+    riverside = shared_route_facts.destinations["KRAL"]
+    assert (riverside.spoken, riverside.short) == ("Riverside", "Riverside")
+
+
+def test_an_empty_short_name_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["short"] = "  "
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]\.short: the key names nothing"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
+def test_a_short_name_written_out_as_the_spoken_name_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["short"] = "sacramento international "
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]\.short: 'sacramento international ' is the row's `spoken` name; drop the key"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
+def test_an_other_name_that_restates_the_short_name_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["also"] = ["SACRAMENTO"]
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]\.also\[0\]: 'SACRAMENTO' is the row's `short` name"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
+def test_a_destination_row_without_other_names_loads_an_empty_list(shared_route_facts: SharedRouteFacts) -> None:
+    assert shared_route_facts.destinations["KCNO"].also == ()
+
+
+def test_an_empty_other_name_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["also"] = ["Sacramento Metro", "  "]
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]\.also\[1\]: the entry names nothing"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
+def test_an_other_name_that_restates_the_spoken_name_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["also"] = ["  sacramento INTERNATIONAL"]
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]\.also\[0\]: '  sacramento INTERNATIONAL' is the row's `spoken` name"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
+def test_an_other_name_repeated_within_a_row_is_rejected(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["destinations"]["KSMF"]["also"] = ["Sacramento Metro", "SACRAMENTO metro "]
+
+    with pytest.raises(ValueError, match=r"destinations\[KSMF\]\.also\[1\]: 'SACRAMENTO metro ' repeats an earlier entry of the same row"):
+        shared_copy(tmp_path, destinations=mutate)
+
+
 def test_sid_family_of_rejects_an_unversioned_id() -> None:
     assert sid_family_of("TRUKN2", "where") == "TRUKN"
     with pytest.raises(ValueError, match="cifp_id 'GAPP' is not upper-case letters followed by a version number"):

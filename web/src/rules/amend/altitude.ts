@@ -125,7 +125,7 @@ function parityConstraint(
   const filed = formatAltitude(scenario.filedAltitude);
   return {
     legal: (feet) => isOnSeries(feet, parity),
-    reason: `filed ${filed} on a ${course}° magnetic course to ${destination.spoken} needs an ${parity} level${under}`,
+    reason: `filed ${filed} on a ${course}° magnetic course to ${destination.short} needs an ${parity} level${under}`,
     citations: [
       ...citePhraseology(airport, 'A-PARITY'),
       ...(override === undefined ? [] : [toCitation(override.row)]),
@@ -266,7 +266,7 @@ export function checkAltitude(
     return {
       box: 'altitude',
       proposedFeet: tecFinal,
-      reason: `the TEC route to ${destination.spoken} is flown at ${formatAltitude(tecFinal)}; a facility-directed altitude is not read against the direction-of-flight rule`,
+      reason: `the TEC route to ${destination.short} is flown at ${formatAltitude(tecFinal)}; a facility-directed altitude is not read against the direction-of-flight rule`,
       citations: [citeTec(tecRow)],
     };
   }

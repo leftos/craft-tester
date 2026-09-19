@@ -1050,6 +1050,12 @@
           "items": {
             "additionalProperties": false,
             "properties": {
+              "also": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
               "arrivals": {
                 "items": {
                   "additionalProperties": false,
@@ -1099,6 +1105,9 @@
               "nct": {
                 "type": "boolean"
               },
+              "short": {
+                "type": "string"
+              },
               "spoken": {
                 "type": "string"
               }
@@ -1106,6 +1115,8 @@
             "required": [
               "icao",
               "spoken",
+              "short",
+              "also",
               "lat",
               "lon",
               "artcc",

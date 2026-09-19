@@ -384,6 +384,11 @@ class Overrides:
 class Destination:
     """One destination a scenario can file to.
 
+    ``spoken`` is the field's full name, the one the engine reads; ``short`` is the name the
+    amendment reasons use, and is the spoken name at a field whose row gives no shorter one.
+    ``also`` is every further name a typed clearance may give the field, in the order the row lists
+    them, and is empty at a field the row gives no other name for.
+
     ``outside_nct`` is the reason a field the NCT terminal polygon holds laterally is nonetheless no
     NCT destination - another facility owns the airspace over it down to the ground - and is ``None``
     at every field the polygon alone decides. The build computes the ``nct`` flag from the polygon
@@ -392,6 +397,8 @@ class Destination:
 
     icao: str
     spoken: str
+    short: str
+    also: tuple[str, ...]
     artcc: str
     outside_nct: str | None
     lat: float | None

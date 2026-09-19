@@ -606,6 +606,227 @@ describe('gradeText on a word typed a letter or two away from the reading', () =
   });
 });
 
+describe('gradeText on an identifier typed in place of the words it is spoken as', () => {
+  it('reads a procedure identifier in lower case as the procedure', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'Oakland Six departure', 'oak6 departure'),
+    );
+    expect(misgraded(grades, {})).toEqual([]);
+  });
+
+  it('reads a procedure identifier in capitals as the procedure', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'Oakland Six departure', 'OAK6 departure'),
+    );
+    expect(misgraded(grades, {})).toEqual([]);
+  });
+
+  it('reads a destination code in lower case as the destination', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'Seattle-Tacoma International airport', 'ksea airport'),
+    );
+    expect(misgraded(grades, {})).toEqual([]);
+  });
+
+  it('reads a word the reading itself says as typed, not as the identifier it spells', () => {
+    const { airport, clearance: resolved, spoken } = settledReading(FDX_PRACTICE);
+    const spelling: AirportData = {
+      ...airport,
+      fixSpoken: { ...airport.fixSpoken, VIA: 'Viaduct VOR' },
+    };
+    expect(spoken.abbreviated).toContain(' via ');
+    expect(misgraded(gradeText(spoken.abbreviated, spoken, resolved, spelling), {})).toEqual([]);
+  });
+});
+
+/** A settled KSFO reading vectored to a navaid its route names in full. */
+const SAC_VECTORS = 'syn-gapp7-sac-28l-nonrnav-jet';
+
+/** The route grades of one reading typed as read, and of the same reading with a stretch spelt. */
+function speltRoute(id: string, name: string, spelt: string): [TextGrade, TextGrade] {
+  const reading = settledReading(id);
+  const asRead = gradedAgainst(reading, reading.spoken.abbreviated);
+  const typed = gradedAgainst(reading, edited(reading.spoken.abbreviated, name, spelt));
+  expect(misgraded(typed, {})).toEqual([]);
+  return [gradeOf(typed, 'R.route'), gradeOf(asRead, 'R.route')];
+}
+
+describe('gradeText on an identifier spelt in the phonetic alphabet', () => {
+  it('reads a navaid spelt letter by letter as the navaid', () => {
+    const [spelt, asRead] = speltRoute(SAC_VECTORS, 'Sacramento VOR', 'sierra alpha charlie');
+    expect(spelt.remarks).toEqual([]);
+    expect(idsOf(spelt)).toEqual(idsOf(asRead));
+  });
+
+  it('reads a five-letter fix spelt letter by letter as the fix', () => {
+    const [spelt, asRead] = speltRoute(FDX_PRACTICE, 'Dedhd', 'delta echo delta hotel delta');
+    expect(spelt.remarks).toEqual([]);
+    expect(idsOf(spelt)).toEqual(idsOf(asRead));
+  });
+});
+
+/** The practice reading with the field named another way, in place of the name the reading reads. */
+function namedGraded(name: string): TextGrade[] {
+  return fdxGraded((reading) => edited(reading, 'Seattle-Tacoma International', name));
+}
+
+/** The rows the clearance limit cites when the reading is typed as read. */
+function limitCitations(): string[] {
+  return idsOf(
+    gradeOf(
+      fdxGraded((reading) => reading),
+      'C',
+    ),
+  );
+}
+
+describe('gradeText on a field named by another name its row lists', () => {
+  it('the name the reading reads is the name', () => {
+    const grades = fdxGraded((reading) => reading);
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(gradeOf(grades, 'C').remarks).toEqual([]);
+    expect(limitCitations().length).toBeGreaterThan(0);
+  });
+
+  it.each(['Seattle', 'Seattle-Tacoma', 'Sea-Tac', 'sea-tac'])(
+    'the field named "%s" is the field itself',
+    (name) => {
+      const grades = namedGraded(name);
+      expect(misgraded(grades, {})).toEqual([]);
+      const limit = gradeOf(grades, 'C');
+      expect(limit.remarks).toEqual([]);
+      expect(idsOf(limit)).toEqual(limitCitations());
+    },
+  );
+
+  it('a word no name of the row holds is filler beside the name it does hold', () => {
+    const grades = namedGraded('the Seattle metro');
+    expect(misgraded(grades, { C: 'acceptable' })).toEqual([]);
+    const limit = gradeOf(grades, 'C');
+    expect(idsOf(limit)).toEqual([...limitCitations(), 'S-FILLER']);
+    expect(limit.remarks).toEqual(['extra words: the, metro']);
+  });
+
+  it('another field is the wrong field', () => {
+    expect(misgraded(namedGraded('Portland'), { C: 'wrong' })).toEqual([]);
+  });
+
+  it('a name typed a letter away from one the row lists is that name', () => {
+    const grades = namedGraded('Seatle');
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['C']);
+  });
+});
+
+/** A hand-built reading whose squawk carries a leading zero, so its digits can be typed in pieces. */
+const leadingZeroSquawk = input({ squawk: '0062' });
+
+/** The leading-zero reading with the squawk it reads typed another way. */
+function squawkGraded(said: string): TextGrade[] {
+  return graded(
+    edited(readingOf(leadingZeroSquawk), 'squawk zero zero six two', said),
+    leadingZeroSquawk,
+  );
+}
+
+describe('gradeText on a number typed in pieces', () => {
+  it('reads the pieces of a squawk as the one number they spell', () => {
+    const grades = squawkGraded('sqawk 00 six two');
+    expect(misgraded(grades, {})).toEqual([]);
+    const squawk = gradeOf(grades, 'T');
+    expect(idsOf(squawk)).toEqual(['S-SPELLING']);
+    expect(squawk.remarks).toEqual([]);
+  });
+
+  it.each(['squawk 00 62', 'squawk 0 0 six two'])('reads "%s" as the squawk', (said) => {
+    expect(misgraded(squawkGraded(said), {})).toEqual([]);
+  });
+
+  it('holds a squawk whose pieces end in a group form to what a group form alone reads as', () => {
+    const joined = gradeOf(squawkGraded('squawk 00 sixty-two'), 'T');
+    const whole = gradeOf(
+      graded(edited(readingOf(), 'squawk three three four two', 'squawk thirty-three forty-two')),
+      'T',
+    );
+    expect(whole.verdict).toBe('wrong');
+    expect(joined.verdict).toBe(whole.verdict);
+    expect(idsOf(joined)).toEqual(idsOf(whole));
+    expect(joined.remarks).toEqual(whole.remarks);
+  });
+
+  it('joins nothing where the pieces spell no number the reading says', () => {
+    const tenThousand = input({
+      clearance: clearance({ redundantExpect: { kind: 'filed', feet: 10000, minutes: 10 } }),
+    });
+    const said = edited(
+      readingOf(tenThousand),
+      'Climb via SID. ',
+      'Climb via SID. Expect 10000 one zero minutes after departure. ',
+    );
+    const grades = graded(said, tenThousand);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'A.expect': 'acceptable' }));
+    expect(idsOf(gradeOf(grades, 'A.expect'))).toEqual(['OWN-REDUNDANT']);
+  });
+});
+
+/** The practice reading with the field typed as its code and the procedure as its identifier. */
+function codedGraded(limit: string): TextGrade[] {
+  return fdxGraded((reading) =>
+    edited(
+      edited(reading, 'cleared to Seattle-Tacoma International airport', limit),
+      'Oakland Six departure',
+      'oak6 depature',
+    ),
+  );
+}
+
+describe('gradeText on a field typed as its code', () => {
+  it('names the word left out and nothing else', () => {
+    const grades = codedGraded('cleared to ksea');
+    expect(misgraded(grades, { C: 'wrong' })).toEqual([]);
+    expect(gradeOf(grades, 'C').remarks).toEqual(['missed: "airport"']);
+    expect(spellingCiters(grades)).toEqual(['R.sid']);
+  });
+
+  it('grades the code with the word said correct', () => {
+    const grades = codedGraded('cleared to ksea airport');
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(spellingCiters(grades)).toEqual(['R.sid']);
+  });
+});
+
+/** A settled KOAK practice reading whose route is radar vectors to join an airway. */
+const AIRWAY_PRACTICE = 'ws-koak-phraseology-practice-2-n436ms';
+
+describe('gradeText on the airway a clearance is vectored to join', () => {
+  it('grades the joined airway said with its word correct', () => {
+    const reading = settledReading(AIRWAY_PRACTICE);
+    expect(reading.spoken.abbreviated).toContain('radar vectors to join Victor six airway');
+    const grades = gradedAgainst(reading, reading.spoken.abbreviated);
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(gradeOf(grades, 'R.route').remarks).toEqual([]);
+  });
+
+  it('misses the word "airway" left off the joined airway', () => {
+    const reading = settledReading(AIRWAY_PRACTICE);
+    const grades = gradedAgainst(
+      reading,
+      edited(reading.spoken.abbreviated, 'Victor six airway', 'Victor six'),
+    );
+    expect(misgraded(grades, { 'R.route': 'wrong' })).toEqual([]);
+    expect(gradeOf(grades, 'R.route').remarks).toEqual(['missed: "airway"']);
+  });
+
+  it('keeps the word said after an airway that connects two fixes filler', () => {
+    const connecting = input({ filedRoute: 'TRUKN2 DEDHD V6 RBL' });
+    const full = speakClearance(connecting).fullRoute;
+    expect(full).toContain('Dedhd transition, Victor six, Red Bluff VOR');
+    const grades = graded(edited(full, 'Victor six,', 'Victor six airway,'), connecting);
+    expect(misgraded(grades, { 'R.route': 'acceptable' })).toEqual([]);
+    expect(idsOf(gradeOf(grades, 'R.route'))).toContain('S-FILLER');
+  });
+});
+
 /** What the expected runs of one grade get wrong: how they join, how they alternate, what they mark. */
 function expectedProblems(grades: readonly TextGrade[]): string[] {
   return grades.flatMap((grade) => {
@@ -797,7 +1018,7 @@ describe('the marks and the remarks of a typed grade', () => {
     expect(limit.said).toEqual([
       { text: 'cleared to ', kind: 'said' },
       { text: 'the', kind: 'filler' },
-      { text: ' Seattle airport', kind: 'said' },
+      { text: ' Seattle-Tacoma International airport', kind: 'said' },
     ]);
     expect(limit.remarks).toEqual(['extra words: the']);
   });

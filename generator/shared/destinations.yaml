@@ -3,76 +3,83 @@
 # airport, so a destination is stated once here and an airport's `routes.yaml` lists only the codes its
 # scenarios file to. US coordinates are filled from CIFP by the generator; a foreign field has nothing to
 # resolve against and gives `lat` and `lon` here.
+# `spoken` is the name the engine reads: the FAA's name for the field in full (the CIFP airport record,
+# its abbreviations written out and its slashes and brackets dropped; the record stops at 30 characters, so
+# a longer name is completed from FAA NASR `ARPT_NAME`). A foreign field takes its published name. `short`
+# is the name the amendment reasons use ("the TEC route to Sacramento is flown at 10,000"), and is the
+# `spoken` name where a row gives none. `also` lists every further name a typed clearance may give the
+# field, local usage among them. A typed clearance may say any of the three, and each grades as the name
+# itself (user, 2026-09-18).
 # Whether a field is inside NCT is computed at build time from the terminal polygons of `nct_boundary.yaml`,
 # never flagged by hand. A field the polygon holds laterally but another facility owns down to the ground
 # states `outside_nct` with the reason, and the build treats it as outside. The flag gates the TEC route
 # lookup, so a TEC row to a field without it is never issued.
 destinations:
-  CYVR: { spoken: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
-  ESSA: { spoken: Stockholm Arlanda, artcc: ZAK, lat: 59.652, lon: 17.919 }
-  KACV: { spoken: Arcata, artcc: ZOA }
-  KAJO: { spoken: Corona, artcc: ZLA }
-  KAPC: { spoken: Napa, artcc: ZOA }
-  KBFI: { spoken: Boeing Field, artcc: ZSE }
-  KBIL: { spoken: Billings, artcc: ZLC }
-  KBLI: { spoken: Bellingham, artcc: ZSE }
-  KBOI: { spoken: Boise, artcc: ZLC }
-  KBUR: { spoken: Burbank, artcc: ZLA }
-  KCCR: { spoken: Concord, artcc: ZOA, outside_nct: "Travis Approach owns a shelf below NCT's lateral boundary down to the ground over Concord (user, 2026-09-16)" }
+  CYVR: { spoken: Vancouver International, short: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
+  ESSA: { spoken: Stockholm Arlanda, also: [Arlanda, Stockholm], artcc: ZAK, lat: 59.652, lon: 17.919 }
+  KACV: { spoken: California Redwood Coast-Humboldt County, short: Arcata, also: [Humboldt County], artcc: ZOA }
+  KAJO: { spoken: Corona Municipal, short: Corona, artcc: ZLA }
+  KAPC: { spoken: Napa County, short: Napa, artcc: ZOA }
+  KBFI: { spoken: Boeing Field King County International, short: Boeing Field, also: [King County International], artcc: ZSE }
+  KBIL: { spoken: Billings Logan International, short: Billings, also: [Billings Logan], artcc: ZLC }
+  KBLI: { spoken: Bellingham International, short: Bellingham, artcc: ZSE }
+  KBOI: { spoken: Boise Air Terminal Gowen Field, short: Boise, also: [Boise Air Terminal, Gowen Field], artcc: ZLC }
+  KBUR: { spoken: Hollywood Burbank, short: Burbank, artcc: ZLA }
+  KCCR: { spoken: Buchanan Field, short: Concord, also: [Buchanan], artcc: ZOA, outside_nct: "Travis Approach owns a shelf below NCT's lateral boundary down to the ground over Concord (user, 2026-09-16)" }
   KCNO: { spoken: Chino, artcc: ZLA }
-  KCRQ: { spoken: Carlsbad, artcc: ZLA }
-  KDEN: { spoken: Denver, artcc: ZDV }
-  KEMT: { spoken: El Monte, artcc: ZLA }
-  KFAT: { spoken: Fresno, artcc: ZOA }
-  KGPZ: { spoken: Grand Rapids Minnesota, artcc: ZMP }
-  KHND: { spoken: Henderson, artcc: ZLA }
-  KHWD: { spoken: Hayward, artcc: ZOA }
+  KCRQ: { spoken: McClellan-Palomar, short: Carlsbad, also: [Palomar], artcc: ZLA }
+  KDEN: { spoken: Denver International, short: Denver, artcc: ZDV }
+  KEMT: { spoken: San Gabriel Valley, short: El Monte, artcc: ZLA }
+  KFAT: { spoken: Fresno Yosemite International, short: Fresno, also: [Fresno Yosemite], artcc: ZOA }
+  KGPZ: { spoken: Grand Rapids Itasca County-Gordon Newstrom Field, short: Grand Rapids Minnesota, also: [Grand Rapids, Grand Rapids Itasca County], artcc: ZMP }
+  KHND: { spoken: Henderson Executive, short: Henderson, artcc: ZLA }
+  KHWD: { spoken: Hayward Executive, short: Hayward, artcc: ZOA }
   KJAC: { spoken: Jackson Hole, artcc: ZLC }
-  KLAS: { spoken: Las Vegas, artcc: ZLA }
-  KLAX: { spoken: Los Angeles, artcc: ZLA }
-  KLGB: { spoken: Long Beach, artcc: ZLA }
-  KLVK: { spoken: Livermore, artcc: ZOA }
-  KMCC: { spoken: McClellan, artcc: ZOA }
-  KMCI: { spoken: Kansas City, artcc: ZKC }
-  KMHR: { spoken: Mather, artcc: ZOA }
-  KMOD: { spoken: Modesto, artcc: ZOA }
-  KMRY: { spoken: Monterey, artcc: ZOA }
-  KMYV: { spoken: Marysville, artcc: ZOA }
-  KNFG: { spoken: Camp Pendleton, artcc: ZLA }
-  KNUQ: { spoken: Moffett, artcc: ZOA }
-  KOAK: { spoken: Oakland, artcc: ZOA }
-  KONT: { spoken: Ontario, artcc: ZLA }
-  KOVE: { spoken: Oroville, artcc: ZOA }
+  KLAS: { spoken: Harry Reid International, short: Las Vegas, also: [Harry Reid], artcc: ZLA }
+  KLAX: { spoken: Los Angeles International, short: Los Angeles, artcc: ZLA }
+  KLGB: { spoken: Long Beach Daugherty Field, short: Long Beach, artcc: ZLA }
+  KLVK: { spoken: Livermore Municipal, short: Livermore, artcc: ZOA }
+  KMCC: { spoken: McClellan Airfield, short: McClellan, also: [Sacramento McClellan], artcc: ZOA }
+  KMCI: { spoken: Kansas City International, short: Kansas City, artcc: ZKC }
+  KMHR: { spoken: Sacramento Mather, short: Mather, artcc: ZOA }
+  KMOD: { spoken: Modesto City-County-Harry Sham Field, short: Modesto, also: [Modesto City-County, Harry Sham Field], artcc: ZOA }
+  KMRY: { spoken: Monterey Regional, short: Monterey, artcc: ZOA }
+  KMYV: { spoken: Yuba County, short: Marysville, artcc: ZOA }
+  KNFG: { spoken: Camp Pendleton Marine Corps Air Station Munn Field, short: Camp Pendleton, also: [Camp Pendleton MCAS, Munn Field], artcc: ZLA }
+  KNUQ: { spoken: Moffett Federal Airfield, short: Moffett, also: [Moffett Field], artcc: ZOA }
+  KOAK: { spoken: Oakland San Francisco Bay, short: Oakland, also: [Oakland International], artcc: ZOA }
+  KONT: { spoken: Ontario International, short: Ontario, artcc: ZLA }
+  KOVE: { spoken: Oroville Municipal, short: Oroville, artcc: ZOA }
   KPAO: { spoken: Palo Alto, artcc: ZOA }
-  KPDX: { spoken: Portland, artcc: ZSE }
-  KPHX: { spoken: Phoenix, artcc: ZAB }
-  KPOC: { spoken: Brackett, artcc: ZLA }
-  KPSP: { spoken: Palm Springs, artcc: ZLA }
-  KRAL: { spoken: Riverside, artcc: ZLA }
-  KRHV: { spoken: Reid-Hillview, artcc: ZOA }
-  KRNO: { spoken: Reno, artcc: ZOA }
+  KPDX: { spoken: Portland International, short: Portland, artcc: ZSE }
+  KPHX: { spoken: Phoenix Sky Harbor International, short: Phoenix, also: [Phoenix Sky Harbor, Sky Harbor], artcc: ZAB }
+  KPOC: { spoken: Brackett Field, short: Brackett, artcc: ZLA }
+  KPSP: { spoken: Palm Springs International, short: Palm Springs, artcc: ZLA }
+  KRAL: { spoken: Riverside, also: [Riverside Municipal], artcc: ZLA }
+  KRHV: { spoken: Reid-Hillview of Santa Clara County, short: Reid-Hillview, artcc: ZOA }
+  KRNO: { spoken: Reno Tahoe International, short: Reno, also: [Reno Tahoe], artcc: ZOA }
   KSAC: { spoken: Sacramento Executive, artcc: ZOA }
-  KSAN: { spoken: San Diego, artcc: ZLA }
-  KSBA: { spoken: Santa Barbara, artcc: ZLA }
-  KSBD: { spoken: San Bernardino, artcc: ZLA }
-  KSBP: { spoken: San Luis Obispo, artcc: ZLA }
-  KSCK: { spoken: Stockton, artcc: ZOA }
-  KSEA: { spoken: Seattle, artcc: ZSE }
-  KSFO: { spoken: San Francisco, artcc: ZOA }
-  KSJC: { spoken: San Jose, artcc: ZOA }
-  KSLC: { spoken: Salt Lake City, artcc: ZLC }
-  KSMF: { spoken: Sacramento, artcc: ZOA }
-  KSMO: { spoken: Santa Monica, artcc: ZLA }
-  KSNA: { spoken: John Wayne, artcc: ZLA }
+  KSAN: { spoken: San Diego International, short: San Diego, artcc: ZLA }
+  KSBA: { spoken: Santa Barbara Municipal, short: Santa Barbara, artcc: ZLA }
+  KSBD: { spoken: San Bernardino International, short: San Bernardino, artcc: ZLA }
+  KSBP: { spoken: San Luis Obispo County Regional, short: San Luis Obispo, also: [San Luis Obispo County], artcc: ZLA }
+  KSCK: { spoken: Stockton Metropolitan, short: Stockton, also: [Stockton Metro], artcc: ZOA }
+  KSEA: { spoken: Seattle-Tacoma International, short: Seattle, also: [Seattle-Tacoma, Sea-Tac], artcc: ZSE }
+  KSFO: { spoken: San Francisco International, short: San Francisco, artcc: ZOA }
+  KSJC: { spoken: Mineta San Jose International, short: San Jose, also: [San Jose International, Norman Y Mineta San Jose International], artcc: ZOA }
+  KSLC: { spoken: Salt Lake City International, short: Salt Lake City, also: [Salt Lake], artcc: ZLC }
+  KSMF: { spoken: Sacramento International, short: Sacramento, also: [Sacramento Metro], artcc: ZOA }
+  KSMO: { spoken: Santa Monica Municipal, short: Santa Monica, artcc: ZLA }
+  KSNA: { spoken: John Wayne Orange County, short: John Wayne, also: [Orange County], artcc: ZLA }
   KSQL: { spoken: San Carlos, artcc: ZOA }
-  KSTS: { spoken: Santa Rosa, artcc: ZOA }
-  KTRK: { spoken: Truckee, artcc: ZOA }
-  KTRM: { spoken: Jacqueline Cochran, artcc: ZLA }
-  KTWF: { spoken: Twin Falls, artcc: ZLC }
+  KSTS: { spoken: Charles M Schulz Sonoma County, short: Santa Rosa, also: [Sonoma County, Charles Schulz], artcc: ZOA }
+  KTRK: { spoken: Truckee-Tahoe, short: Truckee, artcc: ZOA }
+  KTRM: { spoken: Jacqueline Cochran Regional, short: Jacqueline Cochran, also: [Thermal], artcc: ZLA }
+  KTWF: { spoken: Joslin Field Magic Valley Regional, short: Twin Falls, also: [Joslin Field, Magic Valley Regional], artcc: ZLC }
   KUDD: { spoken: Bermuda Dunes, artcc: ZLA }
   KVNY: { spoken: Van Nuys, artcc: ZLA }
-  KWVI: { spoken: Watsonville, artcc: ZOA }
-  MMMX: { spoken: Mexico City, artcc: ZLA, lat: 19.436, lon: -99.072 }
-  O88: { spoken: Rio Vista, artcc: ZOA }
-  PHNL: { spoken: Honolulu, artcc: ZAK }
-  RKSI: { spoken: Seoul Incheon, artcc: ZAK, lat: 37.469, lon: 126.451 }
+  KWVI: { spoken: Watsonville Municipal, short: Watsonville, artcc: ZOA }
+  MMMX: { spoken: Benito Juarez International, short: Mexico City, also: [Mexico City International], artcc: ZLA, lat: 19.436, lon: -99.072 }
+  O88: { spoken: Rio Vista Municipal, short: Rio Vista, artcc: ZOA }
+  PHNL: { spoken: Daniel K Inouye International, short: Honolulu, also: [Honolulu International], artcc: ZAK }
+  RKSI: { spoken: Incheon International, short: Seoul Incheon, also: [Incheon, Seoul], artcc: ZAK, lat: 37.469, lon: 126.451 }
