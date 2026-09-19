@@ -3224,6 +3224,11 @@
       "text": "Reading the whole of an amended or built route, where the clearance hands it over as filed from the fix the two routes run together from (R-THEN-AS-FILED), is acceptable, not wrong: the pilot is cleared along the same route, only at greater length than the clearance needs"
     },
     {
+      "id": "R-FRC",
+      "source": "FAA JO 7110.65 4-3-3 b and 4-3-3 g 1; user ruling 2026-09-18 (full route clearance mode)",
+      "text": "FRC as the first remark on the strip means a full route clearance is necessary: with no fix named the controller reads the entire route, element by element to its end, and THEN AS FILED is not spoken. A reading that hands any part of the route over as filed is wrong"
+    },
+    {
       "id": "R-FACILITY-WORD",
       "source": "FAA JO 7110.65 2-5-2; user ruling 2026-09-17 (free-text entry)",
       "text": "The facility word spoken after a fix the clearance reads bare (R-AS-FILED) is as right as the bare name: CONCORD VOR, THEN AS FILED names the same navaid as CONCORD, THEN AS FILED"

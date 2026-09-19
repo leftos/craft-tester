@@ -256,7 +256,7 @@ function clearanceGrades(
   airport: AirportData,
 ): (Grade | TextGrade)[] {
   return answer.input === 'text'
-    ? gradeText(answer.text, spoken, clearance, airport)
+    ? gradeText(answer.text, spoken, clearance, airport, 'abbreviated')
     : grade(answer.picks, clearance);
 }
 

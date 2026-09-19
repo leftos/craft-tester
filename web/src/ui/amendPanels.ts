@@ -86,7 +86,7 @@ export function amendmentGrades(
   const { clearance } = cleared;
   if (answer.input === 'text') {
     const spoken = spokenFor(cleared.plan, drawn.filed, clearance, airport);
-    return [...boxes, ...gradeText(answer.text, spoken, clearance, airport)];
+    return [...boxes, ...gradeText(answer.text, spoken, clearance, airport, 'abbreviated')];
   }
   const { picks } = answer;
   return [

@@ -59,6 +59,14 @@ type Mark = { span: Span } & MarkKind;
 /** How a candidate reads the route: as spoken, in full, or with "then as filed" for its closing "direct". */
 type RouteOption = 'base' | 'full' | 'end';
 
+/**
+ * The route reading a typed clearance is held to.
+ *
+ * `abbreviated` is the reading spoken on frequency, which hands the route over as filed where it
+ * can; `full` is the route read element by element to its end, as a full route clearance takes.
+ */
+export type RouteReading = 'abbreviated' | 'full';
+
 /** How a candidate reads the expect clause: as spoken, or as the redundant clause the rules allow. */
 type ExpectOption = 'base' | 'redundant';
 
@@ -167,10 +175,11 @@ const REMARKS = {
   restated: 'restated in group form — the digits alone are enough',
   fullRoute: 'the route read in full — the shorter reading is enough',
   thenAsFiled: '"then as filed" said where the reading ends on "direct"',
+  frc: '"then as filed" said on a full route clearance — read the route to its end',
   redundantExpect: 'an expect clause the clearance can do without',
 } as const;
 
-/** The remark a route read longer than it had to be leaves, by the reading the route was graded on. */
+/** The remark a route read longer than it had to be leaves on the reading spoken on frequency. */
 const ROUTE_REMARKS: Readonly<Record<RouteOption, string | undefined>> = {
   base: undefined,
   full: REMARKS.fullRoute,
@@ -214,19 +223,26 @@ function withWords(
 /**
  * The route readings a candidate may take, in the order ties are broken.
  *
- * A route vectored straight to its destination has no closing "direct" to trade for "then as filed":
- * the "direct" of "radar vectors direct" is the vectors, not the end of a route read in full.
+ * The reading the student is held to comes first, so a text that reads as both is graded as the one
+ * asked of it. A route vectored straight to its destination has no closing "direct" to trade for
+ * "then as filed": the "direct" of "radar vectors direct" is the vectors, not the end of a route
+ * read in full.
  */
 function routeReadings(
   parts: readonly GradedPart[],
   fullRouteWords: string,
   template: RouteTemplate,
+  routeReading: RouteReading,
 ): { option: RouteOption; parts: GradedPart[] }[] {
   const base = { option: 'base' as const, parts: [...parts] };
   const words = parts.find((part) => part.element === 'R.route')?.words;
   if (words === undefined) return [base];
   if (words !== fullRouteWords) {
-    return [base, { option: 'full', parts: withWords(parts, 'R.route', fullRouteWords) }];
+    const full = {
+      option: 'full' as const,
+      parts: withWords(parts, 'R.route', fullRouteWords),
+    };
+    return routeReading === 'full' ? [full, base] : [base, full];
   }
   if (template === 'radar_vectors_direct' || !CLOSING_DIRECT.test(words)) return [base];
   const end = words.replace(CLOSING_DIRECT, 'then as filed');
@@ -292,10 +308,11 @@ function candidatesFor(
   spoken: SpokenClearance,
   expected: ResolvedClearance,
   airport: AirportData,
+  routeReading: RouteReading,
 ): Candidate[] {
   const parts = spoken.parts.filter(isGradedPart);
   const { template } = expected.route.value;
-  return routeReadings(parts, spoken.fullRouteWords, template).flatMap((route) =>
+  return routeReadings(parts, spoken.fullRouteWords, template, routeReading).flatMap((route) =>
     expectReadings(route.parts, expected).flatMap((expect) =>
       nameReadings(expect.parts, expected, airport).map((named) => ({
         route: route.option,
@@ -869,16 +886,32 @@ function groupFormTiers(student: NumberToken, expected: NumberToken, airport: Ai
   return student.restated ? [tier(airport, 'acceptable', 'S-GROUP-FORM')] : [];
 }
 
+/**
+ * Whether the chosen reading hands part of the route over as filed rather than reading it to its
+ * end, which a full route clearance does not allow.
+ */
+function handsOverRoute(grading: Grading): boolean {
+  const words = grading.alignment.candidate.parts.find((part) => part.element === 'R.route')?.words;
+  return words !== undefined && words !== grading.spoken.fullRouteWords;
+}
+
+/** The tier the chosen route reading sets: a route read longer than it had to be, or handed over. */
+function routeTiers(grading: Grading): Tier[] {
+  const { airport } = grading;
+  if (grading.routeReading === 'full') {
+    return handsOverRoute(grading) ? [tier(airport, 'wrong', 'R-FRC')] : [];
+  }
+  const { route } = grading.alignment.candidate;
+  if (route === 'full') return [tier(airport, 'acceptable', 'R-FULL-ROUTE')];
+  if (route === 'end') return [tier(airport, 'acceptable', 'R-THEN-AS-FILED-END')];
+  return [];
+}
+
 /** The tier the candidate reading itself sets on an element. */
 function candidateTiers(element: GradedElement, grading: Grading): Tier[] {
   const { candidate } = grading.alignment;
-  const { airport, expected } = grading;
-  if (element === 'R.route' && candidate.route === 'full') {
-    return [tier(airport, 'acceptable', 'R-FULL-ROUTE')];
-  }
-  if (element === 'R.route' && candidate.route === 'end') {
-    return [tier(airport, 'acceptable', 'R-THEN-AS-FILED-END')];
-  }
+  const { expected } = grading;
+  if (element === 'R.route') return routeTiers(grading);
   if (element === 'A.expect' && candidate.expect === 'redundant') {
     return [{ verdict: 'acceptable', rows: expected.redundantExpect.citations }];
   }
@@ -983,10 +1016,15 @@ function wholeExpected(label: string): ExpectedRun[] {
   return label === '' ? [] : [{ text: label, missed: false }];
 }
 
-function expectedLabel(element: GradedElement, spoken: SpokenClearance): string {
+/** The words an element is graded against: the reading's own, the route's in full where that is asked. */
+function expectedLabel(
+  element: GradedElement,
+  spoken: SpokenClearance,
+  routeReading: RouteReading,
+): string {
   const words = spoken.parts.find((part) => part.element === element)?.words;
-  if (words !== undefined) return words;
-  return element === 'A.expect' ? NO_EXPECT_CLAUSE : '';
+  if (words === undefined) return element === 'A.expect' ? NO_EXPECT_CLAUSE : '';
+  return element === 'R.route' && routeReading === 'full' ? spoken.fullRouteWords : words;
 }
 
 /** Everything the per-element verdict reads. */
@@ -995,6 +1033,7 @@ type Grading = {
   spoken: SpokenClearance;
   expected: ResolvedClearance;
   airport: AirportData;
+  routeReading: RouteReading;
   alignment: Alignment;
   marks: Map<GradedElement, GapMarks>;
   matchedBy: Map<number, SpokenToken>;
@@ -1027,7 +1066,9 @@ function missedSpans(indices: readonly number[], grading: Grading): Span[] {
  * Words are marked only where some of the element's words were heard and others were not: an
  * element nothing was heard for, and one said in the wrong place, say nothing by marking every word
  * of them. The marks are cut from the chosen candidate's own words, which are the reading's own but
- * for a route read in full or closed on "then as filed", or a redundant expect clause.
+ * for a route read in full or closed on "then as filed", or a redundant expect clause. A route
+ * handed over as filed where the whole of it was asked for is shown whole instead: its words are
+ * the route in full, which the chosen candidate does not speak and so cannot mark inside.
  */
 function expectedFor(
   element: GradedElement,
@@ -1035,9 +1076,15 @@ function expectedFor(
   marks: GapMarks,
   grading: Grading,
 ): ExpectedRun[] {
-  const label = expectedLabel(element, grading.spoken);
+  const label = expectedLabel(element, grading.spoken, grading.routeReading);
   const missed = missedSpans(indices, grading);
-  if (marks.outOfOrder || missed.length === 0 || missed.length === indices.length) {
+  const routeInFull = element === 'R.route' && grading.routeReading === 'full';
+  if (
+    marks.outOfOrder ||
+    missed.length === 0 ||
+    missed.length === indices.length ||
+    (routeInFull && handsOverRoute(grading))
+  ) {
     return wholeExpected(label);
   }
   const words = grading.alignment.candidate.parts.find((part) => part.element === element)?.words;
@@ -1131,7 +1178,7 @@ function labelsOf(parts: ElementParts, grading: Grading): ElementLabels {
   const merged = mergeSpans(text, elementSpans(parts));
   return {
     element: parts.element,
-    expectedLabel: expectedLabel(parts.element, grading.spoken),
+    expectedLabel: expectedLabel(parts.element, grading.spoken, grading.routeReading),
     actualLabel: actualLabel(text, merged),
     said: saidRuns(text, merged, saidMarks(parts, grading)),
     expected: expectedFor(parts.element, parts.indices, parts.marks, grading),
@@ -1263,9 +1310,18 @@ function fillerRemarks(parts: ElementParts, grading: Grading): string[] {
   return [`extra words: ${words.join(', ')}`];
 }
 
+/** The remark the chosen route reading leaves: a route read at length, or one handed over as filed. */
+function routeRemark(grading: Grading): string | undefined {
+  if (grading.routeReading === 'full') {
+    return handsOverRoute(grading) ? REMARKS.frc : undefined;
+  }
+  return ROUTE_REMARKS[grading.alignment.candidate.route];
+}
+
 /** The remark the chosen reading itself leaves on the element it reads longer than it had to. */
-function candidateRemark(element: GradedElement, candidate: Candidate): string | undefined {
-  if (element === 'R.route') return ROUTE_REMARKS[candidate.route];
+function candidateRemark(element: GradedElement, grading: Grading): string | undefined {
+  if (element === 'R.route') return routeRemark(grading);
+  const { candidate } = grading.alignment;
   if (element === 'A.expect' && candidate.expect === 'redundant') return REMARKS.redundantExpect;
   return undefined;
 }
@@ -1273,7 +1329,7 @@ function candidateRemark(element: GradedElement, candidate: Candidate): string |
 /** The reading's own remark, on an element every token of which matched. */
 function candidateRemarks(parts: ElementParts, grading: Grading): string[] {
   if (parts.indices.length === 0 || parts.pairs.length < parts.indices.length) return [];
-  const remark = candidateRemark(parts.element, grading.alignment.candidate);
+  const remark = candidateRemark(parts.element, grading);
   return remark === undefined ? [] : [remark];
 }
 
@@ -1316,6 +1372,8 @@ function gradeElement(element: GradedElement, grading: Grading): TextGrade {
  * @param spoken The engine's reading of the clearance (`speakClearance`).
  * @param expected The clearance the engine resolved.
  * @param airport The airport data: its lexicon and its phraseology rows.
+ * @param routeReading The reading the student is held to: the one spoken on frequency, or the route
+ *   read to its end as on a full route clearance.
  * @returns Exactly eight grades, in the order C, R.sid, R.route, A.phrase, A.expect, F, T, RWY.
  */
 export function gradeText(
@@ -1323,9 +1381,10 @@ export function gradeText(
   spoken: SpokenClearance,
   expected: ResolvedClearance,
   airport: AirportData,
+  routeReading: RouteReading,
 ): TextGrade[] {
   const lexicon = lexiconFor(airport);
-  const candidates = candidatesFor(spoken, expected, airport);
+  const candidates = candidatesFor(spoken, expected, airport, routeReading);
   const typed = normaliseSpoken(text, typedLexicon(lexicon, candidates));
   const tokens = joinNumbers(typed, candidateNumbers(candidates));
   const vocabulary = vocabularyOf(candidates, lexicon, airport);
@@ -1340,6 +1399,7 @@ export function gradeText(
     spoken,
     expected,
     airport,
+    routeReading,
     alignment,
     marks: walkGaps(alignment, expected, airport, vocabulary),
     matchedBy,
