@@ -68,7 +68,7 @@ describe('normaliseSpoken', () => {
   });
 
   it('expands an identifier the lexicon holds, however it is capitalised', () => {
-    const lexicon = { SAC: 'Sacramento VOR', KSEA: 'Seattle' };
+    const lexicon = { SAC: 'Sacramento VOR' };
     for (const typed of ['SAC', 'sac', 'Sac']) {
       const tokens = normaliseSpoken(typed, lexicon);
       expect(tokens.map(compact)).toEqual(['w:sacramento', 'w:vor']);
