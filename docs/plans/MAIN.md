@@ -24,7 +24,8 @@ override ([archive/tec-override.md](./archive/tec-override.md)). KOAK is closed 
 settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17. AJ's two reports of
-2026-09-19 (a route longer than the strip, "nine" against "three" and "five") landed the same day.
+2026-09-19 (a route longer than the strip, "nine" against "three" and "five") landed the same day, as did
+the afternoon's two (a navaid without its facility word, a SID code typed as a word).
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -172,3 +173,7 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] The joined airway is spoken bare, "radar vectors to join Victor six": the word "airway" reversed the same day (7110.65 2-6-4, 4-4-1 a, 2-5-1 a) — `0de5e2d`
 - [x] Tester feedback, AJ Norell, 2026-09-19: a strip that trimmed its route behind `***` prints the whole filed route on an `RTE` line under the paper, in both modes (the user chose it over a taller strip, an always-on line and a tap to expand) — `811e66a`
 - [x] Tester feedback, AJ Norell, 2026-09-19: "nine" for the digit is acceptable, not a miss, the row still saying to say niner (user ruling, against TBL 2-4-1 listing NIN-ER beside TREE and FIFE; `S-NINER`) — `6019db8`
+- [x] Tester feedback, 2026-09-19: a route navaid said without its facility word is acceptable, not a miss
+  (user ruling on "VOR should not be required … not the clearance limit"; 7110.65 2-5-2 a 2;
+  `R-FACILITY-WORD-OMITTED`), and a SID's family code typed as a word reads as its name ("gapp seven" is
+  "Gap Seven") — `46ae72b`

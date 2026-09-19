@@ -187,7 +187,9 @@ remembered per browser. The dropdowns stay, and the student chooses.
   numbers becomes one token that records its value and how it was said. The run may be figures or words,
   including plain or ICAO digits, group forms, "thousand", "hundred" and "point". An identifier (`NIMI6`,
   `sac`, `ksmf`) is expanded through the airport's lexicon of fix, procedure and destination names
-  whatever its case: capitalisation never changes a grade (user, 2026-09-18). Two things outrank the
+  whatever its case: capitalisation never changes a grade (user, 2026-09-18). A SID's family code typed
+  as a word is the name without its number ("gapp seven" is "Gap Seven", as `GAPP7` typed whole already
+  was), except where a fix or navaid holds the same identifier (`SFO` stays the VOR). Two things outrank the
   lexicon, so an identifier that spells a word cannot take it over: a number word is always a number, and
   a word one of the candidate readings says is read as typed (`gradeText` leaves those keys out of the
   lexicon it reads the typed text with).
@@ -235,6 +237,11 @@ remembered per browser. The dropdowns stay, and the student chooses.
     for "expect"; a number token never matches a word, so a misspelt number word is not guessed at.
     Because the rows' prose is part of that vocabulary, no row may spell a misspelling it forgives;
   - the facility word after a bare fix is right (`R-FACILITY-WORD`);
+  - a route whose only unsaid words are facility words ("direct Red Bluff" for "direct Red Bluff VOR")
+    is acceptable, under either route reading, and the row says a navaid is said with its type
+    (`R-FACILITY-WORD-OMITTED`; user ruling 2026-09-19 on a tester's report: 7110.65 2-5-2 a 2 asks for
+    the type only where the navaid is the clearance limit, which here is always the airport). Any other
+    unsaid word still makes the element wrong;
   - the full route and "then as filed" at the route's end are acceptable (`R-FULL-ROUTE`,
     `R-THEN-AS-FILED-END`);
   - an element out of CRAFT order is wrong (`S-ORDER`).
