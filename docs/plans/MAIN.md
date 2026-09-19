@@ -21,6 +21,32 @@ settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plan
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
+## Current — Typed names (user, 2026-09-18, from a KOAK → KSMF typed clearance)
+
+- [ ] **Airport spoken names.** "cleared to sacramento metro airport" graded acceptable with `metro` as an
+  extra word against `expected: cleared to Sacramento airport`. The user points at how
+  `C:\Users\Leftos\source\repos\vatsim_control_recs\` (VCR) names airports as the source to pull from
+  - Surveyed 2026-09-18: VCR's `data/airport_names.csv` holds display names (`Sacramento Intl`,
+    `Las Vegas - Harry Reid`) built from FAA NASR `ARPT_NAME` through spaCy; the same FAA name is in the
+    CIFP `PA` record the generator already caches (columns 94–123, `SACRAMENTO INTL`). Neither has "Metro"
+  - **User rulings 2026-09-18:** (1) the other names a student may say are hand rows in
+    `shared/destinations.yaml` (`also:`), not an import; (2) any listed name is fully correct, with no
+    "extra words" remark; (3) the engine speaks the **official** name ("cleared to Sacramento
+    International airport"), and the short name becomes an alias
+- [ ] **A typed departure is accepted by its code, as the dropdown offers it.** "nimi6 departure" was graded a
+  miss against `Nimitz Six departure` (`missed: "Nimitz" · not in the reading: "nimi"`); a student who picks
+  from the dropdown picks `NIMI6`, so the typed box must take it too
+  - **User steer, same day: typed text is compared case-insensitively, everywhere.** "We can't be failing
+    people based on the capitalization of words." Today `normalise.ts` expands an identifier through the
+    lexicon only when typed in capitals (`CAPITALISED_IDENTIFIER`), so `NIMI6` reads "Nimitz Six" and
+    `nimi6` reads "nimi 6". The capitals rule goes: `nimi6`, `sac`, `ksmf` expand as `NIMI6`, `SAC`, `KSMF`
+    do. The one thing to keep safe is a typed word that is both a lexicon key and a word of the reading
+  - **Second report, same day (KOAK → KMCC):** "cleared to kmcc oak6 depature" put `kmcc oak` on C as
+    words not in the reading and left R.sid with "6 depature", `missed: "Oakland"`. Same cause: neither
+    lower-case code expanded, so both fell in the gap after "cleared to". Check this exact text once the
+    case rule lands: `oak6` must land on R.sid as "Oakland Six"; C then misses only the word "airport",
+    which S-FILLER already rules a miss (7110.65 4-3-2: the word "airport" must follow the name)
+
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.

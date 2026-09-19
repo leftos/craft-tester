@@ -23,7 +23,7 @@ export type SpokenToken =
       end: number;
     };
 
-/** Identifier (as typed in capitals) to the words it is spoken as. */
+/** Identifier, keyed in capitals, to the words it is spoken as; a piece matches it in any case. */
 export type Lexicon = Readonly<Record<string, string>>;
 
 /** A character span of the original text, end exclusive. */
@@ -130,8 +130,8 @@ const PLAIN_NUMBER = /^\d+(?:\.\d+)?$/;
 /** Digits with no decimal part, which is all a multiplier takes. */
 const WHOLE_NUMBER = /^\d+$/;
 
-/** An identifier typed in capitals: letters and optional trailing digits, e.g. `SAC` or `SFO5`. */
-const CAPITALISED_IDENTIFIER = /^[A-Z]+\d*$/;
+/** An identifier in any case: letters and optional trailing digits, e.g. `SAC`, `sfo5`. */
+const IDENTIFIER = /^[a-z]+\d*$/i;
 
 /** The shortest piece looked up in the lexicon. */
 const MIN_IDENTIFIER_LENGTH = 2;
@@ -257,13 +257,14 @@ function splitText(text: string): Item[] {
   return items;
 }
 
-/** The words a piece is spoken as, when it is a capitalised identifier the lexicon holds. */
+/** The words a piece is spoken as, when it is an identifier the lexicon holds, in whatever case. */
 function spokenIdentifier(text: string, lexicon: Lexicon): string | undefined {
-  if (text.length < MIN_IDENTIFIER_LENGTH || !CAPITALISED_IDENTIFIER.test(text)) return undefined;
-  return Object.hasOwn(lexicon, text) ? lexicon[text] : undefined;
+  if (text.length < MIN_IDENTIFIER_LENGTH || !IDENTIFIER.test(text)) return undefined;
+  const key = text.toUpperCase();
+  return Object.hasOwn(lexicon, key) ? lexicon[key] : undefined;
 }
 
-/** A capitalised identifier's spoken words, every token spanning the whole identifier. */
+/** An identifier's spoken words, every token spanning the whole identifier. */
 function expandIdentifier(piece: Piece, lexicon: Lexicon): SpokenToken[] | undefined {
   const spoken = spokenIdentifier(piece.text, lexicon);
   if (spoken === undefined) return undefined;
@@ -308,14 +309,9 @@ function numberWordOf(text: string): NumberWord | undefined {
 }
 
 /** The item at `index` as a piece of a number run, or undefined where a run cannot go on. */
-function numberPieceAt(
-  items: readonly Item[],
-  index: number,
-  lexicon: Lexicon,
-): NumberPiece | undefined {
+function numberPieceAt(items: readonly Item[], index: number): NumberPiece | undefined {
   const item = items[index];
   if (item === undefined || item.kind === 'boundary') return undefined;
-  if (spokenIdentifier(item.text, lexicon) !== undefined) return undefined;
   const word = numberWordOf(item.text);
   return word === undefined ? undefined : { word, piece: item };
 }
@@ -555,29 +551,33 @@ function readStretch(stretch: readonly NumberPiece[], flightLevel: boolean): Spo
   return tokens;
 }
 
-function readNumberStretch(items: readonly Item[], index: number, lexicon: Lexicon): Reading {
+function readNumberStretch(items: readonly Item[], index: number): Reading {
   const stretch: NumberPiece[] = [];
   let next = index;
-  let found = numberPieceAt(items, next, lexicon);
+  let found = numberPieceAt(items, next);
   while (found !== undefined) {
     stretch.push(found);
     next += 1;
-    found = numberPieceAt(items, next, lexicon);
+    found = numberPieceAt(items, next);
   }
   return { tokens: readStretch(stretch, followsFlightLevel(items, index)), next };
 }
 
+/**
+ * The tokens at one item: a number word opens a number run, the lexicon reads a piece it holds,
+ * and a shape splits what is left. A number word is a number wherever the lexicon also holds it.
+ */
 function readItem(items: readonly Item[], index: number, lexicon: Lexicon): Reading {
   const item = items[index];
   if (item === undefined || item.kind === 'boundary') return { tokens: [], next: index + 1 };
+  if (numberWordOf(item.text) !== undefined) return readNumberStretch(items, index);
   const single = expandIdentifier(item, lexicon) ?? readShaped(item, items[index + 1]);
   if (single !== undefined) return { tokens: single, next: index + 1 };
-  if (numberWordOf(item.text) !== undefined) return readNumberStretch(items, index, lexicon);
   return { tokens: [wordToken(item.text, item)], next: index + 1 };
 }
 
 /**
- * The identifiers a student may type in capitals, and the words each is spoken as.
+ * The identifiers a student may type, and the words each is spoken as.
  *
  * Merges the airport's spoken fixes and navaids, then its SIDs by id, then its route-library
  * destinations by ICAO code. Where two maps share a key the later one wins: a SID over a fix, and a
@@ -602,12 +602,13 @@ export function lexiconFor(airport: AirportData): Lexicon {
 /**
  * Normalises a clearance as typed or as read, so both sides compare token by token.
  *
- * Whitespace, punctuation and a hyphen between letters split the text into pieces. A piece typed in
- * capitals that the lexicon holds becomes its spoken words; a shaped piece (`FL320`, `28L`, `V244`,
- * `HAWKZ7`) becomes its words and its number; a stretch of figures and number words becomes number
- * tokens, each recording how it was said, and digits followed by their own group form (`one zero ten
- * thousand`) read as one restated number; anything else is a lower-case word. A stretch that cannot
- * form a number stays as words. Each token spans the original text it came from.
+ * Whitespace, punctuation and a hyphen between letters split the text into pieces. A stretch of
+ * figures and number words becomes number tokens, each recording how it was said, and digits
+ * followed by their own group form (`one zero ten thousand`) read as one restated number; a piece
+ * the lexicon holds, typed in any case (`SAC`, `nimi6`), becomes its spoken words; a shaped piece
+ * (`FL320`, `28L`, `V244`, `HAWKZ7`) becomes its words and its number; anything else is a
+ * lower-case word. A stretch that cannot form a number stays as words. Each token spans the
+ * original text it came from.
  *
  * @param text The clearance text, typed or spoken.
  * @param lexicon Identifier to spoken words, from `lexiconFor`.

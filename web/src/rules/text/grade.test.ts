@@ -606,6 +606,37 @@ describe('gradeText on a word typed a letter or two away from the reading', () =
   });
 });
 
+describe('gradeText on an identifier typed in place of the words it is spoken as', () => {
+  it('reads a procedure identifier in lower case as the procedure', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'Oakland Six departure', 'oak6 departure'),
+    );
+    expect(misgraded(grades, {})).toEqual([]);
+  });
+
+  it('reads a procedure identifier in capitals as the procedure', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'Oakland Six departure', 'OAK6 departure'),
+    );
+    expect(misgraded(grades, {})).toEqual([]);
+  });
+
+  it('reads a destination code in lower case as the destination', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'Seattle airport', 'ksea airport'));
+    expect(misgraded(grades, {})).toEqual([]);
+  });
+
+  it('reads a word the reading itself says as typed, not as the identifier it spells', () => {
+    const { airport, clearance: resolved, spoken } = settledReading(FDX_PRACTICE);
+    const spelling: AirportData = {
+      ...airport,
+      fixSpoken: { ...airport.fixSpoken, VIA: 'Viaduct VOR' },
+    };
+    expect(spoken.abbreviated).toContain(' via ');
+    expect(misgraded(gradeText(spoken.abbreviated, spoken, resolved, spelling), {})).toEqual([]);
+  });
+});
+
 /** What the expected runs of one grade get wrong: how they join, how they alternate, what they mark. */
 function expectedProblems(grades: readonly TextGrade[]): string[] {
   return grades.flatMap((grade) => {

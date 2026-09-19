@@ -279,6 +279,29 @@ function addWords(words: Set<string>, tokens: readonly SpokenToken[]): void {
   }
 }
 
+/** Every word the candidate readings say. */
+function candidateWords(candidates: readonly Candidate[]): Set<string> {
+  const words = new Set<string>();
+  for (const candidate of candidates) {
+    addWords(
+      words,
+      candidate.tokens.map((tagged) => tagged.token),
+    );
+  }
+  return words;
+}
+
+/**
+ * The lexicon the typed text is read with: the airport's, less every identifier a reading spells
+ * as one of its own words, so a word the clearance says is read as typed and not as a fix.
+ */
+function typedLexicon(lexicon: Lexicon, candidates: readonly Candidate[]): Lexicon {
+  const words = candidateWords(candidates);
+  return Object.fromEntries(
+    Object.entries(lexicon).filter(([identifier]) => !words.has(identifier.toLowerCase())),
+  );
+}
+
 /**
  * Every word a typed word is read as typed against, rather than as a misspelling of another.
  *
@@ -290,13 +313,7 @@ function vocabularyOf(
   lexicon: Lexicon,
   airport: AirportData,
 ): ReadonlySet<string> {
-  const words = new Set<string>();
-  for (const candidate of candidates) {
-    addWords(
-      words,
-      candidate.tokens.map((tagged) => tagged.token),
-    );
-  }
+  const words = candidateWords(candidates);
   for (const spoken of Object.values(lexicon)) {
     addWords(words, normaliseSpoken(spoken, {}));
   }
@@ -1170,8 +1187,8 @@ export function gradeText(
   airport: AirportData,
 ): TextGrade[] {
   const lexicon = lexiconFor(airport);
-  const tokens = normaliseSpoken(text, lexicon);
   const candidates = candidatesFor(spoken, expected);
+  const tokens = normaliseSpoken(text, typedLexicon(lexicon, candidates));
   const vocabulary = vocabularyOf(candidates, lexicon, airport);
   const alignment = bestAlignment(candidates, tokens, vocabulary);
   const matchedBy = new Map<number, SpokenToken>();

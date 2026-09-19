@@ -67,15 +67,33 @@ describe('normaliseSpoken', () => {
     expect(read('HAWKZ7')).toEqual(['w:hawkz', 'n:7/figures']);
   });
 
-  it('expands a capitalised identifier the lexicon holds, and only a capitalised one', () => {
+  it('expands an identifier the lexicon holds, however it is capitalised', () => {
     const lexicon = { SAC: 'Sacramento VOR', KSEA: 'Seattle' };
-    const tokens = normaliseSpoken('SAC', lexicon);
-    expect(tokens.map(compact)).toEqual(['w:sacramento', 'w:vor']);
-    expect(tokens.map(({ start, end }) => [start, end])).toEqual([
-      [0, 3],
-      [0, 3],
+    for (const typed of ['SAC', 'sac', 'Sac']) {
+      const tokens = normaliseSpoken(typed, lexicon);
+      expect(tokens.map(compact)).toEqual(['w:sacramento', 'w:vor']);
+      expect(tokens.map(({ start, end }) => [start, end])).toEqual([
+        [0, 3],
+        [0, 3],
+      ]);
+    }
+  });
+
+  it('expands a procedure identifier in lower case, and splits one the lexicon misses', () => {
+    const lexicon = { NIMI6: 'Nimitz Six' };
+    const spoken = ['w:nimitz', 'n:6/digits'];
+    expect(normaliseSpoken('NIMI6', lexicon).map(compact)).toEqual(spoken);
+    expect(normaliseSpoken('nimi6', lexicon).map(compact)).toEqual(spoken);
+    expect(normaliseSpoken('Nimi6', lexicon).map(compact)).toEqual(spoken);
+    expect(normaliseSpoken('hawkz7', lexicon).map(compact)).toEqual(['w:hawkz', 'n:7/figures']);
+  });
+
+  it('reads a number word as a number even where the lexicon holds it', () => {
+    const lexicon = { TEN: 'Tenville VOR' };
+    expect(normaliseSpoken('one zero ten thousand', lexicon).map(compact)).toEqual([
+      'n:10000/digits+r',
     ]);
-    expect(normaliseSpoken('sac', lexicon).map(compact)).toEqual(['w:sac']);
+    expect(normaliseSpoken('ten thousand', lexicon).map(compact)).toEqual(['n:10000/group']);
   });
 
   it('ends a number run at punctuation', () => {
