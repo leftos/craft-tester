@@ -72,6 +72,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "R-FULL-ROUTE",
     "R-FRC",
     "R-FACILITY-WORD",
+    "R-FACILITY-WORD-OMITTED",
     "S-FILLER",
     "S-ORDER",
     "S-NINER",

@@ -149,8 +149,13 @@ const AS_FILED_WORD = 'filed';
 /** The row that has an amended route's reading hand the rest of it over as filed. */
 const THEN_AS_FILED_ROW = 'R-THEN-AS-FILED';
 
-/** The facility words a student may add after a bare fix an as-filed route hands over on. */
-const FACILITY_WORDS: ReadonlySet<string> = new Set(['vor', 'ndb']);
+/**
+ * The words that name a navaid's type, which the generator speaks after its name.
+ *
+ * One added after a bare fix an as-filed route hands over on is right (`R-FACILITY-WORD`), and one
+ * left off a navaid the route names is acceptable (`R-FACILITY-WORD-OMITTED`).
+ */
+const FACILITY_WORDS: ReadonlySet<string> = new Set(['vor', 'ndb', 'tacan', 'dme']);
 
 /** A number written plainly, whose leading and trailing zeros do not change its value. */
 const PLAIN_DECIMAL = /^\d+(?:\.\d+)?$/u;
@@ -180,6 +185,7 @@ const REMARKS = {
   groupForm: 'group form alone — say the digits',
   restated: 'restated in group form — the digits alone are enough',
   fullRoute: 'the route read in full — the shorter reading is enough',
+  facilityWord: 'facility word left out — a navaid is said with its type',
   thenAsFiled: '"then as filed" said where the reading ends on "direct"',
   frc: '"then as filed" said on a full route clearance — read the route to its end',
   redundantExpect: 'an expect clause the clearance can do without',
@@ -1094,13 +1100,40 @@ function matchedPairs(indices: readonly number[], grading: Grading): MatchedPair
   });
 }
 
-/** The element's candidate tokens no student token matched, as spans of the candidate's own words. */
-function missedSpans(indices: readonly number[], grading: Grading): Span[] {
+/** The element's candidate tokens no student token matched. */
+function missedTokens(indices: readonly number[], grading: Grading): SpokenToken[] {
   return indices.flatMap((index) => {
     if (grading.matchedBy.has(index)) return [];
     const token = grading.alignment.candidate.tokens[index]?.token;
-    return token === undefined ? [] : [{ start: token.start, end: token.end }];
+    return token === undefined ? [] : [token];
   });
+}
+
+/** The element's candidate tokens no student token matched, as spans of the candidate's own words. */
+function missedSpans(indices: readonly number[], grading: Grading): Span[] {
+  return missedTokens(indices, grading).map((token) => ({ start: token.start, end: token.end }));
+}
+
+/**
+ * The facility words of the route the student left off, or undefined where something else is missing.
+ *
+ * A navaid the route names is not the clearance limit, so the word for its type is optional there
+ * (`R-FACILITY-WORD-OMITTED`); any other word of the reading never said is a miss, and no other
+ * element forgives a word.
+ */
+function omittedFacilityWords(parts: ElementParts, grading: Grading): SpokenToken[] | undefined {
+  if (parts.element !== 'R.route') return undefined;
+  const missed = missedTokens(parts.indices, grading);
+  const forgiven = missed.every((token) => token.kind === 'word' && FACILITY_WORDS.has(token.text));
+  return forgiven ? missed : undefined;
+}
+
+/** Whether every word of an element was said, but for the facility words the route may leave off. */
+function allSaid(parts: ElementParts, grading: Grading): boolean {
+  return (
+    parts.pairs.length === parts.indices.length ||
+    omittedFacilityWords(parts, grading) !== undefined
+  );
 }
 
 /**
@@ -1134,19 +1167,26 @@ function expectedFor(
   return words === undefined ? wholeExpected(label) : markedExpected(words, missed);
 }
 
-/** The verdict and rows of an element every token of which matched. */
+/** The tier a navaid the route names said without its facility word sets. */
+function facilityWordTiers(parts: ElementParts, grading: Grading): Tier[] {
+  const omitted = omittedFacilityWords(parts, grading) ?? [];
+  if (omitted.length === 0) return [];
+  return [tier(grading.airport, 'acceptable', 'R-FACILITY-WORD-OMITTED')];
+}
+
+/** The verdict and rows of an element every token of which matched, or all but a facility word. */
 function matchedVerdict(
-  element: GradedElement,
-  pairs: readonly MatchedPair[],
-  marks: GapMarks,
+  parts: ElementParts,
   grading: Grading,
 ): { verdict: Verdict; citations: RuleCitation[] } {
   const { airport, alignment } = grading;
+  const { element, pairs, marks } = parts;
   const tiers = [
     ...pairs.flatMap((pair) => numberTiers(pair.student, pair.expected, airport)),
     ...pairs.flatMap((pair) => spellingTiers(pair.student, pair.expected, airport)),
     ...marks.tiers,
     ...candidateTiers(element, grading),
+    ...facilityWordTiers(parts, grading),
   ];
   const redundant = element === 'A.expect' && alignment.candidate.expect === 'redundant';
   const own = redundant ? [] : ownRows(element, grading);
@@ -1244,14 +1284,14 @@ function emptyElementGrade(
 
 /** The verdict and the rows of one element, on the labels already read from its marks. */
 function verdictOf(parts: ElementParts, labels: ElementLabels, grading: Grading): Unremarked {
-  const { element, indices, marks, pairs } = parts;
+  const { element, indices, marks } = parts;
   const own = ownRows(element, grading);
   if (indices.length === 0) return emptyElementGrade(labels, parts.stray, own);
-  if (pairs.length < indices.length) {
+  if (!allSaid(parts, grading)) {
     const order = marks.outOfOrder ? citePhraseology(grading.airport, 'S-ORDER') : [];
     return { ...labels, verdict: 'wrong', citations: citeOnce([...own, ...order]) };
   }
-  return { ...labels, ...matchedVerdict(element, pairs, marks, grading) };
+  return { ...labels, ...matchedVerdict(parts, grading) };
 }
 
 /** A stretch of text as a remark writes it, without the whitespace and punctuation at its ends. */
@@ -1312,6 +1352,15 @@ function wrongValueRemark(
   return `wrong value: said ${quoted(said)}, expected ${quoted(only)}`;
 }
 
+/**
+ * The remark that names the words never said: the facility words the route may leave off read as
+ * the word left out rather than as a miss.
+ */
+function missedRemark(parts: ElementParts, missed: readonly string[], grading: Grading): string[] {
+  if ((omittedFacilityWords(parts, grading) ?? []).length > 0) return [REMARKS.facilityWord];
+  return missed.length === 0 ? [] : [`missed: ${missed.map(quoted).join(', ')}`];
+}
+
 /** The remarks that say which words were never said, and which words the reading does not have. */
 function valueRemarks(parts: ElementParts, grade: Unremarked, grading: Grading): string[] {
   const missed = grade.expected.filter((run) => run.missed).map((run) => run.text);
@@ -1319,7 +1368,7 @@ function valueRemarks(parts: ElementParts, grade: Unremarked, grading: Grading):
   const wrongValue = wrongValueRemark(parts, missed, grading);
   if (wrongValue !== undefined) return [wrongValue];
   return [
-    ...(missed.length === 0 ? [] : [`missed: ${missed.map(quoted).join(', ')}`]),
+    ...missedRemark(parts, missed, grading),
     ...(said.length === 0 ? [] : [`not in the reading: ${said.map(quoted).join(', ')}`]),
   ];
 }
@@ -1366,11 +1415,12 @@ function candidateRemark(element: GradedElement, grading: Grading): string | und
  *
  * A route a full route clearance was handed over on says so however little of the element was
  * heard, and alongside whatever the words themselves missed; the other remarks are read off an
- * element every token of which matched, where the reading itself is the whole of what went wrong.
+ * element every word of which was said, a facility word the route may leave off included, where the
+ * reading itself is the whole of what went wrong.
  */
 function candidateRemarks(parts: ElementParts, grading: Grading): string[] {
   if (isFullRoute(parts.element, grading)) return handsOver(grading) ? [REMARKS.frc] : [];
-  if (parts.indices.length === 0 || parts.pairs.length < parts.indices.length) return [];
+  if (parts.indices.length === 0 || !allSaid(parts, grading)) return [];
   const remark = candidateRemark(parts.element, grading);
   return remark === undefined ? [] : [remark];
 }

@@ -264,6 +264,27 @@ describe('lexiconFor', () => {
     expect(lexicon[gap?.id ?? '']).toBe(gap?.spoken);
     expect(lexicon['KSEA']).toBe('Seattle-Tacoma International');
   });
+
+  it('reads a SID family code as the procedure name', () => {
+    const lexicon = lexiconFor(airportOf('KSFO'));
+    expect(lexicon['GAPP']).toBe('Gap');
+    expect(normaliseSpoken('gapp seven departure', lexicon).map(compact)).toEqual(
+      normaliseSpoken('gap seven departure', lexicon).map(compact),
+    );
+  });
+
+  it('keeps a navaid over a SID family of the same identifier', () => {
+    const ksfo = airportOf('KSFO');
+    expect(ksfo.sids.some((sid) => sid.family === 'SFO')).toBe(true);
+    expect(lexiconFor(ksfo)['SFO']).toBe('San Francisco');
+    // The CIFP carries no SFO fix record, so the navaid whose identifier the SFO5's family code
+    // shares is added here, as a hand-named navaid would be.
+    const withNavaid: AirportData = {
+      ...ksfo,
+      fixSpoken: { ...ksfo.fixSpoken, SFO: 'San Francisco VOR' },
+    };
+    expect(lexiconFor(withNavaid)['SFO']).toBe('San Francisco VOR');
+  });
 });
 
 /**

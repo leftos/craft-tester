@@ -287,6 +287,14 @@ function graded(text: string, speakInput: SpeakClearanceInput = input()): TextGr
 
 const STRAY_EXPECT = 'Expect flight level three four zero one zero minutes after departure. ';
 
+/** The remark a route reads where the student left a navaid's facility word out. */
+const FACILITY_WORD_REMARK = 'facility word left out — a navaid is said with its type';
+
+/** A reading with both of its navaids named without their facility word. */
+function bareNavaids(reading: string): string {
+  return edited(edited(reading, 'Red Bluff VOR', 'Red Bluff'), 'Concord VOR', 'Concord');
+}
+
 describe('gradeText', () => {
   it("grades the engine's own reading correct in every element, for every settled clearance fixture", () => {
     expect(settledClearances.length).toBeGreaterThan(0);
@@ -371,6 +379,66 @@ describe('gradeText', () => {
     expect(verdictsOf(grades)).toEqual(verdictsWith());
     expect(idsOf(gradeOf(grades, 'R.route'))).toEqual(['OWN-ROUTE', 'R-FACILITY-WORD']);
     expect(gradeOf(grades, 'R.route').actualLabel).toBe('Concord VOR, then as filed');
+  });
+
+  it('grades a route navaid said without its facility word acceptable', () => {
+    const speakInput = input({ originalRoute: 'TRUKN2 DEDHD LIN HAWKZ7' });
+    const text = edited(readingOf(speakInput), 'Red Bluff VOR', 'Red Bluff');
+    const grades = graded(text, speakInput);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'acceptable' }));
+    const route = gradeOf(grades, 'R.route');
+    expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
+    expect(route.remarks).toEqual([FACILITY_WORD_REMARK]);
+    expect(route.expected.filter((run) => run.missed).map((run) => run.text)).toEqual(['VOR']);
+  });
+
+  it('keeps a route wrong that misses more than facility words', () => {
+    const speakInput = input({ originalRoute: 'TRUKN2 DEDHD LIN HAWKZ7' });
+    const bare = edited(readingOf(speakInput), 'Red Bluff VOR', 'Red Bluff');
+    const grades = graded(edited(bare, 'direct Red Bluff, ', ''), speakInput);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'wrong' }));
+    const route = gradeOf(grades, 'R.route');
+    expect(idsOf(route)).not.toContain('R-FACILITY-WORD-OMITTED');
+    expect(route.remarks).toEqual(['missed: "direct Red Bluff VOR"']);
+  });
+
+  it('forgives the facility word on a full route clearance', () => {
+    const speakInput = input({ filedRoute: 'TRUKN2 DEDHD RBL CCR HAWKZ7' });
+    const spoken = speakClearance(speakInput);
+    const route = gradeOf(gradedAs(bareNavaids(spoken.fullRoute), 'full', speakInput), 'R.route');
+    expect(route.verdict).toBe('acceptable');
+    expect(idsOf(route)).toContain('R-FRC');
+    expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
+
+    const handedOver = gradeOf(gradedAs(spoken.abbreviated, 'full', speakInput), 'R.route');
+    expect(handedOver.verdict).toBe('wrong');
+    expect(idsOf(handedOver)).toContain('R-FRC');
+    expect(idsOf(handedOver)).not.toContain('R-FACILITY-WORD-OMITTED');
+  });
+
+  it('keeps the full-route remark beside an omitted facility word', () => {
+    const speakInput = input({ filedRoute: 'TRUKN2 DEDHD RBL CCR HAWKZ7' });
+    const spoken = speakClearance(speakInput);
+    const route = gradeOf(graded(bareNavaids(spoken.fullRoute), speakInput), 'R.route');
+    expect(route.verdict).toBe('acceptable');
+    expect(idsOf(route)).toContain('R-FULL-ROUTE');
+    expect(route.remarks).toEqual([
+      FACILITY_WORD_REMARK,
+      'the route read in full — the shorter reading is enough',
+    ]);
+  });
+
+  it('reads a SID code typed as a word as the procedure name', () => {
+    const speakInput = input({
+      clearance: clearance({
+        procedure: { kind: 'sid', id: 'GAPP7', family: 'GAPP', spoken: 'Gap Seven' },
+      }),
+      filedRoute: 'GAPP7 DEDHD RBL HAWKZ7',
+    });
+    const text = edited(readingOf(speakInput), 'Gap Seven departure', 'Gapp Seven departure');
+    const grades = graded(text, speakInput);
+    expect(verdictsOf(grades)).toEqual(verdictsWith());
+    expect(gradeOf(grades, 'R.sid').remarks).toEqual([]);
   });
 
   it('grades "nine" for a digit acceptable, and a procedure\'s own Nine right', () => {
