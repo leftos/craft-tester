@@ -168,3 +168,4 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] Typed names: any case, full/short/also field names, joined numbers, `R-RV-AIRWAY`, spelt fixes — `b3d2405`, `17c68b7`, `7763420`, `4cc29fe` ([archive/typed-names.md](./archive/typed-names.md))
 - [x] Cleanup after typed names: the joined-airway label says "airway"; an unread field goes — `25ff3d7`
 - [x] Full route clearance mode (AJ Norell and the user): a typed-answer checkbox in both modes, `R-FRC`, `FRC` on the strip, `r=full` — `458fe43` ([archive/full-route-clearance.md](./archive/full-route-clearance.md))
+- [x] The joined airway is spoken bare, "radar vectors to join Victor six": the word "airway" reversed the same day (7110.65 2-6-4, 4-4-1 a, 2-5-1 a) — `0de5e2d`

@@ -42,4 +42,7 @@ grading", "TEC routes", "Amendment mode"); the subplans named below sit beside t
   Metro") — `17c68b7`, `7763420`; a number typed in pieces is one number where the pieces spell a number
   the reading says ("squawk 00 six two") — `7763420`; "radar vectors to join Victor six airway"
   (`R-RV-AIRWAY`), and a navaid or five-letter fix spelt in the phonetic alphabet is fully right
-  (`R-NAVAID`, 7110.65 2-5-2 a 1) — `4cc29fe`
+  (`R-NAVAID`, 7110.65 2-5-2 a 1) — `4cc29fe`. **The word "airway" was reversed the same day** (user
+  ruling): the reading is "radar vectors to join Victor six", since 7110.65 2-6-4, 4-4-1 a and 2-5-1 a
+  never append the word; the label's special case went with it, and a typed "Victor six airway" is
+  acceptable as filler — `0de5e2d`
