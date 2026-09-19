@@ -51,6 +51,9 @@ type NumberPiece = { word: NumberWord; piece: Piece };
 /** The tokens read from the text at one place, and the index of the next item to read. */
 type Reading = { tokens: SpokenToken[]; next: number };
 
+/** The tokens an identifier spelt in the phonetic alphabet reads as, and how many words it took. */
+type Spelt = { tokens: SpokenToken[]; length: number };
+
 /** Words read in order: the digits they append, and what the words they were said in tell. */
 type Concatenation = {
   text: string;
@@ -156,6 +159,42 @@ const AIRWAY_WORDS: Readonly<Record<string, string>> = {
   q: 'queue',
   t: 'tango',
 };
+
+/** The letter each word of the ICAO spelling alphabet spells, per FAA JO 7110.65 2-4-16 TBL 2-4-1. */
+const LETTER_BY_PHONETIC: ReadonlyMap<string, string> = new Map([
+  ['alfa', 'A'],
+  ['alpha', 'A'],
+  ['bravo', 'B'],
+  ['charlie', 'C'],
+  ['delta', 'D'],
+  ['echo', 'E'],
+  ['foxtrot', 'F'],
+  ['golf', 'G'],
+  ['hotel', 'H'],
+  ['india', 'I'],
+  ['juliett', 'J'],
+  ['juliet', 'J'],
+  ['kilo', 'K'],
+  ['lima', 'L'],
+  ['mike', 'M'],
+  ['november', 'N'],
+  ['oscar', 'O'],
+  ['papa', 'P'],
+  ['quebec', 'Q'],
+  ['romeo', 'R'],
+  ['sierra', 'S'],
+  ['tango', 'T'],
+  ['uniform', 'U'],
+  ['victor', 'V'],
+  ['whiskey', 'W'],
+  ['whisky', 'W'],
+  ['xray', 'X'],
+  ['yankee', 'Y'],
+  ['zulu', 'Z'],
+]);
+
+/** How many letters a fix identifier has, which is what a spelt run the lexicon misses reads as. */
+const FIX_IDENTIFIER_LETTERS = 5;
 
 /** The piece shapes read as words and a number, checked in order after a lexicon miss. */
 const SHAPES: readonly Shape[] = [
@@ -273,6 +312,45 @@ function expandIdentifier(piece: Piece, lexicon: Lexicon): SpokenToken[] | undef
     start: piece.start,
     end: piece.end,
   }));
+}
+
+/** The pieces from `index` on that are words of the spelling alphabet, up to the first that is not. */
+function phoneticRun(items: readonly Item[], index: number): Piece[] {
+  const run: Piece[] = [];
+  for (let at = index; at < items.length; at += 1) {
+    const item = items[at];
+    if (item?.kind !== 'piece' || !LETTER_BY_PHONETIC.has(item.text.toLowerCase())) break;
+    run.push(item);
+  }
+  return run;
+}
+
+/** The letters the first `length` words of a run spell, as one piece spanning all of them. */
+function speltPiece(run: readonly Piece[], length: number): Piece {
+  const taken = run.slice(0, length);
+  return {
+    text: taken.map((piece) => LETTER_BY_PHONETIC.get(piece.text.toLowerCase()) ?? '').join(''),
+    start: taken[0]?.start ?? 0,
+    end: taken.at(-1)?.end ?? 0,
+  };
+}
+
+/**
+ * What a run of spelling-alphabet words reads as, and how many of its words that took.
+ *
+ * A navaid or a fix may be named by its identifier spelt out (FAA JO 7110.65 2-5-2 a 1), so the
+ * longest stretch of the run the lexicon holds is read as that identifier's spoken words, and five
+ * letters the lexicon misses are the fix they spell, said as its own word. A run of one word spells
+ * nothing: "victor six" is an airway and its number.
+ */
+function readSpelt(run: readonly Piece[], lexicon: Lexicon): Spelt | undefined {
+  for (let length = run.length; length >= MIN_IDENTIFIER_LENGTH; length -= 1) {
+    const tokens = expandIdentifier(speltPiece(run, length), lexicon);
+    if (tokens !== undefined) return { tokens, length };
+  }
+  if (run.length < FIX_IDENTIFIER_LETTERS) return undefined;
+  const spelt = speltPiece(run, FIX_IDENTIFIER_LETTERS);
+  return { tokens: [wordToken(spelt.text, spelt)], length: FIX_IDENTIFIER_LETTERS };
 }
 
 /** The two parts of a piece a two-group pattern matches whole, each with its own span. */
@@ -564,13 +642,16 @@ function readNumberStretch(items: readonly Item[], index: number): Reading {
 }
 
 /**
- * The tokens at one item: a number word opens a number run, the lexicon reads a piece it holds,
- * and a shape splits what is left. A number word is a number wherever the lexicon also holds it.
+ * The tokens at one item: a number word opens a number run, a run of spelling-alphabet words is
+ * the identifier it spells, the lexicon reads a piece it holds, and a shape splits what is left. A
+ * number word is a number wherever the lexicon also holds it.
  */
 function readItem(items: readonly Item[], index: number, lexicon: Lexicon): Reading {
   const item = items[index];
   if (item === undefined || item.kind === 'boundary') return { tokens: [], next: index + 1 };
   if (numberWordOf(item.text) !== undefined) return readNumberStretch(items, index);
+  const spelt = readSpelt(phoneticRun(items, index), lexicon);
+  if (spelt !== undefined) return { tokens: spelt.tokens, next: index + spelt.length };
   const single = expandIdentifier(item, lexicon) ?? readShaped(item, items[index + 1]);
   if (single !== undefined) return { tokens: single, next: index + 1 };
   return { tokens: [wordToken(item.text, item)], next: index + 1 };
@@ -604,11 +685,13 @@ export function lexiconFor(airport: AirportData): Lexicon {
  *
  * Whitespace, punctuation and a hyphen between letters split the text into pieces. A stretch of
  * figures and number words becomes number tokens, each recording how it was said, and digits
- * followed by their own group form (`one zero ten thousand`) read as one restated number; a piece
- * the lexicon holds, typed in any case (`SAC`, `nimi6`), becomes its spoken words; a shaped piece
- * (`FL320`, `28L`, `V244`, `HAWKZ7`) becomes its words and its number; anything else is a
- * lower-case word. A stretch that cannot form a number stays as words. Each token spans the
- * original text it came from.
+ * followed by their own group form (`one zero ten thousand`) read as one restated number; a run of
+ * two or more spelling-alphabet words becomes the identifier it spells (`sierra alpha uniform`),
+ * read through the lexicon where it holds one and as the five-letter fix the letters spell where it
+ * does not; a piece the lexicon holds, typed in any case (`SAC`, `nimi6`), becomes its spoken
+ * words; a shaped piece (`FL320`, `28L`, `V244`, `HAWKZ7`) becomes its words and its number;
+ * anything else is a lower-case word. A stretch that cannot form a number stays as words. Each
+ * token spans the original text it came from.
  *
  * @param text The clearance text, typed or spoken.
  * @param lexicon Identifier to spoken words, from `lexiconFor`.

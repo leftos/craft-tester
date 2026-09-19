@@ -639,6 +639,32 @@ describe('gradeText on an identifier typed in place of the words it is spoken as
   });
 });
 
+/** A settled KSFO reading vectored to a navaid its route names in full. */
+const SAC_VECTORS = 'syn-gapp7-sac-28l-nonrnav-jet';
+
+/** The route grades of one reading typed as read, and of the same reading with a stretch spelt. */
+function speltRoute(id: string, name: string, spelt: string): [TextGrade, TextGrade] {
+  const reading = settledReading(id);
+  const asRead = gradedAgainst(reading, reading.spoken.abbreviated);
+  const typed = gradedAgainst(reading, edited(reading.spoken.abbreviated, name, spelt));
+  expect(misgraded(typed, {})).toEqual([]);
+  return [gradeOf(typed, 'R.route'), gradeOf(asRead, 'R.route')];
+}
+
+describe('gradeText on an identifier spelt in the phonetic alphabet', () => {
+  it('reads a navaid spelt letter by letter as the navaid', () => {
+    const [spelt, asRead] = speltRoute(SAC_VECTORS, 'Sacramento VOR', 'sierra alpha charlie');
+    expect(spelt.remarks).toEqual([]);
+    expect(idsOf(spelt)).toEqual(idsOf(asRead));
+  });
+
+  it('reads a five-letter fix spelt letter by letter as the fix', () => {
+    const [spelt, asRead] = speltRoute(FDX_PRACTICE, 'Dedhd', 'delta echo delta hotel delta');
+    expect(spelt.remarks).toEqual([]);
+    expect(idsOf(spelt)).toEqual(idsOf(asRead));
+  });
+});
+
 /** The practice reading with the field named another way, in place of the name the reading reads. */
 function namedGraded(name: string): TextGrade[] {
   return fdxGraded((reading) => edited(reading, 'Seattle-Tacoma International', name));
@@ -766,6 +792,38 @@ describe('gradeText on a field typed as its code', () => {
     const grades = codedGraded('cleared to ksea airport');
     expect(misgraded(grades, {})).toEqual([]);
     expect(spellingCiters(grades)).toEqual(['R.sid']);
+  });
+});
+
+/** A settled KOAK practice reading whose route is radar vectors to join an airway. */
+const AIRWAY_PRACTICE = 'ws-koak-phraseology-practice-2-n436ms';
+
+describe('gradeText on the airway a clearance is vectored to join', () => {
+  it('grades the joined airway said with its word correct', () => {
+    const reading = settledReading(AIRWAY_PRACTICE);
+    expect(reading.spoken.abbreviated).toContain('radar vectors to join Victor six airway');
+    const grades = gradedAgainst(reading, reading.spoken.abbreviated);
+    expect(misgraded(grades, {})).toEqual([]);
+    expect(gradeOf(grades, 'R.route').remarks).toEqual([]);
+  });
+
+  it('misses the word "airway" left off the joined airway', () => {
+    const reading = settledReading(AIRWAY_PRACTICE);
+    const grades = gradedAgainst(
+      reading,
+      edited(reading.spoken.abbreviated, 'Victor six airway', 'Victor six'),
+    );
+    expect(misgraded(grades, { 'R.route': 'wrong' })).toEqual([]);
+    expect(gradeOf(grades, 'R.route').remarks).toEqual(['missed: "airway"']);
+  });
+
+  it('keeps the word said after an airway that connects two fixes filler', () => {
+    const connecting = input({ filedRoute: 'TRUKN2 DEDHD V6 RBL' });
+    const full = speakClearance(connecting).fullRoute;
+    expect(full).toContain('Dedhd transition, Victor six, Red Bluff VOR');
+    const grades = graded(edited(full, 'Victor six,', 'Victor six airway,'), connecting);
+    expect(misgraded(grades, { 'R.route': 'acceptable' })).toEqual([]);
+    expect(idsOf(gradeOf(grades, 'R.route'))).toContain('S-FILLER');
   });
 });
 

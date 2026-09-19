@@ -77,6 +77,13 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
     as the fix's word; "victor"/"tango" before a number stay the airway word. Goes out after the grader
     step, which holds the tree
 
+- [ ] **"Radar vectors to join Victor six airway"** (user steer, same day, on a KOAK → O88 reading that said
+  "radar vectors to join Victor six, then as filed"): an airway the flight is vectored to join is followed
+  by the word "airway"; an airway that connects two fixes inside the route takes no such word ("Oakland
+  VOR, Victor six, Sacramento VOR" stays). Row text is `R-RV-AIRWAY` (YAML + build); the reading is
+  `speak.ts`. A typed answer then needs the word like any other required word (`S-FILLER`: a required
+  word left out is a miss), and "airway" said after a connecting airway stays filler
+
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.

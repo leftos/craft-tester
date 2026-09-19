@@ -191,6 +191,12 @@ remembered per browser. The dropdowns stay, and the student chooses.
   lexicon, so an identifier that spells a word cannot take it over: a number word is always a number, and
   a word one of the candidate readings says is read as typed (`gradeText` leaves those keys out of the
   lexicon it reads the typed text with).
+  A run of two or more spelling-alphabet words is the identifier it spells, fully right and with no
+  remark (`R-NAVAID`; 7110.65 2-5-2 a 1 gives "the name or phonetic alphabet equivalent" of a navaid in a
+  routing, and the user extended it to a five-letter fix, 2026-09-18): the longest stretch the lexicon
+  holds reads as that key's spoken words ("sierra alpha uniform" is "Sausalito VOR"), and five letters
+  it misses read as the fix's own word. One such word alone spells nothing, so "victor six" stays an
+  airway, also right after a spelt navaid. `x-ray` typed with a hyphen is not read; `xray` is.
 - **Joining numbers** (`rules/text/grade.ts`, `joinNumbers`). The normaliser ends a number run at typed
   figures, which keeps "expect 10000 one zero minutes" two numbers, so a squawk typed `00 six two`
   arrives as `00` and `62`. Before aligning, consecutive typed numbers whose values concatenate to a

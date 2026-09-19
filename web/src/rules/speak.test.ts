@@ -502,11 +502,11 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.abbreviated).toContain(
-      'San Francisco Five departure, radar vectors to join Victor six, then as filed.',
+      'San Francisco Five departure, radar vectors to join Victor six airway, then as filed.',
     );
     expect(spoken.fullRoute).toBe(
       'United three twenty, cleared to Seattle airport, San Francisco Five departure, ' +
-        `radar vectors to join Victor six, Sacramento VOR, direct Dedhd, direct. ${closing}`,
+        `radar vectors to join Victor six airway, Sacramento VOR, direct Dedhd, direct. ${closing}`,
     );
   });
 
@@ -521,7 +521,7 @@ describe('speakClearance', () => {
       }),
     );
     expect(spoken.fullRoute).toContain(
-      'San Francisco Five departure, radar vectors to join Victor six, Sacramento VOR, direct.',
+      'San Francisco Five departure, radar vectors to join Victor six airway, Sacramento VOR, direct.',
     );
   });
 

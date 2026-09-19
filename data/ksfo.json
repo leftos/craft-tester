@@ -1987,8 +1987,8 @@
     },
     {
       "id": "R-RV-AIRWAY",
-      "source": "ZOA CRAFT Phraseology reference",
-      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway"
+      "source": "ZOA CRAFT Phraseology reference; user steer 2026-09-18 (the word AIRWAY)",
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway) AIRWAY, THEN AS FILED — used when the first filed element after the SID is an airway; the word AIRWAY follows the airway the flight is vectored to join (radar vectors to join Victor six airway), and an airway that connects two fixes inside a route takes no such word"
     },
     {
       "id": "R-RV-DIRECT",
@@ -2002,8 +2002,8 @@
     },
     {
       "id": "R-NAVAID",
-      "source": "FAA JO 7110.65 2-5-2; ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15",
-      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); transitions keep their published name"
+      "source": "FAA JO 7110.65 2-5-2 (a 1: the name or phonetic alphabet equivalent of a NAVAID in a routing); ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15; user ruling 2026-09-18 (a fix spelt letter by letter)",
+      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); in a routing its identifier said in the phonetic alphabet is the same navaid (Sierra Alpha Uniform for Sausalito VOR), and a five-letter fix may be spelt the same way; transitions keep their published name"
     },
     {
       "id": "R-RNAV-AIRWAY",
