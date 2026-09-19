@@ -62,9 +62,6 @@ type RouteOption = 'base' | 'full' | 'end';
 /** How a candidate reads the expect clause: as spoken, or as the redundant clause the rules allow. */
 type ExpectOption = 'base' | 'redundant';
 
-/** How a candidate names the field: as the reading names it, or by another name its row lists. */
-type NameOption = 'read' | 'other';
-
 /** A token of a candidate reading, tagged with the element it speaks. */
 type CandidateToken = { token: SpokenToken; element: GradedElement };
 
@@ -72,7 +69,6 @@ type CandidateToken = { token: SpokenToken; element: GradedElement };
 type Candidate = {
   route: RouteOption;
   expect: ExpectOption;
-  name: NameOption;
   parts: GradedPart[];
   tokens: CandidateToken[];
 };
@@ -279,8 +275,8 @@ function nameReadings(
   parts: readonly GradedPart[],
   expected: ResolvedClearance,
   airport: AirportData,
-): { option: NameOption; parts: GradedPart[] }[] {
-  const base = { option: 'read' as const, parts: [...parts] };
+): GradedPart[][] {
+  const base = [...parts];
   const words = parts.find((part) => part.element === 'C')?.words;
   const row = airport.routeLibrary.destinations.find(
     (destination) => destination.icao === expected.clearedTo.value,
@@ -288,10 +284,7 @@ function nameReadings(
   if (words === undefined || row === undefined) return [base];
   const named = [row.spoken, row.short, ...row.also].map(limitWords);
   const others = named.filter((said, index) => said !== words && named.indexOf(said) === index);
-  return [
-    base,
-    ...others.map((said) => ({ option: 'other' as const, parts: withWords(parts, 'C', said) })),
-  ];
+  return [base, ...others.map((said) => withWords(parts, 'C', said))];
 }
 
 /** Every candidate reading, route-major, the base reading first. */
@@ -304,12 +297,11 @@ function candidatesFor(
   const { template } = expected.route.value;
   return routeReadings(parts, spoken.fullRouteWords, template).flatMap((route) =>
     expectReadings(route.parts, expected).flatMap((expect) =>
-      nameReadings(expect.parts, expected, airport).map((name) => ({
+      nameReadings(expect.parts, expected, airport).map((named) => ({
         route: route.option,
         expect: expect.option,
-        name: name.option,
-        parts: name.parts,
-        tokens: tagged(name.parts),
+        parts: named,
+        tokens: tagged(named),
       })),
     ),
   );
