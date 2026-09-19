@@ -3125,8 +3125,8 @@
     },
     {
       "id": "R-RV-AIRWAY",
-      "source": "ZOA CRAFT Phraseology reference; user steer 2026-09-18 (the word AIRWAY)",
-      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway) AIRWAY, THEN AS FILED — used when the first filed element after the SID is an airway; the word AIRWAY follows the airway the flight is vectored to join (radar vectors to join Victor six airway), and an airway that connects two fixes inside a route takes no such word"
+      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 2-6-4 (VECTOR TO JOIN (airway)), 4-4-1 a (JOIN VICTOR (airway number)) and 2-5-1 a (Victor Twelve); user ruling 2026-09-18 (no word AIRWAY)",
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway; the airway is spoken as its designator alone (radar vectors to join Victor six), with no word AIRWAY after it"
     },
     {
       "id": "R-RV-DIRECT",

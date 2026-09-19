@@ -36,8 +36,8 @@ phraseology_rules:
     source: "FAA JO 7110.65 4-3-2 c 3; OAK ATCT SOP 2-1 c (via koak-v3 notes); S1-SFO-0 CBT No SID"
     text: "VIA FLY RUNWAY HEADING / VIA TURN LEFT (or RIGHT) HEADING (heading), RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading, or turned the shorter way onto the heading the row names, and vectored to the first filed fix; no procedure is named"
   - id: R-RV-AIRWAY
-    source: "ZOA CRAFT Phraseology reference; user steer 2026-09-18 (the word AIRWAY)"
-    text: "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway) AIRWAY, THEN AS FILED — used when the first filed element after the SID is an airway; the word AIRWAY follows the airway the flight is vectored to join (radar vectors to join Victor six airway), and an airway that connects two fixes inside a route takes no such word"
+    source: "ZOA CRAFT Phraseology reference; FAA JO 7110.65 2-6-4 (VECTOR TO JOIN (airway)), 4-4-1 a (JOIN VICTOR (airway number)) and 2-5-1 a (Victor Twelve); user ruling 2026-09-18 (no word AIRWAY)"
+    text: "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway; the airway is spoken as its designator alone (radar vectors to join Victor six), with no word AIRWAY after it"
   - id: R-RV-DIRECT
     source: "SOP 2-1 b (\"if a pilot cannot accept one, vectors direct\"); user ruling 2026-09-18"
     text: "RADAR VECTORS DIRECT — used when the route names no fix after the departure: a TEC route that ends in RV, or a radar-vector SID with nothing after the airport navaid; the flight is vectored straight to the destination"

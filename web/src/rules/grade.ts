@@ -68,9 +68,6 @@ const ROUTE_PHRASES: Record<RouteTemplate, string> = {
 /**
  * Renders a route element the way the results view names it, e.g. `DEDHD transition`.
  *
- * An airway the vectors join is named the way the clearance speaks it, with the word after it, so
- * `V6` reads `radar vectors to join V6 airway`.
- *
  * @param route The route shape and, where the clearance names one, the element it speaks.
  * @returns The label, which is the bare shape when the route names no element.
  */
@@ -79,7 +76,6 @@ export function routeLabel(route: ResolvedClearance['route']['value']): string {
   if (fix === undefined) return ROUTE_PHRASES[template];
   if (template === 'transition') return `${fix} transition`;
   if (template === 'as_filed') return fix;
-  if (template === 'radar_vectors_airway') return `${ROUTE_PHRASES[template]} ${fix} airway`;
   return `${ROUTE_PHRASES[template]} ${fix}`;
 }
 
