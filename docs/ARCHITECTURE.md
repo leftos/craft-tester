@@ -198,6 +198,12 @@ remembered per browser. The dropdowns stay, and the student chooses.
   - a group-form restatement after the digits is acceptable, and the group form alone is wrong
     (`S-GROUP-FORM`);
   - "nine" where the reading says "niner" is wrong (`S-NINER`), except in a chart name;
+  - a word typed a letter or two away from the word the reading has is that word, fully right
+    (`S-SPELLING`, `rules/text/spelling.ts`): one edit for a word of five to eight letters, two for a
+    longer one, none for a shorter one. A typed word that is itself a word of the reading, of the
+    lexicon or of any phraseology row's text is read as typed, which keeps "except" from standing in
+    for "expect"; a number token never matches a word, so a misspelt number word is not guessed at.
+    Because the rows' prose is part of that vocabulary, no row may spell a misspelling it forgives;
   - the facility word after a bare fix is right (`R-FACILITY-WORD`);
   - the full route and "then as filed" at the route's end are acceptable (`R-FULL-ROUTE`,
     `R-THEN-AS-FILED-END`);
@@ -207,7 +213,10 @@ remembered per browser. The dropdowns stay, and the student chooses.
 - **Amendment mode.** After the strip, the typing box takes the place of the CRAFT form. The procedure the
   student speaks is graded in place of the procedure pick.
 - **Results.** A row shows what was said for its element (`TextGrade.said`: runs of said words, filler
-  and breaks). Wherever the element is not fully correct, the row also shows the expected words.
+  and breaks). Wherever the element is not fully correct, the row also shows the expected words
+  (`TextGrade.expected`: runs cut from the winning candidate's own words for the element). The words
+  never said are marked, but only where the element is wrong and some of it was heard: an element not
+  heard at all, or said out of order, marks nothing, because marking every word says nothing.
 - **State.** `AppState.input` and `AppState.text` hold the input kind and the typed clearance. Typed
   attempts are remembered under their own keys and re-graded on revisit.
 

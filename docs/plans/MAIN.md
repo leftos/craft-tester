@@ -22,26 +22,29 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
 ## Current focus — Tester feedback, AJ Norell 2026-09-18 (`rules/text/`, `ui/`)
 
-Gate: UI + a grading ruling from the user.
+Gate: UI. AJ's two notes landed in `93d164f` (see Landed): figures were always accepted, and the red rows
+came from `depature`, `sqawk` and a route with no "then as filed". What is left is the user's steer on top
+of it.
 
-- [ ] **Typed clearances: "accept numbers".** The tester typed `oakland 6 depature`, `radar vectors to join
-  v244` and `sqawk 6201` and read the red rows as figures being refused, because `expected:` shows the
-  numbers as words. First reading of `normalise.ts`: figures already parse (`6`, `v244`, `6201`), and the
-  misses are the misspelt fixed words `depature` and `sqawk` plus a missing "then as filed". Confirmed
-  against `gradeText` on six KOAK fixtures 2026-09-18: `Six` → `6` and all-lowercase grade all correct;
-  each misspelling alone turns its element wrong. `v244` and `V244` grade correct on the screenshot's own
-  route (N436MS, `radar vectors to join Victor two forty-four, then as filed`) and on three `V6` fixtures;
-  the row is wrong only without "then as filed", which stays wrong (free-text decision 4, `R-RV-AIRWAY`).
-  **User rulings 2026-09-18:**
-  - [ ] (a) **A near-miss spelling counts as the word, fully correct, for every word** — fixed words and
-    names alike. One edit away (two for a long word) from a word of the expected reading, unless the typed
-    word is itself a word the lexicon or the reading holds. Numbers stay exact, so `S-NINER` is untouched.
-    A new national row (`S-SPELLING`) is cited
-  - [ ] (b) **The `expected:` line marks the words the student never said** (`Oakland Six [departure]`);
-    matched words, figures included, stay plain
-- [ ] **Dropdown answers: keep the strip in view.** On a desktop screen the flight strip and ATIS scroll
-  away while the amend boxes and the CRAFT form are filled. **User ruling 2026-09-18: pin the flight-plan
-  panel** (`position: sticky`) at the top of the viewport at every width; the ATIS scrolls as now
+- [ ] **User steer 2026-09-18: "we could do a lot better in bringing clarity on what was wrong about each
+  thing, maybe by highlighting it".** Builds on `TextGrade.expected` (the runs that mark the unsaid words).
+  **Rulings the same day:**
+  - [ ] **Both lines read as a diff.** `you said:` marks what was wrong in the typed words (a wrong value
+    struck through, a word out of place, `nine`, a group form alone); `expected:` marks what should have
+    been there. An accepted near-miss spelling gets a light dotted mark, like filler
+  - [ ] **A short reason line on every not-correct row**, from the rule that decided it: `missed: "then as
+    filed"`, `wrong value`, `out of CRAFT order`, `say niner, not nine`, `group form alone — say the
+    digits`, `extra words: the, your`. The cited rows stay underneath
+  - [ ] **Typed and dropdown rows.** A dropdown row marks the words that differ between the option picked
+    and the expected one (`correction:` / `shorter:` / `preferred:`). Strip boxes stay as they are
+- [ ] **Bug, found 2026-09-18 while checking the above: leaving out the expect clause also turns F wrong.**
+  The alignment gives the typed "Departure" of "Departure frequency" to the expect clause's "…after
+  departure" (longest common subsequence, earliest match on a tie), so F reads `you said: frequency one
+  three five point one` and the student loses two elements for one omission. Repro: any reading with an
+  expect clause, typed without it — `syn-koak-rnav-elements-b738w-klas`, `ws-koak-amendment-practice-2-fdx3875`,
+  `-jsx203`, `-n858ee` all grade `A.expect wrong ("Departure") | F wrong`. Predates `S-SPELLING` (the
+  tie-break is untouched). Fix is a tie-break among equally long alignments that keeps an element whole
+  rather than lending one word to a neighbour; failing test first
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -183,3 +186,7 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] Radar vectors direct and `RH`/`RV`/`Hnnn` in TEC routes: KOAK's `RH RV` rows to KSFO and its Hayward
   rows, SFO and HWD as north-gate stand-ins (Richmond), and a TEC row grammar in the build that replaces the
   "rows that name no fix" guard — `210fad9`
+- [x] Tester feedback, AJ Norell: a near-miss spelling is the word (`S-SPELLING`: one edit for five to
+  eight letters, two beyond, none below; a real word of the reading, the lexicon or a row is read as typed;
+  numbers stay exact), a typed row's `expected:` marks the words never said, the flight-plan panel is pinned
+  at every width, and `check:browser` takes `scroll:<px>` with a viewport shot — `93d164f`
