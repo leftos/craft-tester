@@ -1118,11 +1118,11 @@ function missedSpans(indices: readonly number[], grading: Grading): Span[] {
  * The facility words of the route the student left off, or undefined where something else is missing.
  *
  * A navaid the route names is not the clearance limit, so the word for its type is optional there
- * (`R-FACILITY-WORD-OMITTED`); any other word of the reading never said is a miss, and no other
- * element forgives a word.
+ * (`R-FACILITY-WORD-OMITTED`); any other word of the reading never said is a miss, as is a word
+ * said in the facility word's place, and no other element forgives a word.
  */
 function omittedFacilityWords(parts: ElementParts, grading: Grading): SpokenToken[] | undefined {
-  if (parts.element !== 'R.route') return undefined;
+  if (parts.element !== 'R.route' || parts.marks.substituted.length > 0) return undefined;
   const missed = missedTokens(parts.indices, grading);
   const forgiven = missed.every((token) => token.kind === 'word' && FACILITY_WORDS.has(token.text));
   return forgiven ? missed : undefined;

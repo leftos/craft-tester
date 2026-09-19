@@ -117,7 +117,7 @@ One line per step; the full record and the user decisions behind each are in the
 - [x] A controller does not apply an aircraft's service ceiling — `bd295a7`
 - [x] Route building before the vector-SID fallback, over a shared connection table — 2026-09-16
 - [x] CRAFT phraseology rows are national, not per-airport: `shared/phraseology_rules.yaml`, overridden by
-  id (16 rows at landing, 26 today) — 2026-09-16
+  id (16 rows at landing, 38 on 2026-09-19) — 2026-09-16
 - [x] Arrival swap: a flight is routed onto an arrival its equipment can fly, per the LOA and the ZOA
   common-arrivals sheet, with the `half` verdict for the box that misses only the arrival — 2026-09-17
 - [x] Equipment suffixes: TBL 2-3-10 citations, `/H` and `/O` as navigation-unknown, `T-MODE-C` and the
@@ -179,3 +179,5 @@ One line per step; the full record and the user decisions behind each are in the
   "Gap Seven") — `46ae72b`
 - [x] Score line: "inefficient" (a reading longer than it needed to be) and "acceptable" (no longer:
   "nine", a facility word left out) counted apart; inefficient is also acceptable (user steer 2026-09-19)
+  — `b795f3c`
+- [x] A word said in a left-out facility word's place is a miss, not acceptable (user ruling 2026-09-19)

@@ -245,7 +245,8 @@ remembered per browser. The dropdowns stay, and the student chooses.
     is acceptable, under either route reading, and the row says a navaid is said with its type
     (`R-FACILITY-WORD-OMITTED`; user ruling 2026-09-19 on a tester's report: 7110.65 2-5-2 a 2 asks for
     the type only where the navaid is the clearance limit, which here is always the airport). Any other
-    unsaid word still makes the element wrong;
+    unsaid word still makes the element wrong, as does a word said in the facility word's place
+    ("direct Red Bluff foo"; user ruling the same day);
   - the full route and "then as filed" at the route's end are acceptable (`R-FULL-ROUTE`,
     `R-THEN-AS-FILED-END`);
   - an element out of CRAFT order is wrong (`S-ORDER`).

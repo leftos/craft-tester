@@ -402,6 +402,16 @@ describe('gradeText', () => {
     expect(route.remarks).toEqual(['missed: "direct Red Bluff VOR"']);
   });
 
+  it("keeps a route wrong that says a word in the facility word's place", () => {
+    const speakInput = input({ originalRoute: 'TRUKN2 DEDHD LIN HAWKZ7' });
+    const text = edited(readingOf(speakInput), 'Red Bluff VOR', 'Red Bluff foo');
+    const grades = graded(text, speakInput);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'wrong' }));
+    const route = gradeOf(grades, 'R.route');
+    expect(idsOf(route)).not.toContain('R-FACILITY-WORD-OMITTED');
+    expect(route.remarks).toEqual(['missed: "VOR"', 'not in the reading: "foo"']);
+  });
+
   it('forgives the facility word on a full route clearance', () => {
     const speakInput = input({ filedRoute: 'TRUKN2 DEDHD RBL CCR HAWKZ7' });
     const spoken = speakClearance(speakInput);
