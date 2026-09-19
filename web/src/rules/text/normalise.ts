@@ -657,18 +657,28 @@ function readItem(items: readonly Item[], index: number, lexicon: Lexicon): Read
   return { tokens: [wordToken(item.text, item)], next: index + 1 };
 }
 
+/** A procedure's name without the number word its chart name ends in: "Gap Seven" is "Gap". */
+function procedureName(spoken: string): string {
+  const at = spoken.lastIndexOf(' ');
+  if (at < 0) return spoken;
+  return numberWordOf(spoken.slice(at + 1)) === undefined ? spoken : spoken.slice(0, at);
+}
+
 /**
  * The identifiers a student may type, and the words each is spoken as.
  *
- * Merges the airport's spoken fixes and navaids, then its SIDs by id, then its route-library
- * destinations by ICAO code. Where two maps share a key the later one wins: a SID over a fix, and a
- * destination over both.
+ * Merges the airport's SIDs by family code, then its spoken fixes and navaids, then its SIDs by id,
+ * then its route-library destinations by ICAO code. Where two maps share a key the later one wins:
+ * a fix over a SID's family code, so a navaid a procedure is numbered after keeps its own name, a
+ * SID by its whole id over a fix, and a destination over all of them. A family code is spoken as
+ * the procedure's name without its number, which is how the code reads: `GAPP` is "Gap".
  *
  * @param airport The airport data.
  * @returns Identifier to spoken words.
  */
 export function lexiconFor(airport: AirportData): Lexicon {
   return {
+    ...Object.fromEntries(airport.sids.map((sid) => [sid.family, procedureName(sid.spoken)])),
     ...airport.fixSpoken,
     ...Object.fromEntries(airport.sids.map((sid) => [sid.id, sid.spoken])),
     ...Object.fromEntries(

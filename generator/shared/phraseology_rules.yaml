@@ -102,6 +102,9 @@ phraseology_rules:
   - id: R-FACILITY-WORD
     source: "FAA JO 7110.65 2-5-2; user ruling 2026-09-17 (free-text entry)"
     text: "The facility word spoken after a fix the clearance reads bare (R-AS-FILED) is as right as the bare name: CONCORD VOR, THEN AS FILED names the same navaid as CONCORD, THEN AS FILED"
+  - id: R-FACILITY-WORD-OMITTED
+    source: "FAA JO 7110.65 2-5-2 a 1 and a 2; tester feedback and user ruling 2026-09-19"
+    text: "The facility word left off a navaid the route names (DIRECT RED BLUFF for DIRECT RED BLUFF VOR) is acceptable, not a miss: 7110.65 2-5-2 asks for the type of NAVAID only where it is the clearance limit, and the clearance limit here is the airport. R-NAVAID still reads the navaid with its facility word, which is what is said on frequency"
   - id: S-FILLER
     source: "user ruling 2026-09-17 (free-text entry)"
     text: "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make an element acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss"
