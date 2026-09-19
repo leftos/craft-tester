@@ -938,15 +938,53 @@ def _outside_nct(row: _Row) -> str | None:
     return reason
 
 
+def _short(spoken: str, row: _Row) -> str:
+    """Return the name the amendment reasons use: the row's ``short``, else its spoken name."""
+    name = row.optional_text("short")
+    if name is None:
+        return spoken
+    if not name.strip():
+        raise ValueError(
+            f"{row.where}.short: the key names nothing; write the name the amendment reasons use, or drop the key to read the spoken name"
+        )
+    if name.strip().casefold() == spoken.strip().casefold():
+        raise ValueError(f"{row.where}.short: {name!r} is the row's `spoken` name; drop the key, as a row without one reads the spoken name")
+    return name
+
+
+def _also(spoken: str, short: str, row: _Row) -> tuple[str, ...]:
+    """Return the row's further names for the field, rejecting a blank, a name the row already gives, or a repeat."""
+    names = row.optional_texts("also") or ()
+    given = {short.strip().casefold(): "short", spoken.strip().casefold(): "spoken"}
+    seen: set[str] = set()
+    for index, name in enumerate(names):
+        at = f"{row.where}.also[{index}]"
+        key = name.strip().casefold()
+        if not key:
+            raise ValueError(f"{at}: the entry names nothing; write another name a typed clearance may give the field, or drop the entry")
+        if key in given:
+            raise ValueError(
+                f"{at}: {name!r} is the row's `{given[key]}` name; `also` lists only the further names a typed clearance may give the field"
+            )
+        if key in seen:
+            raise ValueError(f"{at}: {name!r} repeats an earlier entry of the same row; every name is listed once")
+        seen.add(key)
+    return names
+
+
 def _destination(icao: str, row: _Row) -> Destination:
     if row.optional_raw("nct") is not None:
         raise ValueError(
             f"{row.where}: `nct` is computed at build time from generator/shared/{NCT_BOUNDARY_FILE}, never stated by hand; remove the key, and "
             "state `outside_nct: <reason>` where another facility owns the airspace over a field that polygon holds"
         )
+    spoken = row.text("spoken")
+    short = _short(spoken, row)
     destination = Destination(
         icao=icao,
-        spoken=row.text("spoken"),
+        spoken=spoken,
+        short=short,
+        also=_also(spoken, short, row),
         artcc=row.text("artcc"),
         outside_nct=_outside_nct(row),
         lat=row.optional_decimal("lat"),

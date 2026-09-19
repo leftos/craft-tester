@@ -443,6 +443,8 @@ def _destination(
     return {
         "icao": destination.icao,
         "spoken": destination.spoken,
+        "short": destination.short,
+        "also": list(destination.also),
         "artcc": destination.artcc,
         "nct": boundary.contains(latitude, longitude) and destination.outside_nct is None,
         "lat": latitude,

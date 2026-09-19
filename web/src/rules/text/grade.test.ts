@@ -622,7 +622,9 @@ describe('gradeText on an identifier typed in place of the words it is spoken as
   });
 
   it('reads a destination code in lower case as the destination', () => {
-    const grades = fdxGraded((reading) => edited(reading, 'Seattle airport', 'ksea airport'));
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'Seattle-Tacoma International airport', 'ksea airport'),
+    );
     expect(misgraded(grades, {})).toEqual([]);
   });
 
@@ -828,7 +830,7 @@ describe('the marks and the remarks of a typed grade', () => {
     expect(limit.said).toEqual([
       { text: 'cleared to ', kind: 'said' },
       { text: 'the', kind: 'filler' },
-      { text: ' Seattle airport', kind: 'said' },
+      { text: ' Seattle-Tacoma International airport', kind: 'said' },
     ]);
     expect(limit.remarks).toEqual(['extra words: the']);
   });

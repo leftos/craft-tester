@@ -195,7 +195,7 @@ describe('lexiconFor', () => {
     expect(lexicon['OSI']).toBe('Woodside VOR');
     expect(gap?.spoken).toMatch(/^Gap /);
     expect(lexicon[gap?.id ?? '']).toBe(gap?.spoken);
-    expect(lexicon['KSEA']).toBe('Seattle');
+    expect(lexicon['KSEA']).toBe('Seattle-Tacoma International');
   });
 });
 

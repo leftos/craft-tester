@@ -181,6 +181,18 @@ def test_destination_coordinates_come_from_the_cifp_unless_the_yaml_gives_them(k
     assert (destinations["RKSI"]["lat"], destinations["RKSI"]["lon"]) == (37.469, 126.451)
 
 
+def test_a_destination_carries_the_other_names_its_row_gives(ksfo_document: Document) -> None:
+    destinations = _destinations(ksfo_document)
+    assert destinations["KSMF"]["also"] == ["Sacramento Metro"]
+    assert destinations["KJAC"]["also"] == []
+
+
+def test_a_destination_carries_the_short_name_its_reasons_use(ksfo_document: Document) -> None:
+    destinations = _destinations(ksfo_document)
+    assert (destinations["KSMF"]["spoken"], destinations["KSMF"]["short"]) == ("Sacramento International", "Sacramento")
+    assert (destinations["KJAC"]["spoken"], destinations["KJAC"]["short"]) == ("Jackson Hole", "Jackson Hole")
+
+
 def _arrival(document: Document, icao: str, star_id: str) -> Document:
     arrivals = _destinations(document)[icao]["arrivals"]
     return next(arrival for arrival in arrivals if arrival["id"] == star_id)

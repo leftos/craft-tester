@@ -213,8 +213,11 @@ the destination does not publish fails the build; correct the family (the sheet'
 or comment the row out where a cycle dropped the procedure.
 
 - **`destinations`**: the ICAO codes the airport's scenarios file to, in draw order. The facts sit in
-  `generator/shared/destinations.yaml`: `spoken`, `artcc` (the center, for LOA rules), and `lat`/`lon` only
-  for airports outside the CIFP (foreign). Whether a field is inside NCT, which is what lets a TEC route
+  `generator/shared/destinations.yaml`: `spoken` (the FAA's name for the field in full, which the clearance
+  reads: "cleared to Sacramento International airport"), `short` (the name the amendment reasons use,
+  "Sacramento"; left out where it is the spoken name), `also` (every further name a typed clearance may
+  give the field, "Sacramento Metro"; a typed clearance may say any of the three), `artcc` (the center, for
+  LOA rules), and `lat`/`lon` only for airports outside the CIFP (foreign). Whether a field is inside NCT, which is what lets a TEC route
   to it be issued, is never stated by hand: the build ray-casts the field's coordinates against the NCT
   terminal polygons in `generator/shared/nct_boundary.yaml` (the SimAware TRACON boundary, copied from
   the `vatsim_control_recs` repository; the NCT SOP's complex tables are not the test: Napa and Santa

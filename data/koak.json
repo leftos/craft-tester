@@ -3617,6 +3617,10 @@
     ],
     "destinations": [
       {
+        "also": [
+          "Seattle-Tacoma",
+          "Sea-Tac"
+        ],
         "arrivals": [
           {
             "family": "CHINS",
@@ -3678,9 +3682,11 @@
         "lat": 47.449889,
         "lon": -122.311778,
         "nct": false,
-        "spoken": "Seattle"
+        "short": "Seattle",
+        "spoken": "Seattle-Tacoma International"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "HELNS",
@@ -3746,9 +3752,13 @@
         "lat": 45.588708,
         "lon": -122.596869,
         "nct": false,
-        "spoken": "Portland"
+        "short": "Portland",
+        "spoken": "Portland International"
       },
       {
+        "also": [
+          "King County International"
+        ],
         "arrivals": [
           {
             "family": "CHINS",
@@ -3784,9 +3794,11 @@
         "lat": 47.529972,
         "lon": -122.301944,
         "nct": false,
-        "spoken": "Boeing Field"
+        "short": "Boeing Field",
+        "spoken": "Boeing Field King County International"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "MADEE",
@@ -3802,9 +3814,14 @@
         "lat": 48.792694,
         "lon": -122.537528,
         "nct": false,
-        "spoken": "Bellingham"
+        "short": "Bellingham",
+        "spoken": "Bellingham International"
       },
       {
+        "also": [
+          "Boise Air Terminal",
+          "Gowen Field"
+        ],
         "arrivals": [
           {
             "family": "BEWTE",
@@ -3857,9 +3874,13 @@
         "lat": 43.564361,
         "lon": -116.222861,
         "nct": false,
-        "spoken": "Boise"
+        "short": "Boise",
+        "spoken": "Boise Air Terminal Gowen Field"
       },
       {
+        "also": [
+          "Salt Lake"
+        ],
         "arrivals": [
           {
             "family": "BEARR",
@@ -3974,18 +3995,22 @@
         "lat": 40.788394,
         "lon": -111.977772,
         "nct": false,
-        "spoken": "Salt Lake City"
+        "short": "Salt Lake City",
+        "spoken": "Salt Lake City International"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZLC",
         "icao": "KJAC",
         "lat": 43.607336,
         "lon": -110.73775,
         "nct": false,
+        "short": "Jackson Hole",
         "spoken": "Jackson Hole"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "AALLE",
@@ -4179,9 +4204,13 @@
         "lat": 39.861667,
         "lon": -104.673167,
         "nct": false,
-        "spoken": "Denver"
+        "short": "Denver",
+        "spoken": "Denver International"
       },
       {
+        "also": [
+          "Harry Reid"
+        ],
         "arrivals": [
           {
             "family": "BLAID",
@@ -4290,9 +4319,14 @@
         "lat": 36.080342,
         "lon": -115.15245,
         "nct": false,
-        "spoken": "Las Vegas"
+        "short": "Las Vegas",
+        "spoken": "Harry Reid International"
       },
       {
+        "also": [
+          "Phoenix Sky Harbor",
+          "Sky Harbor"
+        ],
         "arrivals": [
           {
             "family": "ARLIN",
@@ -4405,9 +4439,11 @@
         "lat": 33.434278,
         "lon": -112.011583,
         "nct": false,
-        "spoken": "Phoenix"
+        "short": "Phoenix",
+        "spoken": "Phoenix Sky Harbor International"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "ANJLL",
@@ -4666,9 +4702,11 @@
         "lat": 33.942497,
         "lon": -118.40805,
         "nct": false,
-        "spoken": "Los Angeles"
+        "short": "Los Angeles",
+        "spoken": "Los Angeles International"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "BARET",
@@ -4749,9 +4787,11 @@
         "lat": 32.733564,
         "lon": -117.189664,
         "nct": false,
-        "spoken": "San Diego"
+        "short": "San Diego",
+        "spoken": "San Diego International"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "FERN",
@@ -4825,9 +4865,11 @@
         "lat": 34.200694,
         "lon": -118.358667,
         "nct": false,
-        "spoken": "Burbank"
+        "short": "Burbank",
+        "spoken": "Hollywood Burbank"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "JCKIE",
@@ -4887,9 +4929,13 @@
         "lat": 34.056014,
         "lon": -117.601189,
         "nct": false,
-        "spoken": "Ontario"
+        "short": "Ontario",
+        "spoken": "Ontario International"
       },
       {
+        "also": [
+          "Palomar"
+        ],
         "arrivals": [
           {
             "family": "LEGOZ",
@@ -4911,9 +4957,11 @@
         "lat": 33.12825,
         "lon": -117.280083,
         "nct": false,
-        "spoken": "Carlsbad"
+        "short": "Carlsbad",
+        "spoken": "McClellan-Palomar"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "BOGET",
@@ -4989,9 +5037,11 @@
         "lat": 34.015822,
         "lon": -118.451306,
         "nct": false,
-        "spoken": "Santa Monica"
+        "short": "Santa Monica",
+        "spoken": "Santa Monica Municipal"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "FERN",
@@ -5065,9 +5115,13 @@
         "lat": 34.209806,
         "lon": -118.489972,
         "nct": false,
+        "short": "Van Nuys",
         "spoken": "Van Nuys"
       },
       {
+        "also": [
+          "Orange County"
+        ],
         "arrivals": [
           {
             "family": "DSNEE",
@@ -5151,9 +5205,11 @@
         "lat": 33.675661,
         "lon": -117.868233,
         "nct": false,
-        "spoken": "John Wayne"
+        "short": "John Wayne",
+        "spoken": "John Wayne Orange County"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "BAUBB",
@@ -5237,9 +5293,11 @@
         "lat": 33.817931,
         "lon": -118.151892,
         "nct": false,
-        "spoken": "Long Beach"
+        "short": "Long Beach",
+        "spoken": "Long Beach Daugherty Field"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "CLOWD",
@@ -5292,9 +5350,11 @@
         "lat": 33.748439,
         "lon": -116.274814,
         "nct": false,
+        "short": "Bermuda Dunes",
         "spoken": "Bermuda Dunes"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "PITBL",
@@ -5311,9 +5371,11 @@
         "lat": 34.426192,
         "lon": -119.841492,
         "nct": false,
-        "spoken": "Santa Barbara"
+        "short": "Santa Barbara",
+        "spoken": "Santa Barbara Municipal"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "BQS",
@@ -5385,18 +5447,27 @@
         "lat": 39.297603,
         "lon": -94.713906,
         "nct": false,
-        "spoken": "Kansas City"
+        "short": "Kansas City",
+        "spoken": "Kansas City International"
       },
       {
+        "also": [
+          "Grand Rapids",
+          "Grand Rapids Itasca County"
+        ],
         "arrivals": [],
         "artcc": "ZMP",
         "icao": "KGPZ",
         "lat": 47.209283,
         "lon": -93.509944,
         "nct": false,
-        "spoken": "Grand Rapids Minnesota"
+        "short": "Grand Rapids Minnesota",
+        "spoken": "Grand Rapids Itasca County-Gordon Newstrom Field"
       },
       {
+        "also": [
+          "Reno Tahoe"
+        ],
         "arrivals": [
           {
             "family": "ANAHO",
@@ -5485,18 +5556,24 @@
         "lat": 39.499111,
         "lon": -119.768111,
         "nct": true,
-        "spoken": "Reno"
+        "short": "Reno",
+        "spoken": "Reno Tahoe International"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KTRK",
         "lat": 39.320056,
         "lon": -120.139583,
         "nct": false,
-        "spoken": "Truckee"
+        "short": "Truckee",
+        "spoken": "Truckee-Tahoe"
       },
       {
+        "also": [
+          "Sacramento Metro"
+        ],
         "arrivals": [
           {
             "family": "FEVTA",
@@ -5540,9 +5617,13 @@
         "lat": 38.695444,
         "lon": -121.590778,
         "nct": true,
-        "spoken": "Sacramento"
+        "short": "Sacramento",
+        "spoken": "Sacramento International"
       },
       {
+        "also": [
+          "Fresno Yosemite"
+        ],
         "arrivals": [
           {
             "family": "ALTTA",
@@ -5556,36 +5637,46 @@
         "lat": 36.776556,
         "lon": -119.718833,
         "nct": false,
-        "spoken": "Fresno"
+        "short": "Fresno",
+        "spoken": "Fresno Yosemite International"
       },
       {
+        "also": [
+          "Humboldt County"
+        ],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KACV",
         "lat": 40.977828,
         "lon": -124.108469,
         "nct": false,
-        "spoken": "Arcata"
+        "short": "Arcata",
+        "spoken": "California Redwood Coast-Humboldt County"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KMRY",
         "lat": 36.586953,
         "lon": -121.842783,
         "nct": true,
-        "spoken": "Monterey"
+        "short": "Monterey",
+        "spoken": "Monterey Regional"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KLVK",
         "lat": 37.693389,
         "lon": -121.820361,
         "nct": true,
-        "spoken": "Livermore"
+        "short": "Livermore",
+        "spoken": "Livermore Municipal"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "REBAS",
@@ -5617,54 +5708,66 @@
         "lat": 38.213189,
         "lon": -122.280686,
         "nct": false,
-        "spoken": "Napa"
+        "short": "Napa",
+        "spoken": "Napa County"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KWVI",
         "lat": 36.935733,
         "lon": -121.789639,
         "nct": true,
-        "spoken": "Watsonville"
+        "short": "Watsonville",
+        "spoken": "Watsonville Municipal"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KMYV",
         "lat": 39.097778,
         "lon": -121.569833,
         "nct": true,
-        "spoken": "Marysville"
+        "short": "Marysville",
+        "spoken": "Yuba County"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KOVE",
         "lat": 39.487819,
         "lon": -121.621989,
         "nct": true,
-        "spoken": "Oroville"
+        "short": "Oroville",
+        "spoken": "Oroville Municipal"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "O88",
         "lat": 38.193383,
         "lon": -121.703633,
         "nct": true,
-        "spoken": "Rio Vista"
+        "short": "Rio Vista",
+        "spoken": "Rio Vista Municipal"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KSAC",
         "lat": 38.512861,
         "lon": -121.4933,
         "nct": true,
+        "short": "Sacramento Executive",
         "spoken": "Sacramento Executive"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "ALWYS",
@@ -5791,9 +5894,11 @@
         "lat": 37.618806,
         "lon": -122.375417,
         "nct": true,
-        "spoken": "San Francisco"
+        "short": "San Francisco",
+        "spoken": "San Francisco International"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "EMZOH",
@@ -5828,9 +5933,14 @@
         "lat": 37.658931,
         "lon": -122.121739,
         "nct": true,
-        "spoken": "Hayward"
+        "short": "Hayward",
+        "spoken": "Hayward Executive"
       },
       {
+        "also": [
+          "San Jose International",
+          "Norman Y Mineta San Jose International"
+        ],
         "arrivals": [
           {
             "family": "BRINY",
@@ -5909,18 +6019,24 @@
         "lat": 37.362994,
         "lon": -121.928619,
         "nct": true,
-        "spoken": "San Jose"
+        "short": "San Jose",
+        "spoken": "Mineta San Jose International"
       },
       {
+        "also": [
+          "Sacramento McClellan"
+        ],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KMCC",
         "lat": 38.667639,
         "lon": -121.400611,
         "nct": true,
-        "spoken": "McClellan"
+        "short": "McClellan",
+        "spoken": "McClellan Airfield"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "AMRVR",
@@ -5937,18 +6053,27 @@
         "lat": 38.555311,
         "lon": -121.297211,
         "nct": true,
-        "spoken": "Mather"
+        "short": "Mather",
+        "spoken": "Sacramento Mather"
       },
       {
+        "also": [
+          "Modesto City-County",
+          "Harry Sham Field"
+        ],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KMOD",
         "lat": 37.625825,
         "lon": -120.954431,
         "nct": true,
-        "spoken": "Modesto"
+        "short": "Modesto",
+        "spoken": "Modesto City-County-Harry Sham Field"
       },
       {
+        "also": [
+          "Moffett Field"
+        ],
         "arrivals": [
           {
             "family": "BRIXX",
@@ -5973,9 +6098,11 @@
         "lat": 37.416144,
         "lon": -122.049131,
         "nct": true,
-        "spoken": "Moffett"
+        "short": "Moffett",
+        "spoken": "Moffett Federal Airfield"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "PYE",
@@ -5992,9 +6119,11 @@
         "lat": 37.461122,
         "lon": -122.115047,
         "nct": true,
+        "short": "Palo Alto",
         "spoken": "Palo Alto"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "PYE",
@@ -6011,18 +6140,24 @@
         "lat": 37.332861,
         "lon": -121.819806,
         "nct": true,
-        "spoken": "Reid-Hillview"
+        "short": "Reid-Hillview",
+        "spoken": "Reid-Hillview of Santa Clara County"
       },
       {
+        "also": [
+          "Stockton Metro"
+        ],
         "arrivals": [],
         "artcc": "ZOA",
         "icao": "KSCK",
         "lat": 37.894411,
         "lon": -121.238744,
         "nct": true,
-        "spoken": "Stockton"
+        "short": "Stockton",
+        "spoken": "Stockton Metropolitan"
       },
       {
+        "also": [],
         "arrivals": [
           {
             "family": "PYE",
@@ -6039,9 +6174,13 @@
         "lat": 37.511861,
         "lon": -122.249531,
         "nct": true,
+        "short": "San Carlos",
         "spoken": "San Carlos"
       },
       {
+        "also": [
+          "Honolulu International"
+        ],
         "arrivals": [
           {
             "family": "BOOKE",
@@ -6179,43 +6318,60 @@
         "lat": 21.317825,
         "lon": -157.92025,
         "nct": false,
-        "spoken": "Honolulu"
+        "short": "Honolulu",
+        "spoken": "Daniel K Inouye International"
       },
       {
+        "also": [
+          "Incheon",
+          "Seoul"
+        ],
         "arrivals": [],
         "artcc": "ZAK",
         "icao": "RKSI",
         "lat": 37.469,
         "lon": 126.451,
         "nct": false,
-        "spoken": "Seoul Incheon"
+        "short": "Seoul Incheon",
+        "spoken": "Incheon International"
       },
       {
+        "also": [
+          "Arlanda",
+          "Stockholm"
+        ],
         "arrivals": [],
         "artcc": "ZAK",
         "icao": "ESSA",
         "lat": 59.652,
         "lon": 17.919,
         "nct": false,
+        "short": "Stockholm Arlanda",
         "spoken": "Stockholm Arlanda"
       },
       {
+        "also": [
+          "Mexico City International"
+        ],
         "arrivals": [],
         "artcc": "ZLA",
         "icao": "MMMX",
         "lat": 19.436,
         "lon": -99.072,
         "nct": false,
-        "spoken": "Mexico City"
+        "short": "Mexico City",
+        "spoken": "Benito Juarez International"
       },
       {
+        "also": [],
         "arrivals": [],
         "artcc": "ZSE",
         "icao": "CYVR",
         "lat": 49.195,
         "lon": -123.184,
         "nct": false,
-        "spoken": "Vancouver"
+        "short": "Vancouver",
+        "spoken": "Vancouver International"
       }
     ],
     "fleet": [

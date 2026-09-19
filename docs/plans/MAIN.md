@@ -32,7 +32,15 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
   - **User rulings 2026-09-18:** (1) the other names a student may say are hand rows in
     `shared/destinations.yaml` (`also:`), not an import; (2) any listed name is fully correct, with no
     "extra words" remark; (3) the engine speaks the **official** name ("cleared to Sacramento
-    International airport"), and the short name becomes an alias
+    International airport"), and the short name becomes an alias; (4) the full FAA name always, also
+    where it is a dedication or a compound (Harry Reid International, Oakland San Francisco Bay);
+    (5) **the amendment reasons keep the short name** — the full names moved the reason text of 15 settled
+    fixtures, so each row carries an explicit `short:` (the old `spoken`), the reasons read it, and no
+    settled reason moves. A typed clearance may say `spoken`, `short` or any `also` name
+  - Landed so far: `also` through schema, generator and both data files (uncommitted, branch
+    `typed-names`). Left: `short` the same way and into the reason builders (`rules/amend/altitude.ts`
+    and any other site composing prose from `destination.spoken`); then the grader's name axis, where
+    "Sacramento airport" ties the official reading on matches and must still win as the name itself
 - [ ] **A typed departure is accepted by its code, as the dropdown offers it.** "nimi6 departure" was graded a
   miss against `Nimitz Six departure` (`missed: "Nimitz" · not in the reading: "nimi"`); a student who picks
   from the dropdown picks `NIMI6`, so the typed box must take it too
@@ -46,6 +54,13 @@ I notice or that users find as they come up". Free-text entry landed 2026-09-17.
     lower-case code expanded, so both fell in the gap after "cleared to". Check this exact text once the
     case rule lands: `oak6` must land on R.sid as "Oakland Six"; C then misses only the word "airport",
     which S-FILLER already rules a miss (7110.65 4-3-2: the word "airport" must follow the name)
+
+- [ ] **A number typed part in figures, part in words is one number** (user report, same day): "sqawk 00 six
+  two" read `wrong value: said "00 six two", expected "zero zero six two"`. Cause: in `normalise.ts` a run
+  that opens on figures takes the figures alone (`figuresRunLength`), so `00` and `six two` are two number
+  tokens and neither is `0062`. The split is deliberate and must stay — "expect 10000 one zero minutes"
+  is two numbers — so the join belongs in `gradeText`, driven by the reading: adjacent typed number
+  tokens whose values concatenate to a number the reading says are read as that one number
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -88,6 +103,16 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
     proposal
 
 ## Singles
+
+- [ ] **A full route clearance mode** (AJ Norell, 2026-09-18; the user agreed: "I should have a proper full
+  route clearance mode"). Today the full route is only a by-product: an amended route is read in full when
+  the amendment needs it, the dropdown results show both readings, and a typed full route on a clean plan
+  grades acceptable, not right (`R-FULL-ROUTE`, remark "the route read in full — the shorter reading is
+  enough"). A mode where the full route IS the expected reading needs planning with the user before any
+  code: what triggers it (a header switch like `m=amend`, or a drawn pilot request / FRC remark on the
+  strip), whether it applies to both clearance and amendment mode, how `R-FULL-ROUTE` and
+  `R-THEN-AS-FILED-END` grade inside it ("then as filed" becomes the miss), which 7110.65 4-3-2 paragraph
+  the new row cites, and what the dropdown form offers for the route
 
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in

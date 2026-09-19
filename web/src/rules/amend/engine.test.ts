@@ -655,7 +655,7 @@ describe('resolveAmendedClearance', () => {
     const { corrected } = resolved(original);
     expect(corrected.filedRoute).toBe('OAK V6 SAC');
     expect(spoken(original).abbreviated).toContain(
-      'cleared to Marysville airport, via fly runway heading, radar vectors Oakland VOR,',
+      'cleared to Yuba County airport, via fly runway heading, radar vectors Oakland VOR,',
     );
   });
 
