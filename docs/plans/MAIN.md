@@ -20,6 +20,29 @@ settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plan
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17.
 
+## Current focus — Tester feedback, AJ Norell 2026-09-18 (`rules/text/`, `ui/`)
+
+Gate: UI + a grading ruling from the user.
+
+- [ ] **Typed clearances: "accept numbers".** The tester typed `oakland 6 depature`, `radar vectors to join
+  v244` and `sqawk 6201` and read the red rows as figures being refused, because `expected:` shows the
+  numbers as words. First reading of `normalise.ts`: figures already parse (`6`, `v244`, `6201`), and the
+  misses are the misspelt fixed words `depature` and `sqawk` plus a missing "then as filed". Confirmed
+  against `gradeText` on six KOAK fixtures 2026-09-18: `Six` → `6` and all-lowercase grade all correct;
+  each misspelling alone turns its element wrong. `v244` and `V244` grade correct on the screenshot's own
+  route (N436MS, `radar vectors to join Victor two forty-four, then as filed`) and on three `V6` fixtures;
+  the row is wrong only without "then as filed", which stays wrong (free-text decision 4, `R-RV-AIRWAY`).
+  **User rulings 2026-09-18:**
+  - [ ] (a) **A near-miss spelling counts as the word, fully correct, for every word** — fixed words and
+    names alike. One edit away (two for a long word) from a word of the expected reading, unless the typed
+    word is itself a word the lexicon or the reading holds. Numbers stay exact, so `S-NINER` is untouched.
+    A new national row (`S-SPELLING`) is cited
+  - [ ] (b) **The `expected:` line marks the words the student never said** (`Oakland Six [departure]`);
+    matched words, figures included, stay plain
+- [ ] **Dropdown answers: keep the strip in view.** On a desktop screen the flight strip and ATIS scroll
+  away while the amend boxes and the CRAFT form are filled. **User ruling 2026-09-18: pin the flight-plan
+  panel** (`position: sticky`) at the top of the viewport at every width; the ATIS scrolls as now
+
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
