@@ -1,10 +1,12 @@
 import type { BoxElementGrade } from '@/rules/amend/grade.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
-import type { TextGrade } from '@/rules/text/grade.ts';
+import type { SaidRun, TextGrade } from '@/rules/text/grade.ts';
 import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 import { button, el, iconButton } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import { readAloud, speechAvailable, stopReading } from '@/ui/speech.ts';
+import type { DiffRun } from '@/ui/wordDiff.ts';
+import { diffWords } from '@/ui/wordDiff.ts';
 
 /** Everything the results view shows after the form is submitted. */
 export type ResultsProps = {
@@ -102,17 +104,23 @@ function citationList(citations: readonly RuleCitation[]): HTMLElement {
 }
 
 /**
- * The second line a verdict reads: a correction where it was wrong, the reading it could have been
- * where it was acceptable (the preferred route box, with the airport navaid, for a route box; the
- * shorter reading for anything else), the box that would have earned the whole point where it
- * earned half, and nothing at all where it was correct.
+ * What the second line a verdict reads opens with: a correction where it was wrong, the reading it
+ * could have been where it was acceptable (the preferred route box, with the airport navaid, for a
+ * route box; the shorter reading for anything else), the box that would have earned the whole point
+ * where it earned half, and nothing at all where it was correct.
  */
-function correctionLine(verdict: Grade): string | undefined {
-  if (verdict.verdict === 'wrong') return `correction: ${verdict.expectedLabel}`;
-  if (isNavaidAcceptable(verdict)) return `preferred: ${verdict.expectedLabel}`;
-  if (verdict.verdict === 'acceptable') return `shorter: ${verdict.expectedLabel}`;
-  if (verdict.verdict === 'half') return `full credit: ${verdict.expectedLabel}`;
+function correctionPrefix(verdict: Grade): string | undefined {
+  if (verdict.verdict === 'wrong') return 'correction';
+  if (isNavaidAcceptable(verdict)) return 'preferred';
+  if (verdict.verdict === 'acceptable') return 'shorter';
+  if (verdict.verdict === 'half') return 'full credit';
   return undefined;
+}
+
+/** The second line a verdict reads, its prefix ahead of the words the clearance was meant to read. */
+function correctionLine(verdict: Grade): string | undefined {
+  const prefix = correctionPrefix(verdict);
+  return prefix === undefined ? undefined : `${prefix}: ${verdict.expectedLabel}`;
 }
 
 /** The second line a typed element reads: the expected words wherever it was not fully correct. */
@@ -123,29 +131,42 @@ function expectedLine(verdict: TextGrade): string | undefined {
   return `expected: ${words}`;
 }
 
+/** What a results row reads between one remark and the next. */
+const REMARK_JOINER = ' · ';
+
+/** The line that names the kinds of miss a typed element made, where it made any. */
+function remarksLine(verdict: Grade | TextGrade | BoxElementGrade): string | undefined {
+  if (!('remarks' in verdict) || verdict.remarks.length === 0) return undefined;
+  return verdict.remarks.join(REMARK_JOINER);
+}
+
 /**
  * The lines one verdict reads as: the player's answer, and the second line their answer earns.
  *
  * A typed element's second line is the expected words, shown wherever it was not fully correct; a
  * picked one's is the correction, the shorter reading (the preferred one, for a route box the
- * airport navaid alone separates) or the full-credit box its verdict calls for.
+ * airport navaid alone separates) or the full-credit box its verdict calls for. A typed element
+ * that missed also names the kinds of miss it made, in words.
  *
  * A box of the strip the engine raised an amendment for also reads why it was amended.
  *
  * @param verdict The verdict for one element, picked or typed, or for one box of the strip.
- * @returns The answer line, how it was answered, the second line, where there is one, and the
- *   reason for the box's amendment, where there is one.
+ * @returns The answer line, how it was answered, the second line, where there is one, the kinds of
+ *   miss a typed element made, where it made any, and the reason for the box's amendment, where
+ *   there is one.
  */
 export function verdictLines(verdict: Grade | TextGrade | BoxElementGrade): {
   answer: string;
   verdict: Verdict;
   correction: string | undefined;
+  remarks: string | undefined;
   why: string | undefined;
 } {
   return {
     answer: `you said: ${verdict.actualLabel}`,
     verdict: verdict.verdict,
     correction: 'said' in verdict ? expectedLine(verdict) : correctionLine(verdict),
+    remarks: remarksLine(verdict),
     why: 'reason' in verdict && verdict.reason !== undefined ? `why: ${verdict.reason}` : undefined,
   };
 }
@@ -156,29 +177,92 @@ function verdictMark(verdict: Verdict): string | undefined {
   return verdict === 'half' ? '½' : '✓';
 }
 
+/** What a marked run of a typed answer says about the words under it, as its tooltip. */
+const RUN_TITLES: Readonly<Record<'wrong' | 'misplaced', string>> = {
+  wrong: 'not what the reading has',
+  misplaced: 'out of CRAFT order',
+};
+
+/** The node with the tooltip that says what the mark on it means. */
+function titled(node: HTMLElement, title: string): HTMLElement {
+  node.setAttribute('title', title);
+  return node;
+}
+
+/** One run of a typed answer: a marked one as a node of its own, the rest as plain text. */
+function saidNode(run: SaidRun): HTMLElement | string {
+  if (run.kind === 'filler') return el('span', 'filler', run.text);
+  if (run.kind === 'spelling') {
+    return titled(el('span', 'spelling', run.text), `read as "${run.readAs}"`);
+  }
+  if (run.kind === 'wrong' || run.kind === 'misplaced') {
+    return titled(el('span', run.kind, run.text), RUN_TITLES[run.kind]);
+  }
+  return run.text;
+}
+
+/** What the two lines of a picked answer read: the second line's prefix, and the words that differ. */
+type PickedDiff = { prefix: string } & ReturnType<typeof diffWords>;
+
+/** Whether a verdict is one the student picked: not a typed element, not a box of the strip. */
+function isPicked(verdict: Grade | TextGrade | BoxElementGrade): boolean {
+  return !('said' in verdict) && !('reason' in verdict);
+}
+
+/** The words that differ between what a picked answer said and what it was held against. */
+function pickedDiff(verdict: Grade | TextGrade | BoxElementGrade): PickedDiff | undefined {
+  const prefix = isPicked(verdict) ? correctionPrefix(verdict) : undefined;
+  if (prefix === undefined) return undefined;
+  return { prefix, ...diffWords(verdict.actualLabel, verdict.expectedLabel) };
+}
+
+/** The answer line of a picked verdict, the words the reading does not have marked inside it. */
+function pickedAnswer(runs: readonly DiffRun[]): HTMLParagraphElement {
+  const line = el('p', 'answer', 'you said: ');
+  for (const run of runs) line.append(run.differs ? el('span', 'wrong', run.text) : run.text);
+  return line;
+}
+
+/** The second line of a picked verdict, the words the answer does not have marked inside it. */
+function pickedExpected(prefix: string, runs: readonly DiffRun[]): HTMLParagraphElement {
+  const line = el('p', 'expected', `${prefix}: `);
+  for (const run of runs) line.append(run.differs ? el('strong', 'missed', run.text) : run.text);
+  return line;
+}
+
 /**
- * The answer line: what the player said, with the filler of a typed element marked inside it.
+ * The answer line: what the player said, with what the matcher made of it marked inside it.
  *
- * A typed element where nothing was heard reads its label, as a picked one does.
+ * A typed element marks its filler, the words the reading does not have, an element said out of its
+ * place and a word typed a letter or two from the word it reads as; a picked one that was not
+ * correct marks the words the reading does not have. A typed element where nothing was heard reads
+ * its label, as a correct picked one does.
  */
-function answerLine(verdict: Grade | TextGrade, text: string): HTMLParagraphElement {
+function answerLine(
+  verdict: Grade | TextGrade,
+  text: string,
+  diff: PickedDiff | undefined,
+): HTMLParagraphElement {
+  if (diff !== undefined) return pickedAnswer(diff.said);
   if (!('said' in verdict) || verdict.said.length === 0) return el('p', 'answer', text);
   const answer = el('p', 'answer', 'you said: ');
-  for (const run of verdict.said) {
-    answer.append(run.kind === 'filler' ? el('span', 'filler', run.text) : run.text);
-  }
+  for (const run of verdict.said) answer.append(saidNode(run));
   return answer;
 }
 
 /**
- * The second line: the expected words of a typed element, the ones never said marked inside them.
+ * The second line: the words the element was held against, the ones never said marked inside them.
  *
- * A picked element, and a typed one whose grade carries no runs, read as the plain line.
+ * A typed element marks the words of its reading it never said, a picked one the words its answer
+ * lacks. A box of the strip, and a typed element whose grade carries no runs, read as the plain
+ * line.
  */
 function expectedParagraph(
   verdict: Grade | TextGrade | BoxElementGrade,
   text: string,
+  diff: PickedDiff | undefined,
 ): HTMLParagraphElement {
+  if (diff !== undefined) return pickedExpected(diff.prefix, diff.expected);
   if (!('expected' in verdict) || verdict.expected.length === 0) return el('p', 'expected', text);
   const line = el('p', 'expected', 'expected: ');
   for (const run of verdict.expected) {
@@ -188,8 +272,9 @@ function expectedParagraph(
 }
 
 /**
- * Renders one element's verdict: what the player said, the correction where it was wrong, the
- * reason a box of the strip was amended, and the rows that decided it.
+ * Renders one element's verdict: what the player said, the correction where it was wrong, the kinds
+ * of miss a typed element made, the reason a box of the strip was amended, and the rows that
+ * decided it.
  *
  * @param verdict The verdict for one element of the clearance, picked or typed, or for one box of
  *   the strip.
@@ -197,12 +282,16 @@ function expectedParagraph(
  */
 export function renderVerdict(verdict: Grade | TextGrade | BoxElementGrade): HTMLElement {
   const lines = verdictLines(verdict);
+  const diff = pickedDiff(verdict);
   const row = el('div', `verdict ${lines.verdict}`);
-  const answer = answerLine(verdict, lines.answer);
+  const answer = answerLine(verdict, lines.answer, diff);
   const mark = verdictMark(lines.verdict);
   if (mark !== undefined) answer.append(el('span', 'mark', mark));
   row.append(el('h3', '', elementLabel(verdict.element)), answer);
-  if (lines.correction !== undefined) row.append(expectedParagraph(verdict, lines.correction));
+  if (lines.correction !== undefined) {
+    row.append(expectedParagraph(verdict, lines.correction, diff));
+  }
+  if (lines.remarks !== undefined) row.append(el('p', 'remarks', lines.remarks));
   if (lines.why !== undefined) row.append(el('p', 'why', lines.why));
   row.append(citationList(verdict.citations));
   return row;

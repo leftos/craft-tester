@@ -131,6 +131,7 @@ const typedAltitude: TextGrade = {
     { text: ' SID', kind: 'said' },
   ],
   expected: [{ text: 'climb via sid', missed: false }],
+  remarks: ['extra words: the'],
 };
 
 describe('verdictLines on a typed element', () => {

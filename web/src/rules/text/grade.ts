@@ -7,8 +7,15 @@ import type { Lexicon, SpokenToken } from '@/rules/text/normalise.ts';
 import { isNearMiss } from '@/rules/text/spelling.ts';
 import type { Grade, ResolvedClearance, RuleCitation, Verdict } from '@/rules/types.ts';
 
-/** A run of the typed text as a result row shows it: words said, filler among them, or the break between two stretches. */
-export type SaidRun = { text: string; kind: 'said' | 'filler' | 'break' };
+/**
+ * A run of the typed text as a result row shows it.
+ *
+ * Words said, filler among them, the break between two stretches, words the reading does not have,
+ * an element said out of its place, or a word typed a letter or two from the word it reads as.
+ */
+export type SaidRun =
+  | { text: string; kind: 'said' | 'filler' | 'break' | 'wrong' | 'misplaced' }
+  | { text: string; kind: 'spelling'; readAs: string };
 
 /** A run of the words the reading has, as a result row shows it: said, or never said at all. */
 export type ExpectedRun = { text: string; missed: boolean };
@@ -18,8 +25,9 @@ export type ExpectedRun = { text: string; missed: boolean };
  *
  * `said` joins back to `actualLabel` wherever anything was heard, and is empty where nothing was.
  * `expected` joins back to the words the element was graded against, the ones never said marked.
+ * `remarks` names the kinds of miss the matcher saw, in words, and is empty on a correct element.
  */
-export type TextGrade = Grade & { said: SaidRun[]; expected: ExpectedRun[] };
+export type TextGrade = Grade & { said: SaidRun[]; expected: ExpectedRun[]; remarks: string[] };
 
 /** An element a typed clearance is graded on: every element of the reading but the callsign. */
 type GradedElement = Exclude<SpokenElement, 'callsign'>;
@@ -41,6 +49,12 @@ const GRADED_ORDER: readonly GradedElement[] = [
 
 /** A character span of the typed text, end exclusive. */
 type Span = { start: number; end: number };
+
+/** How a stretch of the typed text is marked, and what a near-miss spelling stretch reads as. */
+type MarkKind = { kind: 'filler' | 'wrong' | 'misplaced' } | { kind: 'spelling'; readAs: string };
+
+/** A stretch of the typed text, and how the said runs mark it. */
+type Mark = { span: Span } & MarkKind;
 
 /** How a candidate reads the route: as spoken, in full, or with "then as filed" for its closing "direct". */
 type RouteOption = 'base' | 'full' | 'end';
@@ -81,10 +95,18 @@ type NumberToken = Extract<SpokenToken, { kind: 'number' }>;
 /** A tier a rule set on an element, and the rows that rule cites. */
 type Tier = { verdict: Verdict; rows: RuleCitation[] };
 
-/** What the gaps of an alignment put on one element. */
+/**
+ * What the gaps of an alignment put on one element.
+ *
+ * `blocks` is every stretch said for the element that matched nothing, which its label is built
+ * from; `substituted` and `misplaced` are the two of those the said runs mark, a value said where
+ * the reading has other words and an element said out of its place.
+ */
 type GapMarks = {
   outOfOrder: boolean;
   blocks: Span[];
+  substituted: Span[];
+  misplaced: Span[];
   filler: Span[];
   tiers: Tier[];
 };
@@ -131,6 +153,29 @@ const LABEL_BREAK = ' … ';
 const NOT_HEARD = '(not heard)';
 
 const NO_EXPECT_CLAUSE = 'no expect clause';
+
+/** The kinds of miss a results row names in words, one short line under what was said. */
+const REMARKS = {
+  notHeard: 'not heard',
+  strayExpect: 'an expect clause this clearance does not have',
+  outOfOrder: 'out of CRAFT order',
+  niner: 'say niner, not nine',
+  groupForm: 'group form alone — say the digits',
+  restated: 'restated in group form — the digits alone are enough',
+  fullRoute: 'the route read in full — the shorter reading is enough',
+  thenAsFiled: '"then as filed" said where the reading ends on "direct"',
+  redundantExpect: 'an expect clause the clearance can do without',
+} as const;
+
+/** The remark a route read longer than it had to be leaves, by the reading the route was graded on. */
+const ROUTE_REMARKS: Readonly<Record<RouteOption, string | undefined>> = {
+  base: undefined,
+  full: REMARKS.fullRoute,
+  end: REMARKS.thenAsFiled,
+};
+
+/** Whitespace and punctuation at either end of a stretch, which a remark quotes it without. */
+const REMARK_EDGES = /^[\s\p{P}]+|[\s\p{P}]+$/gu;
 
 const VERDICT_RANK: Readonly<Record<Verdict, number>> = {
   correct: 0,
@@ -490,10 +535,15 @@ function gapsOf(alignment: Alignment): Gap[] {
   });
 }
 
+/** What an element the gap walk left nothing on carries. */
+function noMarks(): GapMarks {
+  return { outOfOrder: false, blocks: [], substituted: [], misplaced: [], filler: [], tiers: [] };
+}
+
 function marksOf(marks: Map<GradedElement, GapMarks>, element: GradedElement): GapMarks {
   const existing = marks.get(element);
   if (existing !== undefined) return existing;
-  const created: GapMarks = { outOfOrder: false, blocks: [], filler: [], tiers: [] };
+  const created = noMarks();
   marks.set(element, created);
   return created;
 }
@@ -583,6 +633,7 @@ function markMisplaced(element: GradedElement, span: Span, walk: Walk): void {
   const marks = marksOf(walk.marks, element);
   marks.outOfOrder = true;
   marks.blocks.push(span);
+  marks.misplaced.push(span);
 }
 
 /** Marks the block out of order on the element it says whole, where there is one. */
@@ -608,7 +659,9 @@ function markGap(gap: Gap, walk: Walk): void {
   const span = spanOf(gap.student);
   const substituted = gap.candidate[0];
   if (substituted !== undefined) {
-    marksOf(walk.marks, substituted.element).blocks.push(span);
+    const marks = marksOf(walk.marks, substituted.element);
+    marks.blocks.push(span);
+    marks.substituted.push(span);
     return;
   }
   markExtraWords(gap, span, walk);
@@ -719,32 +772,39 @@ function actualLabel(text: string, merged: readonly Span[]): string {
   return merged.map((span) => text.slice(span.start, span.end)).join(LABEL_BREAK);
 }
 
-function pushRun(runs: SaidRun[], text: string, kind: SaidRun['kind']): void {
-  if (text.length > 0) runs.push({ text, kind });
+function pushRun(runs: SaidRun[], run: SaidRun): void {
+  if (run.text.length > 0) runs.push(run);
 }
 
-/** One merged span of the text, split at the filler inside it. */
-function spanRuns(text: string, span: Span, filler: readonly Span[]): SaidRun[] {
-  const inside = filler
-    .filter((stretch) => stretch.start >= span.start && stretch.end <= span.end)
-    .sort((a, b) => a.start - b.start);
+/** The run a marked stretch reads as, which carries the word a near-miss spelling stands for. */
+function markRun(text: string, mark: MarkKind): SaidRun {
+  return mark.kind === 'spelling'
+    ? { text, kind: 'spelling', readAs: mark.readAs }
+    : { text, kind: mark.kind };
+}
+
+/** One merged span of the text, split at the marks inside it; two that touch are left apart. */
+function spanRuns(text: string, span: Span, marks: readonly Mark[]): SaidRun[] {
+  const inside = marks
+    .filter((mark) => mark.span.start >= span.start && mark.span.end <= span.end)
+    .sort((a, b) => a.span.start - b.span.start);
   const runs: SaidRun[] = [];
   let at = span.start;
-  for (const stretch of inside) {
-    const from = Math.max(at, stretch.start);
-    pushRun(runs, text.slice(at, from), 'said');
-    pushRun(runs, text.slice(from, stretch.end), 'filler');
-    at = Math.max(at, stretch.end);
+  for (const mark of inside) {
+    const from = Math.max(at, mark.span.start);
+    pushRun(runs, { text: text.slice(at, from), kind: 'said' });
+    pushRun(runs, markRun(text.slice(from, mark.span.end), mark));
+    at = Math.max(at, mark.span.end);
   }
-  pushRun(runs, text.slice(at, span.end), 'said');
+  pushRun(runs, { text: text.slice(at, span.end), kind: 'said' });
   return runs;
 }
 
-/** The merged spans as runs, each split at its filler, a break between two spans as the label has one. */
-function saidRuns(text: string, merged: readonly Span[], filler: readonly Span[]): SaidRun[] {
+/** The merged spans as runs, each split at its marks, a break between two spans as the label has one. */
+function saidRuns(text: string, merged: readonly Span[], marks: readonly Mark[]): SaidRun[] {
   return merged.flatMap((span, index) => [
     ...(index === 0 ? [] : [{ text: LABEL_BREAK, kind: 'break' as const }]),
-    ...spanRuns(text, span, filler),
+    ...spanRuns(text, span, marks),
   ]);
 }
 
@@ -787,11 +847,11 @@ type Grading = {
   matchedBy: Map<number, SpokenToken>;
 };
 
+/** A candidate token of an element and the student token that matched it. */
+type MatchedPair = { student: SpokenToken; expected: SpokenToken };
+
 /** The element's candidate tokens with the student tokens that matched them, where any did. */
-function matchedPairs(
-  indices: readonly number[],
-  grading: Grading,
-): { student: SpokenToken; expected: SpokenToken }[] {
+function matchedPairs(indices: readonly number[], grading: Grading): MatchedPair[] {
   return indices.flatMap((index) => {
     const student = grading.matchedBy.get(index);
     const expected = grading.alignment.candidate.tokens[index]?.token;
@@ -834,7 +894,7 @@ function expectedFor(
 /** The verdict and rows of an element every token of which matched. */
 function matchedVerdict(
   element: GradedElement,
-  pairs: readonly { student: SpokenToken; expected: SpokenToken }[],
+  pairs: readonly MatchedPair[],
   marks: GapMarks,
   grading: Grading,
 ): { verdict: Verdict; citations: RuleCitation[] } {
@@ -853,53 +913,239 @@ function matchedVerdict(
   };
 }
 
+/** A grade before the remarks its marks read as are put on it. */
+type Unremarked = Omit<TextGrade, 'remarks'>;
+
+/** Everything a grade carries but its verdict, its citations and its remarks. */
+type ElementLabels = Omit<Unremarked, 'verdict' | 'citations'>;
+
+/** One element's place in the chosen alignment: its tokens, its marks, and what matched it. */
+type ElementParts = {
+  element: GradedElement;
+  indices: number[];
+  marks: GapMarks;
+  pairs: MatchedPair[];
+  stray: Span | undefined;
+};
+
+function partsOf(element: GradedElement, grading: Grading): ElementParts {
+  const indices = elementTokens(grading.alignment.candidate, element);
+  return {
+    element,
+    indices,
+    marks: grading.marks.get(element) ?? noMarks(),
+    pairs: matchedPairs(indices, grading),
+    stray: element === 'A.expect' ? grading.alignment.stray : undefined,
+  };
+}
+
+/** Every stretch of the typed text one element is read from, before they are merged. */
+function elementSpans(parts: ElementParts): Span[] {
+  const { marks, stray } = parts;
+  return [
+    ...parts.pairs.map((pair) => ({ start: pair.student.start, end: pair.student.end })),
+    ...marks.blocks,
+    ...marks.filler,
+    ...(stray === undefined ? [] : [stray]),
+  ];
+}
+
+/** The mark a matched pair leaves: a number said wrong, or a word typed a letter or two away. */
+function pairMark(pair: MatchedPair, airport: AirportData): Mark[] {
+  const { student, expected } = pair;
+  const span = { start: student.start, end: student.end };
+  if (numberTiers(student, expected, airport).some((entry) => entry.verdict === 'wrong')) {
+    return [{ span, kind: 'wrong' }];
+  }
+  if (spellingTiers(student, expected, airport).length === 0 || expected.kind !== 'word') return [];
+  return [{ span, kind: 'spelling', readAs: expected.text }];
+}
+
+/** Every mark the said runs of one element carry, from its gaps and from its matched pairs. */
+function saidMarks(parts: ElementParts, grading: Grading): Mark[] {
+  const { marks } = parts;
+  return [
+    ...marks.filler.map((span): Mark => ({ span, kind: 'filler' })),
+    ...marks.substituted.map((span): Mark => ({ span, kind: 'wrong' })),
+    ...marks.misplaced.map((span): Mark => ({ span, kind: 'misplaced' })),
+    ...parts.pairs.flatMap((pair) => pairMark(pair, grading.airport)),
+  ];
+}
+
+/** The two labels of one element, each as the runs a results row marks inside it. */
+function labelsOf(parts: ElementParts, grading: Grading): ElementLabels {
+  const { text } = grading;
+  const merged = mergeSpans(text, elementSpans(parts));
+  return {
+    element: parts.element,
+    expectedLabel: expectedLabel(parts.element, grading.spoken),
+    actualLabel: actualLabel(text, merged),
+    said: saidRuns(text, merged, saidMarks(parts, grading)),
+    expected: expectedFor(parts.element, parts.indices, parts.marks, grading),
+  };
+}
+
 /**
  * Grades an element the chosen reading gives no words: wrong where a stray expect clause was cut
  * for it, and otherwise right, with nothing said for it.
  */
 function emptyElementGrade(
-  labels: Omit<TextGrade, 'verdict' | 'citations'>,
+  labels: ElementLabels,
   stray: Span | undefined,
   own: readonly RuleCitation[],
-): TextGrade {
+): Unremarked {
   if (stray !== undefined) return { ...labels, verdict: 'wrong', citations: citeOnce(own) };
   const actual = labels.element === 'A.expect' ? NO_EXPECT_CLAUSE : labels.actualLabel;
   return { ...labels, actualLabel: actual, verdict: 'correct', citations: citeOnce(own) };
 }
 
-/** Grades one element of the chosen alignment. */
-function gradeElement(element: GradedElement, grading: Grading): TextGrade {
-  const { text, alignment, airport, expected } = grading;
-  const indices = elementTokens(alignment.candidate, element);
-  const marks = grading.marks.get(element) ?? {
-    outOfOrder: false,
-    blocks: [],
-    filler: [],
-    tiers: [],
-  };
-  const pairs = matchedPairs(indices, grading);
-  const stray = element === 'A.expect' ? alignment.stray : undefined;
-  const spans = [
-    ...pairs.map((pair) => ({ start: pair.student.start, end: pair.student.end })),
-    ...marks.blocks,
-    ...marks.filler,
-    ...(stray === undefined ? [] : [stray]),
-  ];
-  const merged = mergeSpans(text, spans);
-  const labels = {
-    element,
-    expectedLabel: expectedLabel(element, grading.spoken),
-    actualLabel: actualLabel(text, merged),
-    said: saidRuns(text, merged, marks.filler),
-    expected: expectedFor(element, indices, marks, grading),
-  };
-  const own = OWN_ROWS[element](expected);
-  if (indices.length === 0) return emptyElementGrade(labels, stray, own);
+/** The verdict and the rows of one element, on the labels already read from its marks. */
+function verdictOf(parts: ElementParts, labels: ElementLabels, grading: Grading): Unremarked {
+  const { element, indices, marks, pairs } = parts;
+  const own = OWN_ROWS[element](grading.expected);
+  if (indices.length === 0) return emptyElementGrade(labels, parts.stray, own);
   if (pairs.length < indices.length) {
-    const order = marks.outOfOrder ? citePhraseology(airport, 'S-ORDER') : [];
+    const order = marks.outOfOrder ? citePhraseology(grading.airport, 'S-ORDER') : [];
     return { ...labels, verdict: 'wrong', citations: citeOnce([...own, ...order]) };
   }
   return { ...labels, ...matchedVerdict(element, pairs, marks, grading) };
+}
+
+/** A stretch of text as a remark writes it, without the whitespace and punctuation at its ends. */
+function remarkText(text: string): string {
+  return text.replace(REMARK_EDGES, '');
+}
+
+function quoted(text: string): string {
+  return `"${remarkText(text)}"`;
+}
+
+/** The one item of a list, where the list holds exactly one. */
+function onlyOne<T>(items: readonly T[]): T | undefined {
+  return items.length === 1 ? items[0] : undefined;
+}
+
+/** Whether anything at all was heard for an element. */
+function heardAnything(parts: ElementParts): boolean {
+  const { marks } = parts;
+  const stretches = marks.blocks.length + marks.filler.length;
+  return parts.pairs.length + stretches > 0 || parts.stray !== undefined;
+}
+
+/** The remark that says the element was not heard, was never wanted, or landed in the wrong place. */
+function placeRemarks(parts: ElementParts): string[] {
+  if (!heardAnything(parts)) return [REMARKS.notHeard];
+  if (parts.stray !== undefined) return [REMARKS.strayExpect];
+  return parts.marks.outOfOrder ? [REMARKS.outOfOrder] : [];
+}
+
+/** Whether a stretch of the typed text holds a number token. */
+function spanHoldsNumber(span: Span, tokens: readonly SpokenToken[]): boolean {
+  return tokens.some(
+    (token) => token.kind === 'number' && token.start >= span.start && token.end <= span.end,
+  );
+}
+
+/** Whether a token of the element the student never said is a number. */
+function missedNumber(indices: readonly number[], grading: Grading): boolean {
+  return indices.some((index) => {
+    const token = grading.alignment.candidate.tokens[index]?.token;
+    return !grading.matchedBy.has(index) && token?.kind === 'number';
+  });
+}
+
+/** The remark for one value said in place of the one value never said, where that is the whole miss. */
+function wrongValueRemark(
+  parts: ElementParts,
+  missed: readonly string[],
+  grading: Grading,
+): string | undefined {
+  const span = onlyOne(parts.marks.substituted);
+  const only = onlyOne(missed);
+  if (span === undefined || only === undefined) return undefined;
+  if (!spanHoldsNumber(span, grading.alignment.student)) return undefined;
+  if (!missedNumber(parts.indices, grading)) return undefined;
+  const said = grading.text.slice(span.start, span.end);
+  return `wrong value: said ${quoted(said)}, expected ${quoted(only)}`;
+}
+
+/** The remarks that say which words were never said, and which words the reading does not have. */
+function valueRemarks(parts: ElementParts, grade: Unremarked, grading: Grading): string[] {
+  const missed = grade.expected.filter((run) => run.missed).map((run) => run.text);
+  const said = parts.marks.substituted.map((span) => grading.text.slice(span.start, span.end));
+  const wrongValue = wrongValueRemark(parts, missed, grading);
+  if (wrongValue !== undefined) return [wrongValue];
+  return [
+    ...(missed.length === 0 ? [] : [`missed: ${missed.map(quoted).join(', ')}`]),
+    ...(said.length === 0 ? [] : [`not in the reading: ${said.map(quoted).join(', ')}`]),
+  ];
+}
+
+/** Whether one of the tiers an element carries is a row read at a verdict. */
+function hasTier(tiers: readonly Tier[], id: string, verdict: Verdict): boolean {
+  return tiers.some(
+    (entry) => entry.verdict === verdict && entry.rows.some((row) => row.id === id),
+  );
+}
+
+/** The remarks the number rows of an element read as: "nine", the group form, and a restatement. */
+function tierRemarks(parts: ElementParts, grading: Grading): string[] {
+  const tiers = [
+    ...parts.pairs.flatMap((pair) => numberTiers(pair.student, pair.expected, grading.airport)),
+    ...parts.marks.tiers,
+  ];
+  return [
+    ...(hasTier(tiers, 'S-NINER', 'wrong') ? [REMARKS.niner] : []),
+    ...(hasTier(tiers, 'S-GROUP-FORM', 'wrong') ? [REMARKS.groupForm] : []),
+    ...(hasTier(tiers, 'S-GROUP-FORM', 'acceptable') ? [REMARKS.restated] : []),
+  ];
+}
+
+/** The remark that lists the extra words an element carried. */
+function fillerRemarks(parts: ElementParts, grading: Grading): string[] {
+  if (parts.marks.filler.length === 0) return [];
+  const words = parts.marks.filler.map((span) =>
+    remarkText(grading.text.slice(span.start, span.end)),
+  );
+  return [`extra words: ${words.join(', ')}`];
+}
+
+/** The remark the chosen reading itself leaves on the element it reads longer than it had to. */
+function candidateRemark(element: GradedElement, candidate: Candidate): string | undefined {
+  if (element === 'R.route') return ROUTE_REMARKS[candidate.route];
+  if (element === 'A.expect' && candidate.expect === 'redundant') return REMARKS.redundantExpect;
+  return undefined;
+}
+
+/** The reading's own remark, on an element every token of which matched. */
+function candidateRemarks(parts: ElementParts, grading: Grading): string[] {
+  if (parts.indices.length === 0 || parts.pairs.length < parts.indices.length) return [];
+  const remark = candidateRemark(parts.element, grading.alignment.candidate);
+  return remark === undefined ? [] : [remark];
+}
+
+/**
+ * The kinds of miss one element made, in words, in the order a row reads them.
+ *
+ * A correct element says nothing: its row already says it was right, and a near-miss spelling or a
+ * facility word is not a miss to name.
+ */
+function remarksFor(parts: ElementParts, grade: Unremarked, grading: Grading): string[] {
+  if (grade.verdict === 'correct') return [];
+  return [
+    ...placeRemarks(parts),
+    ...valueRemarks(parts, grade, grading),
+    ...tierRemarks(parts, grading),
+    ...fillerRemarks(parts, grading),
+    ...candidateRemarks(parts, grading),
+  ];
+}
+
+/** Grades one element of the chosen alignment, and says in words what it missed. */
+function gradeElement(element: GradedElement, grading: Grading): TextGrade {
+  const parts = partsOf(element, grading);
+  const graded = verdictOf(parts, labelsOf(parts, grading), grading);
+  return { ...graded, remarks: remarksFor(parts, graded, grading) };
 }
 
 /**

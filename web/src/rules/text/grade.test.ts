@@ -689,6 +689,165 @@ describe('the expected words of a typed grade', () => {
   });
 });
 
+/** The runs of one grade the results row marks, as `kind:text` lines, in the order they read. */
+function markedRuns(grade: TextGrade): string[] {
+  return grade.said
+    .filter((run) => run.kind !== 'said' && run.kind !== 'break')
+    .map((run) => `${run.kind}:${run.text}`);
+}
+
+/** Every reading of a fixture the corpus grades: as it is read on frequency, and the route in full. */
+function corpusGrades(fixture: Fixture): { reading: string; grades: TextGrade[] }[] {
+  const { airport, clearance, spoken } = realReading(fixture);
+  const readings = [
+    spoken.abbreviated,
+    ...(spoken.fullRoute === spoken.abbreviated ? [] : [spoken.fullRoute]),
+  ];
+  return readings.map((reading) => ({
+    reading,
+    grades: gradeText(reading, spoken, clearance, airport),
+  }));
+}
+
+/** What every settled clearance fixture's own readings get wrong, each line naming its fixture. */
+function corpusProblemsOf(problems: (grades: readonly TextGrade[]) => string[]): string[] {
+  return settledClearances.flatMap((fixture) =>
+    corpusGrades(fixture).flatMap(({ reading, grades }) =>
+      problems(grades).map((line) => `${fixture.id} "${reading}": ${line}`),
+    ),
+  );
+}
+
+/** The grades that mark a stretch of the typed text, or remark on an element graded correct. */
+function markProblems(grades: readonly TextGrade[]): string[] {
+  return grades.flatMap((grade) => [
+    ...markedRuns(grade).map((run) => `${grade.element} marks ${run}`),
+    ...(grade.verdict === 'correct' && grade.remarks.length > 0
+      ? [`${grade.element} remarks "${grade.remarks.join(', ')}"`]
+      : []),
+  ]);
+}
+
+/** The grades that are not correct and say nothing about why. */
+function silentProblems(grades: readonly TextGrade[]): string[] {
+  return grades
+    .filter((grade) => grade.verdict !== 'correct' && grade.remarks.length === 0)
+    .map((grade) => `${grade.element} is ${grade.verdict} and remarks nothing`);
+}
+
+describe('the marks and the remarks of a typed grade', () => {
+  it('marks a wrong value in what was typed and says which value it was', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'squawk three three four two', 'squawk 6201'),
+    );
+    const squawk = gradeOf(grades, 'T');
+    expect(squawk.said).toEqual([
+      { text: 'squawk ', kind: 'said' },
+      { text: '6201', kind: 'wrong' },
+    ]);
+    expect(squawk.remarks).toEqual(['wrong value: said "6201", expected "three three four two"']);
+  });
+
+  it('marks a near-miss spelling with the word it reads as, and remarks nothing', () => {
+    const grades = fdxGraded((reading) => edited(reading, ' departure,', ' depature,'));
+    const sid = gradeOf(grades, 'R.sid');
+    expect(sid.verdict).toBe('correct');
+    expect(sid.said).toEqual([
+      { text: 'Oakland Six ', kind: 'said' },
+      { text: 'depature', kind: 'spelling', readAs: 'departure' },
+    ]);
+    expect(sid.remarks).toEqual([]);
+  });
+
+  it('marks the whole number said with "nine" and says to say niner', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'point niner', 'point nine'));
+    const frequency = gradeOf(grades, 'F');
+    expect(markedRuns(frequency)).toEqual(['wrong:one two zero point nine']);
+    expect(frequency.remarks).toEqual(['say niner, not nine']);
+  });
+
+  it('marks a number said in group form alone and says to say the digits', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'flight level one niner zero', 'flight level one ninety'),
+    );
+    const altitude = gradeOf(grades, 'A.phrase');
+    expect(markedRuns(altitude)).toEqual(['wrong:one ninety']);
+    expect(altitude.remarks).toEqual(['group form alone — say the digits']);
+  });
+
+  it('marks an element said before its place as misplaced', () => {
+    const grades = fdxGraded((reading) =>
+      edited(
+        edited(reading, ', squawk three three four two', ''),
+        'cleared to',
+        'squawk three three four two, cleared to',
+      ),
+    );
+    const squawk = gradeOf(grades, 'T');
+    expect(squawk.said).toEqual([{ text: 'squawk three three four two', kind: 'misplaced' }]);
+    expect(squawk.remarks).toEqual(['out of CRAFT order']);
+  });
+
+  it('leaves filler marked as filler and lists the extra words', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'cleared to Seattle', 'cleared to the Seattle'),
+    );
+    const limit = gradeOf(grades, 'C');
+    expect(limit.verdict).toBe('acceptable');
+    expect(limit.said).toEqual([
+      { text: 'cleared to ', kind: 'said' },
+      { text: 'the', kind: 'filler' },
+      { text: ' Seattle airport', kind: 'said' },
+    ]);
+    expect(limit.remarks).toEqual(['extra words: the']);
+  });
+
+  it('marks nothing and remarks nothing on the reading typed exactly', () => {
+    const grades = fdxGraded((reading) => reading);
+    expect(grades.flatMap(markedRuns)).toEqual([]);
+    expect(grades.flatMap((grade) => grade.remarks)).toEqual([]);
+  });
+
+  it('names the words of the reading never said', () => {
+    const grades = fdxGraded((reading) =>
+      edited(reading, 'radar vectors Dedhd, then as filed', 'radar vectors Dedhd'),
+    );
+    expect(gradeOf(grades, 'R.route').remarks).toEqual(['missed: "then as filed"']);
+  });
+
+  it('says an element left out was not heard', () => {
+    const grades = fdxGraded((reading) => edited(reading, ', squawk three three four two', ''));
+    expect(gradeOf(grades, 'T').remarks).toEqual(['not heard']);
+  });
+
+  it('names both the word never said and the word the reading does not have', () => {
+    const grades = fdxGraded((reading) => edited(reading, 'squawk', 'sqwk'));
+    expect(gradeOf(grades, 'T').remarks).toEqual([
+      'missed: "squawk"',
+      'not in the reading: "sqwk"',
+    ]);
+  });
+
+  it('says the route was read in full where the shorter reading would have done', () => {
+    const { airport, clearance, spoken } = settledReading(FDX_PRACTICE);
+    expect(spoken.fullRoute).not.toBe(spoken.abbreviated);
+    const grades = gradeText(spoken.fullRoute, spoken, clearance, airport);
+    const route = gradeOf(grades, 'R.route');
+    expect(route.verdict).toBe('acceptable');
+    expect(route.remarks).toEqual(['the route read in full — the shorter reading is enough']);
+  });
+
+  it('a reading typed as read has no marks', () => {
+    expect(settledClearances.length).toBeGreaterThan(0);
+    expect(corpusProblemsOf(markProblems)).toEqual([]);
+  });
+
+  it('a grade that is not correct says why', () => {
+    expect(settledClearances.length).toBeGreaterThan(0);
+    expect(corpusProblemsOf(silentProblems)).toEqual([]);
+  });
+});
+
 /** The settled fixtures whose expect clause ends on the word the frequency opens with. */
 const AFTER_DEPARTURE_READINGS: readonly string[] = [
   'syn-koak-rnav-elements-b738w-klas',

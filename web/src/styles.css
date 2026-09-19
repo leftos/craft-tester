@@ -483,12 +483,36 @@ button.primary:disabled {
 
 .verdict .answer,
 .verdict .expected,
+.verdict .remarks,
 .verdict .why {
   margin: 0.15rem 0;
 }
 
+/* The kinds of miss an element made, in words; the row already carries the verdict's colour. */
+.verdict .remarks {
+  font-size: 0.9em;
+}
+
 .verdict .answer .filler {
   color: var(--muted);
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+
+/* What was typed where the reading has other words. */
+.verdict .answer .wrong {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+/* An element said whole, but out of its place in the CRAFT order. */
+.verdict .answer .misplaced {
+  text-decoration: underline wavy;
+  text-underline-offset: 0.2em;
+}
+
+/* A word typed a letter or two from the word the reading has, which it still reads as. */
+.verdict .answer .spelling {
   text-decoration: underline dotted;
   text-underline-offset: 0.2em;
 }

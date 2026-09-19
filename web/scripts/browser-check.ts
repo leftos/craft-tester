@@ -148,6 +148,8 @@ const recorded = await page.evaluate(() => {
 const report: Report = { ...recorded, errors };
 
 await page.screenshot({ path: `${OUT_DIR}/${name}-${viewportName}-view.png` });
+// A pinned panel is drawn at the scroll offset in a full-page shot, so that one is taken from the top.
+await page.evaluate(() => window.scrollTo(0, 0));
 await page.screenshot({ path: `${OUT_DIR}/${name}-${viewportName}.png`, fullPage: true });
 await writeFile(`${OUT_DIR}/${name}-${viewportName}.json`, JSON.stringify(report, null, 2));
 await browser.close();
