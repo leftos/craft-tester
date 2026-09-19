@@ -188,7 +188,11 @@ remembered per browser. The dropdowns stay, and the student chooses.
   including plain or ICAO digits, group forms, "thousand", "hundred" and "point". An identifier typed in
   capitals is expanded through the airport's lexicon of fix and procedure names.
 - **Aligning** (`rules/text/grade.ts`). The typed tokens are aligned with every candidate reading by
-  longest common subsequence, and the base reading wins ties. The candidates are the base reading, the
+  longest common subsequence, and the base reading wins ties. Within one reading, among the alignments
+  with the most matches the one with the most adjacent matches wins (two neighbouring typed words on two
+  neighbouring words of the reading), then the earliest: a word the reading says twice goes where its
+  neighbour is said too, so a student who leaves out "expect … after departure" keeps the "departure" of
+  "departure frequency" on F. The candidates are the base reading, the
   route in full, the route closed on "then as filed", and each of those with the redundant expect clause.
   An expect clause said where the reading has none is cut out before alignment. Words before the first
   match are the callsign and are not graded.
@@ -213,7 +217,14 @@ remembered per browser. The dropdowns stay, and the student chooses.
 - **Amendment mode.** After the strip, the typing box takes the place of the CRAFT form. The procedure the
   student speaks is graded in place of the procedure pick.
 - **Results.** A row shows what was said for its element (`TextGrade.said`: runs of said words, filler
-  and breaks). Wherever the element is not fully correct, the row also shows the expected words
+  and breaks, plus what the matcher faulted — `wrong` for words said where the reading has others and for
+  a number said "nine" or in group form alone, `misplaced` for an element said out of order, `spelling`
+  with the word it was read as). A row that is not fully correct names the kind of miss in words
+  (`TextGrade.remarks`: `missed: "then as filed"`, `wrong value: said … expected …`, `out of CRAFT order`,
+  `say niner, not nine`, `extra words: the`, and so on). Those labels name what the matcher saw, so they
+  are constants in `grade.ts`; the rule that decided the tier is still a cited data row underneath.
+  A dropdown row marks the words that differ between the pick and the clearance (`ui/wordDiff.ts`), and
+  marks nothing where the two share no word. Strip-box rows carry no marks. Wherever the element is not fully correct, the row also shows the expected words
   (`TextGrade.expected`: runs cut from the winning candidate's own words for the element). The words
   never said are marked, but only where the element is wrong and some of it was heard: an element not
   heard at all, or said out of order, marks nothing, because marking every word says nothing.

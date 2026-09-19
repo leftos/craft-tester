@@ -14,37 +14,12 @@ data facts and rationale now live in [ARCHITECTURE.md](../ARCHITECTURE.md) ("Why
 and "Amendment mode") and [ADDING_AN_AIRPORT.md](../ADDING_AN_AIRPORT.md) ("Lessons from KOAK"); the
 finished subplans behind them are in `archive/`.
 
-**State 2026-09-18.** Both airports are live. The generator-data wave closed 2026-09-18 with the TEC
+**State 2026-09-18.** Both airports are live. Tester feedback from AJ Norell (typed spelling, what a red
+row says, the pinned strip) landed the same day and left nothing open. The generator-data wave closed 2026-09-18 with the TEC
 override ([archive/tec-override.md](./archive/tec-override.md)). KOAK is closed at 51 of 51 fixtures
 settled. KSFO stands at 67 of 100 settled, with **33 pending, all amendment plans** (19 of its 52 amendment fixtures settled;
 all 18 phraseology fixtures settled). The user paused that loop 2026-09-16 — "I can point out any mistakes
 I notice or that users find as they come up". Free-text entry landed 2026-09-17.
-
-## Current focus — Tester feedback, AJ Norell 2026-09-18 (`rules/text/`, `ui/`)
-
-Gate: UI. AJ's two notes landed in `93d164f` (see Landed): figures were always accepted, and the red rows
-came from `depature`, `sqawk` and a route with no "then as filed". What is left is the user's steer on top
-of it.
-
-- [ ] **User steer 2026-09-18: "we could do a lot better in bringing clarity on what was wrong about each
-  thing, maybe by highlighting it".** Builds on `TextGrade.expected` (the runs that mark the unsaid words).
-  **Rulings the same day:**
-  - [ ] **Both lines read as a diff.** `you said:` marks what was wrong in the typed words (a wrong value
-    struck through, a word out of place, `nine`, a group form alone); `expected:` marks what should have
-    been there. An accepted near-miss spelling gets a light dotted mark, like filler
-  - [ ] **A short reason line on every not-correct row**, from the rule that decided it: `missed: "then as
-    filed"`, `wrong value`, `out of CRAFT order`, `say niner, not nine`, `group form alone — say the
-    digits`, `extra words: the, your`. The cited rows stay underneath
-  - [ ] **Typed and dropdown rows.** A dropdown row marks the words that differ between the option picked
-    and the expected one (`correction:` / `shorter:` / `preferred:`). Strip boxes stay as they are
-- [ ] **Bug, found 2026-09-18 while checking the above: leaving out the expect clause also turns F wrong.**
-  The alignment gives the typed "Departure" of "Departure frequency" to the expect clause's "…after
-  departure" (longest common subsequence, earliest match on a tie), so F reads `you said: frequency one
-  three five point one` and the student loses two elements for one omission. Repro: any reading with an
-  expect clause, typed without it — `syn-koak-rnav-elements-b738w-klas`, `ws-koak-amendment-practice-2-fdx3875`,
-  `-jsx203`, `-n858ee` all grade `A.expect wrong ("Departure") | F wrong`. Predates `S-SPELLING` (the
-  tie-break is untouched). Fix is a tie-break among equally long alignments that keeps an element whole
-  rather than lending one word to a neighbour; failing test first
 
 ## Wave 1 — Airway structure for conventional rebuilds (`generator/src/craft_generator/cifp/`, then the engine)
 
@@ -190,3 +165,10 @@ One line per step; the full record and the user decisions behind each are in the
   eight letters, two beyond, none below; a real word of the reading, the lexicon or a row is read as typed;
   numbers stay exact), a typed row's `expected:` marks the words never said, the flight-plan panel is pinned
   at every width, and `check:browser` takes `scroll:<px>` with a viewport shot — `93d164f`
+- [x] A typed clearance without its expect clause keeps its F: among the alignments with the most matches
+  the one with the most adjacent matches wins, so "Departure frequency" stays whole instead of lending
+  "Departure" to "…after departure" (found while checking AJ's feedback; failing tests first) — `8fdd6f0`
+- [x] A results row says what was wrong (user steer on AJ's feedback): a typed row marks wrong, misplaced and
+  near-miss words in `you said:` and names the kind of miss in a remark line; a dropdown row marks the words
+  that differ between the pick and the clearance; strip boxes unchanged. The remark labels are matcher
+  constants, not YAML rows (they name what the matcher saw; the deciding rule is still cited) — `ae2218d`
