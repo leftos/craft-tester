@@ -83,7 +83,11 @@ shown in its own colour) or `half` (an amendment-mode route box that
 reads the proposal but for the arrival the engine swapped, half a box in the score line: the arrival is
 the enroute controller's to change). An amendment session's score line counts the strip boxes ("flight
 plan checks / amendments") and the clearance ("CRAFT clearance elements") apart, each with its own tails
-(`half credit (arrival routing)`, `acceptable (airport navaid)`, `acceptable but inefficient`), and each
+(`half credit (arrival routing)`, `acceptable (airport navaid)`, `inefficient` for an element read
+longer than it needed to be — one citing `S-FILLER`, `S-GROUP-FORM`, `R-FULL-ROUTE`,
+`R-THEN-AS-FILED-END`, `A-EXPECT-REDUNDANT` or `A-FINAL`, the set `LONGER_ROWS` in `ui/results.ts` —
+and `acceptable` for one acceptable without being longer, "nine" for "niner" or a facility word left
+out; inefficient is also acceptable, and the two are counted apart by user steer 2026-09-19), and each
 box verdict reads the engine's `reason` for the box's amendment as a `why:` line. The engine reports the longer reading it
 allows as `redundantExpect` beside the clause it speaks, with its own `kind` (`filed` or `amended`, so it can be spoken): the expect clause a SID chart already publishes
 (accepted at the chart's delay, citing `A-EXPECT-REDUNDANT`), and the amended clause beside a "will be

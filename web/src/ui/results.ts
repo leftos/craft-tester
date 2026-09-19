@@ -41,6 +41,30 @@ function isNavaidAcceptable(grade: Grade): boolean {
   return grade.verdict === 'acceptable' && grade.element === 'BOX.route';
 }
 
+/**
+ * The rows that grade an element acceptable because it was read longer than it needed to be: extra
+ * words, a number restated in group form, the route in full or closed on "then as filed", and an
+ * expect clause the clearance can do without. An acceptable element citing none of them is
+ * acceptable without being longer: "nine" for "niner", a navaid said without its facility word.
+ */
+const LONGER_ROWS: ReadonlySet<string> = new Set([
+  'S-FILLER',
+  'S-GROUP-FORM',
+  'R-FULL-ROUTE',
+  'R-THEN-AS-FILED-END',
+  'A-EXPECT-REDUNDANT',
+  'A-FINAL',
+]);
+
+/** Whether an acceptable verdict is on an element read longer than it needed to be. */
+function isInefficient(grade: Grade): boolean {
+  return (
+    grade.verdict === 'acceptable' &&
+    !isNavaidAcceptable(grade) &&
+    grade.citations.some((row) => LONGER_ROWS.has(row.id))
+  );
+}
+
 /** Whether a verdict is on a box of the strip rather than on an element of the clearance. */
 function isBoxGrade(grade: Grade): boolean {
   return grade.element.startsWith('BOX.');
@@ -50,15 +74,17 @@ function isBoxGrade(grade: Grade): boolean {
  * The line that says how many answers were right.
  *
  * An acceptable answer counts as correct, because it is one: the score line then says how many of
- * them were route boxes filed without the airport navaid, and how many were longer than they needed
- * to be. A half verdict counts as half a box, the arrival routing being the only thing it missed,
- * and the line says how many of those there were too.
+ * them were route boxes filed without the airport navaid, how many were longer than they needed to
+ * be, and how many were acceptable without being longer. A half verdict counts as half a box, the
+ * arrival routing being the only thing it missed, and the line says how many of those there were
+ * too.
  *
  * @param grades The verdict for every element, or for every box of the strip.
  * @param noun What the verdicts are of: `elements` for a clearance alone, `flight plan checks /
  *   amendments` for the boxes of the strip, `CRAFT clearance elements` for the clearance read after
  *   them.
- * @returns The score, e.g. `4 of 5 elements correct, 1 acceptable but inefficient` or
+ * @returns The score, e.g. `4 of 5 elements correct, 1 inefficient` or `5 of 5 elements correct,
+ *   1 acceptable` or
  *   `2½ of 3 flight plan checks / amendments correct, 1 half credit (arrival routing)` or
  *   `3 of 3 flight plan checks / amendments correct, 1 acceptable (airport navaid)`.
  */
@@ -68,13 +94,15 @@ export function scoreLine(
 ): string {
   const acceptable = countOf(grades, 'acceptable');
   const navaid = grades.filter(isNavaidAcceptable).length;
-  const inefficient = acceptable - navaid;
+  const inefficient = grades.filter(isInefficient).length;
+  const other = acceptable - navaid - inefficient;
   const half = countOf(grades, 'half');
   const correct = countOf(grades, 'correct') + acceptable + half * HALF_CREDIT;
   const tails = [
     ...(half === 0 ? [] : [`${half} half credit (arrival routing)`]),
     ...(navaid === 0 ? [] : [`${navaid} acceptable (airport navaid)`]),
-    ...(inefficient === 0 ? [] : [`${inefficient} acceptable but inefficient`]),
+    ...(inefficient === 0 ? [] : [`${inefficient} inefficient`]),
+    ...(other === 0 ? [] : [`${other} acceptable`]),
   ];
   return [`${countLabel(correct)} of ${grades.length} ${noun} correct`, ...tails].join(', ');
 }

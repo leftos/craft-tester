@@ -24,7 +24,16 @@ const redundantExpect: Grade = {
   verdict: 'acceptable',
   expectedLabel: 'no expect altitude',
   actualLabel: 'expect filed altitude 10 minutes after departure',
-  citations: [],
+  citations: [{ id: 'A-EXPECT-REDUNDANT', source: '', text: '' }],
+};
+
+/** A frequency said with "nine" for "niner": acceptable, and no longer than the reading. */
+const nineFrequency: Grade = {
+  element: 'F',
+  verdict: 'acceptable',
+  expectedLabel: 'one two zero point niner',
+  actualLabel: 'one two zero point nine',
+  citations: [{ id: 'S-NINER', source: '', text: '' }],
 };
 
 /** The route box that reads the proposal but for the arrival it swaps: half a point. */
@@ -174,10 +183,15 @@ describe('scoreLine', () => {
     expect(scoreLine(grades, 'elements')).toBe('2 of 3 elements correct');
   });
 
-  it('counts an acceptable element as correct and says how many were inefficient', () => {
+  it('counts an acceptable element as correct and a longer reading as inefficient', () => {
     const grades: Grade[] = [rightRoute, { ...rightRoute, element: 'A.phrase' }, redundantExpect];
+    expect(scoreLine(grades, 'elements')).toBe('3 of 3 elements correct, 1 inefficient');
+  });
+
+  it('counts an acceptable element that is no longer than the reading apart from the inefficient', () => {
+    const grades: Grade[] = [rightRoute, nineFrequency, redundantExpect];
     expect(scoreLine(grades, 'elements')).toBe(
-      '3 of 3 elements correct, 1 acceptable but inefficient',
+      '3 of 3 elements correct, 1 inefficient, 1 acceptable',
     );
   });
 
@@ -203,7 +217,7 @@ describe('scoreLine', () => {
     );
   });
 
-  it('names an acceptable route box as the airport navaid rather than as inefficient', () => {
+  it('names an acceptable route box as the airport navaid', () => {
     const grades: Grade[] = [
       { ...rightRoute, element: 'BOX.type' },
       { ...rightRoute, element: 'BOX.altitude' },
@@ -258,7 +272,7 @@ describe('sessionScoreLine', () => {
     );
     expect(sessionScoreLine([...boxes, ...clearance])).toBe(
       '2½ of 3 flight plan checks / amendments correct, 1 half credit (arrival routing), ' +
-        '6 of 6 CRAFT clearance elements correct, 1 acceptable but inefficient',
+        '6 of 6 CRAFT clearance elements correct, 1 inefficient',
     );
   });
 

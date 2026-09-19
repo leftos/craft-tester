@@ -177,3 +177,5 @@ One line per step; the full record and the user decisions behind each are in the
   (user ruling on "VOR should not be required … not the clearance limit"; 7110.65 2-5-2 a 2;
   `R-FACILITY-WORD-OMITTED`), and a SID's family code typed as a word reads as its name ("gapp seven" is
   "Gap Seven") — `46ae72b`
+- [x] Score line: "inefficient" (a reading longer than it needed to be) and "acceptable" (no longer:
+  "nine", a facility word left out) counted apart; inefficient is also acceptable (user steer 2026-09-19)
