@@ -89,6 +89,15 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox)
   feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
   ([archive/free-text.md](./archive/free-text.md) decision 9)
+- [ ] **Rule briefs contradict the settled fixtures or themselves** (friction `d5:craft-tester:2026-W38`, from the
+  transcript miner: in W38 14 dispatches came back underspecified, 10 ended without a report and 8 were blocked;
+  the gaps read "the brief contradicts itself on the maximum number of amended boxes", "decision 4 contradicts
+  three settled worksheet fixtures", "the number-run rules do not say how several readings combine", "the
+  structure predicate drops a leading token in 8 settled fixtures"). Before a brief on `rules/` or `scenario/`
+  names an expected box, citation or draw, run `pnpm -C web propose` over the settled fixtures it touches and
+  quote the output into the brief; a rule concept with combination semantics (number runs, amended-box count,
+  composition order) gets its worked examples and non-examples written into the rule row's `text` or the rules
+  section of `docs/ARCHITECTURE.md` before it is briefed
 
 ## Landed
 
