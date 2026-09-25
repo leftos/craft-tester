@@ -98,6 +98,7 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
   quote the output into the brief; a rule concept with combination semantics (number runs, amended-box count,
   composition order) gets its worked examples and non-examples written into the rule row's `text` or the rules
   section of `docs/ARCHITECTURE.md` before it is briefed
+- [ ] **Implementers read 28–33 files before their first edit** (friction `d2` ×5, ~$51, worktree runs): hot spots `web/src/rules/amend/route.ts`, `web/src/data/schema.ts`, `web/scripts/propose.ts`, `generator/src/craft_generator/cli.py`, `craft_generator/sop/load.py`. `docs/ARCHITECTURE.md` already names them, so first check whether those briefs cited it; then give ARCHITECTURE.md a task index ("add an amendment rule", "add a schema field", "add a generator subcommand", "load a new SOP section") naming the files in order, for briefs to cite
 
 ## Landed
 
