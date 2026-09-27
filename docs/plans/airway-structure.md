@@ -1,9 +1,6 @@
 # Airway structure for conventional route rebuilds
 
-User steer 2026-09-17: the RNAV element check ([rnav-route-elements.md](./archive/rnav-route-elements.md)) leaves a
-non-RNAV plan with no conventional route in the data. With the J and V airway structure the engine could
-rebuild one. The user named two sources to look at: yaat's handling of the vNAS `NavData.dat` and
-`zoa-reference-cli`, which can pull up any airway.
+User steer 2026-09-17: the RNAV element check (`R-RNAV-AIRWAY`, `R-RNAV-WAYPOINT`, the `rnav_element` fault) leaves a non-RNAV plan with no conventional route in the data. With the J and V airway structure the engine could rebuild one. The user named two sources to look at: yaat's handling of the vNAS `NavData.dat` and `zoa-reference-cli`, which can pull up any airway.
 
 ## Survey (Explore agent, 2026-09-17, verified against the files on disk)
 
