@@ -4,7 +4,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { AirportData, Fixture, Scenario } from '#src/data/schema.ts';
 import type { ResolvedAmendment } from '#src/rules/amend/types.ts';
 import type { SpokenClearance } from '#src/rules/speak.ts';
-import type { EngineResult, ResolvedClearance, RuleCitation } from '#src/rules/types.ts';
+import type {
+  EngineResult,
+  ResolvedClearance,
+  RuleCitation,
+  Unresolved,
+} from '#src/rules/types.ts';
 
 /** The repository root, two levels above this script. */
 const repoRoot = new URL('../../', import.meta.url);
@@ -63,6 +68,18 @@ export type ProposalOutcome =
       expected: unknown;
     };
 
+/**
+ * The reading the trainer also accepts for a ZOA CPS-004 3.1 type, which the proposed reading alone
+ * does not show the person settling a fixture.
+ *
+ * `amendments` is set in amendment mode, one entry per box of the accepted reading, and `clearance` is
+ * the reading itself, or the elements that blocked it under that handling.
+ */
+export type AcceptedReading = {
+  amendments?: readonly ProposalAmendment[];
+  clearance: ProposalClearance | ProposalUnresolved;
+};
+
 /** Everything one proposal prints. */
 export type ProposalView = {
   id: string;
@@ -70,6 +87,8 @@ export type ProposalView = {
   note: string | undefined;
   strip: readonly (readonly [string, string])[];
   outcome: ProposalOutcome;
+  /** The reading the trainer also accepts, which only a type ZOA CPS-004 3.1 lists has. */
+  accepted?: AcceptedReading;
 };
 
 /**
@@ -110,14 +129,20 @@ function expectedBlock(expected: unknown): string {
   return `  "expected": ${json}`;
 }
 
-/** The CRAFT elements with their citations, the route any build wrote, and both spoken forms. */
-function clearanceLines(outcome: ProposalClearance): string[] {
-  const lines = ['', 'CRAFT'];
-  for (const element of outcome.elements) {
+/** The CRAFT elements of one reading, each with the rows that decided it. */
+function elementLines(elements: readonly ProposalElement[]): string[] {
+  const lines: string[] = [];
+  for (const element of elements) {
     lines.push(`  ${element.label.padEnd(12)} ${element.value}`);
     for (const citation of element.citations)
       lines.push(`       ${citation.id} — ${citation.text}`);
   }
+  return lines;
+}
+
+/** The CRAFT elements with their citations, the route any build wrote, and both spoken forms. */
+function clearanceLines(outcome: ProposalClearance): string[] {
+  const lines = ['', 'CRAFT', ...elementLines(outcome.elements)];
   if (outcome.built !== undefined) lines.push('', `built: ${outcome.built}`);
   lines.push(
     '',
@@ -128,17 +153,24 @@ function clearanceLines(outcome: ProposalClearance): string[] {
   return lines;
 }
 
+/** One reading as its block: the CRAFT elements and spoken forms, or the elements that blocked it. */
+function readingLines(reading: ProposalClearance | ProposalUnresolved): string[] {
+  return reading.kind === 'unresolved' ? unresolvedLines(reading.reasons) : clearanceLines(reading);
+}
+
+/** The elements that blocked an engine, one reason line each. */
+function unresolvedReasons(unresolved: readonly Unresolved[]): string[] {
+  return unresolved.map((item) => `${item.element}: ${item.reason}`);
+}
+
 /** The elements that blocked an engine, one per line. */
 function unresolvedLines(reasons: readonly string[]): string[] {
   return ['', 'UNRESOLVED', ...reasons.map((reason) => `  ${reason}`)];
 }
 
-/** The amended boxes, then the clearance the corrected plan gets. */
-function amendmentLines(
-  amendments: readonly ProposalAmendment[],
-  corrected: ProposalClearance | ProposalUnresolved,
-): string[] {
-  const lines = ['', 'AMENDMENTS'];
+/** The amended boxes as both readings print them, one block per box. */
+function amendmentBoxLines(amendments: readonly ProposalAmendment[]): string[] {
+  const lines: string[] = [];
   if (amendments.length === 0) lines.push('  none — the plan is correct as filed');
   for (const amendment of amendments) {
     const box = amendment.warning === true ? `${amendment.box} (warning)` : amendment.box;
@@ -147,26 +179,60 @@ function amendmentLines(
     for (const citation of amendment.citations)
       lines.push(`       ${citation.id} — ${citation.text}`);
   }
-  lines.push('', 'clearance for the corrected plan');
-  const clearance =
-    corrected.kind === 'unresolved'
-      ? unresolvedLines(corrected.reasons)
-      : clearanceLines(corrected);
-  return [...lines, ...clearance];
+  return lines;
+}
+
+/** The amended boxes, then the clearance the corrected plan gets. */
+function amendmentLines(
+  amendments: readonly ProposalAmendment[],
+  corrected: ProposalClearance | ProposalUnresolved,
+): string[] {
+  const lines = [
+    '',
+    'AMENDMENTS',
+    ...amendmentBoxLines(amendments),
+    '',
+    'clearance for the corrected plan',
+  ];
+  return [...lines, ...readingLines(corrected)];
+}
+
+/** The heading the accepted reading prints under. */
+const ACCEPTED_HEADING = 'ALSO ACCEPTED (ZOA-CPS004-SPECIAL-AIRCRAFT)';
+
+/** The reading the trainer also accepts, headed and otherwise printed as the proposed one is. */
+function acceptedReadingLines(accepted: AcceptedReading | undefined): string[] {
+  if (accepted === undefined) return [];
+  const lines = ['', ACCEPTED_HEADING];
+  if (accepted.amendments !== undefined) lines.push(...amendmentBoxLines(accepted.amendments));
+  const { clearance } = accepted;
+  if (clearance.kind === 'unresolved') return [...lines, ...unresolvedLines(clearance.reasons)];
+  return [
+    ...lines,
+    ...elementLines(clearance.elements),
+    `  abbreviated: ${clearance.spoken.abbreviated}`,
+  ];
 }
 
 /** Everything a proposal prints below the strip, which depends on what the engine made of it. */
-function outcomeLines(outcome: ProposalOutcome): string[] {
+function outcomeLines(outcome: ProposalOutcome, accepted: AcceptedReading | undefined): string[] {
   if (outcome.kind === 'unresolved') return unresolvedLines(outcome.reasons);
   if (outcome.kind === 'amendments') {
     return [
       ...amendmentLines(outcome.amendments, outcome.corrected),
+      ...acceptedReadingLines(accepted),
       '',
       'FIXTURE',
       expectedBlock(outcome.expected),
     ];
   }
-  return [...clearanceLines(outcome), '', 'FIXTURE', expectedBlock(outcome.expected)];
+  return [
+    ...clearanceLines(outcome),
+    ...acceptedReadingLines(accepted),
+    '',
+    'FIXTURE',
+    expectedBlock(outcome.expected),
+  ];
 }
 
 /**
@@ -182,7 +248,7 @@ export function formatProposal(view: ProposalView): string {
   if (view.note !== undefined) lines.push(`note: ${view.note}`);
   lines.push('', 'STRIP');
   for (const [label, value] of view.strip) lines.push(`  ${label.padEnd(12)} ${value}`);
-  return [...lines, ...outcomeLines(view.outcome)].join('\n');
+  return [...lines, ...outcomeLines(view.outcome, view.accepted)].join('\n');
 }
 
 /** Renders one row of the `--pending` table. */
@@ -336,17 +402,29 @@ function registerAliasHook(): void {
 
 /** The app modules, imported after the alias hook is in place. */
 async function loadRuntime() {
-  const [schema, load, engine, types, speak, grade, amend, amendTypes] = await Promise.all([
-    import('#src/data/schema.ts'),
-    import('#src/data/load.ts'),
-    import('#src/rules/engine.ts'),
-    import('#src/rules/types.ts'),
-    import('#src/rules/speak.ts'),
-    import('#src/rules/grade.ts'),
-    import('#src/rules/amend/engine.ts'),
-    import('#src/rules/amend/types.ts'),
-  ]);
-  return { ...schema, ...load, ...engine, ...types, ...speak, ...grade, ...amend, ...amendTypes };
+  const [schema, load, engine, types, speak, grade, amend, amendTypes, handling] =
+    await Promise.all([
+      import('#src/data/schema.ts'),
+      import('#src/data/load.ts'),
+      import('#src/rules/engine.ts'),
+      import('#src/rules/types.ts'),
+      import('#src/rules/speak.ts'),
+      import('#src/rules/grade.ts'),
+      import('#src/rules/amend/engine.ts'),
+      import('#src/rules/amend/types.ts'),
+      import('#src/rules/handling.ts'),
+    ]);
+  return {
+    ...schema,
+    ...load,
+    ...engine,
+    ...types,
+    ...speak,
+    ...grade,
+    ...amend,
+    ...amendTypes,
+    ...handling,
+  };
 }
 
 /** Everything the CLI half needs from the app. */
@@ -402,10 +480,7 @@ function clearanceOutcome(
   runtime: Runtime,
 ): ProposalClearance | ProposalUnresolved {
   if (!result.ok) {
-    return {
-      kind: 'unresolved',
-      reasons: result.unresolved.map((item) => `${item.element}: ${item.reason}`),
-    };
+    return { kind: 'unresolved', reasons: unresolvedReasons(result.unresolved) };
   }
   const { clearance } = result;
   const { builtRoute } = clearance.route.value;
@@ -434,6 +509,17 @@ function proposedValue(amendment: ResolvedAmendment): string {
   return amendment.box === 'altitude' ? String(amendment.proposedFeet) : amendment.proposed;
 }
 
+/** The amended boxes as the proposal prints them, one entry per box. */
+function proposalAmendments(amendments: readonly ResolvedAmendment[]): ProposalAmendment[] {
+  return amendments.map((amendment) => ({
+    box: amendment.box,
+    proposed: proposedValue(amendment),
+    reason: amendment.reason,
+    citations: amendment.citations,
+    ...(amendment.box === 'route' && amendment.warning === true ? { warning: true } : {}),
+  }));
+}
+
 /**
  * Runs the amendment engine over a plan, and the clearance engine over the corrected plan.
  *
@@ -447,20 +533,11 @@ function amendmentOutcome(
 ): ProposalOutcome {
   const result = runtime.resolveAmendments(scenario, airport, 'proposed');
   if (!result.ok) {
-    return {
-      kind: 'unresolved',
-      reasons: result.unresolved.map((item) => `${item.element}: ${item.reason}`),
-    };
+    return { kind: 'unresolved', reasons: unresolvedReasons(result.unresolved) };
   }
   return {
     kind: 'amendments',
-    amendments: result.amendments.map((amendment) => ({
-      box: amendment.box,
-      proposed: proposedValue(amendment),
-      reason: amendment.reason,
-      citations: amendment.citations,
-      ...(amendment.box === 'route' && amendment.warning === true ? { warning: true } : {}),
-    })),
+    amendments: proposalAmendments(result.amendments),
     corrected: clearanceOutcome(
       runtime.resolveAmendedClearance(scenario, result.corrected, airport, 'proposed'),
       result.corrected,
@@ -483,6 +560,49 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
     airport,
     runtime,
   );
+}
+
+/**
+ * The reading the trainer also accepts for the fixture's type, resolved the way the proposed one is:
+ * the boxes the accepted handling amends to, then the clearance for that corrected plan.
+ *
+ * @param fixture The fixture to read.
+ * @param airport The airport data.
+ * @param runtime The app modules the script resolves with.
+ * @returns The accepted reading, or nothing for a type ZOA CPS-004 3.1 does not list.
+ */
+function acceptedReading(
+  fixture: Fixture,
+  airport: AirportData,
+  runtime: Runtime,
+): AcceptedReading | undefined {
+  const { scenario } = fixture;
+  if (!runtime.hasSpecialHandling(scenario, airport)) return undefined;
+  if (fixture.mode !== 'amendment') {
+    return {
+      clearance: clearanceOutcome(
+        runtime.resolveClearance(scenario, airport, 'accepted'),
+        scenario,
+        scenario,
+        airport,
+        runtime,
+      ),
+    };
+  }
+  const result = runtime.resolveAmendments(scenario, airport, 'accepted');
+  if (!result.ok) {
+    return { clearance: { kind: 'unresolved', reasons: unresolvedReasons(result.unresolved) } };
+  }
+  return {
+    amendments: proposalAmendments(result.amendments),
+    clearance: clearanceOutcome(
+      runtime.resolveAmendedClearance(scenario, result.corrected, airport, 'accepted'),
+      result.corrected,
+      scenario,
+      airport,
+      runtime,
+    ),
+  };
 }
 
 /** Builds the `--pending` row for one fixture. */
@@ -513,15 +633,16 @@ function pendingRow(fixture: Fixture, outcome: ProposalOutcome): PendingRow {
 /** Prints one fixture's proposal. */
 function printProposal(entry: { path: string; fixture: Fixture }, runtime: Runtime): void {
   const airport = loadAirportData(entry.fixture.airport, runtime);
-  console.log(
-    formatProposal({
-      id: entry.fixture.id,
-      status: entry.fixture.status,
-      note: entry.fixture.source.note,
-      strip: stripLines(entry.fixture.scenario, airport),
-      outcome: outcomeOf(entry.fixture, airport, runtime),
-    }),
-  );
+  const accepted = acceptedReading(entry.fixture, airport, runtime);
+  const view: ProposalView = {
+    id: entry.fixture.id,
+    status: entry.fixture.status,
+    note: entry.fixture.source.note,
+    strip: stripLines(entry.fixture.scenario, airport),
+    outcome: outcomeOf(entry.fixture, airport, runtime),
+  };
+  if (accepted !== undefined) view.accepted = accepted;
+  console.log(formatProposal(view));
 }
 
 /** Prints one line per pending fixture, so a batch review fits on a screen. */
