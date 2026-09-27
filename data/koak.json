@@ -3273,7 +3273,7 @@
     {
       "id": "RWY-GROUP-DEFAULT",
       "source": "OAK ATCT SOP 3-4 a",
-      "text": "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the Dash 8-400 is grouped with the jets and departs the south field with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
+      "text": "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the jets depart the south field, and the Dash 8-400 is grouped with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
     },
     {
       "id": "RWY-CLASS-DEFAULT",

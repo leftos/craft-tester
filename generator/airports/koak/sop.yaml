@@ -1104,7 +1104,7 @@ phraseology_rules:
     text: "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"
   - id: RWY-GROUP-DEFAULT
     source: "OAK ATCT SOP 3-4 a"
-    text: "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the Dash 8-400 is grouped with the jets and departs the south field with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
+    text: "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the jets depart the south field, and the Dash 8-400 is grouped with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
   - id: RWY-CLASS-DEFAULT
     source: "OAK ATCT SOP 3-4 a; ZOA senior staff via the user, 2026-09-16"
     text: "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway"
