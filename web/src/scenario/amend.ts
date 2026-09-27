@@ -1,4 +1,4 @@
-import type { AirportData, Destination, EquipmentSuffix, Scenario, Sid } from '@/data/schema.ts';
+import type { AirportData, Destination, Scenario, Sid } from '@/data/schema.ts';
 import { RVSM_CEILING_FEET, RVSM_FLOOR_FEET } from '@/rules/amend/altitude.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
@@ -19,7 +19,6 @@ export type FaultKind =
   | 'non_rvsm_in_band'
   | 'missing_suffix'
   | 'unknown_suffix'
-  | 'no_mode_c'
   | 'rnav_clash'
   | 'rnav_element';
 
@@ -42,7 +41,6 @@ export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
   non_rvsm_in_band: ['altitude'],
   missing_suffix: ['type'],
   unknown_suffix: ['type'],
-  no_mode_c: ['type'],
   rnav_clash: ['type', 'route'],
   rnav_element: ['type'],
 };
@@ -271,30 +269,6 @@ function unknownSuffix(scenario: Scenario, airport: AirportData): FaultPatch | u
 }
 
 /**
- * How much a row of the table reads like another: the capabilities the two state alike.
- *
- * @param row The row a fault would write into the plan.
- * @param filed The row the plan files, absent where the table does not hold its suffix.
- * @returns How many of RNAV and RVSM the two rows agree on.
- */
-function alike(row: EquipmentSuffix, filed: EquipmentSuffix | undefined): number {
-  return Number(row.rnav === filed?.rnav) + Number(row.rvsm === filed?.rvsm);
-}
-
-/**
- * A suffix whose row reports no altitude, which no aircraft on VATSIM files.
- *
- * The row is chosen to read like the filed one in everything but Mode C where the table holds such
- * a row — an RNAV plan takes an RNAV row — so the type box is the only one the fault makes wrong.
- */
-function noModeC(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
-  const filed = suffixRow(scenario, airport);
-  const rows = airport.equipmentSuffixes.filter((entry) => !entry.transponderModeC);
-  const row = [...rows].sort((left, right) => alike(right, filed) - alike(left, filed))[0];
-  return row === undefined ? undefined : { field: 'equipmentSuffix', suffix: row.suffix };
-}
-
-/**
  * The first row of the equipment table that reports altitude and lacks the navigation a plan needs.
  *
  * A plan over a Q route, an RNAV waypoint or an RNAV procedure needs RNAV; one over a T or Y route
@@ -361,7 +335,6 @@ const INJECTORS: Record<FaultKind, Injector> = {
   non_rvsm_in_band: nonRvsmInBand,
   missing_suffix: missingSuffix,
   unknown_suffix: unknownSuffix,
-  no_mode_c: noModeC,
   rnav_clash: rnavClash,
   rnav_element: rnavElement,
 };

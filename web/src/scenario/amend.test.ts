@@ -340,16 +340,13 @@ describe('fault injection', () => {
     );
   });
 
-  it('files a suffix that reports no altitude, which the type box alone answers', () => {
-    const entry = onlyFault('no_mode_c');
-    const suffix = ksfo.equipmentSuffixes.find((row) => row.suffix === entry.filed.equipmentSuffix);
-    expect(suffix, label(entry)).toBeDefined();
-    expect(suffix?.transponderModeC, label(entry)).toBe(false);
-    expect(raisedBoxes(entry), label(entry)).toEqual(['type']);
-    expect(proposalFor(entry, 'type'), label(entry)).toMatch(
-      new RegExp(`^${entry.filed.aircraftType}/[A-Z]$`),
+  it('never files a suffix the table says reports no altitude, since every VATSIM aircraft has Mode C', () => {
+    const withoutModeC = drawn.filter(
+      (entry) =>
+        ksfo.equipmentSuffixes.find((row) => row.suffix === entry.filed.equipmentSuffix)
+          ?.transponderModeC === false,
     );
-    expect(amendmentFor(entry, 'type')?.reason, label(entry)).toContain('Mode C');
+    expect(withoutModeC.map(label)).toEqual([]);
   });
 
   it('files a non-RNAV suffix against an RNAV procedure', () => {

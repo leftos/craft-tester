@@ -191,3 +191,4 @@ One line per step; the full record and the user decisions behind each are in the
   "nine", a facility word left out) counted apart; inefficient is also acceptable (user steer 2026-09-19)
   — `b795f3c`
 - [x] A word said in a left-out facility word's place is a miss, not acceptable (user ruling 2026-09-19)
+- [x] Tester feedback, 2026-09-26 ("slant Yankee … you would never see that on VATSIM"): the amendment drill no longer files a suffix without Mode C; the `no_mode_c` fault is gone, and `T-MODE-C` still grades one typed in
