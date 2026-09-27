@@ -9,8 +9,9 @@ radar-vector SID, so its kind, runways and top altitude come entirely from the o
 
 What the sources disagree about is a build failure, not a silent choice: a SID whose chart publishes
 a different set of transition fixes than the CIFP codes stops the build, as does a rule naming a DP
-family no procedure has, an exit fix in no gate, a runway no runway record lists, or a fleet type the
-vNAS specs cannot class. A TEC row is checked the same way: the DP its route begins on must be
+family no procedure has, an exit fix in no gate, a runway no runway record lists, a fleet type whose
+wake turbulence category contradicts the FAA table's, or a fleet type the vNAS specs cannot class. A
+TEC row is checked the same way: the DP its route begins on must be
 published for at least one runway family the row departs from. The arrival a route tail ends on is
 the same bargain read the other way: the tail names the family with the ``#`` placeholder and the
 build substitutes the revision the CIFP publishes, so no revision number is ever transcribed. A
@@ -477,6 +478,37 @@ def _approach_category(entry: FleetEntry, characteristics: Mapping[str, Aircraft
     return published.aac
 
 
+_WTC_LETTERS: Mapping[str, frozenset[str]] = {
+    "Light": frozenset({"L"}),
+    "Medium": frozenset({"M"}),
+    "Heavy": frozenset({"H"}),
+    "Super": frozenset({"J"}),
+    "Light/Medium": frozenset({"L", "M"}),
+}
+
+
+def _check_wtc(entry: FleetEntry, characteristics: Mapping[str, AircraftCharacteristic]) -> None:
+    """Fail the build when a fleet row's ``wtc`` is not one the FAA table's category allows.
+
+    The FAA names two categories for a type whose variants straddle them, as ``Light/Medium`` does,
+    and the fleet row states the one letter the strip carries, so either is accepted.
+    """
+    published = characteristics.get(entry.type)
+    if published is None:
+        return
+    letters = _WTC_LETTERS.get(published.wtc)
+    if letters is None:
+        raise ValueError(
+            f"generator/shared/{AIRCRAFT_CHARACTERISTICS_FILE} {entry.type}: the FAA wtc {published.wtc!r} is none of "
+            f"{', '.join(_WTC_LETTERS)}; re-run craft-gen fetch-aircraft-characteristics, or add the value to the mapping in merge.py"
+        )
+    if entry.wtc not in letters:
+        raise ValueError(
+            f"routes.yaml fleet[{entry.type}]: wtc {entry.wtc!r} disagrees with the FAA table's {published.wtc!r}; correct the row in "
+            f"generator/shared/{AIRCRAFT_TYPES_FILE}, whose wtc the FAA states in generator/shared/{AIRCRAFT_CHARACTERISTICS_FILE}"
+        )
+
+
 def _handling(entry: FleetEntry, special_handling: SpecialHandling | None, local_types: frozenset[str]) -> Document | None:
     """Return the ZOA CPS-004 3.1 handling of one fleet type, ``None`` for a type the table does not list.
 
@@ -510,8 +542,10 @@ def _fleet_entry(
     """Return one fleet row; ``cwt`` is the FAA category and is absent for a type their table omits.
 
     ``handling`` is present only for a type ZOA CPS-004 3.1 lists; ``local_types`` are the types the
-    airport's SOP names in its aircraft groups.
+    airport's SOP names in its aircraft groups. The row's ``wtc`` is checked against the FAA table's
+    category for the type.
     """
+    _check_wtc(entry, characteristics)
     fleet: Document = {
         "type": entry.type,
         "class": entry.aircraft_class,

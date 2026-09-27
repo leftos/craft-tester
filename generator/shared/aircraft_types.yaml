@@ -50,13 +50,13 @@ types:
   C208: { class: T, wtc: L, suffixes: [/G, /A] }
   C25B: { class: J, wtc: L, suffixes: [/L] }
   C510: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
-  C55B: { class: J, wtc: M, suffixes: [/L] }
+  C55B: { class: J, wtc: L, suffixes: [/L] }
   C750: { class: J, wtc: M, suffixes: [/L] }
   CL30: { class: J, wtc: M, suffixes: [/L] }
   DH8D: { class: T, performance_class: J, wtc: M, suffixes: [/L] }
   E135: { class: J, wtc: M, suffixes: [/L] }
   E50P: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
-  E55P: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
+  E55P: { class: J, performance_class: T, wtc: M, suffixes: [/L] }
   E75L: { class: J, wtc: M, suffixes: [/L] }
   GL5T: { class: J, wtc: M, suffixes: [/L] }
   M20T: { class: P, wtc: L, suffixes: [/G, /A] }

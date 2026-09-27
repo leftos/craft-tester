@@ -917,6 +917,47 @@ def test_a_hand_approach_category_wins_over_the_faa_table(ksfo_build_inputs: Bui
     assert categories["B738"] == "D"
 
 
+def _with_fleet(inputs: BuildInputs, fleet: tuple[Any, ...]) -> BuildInputs:
+    return replace(inputs, airport=replace(inputs.airport, routes=replace(inputs.airport.routes, fleet=fleet)))
+
+
+def test_a_fleet_wtc_the_faa_table_contradicts_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    fleet = tuple(replace(entry, wtc="M") if entry.type == "C172" else entry for entry in ksfo_build_inputs.airport.routes.fleet)
+    message = (
+        r"routes\.yaml fleet\[C172\]: wtc 'M' disagrees with the FAA table's 'Light'; correct the row in "
+        r"generator/shared/aircraft_types\.yaml, whose wtc the FAA states in generator/shared/faa_aircraft_characteristics\.yaml"
+    )
+    with pytest.raises(ValueError, match=message):
+        build_airport(_with_fleet(ksfo_build_inputs, fleet))
+
+
+def test_a_light_medium_faa_category_accepts_either_letter(ksfo_build_inputs: BuildInputs) -> None:
+    fleet = tuple(replace(entry, wtc="M") if entry.type == "BE20" else entry for entry in ksfo_build_inputs.airport.routes.fleet)
+    document = build_airport(_with_fleet(ksfo_build_inputs, fleet))
+    letters = {entry["type"]: entry["wtc"] for entry in document["routeLibrary"]["fleet"]}
+    assert letters["BE20"] == "M"
+    assert letters["B350"] == "L"
+
+
+def test_an_faa_wtc_outside_the_known_categories_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    table = dict(ksfo_build_inputs.aircraft_characteristics)
+    table["C172"] = replace(table["C172"], wtc="Ultralight")
+    message = r"faa_aircraft_characteristics\.yaml C172: the FAA wtc 'Ultralight' is none of Light, Medium, Heavy, Super, Light/Medium"
+    with pytest.raises(ValueError, match=message):
+        build_airport(replace(ksfo_build_inputs, aircraft_characteristics=table))
+
+
+def test_a_fleet_type_the_faa_table_omits_is_not_checked(ksfo_build_inputs: BuildInputs) -> None:
+    table = {code: row for code, row in ksfo_build_inputs.aircraft_characteristics.items() if code != "C172"}
+    fleet = tuple(
+        replace(entry, wtc="H", approach_category="A") if entry.type == "C172" else entry for entry in ksfo_build_inputs.airport.routes.fleet
+    )
+    document = build_airport(replace(_with_fleet(ksfo_build_inputs, fleet), aircraft_characteristics=table))
+    letters = {entry["type"]: entry["wtc"] for entry in document["routeLibrary"]["fleet"]}
+    assert letters["C172"] == "H"
+    assert letters["B738"] == "M"
+
+
 def test_a_notice_that_issues_a_heading_emits_it(ksfo_build_inputs: BuildInputs) -> None:
     notice = ksfo_build_inputs.airport.sop.notices[0]
     with_heading = replace(notice, effect=replace(notice.effect, heading=120))
