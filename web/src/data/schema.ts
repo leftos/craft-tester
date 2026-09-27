@@ -70,12 +70,22 @@ export const AirportIdentitySchema = z.strictObject({
   magneticVariation: z.number().min(-180).max(180),
 });
 
+/** A hand-transcribed document pinned by its sha256, as `craft-gen verify-sop` checks it. */
+const PinnedDocumentSchema = z.strictObject({
+  url: z.url(),
+  version: z.string(),
+  sha256: z.string(),
+  transcribedAt: z.string(),
+});
+
 /**
  * Where every generated fact came from, so a stale build is visible in the diff.
  *
  * `sop.version` is the SOP's own document version, which moves independently of the sha256.
  * `secondarySources` lists the documents a rule row may cite besides the SOP, such as the ZOA
- * training deck; it is absent when every row comes from the SOP itself.
+ * training deck; it is absent when every row comes from the SOP itself. `specialHandling` pins
+ * ZOA CPS-004 (ATCT Policies and Procedures), whose 3.1 special-aircraft table the fleet's
+ * `handling` comes from, the same way `sop` pins the airport SOP.
  */
 export const ProvenanceSchema = z.strictObject({
   airac: z.strictObject({
@@ -84,12 +94,8 @@ export const ProvenanceSchema = z.strictObject({
     cifpSha256: z.string(),
   }),
   chartsApi: z.url(),
-  sop: z.strictObject({
-    url: z.url(),
-    version: z.string(),
-    sha256: z.string(),
-    transcribedAt: z.string(),
-  }),
+  sop: PinnedDocumentSchema,
+  specialHandling: PinnedDocumentSchema.optional(),
   secondarySources: z
     .array(
       z.strictObject({
@@ -600,6 +606,21 @@ export const FleetEntrySchema = z.strictObject({
   cwt: z
     .string()
     .regex(/^[A-I]$/)
+    .optional(),
+  /**
+   * ZOA CPS-004 3.1 special handling, present only for a type that table lists: a light jet that
+   * climbs and cruises like a turboprop, or a turboprop capable of jet-like performance.
+   * `proposeClass` is the class the trainer proposes; `acceptClass` the class it also accepts.
+   * `ruleId` is the `phraseologyRules` row to cite, and `localSop` is true where the airport's SOP
+   * names the type in its `aircraftGroups`, which makes the SOP's own handling win.
+   */
+  handling: z
+    .strictObject({
+      proposeClass: AircraftClassSchema,
+      acceptClass: AircraftClassSchema,
+      ruleId: z.string(),
+      localSop: z.boolean(),
+    })
     .optional(),
 });
 

@@ -137,7 +137,7 @@ function noSidReason(
   direction: Direction | undefined,
   incompatible: readonly string[],
 ): string {
-  const flight = `${ctx.plan} ${direction ?? 'no-gate'} runway ${ctx.runwayFamily} class ${ctx.aircraftClass}`;
+  const flight = `${ctx.plan} ${direction ?? 'no-gate'} runway ${ctx.runwayFamily} class ${ctx.sopClass}`;
   return incompatible.length === 0
     ? `no assignment rule applies to ${flight}`
     : `no compatible SID for ${flight}; rules applied but incompatible: ${incompatible.join(', ')}`;

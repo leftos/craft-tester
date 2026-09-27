@@ -44,6 +44,7 @@ from craft_generator.merge import BuildInputs, ChartInput, Document, Provenance,
 from craft_generator.nct_boundary import load_nct_boundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
+    AIRCRAFT_TYPES_FILE,
     DESTINATIONS_FILE,
     EQUIPMENT_SUFFIXES_FILE,
     NCT_BOUNDARY_FILE,
@@ -52,6 +53,7 @@ from craft_generator.sop.load import (
     SOP_FILE,
     WORKSHEETS_FILE,
     airport_dir,
+    load_aircraft_types,
     load_airport,
     load_equipment_suffixes,
     load_phraseology_rules,
@@ -61,8 +63,8 @@ from craft_generator.sop.load import (
     load_worksheets,
     shared_dir,
 )
-from craft_generator.sop.model import Overrides, SopSource
-from craft_generator.sop.verify import sop_cache_path, verify_sop_source
+from craft_generator.sop.model import AirportInputs, Overrides, SopSource
+from craft_generator.sop.verify import SopVerification, sop_cache_path, verify_sop_source
 from craft_generator.worksheets import (
     Fixture,
     PublishedSid,
@@ -83,6 +85,7 @@ EXIT_NOT_IMPLEMENTED = 2
 KEPT_SETTLED = "kept (settled)"
 IMPORT_STATUSES = ("unchanged", "written", KEPT_SETTLED, "differs")
 SHARED_DESTINATIONS = f"generator/shared/{DESTINATIONS_FILE}"
+SHARED_PIN_FILE = f"generator/shared/{AIRCRAFT_TYPES_FILE}"
 
 FETCH_AIRCRAFT_CHARACTERISTICS = "fetch-aircraft-characteristics"
 
@@ -242,8 +245,33 @@ def fetch_aircraft_characteristics(*, from_file: Path | None = None, force: bool
     return EXIT_OK
 
 
+def _print_verification(heading: str, source: SopSource, result: SopVerification, pinned_in: str, *, allow_drift: bool) -> bool:
+    """Print one verdict per check of a pinned document and return whether any check failed."""
+    print(f"{heading}: {source.title} version {source.version}, transcribed {source.transcribed_at.isoformat()}")
+    print(f"  {source.url}")
+    failed = False
+    actual, expected = result.actual_sha256, result.expected_sha256
+    if result.hash_matches:
+        print(f"  ok    sha256 {actual}")
+    elif allow_drift and not result.missing_sentinels:
+        print(f"  warn  sha256 is {actual}, {pinned_in} pins {expected}; allowed by --allow-sop-drift, every sentinel still matches")
+    else:
+        print(f"  FAIL  sha256 is {actual}, {pinned_in} pins {expected}; re-read the document, then update sha256 and transcribed_at")
+        failed = True
+    for sentinel in source.sentinels:
+        if sentinel in result.missing_sentinels:
+            print(f'  FAIL  sentinel is gone: "{sentinel}"; re-transcribe the section it came from, then update the sentinel')
+            failed = True
+        else:
+            print(f'  ok    sentinel "{sentinel}"')
+    return failed
+
+
 def verify_sop(airport: str, *, allow_drift: bool = False, force: bool = False) -> int:
-    """Check the SOP PDF an airport's transcription is pinned to, printing one verdict per check.
+    """Check the SOP PDF an airport's transcription is pinned to, then the shared ZOA CPS-004 pin.
+
+    Prints one verdict per check of each document. The shared pin is the ``special_handling``
+    source of ``generator/shared/aircraft_types.yaml``, which every airport inherits.
 
     Args:
         airport: Four-letter ICAO identifier, e.g. ``KSFO``.
@@ -252,27 +280,15 @@ def verify_sop(airport: str, *, allow_drift: bool = False, force: bool = False) 
         force: Re-download even when the cache already holds the PDF.
 
     Returns:
-        The process exit status: non-zero when the document changed or a sentinel went missing.
+        The process exit status: non-zero when either document changed or a sentinel went missing.
     """
     source = load_sop(airport_dir(airport) / SOP_FILE).source
     result = verify_sop_source(source, cache_dir(), force=force)
-    print(f"{airport}: {source.title} version {source.version}, transcribed {source.transcribed_at.isoformat()}")
-    print(f"  {source.url}")
-    failed = False
-    actual, expected = result.actual_sha256, result.expected_sha256
-    if result.hash_matches:
-        print(f"  ok    sha256 {actual}")
-    elif allow_drift and not result.missing_sentinels:
-        print(f"  warn  sha256 is {actual}, sop.yaml pins {expected}; allowed by --allow-sop-drift, every sentinel still matches")
-    else:
-        print(f"  FAIL  sha256 is {actual}, sop.yaml pins {expected}; re-read the SOP, then update sha256 and transcribed_at")
-        failed = True
-    for sentinel in source.sentinels:
-        if sentinel in result.missing_sentinels:
-            print(f'  FAIL  sentinel is gone: "{sentinel}"; re-transcribe the section it came from, then update the sentinel')
-            failed = True
-        else:
-            print(f'  ok    sentinel "{sentinel}"')
+    failed = _print_verification(airport, source, result, SOP_FILE, allow_drift=allow_drift)
+    special_handling = load_aircraft_types(shared_dir() / AIRCRAFT_TYPES_FILE).special_handling
+    if special_handling is not None:
+        shared = verify_sop_source(special_handling.source, cache_dir(), force=force)
+        failed = _print_verification("shared", special_handling.source, shared, SHARED_PIN_FILE, allow_drift=allow_drift) or failed
     return EXIT_ERROR if failed else EXIT_OK
 
 
@@ -326,13 +342,10 @@ def _cifp_member(cache: Path, effective: date, cycle_id: str, *, force: bool = F
     return member.read_bytes()
 
 
-def _missing_cache_files(cache: Path, airport_faa: str, cycle_id: str, source: SopSource) -> list[Path]:
+def _missing_cache_files(cache: Path, airport_faa: str, cycle_id: str, sources: Sequence[SopSource]) -> list[Path]:
     charts_json = charts_cache_path(cache, airport_faa)
-    missing = [
-        path
-        for path in (charts_json, cache / "cifp" / cycle_id / CIFP_MEMBER, specs_cache_path(cache), sop_cache_path(cache, source))
-        if not path.exists()
-    ]
+    pinned = [sop_cache_path(cache, source) for source in sources]
+    missing = [path for path in (charts_json, cache / "cifp" / cycle_id / CIFP_MEMBER, specs_cache_path(cache), *pinned) if not path.exists()]
     if charts_json.exists():
         for chart in parse_departure_charts(charts_json.read_bytes(), airport_faa):
             pdf = pdf_cache_path(cache, cycle_id_from_url(chart.pdf_url), chart)
@@ -341,8 +354,8 @@ def _missing_cache_files(cache: Path, airport_faa: str, cycle_id: str, source: S
     return sorted(missing)
 
 
-def _require_cached(cache: Path, airport_faa: str, cycle_id: str, source: SopSource) -> None:
-    missing = _missing_cache_files(cache, airport_faa, cycle_id, source)
+def _require_cached(cache: Path, airport_faa: str, cycle_id: str, sources: Sequence[SopSource]) -> None:
+    missing = _missing_cache_files(cache, airport_faa, cycle_id, sources)
     if missing:
         listed = "\n".join(f"  {path}" for path in missing)
         raise RuntimeError(
@@ -351,23 +364,38 @@ def _require_cached(cache: Path, airport_faa: str, cycle_id: str, source: SopSou
         )
 
 
-def _verify_sop_for_build(source: SopSource, cache: Path, *, force: bool = False, allow_drift: bool = False) -> None:
+def _pinned_sources(inputs: AirportInputs) -> list[tuple[SopSource, str]]:
+    """Return every pinned document a build checks, with the file that pins it: the SOP, then the shared CPS-004."""
+    pinned = [(inputs.sop.source, SOP_FILE)]
+    if inputs.special_handling is not None:
+        pinned.append((inputs.special_handling.source, SHARED_PIN_FILE))
+    return pinned
+
+
+def _verify_pin_for_build(source: SopSource, pinned_in: str, cache: Path, *, force: bool = False, allow_drift: bool = False) -> None:
     result = verify_sop_source(source, cache, force=force)
     if result.missing_sentinels:
         raise ValueError(
-            f"the SOP at {source.url} no longer carries {list(result.missing_sentinels)}; "
-            "re-transcribe the sections they came from, then update sop.yaml"
+            f"{source.title} at {source.url} no longer carries {list(result.missing_sentinels)}; "
+            f"re-transcribe the sections they came from, then update {pinned_in}"
         )
     if result.hash_matches:
         return
     if not allow_drift:
         raise ValueError(
-            f"the SOP at {source.url} has sha256 {result.actual_sha256}, sop.yaml pins {result.expected_sha256}; "
+            f"{source.title} at {source.url} has sha256 {result.actual_sha256}, {pinned_in} pins {result.expected_sha256}; "
             "re-read the document, then update sha256 and transcribed_at, or pass --allow-sop-drift"
         )
     print(
-        f"warning: the SOP has sha256 {result.actual_sha256}, sop.yaml pins {result.expected_sha256}; every sentinel still matches", file=sys.stderr
+        f"warning: {source.title} has sha256 {result.actual_sha256}, {pinned_in} pins {result.expected_sha256}; every sentinel still matches",
+        file=sys.stderr,
     )
+
+
+def _verify_pins_for_build(inputs: AirportInputs, cache: Path, *, force: bool = False, allow_drift: bool = False) -> None:
+    """Check the airport SOP and the shared ZOA CPS-004 pin; a missing sentinel or unallowed hash drift fails the build."""
+    for source, pinned_in in _pinned_sources(inputs):
+        _verify_pin_for_build(source, pinned_in, cache, force=force, allow_drift=allow_drift)
 
 
 def _print_build_summary(airport: str, cycle_id: str, effective: date, document: Document, result: WriteResult) -> None:
@@ -423,12 +451,12 @@ def build(
     airport_faa = faa_code(airport)
     inputs = load_airport(airport_dir(airport), load_shared_route_facts(shared_dir()))
     if offline:
-        _require_cached(cache, airport_faa, cycle_id, inputs.sop.source)
+        _require_cached(cache, airport_faa, cycle_id, [source for source, _ in _pinned_sources(inputs)])
     charts = _chart_inputs(airport_faa, cache, force=force)
     member = _cifp_member(cache, effective, cycle_id, force=force)
     lines = member.decode("ascii").splitlines()
     legs, runway_records = parse_records(lines, airport)
-    _verify_sop_for_build(inputs.sop.source, cache, force=force, allow_drift=allow_sop_drift)
+    _verify_pins_for_build(inputs, cache, force=force, allow_drift=allow_sop_drift)
     document = build_airport(
         BuildInputs(
             airport=inputs,

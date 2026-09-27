@@ -5,7 +5,7 @@ import type { TypeAmendment } from '@/rules/amend/type.ts';
 import { checkRnavClash, checkRnavElements, checkSuffix } from '@/rules/amend/type.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { citePhraseology } from '@/rules/cite.ts';
-import type { Classification } from '@/rules/classify.ts';
+import type { Classification, Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type {
@@ -43,12 +43,17 @@ function listed(outcome: ResolvedAmendment | undefined | Unresolved): CheckOutco
  *
  * @param scenario The plan to judge a box against.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the plan is read under.
  * @returns The plan with its classification and its clearance, or the gaps that blocked either.
  */
-function judge(scenario: Scenario, airport: AirportData): Judged | Unresolved[] {
-  const ctx = classify(scenario, airport);
+function judge(
+  scenario: Scenario,
+  airport: AirportData,
+  handling: Handling,
+): Judged | Unresolved[] {
+  const ctx = classify(scenario, airport, handling);
   if (isUnresolved(ctx)) return [ctx];
-  const result = resolveClearance(scenario, airport);
+  const result = resolveClearance(scenario, airport, handling);
   if (!result.ok) return result.unresolved;
   return { scenario, ctx, clearance: result.clearance };
 }
@@ -113,10 +118,16 @@ function applies(amendment: ResolvedAmendment): boolean {
  * @param scenario The plan as the type box's own suffix check leaves it.
  * @param clash The clash the type check named the RNAV suffix in.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the plan is read under.
  * @returns Whether that plan needs no amendment at all.
  */
-function rnavPlanStands(scenario: Scenario, clash: TypeAmendment, airport: AirportData): boolean {
-  const result = resolveAmendments(applyAmendment(scenario, clash), airport);
+function rnavPlanStands(
+  scenario: Scenario,
+  clash: TypeAmendment,
+  airport: AirportData,
+  handling: Handling,
+): boolean {
+  const result = resolveAmendments(applyAmendment(scenario, clash), airport, handling);
   return result.ok && result.amendments.length === 0;
 }
 
@@ -165,6 +176,7 @@ function isRnavGap(outcome: ResolvedAmendment | undefined | Unresolved): boolean
  * @param suffix The amendment the suffix check raised for the type box, absent where it raised none.
  * @param judged The filed plan as that check leaves it, with its classification and clearance.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the plan is read under.
  * @returns The result, or `undefined` when the fleet files no suffix carrying what the route needs,
  *   which leaves the route box the gap it is.
  */
@@ -173,10 +185,11 @@ function rnavElementResult(
   suffix: TypeAmendment | undefined,
   judged: Judged,
   airport: AirportData,
+  handling: Handling,
 ): AmendmentResult | undefined {
   const type = checkRnavElements(judged.scenario, judged.ctx, airport);
   if (type === undefined) return undefined;
-  const rnav = judge(applyAmendment(judged.scenario, type), airport);
+  const rnav = judge(applyAmendment(judged.scenario, type), airport, handling);
   if (Array.isArray(rnav)) return { ok: false, unresolved: rnav };
   const { raised, gaps } = collect([
     listed(checkAltitude(rnav.scenario, rnav.ctx, airport)),
@@ -216,25 +229,31 @@ function rnavElementResult(
  *
  * @param scenario The filed flight plan.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the plan is read under.
  * @returns The amendments with the corrected plan, or every box the data could not answer.
  */
-export function resolveAmendments(scenario: Scenario, airport: AirportData): AmendmentResult {
-  const filed = judge(scenario, airport);
+export function resolveAmendments(
+  scenario: Scenario,
+  airport: AirportData,
+  handling: Handling,
+): AmendmentResult {
+  const filed = judge(scenario, airport, handling);
   if (Array.isArray(filed)) return { ok: false, unresolved: filed };
   const suffix = checkSuffix(scenario, airport);
   if (suffix !== undefined && isUnresolved(suffix)) return { ok: false, unresolved: [suffix] };
-  const judged = suffix === undefined ? filed : judge(applyAmendment(scenario, suffix), airport);
+  const judged =
+    suffix === undefined ? filed : judge(applyAmendment(scenario, suffix), airport, handling);
   if (Array.isArray(judged)) return { ok: false, unresolved: judged };
   const route = checkRoute(judged.scenario, judged.ctx, judged.clearance, airport);
   if (isRnavGap(route)) {
-    const answered = rnavElementResult(scenario, suffix, judged, airport);
+    const answered = rnavElementResult(scenario, suffix, judged, airport, handling);
     if (answered !== undefined) return answered;
   }
   const candidate = isRnavGap(route)
     ? undefined
     : checkRnavClash(judged.scenario, judged.ctx, airport);
   const clash =
-    candidate !== undefined && rnavPlanStands(judged.scenario, candidate, airport)
+    candidate !== undefined && rnavPlanStands(judged.scenario, candidate, airport, handling)
       ? candidate
       : undefined;
   const outcomes: CheckOutcome[] = [
@@ -376,14 +395,16 @@ function withAsFiledRule(clearance: ResolvedClearance, airport: AirportData): Re
  * @param original The plan as filed.
  * @param corrected The plan with every amendment applied.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the plan is read under.
  * @returns The clearance for the corrected plan, or the element that blocked it.
  */
 export function resolveAmendedClearance(
   original: Scenario,
   corrected: Scenario,
   airport: AirportData,
+  handling: Handling,
 ): EngineResult {
-  const result = resolveClearance(corrected, airport);
+  const result = resolveClearance(corrected, airport, handling);
   if (!result.ok) return result;
   let clearance = result.clearance;
   if (corrected.filedRoute !== original.filedRoute) {

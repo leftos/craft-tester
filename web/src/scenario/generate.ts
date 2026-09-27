@@ -12,7 +12,7 @@ import type {
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { withVectorNavaid } from '@/rules/amend/route.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
-import { inAnyGroup } from '@/rules/classify.ts';
+import { classify, inAnyGroup } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { directionOf } from '@/rules/route.ts';
 import { airlineOf } from '@/rules/runway.ts';
@@ -394,7 +394,7 @@ export function pickRunway(
  *   first amendment it raised — or `undefined` when it has nothing to amend.
  */
 function amendmentGap(clean: Scenario, airport: AirportData): Unresolved | undefined {
-  const result = resolveAmendments(clean, airport);
+  const result = resolveAmendments(clean, airport, 'proposed');
   if (!result.ok) {
     return (
       result.unresolved[0] ?? unresolved('R.route', `no amendment result for ${clean.callsign}`)
@@ -424,7 +424,7 @@ function amendmentGap(clean: Scenario, airport: AirportData): Unresolved | undef
  * @returns The plan with the built route adopted, or the composed plan where nothing was adopted.
  */
 function withBuiltRoute(clean: Scenario, airport: AirportData): Scenario {
-  const result = resolveAmendments(clean, airport);
+  const result = resolveAmendments(clean, airport, 'proposed');
   if (!result.ok || result.amendments.length === 0) return clean;
   if (!result.amendments.every((amendment) => amendment.box === 'route')) return clean;
   return result.corrected;
@@ -450,18 +450,19 @@ export function composedRoute(procedure: Procedure, tail: string, airport: Airpo
 }
 
 /**
- * The departure runways of the flight's configuration listed for its class, each once, in the
- * configuration's order.
+ * The departure runways of the flight's configuration listed for the class its TEC rows are proposed
+ * under, each once, in the configuration's order.
  *
- * A row with an `onRequestFor` list is left out, as `runwaysByFamily` leaves it out: the class takes
- * that runway only when it asks for it, so a TEC route never moves a flight there.
+ * The class is the proposed TEC class, so a type ZOA CPS-004 3.1 handles as a jet is moved among the
+ * runways a jet is listed for. A row with an `onRequestFor` list is left out, as `runwaysByFamily`
+ * leaves it out: the class takes that runway only when it asks for it, so a TEC route never moves a
+ * flight there.
  */
 function listedRunways(scenario: Scenario, airport: AirportData): string[] {
-  const config = airport.runwayConfigs.find((entry) => entry.id === scenario.runwayConfigId);
-  const aircraftClass = airport.aircraftClasses[scenario.aircraftType];
-  if (config === undefined || aircraftClass === undefined) return [];
-  const listed = config.departureRunways
-    .filter((row) => row.classes.includes(aircraftClass) && row.onRequestFor.length === 0)
+  const ctx = classify(scenario, airport, 'proposed');
+  if (isUnresolved(ctx)) return [];
+  const listed = ctx.config.departureRunways
+    .filter((row) => row.classes.includes(ctx.tecClass) && row.onRequestFor.length === 0)
     .map((row) => row.runway);
   return [...new Set(listed)];
 }
@@ -470,8 +471,10 @@ function listedRunways(scenario: Scenario, airport: AirportData): string[] {
  * The runway a drawn flight departs once its TEC route has been read (user ruling 2026-09-18, "TEC
  * moves them too").
  *
- * A flight a TEC row is usable for off the runway drawn keeps it. Otherwise it moves to the first
- * other runway of the configuration listed for its class that a row is usable from: the drawn
+ * The rows are read under the proposed ZOA CPS-004 3.1 handling, the one the clearance engine
+ * proposes, so a DH8D is moved to a runway the jet row is usable from. A flight a TEC row is usable
+ * for off the runway drawn keeps it. Otherwise it moves to the first other runway of the
+ * configuration listed for its proposed TEC class that a row is usable from: the drawn
  * runway's own family first, then the rest in the configuration's order. A flight no runway gives a
  * usable row keeps the one drawn, and the SOP's own assignment clears it there. The move outranks the
  * airline, group and class defaults, and it draws nothing, so a seed still yields one scenario.
@@ -482,7 +485,7 @@ function listedRunways(scenario: Scenario, airport: AirportData): string[] {
  */
 export function tecRunway(scenario: Scenario, airport: AirportData): string {
   const drawn = scenario.departureRunway;
-  if (usableTecRouteOn(drawn, scenario, airport) !== undefined) return drawn;
+  if (usableTecRouteOn(drawn, scenario, airport, 'proposed') !== undefined) return drawn;
   const family = drawn.slice(0, 2);
   const others = listedRunways(scenario, airport).filter((runway) => runway !== drawn);
   const ordered = [
@@ -490,7 +493,9 @@ export function tecRunway(scenario: Scenario, airport: AirportData): string {
     ...others.filter((runway) => runway.slice(0, 2) !== family),
   ];
   return (
-    ordered.find((runway) => usableTecRouteOn(runway, scenario, airport) !== undefined) ?? drawn
+    ordered.find(
+      (runway) => usableTecRouteOn(runway, scenario, airport, 'proposed') !== undefined,
+    ) ?? drawn
   );
 }
 
@@ -535,7 +540,7 @@ type Cleared = { filed: Scenario; procedure: Procedure };
 
 /** Resolves the clearance of a placed plan, or the element that blocked it. */
 function cleared(filed: Scenario, airport: AirportData): Cleared | Unresolved {
-  const result = resolveClearance(filed, airport);
+  const result = resolveClearance(filed, airport, 'proposed');
   if (!result.ok) {
     return result.unresolved[0] ?? unresolved('R.sid', `no clearance for ${filed.callsign}`);
   }

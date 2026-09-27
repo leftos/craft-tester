@@ -41,7 +41,7 @@ function withLoa(row: LoaRule): AirportData {
 }
 
 function check(flight: Scenario, airport: AirportData = ksfo) {
-  const ctx = classify(flight, airport);
+  const ctx = classify(flight, airport, 'proposed');
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
   return checkAltitude(flight, ctx, airport);
 }

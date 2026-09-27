@@ -2,9 +2,11 @@ import airportsIndexJson from '@data/airports.json';
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import { parseAirport, parseAirportsIndex } from '@/data/load.ts';
 import { resolveAmendedClearance } from '@/rules/amend/engine.ts';
-import type { BoxAnswers } from '@/rules/amend/grade.ts';
-import { studentPlan } from '@/rules/amend/grade.ts';
+import type { BoxAnswers, BoxElementGrade } from '@/rules/amend/grade.ts';
+import { boxGradeAsGrade, gradeBoxes, studentPlan } from '@/rules/amend/grade.ts';
+import type { Handling } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { citeSpecialHandling, gradeBest, hasSpecialHandling } from '@/rules/handling.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { ResolvedClearance, Unresolved } from '@/rules/types.ts';
@@ -82,14 +84,49 @@ function unresolvedView(unresolved: readonly Unresolved[]): ScenarioView {
   };
 }
 
-/** The plan an amendment session clears once the strip is submitted, and the clearance read for it. */
-export type ClearedPlan = { plan: Scenario; clearance: ResolvedClearance };
+/**
+ * The plan an amendment session clears once the strip is submitted, the clearance read for it, the
+ * ZOA CPS-004 3.1 handling both were read under, and the box verdicts that decided that handling.
+ */
+export type ClearedPlan = {
+  plan: Scenario;
+  clearance: ResolvedClearance;
+  handling: Handling;
+  boxes: BoxElementGrade[];
+};
 
 /** A session that draws a plan to amend and then clear. */
 type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
 
 /** The plans already cleared for each amendment session, keyed by the box answers they came from. */
 const clearedPlans = new WeakMap<AmendmentView, Map<string, ClearedPlan>>();
+
+/** Joins the elements an engine result could not answer into one line for the console. */
+function reasonsOf(unresolved: readonly Unresolved[]): string {
+  return unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
+}
+
+/**
+ * The engine's own corrected plan and its clearance under a handling, which the session clears when
+ * the student's plan does not resolve. The accepted corrected plan that does not resolve either falls
+ * back to the proposed one, whose clearance the view already carries.
+ */
+function correctedPlan(
+  view: AmendmentView,
+  corrected: Scenario,
+  handling: Handling,
+  airport: AirportData,
+): Pick<ClearedPlan, 'plan' | 'clearance' | 'handling'> {
+  const proposed = { plan: view.drawn.result.corrected, clearance: view.clearance };
+  if (handling === 'proposed') return { ...proposed, handling };
+  const result = resolveAmendedClearance(view.drawn.filed, corrected, airport, handling);
+  if (result.ok) return { plan: corrected, clearance: result.clearance, handling };
+  console.warn(
+    `the corrected plan did not resolve under the accepted handling (${reasonsOf(result.unresolved)}); ` +
+      'clearing the proposed corrected plan instead',
+  );
+  return { ...proposed, handling: 'proposed' };
+}
 
 /** Resolves the plan the student clears, with no cache in front of it. */
 function resolveClearedPlan(
@@ -98,24 +135,33 @@ function resolveClearedPlan(
   airport: AirportData,
 ): ClearedPlan {
   const { drawn } = view;
-  const plan = studentPlan(answers, drawn.result, drawn.filed, airport);
-  const result = resolveAmendedClearance(drawn.filed, plan, airport);
-  if (result.ok) return { plan, clearance: result.clearance };
-  const reasons = result.unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
-  console.warn(
-    `the student's corrected plan did not resolve (${reasons}); clearing the engine's corrected ` +
-      'plan instead',
+  const decided = gradeBest(
+    drawn.result,
+    drawn.acceptedResult,
+    (result) => gradeBoxes(answers, result, drawn.filed, airport).map(boxGradeAsGrade),
+    citeSpecialHandling(drawn.filed, airport),
   );
-  return { plan: drawn.result.corrected, clearance: view.clearance };
+  const { handling, grades: boxes } = decided;
+  const plan = studentPlan(answers, decided.resolved, drawn.filed, airport);
+  const result = resolveAmendedClearance(drawn.filed, plan, airport, handling);
+  if (result.ok) return { plan, clearance: result.clearance, handling, boxes };
+  console.warn(
+    `the student's corrected plan did not resolve (${reasonsOf(result.unresolved)}); clearing the ` +
+      "engine's corrected plan instead",
+  );
+  return { ...correctedPlan(view, decided.resolved.corrected, handling, airport), boxes };
 }
 
 /**
  * The plan the student clears after the strip, and the clearance the engine reads for it.
  *
- * The plan is the filed plan with every box the student got right as they wrote it and every other
- * box as the engine corrected it, so the strip and the answer key agree and a wrong box never
- * compounds into the clearance. Where that plan does not resolve, the session clears the engine's
- * corrected plan instead, whose clearance the view already carries, and says so on the console.
+ * The boxes are graded against the amendments under both sides of ZOA CPS-004 3.1 special handling
+ * (`gradeBest`), and the handling they are right under is fixed for the rest of the session: the plan
+ * is corrected, and its clearance read, under that handling alone, so the clearance is never graded
+ * against the other one. The plan is the filed plan with every box the student got right as they
+ * wrote it and every other box as the engine corrected it, so the strip and the answer key agree and
+ * a wrong box never compounds into the clearance. Where that plan does not resolve, the session
+ * clears the engine's corrected plan instead and says so on the console.
  *
  * The result is cached per view and answers, so clearing the same answers again returns the same
  * object without resolving or warning again. The airport is not part of the key, because a view is
@@ -156,9 +202,27 @@ function buildClearanceView(
   } catch (error) {
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }
-  const result = resolveClearance(generated, airport);
+  const result = resolveClearance(generated, airport, 'proposed');
   if (!result.ok) return unresolvedView(result.unresolved);
   return { kind: 'clearance', generated, clearance: result.clearance };
+}
+
+/**
+ * The clearance a drawn plan earns under the accepted ZOA CPS-004 3.1 handling, which a clearance
+ * answer is also graded against.
+ *
+ * @param scenario The drawn plan.
+ * @param airport The airport data.
+ * @returns The clearance, or null for a type CPS-004 3.1 does not list, and for a plan the accepted
+ *   handling cannot resolve, which is then graded against the proposed clearance alone.
+ */
+export function acceptedClearance(
+  scenario: Scenario,
+  airport: AirportData,
+): ResolvedClearance | null {
+  if (!hasSpecialHandling(scenario, airport)) return null;
+  const result = resolveClearance(scenario, airport, 'accepted');
+  return result.ok ? result.clearance : null;
 }
 
 /** Draws a plan that needs amending, and the clearance read for it once it is corrected. */
@@ -173,7 +237,7 @@ function buildAmendmentView(
   } catch (error) {
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }
-  const result = resolveAmendedClearance(drawn.filed, drawn.result.corrected, airport);
+  const result = resolveAmendedClearance(drawn.filed, drawn.result.corrected, airport, 'proposed');
   if (!result.ok) return unresolvedView(result.unresolved);
   return { kind: 'amendment', drawn, clearance: result.clearance };
 }

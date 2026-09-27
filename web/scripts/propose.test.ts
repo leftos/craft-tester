@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ProposalView } from './propose.ts';
+import type { AcceptedReading, ProposalView } from './propose.ts';
 import { formatPendingLine, formatProposal } from './propose.ts';
 
 /** A proposal with one of each part, so the assertions can point at exact lines. */
@@ -63,6 +63,71 @@ describe('formatProposal', () => {
     expect(text).toContain('UNRESOLVED');
     expect(text).toContain('  R.sid: no assignment rule applies');
     expect(text).not.toContain('SPOKEN');
+  });
+});
+
+/** The reading the trainer also accepts for a ZOA CPS-004 3.1 type, as the proposal prints it. */
+const acceptedClearance: AcceptedReading = {
+  clearance: {
+    kind: 'clearance',
+    elements: [
+      {
+        label: 'R procedure',
+        value: 'Nimitz Six departure (NIMI6)',
+        citations: [{ id: 'OAK-SFOW-PT-NIMI', source: 'OAK SOP 3-4', text: 'All other props' }],
+      },
+      { label: 'A altitude', value: 'maintain 3000', citations: [] },
+    ],
+    spoken: {
+      abbreviated: 'Accepted abbreviated form.',
+      fullRoute: 'Accepted full route form.',
+      parts: [],
+      fullRouteWords: '',
+    },
+    expected: { sidFamily: 'OAK', altitude: 3000 },
+  },
+};
+
+describe('the accepted reading', () => {
+  it('prints the elements with the abbreviated spoken form under its heading, before the block', () => {
+    const text = formatProposal({ ...clearanceView, accepted: acceptedClearance });
+    const lines = text.split('\n');
+    expect(lines).toContain('ALSO ACCEPTED (ZOA-CPS004-SPECIAL-AIRCRAFT)');
+    expect(lines).toContain('  R procedure  Nimitz Six departure (NIMI6)');
+    expect(lines).toContain('       OAK-SFOW-PT-NIMI — All other props');
+    expect(lines).toContain('  A altitude   maintain 3000');
+    expect(lines).toContain('  abbreviated: Accepted abbreviated form.');
+    expect(lines).not.toContain('  full route:  Accepted full route form.');
+    const heading = text.indexOf('ALSO ACCEPTED');
+    expect(heading).toBeGreaterThan(text.indexOf('SPOKEN'));
+    expect(heading).toBeLessThan(text.indexOf('FIXTURE'));
+  });
+
+  it('prints the accepted boxes before the accepted elements in amendment mode', () => {
+    const view: ProposalView = {
+      ...clearanceView,
+      outcome: {
+        kind: 'amendments',
+        amendments: [],
+        corrected: { kind: 'unresolved', reasons: ['R.sid: no assignment rule applies'] },
+        expected: {},
+      },
+      accepted: {
+        amendments: [
+          { box: 'altitude', proposed: '5000', reason: 'the SOP interim altitude', citations: [] },
+        ],
+        clearance: acceptedClearance.clearance,
+      },
+    };
+    const text = formatProposal(view);
+    expect(text).toContain('  altitude     5000');
+    expect(text).toContain('       the SOP interim altitude');
+    expect(text).toContain('  R procedure  Nimitz Six departure (NIMI6)');
+    expect(text.indexOf('  altitude     5000')).toBeGreaterThan(text.indexOf('ALSO ACCEPTED'));
+  });
+
+  it('prints no section for a type without special handling', () => {
+    expect(formatProposal(clearanceView)).not.toContain('ALSO ACCEPTED');
   });
 });
 

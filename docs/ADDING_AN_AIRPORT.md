@@ -363,7 +363,7 @@ and every airport inherits it.
 
 - **Aircraft groups.** An SOP row often addresses a named set of classes and types ("jets and the DH8D")
   rather than a class. `aircraftGroups` names the set once and the rows address it by name, so a
-  type-specific rule needs no new rule kind.
+  type-specific rule needs no new rule kind. A type a group names also counts as defined by the local SOP for ZOA CPS-004 §3.1: its SOP rows keep the type's own class, and only TEC rows apply the CPS-004 performance class (see "Special aircraft" in ARCHITECTURE.md). Group a CPS-004 type (SF50, C510, E50P, E55P, DH8D) only when the new SOP really addresses it.
 - **Numbered heading departures.** `nonDpHeading` takes a literal heading as well as `runway heading`; the
   turn direction is derived from the shorter turn off the departure runway's magnetic bearing, which is why
   the CIFP runway bearings are emitted.

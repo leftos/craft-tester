@@ -3,6 +3,7 @@ import { RVSM_CEILING_FEET, RVSM_FLOOR_FEET } from '@/rules/amend/altitude.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
+import { hasSpecialHandling } from '@/rules/handling.ts';
 import { isSidToken, rnavElements } from '@/rules/route.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
@@ -48,9 +49,25 @@ export const FAULT_BOXES: Record<FaultKind, readonly Box[]> = {
 /** A filed plan with the faults injected into it, and what the amendment engine makes of it. */
 export type AmendmentScenario = {
   filed: Scenario;
+  /** The amendments under the proposed ZOA CPS-004 3.1 handling, the ones the drill is drawn by. */
   result: Extract<AmendmentResult, { ok: true }>;
+  /**
+   * The amendments under the accepted handling, which the boxes are also graded against: null for a
+   * type CPS-004 3.1 does not list, and for a plan the accepted handling cannot answer.
+   */
+  acceptedResult: Extract<AmendmentResult, { ok: true }> | null;
   faults: FaultKind[];
 };
+
+/** The amendments a plan earns under the accepted handling, for a type the special handling lists. */
+function acceptedAmendments(
+  filed: Scenario,
+  airport: AirportData,
+): Extract<AmendmentResult, { ok: true }> | null {
+  if (!hasSpecialHandling(filed, airport)) return null;
+  const result = resolveAmendments(filed, airport, 'accepted');
+  return result.ok ? result : null;
+}
 
 /** A draw the injection threw away, and why, which is the caller's cue to draw again. */
 export type RejectedDraw = { rejected: string };
@@ -422,7 +439,7 @@ export function drawAmendmentScenario(
   const clean = generateScenario(rng, airport, filter);
   const taken = pickFaults(rng, clean, airport, rng.weighted(FAULT_COUNTS));
   const filed = taken.reduce((plan, fault) => applyPatch(plan, fault.patch), clean);
-  const result = resolveAmendments(filed, airport);
+  const result = resolveAmendments(filed, airport, 'proposed');
   if (!result.ok) {
     const gaps = result.unresolved.map((gap) => gap.element).join(', ');
     return { rejected: `the engine could not answer ${gaps}` };
@@ -434,7 +451,12 @@ export function drawAmendmentScenario(
       rejected: `the plan amends ${boxLabel(raised)} where the faults meant ${boxLabel(intended)}`,
     };
   }
-  return { filed, result, faults: taken.map((fault) => fault.kind) };
+  return {
+    filed,
+    result,
+    acceptedResult: acceptedAmendments(filed, airport),
+    faults: taken.map((fault) => fault.kind),
+  };
 }
 
 /**

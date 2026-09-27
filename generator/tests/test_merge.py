@@ -4,9 +4,20 @@ from typing import Any
 
 import pytest
 
+from craft_generator.aircraft_characteristics import AircraftCharacteristic
 from craft_generator.emit import data_path, dump, schema_path, validate
-from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport, gate_coverage, tec_route_grammar_error
-from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule
+from craft_generator.merge import (
+    BuildInputs,
+    Document,
+    _fleet_entry,
+    _phraseology_rules,
+    _sop_named_types,
+    build_airport,
+    gate_coverage,
+    tec_route_grammar_error,
+)
+from craft_generator.sop.load import airport_dir, load_airport
+from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule, SharedRouteFacts
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -783,6 +794,49 @@ def test_a_literal_arrival_revision_is_kept_for_a_destination_the_faa_file_does_
     assert _tail(ksfo_document, "DEDHD", "CYVR") == "DEDHD LMT BTG J1 SEA PAE GRIZZ1"
 
 
+def _fleet(document: Document) -> dict[str, Document]:
+    return {entry["type"]: entry for entry in document["routeLibrary"]["fleet"]}
+
+
+def test_the_dh8d_at_koak_proposes_the_jet_handling_its_sop_defines(
+    shared_route_facts: SharedRouteFacts, aircraft_characteristics: dict[str, AircraftCharacteristic]
+) -> None:
+    koak = load_airport(airport_dir("KOAK"), shared_route_facts)
+    dh8d = next(entry for entry in koak.routes.fleet if entry.type == "DH8D")
+    fleet = _fleet_entry(dh8d, aircraft_characteristics, koak.special_handling, _sop_named_types(koak.sop))
+    assert fleet["class"] == "T"
+    assert fleet["handling"] == {"proposeClass": "J", "acceptClass": "T", "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT", "localSop": True}
+
+
+def test_a_c510_at_ksfo_proposes_the_jet_handling_no_local_sop_defines(ksfo_document: Document) -> None:
+    c510 = _fleet(ksfo_document)["C510"]
+    assert c510["class"] == "J"
+    assert c510["handling"] == {"proposeClass": "J", "acceptClass": "T", "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT", "localSop": False}
+
+
+def test_a_type_the_cps004_table_does_not_list_has_no_handling(ksfo_document: Document) -> None:
+    fleet = _fleet(ksfo_document)
+    assert "handling" not in fleet["A320"]
+    assert "handling" not in fleet["C25B"]
+    assert {designator for designator, entry in fleet.items() if "handling" in entry} == {"C510", "E55P", "SF50", "E50P"}
+
+
+def test_the_cps004_rule_row_is_citable_from_the_phraseology_rules(ksfo_document: Document) -> None:
+    rules = ksfo_document["phraseologyRules"]
+    assert rules[-1]["id"] == "ZOA-CPS004-SPECIAL-AIRCRAFT"
+    assert rules[-1]["source"] == "ZOA CPS-004 v1.2 3.1"
+    assert [rule["id"] for rule in rules].count("ZOA-CPS004-SPECIAL-AIRCRAFT") == 1
+
+
+def test_the_cps004_pin_is_recorded_in_the_provenance(ksfo_document: Document) -> None:
+    assert ksfo_document["provenance"]["specialHandling"] == {
+        "url": "https://oakartcc.org/controllers/file/a83f4023-5b1e-11e9-8010-2a32edb55910",
+        "version": "1.2",
+        "sha256": "8be0f0acc742a7ca199c73480cd1036600955bba759a321390a40d79a20698a7",
+        "transcribedAt": "2026-09-26",
+    }
+
+
 def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
     shared = (
         PhraseologyRule(id="A", source="shared A source", text="shared A text"),
@@ -792,7 +846,7 @@ def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
         PhraseologyRule(id="B", source="airport B source", text="airport B text"),
         PhraseologyRule(id="C", source="airport C source", text="airport C text"),
     )
-    rules = _phraseology_rules(shared, airport)
+    rules = _phraseology_rules(shared, airport, None)
     assert [rule["id"] for rule in rules] == ["A", "B", "C"]
     assert rules[1] == {"id": "B", "source": "airport B source", "text": "airport B text"}
     assert rules[0]["text"] == "shared A text"
@@ -861,6 +915,47 @@ def test_a_hand_approach_category_wins_over_the_faa_table(ksfo_build_inputs: Bui
     categories = {entry["type"]: entry["approachCategory"] for entry in document["routeLibrary"]["fleet"]}
     assert categories["C172"] == "B"
     assert categories["B738"] == "D"
+
+
+def _with_fleet(inputs: BuildInputs, fleet: tuple[Any, ...]) -> BuildInputs:
+    return replace(inputs, airport=replace(inputs.airport, routes=replace(inputs.airport.routes, fleet=fleet)))
+
+
+def test_a_fleet_wtc_the_faa_table_contradicts_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    fleet = tuple(replace(entry, wtc="M") if entry.type == "C172" else entry for entry in ksfo_build_inputs.airport.routes.fleet)
+    message = (
+        r"routes\.yaml fleet\[C172\]: wtc 'M' disagrees with the FAA table's 'Light'; correct the row in "
+        r"generator/shared/aircraft_types\.yaml, whose wtc the FAA states in generator/shared/faa_aircraft_characteristics\.yaml"
+    )
+    with pytest.raises(ValueError, match=message):
+        build_airport(_with_fleet(ksfo_build_inputs, fleet))
+
+
+def test_a_light_medium_faa_category_accepts_either_letter(ksfo_build_inputs: BuildInputs) -> None:
+    fleet = tuple(replace(entry, wtc="M") if entry.type == "BE20" else entry for entry in ksfo_build_inputs.airport.routes.fleet)
+    document = build_airport(_with_fleet(ksfo_build_inputs, fleet))
+    letters = {entry["type"]: entry["wtc"] for entry in document["routeLibrary"]["fleet"]}
+    assert letters["BE20"] == "M"
+    assert letters["B350"] == "L"
+
+
+def test_an_faa_wtc_outside_the_known_categories_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    table = dict(ksfo_build_inputs.aircraft_characteristics)
+    table["C172"] = replace(table["C172"], wtc="Ultralight")
+    message = r"faa_aircraft_characteristics\.yaml C172: the FAA wtc 'Ultralight' is none of Light, Medium, Heavy, Super, Light/Medium"
+    with pytest.raises(ValueError, match=message):
+        build_airport(replace(ksfo_build_inputs, aircraft_characteristics=table))
+
+
+def test_a_fleet_type_the_faa_table_omits_is_not_checked(ksfo_build_inputs: BuildInputs) -> None:
+    table = {code: row for code, row in ksfo_build_inputs.aircraft_characteristics.items() if code != "C172"}
+    fleet = tuple(
+        replace(entry, wtc="H", approach_category="A") if entry.type == "C172" else entry for entry in ksfo_build_inputs.airport.routes.fleet
+    )
+    document = build_airport(replace(_with_fleet(ksfo_build_inputs, fleet), aircraft_characteristics=table))
+    letters = {entry["type"]: entry["wtc"] for entry in document["routeLibrary"]["fleet"]}
+    assert letters["C172"] == "H"
+    assert letters["B738"] == "M"
 
 
 def test_a_notice_that_issues_a_heading_emits_it(ksfo_build_inputs: BuildInputs) -> None:

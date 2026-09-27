@@ -410,11 +410,13 @@ class FleetEntry:
     """One aircraft type of the curated fleet; ``aircraft_class`` is the YAML ``class`` key.
 
     ``approach_category`` is the type's category from its published Vref, and is ``None`` at an
-    airport whose rules never name one.
+    airport whose rules never name one. ``performance_class`` is the shared type's ZOA CPS-004 3.1
+    performance class, ``None`` for a type that document does not list.
     """
 
     type: str
     aircraft_class: AircraftClass
+    performance_class: AircraftClass | None
     wtc: WakeCategory
     suffixes: tuple[str, ...]
     airlines: tuple[str, ...]
@@ -426,15 +428,41 @@ class AircraftType:
     """One aircraft type of ``generator/shared/aircraft_types.yaml``; ``aircraft_class`` is the YAML ``class`` key.
 
     ``approach_category`` overrides the FAA characteristics table for this type and ``note`` says why;
-    both are ``None`` for a type whose category the FAA table states.
+    both are ``None`` for a type whose category the FAA table states. ``performance_class`` is the
+    class ZOA CPS-004 3.1 says the type performs like, e.g. ``T`` for a light jet that climbs like a
+    turboprop; it is ``None`` for a type the document does not list and never equals ``aircraft_class``.
     """
 
     designator: str
     aircraft_class: AircraftClass
+    performance_class: AircraftClass | None
     wtc: WakeCategory
     suffixes: tuple[str, ...]
     approach_category: ApproachCategory | None
     note: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class SpecialHandling:
+    """The ZOA CPS-004 3.1 special-aircraft table: the pinned document and the rule row cited for it.
+
+    ``source`` is checked by ``craft-gen verify-sop`` and the build exactly as an airport SOP is;
+    ``rule`` is the row the engine cites for every type that carries a ``performance_class``.
+    """
+
+    source: SopSource
+    rule: PhraseologyRule
+
+
+@dataclass(frozen=True, slots=True)
+class AircraftTypeTable:
+    """``generator/shared/aircraft_types.yaml``: the types keyed by designator and the special-handling block.
+
+    ``special_handling`` is ``None`` only for a file that marks no type with a ``performance_class``.
+    """
+
+    types: dict[str, AircraftType]
+    special_handling: SpecialHandling | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -646,11 +674,14 @@ class SharedRouteFacts:
     the route structure fixes, ``common_arrivals`` is ``shared/common_arrivals.yaml``, the
     arrivals ZOA puts a flight to the Los Angeles basin on, and ``navaid_names`` is
     ``shared/navaid_names.yaml``, the spoken names of the navaids the CIFP does not carry.
+    ``special_handling`` is the ZOA CPS-004 3.1 block of ``shared/aircraft_types.yaml``, ``None``
+    when that file marks no type for special handling.
     """
 
     destinations: dict[str, Destination]
     airlines: dict[str, Airline]
     aircraft_types: dict[str, AircraftType]
+    special_handling: SpecialHandling | None
     loa: LoaData
     airways: tuple[Airway, ...]
     common_arrivals: tuple[CommonArrival, ...]
@@ -736,6 +767,8 @@ class AirportInputs:
     inherits the same way; both are carried here so the document emits them for the airport being
     built. ``navaid_names`` is the shared ``navaid_names.yaml`` table, inherited the same way, from
     which the document takes the names of the navaids this airport's data or fixtures file.
+    ``special_handling`` is the shared ZOA CPS-004 3.1 block, inherited the same way, which the
+    document emits as each marked fleet type's handling and a citable rule row.
     """
 
     icao: str
@@ -747,3 +780,4 @@ class AirportInputs:
     airways: tuple[Airway, ...]
     common_arrivals: tuple[CommonArrival, ...]
     navaid_names: tuple[NavaidName, ...]
+    special_handling: SpecialHandling | None

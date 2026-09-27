@@ -18,11 +18,13 @@
     "C750": "J",
     "CL30": "J",
     "E135": "J",
+    "E50P": "J",
     "E55P": "J",
     "E75L": "J",
     "GL5T": "J",
     "M20T": "P",
     "MD11": "J",
+    "SF50": "J",
     "SR22": "P",
     "TBM9": "T"
   },
@@ -2149,6 +2151,11 @@
       "id": "RWY-FIRST",
       "source": "SFO ATCT SOP 1-7",
       "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
+    },
+    {
+      "id": "ZOA-CPS004-SPECIAL-AIRCRAFT",
+      "source": "ZOA CPS-004 v1.2 3.1",
+      "text": "The following aircraft require special handling and coordination unless procedures are defined in local Standard Operating Procedures. The “performance consideration” for each aircraft is not required, but must be considered, given current traffic levels. Aircraft / Performance Consideration / Reason: SF50, T - Turboprop, slow climb/cruise performance; C510, T - Turboprop, slow climb/cruise performance; E50P, T - Turboprop, slow climb/cruise performance; E55P, T - Turboprop, slow climb/cruise performance; DH8D, J - Jet, capable of jet-like performance. ZOA training (user ruling 2026-09-26): the trainer proposes the jet handling and also accepts the turboprop handling for these types; an airport SOP that names the type in its aircraft groups defines it locally."
     }
   ],
   "provenance": {
@@ -2177,6 +2184,12 @@
       "transcribedAt": "2026-09-15",
       "url": "https://oakartcc.org/controllers/file/9a2b1e84-5e65-11e9-8010-2a32edb55910",
       "version": "1.11"
+    },
+    "specialHandling": {
+      "sha256": "8be0f0acc742a7ca199c73480cd1036600955bba759a321390a40d79a20698a7",
+      "transcribedAt": "2026-09-26",
+      "url": "https://oakartcc.org/controllers/file/a83f4023-5b1e-11e9-8010-2a32edb55910",
+      "version": "1.2"
     }
   },
   "rnavWaypoints": [
@@ -5103,7 +5116,7 @@
           "/L"
         ],
         "type": "C55B",
-        "wtc": "M"
+        "wtc": "L"
       },
       {
         "airlines": [],
@@ -5121,6 +5134,12 @@
         "approachCategory": "B",
         "class": "J",
         "cwt": "I",
+        "handling": {
+          "acceptClass": "T",
+          "localSop": false,
+          "proposeClass": "J",
+          "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT"
+        },
         "suffixes": [
           "/L"
         ],
@@ -5134,10 +5153,50 @@
         "approachCategory": "B",
         "class": "J",
         "cwt": "H",
+        "handling": {
+          "acceptClass": "T",
+          "localSop": false,
+          "proposeClass": "J",
+          "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT"
+        },
         "suffixes": [
           "/L"
         ],
         "type": "E55P",
+        "wtc": "M"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "A",
+        "class": "J",
+        "cwt": "I",
+        "handling": {
+          "acceptClass": "T",
+          "localSop": false,
+          "proposeClass": "J",
+          "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT"
+        },
+        "suffixes": [
+          "/L"
+        ],
+        "type": "SF50",
+        "wtc": "L"
+      },
+      {
+        "airlines": [],
+        "approachCategory": "B",
+        "class": "J",
+        "cwt": "I",
+        "handling": {
+          "acceptClass": "T",
+          "localSop": false,
+          "proposeClass": "J",
+          "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT"
+        },
+        "suffixes": [
+          "/L"
+        ],
+        "type": "E50P",
         "wtc": "L"
       },
       {

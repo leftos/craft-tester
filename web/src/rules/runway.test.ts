@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AircraftClass, AirportData, Direction, Scenario } from '@/data/schema.ts';
+import type { Handling } from '@/rules/classify.ts';
+import { resolveClearance } from '@/rules/engine.ts';
 import { airlineOf, explainRunway } from '@/rules/runway.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
@@ -151,6 +153,26 @@ function withDash8Off30(): AirportData {
         text: 'the turboprops the SOP groups with the jets depart the runway the jets do',
       },
     ],
+  };
+}
+
+/**
+ * KOAK with 33 of SFOW listed for the props and turboprops alone, so every runway a jet is drawn onto
+ * has a jet TEC row to KSMF while one a turboprop is drawn onto has none.
+ */
+function withPropsOnlyOff33(): AirportData {
+  return {
+    ...koak,
+    runwayConfigs: koak.runwayConfigs.map((config) =>
+      config.id !== 'SFOW'
+        ? config
+        : {
+            ...config,
+            departureRunways: config.departureRunways.map((row) =>
+              row.runway !== '33' ? row : { ...row, classes: PROP_CLASSES },
+            ),
+          },
+    ),
   };
 }
 
@@ -307,5 +329,48 @@ describe('explainRunway for a flight its TEC route decides the runway of', () =>
 
   it('cites RWY-TEC for a runway only the TEC route explains, another listed runway having no row', () => {
     expect(mechanism(kmryProp('28L'), koak, 'south')).toBe('RWY-TEC');
+  });
+});
+
+describe('the runway explanation of a type ZOA CPS-004 3.1 hands special handling', () => {
+  /** The rows the clearance cites for the runway, read under one handling. */
+  function runwayCitations(flight: Scenario, handling: Handling): string[] {
+    const result = resolveClearance(flight, koak, handling);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    return result.clearance.runway.citations.map((citation) => citation.id);
+  }
+
+  it('cites the rows of the draw under the accepted handling, as under the proposed one', () => {
+    const flight = scenario({
+      callsign: 'N510CJ',
+      aircraftType: 'C510',
+      destination: 'KSMF',
+      filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+      filedAltitude: 10000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '28L',
+    });
+    expect(runwayCitations(flight, 'proposed')).toEqual(['SFOW', 'RWY-TEC']);
+    expect(runwayCitations(flight, 'accepted')).toEqual(runwayCitations(flight, 'proposed'));
+  });
+
+  it('reads the runways the draw departs the real class from, not the accepted class', () => {
+    const flight = scenario({
+      callsign: 'N510CJ',
+      aircraftType: 'C510',
+      destination: 'KSMF',
+      filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+      filedAltitude: 10000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '28L',
+    });
+    const airport = withPropsOnlyOff33();
+    const cited = (handling: Handling): string[] => {
+      const result = resolveClearance(flight, airport, handling);
+      if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+      return result.clearance.runway.citations.map((citation) => citation.id);
+    };
+    expect(cited('proposed')).toEqual(['SFOW', 'RWY-FIRST']);
+    expect(cited('accepted')).toEqual(cited('proposed'));
   });
 });

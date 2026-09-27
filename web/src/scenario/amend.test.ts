@@ -61,7 +61,7 @@ function label(entry: AmendmentScenario): string {
  */
 function amendedAgain(entries: readonly AmendmentScenario[], seeds: readonly number[]): string[] {
   return entries.flatMap((entry, index) => {
-    const again = resolveAmendments(entry.result.corrected, ksfo);
+    const again = resolveAmendments(entry.result.corrected, ksfo, 'proposed');
     if (again.ok && again.amendments.length === 0) return [];
     const left = again.ok
       ? again.amendments.map((amendment) => amendment.box).join('+')

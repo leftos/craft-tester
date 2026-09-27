@@ -430,17 +430,17 @@ function tecCitations(tec: TecRoute | undefined, cited: readonly RuleCitation[])
 
 /** The reason a TEC destination's route box reads the published route rather than what was filed. */
 function tecReason(ctx: Classification, expected: ExpectedRoute, destination: string): string {
-  return `${destination} is inside NorCal TRACON; the TEC route for a ${CLASS_WORDS[ctx.aircraftClass]} in ${ctx.plan} is ${expected.tokens.join(' ')}`;
+  return `${destination} is inside NorCal TRACON; the TEC route for a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} is ${expected.tokens.join(' ')}`;
 }
 
 /**
  * How a reason names the flight the assignment table answered, e.g. "an RNAV jet".
  *
  * @param ctx The classified flight.
- * @returns The words for its equipment and its performance class.
+ * @returns The words for its equipment and the class the SOP rows read it as.
  */
 export function flightWords(ctx: Classification): string {
-  return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.aircraftClass]}`;
+  return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.sopClass]}`;
 }
 
 /** The phraseology row that says a clearance without a procedure is spoken as a heading. */
@@ -809,7 +809,7 @@ export function loaRouteRows(
   return airport.loaRules.flatMap((row) => {
     const { rule } = row;
     if (rule.kind !== 'route' || !appliesTo(row, icao, destination)) return [];
-    if (rule.classes !== undefined && !rule.classes.includes(ctx.aircraftClass)) return [];
+    if (rule.classes !== undefined && !rule.classes.includes(ctx.sopClass)) return [];
     if (rule.rnavOnly === true && !ctx.rnavCapable) return [];
     return [{ row, tokens: rule.tokens }];
   });

@@ -42,6 +42,9 @@ const config: RunwayConfig = {
 
 const BASE_CTX: Classification = {
   aircraftClass: 'J',
+  tecClass: 'J',
+  sopClass: 'J',
+  handlingRule: null,
   aircraftType: 'B738',
   approachCategory: undefined,
   plan: 'SFOW',
@@ -211,7 +214,7 @@ describe('resolveAltitude', () => {
       aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
       altitudeRules: [{ ...CLIMB_VIA_ROW, groups: ['jets_and_dh8d'] }],
     };
-    const dash8 = ctx({ aircraftClass: 'T', aircraftType: 'DH8D' });
+    const dash8 = ctx({ aircraftClass: 'T', tecClass: 'T', sopClass: 'T', aircraftType: 'DH8D' });
     const result = resolve(dash8, sid('GAPP7'), scenario({ aircraftType: 'DH8D' }), airport);
     expect(result.altitude.citations.map((citation) => citation.id)).toContain('TEST-CVS');
   });
@@ -223,7 +226,7 @@ describe('resolveAltitude', () => {
       altitudeRules: [{ ...CLIMB_VIA_ROW, groups: ['jets_and_dh8d'] }],
     };
     const result = resolveAltitude(
-      ctx({ aircraftClass: 'T', aircraftType: 'SF34' }),
+      ctx({ aircraftClass: 'T', tecClass: 'T', sopClass: 'T', aircraftType: 'SF34' }),
       { kind: 'sid', sid: sid('GAPP7') },
       scenario({ aircraftType: 'SF34' }),
       airport,

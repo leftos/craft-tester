@@ -41,9 +41,9 @@ function scenario(overrides: Partial<Scenario>): Scenario {
 }
 
 function checkAt(flight: Scenario, airport: AirportData) {
-  const ctx = classify(flight, airport);
+  const ctx = classify(flight, airport, 'proposed');
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
-  const result = resolveClearance(flight, airport);
+  const result = resolveClearance(flight, airport, 'proposed');
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   return checkRoute(flight, ctx, result.clearance, airport);
 }
@@ -481,7 +481,7 @@ describe('checkRoute TRACON destinations', () => {
 
 describe('checkRoute a TEC route over the SOP assignment', () => {
   function clearanceAt(flight: Scenario, airport: AirportData) {
-    const result = resolveClearance(flight, airport);
+    const result = resolveClearance(flight, airport, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     return result.clearance;
   }
@@ -645,7 +645,7 @@ describe('checkRoute a TEC route over the SOP assignment', () => {
 
 describe('the sector of a departure a TEC route supplies', () => {
   function clearanceAt(flight: Scenario, airport: AirportData) {
-    const result = resolveClearance(flight, airport);
+    const result = resolveClearance(flight, airport, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     return result.clearance;
   }

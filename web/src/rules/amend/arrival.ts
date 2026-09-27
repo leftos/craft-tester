@@ -147,7 +147,7 @@ function isCargoFlight(scenario: Scenario, airport: AirportData): boolean {
 
 /** Whether a cell of the common-arrivals sheet is written for this flight. */
 function rowCovers(row: CommonArrival, ctx: Classification, cargo: boolean): boolean {
-  if (row.classes !== undefined && !row.classes.includes(ctx.aircraftClass)) return false;
+  if (row.classes !== undefined && !row.classes.includes(ctx.sopClass)) return false;
   return row.cargo !== true || cargo;
 }
 

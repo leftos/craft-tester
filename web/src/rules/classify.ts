@@ -4,6 +4,7 @@ import type {
   AirportData,
   ApproachCategory,
   DayOfWeek,
+  FleetEntry,
   NoiseWindow,
   RunwayConfig,
   Scenario,
@@ -11,9 +12,25 @@ import type {
 import type { Unresolved } from '@/rules/types.ts';
 import { unresolved } from '@/rules/unresolved.ts';
 
+/**
+ * Which side of ZOA CPS-004 3.1 special handling a flight is read under: `proposed` is the class the
+ * trainer proposes for a listed type, `accepted` the class it also accepts.
+ */
+export type Handling = 'proposed' | 'accepted';
+
 /** What the rest of the pipeline needs to know about the flight and the field. */
 export type Classification = {
+  /** The type's real class, from `aircraftClasses`. */
   aircraftClass: AircraftClass;
+  /** The class the ZOA-wide TEC rows are keyed by: the handling class for a type CPS-004 3.1 lists. */
+  tecClass: AircraftClass;
+  /**
+   * The class the airport's SOP and LOA rows are keyed by: the real class, unless the flight is read
+   * under the accepted handling and the local SOP is silent on the type.
+   */
+  sopClass: AircraftClass;
+  /** The `phraseologyRules` row of the type's special handling, `null` for a type it does not list. */
+  handlingRule: string | null;
   /** The filed type designator, which is how a row addresses a type its class does not cover. */
   aircraftType: string;
   /**
@@ -69,7 +86,7 @@ function groupIdsOf(row: RuleAudience, airport: AirportData): string[] {
  * `defaultForGroups` asks about.
  *
  * @param groupIds The `aircraftGroups` ids to test, in any order.
- * @param aircraftClass The class the flight was classified into.
+ * @param aircraftClass The class the flight's SOP rows read it as (`Classification.sopClass`).
  * @param aircraftType The filed type designator.
  * @param airport The airport data, which defines the groups.
  * @returns True when the flight is in at least one of the groups.
@@ -106,13 +123,8 @@ export function inAnyGroup(
  * @throws Error When the row names a group the airport data does not define.
  */
 export function addresses(row: RuleAudience, ctx: Classification, airport: AirportData): boolean {
-  const inGroup = inAnyGroup(
-    groupIdsOf(row, airport),
-    ctx.aircraftClass,
-    ctx.aircraftType,
-    airport,
-  );
-  if (!row.classes.includes(ctx.aircraftClass) && !inGroup) return false;
+  const inGroup = inAnyGroup(groupIdsOf(row, airport), ctx.sopClass, ctx.aircraftType, airport);
+  if (!row.classes.includes(ctx.sopClass) && !inGroup) return false;
   if (row.approachCategories === undefined || row.approachCategories.length === 0) return true;
   return (
     ctx.approachCategory !== undefined && row.approachCategories.includes(ctx.approachCategory)
@@ -151,14 +163,55 @@ function activeNoticeIds(scenario: Scenario, airport: AirportData): string[] {
 }
 
 /**
+ * The classes the TEC rows and the SOP rows read a flight as, under a handling.
+ *
+ * A type CPS-004 3.1 does not list reads as its real class everywhere. A listed type is proposed its
+ * `proposeClass` on the TEC rows, while the SOP rows keep its real class; under the accepted handling
+ * the TEC rows read its `acceptClass`, and so do the SOP rows unless the local SOP defines the type
+ * itself (`localSop`), in which case the SOP's own handling stands.
+ *
+ * @param aircraftClass The type's real class.
+ * @param fleet The fleet row for the type, `undefined` where the fleet does not list it.
+ * @param handling Which side of the special handling the flight is read under.
+ * @returns The TEC class, the SOP class and the handling row.
+ */
+function handledClasses(
+  aircraftClass: AircraftClass,
+  fleet: FleetEntry | undefined,
+  handling: Handling,
+): Pick<Classification, 'tecClass' | 'sopClass' | 'handlingRule'> {
+  const special = fleet?.handling;
+  if (special === undefined) {
+    return { tecClass: aircraftClass, sopClass: aircraftClass, handlingRule: null };
+  }
+  if (handling === 'proposed') {
+    return {
+      tecClass: special.proposeClass,
+      sopClass: aircraftClass,
+      handlingRule: special.ruleId,
+    };
+  }
+  return {
+    tecClass: special.acceptClass,
+    sopClass: special.localSop ? aircraftClass : special.acceptClass,
+    handlingRule: special.ruleId,
+  };
+}
+
+/**
  * Classifies a scenario into the facts the assignment and altitude tables are keyed by.
  *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the flight is read under.
  * @returns The classification, or `Unresolved` when the aircraft type or the runway configuration
  *   is not in the data, which blocks the SID element.
  */
-export function classify(scenario: Scenario, airport: AirportData): Classification | Unresolved {
+export function classify(
+  scenario: Scenario,
+  airport: AirportData,
+  handling: Handling,
+): Classification | Unresolved {
   const aircraftClass = airport.aircraftClasses[scenario.aircraftType];
   if (aircraftClass === undefined) {
     return unresolved('R.sid', `aircraft type ${scenario.aircraftType} has no class in the data`);
@@ -173,12 +226,12 @@ export function classify(scenario: Scenario, airport: AirportData): Classificati
   const suffix = airport.equipmentSuffixes.find(
     (entry) => entry.suffix === scenario.equipmentSuffix,
   );
+  const fleet = airport.routeLibrary.fleet.find((entry) => entry.type === scenario.aircraftType);
   return {
     aircraftClass,
+    ...handledClasses(aircraftClass, fleet, handling),
     aircraftType: scenario.aircraftType,
-    approachCategory: airport.routeLibrary.fleet.find(
-      (entry) => entry.type === scenario.aircraftType,
-    )?.approachCategory,
+    approachCategory: fleet?.approachCategory,
     plan: config.plan,
     runwayFamily: scenario.departureRunway.slice(0, 2),
     config,
