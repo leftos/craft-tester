@@ -9,7 +9,7 @@ import type {
   TecRoute,
 } from '@/data/schema.ts';
 import { checkRoute, withVectorNavaid } from '@/rules/amend/route.ts';
-import type { Classification } from '@/rules/classify.ts';
+import type { Classification, Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
@@ -39,6 +39,9 @@ const config: RunwayConfig = {
 
 const CTX: Classification = {
   aircraftClass: 'J',
+  tecClass: 'J',
+  sopClass: 'J',
+  handlingRule: null,
   aircraftType: 'B737',
   approachCategory: undefined,
   plan: 'SFOW',
@@ -117,7 +120,7 @@ function klvkRow(overrides: Partial<Scenario>, data: AirportData = ksfo): string
     departureRunway: '01R',
     ...overrides,
   };
-  const ctx = classify(flight, data);
+  const ctx = classify(flight, data, 'proposed');
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
   return usableTecRoute(ctx, flight, data)?.id;
 }
@@ -176,7 +179,7 @@ describe('usableTecRoute', () => {
         runwayConfigId,
         departureRunway,
       };
-      const ctx = classify(flight, ksfo);
+      const ctx = classify(flight, ksfo, 'proposed');
       if (isUnresolved(ctx)) throw new Error(ctx.reason);
       return usableTecRoute(ctx, flight, ksfo)?.id;
     }
@@ -227,7 +230,7 @@ describe('a TEC route that begins on an initial heading', () => {
 
   /** The classified flight, which the TEC rows are keyed against. */
   function classified(scenario: Scenario): Classification {
-    const ctx = classify(scenario, withNoDpRow);
+    const ctx = classify(scenario, withNoDpRow, 'proposed');
     if (isUnresolved(ctx)) throw new Error(ctx.reason);
     return ctx;
   }
@@ -242,7 +245,7 @@ describe('a TEC route that begins on an initial heading', () => {
   });
 
   it('amends the route box to the published route, its heading included', () => {
-    const result = resolveClearance(flight, withNoDpRow);
+    const result = resolveClearance(flight, withNoDpRow, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
     const amendment = checkRoute(flight, classified(flight), result.clearance, withNoDpRow);
@@ -294,5 +297,38 @@ describe('tecTokens on the RH, RV and heading tokens', () => {
     const tokens = tokensOf('GAPP#', ksfo);
     expect(tokens.join(' ')).toBe('GAPP7');
     expect(withVectorNavaid(tokens, ksfo).join(' ')).toBe('GAPP7 SFO');
+  });
+});
+
+describe('usableTecRoute for a type ZOA CPS-004 3.1 handles as another class', () => {
+  /** The TEC row a KOAK flight of `aircraftType` to KSMF off 30 in SFOW is routed on. */
+  function koakKsmfRow(aircraftType: string, handling: Handling): TecRoute | undefined {
+    const flight: Scenario = {
+      ...SCENARIO,
+      aircraftType,
+      filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+    };
+    const ctx = classify(flight, koak, handling);
+    if (isUnresolved(ctx)) throw new Error(ctx.reason);
+    return usableTecRoute(ctx, flight, koak);
+  }
+
+  it.each(['DH8D', 'C510'])('proposes a %s the jet row', (aircraftType) => {
+    const row = koakKsmfRow(aircraftType, 'proposed');
+    expect(row?.id).toBe('TEC-KSMF-SFOW-J');
+    expect(row?.route).toBe('OAK# OAK FEVTA FEVTA1');
+  });
+
+  it.each(['DH8D', 'C510'])('accepts a %s on the turboprop row', (aircraftType) => {
+    const row = koakKsmfRow(aircraftType, 'accepted');
+    expect(row?.id).toBe('TEC-KSMF-SFOW-T');
+    expect(row?.route).toBe('NIMI# OAK V6 SAC');
+  });
+
+  it('routes a B738, which the table does not list, on the jet row under either handling', () => {
+    expect(koakKsmfRow('B738', 'proposed')?.id).toBe('TEC-KSMF-SFOW-J');
+    expect(koakKsmfRow('B738', 'accepted')?.id).toBe('TEC-KSMF-SFOW-J');
   });
 });

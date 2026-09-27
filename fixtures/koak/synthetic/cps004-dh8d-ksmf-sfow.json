@@ -1,0 +1,37 @@
+{
+  "airport": "KOAK",
+  "expected": {
+    "altitude": {
+      "feet": 10000,
+      "phrase": "climb_via_except"
+    },
+    "clearedTo": "KSMF",
+    "expect": null,
+    "frequency": "120.9",
+    "route": {
+      "fix": "FEVTA",
+      "template": "radar_vectors_fix"
+    },
+    "sidFamily": "OAK"
+  },
+  "id": "syn-koak-cps004-dh8d-ksmf-sfow",
+  "mode": "clearance",
+  "scenario": {
+    "aircraftType": "DH8D",
+    "callsign": "QXE2451",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KSMF",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 10000,
+    "filedRoute": "OAK6 OAK FEVTA FEVTA1",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4521"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "ZOA CPS-004 3.1: the DH8D, a turboprop, is proposed the jet TEC row TEC-KSMF-SFOW-J (OAK# OAK FEVTA FEVTA1, 10,000) and the turboprop row TEC-KSMF-SFOW-T (NIMI# OAK V6 SAC, 3,000 then 9,000) is also accepted; 30 is the runway SFOW departs the jets and the DH8D from (jets_and_dh8d); the expected clearance is the proposed jet one (user confirmed 2026-09-26)"
+  },
+  "status": "settled"
+}

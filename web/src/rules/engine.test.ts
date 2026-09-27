@@ -10,6 +10,7 @@ import type {
 } from '@/data/schema.ts';
 import { checkRoute } from '@/rules/amend/route.ts';
 import { classify } from '@/rules/classify.ts';
+import type { Handling } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
@@ -37,7 +38,7 @@ function scenario(overrides: Partial<Scenario>): Scenario {
 }
 
 function clearanceFor(flight: Scenario, airport: AirportData = ksfo): ResolvedClearance {
-  const result = resolveClearance(flight, airport);
+  const result = resolveClearance(flight, airport, 'proposed');
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   return result.clearance;
 }
@@ -333,7 +334,7 @@ describe('resolveClearance on the generated KSFO data', () => {
   });
 
   it('blocks a route that joins an airway with no fix to place it in a gate', () => {
-    const result = resolveClearance(scenario({ filedRoute: 'SFO4 V6' }), ksfo);
+    const result = resolveClearance(scenario({ filedRoute: 'SFO4 V6' }), ksfo, 'proposed');
     expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.route' }] });
   });
 
@@ -358,7 +359,7 @@ describe('resolveClearance on the generated KSFO data', () => {
   });
 
   it('blocks the SID element when the airway leads to a fix in no departure gate', () => {
-    const result = resolveClearance(scenario({ filedRoute: 'TRUKN2 J501 OED' }), ksfo);
+    const result = resolveClearance(scenario({ filedRoute: 'TRUKN2 J501 OED' }), ksfo, 'proposed');
     expect(result).toMatchObject({
       ok: false,
       unresolved: [{ element: 'R.sid', reason: expect.stringContaining('no-gate') }],
@@ -366,7 +367,7 @@ describe('resolveClearance on the generated KSFO data', () => {
   });
 
   it('blocks the SID element for an aircraft type the data does not class', () => {
-    const result = resolveClearance(scenario({ aircraftType: 'ZZZZ' }), ksfo);
+    const result = resolveClearance(scenario({ aircraftType: 'ZZZZ' }), ksfo, 'proposed');
     expect(result).toMatchObject({ ok: false, unresolved: [{ element: 'R.sid' }] });
   });
 
@@ -525,7 +526,7 @@ describe('route building before a heading', () => {
 
 /** The route box the amendment check proposes for a flight, `undefined` where it reads right. */
 function proposedBox(flight: Scenario, airport: AirportData): string | undefined {
-  const ctx = classify(flight, airport);
+  const ctx = classify(flight, airport, 'proposed');
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
   const result = checkRoute(flight, ctx, clearanceFor(flight, airport), airport);
   if (result !== undefined && isUnresolved(result)) throw new Error(result.reason);
@@ -579,5 +580,47 @@ describe('radar vectors direct on an RH RV TEC route', () => {
     );
     expect(proposedBox(flight, koak)).toBeUndefined();
     expect(proposedBox({ ...flight, filedRoute: 'OAK6 OAK SFO' }, koak)).toBe('RH RV');
+  });
+});
+
+describe('the SOP rows under ZOA CPS-004 3.1 special handling', () => {
+  /** The clearance under the handling given, failing the test where the flight does not resolve. */
+  function clearanceUnder(
+    flight: Scenario,
+    airport: AirportData,
+    handling: Handling,
+  ): ResolvedClearance {
+    const result = resolveClearance(flight, airport, handling);
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    return result.clearance;
+  }
+
+  it('keeps a KOAK DH8D on its own SOP rows when accepted, the OAK SOP defining the type', () => {
+    const dash8 = scenario({
+      callsign: 'QXE2451',
+      aircraftType: 'DH8D',
+      destination: 'KSBA',
+      filedRoute: 'COAST9 GVO HABUT',
+      filedAltitude: 16000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+    });
+    const proposed = clearanceUnder(dash8, koak, 'proposed');
+    expect(clearanceUnder(dash8, koak, 'accepted')).toStrictEqual(proposed);
+  });
+
+  it('assigns a KSFO C510 the jet-only SSTIK when proposed, and GAPP when accepted', () => {
+    const citation = scenario({
+      ...SOUTHBOUND_LAX,
+      callsign: 'N510CJ',
+      aircraftType: 'C510',
+      departureRunway: '01L',
+    });
+    const proposed = clearanceUnder(citation, ksfo, 'proposed');
+    expect(assigned(proposed).family).toBe('SSTIK');
+    expect(proposed.procedure.citations.map((row) => row.id)).toContain('SFOW-S-SSTIK-01');
+    const accepted = clearanceUnder(citation, ksfo, 'accepted');
+    expect(assigned(accepted).family).toBe('GAPP');
+    expect(accepted.procedure.citations.map((row) => row.id)).toContain('SFOW-S-GAPP');
   });
 });

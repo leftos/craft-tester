@@ -50,7 +50,7 @@ function suffixGap(flight: Scenario, airport: AirportData = ksfo) {
 
 /** The RNAV suffix a plan's type box could carry instead, which the engine then judges the pair on. */
 function clash(flight: Scenario, airport: AirportData = ksfo) {
-  const ctx = classify(flight, airport);
+  const ctx = classify(flight, airport, 'proposed');
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
   return checkRnavClash(flight, ctx, airport);
 }

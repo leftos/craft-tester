@@ -322,7 +322,7 @@ const NUMBER_WORDS: ReadonlySet<string> = new Set([
 /** What one fixture's normalised reading misses: leftover number words, the squawk, the frequency. */
 function readingProblems(fixture: Fixture): string[] {
   const airport = airportOf(fixture.airport);
-  const result = resolveClearance(fixture.scenario, airport);
+  const result = resolveClearance(fixture.scenario, airport, 'proposed');
   if (!result.ok) return [`${fixture.id}: the engine resolves no clearance to read`];
   const spoken = spokenFor(fixture.scenario, fixture.scenario, result.clearance, airport);
   const lexicon = lexiconFor(airport);

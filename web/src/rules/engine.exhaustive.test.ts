@@ -175,7 +175,7 @@ describe.each(checkedInAirports())('every reachable $icao scenario', ({ icao, da
   const combinations = enumerateCombinations(data);
   const outcomes: Outcome[] = combinations.map((combination) => ({
     combination,
-    result: resolveClearance(combination.scenario, data),
+    result: resolveClearance(combination.scenario, data, 'proposed'),
   }));
   const unresolvedGroups = groupUnresolved(outcomes);
 

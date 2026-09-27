@@ -8,7 +8,9 @@ from craft_generator.sop.model import AircraftClass, AirportInputs, FleetEntry
 
 
 def fleet_entry(designator: str, aircraft_class: AircraftClass) -> FleetEntry:
-    return FleetEntry(type=designator, aircraft_class=aircraft_class, wtc="M", suffixes=("/L",), airlines=(), approach_category=None)
+    return FleetEntry(
+        type=designator, aircraft_class=aircraft_class, performance_class=None, wtc="M", suffixes=("/L",), airlines=(), approach_category=None
+    )
 
 
 def specs_of(*records: tuple[str, str]) -> list[dict[str, Any]]:

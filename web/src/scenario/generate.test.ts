@@ -181,14 +181,16 @@ function label(scenario: Scenario): string {
 describe('generateScenario', () => {
   it('generates a clearable scenario for every seed', () => {
     expect(generated).toHaveLength(SEEDS.length);
-    const blocked = generated.filter((entry) => !resolveClearance(entry, ksfo).ok).map(label);
+    const blocked = generated
+      .filter((entry) => !resolveClearance(entry, ksfo, 'proposed').ok)
+      .map(label);
     expect(blocked).toEqual([]);
   });
 
   it('files the assigned procedure on every draw, and none where the SOP assigns none', () => {
     const misfiled = generated
       .filter((entry) => {
-        const result = resolveClearance(entry, ksfo);
+        const result = resolveClearance(entry, ksfo, 'proposed');
         if (!result.ok) return true;
         const procedure = result.clearance.procedure.value;
         const head = entry.filedRoute.split(' ')[0] ?? '';
@@ -202,7 +204,7 @@ describe('generateScenario', () => {
     const dirty = generated
       .slice(0, 300)
       .filter((entry) => {
-        const result = resolveAmendments(entry, ksfo);
+        const result = resolveAmendments(entry, ksfo, 'proposed');
         return !result.ok || result.amendments.length > 0;
       })
       .map(label);
@@ -290,8 +292,8 @@ describe('generateScenario', () => {
     const offDefault = propsAndTurboprops.filter((entry) => entry.departureRunway !== '28R');
     const unmoved = offDefault.filter(
       (entry) =>
-        usableTecRouteOn('28R', entry, ksfo) !== undefined ||
-        usableTecRouteOn(entry.departureRunway, entry, ksfo) === undefined,
+        usableTecRouteOn('28R', entry, ksfo, 'proposed') !== undefined ||
+        usableTecRouteOn(entry.departureRunway, entry, ksfo, 'proposed') === undefined,
     );
     expect(unmoved.map(label)).toEqual([]);
   });
@@ -367,7 +369,7 @@ describe('generateScenario', () => {
   it('presents the non-RNAV prop the noise window sends off the 01s on the runway heading', () => {
     const night = drawnUnder({ time: 'night', config: { kind: 'any' } }, NIGHT_HEADING_SEEDS);
     const headings = night.filter((scenario) => {
-      const result = resolveClearance(scenario, ksfo);
+      const result = resolveClearance(scenario, ksfo, 'proposed');
       return result.ok && result.clearance.procedure.value.kind === 'heading';
     });
     console.log(
@@ -510,7 +512,7 @@ describe('pickRunway', () => {
 describe('the scenario filter', () => {
   it('draws the scenario the unfiltered seed always drew', () => {
     const first = generateScenario(createRng(1), ksfo, ANY_SCENARIO);
-    expect(first.callsign).toBe('SKW2811');
+    expect(first.callsign).toBe('JSX2811');
     expect(first.runwayConfigId).toBe('28 RT');
   });
 
@@ -676,6 +678,40 @@ describe('tecRunway', () => {
     expect(tecRunway(flight, koak)).toBe('28L');
   });
 
+  /** A KOAK DH8D to KSMF drawn onto 33, which OAK6, the jet row's departure, is not published from. */
+  const dash8 = drawnFlight({
+    callsign: 'QXE2451',
+    aircraftType: 'DH8D',
+    filedRoute: 'OAK FEVTA FEVTA1',
+    runwayConfigId: 'SFOW',
+    departureRunway: '33',
+  });
+
+  it('moves a KOAK DH8D to KSMF to a runway the jet row it is proposed is usable from', () => {
+    const runway = tecRunway(dash8, koak);
+    expect(usableTecRouteOn(runway, dash8, koak, 'proposed')?.id).toBe('TEC-KSMF-SFOW-J');
+  });
+
+  it('moves a KOAK DH8D among the runways listed for jets, the class its TEC row is proposed under', () => {
+    const sfow = koak.runwayConfigs.find((config) => config.id === 'SFOW');
+    const [row] = sfow?.departureRunways ?? [];
+    if (sfow === undefined || row === undefined) throw new Error('KOAK no longer carries SFOW');
+    const split: AirportData = {
+      ...koak,
+      runwayConfigs: [
+        {
+          ...sfow,
+          departureRunways: [
+            { ...row, runway: '28R', classes: ['T'] },
+            { ...row, runway: '30', classes: ['J'] },
+            { ...row, runway: '33', classes: ['P', 'T', 'J'] },
+          ],
+        },
+      ],
+    };
+    expect(tecRunway(dash8, split)).toBe('30');
+  });
+
   it('never moves a jet in 28/01 onto the 28s, which it takes only on request, though its only usable row is there', () => {
     const jetRow = ksfo.tecRoutes.find((row) => row.id === 'TEC-KSMF-SFOW-J');
     if (jetRow === undefined) throw new Error('KSFO no longer carries TEC-KSMF-SFOW-J');
@@ -691,8 +727,8 @@ describe('tecRunway', () => {
       tecRoutes: [onlyOffThe28s, ...ksfo.tecRoutes.filter((row) => row.destination !== 'KSMF')],
     };
     const flight = rnavJet({ departureRunway: '01R' });
-    expect(usableTecRouteOn('28L', flight, injected)?.id).toBe('TEC-KSMF-SFOW-J-28');
-    expect(usableTecRouteOn('01L', flight, injected)).toBeUndefined();
+    expect(usableTecRouteOn('28L', flight, injected, 'proposed')?.id).toBe('TEC-KSMF-SFOW-J-28');
+    expect(usableTecRouteOn('01L', flight, injected, 'proposed')).toBeUndefined();
     expect(tecRunway(flight, injected)).toBe('01R');
   });
 });
@@ -702,7 +738,7 @@ describe('the on-request draw', () => {
     const asked = generated.filter((entry) => entry.remarks !== undefined);
     expect(asked.length).toBeGreaterThan(0);
     const offFamily = asked.filter((entry) => {
-      const result = resolveClearance(entry, ksfo);
+      const result = resolveClearance(entry, ksfo, 'proposed');
       if (!result.ok) return true;
       const procedure = result.clearance.procedure.value;
       if (procedure.kind !== 'sid') return true;
@@ -723,7 +759,7 @@ describe('the on-request draw', () => {
       departureRunway: '28L',
       remarks: 'REQ RWY 28',
     });
-    const result = resolveClearance(heavy, ksfo);
+    const result = resolveClearance(heavy, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     const procedure = result.clearance.procedure.value;
     expect(procedure).toMatchObject({ kind: 'sid', family: 'GAPP' });
@@ -752,12 +788,13 @@ describe('the runway a TEC-routed draw departs', () => {
     (_icao, airport, drawn) => {
       const routed = drawn.filter((entry) =>
         listedRunways(entry, airport).some(
-          (runway) => usableTecRouteOn(runway, entry, airport) !== undefined,
+          (runway) => usableTecRouteOn(runway, entry, airport, 'proposed') !== undefined,
         ),
       );
       expect(routed.length).toBeGreaterThan(0);
       const stranded = routed.filter(
-        (entry) => usableTecRouteOn(entry.departureRunway, entry, airport) === undefined,
+        (entry) =>
+          usableTecRouteOn(entry.departureRunway, entry, airport, 'proposed') === undefined,
       );
       expect(stranded.map(label)).toEqual([]);
     },

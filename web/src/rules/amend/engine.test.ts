@@ -29,7 +29,7 @@ function scenario(overrides: Partial<Scenario>): Scenario {
 }
 
 function resolved(flight: Scenario) {
-  const result = resolveAmendments(flight, ksfo);
+  const result = resolveAmendments(flight, ksfo, 'proposed');
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   return result;
 }
@@ -94,7 +94,7 @@ function swa126(): Scenario {
 }
 
 function cleared(flight: Scenario) {
-  const result = resolveClearance(flight, ksfo);
+  const result = resolveClearance(flight, ksfo, 'proposed');
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   return result.clearance;
 }
@@ -116,7 +116,7 @@ function transitionsOf(clearance: ResolvedClearance) {
 /** Reads the corrected plan's clearance aloud, the way the reveal does (`ui/session.ts`). */
 function spoken(flight: Scenario) {
   const { corrected } = resolved(flight);
-  const result = resolveAmendedClearance(flight, corrected, ksfo);
+  const result = resolveAmendedClearance(flight, corrected, ksfo, 'proposed');
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   const { clearance } = result;
   return speakClearance({
@@ -224,7 +224,7 @@ describe('resolveAmendments', () => {
       'MOLEN9 is not the procedure the SOP assigns an RNAV piston from 01R in 01/01; it is NIITE4',
     );
     expect(route.reason).not.toContain('runway heading');
-    const amended = resolveAmendedClearance(flight, result.corrected, ksfo);
+    const amended = resolveAmendedClearance(flight, result.corrected, ksfo, 'proposed');
     if (!amended.ok) throw new Error(amended.unresolved.map((item) => item.reason).join('; '));
     expect(assigned(amended.clearance).family).toBe('NIITE');
   });
@@ -295,13 +295,13 @@ describe('resolveAmendments', () => {
     expect(route.proposed).toBe(
       'NIITE4 DEDHD RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO',
     );
-    const again = resolveAmendments(result.corrected, ksfo);
+    const again = resolveAmendments(result.corrected, ksfo, 'proposed');
     if (!again.ok) throw new Error(again.unresolved.map((item) => item.reason).join('; '));
     expect(again.amendments).toEqual([]);
   });
 
   it('fails the whole result when a box the data cannot answer blocks one check', () => {
-    const result = resolveAmendments(scenario({ destination: 'KZZZ' }), ksfo);
+    const result = resolveAmendments(scenario({ destination: 'KZZZ' }), ksfo, 'proposed');
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.unresolved.map((item) => item.element)).toContain('BOX.altitude');
@@ -328,7 +328,7 @@ describe('resolveAmendments RNAV pair', () => {
 
   it('raises the RNAV pair with the altitude box on its other side when the RNAV plan is clean', () => {
     const flight = nks510();
-    const result = resolveAmendments(flight, koak);
+    const result = resolveAmendments(flight, koak, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.amendments.map((amendment) => [amendment.box, amendment.alternativeTo])).toEqual([
       ['type', 'altitude'],
@@ -390,7 +390,7 @@ describe('resolveAmendments RNAV route elements', () => {
   }
 
   function amended(flight: Scenario, airport: AirportData = koak) {
-    const result = resolveAmendments(flight, airport);
+    const result = resolveAmendments(flight, airport, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     return result;
   }
@@ -427,7 +427,7 @@ describe('resolveAmendments RNAV route elements', () => {
       row.type === 'B738' ? { ...row, suffixes: ['/A'] } : row,
     );
     const airport: AirportData = { ...koak, routeLibrary: { ...koak.routeLibrary, fleet } };
-    const result = resolveAmendments(b738w({ equipmentSuffix: '/A' }), airport);
+    const result = resolveAmendments(b738w({ equipmentSuffix: '/A' }), airport, 'proposed');
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.unresolved.map((gap) => gap.element)).toEqual(['BOX.route']);
@@ -516,7 +516,7 @@ describe('resolveAmendedClearance', () => {
     const original = ual313NonRvsm();
     const { corrected } = resolved(original);
     expect(corrected.filedAltitude).toBe(27000);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.expect.value).toEqual({ kind: 'amended', feet: 27000, minutes: 10 });
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
@@ -528,7 +528,7 @@ describe('resolveAmendedClearance', () => {
     const original = skw2345();
     const { corrected } = resolved(original);
     expect(corrected.filedAltitude).toBe(10000);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via_except', feet: 10000 });
     expect(result.clearance.expect.value).toEqual({ kind: 'final', feet: 10000 });
@@ -538,7 +538,7 @@ describe('resolveAmendedClearance', () => {
   it('keeps the amended clause beside the final reading as the longer reading still allowed', () => {
     const original = skw2345();
     const { corrected } = resolved(original);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.redundantExpect.value).toEqual({
       kind: 'amended',
@@ -554,7 +554,7 @@ describe('resolveAmendedClearance', () => {
     const original = swa126();
     const { corrected } = resolved(original);
     expect(corrected.filedAltitude).toBe(32000);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.expect.value).toEqual({ kind: 'amended', feet: 32000, minutes: 10 });
     expect(result.clearance.expect.citations.map((citation) => citation.id)).toEqual([
@@ -579,7 +579,7 @@ describe('resolveAmendedClearance', () => {
           : sid,
       ),
     };
-    const result = resolveAmendedClearance(original, corrected, airport);
+    const result = resolveAmendedClearance(original, corrected, airport, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.altitude.value).toEqual({ phrase: 'climb_via' });
     expect(result.clearance.expect.value).toEqual({ kind: 'amended', feet: 32000, minutes: 10 });
@@ -591,7 +591,7 @@ describe('resolveAmendedClearance', () => {
   it('holds nothing redundant, because the amended clause is mandatory', () => {
     const original = ual313NonRvsm();
     const { corrected } = resolved(original);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.redundantExpect.value).toBeNull();
     expect(result.clearance.redundantExpect.citations).toEqual([]);
@@ -600,7 +600,7 @@ describe('resolveAmendedClearance', () => {
   it('reads the filed RNAV procedure of a plan whose type box carried the RNAV fix', () => {
     const original = ual313();
     const { corrected } = resolved(original);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(assigned(result.clearance).family).toBe('TRUKN');
     expect(corrected.filedRoute.startsWith(assigned(result.clearance).id)).toBe(true);
@@ -610,7 +610,7 @@ describe('resolveAmendedClearance', () => {
     const original = scenario({ filedRoute: 'TRUKN1 DEDHD RBL LMT HAWKZ7' });
     const { corrected } = resolved(original);
     expect(corrected.filedRoute).not.toBe(original.filedRoute);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.route.citations.map((citation) => citation.id)).toContain(
       'R-THEN-AS-FILED',
@@ -622,7 +622,7 @@ describe('resolveAmendedClearance', () => {
     const { corrected } = resolved(original);
     expect(corrected.filedRoute).toBe(original.filedRoute);
     expect(corrected.filedAltitude).not.toBe(original.filedAltitude);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.route).toEqual(cleared(corrected).route);
     expect(result.clearance.route.citations.map((citation) => citation.id)).not.toContain(
@@ -634,7 +634,7 @@ describe('resolveAmendedClearance', () => {
     const original = scenario({ filedRoute: 'TRUKN1 DEDHD RBL LMT HAWKZ7' });
     const { corrected } = resolved(original);
     expect(corrected.filedAltitude).toBe(original.filedAltitude);
-    const result = resolveAmendedClearance(original, corrected, ksfo);
+    const result = resolveAmendedClearance(original, corrected, ksfo, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.clearance.expect).toEqual(cleared(corrected).expect);
     expect(result.clearance.expect.value).toBeNull();

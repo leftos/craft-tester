@@ -16,7 +16,7 @@ airlines: [AAL, AAY, ABX, ACA, ASA, ATN, CKS, CLX, DAL, EJA, FDX, FFT, GTI, JBU,
 
 # The aircraft types a KOAK scenario can draw; an airline flies one when generator/shared/airlines.yaml
 # lists the type for it.
-fleet: [A320, A20N, A319, B737, B738, B752, B77L, B788, A306, MD11, E75L, E135, CL30, GL5T, C750, C55B, C25B, C510, E55P, DH8D, B350, BE20, TBM9, C208, C172, SR22, M20T]
+fleet: [A320, A20N, A319, B737, B738, B752, B77L, B788, A306, MD11, E75L, E135, CL30, GL5T, C750, C55B, C25B, C510, E55P, SF50, E50P, DH8D, B350, BE20, TBM9, C208, C172, SR22, M20T]
 
 # Filed routes, keyed by the fix where the aircraft leaves the SID. `tail` starts at that fix.
 # `classes` limits which aircraft classes fly it; `altitudes` are plausible filed cruise altitudes.

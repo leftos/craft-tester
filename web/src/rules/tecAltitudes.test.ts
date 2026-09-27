@@ -221,7 +221,7 @@ function recordAltitude(
   sopAirport: AirportData,
 ): void {
   const { scenario, label } = combination;
-  const sopResult = resolveClearance(scenario, sopAirport);
+  const sopResult = resolveClearance(scenario, sopAirport, 'proposed');
   const climbed = sopResult.ok ? climbedTo(sopResult.clearance, sopAirport) : undefined;
   if (!sopResult.ok || climbed === undefined) {
     report.unreadable += 1;
@@ -262,10 +262,10 @@ function auditRow(row: TecRoute, airport: AirportData): RowReport {
   const groups = new Map<string, AltitudeGroup>();
   for (const combination of combinationsOf(row, airport)) {
     const { scenario, label } = combination;
-    const ctx = classify(scenario, airport);
+    const ctx = classify(scenario, airport, 'proposed');
     if (isUnresolved(ctx) || usableTecRoute(ctx, scenario, airport) !== row) continue;
     report.routed += 1;
-    const result = resolveClearance(scenario, airport);
+    const result = resolveClearance(scenario, airport, 'proposed');
     if (!result.ok) {
       tally(report.unresolved, result.unresolved.map((item) => item.reason).join('; '), label);
       continue;

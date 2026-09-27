@@ -983,6 +983,31 @@
             "transcribedAt"
           ],
           "type": "object"
+        },
+        "specialHandling": {
+          "additionalProperties": false,
+          "properties": {
+            "sha256": {
+              "type": "string"
+            },
+            "transcribedAt": {
+              "type": "string"
+            },
+            "url": {
+              "format": "uri",
+              "type": "string"
+            },
+            "version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "url",
+            "version",
+            "sha256",
+            "transcribedAt"
+          ],
+          "type": "object"
         }
       },
       "required": [
@@ -1156,6 +1181,40 @@
               "cwt": {
                 "pattern": "^[A-I]$",
                 "type": "string"
+              },
+              "handling": {
+                "additionalProperties": false,
+                "properties": {
+                  "acceptClass": {
+                    "enum": [
+                      "P",
+                      "T",
+                      "J"
+                    ],
+                    "type": "string"
+                  },
+                  "localSop": {
+                    "type": "boolean"
+                  },
+                  "proposeClass": {
+                    "enum": [
+                      "P",
+                      "T",
+                      "J"
+                    ],
+                    "type": "string"
+                  },
+                  "ruleId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "proposeClass",
+                  "acceptClass",
+                  "ruleId",
+                  "localSop"
+                ],
+                "type": "object"
               },
               "suffixes": {
                 "items": {

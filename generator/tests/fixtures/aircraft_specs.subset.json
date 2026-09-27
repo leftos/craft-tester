@@ -1190,6 +1190,28 @@
   {
     "AircraftDescription": "LandPlane",
     "Description": "L2J",
+    "Designator": "E50P",
+    "EngineCount": "2",
+    "EngineType": "Jet",
+    "ManufacturerCode": "EMBRAER",
+    "ModelFullName": "EMB-500 Phenom 100",
+    "WTC": "L",
+    "WTG": "G"
+  },
+  {
+    "AircraftDescription": "LandPlane",
+    "Description": "L2J",
+    "Designator": "E50P",
+    "EngineCount": "2",
+    "EngineType": "Jet",
+    "ManufacturerCode": "EMBRAER",
+    "ModelFullName": "Phenom 100",
+    "WTC": "L",
+    "WTG": "G"
+  },
+  {
+    "AircraftDescription": "LandPlane",
+    "Description": "L2J",
     "Designator": "E55P",
     "EngineCount": "2",
     "EngineType": "Jet",
@@ -1472,6 +1494,39 @@
     "ModelFullName": "MD-11",
     "WTC": "H",
     "WTG": "C"
+  },
+  {
+    "AircraftDescription": "LandPlane",
+    "Description": "L1J",
+    "Designator": "SF50",
+    "EngineCount": "1",
+    "EngineType": "Jet",
+    "ManufacturerCode": "CIRRUS",
+    "ModelFullName": "SJ-X Vision",
+    "WTC": "L",
+    "WTG": "G"
+  },
+  {
+    "AircraftDescription": "LandPlane",
+    "Description": "L1J",
+    "Designator": "SF50",
+    "EngineCount": "1",
+    "EngineType": "Jet",
+    "ManufacturerCode": "CIRRUS",
+    "ModelFullName": "SF-50 Vision",
+    "WTC": "L",
+    "WTG": "G"
+  },
+  {
+    "AircraftDescription": "LandPlane",
+    "Description": "L1J",
+    "Designator": "SF50",
+    "EngineCount": "1",
+    "EngineType": "Jet",
+    "ManufacturerCode": "CIRRUS",
+    "ModelFullName": "Vision",
+    "WTC": "L",
+    "WTG": "G"
   },
   {
     "AircraftDescription": "LandPlane",

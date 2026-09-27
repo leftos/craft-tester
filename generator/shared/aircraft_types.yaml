@@ -4,6 +4,36 @@
 # vNAS EngineType at build time. `approach_category` overrides the FAA table in
 # faa_aircraft_characteristics.yaml for one type and carries a `note` saying why; without it the build
 # reads the category from that table.
+#
+# `performance_class` marks a type ZOA CPS-004 3.1 lists for special handling: the class whose
+# performance the type is handled with, which differs from its own `class` (a light jet that climbs like a
+# turboprop, a turboprop that climbs like a jet). The `special_handling` block pins that document the way
+# an airport's sop.yaml pins its SOP, so `craft-gen verify-sop` and the build catch a re-issue, and carries
+# the rule row the web engine cites for every type marked here.
+special_handling:
+  source:
+    title: ZOA CPS-004 ATCT Policies and Procedures
+    version: "1.2"
+    url: https://oakartcc.org/controllers/file/a83f4023-5b1e-11e9-8010-2a32edb55910
+    sha256: 8be0f0acc742a7ca199c73480cd1036600955bba759a321390a40d79a20698a7
+    transcribed_at: 2026-09-26
+    sentinels:
+      - "Version 1.2"
+      - "SF50 T - Turboprop Slow climb/cruise performance"
+      - "DH8D J - Jet Capable of jet-like performance"
+  rule:
+    id: ZOA-CPS004-SPECIAL-AIRCRAFT
+    source: ZOA CPS-004 v1.2 3.1
+    text: >-
+      The following aircraft require special handling and coordination unless procedures are defined in local
+      Standard Operating Procedures. The “performance consideration” for each aircraft is not required, but
+      must be considered, given current traffic levels. Aircraft / Performance Consideration / Reason:
+      SF50, T - Turboprop, slow climb/cruise performance; C510, T - Turboprop, slow climb/cruise performance;
+      E50P, T - Turboprop, slow climb/cruise performance; E55P, T - Turboprop, slow climb/cruise performance;
+      DH8D, J - Jet, capable of jet-like performance.
+      ZOA training (user ruling 2026-09-26): the trainer proposes the jet handling and also accepts the
+      turboprop handling for these types; an airport SOP that names the type in its aircraft groups defines
+      it locally.
 types:
   A20N: { class: J, wtc: M, suffixes: [/L] }
   A306: { class: J, wtc: H, suffixes: [/L] }
@@ -19,16 +49,18 @@ types:
   C172: { class: P, wtc: L, suffixes: [/G, /A, /U] }
   C208: { class: T, wtc: L, suffixes: [/G, /A] }
   C25B: { class: J, wtc: L, suffixes: [/L] }
-  C510: { class: J, wtc: L, suffixes: [/L] }
+  C510: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
   C55B: { class: J, wtc: M, suffixes: [/L] }
   C750: { class: J, wtc: M, suffixes: [/L] }
   CL30: { class: J, wtc: M, suffixes: [/L] }
-  DH8D: { class: T, wtc: M, suffixes: [/L] }
+  DH8D: { class: T, performance_class: J, wtc: M, suffixes: [/L] }
   E135: { class: J, wtc: M, suffixes: [/L] }
-  E55P: { class: J, wtc: L, suffixes: [/L] }
+  E50P: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
+  E55P: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
   E75L: { class: J, wtc: M, suffixes: [/L] }
   GL5T: { class: J, wtc: M, suffixes: [/L] }
   M20T: { class: P, wtc: L, suffixes: [/G, /A] }
   MD11: { class: J, wtc: H, suffixes: [/L] }
+  SF50: { class: J, performance_class: T, wtc: L, suffixes: [/L] }
   SR22: { class: P, wtc: L, suffixes: [/G] }
   TBM9: { class: T, wtc: L, suffixes: [/L, /G] }

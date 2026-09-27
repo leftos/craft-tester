@@ -117,8 +117,9 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
 - **Fixtures carry `status: settled | pending`.** `pending` records an open question and must not fail the
   suite; promote to `settled` only after the user confirms the expected clearance.
 - **SIDs compare by family** (`TRUKN`), never by versioned id, because AIRAC cycles bump versions.
-- **Hand-transcribed sources are pinned.** `sop.yaml` records the SOP PDF sha256 and sentinel strings;
-  `verify-sop` fails when the document changes. Re-transcribe, then update the hash.
+- **Hand-transcribed sources are pinned.** `sop.yaml` records the SOP PDF sha256 and sentinel strings, and
+  `generator/shared/aircraft_types.yaml` pins ZOA CPS-004 (special aircraft) the same way; `verify-sop` and
+  the build fail when either document changes. Re-transcribe, then update the hash.
 - **Network stays out of tests.** Generator tests run on checked-in text fixtures; anything that fetches is
   marked `@pytest.mark.network` and deselected by default.
 - **Procedures and fixes are spoken by name, never spelled.** The generator emits `fixSpoken` from CIFP

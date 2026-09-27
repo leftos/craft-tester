@@ -212,15 +212,15 @@ describe('an amendment scenario', () => {
       return amendments.length > 0 && amendments.every((one) => one.alternativeTo === undefined);
     });
     if (seed === undefined) throw new Error('no seed of 1 to 20 amends a box without a pair');
-    const { drawn, clearance } = amendmentOf(seed);
+    const view = amendmentOf(seed);
+    const { drawn, clearance } = view;
     const answers = correctedAnswers(drawn.result.amendments);
     const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
-    const cleared = { plan: drawn.result.corrected, clearance };
+    const cleared = clearedPlan(view, answers, airport);
     const grades = amendmentGrades({
       drawn,
       cleared,
       airport,
-      answers,
       answer: { input: 'text', text: spoken.abbreviated },
       routeReading: 'abbreviated',
     });
@@ -256,13 +256,13 @@ describe('an amendment scenario', () => {
     if (seed === undefined) {
       throw new Error('no seed of 1 to 20 amends a plan whose route is handed over as filed');
     }
-    const { drawn, clearance } = amendmentOf(seed);
+    const view = amendmentOf(seed);
+    const { drawn, clearance } = view;
     const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
     const session = {
       drawn,
-      cleared: { plan: drawn.result.corrected, clearance },
+      cleared: clearedPlan(view, correctedAnswers(drawn.result.amendments), airport),
       airport,
-      answers: correctedAnswers(drawn.result.amendments),
       routeReading: 'full',
     } as const;
     const handedOver = routeGrade(
@@ -305,7 +305,7 @@ describe('an amendment scenario', () => {
     const answers = correctedAnswers(drawn.result.amendments);
     const plan = studentPlan(answers, drawn.result, drawn.filed, airport);
     expect(plan.filedRoute).toBe('ZZZZZ');
-    expect(resolveAmendedClearance(drawn.filed, plan, airport).ok).toBe(false);
+    expect(resolveAmendedClearance(drawn.filed, plan, airport, 'proposed').ok).toBe(false);
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {

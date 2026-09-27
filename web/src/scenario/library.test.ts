@@ -111,13 +111,13 @@ function uncleanReason(
     dayOfWeek: DAY_OF_WEEK,
     squawk: SQUAWK,
   };
-  const result = resolveClearance(filed, data);
+  const result = resolveClearance(filed, data, 'proposed');
   if (!result.ok) return gapsOf(result.unresolved);
   const clean: Scenario = {
     ...filed,
     filedRoute: composedRoute(result.clearance.procedure.value, route.tail, data),
   };
-  const amended = resolveAmendments(clean, data);
+  const amended = resolveAmendments(clean, data, 'proposed');
   if (!amended.ok) return gapsOf(amended.unresolved);
   const amendment = amended.amendments[0];
   return amendment === undefined ? undefined : `${amendment.box}: ${amendment.reason}`;

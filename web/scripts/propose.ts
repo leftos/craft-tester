@@ -445,7 +445,7 @@ function amendmentOutcome(
   airport: AirportData,
   runtime: Runtime,
 ): ProposalOutcome {
-  const result = runtime.resolveAmendments(scenario, airport);
+  const result = runtime.resolveAmendments(scenario, airport, 'proposed');
   if (!result.ok) {
     return {
       kind: 'unresolved',
@@ -462,7 +462,7 @@ function amendmentOutcome(
       ...(amendment.box === 'route' && amendment.warning === true ? { warning: true } : {}),
     })),
     corrected: clearanceOutcome(
-      runtime.resolveAmendedClearance(scenario, result.corrected, airport),
+      runtime.resolveAmendedClearance(scenario, result.corrected, airport, 'proposed'),
       result.corrected,
       scenario,
       airport,
@@ -477,7 +477,7 @@ function outcomeOf(fixture: Fixture, airport: AirportData, runtime: Runtime): Pr
   const { scenario } = fixture;
   if (fixture.mode === 'amendment') return amendmentOutcome(scenario, airport, runtime);
   return clearanceOutcome(
-    runtime.resolveClearance(scenario, airport),
+    runtime.resolveClearance(scenario, airport, 'proposed'),
     scenario,
     scenario,
     airport,

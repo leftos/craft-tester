@@ -82,7 +82,7 @@ function comparable(expected: ExpectedClearance): ExpectedClearance {
 
 /** What the engine makes of a fixture: the clearance in fixture shape, or why it is blocked. */
 function engineResult(fixture: Fixture): ExpectedClearance | string {
-  const result = resolveClearance(fixture.scenario, airportOf(fixture));
+  const result = resolveClearance(fixture.scenario, airportOf(fixture), 'proposed');
   return result.ok
     ? toExpectedClearance(result.clearance)
     : result.unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
@@ -90,7 +90,7 @@ function engineResult(fixture: Fixture): ExpectedClearance | string {
 
 /** What the amendment engine makes of a fixture: the amendments in fixture shape, or the gaps. */
 function amendmentResult(fixture: Fixture): ExpectedAmendments | string {
-  const result = resolveAmendments(fixture.scenario, airportOf(fixture));
+  const result = resolveAmendments(fixture.scenario, airportOf(fixture), 'proposed');
   return result.ok
     ? toExpectedAmendments(result)
     : result.unresolved.map((item) => `${item.element}: ${item.reason}`).join('; ');
@@ -153,7 +153,7 @@ describe('fixtures', () => {
       const groups: UnresolvedGroups = new Map();
       let resolved = 0;
       for (const fixture of clearancePlans) {
-        const result = resolveClearance(fixture.scenario, airportOf(fixture));
+        const result = resolveClearance(fixture.scenario, airportOf(fixture), 'proposed');
         if (result.ok) {
           resolved += 1;
           continue;
@@ -182,7 +182,7 @@ describe('fixtures', () => {
       let resolved = 0;
       let clean = 0;
       for (const fixture of amendmentPlans) {
-        const result = resolveAmendments(fixture.scenario, airportOf(fixture));
+        const result = resolveAmendments(fixture.scenario, airportOf(fixture), 'proposed');
         if (!result.ok) {
           for (const item of result.unresolved) {
             addGroup(groups, `${item.element} | ${item.reason}`, fixture.id);

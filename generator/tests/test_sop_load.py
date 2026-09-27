@@ -108,6 +108,8 @@ KSFO_FLEET_AIRLINES = {
     "C25B": set[str](),
     "C510": set[str](),
     "E55P": {"LXJ"},
+    "SF50": set[str](),
+    "E50P": set[str](),
     "B350": set[str](),
     "BE20": set[str](),
     "TBM9": set[str](),
@@ -897,6 +899,52 @@ def test_malformed_equipment_suffix_is_named(tmp_path: Path) -> None:
         data["types"]["A320"]["suffixes"] = ["/L", "LL"]
 
     with pytest.raises(ValueError, match="suffix 'LL' is not a slash and one upper-case letter"):
+        shared_copy(tmp_path, aircraft_types=mutate)
+
+
+def test_the_cps004_special_aircraft_load_with_their_performance_class(shared_route_facts: SharedRouteFacts) -> None:
+    marked = {designator: row.performance_class for designator, row in shared_route_facts.aircraft_types.items() if row.performance_class}
+    assert marked == {"SF50": "T", "C510": "T", "E50P": "T", "E55P": "T", "DH8D": "J"}
+    handling = shared_route_facts.special_handling
+    assert handling is not None
+    assert handling.rule.id == "ZOA-CPS004-SPECIAL-AIRCRAFT"
+    assert handling.rule.source == "ZOA CPS-004 v1.2 3.1"
+    assert handling.source.version == "1.2"
+    assert handling.source.sha256 == "8be0f0acc742a7ca199c73480cd1036600955bba759a321390a40d79a20698a7"
+    assert handling.source.transcribed_at == date(2026, 9, 26)
+
+
+def test_a_performance_class_equal_to_the_class_is_named(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["types"]["DH8D"]["performance_class"] = "T"
+
+    with pytest.raises(ValueError, match=r"types\[DH8D\]: performance_class 'T' is the type's own class"):
+        shared_copy(tmp_path, aircraft_types=mutate)
+
+
+def test_a_performance_class_without_the_special_handling_block_is_named(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        del data["special_handling"]
+
+    with pytest.raises(
+        ValueError, match=r"\['C510', 'DH8D', 'E50P', 'E55P', 'SF50'\] carry a performance_class but the file has no special_handling"
+    ):
+        shared_copy(tmp_path, aircraft_types=mutate)
+
+
+def test_a_performance_class_outside_the_aircraft_classes_is_named(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["types"]["SF50"]["performance_class"] = "X"
+
+    with pytest.raises(ValueError, match=r"types\[SF50\]\.performance_class: 'X' is not one of \['P', 'T', 'J'\]"):
+        shared_copy(tmp_path, aircraft_types=mutate)
+
+
+def test_an_unknown_key_in_the_special_handling_block_is_named(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["special_handling"]["rule"]["cites"] = "3.2"
+
+    with pytest.raises(ValueError, match=r"special_handling\.rule: unknown key\(s\) \['cites'\]"):
         shared_copy(tmp_path, aircraft_types=mutate)
 
 

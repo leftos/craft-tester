@@ -363,7 +363,7 @@ export function resolveAltitude(
     const on = procedure.kind === 'sid' ? procedure.sid.family : 'the runway heading';
     return unresolved(
       'A.phrase',
-      `no altitude rule for ${ctx.plan} runway ${ctx.runwayFamily} class ${ctx.aircraftClass} on ${on}`,
+      `no altitude rule for ${ctx.plan} runway ${ctx.runwayFamily} class ${ctx.sopClass} on ${on}`,
     );
   }
   const resolved = altitudeValue(row, procedure, ctx, scenario);

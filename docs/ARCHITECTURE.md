@@ -55,7 +55,8 @@ polygons; `nct_boundary.py` ray-casts every destination's coordinates against th
 `nct` flag that gates the TEC lookup is computed, with `outside_nct: <reason>` on a destination row for a
 field another facility owns to the ground), plus `destinations.yaml`, `airlines.yaml` and
 `aircraft_types.yaml` (what a destination, an airline and an aircraft type are; an airport's `routes.yaml`
-lists only the codes it flies and the build composes its `routeLibrary` from them). Airport-independent
+lists only the codes it flies and the build composes its `routeLibrary` from them; `aircraft_types.yaml` also
+pins ZOA CPS-004 and marks its special aircraft, see "Special aircraft" below). Airport-independent
 facts live in `shared/`, never copied between airports. Adding an
 airport is adding that directory and a line in `data/airports.json`; the step-by-step runbook is
 [ADDING_AN_AIRPORT.md](./ADDING_AN_AIRPORT.md).
@@ -177,6 +178,23 @@ still win.
   family come first. This move outranks every default, and `RWY-TEC` explains it.
 - **Altitude.** The flight is flown at the TEC final altitude exactly, parity aside. A row's initial
   altitude decides the A element when the row's head is the procedure issued.
+
+### Special aircraft (CPS-004 §3.1)
+
+ZOA CPS-004 §3.1 lists five types whose performance differs from their engine class. The SF50, C510, E50P and E55P are jets handled like turboprops, and the DH8D is a turboprop handled like a jet. The list applies "unless procedures are defined in local Standard Operating Procedures", and the consideration "is not required, but must be considered". User ruling, 2026-09-26: the trainer **proposes the jet handling and also accepts the turboprop handling**.
+
+- **Data.**
+  - `generator/shared/aircraft_types.yaml` gives each of these types a `performance_class`, and its `special_handling` block pins the document. The block holds the sha256 and sentinels, which `verify-sop` and the build check, plus the citable row `ZOA-CPS004-SPECIAL-AIRCRAFT`.
+  - `merge.py` writes `handling { proposeClass, acceptClass, ruleId, localSop }` on the fleet entry and appends the row to `phraseologyRules`.
+  - `localSop` is true when the airport's `aircraftGroups` names the type (KOAK's `jets_and_dh8d`), meaning its SOP defines that type itself.
+- **Handling.** `classify(scenario, airport, handling)` takes `'proposed'` or `'accepted'` and sets two classes:
+  - `tecClass` keys TEC rows. They are ZOA-wide, so §3.1 always applies to them.
+  - `sopClass` keys assignment, altitude, runway-explanation, LOA and common-arrival rows. It changes only under `'accepted'`, and only when `localSop` is false.
+  - `aircraftClass` stays the engine class. The scenario draw uses it, except the TEC runway move, which uses the proposed `tecClass`.
+- **Grading.** A special type is resolved under both handlings, and the answer is graded against each as a whole, so a jet route with a turboprop altitude is not right. The result with more right elements wins and ties go to the proposal (`rules/handling.ts`). Every grade that differs between the two resolutions cites `ZOA-CPS004-SPECIAL-AIRCRAFT` when the accepted handling wins.
+  - In clearance mode that is one comparison over the whole clearance.
+  - In amendment mode the boxes decide the handling. The amended plan, the clearance and its grades then use that handling only.
+  - The runway explanation always describes the draw, so it is the same under both handlings.
 
 ### Free-text grading
 

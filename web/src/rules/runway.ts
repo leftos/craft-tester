@@ -111,9 +111,12 @@ function defaultRunway(
   return (byAirline ?? byGroup ?? byClass)?.runway;
 }
 
-/** Whether a TEC row is usable for the flight were it to depart this runway. */
+/**
+ * Whether a TEC row is usable for the flight were it to depart this runway, read under the proposed
+ * ZOA CPS-004 3.1 handling, the only one the draw moves a flight by.
+ */
 function hasTecRoute(runway: string, scenario: Scenario, airport: AirportData): boolean {
-  return usableTecRouteOn(runway, scenario, airport) !== undefined;
+  return usableTecRouteOn(runway, scenario, airport, 'proposed') !== undefined;
 }
 
 /**
@@ -134,8 +137,9 @@ function movedOffDefault(
 
 /**
  * Whether the flight's TEC route explains a runway no default, request or direction does: a row is
- * usable off it, and some runway of the configuration listed for the class has none. A runway the
- * class takes only on request is not one the draw moves a flight to, so it is not counted.
+ * usable off it, and some runway the draw could have drawn it onto has none. Those are the runways
+ * of the configuration listed for the class the draw departs the flight by, its real class; a
+ * runway the class takes only on request is left out, as the draw leaves it out.
  */
 function explainedByTec(
   airport: AirportData,
@@ -195,12 +199,17 @@ function mechanismId(
  * the defaults: where the draw moved the flight off its default to a runway its TEC departure is in
  * use from, or where only its TEC route explains the runway, `RWY-TEC` is cited.
  *
+ * The runway is a fact of the draw, so the explanation reads the flight as the draw does: by its
+ * real class and under the proposed ZOA CPS-004 3.1 handling, whichever handling the clearance is
+ * resolved under. A type the special handling lists is explained the same way on both sides of it.
+ *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data, whose phraseology rows carry the mechanisms.
- * @param aircraftClass The class the flight was classified into.
- * @param direction The gate direction the assignment table reads the flight on: its TEC route's for a
- *   flight a TEC route begins on a departure or heading for, else its filed route's; undefined when
- *   the exit fix is not a gate.
+ * @param aircraftClass The flight's real class (`Classification.aircraftClass`), the class the draw
+ *   departs it by.
+ * @param direction The gate direction the assignment table reads the flight on under the proposed
+ *   handling: its TEC route's for a flight a TEC route begins on a departure or heading for, else its
+ *   filed route's; undefined when the exit fix is not a gate.
  * @returns The departure runway with the configuration row and the mechanism row that decided it.
  */
 export function explainRunway(

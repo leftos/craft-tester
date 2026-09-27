@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, NoiseWindow, Scenario } from '@/data/schema.ts';
-import type { Classification, RuleAudience } from '@/rules/classify.ts';
+import type { Classification, Handling, RuleAudience } from '@/rules/classify.ts';
 import { addresses, classify, inAnyGroup, isNoiseWindowActive } from '@/rules/classify.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const BASE: Scenario = {
   callsign: 'UAL1',
@@ -62,7 +64,7 @@ const grouped: AirportData = {
 
 /** The classification of a flight of `aircraftType` at the airport with the groups. */
 function classified(aircraftType: string): Classification {
-  const result = classify(scenario({ aircraftType }), grouped);
+  const result = classify(scenario({ aircraftType }), grouped, 'proposed');
   if (isUnresolved(result)) throw new Error(result.reason);
   return result;
 }
@@ -102,9 +104,49 @@ describe('isNoiseWindowActive', () => {
   });
 });
 
+describe('classify under ZOA CPS-004 3.1 special handling', () => {
+  /** The classes a flight of `aircraftType` is read as at the airport, under the handling given. */
+  function classesOf(
+    aircraftType: string,
+    airport: AirportData,
+    handling: Handling,
+  ): Pick<Classification, 'aircraftClass' | 'tecClass' | 'sopClass' | 'handlingRule'> {
+    const flight = scenario({
+      aircraftType,
+      runwayConfigId: airport.runwayConfigs[0]?.id ?? '',
+    });
+    const result = classify(flight, airport, handling);
+    if (isUnresolved(result)) throw new Error(result.reason);
+    const { aircraftClass, tecClass, sopClass, handlingRule } = result;
+    return { aircraftClass, tecClass, sopClass, handlingRule };
+  }
+
+  const RULE = 'ZOA-CPS004-SPECIAL-AIRCRAFT';
+
+  it.each([
+    ['KOAK', 'DH8D', 'proposed', 'T', 'J', 'T', RULE],
+    ['KOAK', 'DH8D', 'accepted', 'T', 'T', 'T', RULE],
+    ['KSFO', 'C510', 'proposed', 'J', 'J', 'J', RULE],
+    ['KSFO', 'C510', 'accepted', 'J', 'T', 'T', RULE],
+    ['KOAK', 'C510', 'accepted', 'J', 'T', 'T', RULE],
+    ['KSFO', 'B738', 'proposed', 'J', 'J', 'J', null],
+    ['KSFO', 'B738', 'accepted', 'J', 'J', 'J', null],
+  ] as const)(
+    'reads a %s %s %s as class %s, TEC class %s, SOP class %s',
+    (icao, type, handling, aircraftClass, tecClass, sopClass, handlingRule) => {
+      expect(classesOf(type, icao === 'KOAK' ? koak : ksfo, handling)).toStrictEqual({
+        aircraftClass,
+        tecClass,
+        sopClass,
+        handlingRule,
+      });
+    },
+  );
+});
+
 describe('classify', () => {
   it('reads the class, plan, runway family, and config from the data', () => {
-    const result = classify(scenario({}), ksfo);
+    const result = classify(scenario({}), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.aircraftClass).toBe('J');
     expect(result.plan).toBe('SFOW');
@@ -114,19 +156,19 @@ describe('classify', () => {
   });
 
   it('reports both noise windows in the small hours', () => {
-    const result = classify(scenario({ localTime: '0300' }), ksfo);
+    const result = classify(scenario({ localTime: '0300' }), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.activeNoiseWindows).toEqual(['night', 'late_night']);
   });
 
   it('takes the notices the data marks default-active', () => {
-    const result = classify(scenario({}), ksfo);
+    const result = classify(scenario({}), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.activeNotices).toEqual(['SFO-SEGUL-OFF']);
   });
 
   it('lets a scenario override the active notices, including with none', () => {
-    const result = classify(scenario({ activeNotices: [] }), ksfo);
+    const result = classify(scenario({ activeNotices: [] }), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.activeNotices).toEqual([]);
   });
@@ -136,7 +178,7 @@ describe('classify', () => {
     [null, false],
     ['/Q', false],
   ] as const)('reads RNAV capability from the equipment suffix %s: %s', (suffix, expected) => {
-    const result = classify(scenario({ equipmentSuffix: suffix }), ksfo);
+    const result = classify(scenario({ equipmentSuffix: suffix }), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.rnavCapable).toBe(expected);
   });
@@ -149,23 +191,23 @@ describe('classify', () => {
     [null, false],
     ['/Q', false],
   ] as const)('reads GNSS capability from the equipment suffix %s: %s', (suffix, expected) => {
-    const result = classify(scenario({ equipmentSuffix: suffix }), ksfo);
+    const result = classify(scenario({ equipmentSuffix: suffix }), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.gnssCapable).toBe(expected);
   });
 
   it('blocks the SID element on an aircraft type with no class', () => {
-    const result = classify(scenario({ aircraftType: 'XXXX' }), ksfo);
+    const result = classify(scenario({ aircraftType: 'XXXX' }), ksfo, 'proposed');
     expect(result).toEqual({ element: 'R.sid', reason: expect.stringContaining('XXXX') });
   });
 
   it('blocks the SID element on a runway configuration the data does not have', () => {
-    const result = classify(scenario({ runwayConfigId: '13/31' }), ksfo);
+    const result = classify(scenario({ runwayConfigId: '13/31' }), ksfo, 'proposed');
     expect(result).toEqual({ element: 'R.sid', reason: expect.stringContaining('13/31') });
   });
 
   it('carries the filed type designator', () => {
-    const result = classify(scenario({}), ksfo);
+    const result = classify(scenario({}), ksfo, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.aircraftType).toBe('B738');
   });
@@ -183,7 +225,7 @@ describe('classify', () => {
       ...grouped,
       routeLibrary: { ...grouped.routeLibrary, fleet: [] },
     };
-    const result = classify(scenario({ aircraftType: 'DH8D' }), noFleet);
+    const result = classify(scenario({ aircraftType: 'DH8D' }), noFleet, 'proposed');
     if (isUnresolved(result)) throw new Error(result.reason);
     expect(result.approachCategory).toBeUndefined();
   });

@@ -75,6 +75,7 @@ from craft_generator.cifp.waypoints import RNAV_WAYPOINT
 from craft_generator.nct_boundary import NctBoundary
 from craft_generator.sop.load import (
     AIRCRAFT_CHARACTERISTICS_FILE,
+    AIRCRAFT_TYPES_FILE,
     AIRLINES_FILE,
     COMMON_ARRIVALS_FILE,
     NCT_BOUNDARY_FILE,
@@ -113,6 +114,8 @@ from craft_generator.sop.model import (
     SidOverride,
     SidTopAltitude,
     SopData,
+    SopSource,
+    SpecialHandling,
     TecRoute,
 )
 
@@ -233,21 +236,22 @@ def _airport(info: AirportInfo, airport_records: Mapping[str, AirportRecord]) ->
     }
 
 
-def _provenance(sop: SopData, provenance: Provenance) -> Document:
-    source = sop.source
-    return {
+def _pinned_source(source: SopSource) -> Document:
+    return {"url": source.url, "version": source.version, "sha256": source.sha256, "transcribedAt": source.transcribed_at.isoformat()}
+
+
+def _provenance(sop: SopData, special_handling: SpecialHandling | None, provenance: Provenance) -> Document:
+    document: Document = {
         "airac": {"cycle": provenance.cycle, "effective": provenance.effective.isoformat(), "cifpSha256": provenance.cifp_sha256},
         "chartsApi": provenance.charts_api_url,
-        "sop": {
-            "url": source.url,
-            "version": source.version,
-            "sha256": source.sha256,
-            "transcribedAt": source.transcribed_at.isoformat(),
-        },
+        "sop": _pinned_source(sop.source),
         "secondarySources": [
             {"id": entry.id, "title": entry.title, "dated": entry.dated.isoformat(), "url": entry.url} for entry in sop.secondary_sources
         ],
     }
+    if special_handling is not None:
+        document["specialHandling"] = _pinned_source(special_handling.source)
+    return document
 
 
 def _departure_runway(runway: DepartureRunway) -> Document:
@@ -400,21 +404,28 @@ def _common_arrival(arrival: CommonArrival) -> Document:
     return entry
 
 
-def _phraseology_rules(shared: Sequence[PhraseologyRule], airport: Sequence[PhraseologyRule]) -> list[Document]:
+def _phraseology_rules(
+    shared: Sequence[PhraseologyRule], airport: Sequence[PhraseologyRule], special_handling: SpecialHandling | None
+) -> list[Document]:
     """Join the phraseology rows every airport shares with the rows one airport states itself.
 
     Args:
         shared: The inherited rows, in the order ``shared/phraseology_rules.yaml`` states them.
         airport: The rows the airport's ``sop.yaml`` states, in its file order.
+        special_handling: The shared ZOA CPS-004 3.1 block, whose rule row the fleet's ``handling``
+            cites by id, or ``None`` when ``shared/aircraft_types.yaml`` carries none.
 
     Returns:
         The shared rows in shared-file order, each replaced in place by the airport row of the same
-        id where the airport states one, followed by the rows only the airport has, in its file order.
+        id where the airport states one, followed by the rows only the airport has, in its file order,
+        and last the CPS-004 rule row.
     """
     overrides = {rule.id: rule for rule in airport}
     shared_ids = {rule.id for rule in shared}
     rules = [overrides.get(rule.id, rule) for rule in shared]
     rules += [rule for rule in airport if rule.id not in shared_ids]
+    if special_handling is not None:
+        rules.append(special_handling.rule)
     return [{"id": rule.id, "source": rule.source, "text": rule.text} for rule in rules]
 
 
@@ -466,8 +477,41 @@ def _approach_category(entry: FleetEntry, characteristics: Mapping[str, Aircraft
     return published.aac
 
 
-def _fleet_entry(entry: FleetEntry, characteristics: Mapping[str, AircraftCharacteristic]) -> Document:
-    """Return one fleet row; ``cwt`` is the FAA category and is absent for a type their table omits."""
+def _handling(entry: FleetEntry, special_handling: SpecialHandling | None, local_types: frozenset[str]) -> Document | None:
+    """Return the ZOA CPS-004 3.1 handling of one fleet type, ``None`` for a type the table does not list.
+
+    The trainer proposes the jet handling and also accepts the turboprop one (user ruling
+    2026-09-26), so of the type's own class and its performance class the jet one is proposed and
+    the other accepted. ``localSop`` is set where the airport's SOP names the type in an aircraft
+    group, which is the SOP defining the type's handling itself.
+    """
+    performance = entry.performance_class
+    if performance is None:
+        return None
+    where = f"routes.yaml fleet[{entry.type}]"
+    if special_handling is None:
+        raise ValueError(f"{where}: the type carries a performance_class but no special_handling block was loaded to cite for it")
+    pair = {entry.aircraft_class, performance}
+    if "J" not in pair:
+        raise ValueError(
+            f"{where}: class {entry.aircraft_class!r} and performance_class {performance!r} name no jet handling to propose; "
+            f"the CPS-004 ruling covers jet and turboprop handling only, so correct the row in generator/shared/{AIRCRAFT_TYPES_FILE}"
+        )
+    (accept,) = pair - {"J"}
+    return {"proposeClass": "J", "acceptClass": accept, "ruleId": special_handling.rule.id, "localSop": entry.type in local_types}
+
+
+def _fleet_entry(
+    entry: FleetEntry,
+    characteristics: Mapping[str, AircraftCharacteristic],
+    special_handling: SpecialHandling | None,
+    local_types: frozenset[str],
+) -> Document:
+    """Return one fleet row; ``cwt`` is the FAA category and is absent for a type their table omits.
+
+    ``handling`` is present only for a type ZOA CPS-004 3.1 lists; ``local_types`` are the types the
+    airport's SOP names in its aircraft groups.
+    """
     fleet: Document = {
         "type": entry.type,
         "class": entry.aircraft_class,
@@ -479,7 +523,15 @@ def _fleet_entry(entry: FleetEntry, characteristics: Mapping[str, AircraftCharac
     published = characteristics.get(entry.type)
     if published is not None:
         fleet["cwt"] = published.cwt
+    handling = _handling(entry, special_handling, local_types)
+    if handling is not None:
+        fleet["handling"] = handling
     return fleet
+
+
+def _sop_named_types(sop: SopData) -> frozenset[str]:
+    """Return the types the airport's SOP names in any aircraft group's ``types`` list."""
+    return frozenset(designator for group in sop.aircraft_groups.values() for designator in group.types)
 
 
 def _route_where(route: RouteEntry) -> str:
@@ -598,7 +650,10 @@ def _route_library(inputs: BuildInputs) -> Document:
         ],
         "telephony": dict(routes.telephony),
         "cargoAirlines": list(routes.cargo_airlines),
-        "fleet": [_fleet_entry(entry, inputs.aircraft_characteristics) for entry in routes.fleet],
+        "fleet": [
+            _fleet_entry(entry, inputs.aircraft_characteristics, inputs.airport.special_handling, _sop_named_types(inputs.airport.sop))
+            for entry in routes.fleet
+        ],
         "routes": [_route_entry(route, inputs.airport_records, inputs.destination_stars) for route in routes.routes],
     }
 
@@ -1279,7 +1334,7 @@ def build_airport(inputs: BuildInputs) -> Document:
     sop = inputs.airport.sop
     document: Document = {
         "airport": _airport(sop.airport, inputs.airport_records),
-        "provenance": _provenance(sop, inputs.provenance),
+        "provenance": _provenance(sop, inputs.airport.special_handling, inputs.provenance),
         "runways": [{"designator": record.designator, "magneticBearing": record.magnetic_bearing} for record in inputs.runways],
         "runwayConfigs": [_runway_config(config) for config in sop.runway_configs],
         "departureSectors": [_sector(sector) for sector in sop.departure_sectors],
@@ -1303,7 +1358,7 @@ def build_airport(inputs: BuildInputs) -> Document:
             "nonStandardInterimExpectMinutes": sop.phraseology.non_standard_interim_expect_minutes,
             "vectorHybridTransitionsSpoken": sop.phraseology.vector_hybrid_transitions_spoken,
         },
-        "phraseologyRules": _phraseology_rules(inputs.phraseology_rules, sop.phraseology_rules),
+        "phraseologyRules": _phraseology_rules(inputs.phraseology_rules, sop.phraseology_rules, inputs.airport.special_handling),
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
         "routeConnections": [_route_connection(connection) for connection in inputs.route_connections],
         "airways": [_airway(airway) for airway in inputs.airport.airways],

@@ -4,9 +4,20 @@ from typing import Any
 
 import pytest
 
+from craft_generator.aircraft_characteristics import AircraftCharacteristic
 from craft_generator.emit import data_path, dump, schema_path, validate
-from craft_generator.merge import BuildInputs, Document, _phraseology_rules, build_airport, gate_coverage, tec_route_grammar_error
-from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule
+from craft_generator.merge import (
+    BuildInputs,
+    Document,
+    _fleet_entry,
+    _phraseology_rules,
+    _sop_named_types,
+    build_airport,
+    gate_coverage,
+    tec_route_grammar_error,
+)
+from craft_generator.sop.load import airport_dir, load_airport
+from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule, SharedRouteFacts
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -783,6 +794,49 @@ def test_a_literal_arrival_revision_is_kept_for_a_destination_the_faa_file_does_
     assert _tail(ksfo_document, "DEDHD", "CYVR") == "DEDHD LMT BTG J1 SEA PAE GRIZZ1"
 
 
+def _fleet(document: Document) -> dict[str, Document]:
+    return {entry["type"]: entry for entry in document["routeLibrary"]["fleet"]}
+
+
+def test_the_dh8d_at_koak_proposes_the_jet_handling_its_sop_defines(
+    shared_route_facts: SharedRouteFacts, aircraft_characteristics: dict[str, AircraftCharacteristic]
+) -> None:
+    koak = load_airport(airport_dir("KOAK"), shared_route_facts)
+    dh8d = next(entry for entry in koak.routes.fleet if entry.type == "DH8D")
+    fleet = _fleet_entry(dh8d, aircraft_characteristics, koak.special_handling, _sop_named_types(koak.sop))
+    assert fleet["class"] == "T"
+    assert fleet["handling"] == {"proposeClass": "J", "acceptClass": "T", "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT", "localSop": True}
+
+
+def test_a_c510_at_ksfo_proposes_the_jet_handling_no_local_sop_defines(ksfo_document: Document) -> None:
+    c510 = _fleet(ksfo_document)["C510"]
+    assert c510["class"] == "J"
+    assert c510["handling"] == {"proposeClass": "J", "acceptClass": "T", "ruleId": "ZOA-CPS004-SPECIAL-AIRCRAFT", "localSop": False}
+
+
+def test_a_type_the_cps004_table_does_not_list_has_no_handling(ksfo_document: Document) -> None:
+    fleet = _fleet(ksfo_document)
+    assert "handling" not in fleet["A320"]
+    assert "handling" not in fleet["C25B"]
+    assert {designator for designator, entry in fleet.items() if "handling" in entry} == {"C510", "E55P", "SF50", "E50P"}
+
+
+def test_the_cps004_rule_row_is_citable_from_the_phraseology_rules(ksfo_document: Document) -> None:
+    rules = ksfo_document["phraseologyRules"]
+    assert rules[-1]["id"] == "ZOA-CPS004-SPECIAL-AIRCRAFT"
+    assert rules[-1]["source"] == "ZOA CPS-004 v1.2 3.1"
+    assert [rule["id"] for rule in rules].count("ZOA-CPS004-SPECIAL-AIRCRAFT") == 1
+
+
+def test_the_cps004_pin_is_recorded_in_the_provenance(ksfo_document: Document) -> None:
+    assert ksfo_document["provenance"]["specialHandling"] == {
+        "url": "https://oakartcc.org/controllers/file/a83f4023-5b1e-11e9-8010-2a32edb55910",
+        "version": "1.2",
+        "sha256": "8be0f0acc742a7ca199c73480cd1036600955bba759a321390a40d79a20698a7",
+        "transcribedAt": "2026-09-26",
+    }
+
+
 def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
     shared = (
         PhraseologyRule(id="A", source="shared A source", text="shared A text"),
@@ -792,7 +846,7 @@ def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
         PhraseologyRule(id="B", source="airport B source", text="airport B text"),
         PhraseologyRule(id="C", source="airport C source", text="airport C text"),
     )
-    rules = _phraseology_rules(shared, airport)
+    rules = _phraseology_rules(shared, airport, None)
     assert [rule["id"] for rule in rules] == ["A", "B", "C"]
     assert rules[1] == {"id": "B", "source": "airport B source", "text": "airport B text"}
     assert rules[0]["text"] == "shared A text"

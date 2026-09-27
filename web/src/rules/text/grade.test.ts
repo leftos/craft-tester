@@ -95,7 +95,7 @@ type RealReading = {
 
 function realReading(fixture: Fixture): RealReading {
   const airport = airportOf(fixture.airport);
-  const result = resolveClearance(fixture.scenario, airport);
+  const result = resolveClearance(fixture.scenario, airport, 'proposed');
   if (!result.ok) throw new Error(`${fixture.id}: the engine resolves no clearance`);
   const spoken = spokenFor(fixture.scenario, fixture.scenario, result.clearance, airport);
   return { fixture, airport, clearance: result.clearance, spoken };

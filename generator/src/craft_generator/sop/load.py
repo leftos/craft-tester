@@ -47,6 +47,7 @@ from craft_generator.sop.model import (
     AircraftClass,
     AircraftGroup,
     AircraftType,
+    AircraftTypeTable,
     Airline,
     AirportInfo,
     AirportInputs,
@@ -91,6 +92,7 @@ from craft_generator.sop.model import (
     SidTopAltitude,
     SopData,
     SopSource,
+    SpecialHandling,
     TecData,
     TecRoute,
     TecSource,
@@ -1051,6 +1053,7 @@ def _aircraft_type(designator: str, row: _Row) -> AircraftType:
     aircraft = AircraftType(
         designator=designator,
         aircraft_class=row.choice("class", AIRCRAFT_CLASSES),
+        performance_class=row.optional_choice("performance_class", AIRCRAFT_CLASSES),
         wtc=row.choice("wtc", WAKE_CATEGORIES),
         suffixes=row.texts("suffixes"),
         approach_category=row.optional_choice("approach_category", APPROACH_CATEGORIES),
@@ -1060,29 +1063,52 @@ def _aircraft_type(designator: str, row: _Row) -> AircraftType:
     for suffix in aircraft.suffixes:
         if _SUFFIX_PATTERN.fullmatch(suffix) is None:
             raise ValueError(f"{row.where}: suffix {suffix!r} is not a slash and one upper-case letter, e.g. /L; see FAA JO 7110.65 TBL 2-3-10")
+    if aircraft.performance_class == aircraft.aircraft_class:
+        raise ValueError(
+            f"{row.where}: performance_class {aircraft.performance_class!r} is the type's own class; "
+            "it names the class ZOA CPS-004 3.1 says the type performs like, so drop it or correct it to the other class"
+        )
     return aircraft
 
 
-def load_aircraft_types(path: Path) -> dict[str, AircraftType]:
-    """Load the aircraft-type facts every airport shares.
+def _special_handling(row: _Row) -> SpecialHandling:
+    handling = SpecialHandling(source=_sop_source(row.child("source")), rule=_phraseology_rule(row.child("rule")))
+    row.finish()
+    return handling
+
+
+def load_aircraft_types(path: Path) -> AircraftTypeTable:
+    """Load the aircraft-type facts every airport shares, with the ZOA CPS-004 special-handling block.
 
     Args:
         path: Path to ``generator/shared/aircraft_types.yaml``.
 
     Returns:
-        One row per type, keyed by its designator.
+        One row per type, keyed by its designator, and the special-handling block, ``None`` when
+        the file carries none.
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown key, names an aircraft class
-            outside P/T/J or a wake category outside L/M/H/J, or holds a malformed equipment suffix.
+            outside P/T/J or a wake category outside L/M/H/J, holds a malformed equipment suffix, gives
+            a type a ``performance_class`` equal to its ``class``, or marks a type with a
+            ``performance_class`` while carrying no ``special_handling`` block to cite for it.
         OSError: The file is missing.
     """
     where = _where(path)
     root = _Row(where, _load_yaml_mapping(path, where))
+    block = root.optional_child("special_handling")
+    special_handling = None if block is None else _special_handling(block)
     table = root.table("types")
     types = {designator: _aircraft_type(designator, _Row(f"{where}.types[{designator}]", value)) for designator, value in table.items()}
     root.finish()
-    return types
+    if special_handling is None:
+        marked = sorted(designator for designator, aircraft in types.items() if aircraft.performance_class is not None)
+        if marked:
+            raise ValueError(
+                f"{where}: {marked} carry a performance_class but the file has no special_handling block; "
+                "add the block with the pinned ZOA CPS-004 source and its rule row, or drop performance_class"
+            )
+    return AircraftTypeTable(types=types, special_handling=special_handling)
 
 
 def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
@@ -1101,10 +1127,12 @@ def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
         ValueError: One of the seven files fails its own checks.
         OSError: One of the seven files is missing.
     """
+    aircraft_types = load_aircraft_types(shared / AIRCRAFT_TYPES_FILE)
     return SharedRouteFacts(
         destinations=load_shared_destinations(shared / DESTINATIONS_FILE),
         airlines=load_airlines(shared / AIRLINES_FILE),
-        aircraft_types=load_aircraft_types(shared / AIRCRAFT_TYPES_FILE),
+        aircraft_types=aircraft_types.types,
+        special_handling=aircraft_types.special_handling,
         loa=load_shared_loa_rules(shared / LOA_RULES_FILE),
         airways=load_airways(shared / AIRWAYS_FILE),
         common_arrivals=load_common_arrivals(shared / COMMON_ARRIVALS_FILE),
@@ -1159,6 +1187,7 @@ def _composed_fleet_entry(aircraft: AircraftType, airlines: Sequence[Airline]) -
     return FleetEntry(
         type=aircraft.designator,
         aircraft_class=aircraft.aircraft_class,
+        performance_class=aircraft.performance_class,
         wtc=aircraft.wtc,
         suffixes=aircraft.suffixes,
         airlines=tuple(airline.code for airline in airlines if aircraft.designator in airline.types),
@@ -1953,4 +1982,5 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         airways=shared.airways,
         common_arrivals=shared.common_arrivals,
         navaid_names=shared.navaid_names,
+        special_handling=shared.special_handling,
     )

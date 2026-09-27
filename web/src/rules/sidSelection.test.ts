@@ -52,6 +52,9 @@ const config: RunwayConfig = {
 
 const BASE_CTX: Classification = {
   aircraftClass: 'J',
+  tecClass: 'J',
+  sopClass: 'J',
+  handlingRule: null,
   aircraftType: 'B738',
   approachCategory: undefined,
   plan: 'SFOW',
@@ -409,7 +412,7 @@ describe('selectSid', () => {
 
   it('names the flight when no row applies at all', () => {
     const result = selectSid(
-      ctx({ aircraftClass: 'P' }),
+      ctx({ aircraftClass: 'P', tecClass: 'P', sopClass: 'P' }),
       'DEDHD',
       'north',
       scenario({}),
@@ -427,7 +430,7 @@ describe('selectSid', () => {
       aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
     };
     const result = selectSid(
-      ctx({ aircraftClass: 'T', aircraftType: 'DH8D' }),
+      ctx({ aircraftClass: 'T', tecClass: 'T', sopClass: 'T', aircraftType: 'DH8D' }),
       'DEDHD',
       'north',
       scenario({ aircraftType: 'DH8D' }),
@@ -443,7 +446,7 @@ describe('selectSid', () => {
       aircraftGroups: { jets_and_dh8d: { classes: ['J'], types: ['DH8D'] } },
     };
     const result = selectSid(
-      ctx({ aircraftClass: 'T', aircraftType: 'SF34' }),
+      ctx({ aircraftClass: 'T', tecClass: 'T', sopClass: 'T', aircraftType: 'SF34' }),
       'DEDHD',
       'north',
       scenario({ aircraftType: 'SF34' }),

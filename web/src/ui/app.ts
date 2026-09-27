@@ -1,6 +1,7 @@
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import { grade } from '@/rules/grade.ts';
+import { citeSpecialHandling, gradeBest } from '@/rules/handling.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { RouteReading, TextGrade } from '@/rules/text/grade.ts';
 import { gradeText } from '@/rules/text/grade.ts';
@@ -38,7 +39,13 @@ import {
   browserInputKindStore,
 } from '@/ui/preferences.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
-import { clearedPlan, listAirports, loadAirportData, spokenFor } from '@/ui/session.ts';
+import {
+  acceptedClearance,
+  clearedPlan,
+  listAirports,
+  loadAirportData,
+  spokenFor,
+} from '@/ui/session.ts';
 import type { SolvedStore } from '@/ui/solved.ts';
 import { browserSolvedStore } from '@/ui/solved.ts';
 import type { AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
@@ -286,6 +293,32 @@ function clearanceGrades(
     : grade(answer.picks, clearance);
 }
 
+/** The verdicts of a clearance answer and the reading the reveal speaks for the clearance they won against. */
+type ClearanceOutcome = { grades: (Grade | TextGrade)[]; spoken: SpokenClearance };
+
+/**
+ * Grades a clearance answer against the clearance under both sides of ZOA CPS-004 3.1 special
+ * handling and keeps the better one (`gradeBest`), so a player who read the accepted handling's
+ * clearance sees it confirmed, with the special-handling row cited, rather than the proposed one.
+ */
+function clearanceOutcome(
+  answer: ClearanceAnswer<PlayerPicks>,
+  generated: Scenario,
+  clearance: ResolvedClearance,
+  airport: AirportData,
+  routeReading: RouteReading,
+): ClearanceOutcome {
+  const spokenOf = (resolved: ResolvedClearance): SpokenClearance =>
+    spokenFor(generated, generated, resolved, airport);
+  const best = gradeBest(
+    clearance,
+    acceptedClearance(generated, airport),
+    (resolved) => clearanceGrades(answer, spokenOf(resolved), resolved, airport, routeReading),
+    citeSpecialHandling(generated, airport),
+  );
+  return { grades: best.grades, spoken: spokenOf(best.resolved) };
+}
+
 /** The strip, the ATIS, and then either the form or the results. */
 function renderPanels(state: AppState, actions: Actions): Panels {
   if (state.view.kind === 'unresolved') {
@@ -308,11 +341,9 @@ function renderPanels(state: AppState, actions: Actions): Panels {
   ];
   const revisit = state.revisit;
   if (phase === 'clearance-revisit' && revisit?.kind === 'clearance') {
-    const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderRevisit({
-        grades: clearanceGrades(revisit, spoken, clearance, state.airport, routeReadingOf(state)),
-        spoken,
+        ...clearanceOutcome(revisit, generated, clearance, state.airport, routeReadingOf(state)),
         routeReading: routeReadingOf(state),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,
@@ -322,11 +353,9 @@ function renderPanels(state: AppState, actions: Actions): Panels {
   }
   const answer = toClearanceAnswer(state);
   if (phase === 'clearance-results' && answer !== undefined) {
-    const spoken = spokenFor(generated, generated, clearance, state.airport);
     panels.push(
       renderResults({
-        grades: clearanceGrades(answer, spoken, clearance, state.airport, routeReadingOf(state)),
-        spoken,
+        ...clearanceOutcome(answer, generated, clearance, state.airport, routeReadingOf(state)),
         routeReading: routeReadingOf(state),
         onNext: actions.onNewScenario,
         onRetry: actions.onRetry,

@@ -1,7 +1,7 @@
 import type { AirportData, AssignmentRule, Direction, Scenario } from '@/data/schema.ts';
 import { resolveAltitude } from '@/rules/altitude.ts';
 import { citePhraseology, citeTec, toCitation } from '@/rules/cite.ts';
-import type { Classification } from '@/rules/classify.ts';
+import type { Classification, Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveFrequency } from '@/rules/frequency.ts';
 import type { ParsedRoute } from '@/rules/route.ts';
@@ -14,6 +14,7 @@ import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
 import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type {
+  Cited,
   EngineResult,
   ResolvedRoute,
   RuleCitation,
@@ -121,6 +122,37 @@ type Issued = {
   builtRoute?: string;
 };
 
+/** The flight as the clearance is resolved: the handling it is read under and what that reading made of it. */
+type Reading = { handling: Handling; ctx: Classification; direction: Direction | undefined };
+
+/**
+ * Explains the runway as the draw read it, which is under the proposed ZOA CPS-004 3.1 handling
+ * whatever handling the clearance is resolved under, so both readings of a listed type cite the same
+ * rows. Under the accepted handling the gate direction is read again under the proposed one; where
+ * that reading cannot be made, the accepted reading's direction stands.
+ *
+ * @param scenario The filed flight plan.
+ * @param airport The airport data.
+ * @param filed The filed route, parsed.
+ * @param reading The handling the clearance is resolved under, with its classification and direction.
+ * @returns The departure runway with the rows that decided it.
+ */
+function drawnRunway(
+  scenario: Scenario,
+  airport: AirportData,
+  filed: ParsedRoute,
+  reading: Reading,
+): Cited<string> {
+  const { aircraftClass } = reading.ctx;
+  if (reading.handling === 'proposed') {
+    return explainRunway(scenario, airport, aircraftClass, reading.direction);
+  }
+  const ctx = classify(scenario, airport, 'proposed');
+  const read = isUnresolved(ctx) ? ctx : tableRoute(ctx, filed, scenario, airport);
+  const direction = isUnresolved(read) ? reading.direction : read.direction;
+  return explainRunway(scenario, airport, aircraftClass, direction);
+}
+
 /**
  * What the assignment table and the route builder together issue the flight.
  *
@@ -196,10 +228,15 @@ function routeElement(element: Issued, airport: AirportData): ResolvedRoute {
  *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the flight is read under.
  * @returns The resolved clearance, or the element that blocked it with the reason.
  */
-export function resolveClearance(scenario: Scenario, airport: AirportData): EngineResult {
-  const ctx = classify(scenario, airport);
+export function resolveClearance(
+  scenario: Scenario,
+  airport: AirportData,
+  handling: Handling,
+): EngineResult {
+  const ctx = classify(scenario, airport, handling);
   if (isUnresolved(ctx)) return blocked(ctx);
   const route = parseFiledRoute(scenario.filedRoute, airport, scenario.destination);
   if (isUnresolved(route)) return blocked(route);
@@ -224,7 +261,7 @@ export function resolveClearance(scenario: Scenario, airport: AirportData): Engi
         value: scenario.destination,
         citations: citePhraseology(airport, 'C-DEST'),
       },
-      runway: explainRunway(scenario, airport, ctx.aircraftClass, read.direction),
+      runway: drawnRunway(scenario, airport, route, { handling, ctx, direction: read.direction }),
       procedure: {
         value: procedureOf(element.procedure),
         citations: element.citations,

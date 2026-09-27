@@ -8,7 +8,7 @@ import type {
   Sid,
   TecRoute,
 } from '@/data/schema.ts';
-import type { Classification } from '@/rules/classify.ts';
+import type { Classification, Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
@@ -108,7 +108,7 @@ export function keyedFor(row: TecRoute, ctx: Classification, destination: Destin
     return false;
   }
   if (row.runwayFamilies.length > 0 && !row.runwayFamilies.includes(ctx.runwayFamily)) return false;
-  return row.classes.includes(ctx.aircraftClass);
+  return row.classes.includes(ctx.tecClass);
 }
 
 /**
@@ -241,6 +241,8 @@ export function usableTecRoute(
  * @param runway The departure runway to read the flight off.
  * @param scenario The filed flight plan.
  * @param airport The airport data.
+ * @param handling Which side of ZOA CPS-004 3.1 special handling the flight is read under, which
+ *   decides the class the rows are keyed by.
  * @returns The row, or `undefined` where no row is usable off that runway, or where the flight cannot
  *   be classified at all, which the clearance engine reports on its own.
  */
@@ -248,9 +250,10 @@ export function usableTecRouteOn(
   runway: string,
   scenario: Scenario,
   airport: AirportData,
+  handling: Handling,
 ): TecRoute | undefined {
   const moved: Scenario = { ...scenario, departureRunway: runway };
-  const ctx = classify(moved, airport);
+  const ctx = classify(moved, airport, handling);
   if (isUnresolved(ctx)) return undefined;
   return usableTecRoute(ctx, moved, airport);
 }

@@ -541,7 +541,7 @@ describe('gradeBoxes one-way airway', () => {
 
   /** The boxes of FDX3875, every one answered as filed, graded against what the engine resolves. */
   function asFiledGrades(airport: AirportData) {
-    const resolved = resolveAmendments(FDX3875, airport);
+    const resolved = resolveAmendments(FDX3875, airport, 'proposed');
     if (!resolved.ok) throw new Error(resolved.unresolved.map((item) => item.reason).join('; '));
     return gradeBoxes(answers(), resolved, FDX3875, airport);
   }
