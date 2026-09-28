@@ -55,6 +55,11 @@
         "clearanceDelivery": {
           "type": "string"
         },
+        "elevationFeet": {
+          "maximum": 9007199254740991,
+          "minimum": -9007199254740991,
+          "type": "integer"
+        },
         "faa": {
           "type": "string"
         },
@@ -87,7 +92,8 @@
         "clearanceDelivery",
         "lat",
         "lon",
-        "magneticVariation"
+        "magneticVariation",
+        "elevationFeet"
       ],
       "type": "object"
     },

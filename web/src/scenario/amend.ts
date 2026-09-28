@@ -1,5 +1,5 @@
 import type { AirportData, Destination, Scenario, Sid } from '@/data/schema.ts';
-import { RVSM_CEILING_FEET, RVSM_FLOOR_FEET } from '@/rules/amend/altitude.ts';
+import { RVSM_CEILING_FEET, RVSM_FLOOR_FEET, parityFloorFeet } from '@/rules/amend/altitude.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
@@ -237,9 +237,17 @@ export function droppedTransition(
   return { field: 'filedRoute', route: [...tokens.slice(0, 1), ...tokens.slice(2)].join(' ') };
 }
 
-/** The filed altitude a thousand feet up, which reads the other half of the parity table. */
-function parityFlip(scenario: Scenario): FaultPatch {
-  return { field: 'filedAltitude', feet: scenario.filedAltitude + STEP_FEET };
+/**
+ * The filed altitude a thousand feet up, which reads the other half of the parity table.
+ *
+ * @param scenario The clean plan the fault is measured against.
+ * @param airport The airport data, whose field elevation sets the floor the table is read from.
+ * @returns The raised filed altitude, or undefined when it lands below that floor, where the table
+ *   is not read at all and the plan stays correct as filed.
+ */
+export function parityFlip(scenario: Scenario, airport: AirportData): FaultPatch | undefined {
+  const feet = scenario.filedAltitude + STEP_FEET;
+  return feet < parityFloorFeet(airport) ? undefined : { field: 'filedAltitude', feet };
 }
 
 /**

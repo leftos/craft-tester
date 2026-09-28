@@ -12,6 +12,15 @@ CONTINUATION_COLUMN = 21
 PRIMARY_CONTINUATION_NUMBERS = frozenset({"0", "1"})
 LIMITATION_APPLICATION = "L"
 COORDINATE_COLUMNS = (32, 56)
+ELEVATION_COLUMNS = (56, 61)
+
+KDEN_ELEVATION = "05434"
+BELOW_SEA_LEVEL_ELEVATION = "-0012"
+
+
+def _with_elevation(field: str) -> str:
+    """Return the KSFO row with its elevation field replaced."""
+    return KSFO_RECORD[: ELEVATION_COLUMNS[0]] + field + KSFO_RECORD[ELEVATION_COLUMNS[1] :]
 
 
 def _continuation_of(primary: str) -> str:
@@ -54,6 +63,34 @@ def test_a_westerly_variation_is_negative_and_true_north_is_none_at_all() -> Non
     assert true_north is not None
     assert westerly.magnetic_variation == WESTERLY_VARIATION
     assert true_north.magnetic_variation == 0.0
+
+
+def test_the_elevation_field_is_whole_feet_above_sea_level() -> None:
+    record = parse_airport_record(KSFO_RECORD)
+    assert record is not None
+    assert record.elevation_feet == 13
+
+
+def test_a_high_elevation_airport_reports_its_field_elevation() -> None:
+    record = parse_airport_record(_with_elevation(KDEN_ELEVATION))
+    assert record is not None
+    assert record.elevation_feet == 5434
+
+
+def test_an_airport_below_sea_level_is_negative() -> None:
+    record = parse_airport_record(_with_elevation(BELOW_SEA_LEVEL_ELEVATION))
+    assert record is not None
+    assert record.elevation_feet == -12
+
+
+def test_a_misaligned_elevation_field_is_named() -> None:
+    with pytest.raises(ValueError, match="KSFO: elevation field"):
+        parse_airport_record(_with_elevation("0001X"))
+
+
+def test_a_row_truncated_before_its_elevation_field_is_named() -> None:
+    with pytest.raises(ValueError, match="KSFO: the airport row is 58 characters"):
+        parse_airport_record(KSFO_RECORD[:58])
 
 
 def test_rows_that_are_not_airport_records_are_skipped(ksfo_lines: list[str]) -> None:

@@ -68,6 +68,8 @@ export const AirportIdentitySchema = z.strictObject({
    * from the true course to get the magnetic course the parity rule is read against.
    */
   magneticVariation: z.number().min(-180).max(180),
+  /** Field elevation in feet MSL, from the CIFP airport record. */
+  elevationFeet: z.number().int(),
 });
 
 /** A hand-transcribed document pinned by its sha256, as `craft-gen verify-sop` checks it. */

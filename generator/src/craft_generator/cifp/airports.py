@@ -12,7 +12,9 @@ seconds and hundredths of a second. ``N37370770`` is 37°37'07.70" = 37.618806 a
 the plan quotes as "about N37.619, W122.375", so the offsets read the fields they are meant to. The
 magnetic variation follows the longitude at ``[51:56]``: a direction letter, then degrees and tenths
 of a degree, so ``E0140`` is 14.0° east. ``T`` marks a station referenced to true north, used near
-the poles, and reads as no variation at all.
+the poles, and reads as no variation at all. The field elevation follows the variation at ``[56:61]``:
+five characters of whole feet, right-justified and zero-filled, prefixed with a minus for an airport
+below sea level, so the row's ``00013`` is 13 ft MSL.
 
 Southern and western hemispheres come back negative, a westerly variation comes back negative, and
 every coordinate is rounded to six decimal places (about 0.1 m) so the emitted JSON carries a short
@@ -26,10 +28,13 @@ AIRPORT_RECORD_TYPE = "A"
 LATITUDE_COLUMNS = (32, 41)
 LONGITUDE_COLUMNS = (41, 51)
 MAGNETIC_VARIATION_COLUMNS = (51, 56)
+ELEVATION_COLUMNS = (56, 61)
 
-_MINIMUM_LENGTH = MAGNETIC_VARIATION_COLUMNS[1]
+_RECORD_TYPE_COLUMN = 12
+_MINIMUM_LENGTH = ELEVATION_COLUMNS[1]
 _CONTINUATION_COLUMN = 21
 _PRIMARY_CONTINUATION_NUMBERS = frozenset({"0", "1"})
+_BELOW_SEA_LEVEL_SIGN = "-"
 _DEGREE_DIGITS = {"latitude": 2, "longitude": 3}
 _COORDINATE_DIGITS = 6
 _HEMISPHERE_SIGNS = {"N": 1.0, "S": -1.0, "E": 1.0, "W": -1.0}
@@ -45,16 +50,17 @@ _TENTHS_PER_DEGREE = 10
 
 @dataclass(frozen=True, slots=True)
 class AirportRecord:
-    """One airport reference point of the CIFP: where the airport is, and how far magnetic north is off true.
+    """One airport reference point of the CIFP: where the airport is, how far magnetic north is off true, and its elevation.
 
     ``magnetic_variation`` is in degrees, east positive, so a magnetic course is the true course less
-    the variation.
+    the variation. ``elevation_feet`` is the field elevation in feet MSL, negative below sea level.
     """
 
     ident: str
     latitude: float
     longitude: float
     magnetic_variation: float
+    elevation_feet: int
 
 
 def _decimal_degrees(field: str, kind: str, where: str) -> float:
@@ -88,8 +94,18 @@ def _magnetic_variation(field: str, where: str) -> float:
     return round(sign * int(digits) / _TENTHS_PER_DEGREE, _DECIMAL_PLACES)
 
 
+def _elevation(field: str, where: str) -> int:
+    digits = field.removeprefix(_BELOW_SEA_LEVEL_SIGN)
+    if not digits.isdigit():
+        raise ValueError(
+            f"{where}: elevation field {field!r} is not whole feet in five characters, prefixed with a "
+            f"{_BELOW_SEA_LEVEL_SIGN} for an airport below sea level; the CIFP row may be misaligned"
+        )
+    return int(field)
+
+
 def parse_airport_record(line: str) -> AirportRecord | None:
-    """Parse one CIFP line into an airport identifier, its reference point and its magnetic variation.
+    """Parse one CIFP line into an airport identifier, its reference point, variation and field elevation.
 
     Args:
         line: A single CIFP line, without its newline.
@@ -101,21 +117,28 @@ def parse_airport_record(line: str) -> AirportRecord | None:
 
     Raises:
         ValueError: The line is an airport row whose coordinate fields are not hemisphere letters
-            followed by digits, or whose variation field is not a direction letter followed by
-            digits, which means the record is misaligned.
+            followed by digits, whose variation field is not a direction letter followed by digits,
+            or whose elevation field is not whole feet, which means the record is misaligned; or the
+            row stops before its elevation field, which means it is truncated.
     """
-    if len(line) < _MINIMUM_LENGTH or line[0] != "S" or line[4] != "P" or line[12] != AIRPORT_RECORD_TYPE:
-        return None
-    if line[_CONTINUATION_COLUMN] not in _PRIMARY_CONTINUATION_NUMBERS:
+    if len(line) <= _RECORD_TYPE_COLUMN or line[0] != "S" or line[4] != "P" or line[12] != AIRPORT_RECORD_TYPE:
         return None
     ident = line[6:10].strip()
     if not ident:
+        return None
+    if len(line) < _MINIMUM_LENGTH:
+        raise ValueError(
+            f"{ident}: the airport row is {len(line)} characters and stops before the elevation field at "
+            f"columns {ELEVATION_COLUMNS[0] + 1}-{ELEVATION_COLUMNS[1]}; the row is truncated"
+        )
+    if line[_CONTINUATION_COLUMN] not in _PRIMARY_CONTINUATION_NUMBERS:
         return None
     return AirportRecord(
         ident=ident,
         latitude=_decimal_degrees(line[LATITUDE_COLUMNS[0] : LATITUDE_COLUMNS[1]], "latitude", ident),
         longitude=_decimal_degrees(line[LONGITUDE_COLUMNS[0] : LONGITUDE_COLUMNS[1]], "longitude", ident),
         magnetic_variation=_magnetic_variation(line[MAGNETIC_VARIATION_COLUMNS[0] : MAGNETIC_VARIATION_COLUMNS[1]], ident),
+        elevation_feet=_elevation(line[ELEVATION_COLUMNS[0] : ELEVATION_COLUMNS[1]], ident),
     )
 
 
@@ -130,7 +153,8 @@ def parse_airport_records(lines: Iterable[str]) -> dict[str, AirportRecord]:
         westerly magnetic variation are negative.
 
     Raises:
-        ValueError: An airport row carries coordinate or variation fields the parser cannot read.
+        ValueError: An airport row carries coordinate, variation or elevation fields the parser
+            cannot read, or one that stops before its elevation field.
     """
     records: dict[str, AirportRecord] = {}
     for raw in lines:

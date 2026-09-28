@@ -24,8 +24,12 @@ type Constraint = {
   citations: RuleCitation[];
 };
 
-/** Feet below which the direction-of-flight rule is not read; see `parityConstraint`. */
-const PARITY_FLOOR_FEET = 3000;
+/**
+ * The airspace above the surface that FAA JO 7110.65 TBL 4-5-1 exempts from the direction-of-flight
+ * rule: below 3,000 ft above the surface any altitude is assigned on any course. `parityFloorFeet`
+ * reads it against the departure field's elevation.
+ */
+const TERRAIN_CLEARANCE_FEET = 3000;
 
 /**
  * The top of the 1,000-ft series of FAA JO 7110.65 TBL 4-5-1: at and below FL410 the table assigns
@@ -86,18 +90,32 @@ function parityFor(course: number, override: ParityOverride | undefined): Parity
 }
 
 /**
+ * The altitude the direction-of-flight table is read from at one departure field.
+ *
+ * TBL 4-5-1 reads its rule only from 3,000 ft above the surface, so the floor is the departure
+ * field's elevation plus that clearance, rounded up to the next whole thousand because only whole
+ * thousands are assigned: an airport at 13 ft is read from 4,000 and one at 5,434 ft from 9,000.
+ *
+ * @param airport The airport data, whose identity carries the CIFP field elevation.
+ * @returns The lowest altitude the table's parity is read at.
+ */
+export function parityFloorFeet(airport: AirportData): number {
+  const aboveSurface = airport.airport.elevationFeet + TERRAIN_CLEARANCE_FEET;
+  return Math.ceil(aboveSurface / STEP_FEET) * STEP_FEET;
+}
+
+/**
  * Whether an altitude is on the series a parity allows.
  *
- * Below `PARITY_FLOOR_FEET` every altitude passes: 14 CFR 91.179 states the rule for flight above
- * 3,000 ft AGL, and the airports this trainer covers are near enough sea level for the field
- * elevation to make no difference to that reading.
+ * Below the departure field's floor every altitude passes, the table reading nothing there.
  *
  * @param feet The altitude to test.
  * @param parity The half of the table the flight reads.
+ * @param floorFeet The altitude the table is read from, which `parityFloorFeet` computes.
  * @returns True when the altitude is one the flight may be assigned.
  */
-function isOnSeries(feet: number, parity: Parity): boolean {
-  if (feet < PARITY_FLOOR_FEET) return true;
+function isOnSeries(feet: number, parity: Parity, floorFeet: number): boolean {
+  if (feet < floorFeet) return true;
   if (feet <= SERIES_TOP_FEET) {
     return feet % (2 * STEP_FEET) === (parity === 'odd' ? STEP_FEET : 0);
   }
@@ -121,10 +139,11 @@ function parityConstraint(
   const course = Math.round(magneticCourse(airport.airport, destination)) % 360;
   const override = parityOverride(airport, destination);
   const parity = parityFor(course, override);
+  const floorFeet = parityFloorFeet(airport);
   const under = override === undefined ? '' : ` under ${override.row.id}`;
   const filed = formatAltitude(scenario.filedAltitude);
   return {
-    legal: (feet) => isOnSeries(feet, parity),
+    legal: (feet) => isOnSeries(feet, parity, floorFeet),
     reason: `filed ${filed} on a ${course}° magnetic course to ${destination.short} needs an ${parity} level${under}`,
     citations: [
       ...citePhraseology(airport, 'A-PARITY'),

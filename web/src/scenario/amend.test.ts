@@ -11,6 +11,7 @@ import {
   drawAmendmentScenario,
   droppedTransition,
   generateAmendmentScenario,
+  parityFlip,
 } from '@/scenario/amend.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
@@ -300,6 +301,17 @@ describe('fault injection', () => {
 
   it('drops nothing where the second token is neither forced nor a connecting fix', () => {
     expect(droppedTransition(plan({ filedRoute: 'TRUKN2 DEDHD ENI' }), ksfo)).toBeUndefined();
+  });
+
+  it('declines a parity flip that would land below the floor, which the table does not read', () => {
+    expect(parityFlip(plan({ filedAltitude: 2000 }), ksfo)).toBeUndefined();
+  });
+
+  it('flips an altitude whose thousand up is at the floor', () => {
+    expect(parityFlip(plan({ filedAltitude: 3000 }), ksfo)).toEqual({
+      field: 'filedAltitude',
+      feet: 4000,
+    });
   });
 
   it('files an altitude on the wrong half of the parity table', () => {

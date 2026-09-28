@@ -45,6 +45,7 @@ const minimalAirportData: AirportData = {
     lat: 37.618806,
     lon: -122.375417,
     magneticVariation: 14,
+    elevationFeet: 13,
   },
   provenance: {
     airac: { cycle: '2609', effective: '2026-09-03', cifpSha256: 'a'.repeat(64) },

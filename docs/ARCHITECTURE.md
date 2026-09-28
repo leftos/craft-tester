@@ -93,7 +93,7 @@ draws are up to two faults with a fifth of them clean.
 - **A plan filed with no SID is a route fault**: the proposed route prepends the SID the clearance engine
   issues.
 - **The proposed altitude is the highest legal altitude at or below the filed one** — legal meaning it
-  satisfies parity (91.179 or the LOA rotation), the RVSM band for a non-RVSM suffix and the TEC cap at
+  satisfies parity (7110.65 TBL 4-5-1, read from the departure field's elevation plus 3,000 ft rounded up to a thousand, or the LOA rotation), the RVSM band for a non-RVSM suffix and the TEC cap at
   once. A controller does not apply an aircraft's service ceiling. A one-way airway is read against the
   one-way rule in place of parity (any whole thousand at or below FL410, only odd flight levels above
   it), and its altitude box cites `A-ONE-WAY-AIRWAY` whatever the verdict, so the reveal says why a

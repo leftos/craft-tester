@@ -234,6 +234,7 @@ def _airport(info: AirportInfo, airport_records: Mapping[str, AirportRecord]) ->
         "lat": found.latitude,
         "lon": found.longitude,
         "magneticVariation": found.magnetic_variation,
+        "elevationFeet": found.elevation_feet,
     }
 
 

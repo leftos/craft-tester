@@ -90,6 +90,42 @@ describe('checkAltitude parity', () => {
   });
 });
 
+describe('checkAltitude parity floor', () => {
+  /**
+   * The same airport at Denver's elevation: 5,434 ft puts the floor at 9,000, where SFO's 13 ft
+   * puts it at 4,000.
+   */
+  const highAirport: AirportData = {
+    ...ksfo,
+    airport: { ...ksfo.airport, elevationFeet: 5434 },
+  };
+
+  it('passes an odd 3,000 to an even-side destination, which is below SFOs 4,000 floor', () => {
+    expect(check(scenario({ destination: 'KSEA', filedAltitude: 3000 }))).toBeUndefined();
+  });
+
+  it('amends an even 4,000 to an odd-side destination, the first thousand at the floor', () => {
+    expect(amendment(scenario({ destination: 'KSLC', filedAltitude: 4000 })).proposedFeet).toBe(
+      3000,
+    );
+  });
+
+  it('leaves an odd 5,000 to an odd-side destination alone', () => {
+    expect(check(scenario({ destination: 'KSLC', filedAltitude: 5000 }))).toBeUndefined();
+  });
+
+  it('passes an even 8,000 to an odd-side destination from a 5,434 ft field', () => {
+    expect(
+      check(scenario({ destination: 'KSLC', filedAltitude: 8000 }), highAirport),
+    ).toBeUndefined();
+  });
+
+  it('amends an odd 9,000 to an even-side destination from a 5,434 ft field', () => {
+    const flight = scenario({ destination: 'KSEA', filedAltitude: 9000 });
+    expect(amendment(flight, highAirport).proposedFeet).toBe(8000);
+  });
+});
+
 describe('checkAltitude equipment and performance', () => {
   it('steps a non-RVSM flight below the RVSM band, onto the parity its course wants', () => {
     const flight = scenario({
