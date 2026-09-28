@@ -25,7 +25,7 @@ ends with their magnetic bearing), `runwayConfigs`, `departureSectors`, `frequen
 
 | module | job |
 |---|---|
-| `cli.py` | `craft-gen` subcommands: `build`, `verify-sop`, `import-worksheets` |
+| `cli.py` | `craft-gen` subcommands: `fetch-cifp`, `fetch-charts`, `fetch-aircraft-characteristics`, `build`, `verify-sop`, `import-worksheets` |
 | `http.py` | cached GET (stdlib urllib), sha256 |
 | `charts_api.py`, `chart_text.py` | ZOA charts API → DP list; pypdf text → top altitude, transitions, departure frequencies |
 | `cifp/` | AIRAC cycle math; ARINC 424 fixed-width slicing of SID legs and runways (`records.py`), STARs with their family, RNAV flag and enroute transitions (`stars.py`), VHF/NDB navaids (`navaids.py`) and airport reference points (`airports.py`); grouping into runways/transitions/restrictions/kind (`sid.py`). Hand-rolled on purpose: audited against `cifparse` 2.0.9's width tables and `zoa-reference-cli` with zero column drift, and neither package fits as a dependency (GPL-3.0 and no tests; no runway/navaid-name coverage). The checked-in text fixtures under `tests/fixtures/cifp/` are the regression net for every column |
@@ -277,6 +277,141 @@ remembered per browser. The dropdowns stay, and the student chooses.
 2. `pnpm -C web propose <id>` prints the engine's clearance with citations.
 3. The user confirms or corrects; a correction is a YAML edit plus `craft-gen build`.
 4. The fixture gains `expected` and becomes `settled`. Settled fixtures fail the suite when they break.
+
+## Change recipes
+
+The files to open for a routine change, in the order they are touched, with the symbol to find in each. A brief cites the recipe instead of leaving the implementer to discover the path. "No edit" rows are steps the change passes through. The gates are in the last table.
+
+### Add an amendment rule (a check that raises or changes a strip box)
+
+| file | symbol | why |
+|---|---|---|
+| `generator/shared/phraseology_rules.yaml` or `generator/airports/<icao>/sop.yaml` | `phraseology_rules` row (`id`, `source`, `text`) | the check cites this row and never hard-codes its text |
+| `data/<icao>.json` via `craft-gen build` for every airport in `data/airports.json` | `phraseologyRules` | web tests read the checked-in data, so the row must be built in |
+| `web/src/rules/amend/altitude.ts` | `checkAltitude`, `Constraint`, a sibling of `rvsmConstraint` | the altitude box: each broken constraint adds its own `reason` and `citations` |
+| `web/src/rules/amend/route.ts` (last step `arrival.ts`) | `checkRoute` → `routeOutcome` / `procedureOutcome`, `routeReason`; `changeArrival` | the route box: TEC route, else SID plus filed tail, then the arrival step |
+| `web/src/rules/amend/type.ts` | `checkSuffix`, `checkRnavClash`, `checkRnavElements` | the type box, which is corrected before the other two are judged |
+| `web/src/rules/cite.ts` | `citePhraseology` | skips an id it cannot find, so a typo cites nothing; assert the id in the test |
+| `web/src/rules/amend/engine.ts` | `resolveAmendments`, `STRIP_ORDER`, `collect`, `applyAmendment` | edit only to wire in a new check function |
+| `web/src/data/schema.ts` + `web/src/rules/amend/types.ts` | `AmendmentSchema`, `ResolvedAmendment` | only when the amendment carries a new field (as `arrivalSwap` does); then run `schema:export` |
+| `web/src/rules/amend/grade.ts` | `gradeBoxes` | only when the rule changes scoring (a new tier, or a row cited whatever the verdict, like `A-ONE-WAY-AIRWAY`) |
+| `web/src/scenario/generate.ts` (no edit) | `amendmentGap`, `withBuiltRoute` | a rule that fires on library plans makes clearance mode redraw, so check the library test |
+| `web/src/ui/results.ts`, `web/src/ui/amendForm.ts` (no edit) | `renderVerdict`, `verdictLines`, `rulesApplied`, `renderBoxVerdicts` | `reason` shows as the why line and citations under "rules applied" |
+
+Tests: `rules/amend/<box>.test.ts`; `rules/amend/engine.test.ts`; `scenario/amend.test.ts` ("amends exactly the boxes the injected faults meant"); `scenario/generate.test.ts` ("every draw is clean as filed"); `scenario/library.test.ts`; `rules/fixtures.test.ts`, the only guard on reason wording. Run `pnpm -C web test rules/fixtures` first and `pnpm -C web propose --pending` to see what moved.
+
+### Add a rule row the engine cites, end to end to the UI
+
+| file | symbol | why |
+|---|---|---|
+| `generator/shared/phraseology_rules.yaml` | `phraseology_rules` | a national 7110.65 row every airport inherits |
+| `generator/airports/<icao>/sop.yaml` | `phraseology_rules` | a local row, or an override of a shared row by the same `id` |
+| `generator/src/craft_generator/sop/load.py` (no edit) | `load_phraseology_rules`, `_phraseology_rule`, `_check_phraseology_rules` | rejects an unknown key and an id stated twice in one file |
+| `generator/src/craft_generator/merge.py` | `_phraseology_rules`; `_check` | shared order, airport override in place, airport-only rows after, CPS-004 row last; add a `_check_*` when a data feature cannot work without the row |
+| `data/<icao>.json` via `craft-gen build` | `phraseologyRules`; `emit.py` `validate` | the web half reads nothing else |
+| `web/src/rules/<step>.ts` | `citePhraseology(airport, '<ID>')` into the element's `Cited.citations` | the matcher step that decides the element names the row |
+| `web/src/rules/grade.ts` (no edit) | `grade` | copies each element's citations onto its `Grade` |
+| `web/src/ui/results.ts` | `citationList`, `rulesApplied`, `LONGER_ROWS` | shows the citation; add the id to `LONGER_ROWS` only if the row marks a longer reading as inefficient |
+| `web/src/rules/text/grade.ts` (no edit) | `vocabularyOf` | row text becomes spelling vocabulary, so a row must never contain a misspelling that `S-SPELLING` forgives |
+| `web/scripts/propose.ts` (no edit) | `elementLines`, `amendmentBoxLines` | prints `id — text` under each element |
+
+Tests: `generator/tests/test_sop_load.py`; `generator/tests/test_merge.py` (an airport row replaces the shared row of its id); `web/src/rules/cite.test.ts`; the deciding step's own test asserting the citation id.
+
+### Add a schema field to the airport data
+
+| file | symbol | why |
+|---|---|---|
+| `web/src/data/schema.ts` | the section's `…Schema` (or `AirportDataSchema` for a top-level key) and its `export type` | the single source of truth for the shape |
+| `web/src/data/schema.test.ts` | `minimalAirportData` | this hand-built airport must carry every new required key |
+| `pnpm -C web schema:export` | `data/schema/airport.schema.json` (and `fixture.schema.json` for `Scenario`, `Fixture` or `Amendment` fields) | the sync test and CI fail when the export is stale |
+| `generator/src/craft_generator/sop/model.py` | the source dataclass (`SopData`, `SidOverride`, `Destination`, …) | only when the value comes from hand-written YAML |
+| `generator/src/craft_generator/sop/load.py` | the row reader and its `_check_*` | the loader reads every key and ignores nothing |
+| `generator/src/craft_generator/merge.py` | the emitter (`_sid`, `_destination`, …), `_with_optional`, the `build_airport` dict, `_check` | writes the camelCase key and runs the cross-reference checks |
+| `generator/src/craft_generator/emit.py` (no edit) | `validate`, `schema_path` | the build fails when the output does not match the export |
+| `generator/src/craft_generator/worksheets.py` | `fixture_for` | only for a `Scenario` field: fixtures are validated against the fixture schema |
+| `data/ksfo.json`, `data/koak.json` via `craft-gen build` | — | the checked-in data carries the field before any consumer reads it |
+| `web/src/data/load.ts`, then the consumers in `web/src/rules/`, `web/src/ui/` and `web/scripts/propose.ts` | `parseAirport`, `AirportData` | the app parses the field, then the engine and UI read it |
+
+Tests: `web/src/data/schema.test.ts`; `data/load.test.ts`; `data/checkedIn.test.ts`; `generator/tests/test_merge.py`; `test_sop_load.py`; `test_emit.py` (`test_the_committed_document_validates`).
+
+### Add a generator subcommand
+
+| file | symbol | why |
+|---|---|---|
+| `generator/src/craft_generator/cli.py` | `_SUBCOMMANDS` | the name and help text; the parser is built from this dict |
+| `generator/src/craft_generator/cli.py` | `build_parser` | adds flags by command name; every command gets `--airport` except `FETCH_AIRCRAFT_CHARACTERISTICS` |
+| `cli.py` plus the module that does the work | the command function, shaped like `fetch_charts` or `verify_sop` | returns `EXIT_OK` or `EXIT_ERROR`; the real work lives outside `cli.py` |
+| `generator/src/craft_generator/cli.py` | `_run` (`handlers`), `main` | a command missing from `handlers` falls to `_not_implemented`; `main` reports `RuntimeError`, `ValueError` and `OSError` |
+| `generator/tests/test_cli.py` | `test_subcommand_help_exits_zero`, `build_parser().parse_args` tests | the help smoke test lists commands by name; each flag gets a parse test |
+| `generator/tests/test_<module>.py` | `@pytest.mark.network` | a test that fetches is deselected by default |
+| `CLAUDE.md`, `docs/ARCHITECTURE.md` | the Commands block; the `cli.py` row of the generator table | the documented command list |
+
+### Load a new SOP section
+
+| file | symbol | why |
+|---|---|---|
+| `generator/airports/<icao>/sop.yaml`, in every airport | the new top-level key | a key read with `child` or `children` is required everywhere; use `optional_child` or `optional_children` otherwise |
+| `generator/src/craft_generator/sop/model.py` | a frozen dataclass, a `…_KINDS` tuple for any enum, a field on `SopData` | the typed shape of the section |
+| `generator/src/craft_generator/sop/load.py` | the `_x(row)` reader, its line in `_sop_data`, the check in `_check_sop` (or `load_airport` when it needs overrides or routes), `load_sop`'s `Raises` | parse the section, then check it against the rest of the file |
+| `generator/tests/test_sop_load.py` | `ksfo_inputs`; the `tmp_path` + `ksfo_dir` rejection pattern | one round-trip test and one test per rejection |
+| `web/src/data/schema.ts` → `pnpm -C web schema:export` | the new `…Schema` and its `AirportDataSchema` key | the data contract |
+| `generator/src/craft_generator/merge.py` | the `_x` emitter, the `build_airport` key, a `_check_x` in `_check` | emit it and check it against the other sources |
+| `generator/tests/test_merge.py` | `ksfo_document`, `ksfo_build_inputs` | emission and build-failure tests |
+| `data/<icao>.json` via `craft-gen build` for each airport | — | the web half sees the section |
+| `docs/ADDING_AN_AIRPORT.md`, `docs/ARCHITECTURE.md` | "2. `sop.yaml`"; the sections of `AirportData` | the runbook for the next airport, and the section list |
+| `web/src/rules/<step>.ts` | the consumer; `toCitation` / `citePhraseology` when the rows are citable | the engine matches on the rows and cites them |
+
+### Add a fault kind to the amendment drill
+
+| file | symbol | why |
+|---|---|---|
+| `web/src/scenario/amend.ts` | `FaultKind` | names the fault |
+| `web/src/scenario/amend.ts` | `FAULT_BOXES` | the boxes it means to make wrong; a draw is kept only when the engine amends exactly these (`sameBoxes`) |
+| `web/src/scenario/amend.ts` | a new `Injector` returning a `FaultPatch` or `undefined` (like `staleSid`, `droppedTransition`, `parityFlip`) | writes the fault, or declines a plan that cannot carry it |
+| `web/src/scenario/amend.ts` | `INJECTORS` (`FAULT_KINDS` derives from it) | `pickFaults` calls every injector per draw, so one that draws from the rng changes the draw for every seed |
+| `web/src/scenario/amend.ts` | `FaultPatch`, `applyPatch`, `MAX_BOXES` | only for a new strip field, or a fault wider than two boxes |
+| `web/src/rules/amend/<box>.ts` | the box's `check*` | the engine must detect the fault, or every draw carrying it is thrown away |
+
+Tests: `web/src/scenario/amend.test.ts` ("draws every fault kind across the seeds", a case under "fault injection", "amends exactly the boxes the injected faults meant"). Seed-searching helpers in `web/src/ui/app.test.ts` (`twoWayAmendment`) may land on other seeds.
+
+### Add a UI control or panel
+
+| file | symbol | why |
+|---|---|---|
+| `web/src/ui/state.ts` | an `AppState` field and a pure `with*` transition (like `withInputKind`); `Phase` / `phaseOf` when it changes which panels show | state changes are pure functions of the old state |
+| `web/src/scenario/filter.ts` | `SessionSettings`, `hashFor`, a `*FromHash` reader | only for a setting carried in the URL hash; `viewKey` then includes it |
+| `web/src/ui/preferences.ts` | a `create*Store` / `browser*Store` pair | only when the choice is remembered per browser |
+| `web/src/ui/dom.ts` | `selectControl`, `segmentedControl`, `textControl`, `button` and their `sync*` twins | the building blocks; `segmentedControl` sets the `data-focus-key` that `restoreFocus` reads |
+| the panel module (`textForm.ts`, `craftForm.ts`, `amendForm.ts`, `amendPanels.ts`) | `render*` returning `{ node, sync }`; `Panels` | `sync` writes later state into the controls already on screen |
+| `web/src/ui/app.ts` | `Actions`; `renderToolbar`, `renderPanels`; the `actions` in `mount`; `Stores` | wires the control to `update` |
+| `web/src/styles.css` | — | layout at phone and desktop widths, colours from the tokens only |
+
+A change that alters which panels render must change `viewKey`; any other change goes through `sync` and never rebuilds the panels. Tests: `web/src/ui/state.test.ts` (`viewKey`); a `*.dom.test.ts` with `// @vitest-environment happy-dom` on line 1, following `textForm.dom.test.ts`; `web/src/ui/app.test.ts` (`mountApp` / `mountHash`) for the mounted page. Then `pnpm -C web build`, `preview`, and `check:browser … phone|desktop`.
+
+### Settle or add a worksheet fixture
+
+| file | symbol | why |
+|---|---|---|
+| `generator/airports/<icao>/worksheets.yaml` | `worksheets` (a new sheet), `type_aliases`, `corrections` | a `corrections` row is a user ruling that replaces a plan's route and altitude, with its `reason` |
+| `generator/src/craft_generator/sop/load.py` (no edit) | `load_worksheets`, `_worksheet_correction`, `_check_corrections` | rejects a correction whose plan is not on its sheet, or a plan corrected twice |
+| `generator/src/craft_generator/worksheets.py` | `parse_worksheet`, `sheet_fixtures`, `fixture_for`, `departure_runway`, `settled_fixture_at` | parses the sheet, chooses the runway and never overwrites a settled fixture |
+| `uv run craft-gen import-worksheets --airport <ICAO>` | `import_worksheets` in `cli.py` | writes `fixtures/<icao>/worksheets/<slug>.json` as `pending` |
+| `data/<icao>.json` via `craft-gen build` | `fixture_filed_routes` | the build reads navaid names for routes that fixtures file |
+| `pnpm -C web propose <id>` or `--pending` | `formatProposal`, `printPending` in `web/scripts/propose.ts` | the engine's answer with citations, plus the `expected` block to paste |
+| `fixtures/<icao>/worksheets/<slug>.json` | `expected`, `status: settled` | set only after the user confirms; a disagreement is fixed in YAML plus a build |
+| `web/src/rules/fixtures.test.ts` | "settled fixtures", "settled amendment fixtures", "pending …" | a settled fixture fails when it breaks; a pending one fails once it matches, asking to be promoted |
+
+Tests: `generator/tests/test_worksheets.py` (sheet text under `generator/tests/fixtures/worksheets/`); CI runs `import-worksheets --airport KSFO --check`.
+
+### Gates
+
+| half | command |
+|---|---|
+| web | `pnpm -C web lint && pnpm -C web fmt:check && pnpm -C web typecheck && pnpm -C web test` (one file first: `pnpm -C web test <path>`) |
+| generator | `cd generator && uv run ruff check && uv run ruff format --check && uv run ty check && uv run pytest -q` |
+| data | `uv run craft-gen build --airport <ICAO> --check` for every airport (a local step; CI does not build) |
+| schema | `pnpm -C web schema:export` leaves `data/schema/` unchanged |
+| all hooks | `prek run --all-files` |
 
 ## Why it is built this way
 
