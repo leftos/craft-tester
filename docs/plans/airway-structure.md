@@ -53,4 +53,19 @@ records if the direction restriction column proves populated.
 - **Structure shipped to the browser**: only the airways the Bay files (named in `routes.yaml`, TEC and LOA rows and the fixtures), as `rnavWaypoints` does.
 - **Grading**: a rebuilt route is accepted among alternatives: any legal conventional route the engine confirms takes full credit, and the rebuilt one is shown as the model answer, as the radar-vector navaid warning works today.
 
-Next step: brief the `ER` parser and the data shape, then the engine's rebuild.
+- **Data shape**: `airways` widens to one list, `{id, rnav, level, oneWay, stretches}`, with the three hand one-way rows of `shared/airways.yaml` merged in by id.
+- **What ships**: V and J with their structure; Q and T as id plus RNAV flag, so the RNAV check reads data. Y keeps its prefix rule (the CIFP codes Y routes conventional).
+- **No path**: ship more airways rather than fall back: the filed set is widened by connectivity (a V/J airway sharing a fix with a shipped one), starting at depth 2 and tuned from the measured data size and the destinations it reaches.
+- **Type box and route**: when a path exists, raising the type to an RNAV suffix and rebuilding the route are an alternative pair, both full credit, as the RNAV clash pairs today. The settled KOAK fixtures `rnav-elements-b738w-klas`, `amendment-practice-2-fdx3859` and `amendment-practice-3-pxt415` then gain a route alternative and go back to the user for a re-ruling.
+
+## Mapped facts (explorer)
+
+- CIFP airway rows: `[37]` subsection, `[40]=='E'` ends a stretch (178 mid-airway breaks, e.g. V6 ends at DPA and restarts at PSB), `[46]` direction restriction is blank in every row (one-way stays hand-maintained), `[88:93]` a second minimum altitude in 637 rows (believed the reverse-direction MEA), `[83:88]` can read `UNKNN`.
+- 28 V/J airways are filed anywhere in the Bay data and fixtures; 23 exist in the CIFP (not J179, J195, J502, J517, J605) and form one component of 480 fixes that misses the LAS, DEN and SLC navaids. SFO sits on V25, V87, V150, V199 only, no J airway.
+- A conventional library row to the same destination exists only for props/turboprops to NorCal fields, KLAX, KSAN and KPHX.
+- The filed-airway set must also read LOA route tokens (J92, Q174 appear only there) and drop heading tokens (H090).
+
+## Slices
+
+- **A**: parse the airway rows (`cifp/airways.py`), widen `airways`, ship the filed set plus the connectivity widening; the RNAV airway check reads the Q/T flag from data. No fixture moves.
+- **C**: the rebuild search (reusing `routeBuild.ts`'s breadth-first walk), the alternative pair in `rules/amend/engine.ts`, a grading tier in `grade.ts` and `ui/results.ts` distinct from the navaid-acceptable one, a rule row, and the three settled fixtures re-ruled. Open for C's brief: level at FL180, tie-break among equal paths, the exit navaid per SID kind, where the route stops, MEA use, and what a "confirmed conventional route" is for grading.
