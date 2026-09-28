@@ -13,14 +13,17 @@
  *   fill:<index>=<text>      type into the n-th text field (text inputs and textareas, in page order)
  *   press:<key>              press a key on whatever has focus, e.g. `press:Enter` after a `fill`
  *   click:<button text>      press the button with that text
- *   check:<label>            tick the checkbox that reads that label
  *   scroll:<pixels>          scroll the page down to that offset
  *
  * The page's text, its selects, inputs and buttons, every console error, and whether it scrolls
  * sideways are written to `.tmp/browser-check/<name>-<viewport>.json` next to a full-page
  * screenshot and a `-view` screenshot of the viewport alone, which is the one that shows what stays
- * pinned after a `scroll`. The flight-plan panel's top edge in the viewport is recorded as `stripTop`,
- * and the essentials are printed. Playwright's Chromium must be installed once with
+ * pinned after a `scroll`. The top edge in the viewport of the rail's pinned group (`.rail-pin`) is
+ * recorded as `stripTop`: the strip the student works from and the ATIS under it, which in
+ * amendment mode is the plan as filed while amending and the amended plan once there is one. Whether
+ * the phone toolbar has slid away on a scroll down is recorded as `toolbarHidden`, the scale the
+ * pinned strip's paper prints at as `stripScale`, and the page offset of the work column's first
+ * panel (the form, or the results) as `workTop`. The essentials are printed. Playwright's Chromium must be installed once with
  * `pnpm -C web exec playwright install chromium`.
  *
  * `CRAFT_PREVIEW_URL` overrides the preview the run opens, so two previews on different ports can
@@ -47,6 +50,9 @@ type Report = {
   innerWidth: number;
   scrollY: number;
   stripTop: number;
+  toolbarHidden: boolean;
+  stripScale: number;
+  workTop: number;
   overflowing: string[];
   text: string;
   selects: { value: string; options: string[] }[];
@@ -61,9 +67,7 @@ function isViewportName(value: string): value is ViewportName {
 
 function usage(): never {
   console.error('usage: pnpm -C web check:browser <name> <hash> [phone|desktop] [action...]');
-  console.error(
-    'actions: select:<n>=<label> fill:<n>=<text> press:<key> click:<text> check:<label> scroll:<px>',
-  );
+  console.error('actions: select:<n>=<label> fill:<n>=<text> press:<key> click:<text> scroll:<px>');
   process.exit(2);
 }
 
@@ -106,8 +110,6 @@ for (const action of actions) {
     await page.keyboard.press(rest);
   } else if (kind === 'click') {
     await page.getByRole('button', { name: rest }).first().click();
-  } else if (kind === 'check') {
-    await page.getByRole('checkbox', { name: rest }).first().check();
   } else if (kind === 'scroll') {
     await page.evaluate((top) => window.scrollTo(0, top), Number(rest));
   } else {
@@ -134,8 +136,15 @@ const recorded = await page.evaluate(() => {
     scrollWidth: document.documentElement.scrollWidth,
     innerWidth: window.innerWidth,
     scrollY: Math.round(window.scrollY),
-    stripTop: Math.round(
-      document.querySelector('.panel.strip')?.getBoundingClientRect().top ?? NaN,
+    stripTop: Math.round(document.querySelector('.rail-pin')?.getBoundingClientRect().top ?? NaN),
+    toolbarHidden: document.documentElement.classList.contains('toolbar-hidden'),
+    stripScale: (() => {
+      const grid = document.querySelector<HTMLElement>('.rail-pin .strip-grid');
+      if (grid === null || grid.offsetWidth === 0) return NaN;
+      return Math.round((grid.getBoundingClientRect().width / grid.offsetWidth) * 1000) / 1000;
+    })(),
+    workTop: Math.round(
+      (document.querySelector('.work > *')?.getBoundingClientRect().top ?? NaN) + window.scrollY,
     ),
     overflowing,
     text: document.body.innerText,
@@ -168,7 +177,10 @@ console.log(`hash: ${report.hash}`);
 console.log(
   `overflow: ${report.overflow} (scrollWidth ${report.scrollWidth}, innerWidth ${report.innerWidth})`,
 );
-console.log(`scrollY: ${report.scrollY}, stripTop: ${report.stripTop}`);
+console.log(
+  `scrollY: ${report.scrollY}, stripTop: ${report.stripTop}, toolbarHidden: ${report.toolbarHidden}`,
+);
+console.log(`stripScale: ${report.stripScale}, workTop: ${report.workTop}`);
 if (report.overflowing.length > 0)
   console.log(`overflowing:\n  ${report.overflowing.join('\n  ')}`);
 console.log(

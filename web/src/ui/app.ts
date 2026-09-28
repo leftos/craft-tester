@@ -391,11 +391,13 @@ function clearanceOutcome(
   return { grades: best.grades, spoken: spokenOf(best.resolved) };
 }
 
-/** The strip, the ATIS, and then either the form or the results. */
+/** The strip and the ATIS in the rail, and either the form or the results in the work column. */
 function renderPanels(state: AppState, actions: Actions): Panels {
   if (state.view.kind === 'unresolved') {
     return {
-      nodes: [renderUnresolved(state.view.reasons, actions.onNewScenario)],
+      rail: [],
+      pinned: [],
+      work: [renderUnresolved(state.view.reasons, actions.onNewScenario)],
       sync: undefined,
     };
   }
@@ -404,7 +406,7 @@ function renderPanels(state: AppState, actions: Actions): Panels {
   }
   const phase = phaseOf(state);
   const { generated, clearance } = state.view;
-  const panels = [
+  const pinned = [
     renderStrip(generated, state.airport, state.seed, 'Flight plan', {
       revision: undefined,
       frc: state.fullRoute,
@@ -413,31 +415,26 @@ function renderPanels(state: AppState, actions: Actions): Panels {
   ];
   const revisit = state.revisit;
   if (phase === 'clearance-revisit' && revisit?.kind === 'clearance') {
-    panels.push(
-      renderRevisit({
-        ...clearanceOutcome(revisit, generated, clearance, state.airport, routeReadingOf(state)),
-        routeReading: routeReadingOf(state),
-        onNext: actions.onNewScenario,
-        onRetry: actions.onRetry,
-      }),
-    );
-    return { nodes: panels, sync: undefined };
+    const work = renderRevisit({
+      ...clearanceOutcome(revisit, generated, clearance, state.airport, routeReadingOf(state)),
+      routeReading: routeReadingOf(state),
+      onNext: actions.onNewScenario,
+      onRetry: actions.onRetry,
+    });
+    return { rail: [], pinned, work: [work], sync: undefined };
   }
   const answer = toClearanceAnswer(state);
   if (phase === 'clearance-results' && answer !== undefined) {
-    panels.push(
-      renderResults({
-        ...clearanceOutcome(answer, generated, clearance, state.airport, routeReadingOf(state)),
-        routeReading: routeReadingOf(state),
-        onNext: actions.onNewScenario,
-        onRetry: actions.onRetry,
-      }),
-    );
-    return { nodes: panels, sync: undefined };
+    const work = renderResults({
+      ...clearanceOutcome(answer, generated, clearance, state.airport, routeReadingOf(state)),
+      routeReading: routeReadingOf(state),
+      onNext: actions.onNewScenario,
+      onRetry: actions.onRetry,
+    });
+    return { rail: [], pinned, work: [work], sync: undefined };
   }
   const form = renderClearanceForm(state, generated, clearance, actions);
-  panels.push(form.node);
-  return { nodes: panels, sync: form.sync };
+  return { rail: [], pinned, work: [form.node], sync: form.sync };
 }
 
 /** The answer form of a clean clearance: the node on screen, and how to write a later state into it. */
@@ -480,21 +477,110 @@ function renderClearanceForm(
 type Page = { node: HTMLElement; sync: ((state: AppState) => void) | undefined };
 
 /**
- * Renders the whole page from the state. The first strip on the page, the one the student was
- * handed, carries the button that copies the link to it.
+ * The strip bay: the panels that scroll away on a phone, then the pinned strip and the ATIS in
+ * their own group, which a phone keeps in view under the toolbar. A view with nothing in the bay
+ * (a scenario the engine could not clear) has no rail at all.
+ */
+function renderRail(panels: Panels): HTMLElement | undefined {
+  if (panels.rail.length === 0 && panels.pinned.length === 0) return undefined;
+  const rail = el('aside', 'rail');
+  rail.setAttribute('aria-label', 'Flight plan and ATIS');
+  const pin = el('div', 'rail-pin');
+  pin.append(...panels.pinned);
+  rail.append(...panels.rail, pin);
+  return rail;
+}
+
+/**
+ * Renders the whole page from the state: the toolbar over the strip bay (rail) and the work column.
+ * The first strip on the page, the one the student was handed, carries the button that copies the
+ * link to it.
  */
 function renderApp(state: AppState, index: AirportsIndex, actions: Actions): Page {
   const page = el('div', 'page');
-  const main = el('main', 'layout');
   const panels = renderPanels(state, actions);
-  const strip = panels.nodes.find((node) => node.matches('section.panel.strip'));
+  const rail = renderRail(panels);
+  const main = el('main', rail === undefined ? 'layout no-rail' : 'layout');
+  const strip = [...panels.rail, ...panels.pinned].find((node) =>
+    node.matches('section.panel.strip'),
+  );
   if (strip !== undefined) {
     const { icao } = state.airport.airport;
     addCopyLink(strip, shareLink(globalThis.location.href, icao, state.seed, state));
   }
-  main.append(...panels.nodes);
+  const work = el('section', 'work');
+  work.append(...panels.work);
+  if (rail !== undefined) main.append(rail);
+  main.append(work);
   page.append(renderToolbar(state, index, actions), main);
   return { node: page, sync: panels.sync };
+}
+
+/** How far the page must scroll in one direction before the phone toolbar hides or comes back. */
+const TOOLBAR_SCROLL_THRESHOLD = 8;
+
+/** The widths the phone layout applies to, which is where the toolbar hides on scroll. */
+const PHONE_QUERY = '(max-width: 899.98px)';
+
+/**
+ * Whether the phone toolbar is hidden after a scroll: a scroll down hides it, a scroll up brings it
+ * back, and the top of the page always shows it.
+ *
+ * @param previousY The scroll offset the toolbar was last decided at.
+ * @param y The scroll offset now.
+ * @param threshold How far the page must move from `previousY` before the toolbar changes.
+ * @returns `true` to hide it, `false` to show it, or `undefined` where the page moved less than the
+ *   threshold and the toolbar stays as it is.
+ */
+export function toolbarHiddenAfter(
+  previousY: number,
+  y: number,
+  threshold: number,
+): boolean | undefined {
+  if (y <= threshold) return false;
+  if (Math.abs(y - previousY) < threshold) return undefined;
+  return y > previousY;
+}
+
+/**
+ * Hides the phone toolbar while the page scrolls down and brings it back on a scroll up.
+ *
+ * The listener marks the document root with `toolbar-hidden`, which slides the toolbar up, and sets
+ * `--pin-top` to `0px` so the pinned strip moves up into its place. The mark lives on the root rather
+ * than on the toolbar because the toolbar is drawn again whenever the panels are. Wider than a phone
+ * the toolbar never hides.
+ */
+function hideToolbarOnScroll(): void {
+  if (typeof globalThis.matchMedia !== 'function') return;
+  const docRoot = document.documentElement;
+  const phone = globalThis.matchMedia(PHONE_QUERY);
+  let lastY = globalThis.scrollY;
+  let hidden = false;
+  const apply = (next: boolean): void => {
+    hidden = next;
+    docRoot.classList.toggle('toolbar-hidden', next);
+    if (next) docRoot.style.setProperty('--pin-top', '0px');
+    else docRoot.style.removeProperty('--pin-top');
+  };
+  globalThis.addEventListener(
+    'scroll',
+    () => {
+      const y = globalThis.scrollY;
+      if (!phone.matches) {
+        if (hidden) apply(false);
+        lastY = y;
+        return;
+      }
+      const next = toolbarHiddenAfter(lastY, y, TOOLBAR_SCROLL_THRESHOLD);
+      if (next === undefined) return;
+      lastY = y;
+      if (next !== hidden) apply(next);
+    },
+    { passive: true },
+  );
+  phone.addEventListener('change', () => {
+    if (!phone.matches && hidden) apply(false);
+  });
 }
 
 /** The key of the control that has the focus, where it is one a page drawn again can find. */
@@ -646,6 +732,9 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
   update(state);
 }
 
+/** Whether the scroll listener of the phone toolbar is installed, which `startApp` does once. */
+let toolbarListening = false;
+
 /**
  * Whether a session opens held to the route read to its end.
  *
@@ -706,4 +795,8 @@ export async function startApp(root: Element): Promise<void> {
   const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute });
   const settings = { filter, mode, input, fullRoute };
   mount(root, index, newSession(airport, seed, previous, settings), stores);
+  if (!toolbarListening) {
+    toolbarListening = true;
+    hideToolbarOnScroll();
+  }
 }

@@ -384,14 +384,17 @@ function fullRouteLine(fullRoute: string): HTMLDivElement {
   return node;
 }
 
-/** The nine blank annotation boxes of columns 5 to 7, in the order the strip lays them out. */
+/**
+ * The nine blank annotation boxes of columns 5 to 7, in the order the strip lays them out. A phone
+ * hides them (`strip-annotation`), so the printed columns take the width they leave.
+ */
 function annotationCells(): HTMLDivElement[] {
   const cells: HTMLDivElement[] = [];
   for (const row of [1, 2, 3]) {
     for (const column of [5, 6, 7]) {
       const ruled = row < 3 ? ' strip-ruled' : '';
       const last = column === 7 ? ' strip-last' : '';
-      cells.push(cell(`c${column} r${row}${ruled}${last}`));
+      cells.push(cell(`c${column} r${row} strip-annotation${ruled}${last}`));
     }
   }
   return cells;
@@ -417,31 +420,57 @@ function stripGrid(fields: StripFields): HTMLDivElement {
 }
 
 /**
- * Scales the paper to the panel it is printed in, so a phone never scrolls sideways.
+ * The scale the paper prints at in a container: whatever shrinks it to the container's width, and
+ * never larger than the paper itself.
  *
- * The strip is a fixed 537 px of paper; the wrapper shrinks it to whatever width the panel has and
- * takes the shrunken height, since a CSS transform leaves the space the element laid out in alone.
+ * @param containerWidth The width the paper has to fit in.
+ * @param gridWidth The paper's laid-out width, border included, before any scale.
+ * @returns The scale, at most 1.
+ */
+export function stripScale(containerWidth: number, gridWidth: number): number {
+  return Math.min(1, containerWidth / gridWidth);
+}
+
+/**
+ * Scales the paper once to the width its wrapper has now, and gives the wrapper the scaled height.
+ *
+ * The paper's width is read from its layout rather than assumed, because a phone hides the three
+ * annotation columns and the paper narrows; a paper not laid out yet (width 0) is taken at its full
+ * printed size.
+ *
+ * @param wrapper The element the paper is printed on, whose width the scale is read from.
+ * @param grid The paper, which the scale is applied to.
+ */
+export function fitStrip(wrapper: HTMLElement, grid: HTMLElement): void {
+  const width = wrapper.clientWidth;
+  if (width <= 0) return;
+  const gridWidth = grid.offsetWidth > 0 ? grid.offsetWidth : STRIP_WIDTH + 2 * STRIP_BORDER;
+  const gridHeight = grid.offsetHeight > 0 ? grid.offsetHeight : STRIP_HEIGHT + 2 * STRIP_BORDER;
+  const scale = stripScale(width, gridWidth);
+  grid.style.transform = `scale(${scale})`;
+  wrapper.style.height = `${gridHeight * scale}px`;
+}
+
+/**
+ * Keeps the paper scaled to the panel it is printed in, so a phone never scrolls sideways.
+ *
+ * A CSS transform leaves the space the element laid out in alone, so the wrapper takes the shrunken
+ * height. Both the wrapper and the paper are watched: the wrapper changes width with the page, and
+ * the paper with the annotation columns a phone hides.
  *
  * @param wrapper The element the paper is printed on, whose width the scale is read from.
  * @param grid The paper, which the scale is applied to.
  */
 function scaleToFit(wrapper: HTMLElement, grid: HTMLElement): void {
-  const outerWidth = STRIP_WIDTH + 2 * STRIP_BORDER;
-  const outerHeight = STRIP_HEIGHT + 2 * STRIP_BORDER;
-  const apply = (width: number): void => {
-    if (width <= 0) return;
-    const scale = Math.min(1, width / outerWidth);
-    grid.style.transform = `scale(${scale})`;
-    wrapper.style.height = `${outerHeight * scale}px`;
-  };
   if (typeof ResizeObserver === 'undefined') {
-    apply(outerWidth);
+    wrapper.style.height = `${STRIP_HEIGHT + 2 * STRIP_BORDER}px`;
     return;
   }
-  const observer = new ResizeObserver((entries) => {
-    for (const entry of entries) apply(entry.contentRect.width);
+  const observer = new ResizeObserver(() => {
+    fitStrip(wrapper, grid);
   });
   observer.observe(wrapper);
+  observer.observe(grid);
 }
 
 /**
@@ -466,13 +495,15 @@ export function renderStrip(
   marks: StripMarks,
 ): HTMLElement {
   const panel = el('section', 'panel strip');
+  const holder = el('div', 'strip-holder');
   const paper = el('div', 'strip-paper');
   const fields = stripFields(scenario, airport, seed, marks);
   const grid = stripGrid(fields);
   paper.append(grid);
+  holder.append(paper);
   const head = el('div', 'strip-head');
   head.append(el('h2', '', heading));
-  panel.append(head, paper);
+  panel.append(head, holder);
   if (fields.fullRoute !== undefined) panel.append(fullRouteLine(fields.fullRoute));
   scaleToFit(paper, grid);
   return panel;

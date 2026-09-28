@@ -58,6 +58,12 @@ Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser chec
 
 ## Singles
 
+- [ ] **Align rule rows with 7110.65** (from the check of the why drafts, `.tmp/why-drafts.md` "Possible data errors"; user rulings):
+  - Correct every wrong paragraph citation. The `4-3-2 c 3/c 4/c 5` altitude and route citations become 4-3-2 e (altitude; `CLIMB VIA SID` is e 4 (a)) or d (route), per `docs/refs/7110.65BB.txt`. `R-THEN-OMITTED` becomes 4-3-3 d/g, and `A-RVSM` becomes 2-1-29 a 1. Grading does not change.
+  - `S-GROUP-FORM`: digits followed by a group-form restatement grade **correct** (2-4-17 b 1 NOTE, 2-4-18 a: restated "for added clarity"). Group form alone stays wrong. Its citation b 2 (a), flight levels, becomes b 1.
+  - `R-NAVAID` / `R-FACILITY-WORD-OMITTED`: a navaid said without its facility type grades **correct** (2-5-2 a 1 asks only for the name or phonetic identifier). Reword `R-NAVAID` to match, and cite 2-5-3 b for fixes.
+  - `A-FINAL` and `A-EXPECT-AMENDED` stay as ZOA practice: no change.
+  - Fold in the minor items: `A-ONE-WAY-AIRWAY` says "at or below FL410" where the table says "below FL 410"; `A-PARITY` omits the table's surface-3,000 ft line; for `R-ROUTE-TOKEN`, confirm with the user whether 4-3-3 b's FRC for an incorrect fix name applies.
 - [ ] **Number grading report awaiting a repro**: an instructor saw "120.9" marked wrong in full-route typing, but figures already grade correct (`normalise.test.ts`). Waiting on the strip link
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in

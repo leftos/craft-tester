@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InputKind, Mode, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { procedureOf } from '@/ui/amendPanels.ts';
-import { clearancePickGrades, startApp } from '@/ui/app.ts';
+import { clearancePickGrades, startApp, toolbarHiddenAfter } from '@/ui/app.ts';
 import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import { headingPick } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
@@ -719,5 +719,98 @@ describe('the procedure pick of a clearance with no DP', () => {
     const verdicts = [...root.querySelectorAll('.verdict')];
     expect(verdicts).toHaveLength(6);
     expect(verdicts[0]?.textContent).toContain('R — procedure');
+  });
+});
+
+/** The headings of the strips one region of the page holds, in page order. */
+function stripHeadings(region: ParentNode): string[] {
+  return [...region.querySelectorAll('section.panel.strip h2')].map((node) => node.textContent);
+}
+
+/** One region of the page: the rail, its pinned group, or the work column. */
+function region(root: ParentNode, selector: string): HTMLElement {
+  const node = root.querySelector(selector);
+  if (!(node instanceof HTMLElement)) throw new Error(`the page has no ${selector}`);
+  return node;
+}
+
+describe('the rail and the work column', () => {
+  beforeEach(() => {
+    globalThis.localStorage.clear();
+  });
+
+  it('puts the strip and the ATIS in the pinned rail and the form in the work column', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    const rail = region(root, 'main.layout > aside.rail');
+    const pin = region(rail, '.rail-pin');
+    const work = region(root, 'main.layout > section.work');
+
+    expect(stripHeadings(pin)).toEqual(['Flight plan']);
+    expect(pin.querySelector('.panel.atis')).not.toBeNull();
+    expect(rail.children).toHaveLength(1);
+    expect(work.querySelector('.panel.craft')).not.toBeNull();
+    expect(rail.querySelector('.panel.craft')).toBeNull();
+    expect(stripHeadings(work)).toEqual([]);
+  });
+
+  it('keeps the results in the work column and the strip in the rail', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
+    typeInto(clearanceBox(root), 'cleared to');
+    pressEnter(clearanceBox(root));
+
+    const rail = region(root, 'aside.rail');
+    const work = region(root, 'section.work');
+    expect(work.querySelector('.panel.results')).not.toBeNull();
+    expect(rail.querySelector('.panel.results')).toBeNull();
+    expect(stripHeadings(region(rail, '.rail-pin'))).toEqual(['Flight plan']);
+  });
+
+  it('pins the filed strip while amending and the amended strip once it exists', async () => {
+    const root = await mountApp(AMENDMENT_SEED, 'amendment', 'text');
+    const amending = region(root, 'aside.rail');
+    expect(stripHeadings(region(amending, '.rail-pin'))).toEqual(['Flight plan']);
+    expect(region(root, 'section.work').querySelector('.panel.amend')).not.toBeNull();
+    expect(amending.querySelector('.panel.amend')).toBeNull();
+
+    clearTheStrip(root);
+
+    const clearing = region(root, 'aside.rail');
+    const pin = region(clearing, '.rail-pin');
+    expect(stripHeadings(clearing)).toEqual(['Flight plan as filed', 'Amended flight plan']);
+    expect(stripHeadings(pin)).toEqual(['Amended flight plan']);
+    expect(pin.querySelector('.panel.atis')).not.toBeNull();
+    const verdicts = clearing.querySelector('.panel.results');
+    expect(verdicts).not.toBeNull();
+    expect(pin.contains(verdicts)).toBe(false);
+    expect(region(root, 'section.work').querySelector('.panel.typed')).not.toBeNull();
+
+    typeInto(clearanceBox(root), 'cleared to');
+    pressEnter(clearanceBox(root));
+
+    const results = region(root, 'aside.rail');
+    expect(stripHeadings(region(results, '.rail-pin'))).toEqual(['Amended flight plan']);
+    expect(stripHeadings(results)).toEqual(['Flight plan as filed', 'Amended flight plan']);
+    expect(results.querySelector('.panel.results')).toBeNull();
+    expect(region(root, 'section.work').querySelector('.panel.results')).not.toBeNull();
+  });
+});
+
+describe('toolbarHiddenAfter', () => {
+  it('hides the toolbar on a scroll down past the threshold', () => {
+    expect(toolbarHiddenAfter(100, 400, 8)).toBe(true);
+  });
+
+  it('brings it back on a scroll up past the threshold', () => {
+    expect(toolbarHiddenAfter(400, 300, 8)).toBe(false);
+  });
+
+  it('leaves it as it is on a move shorter than the threshold', () => {
+    expect(toolbarHiddenAfter(400, 405, 8)).toBeUndefined();
+    expect(toolbarHiddenAfter(400, 393, 8)).toBeUndefined();
+  });
+
+  it('shows it at the top of the page whatever the direction', () => {
+    expect(toolbarHiddenAfter(0, 5, 8)).toBe(false);
+    expect(toolbarHiddenAfter(3, 8, 8)).toBe(false);
   });
 });

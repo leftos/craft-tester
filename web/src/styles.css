@@ -74,6 +74,7 @@
   --s5: 24px;
   --s6: 32px;
   --bar-h: 56px;
+  --pin-top: var(--bar-h);
   font-family: var(--font-ui);
   line-height: 1.5;
 }
@@ -287,16 +288,56 @@ h3 {
   box-shadow: 0 4px 16px var(--shadow);
 }
 
+/*
+ * The page under the toolbar: the strip bay (rail) on the left, the work column on the right. The
+ * rail is tinted by the layout's background, so the tint runs the full height of the page even where
+ * the sticky rail itself is shorter.
+ */
 .layout {
+  --rail-w: 600px;
   display: grid;
-  /* The strip column is as wide as the paper wants (535 px plus the panel's padding), so a desktop
-     draws the strip at full size; the ATIS takes the rest. */
-  grid-template-columns: minmax(16rem, max-content) 1fr;
-  gap: 1rem;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
   align-items: start;
-  max-width: 62rem;
+  max-width: 1320px;
+  min-height: calc(100vh - var(--bar-h));
   margin: 0 auto;
-  padding: 1.5rem;
+  background: linear-gradient(
+    90deg,
+    var(--rail) 0 var(--rail-w),
+    var(--rule) var(--rail-w) calc(var(--rail-w) + 1px),
+    transparent 0
+  );
+}
+
+.layout.no-rail {
+  grid-template-columns: minmax(0, 1fr);
+  background: none;
+}
+
+/* 600 px less its padding leaves 552 px, and the holder 539 px of it, so the 537 px paper prints at 1:1. */
+.rail {
+  position: sticky;
+  top: var(--bar-h);
+  box-sizing: border-box;
+  max-height: calc(100vh - var(--bar-h));
+  overflow: auto;
+  padding: var(--s5);
+}
+
+.rail > * + *,
+.rail-pin > * + * {
+  margin-top: var(--s5);
+}
+
+.work {
+  min-width: 0;
+  padding: var(--s5) var(--s6) var(--s6);
+}
+
+.work > * + * {
+  margin-top: var(--s5);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--rule);
 }
 
 .field {
@@ -378,19 +419,11 @@ button.primary:disabled {
   cursor: not-allowed;
 }
 
-.panel {
-  padding: 0.9rem 1rem;
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-  background: var(--surface);
-}
-
-/* The strip stays in view, under the toolbar, while the form below it is filled in. */
-.panel.strip {
-  position: sticky;
-  top: var(--bar-h);
-  z-index: 2;
-  grid-column: 1;
+/* The dark holder the paper strip sits in, the one heavy object on the page. */
+.strip-holder {
+  padding: 5px 5px 5px 8px;
+  border-radius: 3px;
+  background: var(--holder);
 }
 
 .strip-head {
@@ -422,16 +455,23 @@ button.primary:disabled {
   font-size: 0.8rem;
 }
 
-.panel.atis {
-  grid-column: 2;
+/* The one-line ATIS a phone shows under the pinned strip; a desktop opens the ATIS and hides it. */
+.atis-summary {
+  overflow: hidden;
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.panel.amend,
-.panel.craft,
-.panel.typed,
-.panel.results,
-.panel.unresolved {
-  grid-column: 1 / -1;
+.atis-summary span {
+  margin-left: 10px;
+}
+
+@media (min-width: 900px) {
+  .atis-details[open] > .atis-summary {
+    display: none;
+  }
 }
 
 .atis-rows {
@@ -923,20 +963,99 @@ button.icon[aria-pressed='true'] {
     width: auto;
     max-width: none;
   }
+
+  /* The toolbar slides away on a scroll down (`toolbar-hidden`, set by the scroll listener in app.ts). */
+  .toolbar {
+    transition: transform 150ms ease-out;
+  }
+
+  :root.toolbar-hidden .toolbar {
+    transform: translateY(-100%);
+  }
+
+  /*
+   * One column. The rail's own box goes away, so the pinned group sticks to the whole page rather
+   * than to the rail: the strip the student works from and the ATIS line stay under the toolbar, or
+   * at the top of the screen while the toolbar is hidden (`--pin-top`), and any other strip or the
+   * box verdicts scroll away above the work.
+   */
+  .layout {
+    display: block;
+    background: none;
+  }
+
+  .rail {
+    display: contents;
+  }
+
+  .rail > .panel {
+    margin: var(--s4) var(--s4) 0;
+  }
+
+  .rail-pin {
+    position: sticky;
+    top: var(--pin-top);
+    z-index: 5;
+    margin: 0;
+    padding: var(--s2);
+    border-bottom: 1px solid var(--rule);
+    background: var(--rail);
+  }
+
+  .rail > .panel + .rail-pin {
+    margin-top: var(--s4);
+  }
+
+  .rail-pin > * + * {
+    margin-top: 6px;
+  }
+
+  .rail-pin .strip-head {
+    margin-bottom: var(--s1);
+  }
+
+  .rail-pin .strip-head h2 {
+    font-size: 0.9375rem;
+  }
+
+  .work {
+    padding: var(--s4);
+  }
+
+  .strip-holder {
+    padding: 3px 3px 3px 8px;
+  }
+
+  /* The three blank annotation columns leave the phone strip, which then prints larger. */
+  .strip-grid {
+    width: 438px;
+    grid-template-columns: 118px 46px 90px 1fr;
+  }
+
+  .strip-grid > .strip-annotation {
+    display: none;
+  }
+
+  .strip-grid > .strip-route {
+    border-right: none;
+  }
+
+  .atis-details > h2 {
+    display: none;
+  }
+
+  .atis-details[open] > .atis-summary {
+    margin-bottom: var(--s2);
+  }
+}
+
+@media (max-width: 899.98px) and (prefers-reduced-motion: reduce) {
+  .toolbar {
+    transition: none;
+  }
 }
 
 @media (max-width: 700px) {
-  .layout {
-    /* minmax(0, …) so a panel's widest dropdown cannot grow the column past the viewport. */
-    grid-template-columns: minmax(0, 1fr);
-    padding: 1rem;
-  }
-
-  .panel.strip,
-  .panel.atis {
-    grid-column: 1;
-  }
-
   .craft-group h3 {
     flex: 1 0 100%;
   }

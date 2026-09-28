@@ -80,8 +80,44 @@ function noticeList(notices: readonly Notice[]): HTMLElement {
   return list;
 }
 
+/** How many advisories are in force, in words: `No advisories`, `1 advisory`, `3 advisories`. */
+function advisoryCount(count: number): string {
+  if (count === 0) return 'No advisories';
+  return count === 1 ? '1 advisory' : `${count} advisories`;
+}
+
 /**
- * Renders the ATIS panel.
+ * The parts of the one-line ATIS summary a phone shows under the pinned strip: the configuration
+ * id, the runways in normal use, the local time and how many advisories are in force.
+ *
+ * @param scenario The scenario the ATIS describes.
+ * @param airport The airport data.
+ * @returns The parts, in the order the line prints them, e.g.
+ *   `['28 RT', 'Dep 28L 28R', '1246L Tuesday', '1 advisory']`.
+ */
+export function atisSummary(scenario: Scenario, airport: AirportData): string[] {
+  const config = airport.runwayConfigs.find((row) => row.id === scenario.runwayConfigId);
+  const departing = config === undefined ? '—' : advertisedRunways(config).join(' ');
+  return [
+    scenario.runwayConfigId,
+    `Dep ${departing}`,
+    timeLabel(scenario.localTime, scenario.dayOfWeek),
+    advisoryCount(activeNotices(scenario, airport).length),
+  ];
+}
+
+/** Whether the page is as wide as the desktop layout, where the ATIS opens in full. */
+function wideScreen(): boolean {
+  if (typeof globalThis.matchMedia !== 'function') return true;
+  return globalThis.matchMedia('(min-width: 900px)').matches;
+}
+
+/**
+ * Renders the ATIS panel: one `<details>` whose summary is the one-line ATIS and whose body is the
+ * full ATIS.
+ *
+ * It opens on a desktop, where the stylesheet hides the summary line, and stays closed on a phone,
+ * where the summary line is all that shows under the pinned strip until it is tapped.
  *
  * @param scenario The scenario the ATIS describes.
  * @param airport The airport data.
@@ -89,10 +125,17 @@ function noticeList(notices: readonly Notice[]): HTMLElement {
  */
 export function renderAtis(scenario: Scenario, airport: AirportData): HTMLElement {
   const panel = el('section', 'panel atis');
-  panel.append(
+  const details = el('details', 'atis-details');
+  details.open = wideScreen();
+  const summary = el('summary', 'atis-summary');
+  summary.append(el('b', '', 'ATIS'));
+  for (const part of atisSummary(scenario, airport)) summary.append(el('span', '', part));
+  details.append(
+    summary,
     el('h2', '', 'ATIS'),
     rowList('atis-rows', atisRows(scenario, airport)),
     noticeList(activeNotices(scenario, airport)),
   );
+  panel.append(details);
   return panel;
 }

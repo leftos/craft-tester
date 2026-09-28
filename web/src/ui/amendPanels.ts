@@ -25,13 +25,23 @@ import { renderTextForm } from '@/ui/textForm.ts';
 type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
 
 /**
- * A built panel set: the panels on screen, and how to write a later state of the same phase into
- * them.
+ * A built panel set, split between the two regions of the page, and how to write a later state of
+ * the same phase into it.
+ *
+ * The rail is the strip bay: `rail` holds what scrolls away on a phone (the plan as filed and the
+ * box verdicts once an amended strip exists), and `pinned` holds the strip the student works from
+ * and the ATIS under it, which stay in view on a phone. The work column holds the form, the typing
+ * box, the amendment boxes, the results or the unresolved panel.
  *
  * A set whose panels are all read-only — an earlier attempt, the verdicts — syncs nothing, because
  * nothing on it answers to a state the phase still allows to change.
  */
-export type Panels = { nodes: HTMLElement[]; sync: ((state: AppState) => void) | undefined };
+export type Panels = {
+  rail: HTMLElement[];
+  pinned: HTMLElement[];
+  work: HTMLElement[];
+  sync: ((state: AppState) => void) | undefined;
+};
 
 /** What the amendment panels call back into. */
 export type AmendmentHandlers = {
@@ -123,9 +133,12 @@ function revisitPanels(
   const { drawn } = view;
   const cleared = clearedPlan(view, attempt.boxes, state.airport);
   return {
-    nodes: [
+    rail: [],
+    pinned: [
       renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan', asFiled(state)),
       renderAtis(drawn.filed, state.airport),
+    ],
+    work: [
       renderRevisit({
         grades: amendmentGrades({
           drawn,
@@ -159,11 +172,12 @@ function amendingPanels(state: AppState, view: AmendmentView, handlers: Amendmen
   });
   const form = renderAmendForm(props(state));
   return {
-    nodes: [
+    rail: [],
+    pinned: [
       renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan', asFiled(state)),
       renderAtis(view.drawn.filed, state.airport),
-      form.node,
     ],
+    work: [form.node],
     sync: (next) => {
       form.sync(props(next));
     },
@@ -217,7 +231,7 @@ function clearingPanels(
   const cleared = clearedPlan(view, answers, state.airport);
   const form = renderClearingForm(state, cleared, handlers);
   return {
-    nodes: [
+    rail: [
       renderStrip(
         view.drawn.filed,
         state.airport,
@@ -226,10 +240,12 @@ function clearingPanels(
         asFiled(state),
       ),
       renderBoxVerdicts(cleared.boxes),
+    ],
+    pinned: [
       renderStrip(cleared.plan, state.airport, state.seed, 'Amended flight plan', amended(state)),
       renderAtis(cleared.plan, state.airport),
-      form.node,
     ],
+    work: [form.node],
     sync: form.sync,
   };
 }
@@ -248,10 +264,14 @@ function resultPanels(
   const { drawn } = view;
   const cleared = clearedPlan(view, answers, state.airport);
   return {
-    nodes: [
+    rail: [
       renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan as filed', asFiled(state)),
+    ],
+    pinned: [
       renderStrip(cleared.plan, state.airport, state.seed, 'Amended flight plan', amended(state)),
       renderAtis(cleared.plan, state.airport),
+    ],
+    work: [
       renderResults({
         grades: amendmentGrades({
           drawn,
@@ -276,7 +296,8 @@ function resultPanels(
  * @param state The state the page renders from.
  * @param view The plan to amend, and the clearance its corrected form earns.
  * @param handlers What the panels call back into.
- * @returns The panels, in the order the page lays them out, with the sync of the form among them.
+ * @returns The rail and work panels, each in the order the page lays them out, with the sync of
+ *   the form among them.
  */
 export function renderAmendmentPanels(
   state: AppState,
