@@ -9,6 +9,7 @@ Index line: [MAIN.md](./MAIN.md) Wave 4. The mockup is [page-redesign-mockup.htm
   - **Shape**: an optional `why` field on each rule row (SOP, phraseology, TEC, LOA), written for a student.
   - **Display**: the row that decided an element's verdict supplies it (the tier row for acceptable, half or longer-than-needed; the element's own row for wrong). Where that row has no `why`, the result row falls back to the remark.
   - **Authoring**: the agent drafts `why` for the rows that most often decide a non-correct verdict, and the user approves each in a review pass before it ships. A row without an approved `why` keeps the fallback.
+  - **Grounding**: every `why` about how a clearance is issued is checked against FAA JO 7110.65, the source the clearance rules derive from (`docs/refs/7110.65/`). The reason it gives is the one the order states or directly implies, and the draft names the paragraph. A reason 7110.65 does not support is dropped or marked for the user, never inferred. A row whose source is not 7110.65 (the AIM, 14 CFR, a ZOA SOP or LOA, VATSIM policy) is checked against that source instead.
 - **Phone toolbar**: it hides on scroll-down and comes back on scroll-up; the strip stays pinned.
 - **Fonts**: Atkinson Hyperlegible Next and Mono, self-hosted. Their `woff2` files and OFL licence are vendored under `web/public/fonts/`. There is no npm dependency and no third-party request, and a system-font fallback is kept.
 
