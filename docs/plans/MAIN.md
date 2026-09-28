@@ -62,6 +62,7 @@ Subplan: [what-if-variants.md](./what-if-variants.md). Gate: UI + browser check.
 
 ## Cleanup
 
+- [ ] `tools/gate.ps1` now requires `-Slot heavy|light` (heavy when the command fans out across cores, light when it keeps one or two threads busy; see `~/.claude/CLAUDE.md`). Nothing here calls the gate yet; confirm that, and give any call added later a kind. The choice was made from outside this repo's agents; the pool sizes belong to the machine-wide gate in `~/.claude/tools/gate/`.
 - [ ] CLAUDE.md's browser-check example `s=1,a=KOAK,d=KLVK … "select:4=(no prefix)" "fill:0=…"` does not match its hash: `select:4` is the "fix or airway" row, `(no prefix)` sits in the "shape" row, and the page has no text input for `fill:0`. Pick a hash and indices that do what the example says
 - [ ] Bump `astral-sh/setup-uv` from v10.1.0 to v10.2.0 (`c18668ad3cf93ea998bef934396af7bb5c839dc7`) in `ci.yml`, `pages.yml` and `airac.yml` together
 - [ ] `check:browser`'s `click:` cannot press a bare `<summary>`, so `click:Filters` times out (the Test popover got `role="button"` to work around it); give `web/scripts/browser-check.ts` a way to press a summary by its text
