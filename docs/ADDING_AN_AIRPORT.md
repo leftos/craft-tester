@@ -332,7 +332,7 @@ Then:
    the schema index test) to loop over the index, so the new airport gets the same coverage.
 4. If any chart parsed differently from the KSFO charts, check its pypdf text into
    `generator/tests/fixtures/chart_text/` with a test, so the regex change is pinned.
-5. Commit `data/<icao>.json` with the YAML. CI runs `build --check` against it.
+5. Run `craft-gen build --airport <ICAO> --check`, then commit `data/<icao>.json` with the YAML. CI does not run `build`, so this local check is the only one.
 
 ## 7. Worksheets and validation
 

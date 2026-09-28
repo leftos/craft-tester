@@ -64,13 +64,12 @@ Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser chec
   `--airport` at a time (loop over `data/airports.json`); its output is byte-stable, so a PR diff is the
   cycle's real changes; actions are pinned by full sha with `persist-credentials: false`. **Two decisions
   for the user before a brief**: the repo has no PR-opening pattern (no workflow holds
-  `pull-requests: write`; pick the token and the action), and `build` verifies the SOP PDF, which
-  ADDING_AN_AIRPORT.md says is placed in the cache by hand, so an unattended runner may not be able to
-  build. Also undecided: `build` without `--cycle` takes the cycle containing today, which can 404 on
-  the effective date if the FAA publishes late
-- [ ] **ADDING_AN_AIRPORT.md says CI runs `craft-gen build --check`; it does not** (`ci.yml` runs only
-  `import-worksheets --check` over the network). Correct the runbook, or add the step once the AIRAC
-  workflow settles how CI reaches the cache
+  `pull-requests: write`), and `build` verifies the SOP PDF, which ADDING_AN_AIRPORT.md says is placed in
+  the cache by hand. **Ruled**: the job pushes a branch and runs `gh pr create` with `GITHUB_TOKEN`
+  (`contents: write`, `pull-requests: write`; such a PR does not trigger CI by itself); `build` gains a
+  `--skip-sop-verify` flag used only by this workflow, `verify-sop` staying a local step; it runs daily on
+  a cron, builds the cycle containing today, and opens a PR only when the output differs from `main`, so a
+  late FAA publish is retried the next day
 - [ ] **Playtest observation awaiting a ruling** (2026-09-16, still true): the standing `SFO-SEGUL-OFF` notice is `default_active: true` and notices are cancelled only 20% of draws (`NOTICES_OFF_CHANCE`), so it is in force on 80% of scenarios. Is that too often?
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox) feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
 - [ ] **Rule briefs contradict the settled fixtures or themselves** (friction `d5:craft-tester:2026-W38`, from the
