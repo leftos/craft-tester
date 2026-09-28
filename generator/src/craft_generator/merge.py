@@ -68,6 +68,7 @@ from typing import Any
 from craft_generator.aircraft_characteristics import AircraftCharacteristic
 from craft_generator.chart_text import ChartFacts, TopAltitude
 from craft_generator.cifp.airports import AirportRecord
+from craft_generator.cifp.airways import AirwayFix, CifpAirway
 from craft_generator.cifp.navaids import Navaid
 from craft_generator.cifp.records import RunwayRecord
 from craft_generator.cifp.sid import CifpSid, Restriction, Transition
@@ -126,6 +127,8 @@ PILOT_NAV_KINDS = frozenset({"rnav_pilot_nav", "conventional_pilot_nav"})
 RNAV_KIND = "rnav_pilot_nav"
 VECTOR_SEGMENT_KINDS = frozenset({"radar_vectors", "vector_hybrid"})
 PUBLISHED_TOP_ALTITUDE = "published"
+# How many times the shipped V and J airways widen to every V or J airway that shares a fix with one.
+AIRWAY_REACH_DEPTH = 2
 
 _CLOCK = re.compile(r"^(?P<hours>[01]\d|2[0-3]):?(?P<minutes>[0-5]\d)$")
 _NAVAID_TOKEN = re.compile(r"[A-Z]{2,3}")
@@ -133,6 +136,10 @@ _FIX_TOKEN = re.compile(r"[A-Z]{5}")
 _PROCEDURE_TOKEN = re.compile(r"(?P<family>[A-Z]{3,5})\d+")
 _PROCEDURE_FAMILY_TOKEN = re.compile(rf"(?P<family>[A-Z]{{3,5}}){re.escape(SID_PLACEHOLDER)}")
 _HEADING_TOKEN = re.compile(r"H\d{3}")
+_AIRWAY_TOKEN = re.compile(r"[A-Z]\d{1,3}")
+_AIRWAY_ID = re.compile(r"(?P<letters>[A-Z]+)(?P<number>\d+)")
+_STRUCTURED_AIRWAY_LETTERS = frozenset("VJ")
+_RNAV_FLAG_AIRWAY_LETTERS = frozenset("QT")
 _HEADING_DEGREES = range(1, 361)
 _RUNWAY_HEADING_TOKEN = "RH"
 _RADAR_VECTORS_TOKEN = "RV"
@@ -177,6 +184,9 @@ class BuildInputs:
     ``destination_stars`` is every arrival each destination publishes, keyed by ICAO identifier, in
     CIFP order. A destination the FAA file does not carry - every foreign one - is simply absent, as
     is a US airport that publishes no arrival at all; both emit an empty ``arrivals`` list.
+
+    ``airways`` is every US airway the CIFP publishes, keyed by identifier; :func:`build_airport`
+    ships the ones the airport files and the V and J airways within ``AIRWAY_REACH_DEPTH`` of them.
     """
 
     airport: AirportInputs
@@ -189,6 +199,7 @@ class BuildInputs:
     aircraft_characteristics: dict[str, AircraftCharacteristic]
     airport_records: dict[str, AirportRecord]
     destination_stars: dict[str, tuple[CifpStar, ...]]
+    airways: Mapping[str, CifpAirway]
     equipment_suffixes: tuple[EquipmentSuffix, ...]
     phraseology_rules: tuple[PhraseologyRule, ...]
     route_connections: tuple[RouteConnection, ...]
@@ -389,8 +400,61 @@ def _route_connection(connection: RouteConnection) -> Document:
     }
 
 
-def _airway(airway: Airway) -> Document:
-    return {"id": airway.id, "oneWay": airway.one_way}
+def _airway_fix(fix: AirwayFix) -> Document:
+    entry: Document = {"fix": fix.fix, "navaid": fix.section == "navaid"}
+    return _with_optional(entry, mea=fix.mea, maa=fix.maa, distanceNm=fix.distance_nm)
+
+
+def _airway(airway: CifpAirway, *, structured: bool, one_way: bool) -> Document:
+    entry = _with_optional({"id": airway.id, "rnav": airway.rnav}, level=airway.level if structured else None)
+    entry["oneWay"] = one_way
+    if structured:
+        entry["stretches"] = [[_airway_fix(fix) for fix in stretch] for stretch in airway.stretches]
+    return entry
+
+
+def _airway_sort_key(airway_id: str) -> tuple[str, int]:
+    match = _AIRWAY_ID.fullmatch(airway_id)
+    if match is None:
+        return airway_id, 0
+    return match["letters"], int(match["number"])
+
+
+def _reach(structured: Mapping[str, CifpAirway], seeds: set[str], depth: int) -> set[str]:
+    """Return the seeds and every airway reached from them by sharing a fix, ``depth`` times over."""
+    by_fix: dict[str, set[str]] = {}
+    for airway in structured.values():
+        for fix in {fix.fix for stretch in airway.stretches for fix in stretch}:
+            by_fix.setdefault(fix, set()).add(airway.id)
+    reached = set(seeds)
+    frontier = set(seeds)
+    for _ in range(depth):
+        fixes = {fix.fix for airway_id in frontier for stretch in structured[airway_id].stretches for fix in stretch}
+        frontier = {neighbour for fix in fixes for neighbour in by_fix[fix]} - reached
+        reached |= frontier
+    return reached
+
+
+def _shipped_airways(cifp_airways: Mapping[str, CifpAirway], filed_ids: frozenset[str], one_way_rows: Sequence[Airway]) -> list[Document]:
+    """Return the airways the airport data ships, sorted by letter and number.
+
+    The V and J airways the airport files carry their structure, widened by
+    :data:`AIRWAY_REACH_DEPTH` to every V or J airway sharing a fix with a shipped one. The Q and T
+    airways it files carry their RNAV flag alone. A Y airway ships from neither: the CIFP codes it
+    conventional, so the engine keeps reading it by its letter. A filed identifier the CIFP does not
+    publish is skipped. The hand-maintained rows of ``shared/airways.yaml`` merge in by identifier and
+    state ``oneWay``; one the CIFP does not ship is emitted as a conventional airway with no structure.
+    """
+    structured = {airway_id: airway for airway_id, airway in cifp_airways.items() if airway_id[0] in _STRUCTURED_AIRWAY_LETTERS}
+    one_way = {row.id: row.one_way for row in one_way_rows}
+    reached = _reach(structured, {airway_id for airway_id in filed_ids if airway_id in structured}, AIRWAY_REACH_DEPTH)
+    rows = {airway_id: _airway(structured[airway_id], structured=True, one_way=one_way.get(airway_id, False)) for airway_id in reached}
+    for airway_id in filed_ids:
+        if airway_id in cifp_airways and airway_id[0] in _RNAV_FLAG_AIRWAY_LETTERS:
+            rows[airway_id] = _airway(cifp_airways[airway_id], structured=False, one_way=one_way.get(airway_id, False))
+    for row in one_way_rows:
+        rows.setdefault(row.id, {"id": row.id, "rnav": False, "oneWay": row.one_way})
+    return [rows[airway_id] for airway_id in sorted(rows, key=_airway_sort_key)]
 
 
 def _common_arrival(arrival: CommonArrival) -> Document:
@@ -1243,6 +1307,19 @@ def _rnav_waypoints(document: Document, inputs: BuildInputs) -> list[str]:
     return sorted(token for token in filed if inputs.waypoints.get(token) == RNAV_WAYPOINT)
 
 
+def _filed_airway_ids(document: Document, inputs: BuildInputs) -> frozenset[str]:
+    """Return every airway identifier the airport data, its LOA rows or its fixtures file.
+
+    The tokens are the ones :func:`_rnav_waypoints` reads plus the route tokens of the LOA rows,
+    which name airways no route writes (J92, Q174). A heading such as ``H090`` has the shape of an
+    airway identifier and is dropped.
+    """
+    tokens = {token for token, _ in _route_navaid_tokens(document)}
+    tokens |= {token for route in inputs.fixture_routes for token in route.split()}
+    tokens |= {token for row in document["loaRules"] for token in row["rule"].get("tokens", [])}
+    return frozenset(token for token in tokens if _AIRWAY_TOKEN.fullmatch(token) and not _is_heading_token(token))
+
+
 def _fix_spoken(document: Document, inputs: BuildInputs) -> dict[str, str]:
     tokens = set(_document_navaid_tokens(document)) | _fixture_navaid_tokens(document, inputs)
     named = {token: inputs.navaids[token].spoken for token in sorted(tokens) if token in inputs.navaids}
@@ -1409,7 +1486,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "phraseologyRules": _phraseology_rules(inputs.phraseology_rules, sop.phraseology_rules, inputs.airport.special_handling),
         "equipmentSuffixes": [_equipment_suffix(suffix) for suffix in inputs.equipment_suffixes],
         "routeConnections": [_route_connection(connection) for connection in inputs.route_connections],
-        "airways": [_airway(airway) for airway in inputs.airport.airways],
+        "airways": [],
         "commonArrivals": [_common_arrival(arrival) for arrival in inputs.airport.common_arrivals],
         "tecRoutes": _tec_routes(inputs),
         "loaRules": _loa_rules(inputs),
@@ -1419,6 +1496,7 @@ def build_airport(inputs: BuildInputs) -> Document:
     }
     document["fixSpoken"] = _fix_spoken(document, inputs)
     document["rnavWaypoints"] = _rnav_waypoints(document, inputs)
+    document["airways"] = _shipped_airways(inputs.airways, _filed_airway_ids(document, inputs), inputs.airport.airways)
     _check(document, inputs)
     _warn(document, inputs)
     return document

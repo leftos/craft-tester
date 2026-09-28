@@ -142,7 +142,21 @@ const minimalAirportData: AirportData = {
   phraseologyRules: [],
   equipmentSuffixes: [],
   routeConnections: [],
-  airways: [],
+  airways: [
+    {
+      id: 'V6',
+      rnav: false,
+      level: 'low',
+      oneWay: false,
+      stretches: [
+        [
+          { fix: 'OAK', navaid: true, mea: 4000, maa: 17500, distanceNm: 8.5 },
+          { fix: 'FESIK', navaid: false },
+        ],
+      ],
+    },
+    { id: 'Q1', rnav: true, oneWay: false },
+  ],
   commonArrivals: [],
   tecRoutes: [],
   loaRules: [],

@@ -104,12 +104,59 @@
           "id": {
             "type": "string"
           },
+          "level": {
+            "enum": [
+              "high",
+              "low",
+              "both"
+            ],
+            "type": "string"
+          },
           "oneWay": {
             "type": "boolean"
+          },
+          "rnav": {
+            "type": "boolean"
+          },
+          "stretches": {
+            "items": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "distanceNm": {
+                    "type": "number"
+                  },
+                  "fix": {
+                    "type": "string"
+                  },
+                  "maa": {
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "mea": {
+                    "maximum": 9007199254740991,
+                    "minimum": -9007199254740991,
+                    "type": "integer"
+                  },
+                  "navaid": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "fix",
+                  "navaid"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "type": "array"
           }
         },
         "required": [
           "id",
+          "rnav",
           "oneWay"
         ],
         "type": "object"

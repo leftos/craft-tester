@@ -11,6 +11,7 @@ from craft_generator.aircraft_classes import classes_for_fleet
 from craft_generator.chart_text import parse_chart_facts
 from craft_generator.charts_api import ChartRef, charts_api_url, parse_departure_charts
 from craft_generator.cifp.airports import AirportRecord, parse_airport_records
+from craft_generator.cifp.airways import CifpAirway, parse_airways
 from craft_generator.cifp.navaids import Navaid, parse_navaids
 from craft_generator.cifp.records import RunwayRecord, SidRecord, parse_records
 from craft_generator.cifp.sid import CifpSid, group_sids
@@ -41,6 +42,7 @@ AIRPORT_RECORDS = FIXTURES / "cifp" / "airport_records.txt"
 NAVAID_RECORDS = FIXTURES / "cifp" / "navaid_records.txt"
 WAYPOINT_RECORDS = FIXTURES / "cifp" / "waypoint_records.txt"
 STAR_RECORDS = FIXTURES / "cifp" / "star_records.txt"
+AIRWAY_RECORDS = FIXTURES / "cifp" / "airway_records.txt"
 SFO_CHARTS_JSON = FIXTURES / "charts_api" / "SFO.json"
 CHART_TEXT = FIXTURES / "chart_text"
 SOP_TEXT = FIXTURES / "sop_text.txt"
@@ -146,6 +148,17 @@ def destination_stars(star_record_lines: list[str]) -> dict[str, tuple[CifpStar,
 
 
 @pytest.fixture(scope="session")
+def airway_record_lines() -> list[str]:
+    """Return the checked-in CIFP airway rows of every airway the KSFO document ships."""
+    return AIRWAY_RECORDS.read_text(encoding="ascii").splitlines()
+
+
+@pytest.fixture(scope="session")
+def cifp_airways(airway_record_lines: list[str]) -> dict[str, CifpAirway]:
+    return parse_airways(airway_record_lines)
+
+
+@pytest.fixture(scope="session")
 def navaid_lines() -> list[str]:
     """Return the checked-in CIFP navaid rows of every navaid the KSFO document names."""
     return NAVAID_RECORDS.read_text(encoding="ascii").splitlines()
@@ -203,6 +216,7 @@ def ksfo_build_inputs(
     ksfo_waypoints: dict[str, str],
     aircraft_characteristics: dict[str, AircraftCharacteristic],
     nct_boundary: NctBoundary,
+    cifp_airways: dict[str, CifpAirway],
 ) -> BuildInputs:
     """Return every build input of KSFO, read from the checked-in fixtures only."""
     legs, runway_records = ksfo_records
@@ -217,6 +231,7 @@ def ksfo_build_inputs(
         aircraft_characteristics=aircraft_characteristics,
         airport_records=parse_airport_records(AIRPORT_RECORDS.read_text(encoding="ascii").splitlines()),
         destination_stars=parse_stars(STAR_RECORDS.read_text(encoding="ascii").splitlines()),
+        airways=cifp_airways,
         equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
         phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
         route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),

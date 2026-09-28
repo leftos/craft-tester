@@ -434,6 +434,25 @@ function sidFixes(head: string | undefined, airport: AirportData): Set<string> {
 }
 
 /**
+ * What flying an airway takes, read from its data row where the airport ships one.
+ *
+ * The CIFP's route type says whether an airway is RNAV: an RNAV row takes what `RNAV_AIRWAYS` names
+ * for its letter, or RNAV capability where the table names none, and a conventional row takes
+ * nothing. An airway with no data row falls back to its letter, and so does every Y route, which
+ * the CIFP codes conventional although flying one takes GPS.
+ *
+ * @param token An airway token of the filed route.
+ * @param airport The airport data, whose `airways` carry the RNAV flag.
+ * @returns What the airway takes, or `undefined` for a conventional airway.
+ */
+function airwayNeed(token: string, airport: AirportData): RnavNeed | undefined {
+  const letter = token.charAt(0);
+  const row = letter === 'Y' ? undefined : airport.airways.find((entry) => entry.id === token);
+  if (row === undefined) return RNAV_AIRWAYS[letter];
+  return row.rnav ? (RNAV_AIRWAYS[letter] ?? 'rnav') : undefined;
+}
+
+/**
  * What one token of a filed route takes to fly, where it takes anything at all.
  *
  * @param token One token of the filed route.
@@ -448,7 +467,7 @@ function elementOf(
 ): RnavElement | undefined {
   if (isSidToken(token) || token === airport.airport.faa) return undefined;
   if (isAirwayToken(token)) {
-    const needs = RNAV_AIRWAYS[token.charAt(0)];
+    const needs = airwayNeed(token, airport);
     return needs === undefined ? undefined : { token, needs, kind: 'airway' };
   }
   if (implied.has(token) || !airport.rnavWaypoints.includes(token)) return undefined;

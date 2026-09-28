@@ -317,6 +317,35 @@ describe('rnavElements', () => {
     ]);
   });
 
+  /** KSFO with its airway rows replaced, so each test states the rows the RNAV flag is read from. */
+  function withAirways(airways: AirportData['airways']): AirportData {
+    return { ...ksfo, airways };
+  }
+
+  it('reads an airway whose data row is RNAV as needing what its letter takes', () => {
+    const airport = withAirways([
+      { id: 'T257', rnav: true, oneWay: false },
+      { id: 'J999', rnav: true, oneWay: false },
+    ]);
+    expect(rnavElements(plan('SAC T257 RBL J999 LMT'), airport)).toEqual([
+      { token: 'T257', needs: 'gnss', kind: 'airway' },
+      { token: 'J999', needs: 'rnav', kind: 'airway' },
+    ]);
+  });
+
+  it('reads an airway whose data row is conventional as needing nothing, whatever its letter', () => {
+    const airport = withAirways([{ id: 'Q174', rnav: false, oneWay: false }]);
+    expect(rnavElements(plan('SAC Q174 RBL'), airport)).toEqual([]);
+  });
+
+  it('reads an airway with no data row, and every Y route, by its letter', () => {
+    const airport = withAirways([{ id: 'Y233', rnav: false, oneWay: false }]);
+    expect(rnavElements(plan('SAC Q999 RBL Y233 LMT V999 OED'), airport)).toEqual([
+      { token: 'Q999', needs: 'rnav', kind: 'airway' },
+      { token: 'Y233', needs: 'gnss', kind: 'airway' },
+    ]);
+  });
+
   it('names a fix filed twice once', () => {
     expect(rnavElements(plan('DEDHD RBL DEDHD'), ksfo).map((element) => element.token)).toEqual([
       'DEDHD',

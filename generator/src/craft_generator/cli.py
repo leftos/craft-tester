@@ -32,6 +32,7 @@ from craft_generator.charts_api import (
     pdf_cache_path,
 )
 from craft_generator.cifp.airports import parse_airport_records
+from craft_generator.cifp.airways import parse_airways
 from craft_generator.cifp.cycle import CIFP_MEMBER, cifp_url, cycle_id_for, effective_date_for, effective_date_for_cycle
 from craft_generator.cifp.navaids import parse_navaids
 from craft_generator.cifp.records import parse_records
@@ -485,6 +486,7 @@ def build(
             aircraft_characteristics=load_aircraft_characteristics(shared_dir() / AIRCRAFT_CHARACTERISTICS_FILE),
             airport_records=parse_airport_records(lines),
             destination_stars=parse_stars(lines),
+            airways=parse_airways(lines),
             equipment_suffixes=load_equipment_suffixes(shared_dir() / EQUIPMENT_SUFFIXES_FILE),
             phraseology_rules=load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE),
             route_connections=load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE),

@@ -5,19 +5,23 @@ from typing import Any
 import pytest
 
 from craft_generator.aircraft_characteristics import AircraftCharacteristic
+from craft_generator.cifp.airways import AirwayFix, CifpAirway
 from craft_generator.emit import data_path, dump, schema_path, validate
 from craft_generator.merge import (
     BuildInputs,
     Document,
+    _filed_airway_ids,
     _fleet_entry,
     _phraseology_rules,
+    _reach,
+    _shipped_airways,
     _sop_named_types,
     build_airport,
     gate_coverage,
     tec_route_grammar_error,
 )
 from craft_generator.sop.load import airport_dir, load_airport
-from craft_generator.sop.model import AircraftGroup, PhraseologyRule, RouteEntry, RouteTokenRule, SharedRouteFacts
+from craft_generator.sop.model import AircraftGroup, Airway, PhraseologyRule, RouteEntry, RouteTokenRule, SharedRouteFacts
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -291,9 +295,82 @@ def test_the_shared_route_connections_are_emitted_as_citable_rows(ksfo_document:
 
 
 def test_the_shared_airways_are_emitted_with_their_direction(ksfo_document: Document, ksfo_build_inputs: BuildInputs) -> None:
-    rows = ksfo_document["airways"]
-    assert len(rows) == len(ksfo_build_inputs.airport.airways)
-    assert rows == [{"id": "R463", "oneWay": True}, {"id": "R464", "oneWay": True}, {"id": "A220", "oneWay": True}]
+    rows = {row["id"]: row for row in ksfo_document["airways"]}
+    assert [rows[airway.id] for airway in ksfo_build_inputs.airport.airways] == [
+        {"id": "R463", "rnav": False, "oneWay": True},
+        {"id": "R464", "rnav": False, "oneWay": True},
+        {"id": "A220", "rnav": False, "oneWay": True},
+    ]
+
+
+def _airway(airway_id: str, *fixes: str, rnav: bool = False) -> CifpAirway:
+    stretch = tuple(AirwayFix(fix=fix, section="waypoint", mea=None, maa=None, distance_nm=None) for fix in fixes)
+    return CifpAirway(id=airway_id, rnav=rnav, level="high" if rnav else "low", stretches=(stretch,))
+
+
+# V1 and V2 meet at BBBBB, V2 and J3 at CCCCC, J3 and V4 at DDDDD; Q5 and T6 share fixes with V1 and never widen.
+_CHAIN = {
+    "V1": _airway("V1", "AAAAA", "BBBBB"),
+    "V2": _airway("V2", "BBBBB", "CCCCC"),
+    "J3": _airway("J3", "CCCCC", "DDDDD"),
+    "V4": _airway("V4", "DDDDD", "EEEEE"),
+    "Q5": _airway("Q5", "AAAAA", "BBBBB", rnav=True),
+    "T6": _airway("T6", "AAAAA", "FFFFF", rnav=True),
+    "Y7": _airway("Y7", "AAAAA", "GGGGG"),
+}
+_STRUCTURED_CHAIN = {airway_id: airway for airway_id, airway in _CHAIN.items() if airway_id[0] in "VJ"}
+
+
+@pytest.mark.parametrize(("depth", "reached"), [(0, {"V1"}), (1, {"V1", "V2"}), (2, {"V1", "V2", "J3"})])
+def test_the_shipped_airways_widen_one_shared_fix_per_depth(depth: int, reached: set[str]) -> None:
+    assert _reach(_STRUCTURED_CHAIN, {"V1"}, depth) == reached
+
+
+def test_a_filed_v_airway_ships_its_structure_widened_to_the_reach_depth() -> None:
+    rows = _shipped_airways(_CHAIN, frozenset({"V1"}), ())
+    assert [row["id"] for row in rows] == ["J3", "V1", "V2"]
+    assert rows[1] == {
+        "id": "V1",
+        "rnav": False,
+        "level": "low",
+        "oneWay": False,
+        "stretches": [[{"fix": "AAAAA", "navaid": False}, {"fix": "BBBBB", "navaid": False}]],
+    }
+
+
+def test_a_filed_q_or_t_airway_ships_its_rnav_flag_alone_and_a_y_airway_not_at_all() -> None:
+    rows = _shipped_airways(_CHAIN, frozenset({"Q5", "T6", "Y7"}), ())
+    assert rows == [{"id": "Q5", "rnav": True, "oneWay": False}, {"id": "T6", "rnav": True, "oneWay": False}]
+
+
+def test_a_filed_airway_the_cifp_does_not_publish_is_skipped() -> None:
+    assert [row["id"] for row in _shipped_airways(_CHAIN, frozenset({"J999", "Q5"}), ())] == ["Q5"]
+
+
+def test_a_one_way_row_merges_into_the_airway_it_names_and_ships_alone_otherwise() -> None:
+    one_way = (Airway(id="V2", one_way=True, note="westbound only"), Airway(id="R464", one_way=True, note="westbound only"))
+    rows = {row["id"]: row for row in _shipped_airways(_CHAIN, frozenset({"V1"}), one_way)}
+    assert rows["V2"]["oneWay"] is True
+    assert rows["V2"]["stretches"] == [[{"fix": "BBBBB", "navaid": False}, {"fix": "CCCCC", "navaid": False}]]
+    assert rows["V1"]["oneWay"] is False
+    assert rows["R464"] == {"id": "R464", "rnav": False, "oneWay": True}
+
+
+def test_the_filed_airways_read_loa_tokens_and_drop_headings(ksfo_document: Document, ksfo_build_inputs: BuildInputs) -> None:
+    document = {
+        **ksfo_document,
+        "loaRules": [{"rule": {"kind": "route", "tokens": ["J999", "H090"]}}],
+        "tecRoutes": [{"id": "X", "route": "H270 V999 SAC"}],
+    }
+    inputs = replace(ksfo_build_inputs, fixture_routes=("RH H180 V998 SAC",))
+    filed = _filed_airway_ids(document, inputs)
+    assert {"J999", "V999", "V998"} <= filed
+    assert filed.isdisjoint({"H090", "H270", "H180"})
+
+
+def test_the_ksfo_airways_include_the_ones_only_an_loa_row_names(ksfo_document: Document) -> None:
+    ids = {row["id"] for row in ksfo_document["airways"]}
+    assert {"J92", "Q174"} <= ids
 
 
 def test_the_shared_common_arrivals_are_emitted_with_their_families_and_transitions(ksfo_document: Document, ksfo_build_inputs: BuildInputs) -> None:

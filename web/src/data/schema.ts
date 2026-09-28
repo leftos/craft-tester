@@ -434,15 +434,36 @@ export const RouteConnectionSchema = z.strictObject({
 });
 
 /**
- * One airway whose direction of flight the route structure fixes.
+ * One fix of an airway, with the leg that leaves it for the next fix of its stretch.
  *
- * A one-way airway carries no opposing traffic, so the direction-of-flight altitude rule has nothing
- * to separate on it and an altitude filed on it stands whichever half of the table it falls in. The
- * rows are national, so every airport inherits all of them.
+ * `navaid` is set where the fix is a VOR or NDB rather than a waypoint. `mea` and `maa` are the
+ * leg's minimum enroute and maximum authorized altitudes in feet and `distanceNm` its length; the
+ * last fix of a stretch has no leg and carries none, and `mea` is absent where the FAA publishes
+ * none.
+ */
+export const AirwayFixSchema = z.strictObject({
+  fix: z.string(),
+  navaid: z.boolean(),
+  mea: z.number().int().optional(),
+  maa: z.number().int().optional(),
+  distanceNm: z.number().optional(),
+});
+
+/**
+ * One airway the airport files or can reach, from the FAA CIFP and the hand oneWay table.
+ *
+ * `rnav` is the CIFP's route type: a Q or T airway ships with it alone, a V or J airway with its
+ * `level` and its `stretches` as well, the fixes in published order, split where the airway
+ * breaks. A one-way airway carries no opposing traffic, so the direction-of-flight altitude rule has
+ * nothing to separate on it and an altitude filed on it stands whichever half of the table it falls
+ * in; the oneWay rows are national, so every airport inherits all of them.
  */
 export const AirwaySchema = z.strictObject({
   id: z.string(),
+  rnav: z.boolean(),
+  level: z.enum(['high', 'low', 'both']).optional(),
   oneWay: z.boolean(),
+  stretches: z.array(z.array(AirwayFixSchema)).optional(),
 });
 
 /**
@@ -931,6 +952,7 @@ export type Phraseology = z.infer<typeof PhraseologySchema>;
 export type PhraseologyRule = z.infer<typeof PhraseologyRuleSchema>;
 export type EquipmentSuffix = z.infer<typeof EquipmentSuffixSchema>;
 export type RouteConnection = z.infer<typeof RouteConnectionSchema>;
+export type AirwayFix = z.infer<typeof AirwayFixSchema>;
 export type Airway = z.infer<typeof AirwaySchema>;
 export type CommonArrival = z.infer<typeof CommonArrivalSchema>;
 export type TecRoute = z.infer<typeof TecRouteSchema>;

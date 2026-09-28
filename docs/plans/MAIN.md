@@ -12,13 +12,7 @@ Design, data facts and rationale live in [ARCHITECTURE.md](../ARCHITECTURE.md) (
 
 Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data concept the user rules on.
 
-- [ ] The RNAV element check leaves a non-RNAV plan with no conventional route in the data; the J and V
-  airway structure would let the engine rebuild one. Surveyed 2026-09-17: parse the CIFP `ER` records the
-  generator already downloads (ordered fixes plus high/low, conventional/RNAV, MEA/MAA); the vNAS
-  `NavData.dat` carries only `id + fixes` and has 224 colliding ids (`J1`, `V6` resolve to foreign routes
-  first-wins). No airway parsing exists in `cifp/` today — only the three-row hand-written
-  `shared/airways.yaml`. The user ruled on the subplan's three questions (library route first, then a V/J
-  path; ship only the airways the Bay files; accepted among alternatives); ready to brief the `ER` parser
+- [ ] **Rebuild a conventional route for a non-RNAV plan that files RNAV elements** (slice C of the subplan). The airway structure ships in `airways` (`cifp/airways.py`, depth-2 widening); the engine still answers with the type box alone. Ruled: library route first, then a V/J path; type raise and rebuilt route as an alternative pair; three settled KOAK fixtures go back to the user once it lands. Open questions for the brief are in the subplan
 
 ## Wave 2 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
 

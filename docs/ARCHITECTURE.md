@@ -28,7 +28,7 @@ ends with their magnetic bearing), `runwayConfigs`, `departureSectors`, `frequen
 | `cli.py` | `craft-gen` subcommands: `fetch-cifp`, `fetch-charts`, `fetch-aircraft-characteristics`, `build`, `verify-sop`, `import-worksheets` |
 | `http.py` | cached GET (stdlib urllib), sha256 |
 | `charts_api.py`, `chart_text.py` | ZOA charts API → DP list; pypdf text → top altitude, transitions, departure frequencies |
-| `cifp/` | AIRAC cycle math; ARINC 424 fixed-width slicing of SID legs and runways (`records.py`), STARs with their family, RNAV flag and enroute transitions (`stars.py`), VHF/NDB navaids (`navaids.py`) and airport reference points (`airports.py`); grouping into runways/transitions/restrictions/kind (`sid.py`). Hand-rolled on purpose: audited against `cifparse` 2.0.9's width tables and `zoa-reference-cli` with zero column drift, and neither package fits as a dependency (GPL-3.0 and no tests; no runway/navaid-name coverage). The checked-in text fixtures under `tests/fixtures/cifp/` are the regression net for every column |
+| `cifp/` | AIRAC cycle math; ARINC 424 fixed-width slicing of SID legs and runways (`records.py`), STARs with their family, RNAV flag and enroute transitions (`stars.py`), VHF/NDB navaids (`navaids.py`) airport reference points (`airports.py`) and airways (`airways.py`: `SUSAER` rows grouped by id into stretches split where a row ends one, with route type, level, MEA, MAA and leg distance); grouping into runways/transitions/restrictions/kind (`sid.py`). Hand-rolled on purpose: audited against `cifparse` 2.0.9's width tables and `zoa-reference-cli` with zero column drift, and neither package fits as a dependency (GPL-3.0 and no tests; no runway/navaid-name coverage). The checked-in text fixtures under `tests/fixtures/cifp/` are the regression net for every column |
 | `sop/` | YAML models, loader with cross-reference validation, SOP PDF hash + sentinel verification |
 | `aircraft_classes.py` | vNAS `AircraftSpecs.json` EngineType → P/T/J |
 | `merge.py` | joins all sources, applies `overrides.yaml`, runs integrity checks |
@@ -42,8 +42,9 @@ national CRAFT rule rows, which an airport's `sop.yaml` overrides by id; `merge.
 first), `loa_rules.yaml` (the inter-ARTCC LOA sources and rows, joined the same way by `sop/load.py`
 `joined_loa_rules`, with `departures` filtering a row to the airports it names) and
 `route_connections.yaml` (the ZOA route-building cheat sheet, one row per "fix connects onward to fix"
-arrow, emitted as citable `routeConnections` rows), `airways.yaml` (the one-way oceanic airways, emitted
-as `airways`), `navaid_names.yaml` (spoken names for navaids the CIFP does not carry, decommissioned or
+arrow, emitted as citable `routeConnections` rows), `airways.yaml` (the one-way oceanic airways, merged by id into
+`airways`, which also carries every V and J airway the Bay files with its structure, widened to the airways
+sharing a fix with them to `AIRWAY_REACH_DEPTH` (`merge.py`), and filed Q and T airways as an RNAV flag), `navaid_names.yaml` (spoken names for navaids the CIFP does not carry, decommissioned or
 foreign, read between the CIFP names and an airport's `fix_spoken` and emitted into `fixSpoken` only where
 the airport's data or fixtures file the navaid), `common_arrivals.yaml` (the ZOA "Common ZLA Arrivals from ZOA" sheet, one row per cell with
 the destinations, classes, cargo mark, arrival family and entry fixes, emitted as citable `commonArrivals`
