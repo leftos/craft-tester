@@ -115,6 +115,12 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
 - **`data/*.json` is generated.** Never hand-edit; run `craft-gen build --check` to confirm it matches.
 - **Fixtures carry `status: settled | pending`.** `pending` records an open question and must not fail the
   suite; promote to `settled` only after the user confirms the expected clearance.
+- **A brief on `rules/` or `scenario/` quotes the engine, not memory.** Before a brief names an expected box,
+  citation or draw, run `pnpm -C web propose <id>` over the settled fixtures the change touches and quote the
+  output into the brief, so the brief cannot contradict a settled answer. A rule concept with combination
+  semantics (number runs, how many boxes may be amended, composition order) gets its worked examples and
+  non-examples written into the rule row's `text` or `docs/ARCHITECTURE.md` before it is briefed. Cite the
+  matching recipe in `docs/ARCHITECTURE.md` "Change recipes" for the files to open.
 - **SIDs compare by family** (`TRUKN`), never by versioned id, because AIRAC cycles bump versions.
 - **Hand-transcribed sources are pinned.** `sop.yaml` records the SOP PDF sha256 and sentinel strings, and
   `generator/shared/aircraft_types.yaml` pins ZOA CPS-004 (special aircraft) the same way; `verify-sop` and
