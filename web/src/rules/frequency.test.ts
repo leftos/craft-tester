@@ -16,7 +16,6 @@ const row: AssignmentRule = {
   classes: ['T', 'J'],
   sidFamily: 'TRUKN',
   sector: 'richmond',
-  why: null,
 };
 
 describe('resolveFrequency', () => {

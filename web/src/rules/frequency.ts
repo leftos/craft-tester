@@ -26,12 +26,7 @@ export function resolveFrequency(
     value: { value: sector.frequency, sectorId: sector.id },
     citations: [
       toCitation(row),
-      {
-        id: sector.id,
-        source: 'departureSectors',
-        text: `${sector.name} ${sector.frequency}`,
-        why: null,
-      },
+      { id: sector.id, source: 'departureSectors', text: `${sector.name} ${sector.frequency}` },
     ],
   };
 }

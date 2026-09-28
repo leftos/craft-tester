@@ -30,7 +30,6 @@ const EVEN_TO_BOISE: LoaRule = {
   text: 'Boise arrivals from the Bay are assigned even altitudes',
   destinations: ['KBOI'],
   rule: { kind: 'even' },
-  why: null,
 };
 
 function scenario(overrides: Partial<Scenario>): Scenario {

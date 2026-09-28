@@ -282,42 +282,6 @@ def test_a_shared_phraseology_id_stated_twice_is_rejected(tmp_path: Path) -> Non
         load_phraseology_rules(path)
 
 
-def _phraseology_file(tmp_path: Path, rows: str) -> Path:
-    path = tmp_path / PHRASEOLOGY_RULES_FILE
-    path.write_text(f"phraseology_rules:\n{rows}", encoding="utf-8")
-    return path
-
-
-def test_a_reason_loads_and_a_row_without_one_loads_none(tmp_path: Path) -> None:
-    path = _phraseology_file(
-        tmp_path,
-        '  - { id: A-MAINTAIN, source: one, text: maintain, why: "the pilot keeps the level" }\n  - { id: A-EXPECT, source: two, text: expect }\n',
-    )
-    rules = {rule.id: rule for rule in load_phraseology_rules(path)}
-    assert rules["A-MAINTAIN"].why == "the pilot keeps the level"
-    assert rules["A-EXPECT"].why is None
-
-
-@pytest.mark.parametrize(
-    "reason",
-    ['""', f'"{("x" * 301)}"', '"padded "'],
-    ids=["empty", "over-long", "padded"],
-)
-def test_a_reason_that_is_empty_over_long_or_padded_names_the_row(tmp_path: Path, reason: str) -> None:
-    path = _phraseology_file(tmp_path, f"  - {{ id: A-MAINTAIN, source: one, text: maintain, why: {reason} }}\n")
-    with pytest.raises(ValueError, match=r"phraseology_rules\[A-MAINTAIN\]\.why"):
-        load_phraseology_rules(path)
-
-
-def test_the_checked_in_rows_carry_the_reason_they_state_and_no_other() -> None:
-    rules = {rule.id: rule for rule in load_phraseology_rules(shared_dir() / PHRASEOLOGY_RULES_FILE)}
-    assert rules["R-THEN-OMITTED"].why == (
-        'Leaving out "then" still hands the pilot the rest of the filed route, so it is only marked down a little; '
-        'the standard phrase is "then as filed".'
-    )
-    assert rules["R-TRANSITION"].why is None
-
-
 def test_the_shared_route_connections_load() -> None:
     connections = load_route_connections(shared_dir() / ROUTE_CONNECTIONS_FILE)
     assert len(connections) == ROUTE_CONNECTION_COUNT

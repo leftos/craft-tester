@@ -123,7 +123,6 @@ AIRCRAFT_TYPES_FILE = "aircraft_types.yaml"
 RUNWAY_FAMILY_LENGTH = 2
 SID_PLACEHOLDER = "#"
 COURSE_DEGREES_MAX = 359
-WHY_CHARACTERS_MAX = 300
 
 _SUFFIX_PATTERN = re.compile(r"^/[A-Z]$")
 _CIFP_ID_PATTERN = re.compile(r"^(?P<family>[A-Z]+)\d+$")
@@ -353,20 +352,6 @@ class _Row:
             raise ValueError(f"{self.where}: unknown key(s) {sorted(self._unread)}; remove them or fix the spelling, the loader ignores nothing")
 
 
-def _why(row: _Row) -> str | None:
-    """The row's plain-English reason for the student, or ``None`` where the row states none."""
-    value = row.optional_text("why")
-    if value is None:
-        return None
-    if not value.strip():
-        raise ValueError(f"{row.where}.why: the reason is empty; write a sentence for the student, or drop the key")
-    if len(value) > WHY_CHARACTERS_MAX:
-        raise ValueError(f"{row.where}.why: {len(value)} characters; a reason is one sentence of at most {WHY_CHARACTERS_MAX} characters")
-    if value != value.rstrip():
-        raise ValueError(f"{row.where}.why: the reason ends in whitespace; trim it")
-    return value
-
-
 def _load_yaml_mapping(path: Path, where: str) -> dict[str, Any]:
     try:
         body = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -572,7 +557,6 @@ def _assignment_rule(row: _Row) -> AssignmentRule:
         non_dp_heading=_non_dp_heading(row),
         sector=row.text("sector"),
         when=None if when is None else _assignment_condition(when),
-        why=_why(row),
     )
     row.finish()
     if (rule.sid_family is None) == (rule.non_dp_heading is None):
@@ -604,7 +588,6 @@ def _altitude_rule(row: _Row) -> AltitudeRule:
         outcome=_altitude_outcome(row.child("outcome")),
         when_top_altitude_published=row.choice("when_top_altitude_published", ALTITUDE_OUTCOME_KINDS),
         expect_after_minutes=row.number("expect_after_minutes"),
-        why=_why(row),
     )
     row.finish()
     if rule.sid_families is not None and rule.non_dp_headings is not None:
@@ -635,7 +618,6 @@ def _notice(row: _Row) -> Notice:
         plan=row.text("plan"),
         effect=_notice_effect(row.child("effect")),
         default_active=row.flag("default_active"),
-        why=_why(row),
     )
     row.finish()
     return notice
@@ -652,7 +634,7 @@ def _phraseology(row: _Row) -> Phraseology:
 
 
 def _phraseology_rule(row: _Row) -> PhraseologyRule:
-    rule = PhraseologyRule(id=row.text("id"), source=row.text("source"), text=row.text("text"), why=_why(row))
+    rule = PhraseologyRule(id=row.text("id"), source=row.text("source"), text=row.text("text"))
     row.finish()
     return rule
 
@@ -1336,7 +1318,6 @@ def _route_connection(source: str, row: _Row) -> RouteConnection:
         to=_route_token(row.text("to"), "to", row),
         connects=row.choice("connects", CONNECTION_STRENGTHS),
         source=source,
-        why=_why(row),
     )
     row.finish()
     return connection
@@ -1531,7 +1512,6 @@ def _common_arrival(source: str, row: _Row) -> CommonArrival:
         cargo=row.optional_flag("cargo", default=False) or False,
         family=family,
         transitions=transitions,
-        why=_why(row),
     )
     note = row.optional_text("note")
     row.finish()
@@ -1617,7 +1597,6 @@ def _tec_route(row: _Row) -> TecRoute:
         route=row.text("route"),
         initial_altitude_feet=initial_feet,
         final_altitude_feet=final_feet,
-        why=_why(row),
     )
     row.finish()
     return route
@@ -1702,7 +1681,6 @@ def _loa_rule(row: _Row) -> LoaRule:
         destinations=row.optional_texts("destinations"),
         departures=_loa_departures(row),
         rule=_loa_effect(row.child("rule")),
-        why=_why(row),
     )
     row.finish()
     return rule

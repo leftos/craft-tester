@@ -417,7 +417,6 @@ describe('resolveClearance on the generated KSFO data', () => {
       sidFamily: null,
       nonDpHeading: 270,
       sector: 'richmond',
-      why: null,
     };
     const airport: AirportData = {
       ...ksfo,

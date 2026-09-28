@@ -254,25 +254,24 @@ describe('renderVerdict on a picked element', () => {
     const reason = partOf(row, 'dd.reason');
     expect(termOf(reason)).toBe('Reason');
     expect(reason.textContent).toBe('the altitude is wrong for direction of flight');
-    expect(row.querySelector('dd.why')).toBeNull();
+    expect(row.querySelector('dd.note')).toBeNull();
   });
 });
 
-/** A row of the rules that states a plain-English reason. */
+/** A row of the rules the expect clause is graded by. */
 const expectRow = {
   id: 'A-EXPECT-REDUNDANT',
   source: 'ZOA SFO SOP',
   text: 'An expect clause the SID chart already publishes.',
-  why: 'The chart already publishes the expect note.',
 };
 
-/** A picked expect clause the chart already publishes: wrong, decided by a row with a why. */
+/** A picked expect clause the chart already publishes: wrong. */
 const wrongExpect: Grade = {
   element: 'A.expect',
   verdict: 'wrong',
   expectedLabel: 'no expect altitude',
   actualLabel: 'expect FL340 10 minutes after departure',
-  citations: [expectRow, { ...expectRow, id: 'S-FILLER', why: null }],
+  citations: [expectRow, { ...expectRow, id: 'S-FILLER' }],
 };
 
 /** A results panel with a correct, an acceptable and a wrong element. */
@@ -319,22 +318,18 @@ describe('the results rows', () => {
     expect(partOf(row, 'summary .said').textContent).toBe('maintain 5,000');
   });
 
-  it('expands a wrong row with its Why before the rules', () => {
+  it('expands a wrong picked row with no note', () => {
     const row = renderVerdict(wrongExpect);
     expect(row.tagName).toBe('DIV');
     expect(partOf(row, '.tag').textContent).toBe('✗ Wrong');
-    const why = partOf(row, 'dd.why');
-    expect(termOf(why)).toBe('Why');
-    expect(why.textContent).toBe('The chart already publishes the expect note.');
+    expect(row.querySelector('dd.note')).toBeNull();
   });
 
-  it('shows the why ahead of the remarks where a typed row has both', () => {
+  it('notes the kinds of miss on a typed row', () => {
     const row = renderVerdict({ ...typedWrongValue, citations: [expectRow] });
-    const lines = [...partOf(row, 'dd.why').children].map((line) => line.textContent);
-    expect(lines).toStrictEqual([
-      'The chart already publishes the expect note.',
-      'wrong value: said "6201", expected "three three four two"',
-    ]);
+    const note = partOf(row, 'dd.note');
+    expect(termOf(note)).toBe('Note');
+    expect(note.textContent).toBe('wrong value: said "6201", expected "three three four two"');
   });
 
   it('keeps the rules applied behind a closed disclosure', () => {

@@ -383,7 +383,6 @@ describe('checkRoute route building', () => {
           connects: 'usually',
           source: 'a test row',
           text: 'PXN usually connects to LOSHN',
-          why: null,
         },
       ],
     };
@@ -576,7 +575,6 @@ describe('checkRoute a TEC route over the SOP assignment', () => {
       classes: ['J'],
       route: 'H030 TRUKN FEVTA FEVTA1',
       finalAltitudeFeet: 10000,
-      why: null,
     };
     const airport: AirportData = { ...ksfo, tecRoutes: [headingRow, ...ksfo.tecRoutes] };
     const flight = ksmfJet({ departureRunway: '01R', localTime: '2300' });
@@ -616,7 +614,6 @@ describe('checkRoute a TEC route over the SOP assignment', () => {
       plan: 'SFOW',
       effect: { kind: 'sid_off', sidFamily: 'TRUKN', heading: 300 },
       defaultActive: false,
-      why: null,
     };
     const truknRow: AssignmentRule = {
       id: 'TEST-SFOW-TRUKN-28',
@@ -628,7 +625,6 @@ describe('checkRoute a TEC route over the SOP assignment', () => {
       classes: ['J'],
       sidFamily: 'TRUKN',
       sector: 'richmond',
-      why: null,
     };
     const airport: AirportData = {
       ...ksfo,
@@ -744,7 +740,6 @@ describe('checkRoute on the runway heading', () => {
       sidFamily: null,
       nonDpHeading: 270,
       sector: 'richmond',
-      why: null,
     };
     const airport: AirportData = {
       ...ksfo,
@@ -855,7 +850,6 @@ describe('checkRoute letters of agreement', () => {
       text: 'the test routing',
       destinations: [destination],
       rule: { kind: 'route', tokens: ['ZZZZZ'], ...narrowing },
-      why: null,
     };
   }
 
@@ -1070,7 +1064,6 @@ describe('checkRoute arrivals', () => {
       destinations: ['KSMF'],
       family: 'SLMMR',
       transitions: ['NURAY'],
-      why: null,
     };
     const plain = withoutRnavWaypoints(ksfo);
     const airport: AirportData = { ...plain, commonArrivals: [cell, ...ksfo.commonArrivals] };
@@ -1090,7 +1083,6 @@ describe('checkRoute arrivals', () => {
           connects: 'usually',
           source: 'a test row',
           text: 'SNS usually connects to SNAXX',
-          why: null,
         },
       ],
     };

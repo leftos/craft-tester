@@ -90,7 +90,6 @@ const BASE_RULE: AssignmentRule = {
   classes: ['T', 'J'],
   sidFamily: 'TRUKN',
   sector: 'richmond',
-  why: null,
 };
 
 function ctx(overrides: Partial<Classification>): Classification {
@@ -117,7 +116,6 @@ const segulOff: Notice = {
   plan: 'SFOW',
   effect: { kind: 'sid_off', sidFamily: 'SEGUL' },
   defaultActive: true,
-  why: null,
 };
 
 /** The same notice, issuing heading 120 to the flights the SEGUL row would have put on the SID. */
@@ -473,7 +471,6 @@ const oakeTec: TecRoute = {
   route: 'H270 FEVTA FEVTA1',
   initialAltitudeFeet: 10000,
   finalAltitudeFeet: 10000,
-  why: null,
 };
 
 describe('selectSid on a TEC route that carries no departure procedure', () => {

@@ -949,11 +949,11 @@ div.verdict .tag {
   overflow-wrap: anywhere;
 }
 
-.verdict .why p {
+.verdict .note p {
   margin: 0;
 }
 
-/* The kinds of miss an element made, in words, after the plain-English reason where there is one. */
+/* The kinds of miss an element made, in words. */
 .verdict .remarks {
   font-size: 0.9em;
 }

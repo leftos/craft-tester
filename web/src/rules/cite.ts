@@ -2,22 +2,21 @@ import type { AirportData, TecRoute } from '@/data/schema.ts';
 import { formatAltitude } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
 
-/** Any data row that carries the four fields a citation shows. */
+/** Any data row that carries the three fields a citation shows. */
 type CitableRow = {
   id: string;
   source: string;
   text: string;
-  why: string | null;
 };
 
 /**
  * Turns a data row into the citation the results view quotes.
  *
  * @param row An assignment rule, altitude rule, notice, or phraseology rule.
- * @returns The citation for that row, carrying the row's own reason where it states one.
+ * @returns The citation for that row.
  */
 export function toCitation(row: CitableRow): RuleCitation {
-  return { id: row.id, source: row.source, text: row.text, why: row.why };
+  return { id: row.id, source: row.source, text: row.text };
 }
 
 /**
@@ -59,10 +58,5 @@ function altitudes(row: TecRoute): string {
 export function citeTec(row: TecRoute): RuleCitation {
   const runways = row.runwayFamilies.length === 0 ? '' : ` ${row.runwayFamilies.join('/')}`;
   const keys = `${row.destination} ${row.plan}${runways} ${row.classes.join('/')}`;
-  return {
-    id: row.id,
-    source: row.source,
-    text: `${keys}: ${row.route}${altitudes(row)}`,
-    why: row.why,
-  };
+  return { id: row.id, source: row.source, text: `${keys}: ${row.route}${altitudes(row)}` };
 }

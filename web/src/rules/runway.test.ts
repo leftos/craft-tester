@@ -124,7 +124,6 @@ function withPcmOff28L(): AirportData {
         id: 'RWY-AIRLINE-DEFAULT',
         source: 'OAK ATCT SOP 2-1',
         text: 'an airline whose ramp is on the other side of the field departs the runway it parks on',
-        why: null,
       },
     ],
   };
@@ -159,7 +158,6 @@ function withDash8Off30(): AirportData {
         id: 'RWY-GROUP-DEFAULT',
         source: 'OAK ATCT SOP 3-4',
         text: 'the turboprops the SOP groups with the jets depart the runway the jets do',
-        why: null,
       },
     ],
   };
@@ -257,7 +255,6 @@ describe('explainRunway on the generated KSFO data', () => {
       id: '28/01',
       source: 'SFO ATCT SOP 1-7',
       text: 'Landing runways 28, departing runways 01',
-      why: null,
     });
   });
 

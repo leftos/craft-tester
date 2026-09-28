@@ -79,7 +79,6 @@ const headingRow: TecRoute = {
   route: 'H270 FEVTA FEVTA1',
   initialAltitudeFeet: 10000,
   finalAltitudeFeet: 10000,
-  why: null,
 };
 
 function row(overrides: Partial<TecRoute>): TecRoute {
@@ -220,7 +219,6 @@ describe('a TEC route that begins on an initial heading', () => {
     nonDpHeading: 270,
     sector: 'richmond',
     when: { tecRouteWithoutDp: true },
-    why: null,
   };
 
   const withNoDpRow: AirportData = {

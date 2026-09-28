@@ -14,10 +14,6 @@ by a later pipeline stage.
 
 Field names follow the YAML keys, except ``class``, which is a Python keyword and is spelled
 ``aircraft_class`` on :class:`FleetEntry`.
-
-Every row the engine can cite may state a ``why``: one plain-English sentence for the student,
-which the results view shows beside the citation. It is an optional key in the YAML and a row that
-states none carries ``None``; the loader rejects a ``why`` that is empty, over-long or padded.
 """
 
 from dataclasses import dataclass
@@ -241,7 +237,6 @@ class AssignmentRule:
     non_dp_heading: NonDpHeading | None
     sector: str
     when: AssignmentCondition | None
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -276,7 +271,6 @@ class AltitudeRule:
     outcome: AltitudeOutcome
     when_top_altitude_published: AltitudeOutcomeKind
     expect_after_minutes: int
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -303,7 +297,6 @@ class Notice:
     plan: str
     effect: NoticeEffect
     default_active: bool
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -322,7 +315,6 @@ class PhraseologyRule:
     id: str
     source: str
     text: str
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -541,7 +533,6 @@ class TecRoute:
     route: str
     initial_altitude_feet: int | None
     final_altitude_feet: int | None
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -611,7 +602,6 @@ class LoaRule:
     destinations: tuple[str, ...] | None
     departures: tuple[str, ...] | None
     rule: LoaRuleKind
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -673,7 +663,6 @@ class CommonArrival:
     cargo: bool
     family: str
     transitions: tuple[str, ...]
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -724,7 +713,6 @@ class RouteConnection:
     to: str
     connects: ConnectionStrength
     source: str
-    why: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

@@ -282,26 +282,6 @@ export function verdictLines(verdict: AnyGrade): {
   };
 }
 
-/**
- * What a row that lost credit says about why: the plain-English reason of every row that decided
- * the verdict, and the kinds of miss a typed element made.
- *
- * The reasons are the `why` of each citation that states one, in citation order, each said once. A
- * correct verdict lost nothing and reads neither.
- *
- * @param grade The verdict for one element, picked or typed, or for one box of the strip.
- * @returns The reasons, and the remarks of a typed element, either list empty where there are none.
- */
-export function whyLines(grade: AnyGrade): { whys: string[]; remarks: string[] } {
-  if (grade.verdict === 'correct') return { whys: [], remarks: [] };
-  const whys: string[] = [];
-  for (const citation of grade.citations) {
-    if (citation.why !== null && !whys.includes(citation.why)) whys.push(citation.why);
-  }
-  const remarks = 'remarks' in grade ? [...grade.remarks] : [];
-  return { whys, remarks };
-}
-
 /** What a marked run of a typed answer says about the words under it, as its tooltip. */
 const RUN_TITLES: Readonly<Record<'wrong' | 'misplaced', string>> = {
   wrong: 'not what the reading has',
@@ -441,17 +421,15 @@ function detailPair(term: string, value: HTMLElement): HTMLElement[] {
   return [el('dt', '', term), value];
 }
 
-/** The Why value: the reasons of the rows that decided the verdict, then the kinds of miss. */
-function whyValue(verdict: AnyGrade): HTMLElement | undefined {
-  const { whys, remarks } = whyLines(verdict);
-  if (whys.length === 0 && remarks.length === 0) return undefined;
-  const value = el('dd', 'why');
-  for (const why of whys) value.append(el('p', 'why-text', why));
-  if (remarks.length > 0) value.append(el('p', 'remarks', remarks.join(REMARK_JOINER)));
+/** The Note value: the kinds of miss a typed element made, in words; none on a picked row. */
+function noteValue(verdict: AnyGrade): HTMLElement | undefined {
+  if (!('remarks' in verdict) || verdict.remarks.length === 0) return undefined;
+  const value = el('dd', 'note');
+  value.append(el('p', 'remarks', verdict.remarks.join(REMARK_JOINER)));
   return value;
 }
 
-/** The detail list of a row that lost credit: what was said, what it reads as, why, the reason. */
+/** The detail list of a row that lost credit: what was said, what it reads as, a note, the reason. */
 function detailList(verdict: AnyGrade, diff: PickedDiff | undefined): HTMLElement {
   const list = el('dl', 'detail');
   const answer = el('dd', 'answer');
@@ -463,8 +441,8 @@ function detailList(verdict: AnyGrade, diff: PickedDiff | undefined): HTMLElemen
     fillExpected(expected, verdict, diff);
     list.append(...detailPair(term, expected));
   }
-  const why = whyValue(verdict);
-  if (why !== undefined) list.append(...detailPair('Why', why));
+  const note = noteValue(verdict);
+  if (note !== undefined) list.append(...detailPair('Note', note));
   if ('reason' in verdict && verdict.reason !== undefined) {
     list.append(...detailPair('Reason', el('dd', 'reason', verdict.reason)));
   }

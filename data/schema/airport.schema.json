@@ -218,19 +218,12 @@
               "climb_via"
             ],
             "type": "string"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "id",
           "source",
           "text",
-          "why",
           "plan",
           "runwayFamilies",
           "classes",
@@ -366,19 +359,12 @@
               }
             },
             "type": "object"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "id",
           "source",
           "text",
-          "why",
           "plan",
           "direction",
           "runwayFamilies",
@@ -432,19 +418,12 @@
               "type": "string"
             },
             "type": "array"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "id",
           "source",
           "text",
-          "why",
           "destinations",
           "family",
           "transitions"
@@ -739,19 +718,12 @@
           },
           "text": {
             "type": "string"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "id",
           "source",
           "text",
-          "why",
           "rule"
         ],
         "type": "object"
@@ -868,12 +840,6 @@
           },
           "text": {
             "type": "string"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
@@ -881,7 +847,6 @@
           "source",
           "dated",
           "text",
-          "why",
           "effect",
           "defaultActive"
         ],
@@ -934,19 +899,12 @@
           },
           "text": {
             "type": "string"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
           "id",
           "source",
-          "text",
-          "why"
+          "text"
         ],
         "type": "object"
       },
@@ -1096,12 +1054,6 @@
           },
           "to": {
             "type": "string"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
@@ -1110,8 +1062,7 @@
           "to",
           "connects",
           "source",
-          "text",
-          "why"
+          "text"
         ],
         "type": "object"
       },
@@ -1784,12 +1735,6 @@
           },
           "source": {
             "type": "string"
-          },
-          "why": {
-            "type": [
-              "string",
-              "null"
-            ]
           }
         },
         "required": [
@@ -1800,8 +1745,7 @@
           "plan",
           "runwayFamilies",
           "classes",
-          "route",
-          "why"
+          "route"
         ],
         "type": "object"
       },

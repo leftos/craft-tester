@@ -287,7 +287,6 @@ def test_the_shared_route_connections_are_emitted_as_citable_rows(ksfo_document:
         "connects": "always",
         "source": source,
         "text": "SUSEY always connects to EBAYE",
-        "why": None,
     }
 
 
@@ -865,18 +864,8 @@ def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
     )
     rules = _phraseology_rules(shared, airport, None)
     assert [rule["id"] for rule in rules] == ["A", "B", "C"]
-    assert rules[1] == {"id": "B", "source": "airport B source", "text": "airport B text", "why": None}
+    assert rules[1] == {"id": "B", "source": "airport B source", "text": "airport B text"}
     assert rules[0]["text"] == "shared A text"
-
-
-def test_a_phraseology_row_carries_its_reason_and_a_null_where_it_states_none() -> None:
-    shared = (
-        PhraseologyRule(id="A", source="shared A source", text="shared A text", why="A is said this way"),
-        PhraseologyRule(id="B", source="shared B source", text="shared B text"),
-    )
-    rules = _phraseology_rules(shared, (), None)
-    assert rules[0]["why"] == "A is said this way"
-    assert rules[1]["why"] is None
 
 
 def test_build_matches_committed_data(ksfo_document: Document) -> None:

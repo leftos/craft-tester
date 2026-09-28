@@ -52,14 +52,12 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
 
 Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser check. From a ZOA instructor's playtest feedback.
 
-- [ ] **Why text for the results rows** — slice R3 of [page-redesign.md](./page-redesign.md): the layout (R1) and results view (R2) are in, and the `why` field reaches every citation. Waiting on the user's review of the drafts in `.tmp/why-drafts.md` (checked against 7110.65); approved lines go into the rule YAML. `R-THEN-OMITTED` carries a placeholder `why` from the plumbing test, to replace with the approved text
 - [ ] **Test sets**: N strips on a clock, grades hidden until the set ends, then one summary; linkable through `x=` in the hash
 - [ ] **What-if variants**: after results, "as a prop", "as /G" and similar variants re-open the strip with that one change in amendment mode; linkable through `v=`
 
 ## Singles
 
 - [ ] **Parity floor above the surface**: the engine's parity floor is 3,000 ft MSL (`PARITY_FLOOR_FEET`, `rules/altitude.ts`) where TBL 4-5-1 says 3,000 ft above the surface; that is the same at SFO and OAK but not at a high-elevation airport
-- [ ] **Number grading report awaiting a repro**: an instructor saw "120.9" marked wrong in full-route typing, but figures already grade correct (`normalise.test.ts`). Waiting on the strip link
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
   `cifp/cycle.py`. Mapped 2026-09-18: `build` fetches everything it needs through the cache and takes one

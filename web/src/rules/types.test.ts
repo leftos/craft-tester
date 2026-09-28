@@ -7,7 +7,6 @@ const citation: RuleCitation = {
   id: 'SFOW-N-TRUKN-01',
   source: 'SFO ATCT SOP 2-2 a',
   text: 'Northbound, runway 01, T/J -> TRUKN#',
-  why: null,
 };
 
 const resolved: ResolvedClearance = {
