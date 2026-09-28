@@ -73,9 +73,6 @@ const RESERVED_SQUAWKS = new Set(['1200', '7500', '7600', '7700']);
 /** The letters a US registration uses; I and O are left out so they cannot read as 1 and 0. */
 const REGISTRATION_LETTERS = [...'ABCDEFGHJKLMNPQRSTUVWXYZ'];
 
-/** How often a scenario presents every operational notice as cancelled. */
-const NOTICES_OFF_CHANCE = 0.2;
-
 /**
  * How often a flight that may ask for an on-request runway is drawn as having asked for it.
  *
@@ -626,7 +623,6 @@ export function drawScenario(
   };
   const picked = pickRunway(rng, draw);
   const time = pickTime(rng, filter.time);
-  const noticesOff = rng.next() < NOTICES_OFF_CHANCE;
   const drawn: Scenario = {
     callsign,
     aircraftType: fleet.type,
@@ -639,7 +635,6 @@ export function drawScenario(
     localTime: time.localTime,
     dayOfWeek: time.dayOfWeek,
     squawk: pickSquawk(rng),
-    ...(noticesOff ? { activeNotices: [] } : {}),
   };
   const result = clearedOnRunway(rng, drawn, draw, picked);
   if (isUnresolved(result)) return result;

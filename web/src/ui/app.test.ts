@@ -16,10 +16,10 @@ const AMENDMENT_SEED = 7;
 
 /**
  * A KSFO seed whose plan the engine fixes in the type box, with a route amendment as the other side
- * of the pair: a GL5T filed /U on SAHEY4, which the engine corrects to /L and a student may instead
+ * of the pair: a B788 filed /U on SAHEY4, which the engine corrects to /L and a student may instead
  * put on GAPP7.
  */
-const ALTERNATIVE_SEED = 107;
+const ALTERNATIVE_SEED = 593;
 
 /** A KSFO seed clearance mode draws a clean clearance from. */
 const CLEARANCE_SEED = 1;

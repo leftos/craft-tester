@@ -77,7 +77,6 @@ Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser chec
   `--skip-sop-verify` flag used only by this workflow, `verify-sop` staying a local step; it runs daily on
   a cron, builds the cycle containing today, and opens a PR only when the output differs from `main`, so a
   late FAA publish is retried the next day
-- [ ] **Playtest observation awaiting a ruling** (2026-09-16, still true): the standing `SFO-SEGUL-OFF` notice is `default_active: true` and notices are cancelled only 20% of draws (`NOTICES_OFF_CHANCE`), so it is in force on 80% of scenarios. Is that too often?
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox) feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
 - [ ] **Rule briefs contradict the settled fixtures or themselves** (friction `d5:craft-tester:2026-W38`, from the
   transcript miner: in W38 14 dispatches came back underspecified, 10 ended without a report and 8 were blocked;

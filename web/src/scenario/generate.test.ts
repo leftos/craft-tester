@@ -187,6 +187,15 @@ describe('generateScenario', () => {
     expect(blocked).toEqual([]);
   });
 
+  it('never cancels the airport notices on a drawn scenario', () => {
+    // `generated[i]` is the draw at seed i, so the slice is the seeds 1..500 this asserts over.
+    const cancelled = generated
+      .slice(1, 501)
+      .filter((entry) => entry.activeNotices !== undefined)
+      .map((entry) => `${label(entry)} | activeNotices ${JSON.stringify(entry.activeNotices)}`);
+    expect(cancelled).toEqual([]);
+  });
+
   it('files the assigned procedure on every draw, and none where the SOP assigns none', () => {
     const misfiled = generated
       .filter((entry) => {
