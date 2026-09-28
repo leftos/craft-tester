@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BoxElementGrade } from '@/rules/amend/grade.ts';
 import type { TextGrade } from '@/rules/text/grade.ts';
 import type { ClearanceElement, Grade } from '@/rules/types.ts';
-import { scoreLine, sessionScoreLine, verdictLines } from '@/ui/results.ts';
+import { scoreLine, sessionScoreLine, verdictLines, whyLines } from '@/ui/results.ts';
 
 const wrongRoute: Grade = {
   element: 'R.route',
@@ -283,5 +283,51 @@ describe('sessionScoreLine', () => {
       { ...wrongRoute, element: 'F' },
     ];
     expect(sessionScoreLine(grades)).toBe('2 of 3 elements correct');
+  });
+});
+
+describe('whyLines', () => {
+  const filler = {
+    id: 'S-FILLER',
+    source: '7110.65 4-2-1',
+    text: 'Words the phraseology does not have.',
+    why: 'Extra words only lengthen the transmission.',
+  };
+
+  it('reads the why of the row that decided the verdict', () => {
+    expect(whyLines({ ...redundantExpect, citations: [filler] })).toStrictEqual({
+      whys: ['Extra words only lengthen the transmission.'],
+      remarks: [],
+    });
+  });
+
+  it('falls back to the remarks where no row states a why', () => {
+    const typed: TextGrade = {
+      ...wrongRoute,
+      citations: [{ ...filler, why: null }],
+      said: [],
+      expected: [],
+      remarks: ['missed: "transition"'],
+    };
+    expect(whyLines(typed)).toStrictEqual({ whys: [], remarks: ['missed: "transition"'] });
+  });
+
+  it('says a why two rows share once, in citation order', () => {
+    const other = { ...filler, id: 'A-EXPECT-REDUNDANT', why: 'The chart already says it.' };
+    const grade = {
+      ...redundantExpect,
+      citations: [filler, other, { ...filler, id: 'S-GROUP-FORM' }],
+    };
+    expect(whyLines(grade).whys).toStrictEqual([
+      'Extra words only lengthen the transmission.',
+      'The chart already says it.',
+    ]);
+  });
+
+  it('reads nothing for a correct verdict', () => {
+    expect(whyLines({ ...rightRoute, citations: [filler] })).toStrictEqual({
+      whys: [],
+      remarks: [],
+    });
   });
 });

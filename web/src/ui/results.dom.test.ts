@@ -138,30 +138,36 @@ function partOf(row: Element, selector: string): Element {
   return found;
 }
 
+/** The label a value of a row's detail list reads under. */
+function termOf(value: Element): string {
+  return value.previousElementSibling?.textContent ?? '';
+}
+
 describe('renderVerdict on a typed element', () => {
   it('marks the filler inside the said line', () => {
-    const answer = partOf(renderVerdict(typedAltitude), '.answer');
-    expect(answer.textContent).toBe('you said: Climb via the SID✓');
+    const answer = partOf(renderVerdict(typedAltitude), 'dd.answer');
+    expect(termOf(answer)).toBe('You said');
+    expect(answer.textContent).toBe('Climb via the SID');
     const filler = answer.querySelectorAll('.filler');
     expect(filler).toHaveLength(1);
     expect(filler[0]?.textContent).toBe('the');
   });
 
   it('shows the expected words on an acceptable row', () => {
-    expect(partOf(renderVerdict(typedAltitude), '.expected').textContent).toBe(
-      'expected: climb via sid',
-    );
+    const expected = partOf(renderVerdict(typedAltitude), 'dd.expected');
+    expect(termOf(expected)).toBe('Reads as');
+    expect(expected.textContent).toBe('climb via sid');
   });
 
   it('shows no expected words on a correct row', () => {
     const row = renderVerdict(typedCorrect);
     expect(row.querySelector('.expected')).toBeNull();
-    expect(partOf(row, '.answer').textContent).toBe('you said: Climb via SID✓');
+    expect(partOf(row, '.answer').textContent).toBe('Climb via SID');
   });
 
   it('marks the words never said inside the expected line', () => {
-    const expected = partOf(renderVerdict(typedMissedWord), 'p.expected');
-    expect(expected.textContent).toBe('expected: Oakland Six departure');
+    const expected = partOf(renderVerdict(typedMissedWord), 'dd.expected');
+    expect(expected.textContent).toBe('Oakland Six departure');
     const missed = expected.querySelectorAll('strong.missed');
     expect(missed).toHaveLength(1);
     expect(missed[0]?.textContent).toBe('departure');
@@ -221,8 +227,9 @@ describe('renderVerdict on a picked element', () => {
   it('a picked row marks the words that differ', () => {
     const row = renderVerdict(pickedAltitude);
     expect(partOf(row, '.answer .wrong').textContent).toBe('5,000');
-    const expected = partOf(row, 'p.expected');
-    expect(expected.textContent).toBe('correction: maintain 3,000');
+    const expected = partOf(row, 'dd.expected');
+    expect(termOf(expected)).toBe('Reads as');
+    expect(expected.textContent).toBe('maintain 3,000');
     expect(partOf(expected, 'strong.missed').textContent).toBe('3,000');
   });
 
@@ -234,18 +241,123 @@ describe('renderVerdict on a picked element', () => {
     });
     expect(row.querySelector('.answer .wrong')).toBeNull();
     expect(row.querySelector('.expected .missed')).toBeNull();
-    expect(partOf(row, '.answer').textContent).toBe('you said: (no prefix)');
-    expect(partOf(row, 'p.expected').textContent).toBe('correction: climb via SID');
+    expect(partOf(row, 'dd.answer').textContent).toBe('(no prefix)');
+    expect(partOf(row, 'dd.expected').textContent).toBe('climb via SID');
   });
 
-  it('a strip box row is left as it was', () => {
+  it('a strip box row reads its reason unchanged', () => {
     const row = renderVerdict(wrongBox);
     expect(row.querySelector('.wrong')).toBeNull();
     expect(row.querySelector('.missed')).toBeNull();
-    expect(partOf(row, '.answer').textContent).toBe('you said: correct as filed');
-    expect(partOf(row, 'p.expected').textContent).toBe('correction: FL270');
-    expect(partOf(row, 'p.why').textContent).toBe(
-      'why: the altitude is wrong for direction of flight',
+    expect(partOf(row, 'dd.answer').textContent).toBe('correct as filed');
+    expect(partOf(row, 'dd.expected').textContent).toBe('FL270');
+    const reason = partOf(row, 'dd.reason');
+    expect(termOf(reason)).toBe('Reason');
+    expect(reason.textContent).toBe('the altitude is wrong for direction of flight');
+    expect(row.querySelector('dd.why')).toBeNull();
+  });
+});
+
+/** A row of the rules that states a plain-English reason. */
+const expectRow = {
+  id: 'A-EXPECT-REDUNDANT',
+  source: 'ZOA SFO SOP',
+  text: 'An expect clause the SID chart already publishes.',
+  why: 'The chart already publishes the expect note.',
+};
+
+/** A picked expect clause the chart already publishes: wrong, decided by a row with a why. */
+const wrongExpect: Grade = {
+  element: 'A.expect',
+  verdict: 'wrong',
+  expectedLabel: 'no expect altitude',
+  actualLabel: 'expect FL340 10 minutes after departure',
+  citations: [expectRow, { ...expectRow, id: 'S-FILLER', why: null }],
+};
+
+/** A results panel with a correct, an acceptable and a wrong element. */
+function resultsOf(grades: readonly Grade[]): HTMLElement {
+  return renderResults({
+    grades,
+    spoken,
+    routeReading: 'abbreviated',
+    onNext: () => undefined,
+    onRetry: () => undefined,
+  });
+}
+
+describe('the results rows', () => {
+  const grades: Grade[] = [
+    { ...pickedAltitude, element: 'C', verdict: 'correct', actualLabel: 'Las Vegas airport' },
+    typedAltitude,
+    wrongExpect,
+  ];
+
+  it('links each element pill to its row', () => {
+    const panel = resultsOf(grades);
+    const pills = [...panel.querySelectorAll('.pills a')];
+    expect(pills.map((pill) => pill.getAttribute('href'))).toStrictEqual([
+      '#row-C',
+      '#row-A.phrase',
+      '#row-A.expect',
+    ]);
+    expect(pills[0]?.textContent).toBe('C ✓');
+    for (const pill of pills) {
+      const id = (pill.getAttribute('href') ?? '').slice(1);
+      expect(panel.querySelector(`[id="${id}"]`)?.classList.contains('verdict')).toBe(true);
+    }
+    const wrong = pills[2];
+    expect(wrong?.textContent).toBe('A expect ✗');
+    expect(wrong?.getAttribute('aria-label')).toBe('A expect: ✗ Wrong');
+  });
+
+  it('collapses a correct row to one closed line', () => {
+    const row = renderVerdict({ ...pickedAltitude, verdict: 'correct' });
+    expect(row.tagName).toBe('DETAILS');
+    expect(row.hasAttribute('open')).toBe(false);
+    expect(partOf(row, 'summary .tag').textContent).toBe('Correct');
+    expect(partOf(row, 'summary .said').textContent).toBe('maintain 5,000');
+  });
+
+  it('expands a wrong row with its Why before the rules', () => {
+    const row = renderVerdict(wrongExpect);
+    expect(row.tagName).toBe('DIV');
+    expect(partOf(row, '.tag').textContent).toBe('✗ Wrong');
+    const why = partOf(row, 'dd.why');
+    expect(termOf(why)).toBe('Why');
+    expect(why.textContent).toBe('The chart already publishes the expect note.');
+  });
+
+  it('shows the why ahead of the remarks where a typed row has both', () => {
+    const row = renderVerdict({ ...typedWrongValue, citations: [expectRow] });
+    const lines = [...partOf(row, 'dd.why').children].map((line) => line.textContent);
+    expect(lines).toStrictEqual([
+      'The chart already publishes the expect note.',
+      'wrong value: said "6201", expected "three three four two"',
+    ]);
+  });
+
+  it('keeps the rules applied behind a closed disclosure', () => {
+    const rules = partOf(renderVerdict(wrongExpect), 'details.rules');
+    expect(rules.hasAttribute('open')).toBe(false);
+    expect(partOf(rules, 'summary').textContent).toBe('2 rules applied');
+    expect(partOf(rules, '.citations li').textContent).toBe(
+      'A-EXPECT-REDUNDANT — An expect clause the SID chart already publishes. (ZOA SFO SOP)',
     );
+  });
+
+  it('opens on the score and the tails, then the reading on frequency', () => {
+    const panel = resultsOf(grades);
+    expect(partOf(panel, '.summary .score').textContent).toBe('2/3correct');
+    expect(partOf(panel, '.score-sub').textContent).toBe('1 wrong, 1 acceptable.');
+    expect(panel.querySelector('.summary + .reveal')).not.toBeNull();
+  });
+
+  it('puts Next strip ahead of Try this strip again', () => {
+    const buttons = [...resultsOf(grades).querySelectorAll('.actions button')];
+    expect(buttons.map((node) => [node.textContent, node.className])).toStrictEqual([
+      ['Next strip', 'primary'],
+      ['Try this strip again', 'secondary'],
+    ]);
   });
 });

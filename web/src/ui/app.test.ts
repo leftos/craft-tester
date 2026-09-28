@@ -309,7 +309,7 @@ describe('the mounted page', () => {
     pressEnter(clearanceBox(root));
 
     const score = root.querySelector('.panel.results .score')?.textContent ?? '';
-    expect(score.startsWith('8 of 8 elements correct')).toBe(true);
+    expect(score.startsWith('8/8')).toBe(true);
   });
 
   it('switches to Full route, answering by typing, and remembers it', async () => {
@@ -702,9 +702,9 @@ describe('the procedure pick of a clearance with no DP', () => {
 
     const verdicts = [...root.querySelectorAll('.panel.results .verdict')];
     expect(verdicts).toHaveLength(6);
-    expect(verdicts[0]?.textContent).toContain('R — procedure');
+    expect(verdicts[0]?.querySelector('.name')?.textContent).toBe('procedure');
     const score = root.querySelector('.panel.results .score')?.textContent ?? '';
-    expect(score).toContain('of 6 elements correct');
+    expect(score).toMatch(/^\d½?\/6correct$/);
   });
 
   it('shows an attempt stored without the procedure back with the procedure graded wrong', async () => {
@@ -718,7 +718,7 @@ describe('the procedure pick of a clearance with no DP', () => {
 
     const verdicts = [...root.querySelectorAll('.verdict')];
     expect(verdicts).toHaveLength(6);
-    expect(verdicts[0]?.textContent).toContain('R — procedure');
+    expect(verdicts[0]?.querySelector('.name')?.textContent).toBe('procedure');
   });
 });
 
