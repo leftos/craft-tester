@@ -11,7 +11,7 @@ Build the two one after the other, since both touch `app.ts`, `scenario/filter.t
 
 ## Test sets
 
-- **Starting one:** a "Test" control next to "New scenario". The student picks a count (5/10/20) and minutes (10/20/30, or untimed), using the current airport, mode, input and filters.
+- **Starting one:** a "Test" button next to "New strip". The student picks a count (5/10/20) and minutes (10/20/30, or untimed), using the current airport, mode, input and filters.
 - **Seeds:** a set seed derives N strip seeds (`seedFromString(setSeed + i)`, `scenario/rng.ts:84`). The hash carries `x=<setSeed>.<n>.<minutes>.<index>`, so a set can be shared and reloaded.
 - **Taking it:** submitting a strip saves the attempt (the existing `ui/solved.ts` store) and moves to the next strip without showing grades. The countdown shows on top. When time runs out, the unsubmitted strips count as unanswered.
 - **Summary view:** one row per strip with `scoreLine`, a total, the time used, and a link that opens each strip in the existing revisit/results view.
