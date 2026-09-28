@@ -14,7 +14,7 @@ import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl, selectOf, syncButton, syncSelect } from '@/ui/dom.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
-import { templateNamesFix, toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
+import { picksProcedure, templateNamesFix, toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
 
 /** The blank choice every dropdown opens on. */
 const PLACEHOLDER = '—';
@@ -38,11 +38,23 @@ type PickedGroup = Extract<CraftGroup, { kind: 'picked' }>;
 /**
  * How the form treats the procedure row.
  *
- * A clean clearance is read as filed, so the procedure is a given row; a clearance on a plan the
- * student has just corrected assigns the procedure the corrected route carries, so the student
- * picks it and it is graded.
+ * A clean clearance that assigns a SID is read as filed, so the procedure is a given row; a clearance
+ * on a plan the student has just corrected assigns the procedure the corrected route carries, and a
+ * clean clearance with no DP sends the flight off on a heading the student has to look up, so in
+ * both the student picks it and it is graded.
  */
 export type ProcedureRow = 'given' | 'picked';
+
+/**
+ * How a clearance-mode form treats the procedure row: picked where the clearance names no DP, given
+ * where it assigns a SID. The grading reads the same `picksProcedure`, so the two never disagree.
+ *
+ * @param clearance The clearance the engine proposed for the strip.
+ * @returns `picked` for a clearance on a heading, `given` for one on a SID.
+ */
+export function clearanceProcedureRow(clearance: ResolvedClearance): ProcedureRow {
+  return picksProcedure(clearance) ? 'picked' : 'given';
+}
 
 /** Everything the form needs to render and to report back. */
 export type CraftFormProps = {
@@ -270,11 +282,12 @@ function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
 }
 
 /**
- * Builds the eight rows of the form, the five of them the player answers the clearance with.
+ * Builds the eight rows of the form, the five or six of them the player answers the clearance with.
  *
  * The clearance limit and the squawk are given rows: the engine resolved them and the reveal speaks
  * them, and they sit in their CRAFT positions so the whole clearance reads in order. The procedure
- * is a given row on a clean clearance and a picked one on a corrected plan, in the same position
+ * is a given row on a clean clearance that assigns a SID, and a picked one on a corrected plan or on
+ * a clearance with no DP, which sends the flight off on a heading; it sits in the same position
  * either way.
  *
  * @param scenario The scenario being cleared, which contributes the filed route, altitude and squawk.

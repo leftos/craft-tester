@@ -1,11 +1,11 @@
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
-import { grade } from '@/rules/grade.ts';
+import { grade, gradeProcedure } from '@/rules/grade.ts';
 import { citeSpecialHandling, gradeBest } from '@/rules/handling.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { RouteReading, TextGrade } from '@/rules/text/grade.ts';
 import { gradeText } from '@/rules/text/grade.ts';
-import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
+import type { Grade, ResolvedClearance } from '@/rules/types.ts';
 import type {
   ConfigFilter,
   InputKind,
@@ -29,7 +29,7 @@ import type { Panels } from '@/ui/amendPanels.ts';
 import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
-import { renderCraftForm } from '@/ui/craftForm.ts';
+import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
 import { button, checkboxControl, el, selectControl } from '@/ui/dom.ts';
 import type { SelectOption } from '@/ui/dom.ts';
 import type { FilterStore, FullRouteStore, InputKindStore } from '@/ui/preferences.ts';
@@ -48,10 +48,11 @@ import {
 } from '@/ui/session.ts';
 import type { SolvedStore } from '@/ui/solved.ts';
 import { browserSolvedStore } from '@/ui/solved.ts';
-import type { AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
+import type { AppState, ClearanceAnswer, ClearancePicks, PickKey } from '@/ui/state.ts';
 import {
   newSession,
   phaseOf,
+  picksProcedure,
   routeReadingOf,
   shareLink,
   toAmendmentAnswer,
@@ -278,19 +279,50 @@ function renderUnresolved(reasons: readonly string[], onNext: () => void): HTMLE
 }
 
 /**
+ * The verdicts a clearance-mode strip's dropdowns earn.
+ *
+ * A strip whose clearance names no procedure has the student pick it, and that pick is graded as
+ * `R.sid` ahead of the route, in CRAFT order; a pick an older attempt never stored is graded as a
+ * blank, which is wrong. Every other strip is given its SID and grades the five CRAFT picks alone.
+ *
+ * @param picks What the student picked.
+ * @param resolved The clearance the picks are graded against, proposed or accepted.
+ * @param airport The airport data, which names the published procedures.
+ * @param procedurePicked Whether the strip asks for the procedure (`picksProcedure` of the
+ *   proposed clearance), which holds for both sides of the special handling.
+ * @returns Six verdicts where the procedure is picked, the five of `grade` otherwise.
+ */
+export function clearancePickGrades(
+  picks: ClearancePicks,
+  resolved: ResolvedClearance,
+  airport: AirportData,
+  procedurePicked: boolean,
+): Grade[] {
+  if (!procedurePicked) return grade(picks, resolved);
+  return [gradeProcedure(picks.procedure ?? '', resolved, airport), ...grade(picks, resolved)];
+}
+
+/** Everything one side of a clearance answer is graded with, besides the clearance it is held to. */
+type ClearanceGrading = {
+  answer: ClearanceAnswer<ClearancePicks>;
+  airport: AirportData;
+  routeReading: RouteReading;
+  procedurePicked: boolean;
+};
+
+/**
  * The verdicts a clearance answer earns: the picks graded as picked, or the typed clearance graded
  * against the engine's reading of the same clearance.
  */
 function clearanceGrades(
-  answer: ClearanceAnswer<PlayerPicks>,
+  grading: ClearanceGrading,
   spoken: SpokenClearance,
-  clearance: ResolvedClearance,
-  airport: AirportData,
-  routeReading: RouteReading,
+  resolved: ResolvedClearance,
 ): (Grade | TextGrade)[] {
+  const { answer, airport, routeReading, procedurePicked } = grading;
   return answer.input === 'text'
-    ? gradeText(answer.text, spoken, clearance, airport, routeReading)
-    : grade(answer.picks, clearance);
+    ? gradeText(answer.text, spoken, resolved, airport, routeReading)
+    : clearancePickGrades(answer.picks, resolved, airport, procedurePicked);
 }
 
 /** The verdicts of a clearance answer and the reading the reveal speaks for the clearance they won against. */
@@ -302,7 +334,7 @@ type ClearanceOutcome = { grades: (Grade | TextGrade)[]; spoken: SpokenClearance
  * clearance sees it confirmed, with the special-handling row cited, rather than the proposed one.
  */
 function clearanceOutcome(
-  answer: ClearanceAnswer<PlayerPicks>,
+  answer: ClearanceAnswer<ClearancePicks>,
   generated: Scenario,
   clearance: ResolvedClearance,
   airport: AirportData,
@@ -310,10 +342,11 @@ function clearanceOutcome(
 ): ClearanceOutcome {
   const spokenOf = (resolved: ResolvedClearance): SpokenClearance =>
     spokenFor(generated, generated, resolved, airport);
+  const grading = { answer, airport, routeReading, procedurePicked: picksProcedure(clearance) };
   const best = gradeBest(
     clearance,
     acceptedClearance(generated, airport),
-    (resolved) => clearanceGrades(answer, spokenOf(resolved), resolved, airport, routeReading),
+    (resolved) => clearanceGrades(grading, spokenOf(resolved), resolved),
     citeSpecialHandling(generated, airport),
   );
   return { grades: best.grades, spoken: spokenOf(best.resolved) };
@@ -373,7 +406,8 @@ type ClearanceForm = { node: HTMLElement; sync: (state: AppState) => void };
 
 /**
  * The form a clean clearance is answered in: the typing box where the student types it out, and the
- * CRAFT dropdowns otherwise.
+ * CRAFT dropdowns otherwise, which have the student pick the procedure where the clearance names
+ * none (`picksProcedure`).
  */
 function renderClearanceForm(
   state: AppState,
@@ -395,7 +429,7 @@ function renderClearanceForm(
     airport: next.airport,
     clearance,
     picks: next.picks,
-    procedure: 'given',
+    procedure: clearanceProcedureRow(clearance),
     onPick: actions.onPick,
     onSubmit: actions.onSubmit,
   });

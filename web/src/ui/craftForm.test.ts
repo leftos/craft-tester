@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { headingPick } from '@/rules/grade.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
+import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import type { CraftGroup } from '@/ui/craftForm.ts';
-import { craftGroups, submitDisabled } from '@/ui/craftForm.ts';
+import { clearanceProcedureRow, craftGroups, submitDisabled } from '@/ui/craftForm.ts';
+import { buildScenario } from '@/ui/session.ts';
 import type { DraftPicks } from '@/ui/state.ts';
 import { EMPTY_PICKS } from '@/ui/state.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 const scenario: Scenario = {
   callsign: 'UAL1',
@@ -219,5 +223,48 @@ describe('submitDisabled', () => {
   it('holds either form back while a CRAFT dropdown is blank', () => {
     expect(submitDisabled({ ...full, runway: undefined }, 'given')).toBe(true);
     expect(submitDisabled({ ...full, runway: undefined }, 'picked')).toBe(true);
+  });
+});
+
+/** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
+const NO_DP_SEED = 2;
+
+/** A KOAK clearance-mode strip whose clearance assigns a SID. */
+const SID_SEED = 1;
+
+/** The clean clearance clearance mode draws at one KOAK seed. */
+function koakClearance(seed: number): { scenario: Scenario; clearance: ResolvedClearance } {
+  const view = buildScenario(koak, seed, ANY_SCENARIO, 'clearance');
+  if (view.kind !== 'clearance') throw new Error(`KOAK seed ${String(seed)} draws no clearance`);
+  return { scenario: view.generated, clearance: view.clearance };
+}
+
+describe('the procedure row of a clearance-mode strip', () => {
+  it('has the student pick the heading of a clearance with no DP', () => {
+    const drawn = koakClearance(NO_DP_SEED);
+    expect(drawn.clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
+    const procedure = clearanceProcedureRow(drawn.clearance);
+    expect(procedure).toBe('picked');
+    const row = craftGroups(drawn.scenario, koak, drawn.clearance, EMPTY_PICKS, procedure)[1];
+    if (row?.kind !== 'picked') throw new Error('the procedure row is not a picked row');
+    expect(row.element).toBe('R.sid');
+    expect(row.fields[0]?.value).toBeUndefined();
+    const values = row.fields[0]?.options.map((option) => option.value) ?? [];
+    expect(values).toContain(headingPick(270));
+    expect(values).toContain(headingPick('runway heading'));
+  });
+
+  it('gives the SID of a clearance that assigns one', () => {
+    const drawn = koakClearance(SID_SEED);
+    const procedure = clearanceProcedureRow(drawn.clearance);
+    expect(procedure).toBe('given');
+    const row = craftGroups(drawn.scenario, koak, drawn.clearance, EMPTY_PICKS, procedure)[1];
+    expect(row?.kind).toBe('given');
+  });
+
+  it('holds the no-DP form back until the procedure is picked', () => {
+    const procedure = clearanceProcedureRow(koakClearance(NO_DP_SEED).clearance);
+    expect(submitDisabled({ ...full, procedure: undefined }, procedure)).toBe(true);
+    expect(submitDisabled({ ...full, procedure: headingPick(270) }, procedure)).toBe(false);
   });
 });

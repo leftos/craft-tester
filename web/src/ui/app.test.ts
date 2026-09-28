@@ -3,10 +3,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { InputKind, Mode, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { procedureOf } from '@/ui/amendPanels.ts';
-import { startApp } from '@/ui/app.ts';
+import { clearancePickGrades, startApp } from '@/ui/app.ts';
 import type { BoxAnswers } from '@/rules/amend/grade.ts';
+import { headingPick } from '@/rules/grade.ts';
+import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
 import { buildScenario, clearedPlan, loadAirportData, spokenFor } from '@/ui/session.ts';
+import { picksProcedure } from '@/ui/state.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
@@ -502,5 +505,109 @@ describe('the mounted page', () => {
       .join(' ');
     expect(routeText).toContain(route.proposed);
     expect(selectOf(field(root, 'procedure')).value).toBe(procedure);
+  });
+});
+
+/** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
+const NO_DP_SEED = 2;
+
+/** A KOAK clearance-mode strip whose clearance assigns a SID. */
+const SID_SEED = 1;
+
+/** The clean clearance clearance mode draws at one KOAK seed. */
+async function koakClearance(seed: number): Promise<ResolvedClearance> {
+  const airport = await loadAirportData('KOAK');
+  const view = buildScenario(airport, seed, ANY_SCENARIO, 'clearance');
+  if (view.kind !== 'clearance') throw new Error(`KOAK seed ${String(seed)} draws no clearance`);
+  return view.clearance;
+}
+
+/** CRAFT picks whose verdicts the procedure tests do not read. */
+const somePicks: PlayerPicks = {
+  routeTemplate: 'radar_vectors_direct',
+  altitudePhrase: 'climb_via',
+  expect: 'none',
+  frequency: '120.9',
+  runway: '30',
+};
+
+describe('the procedure pick of a clearance with no DP', () => {
+  it('grades the heading the clearance names correct and a SID wrong, ahead of the route', async () => {
+    const airport = await loadAirportData('KOAK');
+    const clearance = await koakClearance(NO_DP_SEED);
+    const sid = airport.sids[0]?.id ?? '';
+    const right = clearancePickGrades(
+      { ...somePicks, procedure: headingPick(270) },
+      clearance,
+      airport,
+      picksProcedure(clearance),
+    );
+    const wrong = clearancePickGrades(
+      { ...somePicks, procedure: sid },
+      clearance,
+      airport,
+      picksProcedure(clearance),
+    );
+    expect(right.map((grade) => grade.element)).toStrictEqual([
+      'R.sid',
+      'R.route',
+      'A.phrase',
+      'A.expect',
+      'F',
+      'RWY',
+    ]);
+    expect(right[0]?.verdict).toBe('correct');
+    expect(wrong[0]?.verdict).toBe('wrong');
+  });
+
+  it('grades an attempt stored without a procedure pick as a wrong procedure', async () => {
+    const airport = await loadAirportData('KOAK');
+    const clearance = await koakClearance(NO_DP_SEED);
+    const grades = clearancePickGrades(somePicks, clearance, airport, picksProcedure(clearance));
+    expect(grades[0]).toMatchObject({ element: 'R.sid', verdict: 'wrong' });
+  });
+
+  it('grades no procedure on a strip whose clearance assigns a SID', async () => {
+    const airport = await loadAirportData('KOAK');
+    const clearance = await koakClearance(SID_SEED);
+    const grades = clearancePickGrades(somePicks, clearance, airport, picksProcedure(clearance));
+    expect(grades.map((grade) => grade.element)).not.toContain('R.sid');
+    expect(grades).toHaveLength(5);
+  });
+
+  it('shows six graded rows, the procedure among them, once the strip is submitted', async () => {
+    globalThis.localStorage.clear();
+    const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
+    const root = await mountHash(hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false }));
+    const labels = ['shape', 'fix or airway', 'phrase', 'altitude', 'expect clause'];
+    for (const label of [...labels, 'departure frequency', 'expect runway']) {
+      const select = selectOf(field(root, label));
+      if (!select.disabled) choose(select, firstChoice(select));
+    }
+    expect(submitOf(root, '.panel.craft').disabled).toBe(true);
+
+    choose(selectOf(field(root, 'procedure')), headingPick(270));
+    expect(submitOf(root, '.panel.craft').disabled).toBe(false);
+    submitOf(root, '.panel.craft').click();
+
+    const verdicts = [...root.querySelectorAll('.panel.results .verdict')];
+    expect(verdicts).toHaveLength(6);
+    expect(verdicts[0]?.textContent).toContain('R — procedure');
+    const score = root.querySelector('.panel.results .score')?.textContent ?? '';
+    expect(score).toContain('of 6 elements correct');
+  });
+
+  it('shows an attempt stored without the procedure back with the procedure graded wrong', async () => {
+    globalThis.localStorage.clear();
+    globalThis.localStorage.setItem(
+      `craft-tester:solved:KOAK:${String(NO_DP_SEED)}`,
+      JSON.stringify(somePicks),
+    );
+    const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
+    const root = await mountHash(hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false }));
+
+    const verdicts = [...root.querySelectorAll('.verdict')];
+    expect(verdicts).toHaveLength(6);
+    expect(verdicts[0]?.textContent).toContain('R — procedure');
   });
 });

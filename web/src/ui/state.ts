@@ -3,7 +3,7 @@ import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { EXPECT_CHOICES } from '@/rules/options.ts';
 import type { RouteReading } from '@/rules/text/grade.ts';
-import type { PlayerPicks } from '@/rules/types.ts';
+import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import { hashFor } from '@/scenario/filter.ts';
 import { buildScenario } from '@/ui/session.ts';
@@ -26,8 +26,8 @@ export type PickKey =
  *
  * `procedure` is the identifier of a published SID, e.g. `TRUKN2`, or what `headingPick` writes,
  * e.g. `heading:runway`, where the plan is one the SOP sends off on a heading with no procedure at
- * all. Clearance mode is given the procedure rather than picking it, so only amendment mode fills
- * that pick in.
+ * all. Amendment mode always fills that pick in; clearance mode fills it in only where the clearance
+ * names no procedure (`picksProcedure`), and is given the SID otherwise.
  */
 export type DraftPicks = {
   procedure: string | undefined;
@@ -54,6 +54,26 @@ export const EMPTY_PICKS: DraftPicks = {
 
 /** The picks an amendment-mode clearance is graded on: the CRAFT picks and the procedure. */
 export type AmendmentPicks = PlayerPicks & { procedure: string };
+
+/**
+ * The picks a clearance-mode clearance is graded on: the CRAFT picks, and the procedure where the
+ * strip asks for it. An attempt stored before clearance mode asked for it carries none.
+ */
+export type ClearancePicks = PlayerPicks & { procedure?: string };
+
+/**
+ * Whether a clearance-mode strip asks the student to pick the procedure.
+ *
+ * A clearance that assigns a SID is read as filed, so the SID is given; one the SOP sends off on a
+ * heading with no procedure at all leaves the student to look up which heading, so it is picked and
+ * graded. The form and the grading both ask this, so they never disagree.
+ *
+ * @param clearance The clearance the engine proposed for the strip.
+ * @returns True where the clearance names a heading rather than a SID.
+ */
+export function picksProcedure(clearance: ResolvedClearance): boolean {
+  return clearance.procedure.value.kind === 'heading';
+}
 
 /** What the student has answered for each box of the strip; a box nobody answered is `undefined`. */
 export type DraftBoxes = Record<Box, BoxAnswer | undefined>;
@@ -251,13 +271,16 @@ function typedAnswer(text: string): { input: 'text'; text: string } | undefined 
 /**
  * Turns a clearance session's answer into a gradable one, whichever way the student gives it.
  *
+ * A strip whose clearance names no procedure needs the procedure pick too (`picksProcedure`).
+ *
  * @param state The session so far.
  * @returns The dropdown picks once every required one is made, or the typed clearance exactly as
  *   typed once it is more than whitespace; `undefined` until then.
  */
-export function toClearanceAnswer(state: AppState): ClearanceAnswer<PlayerPicks> | undefined {
+export function toClearanceAnswer(state: AppState): ClearanceAnswer<ClearancePicks> | undefined {
   if (state.input === 'text') return typedAnswer(state.text);
-  const picks = toPlayerPicks(state.picks);
+  const picked = state.view.kind === 'clearance' && picksProcedure(state.view.clearance);
+  const picks = picked ? toAmendmentPicks(state.picks) : toPlayerPicks(state.picks);
   return picks === undefined ? undefined : { input: 'dropdowns', picks };
 }
 

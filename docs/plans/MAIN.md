@@ -59,7 +59,6 @@ Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser chec
 ## Singles
 
 - [ ] **Either parallel on the KSFO 28s**: where the SOP leaves the parallel to the parking spot (jets in 28 RT and 28 SO), 28L and 28R both grade correct under a new `RWY-PARKING` row; correct `RWY-DIRECTION`, which claims the 28s are split. Needs a schema flag on `direction_runway_preference`
-- [ ] **Graded procedure dropdown for no-DP plans in clearance mode**: when the SOP sends the flight off on a heading, clearance-mode dropdowns show `procedureGroup` and grade R.sid (`ui/craftForm.ts`, `rules/grade.ts`); SID plans keep the fixed row
 - [ ] **Number grading report awaiting a repro**: an instructor saw "120.9" marked wrong in full-route typing, but figures already grade correct (`normalise.test.ts`). Waiting on the strip link
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in

@@ -3,7 +3,7 @@ import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
 import type { InputKind, Mode } from '@/scenario/filter.ts';
-import type { AmendmentPicks, ClearanceAnswer } from '@/ui/state.ts';
+import type { AmendmentPicks, ClearanceAnswer, ClearancePicks } from '@/ui/state.ts';
 
 /**
  * The shape a remembered attempt has to have to be loaded back.
@@ -23,6 +23,12 @@ export const PlayerPicksSchema = z.strictObject({
 
 /** The picks an amendment attempt stores: the ordinary ones and the procedure it picked. */
 const AmendmentPicksSchema = PlayerPicksSchema.extend({ procedure: z.string() });
+
+/**
+ * The picks a clearance attempt stores: the ordinary ones, and the procedure where the strip asked
+ * for it. An attempt stored before clearance mode asked for it has none, and still loads.
+ */
+const ClearancePicksSchema = PlayerPicksSchema.extend({ procedure: z.string().optional() });
 
 /** What the student did with one box, as the store writes it. */
 const BoxAnswerSchema = z.discriminatedUnion('kind', [
@@ -64,6 +70,12 @@ function toPicks(parsed: z.infer<typeof PlayerPicksSchema>): PlayerPicks {
   };
 }
 
+/** Rebuilds a clearance attempt's picks, with the procedure where it stored one. */
+function toClearancePicks(parsed: z.infer<typeof ClearancePicksSchema>): ClearancePicks {
+  const { procedure, ...rest } = parsed;
+  return { ...toPicks(rest), ...(procedure === undefined ? {} : { procedure }) };
+}
+
 /** Rebuilds an amendment attempt from a parsed value. */
 function toAmendment(parsed: z.infer<typeof AmendmentAttemptSchema>): Attempt {
   const { procedure, ...rest } = parsed.picks;
@@ -74,12 +86,12 @@ function toAmendment(parsed: z.infer<typeof AmendmentAttemptSchema>): Attempt {
 /**
  * What one attempt at a scenario answered, which is what a revisit shows back.
  *
- * A clearance attempt is the CRAFT half alone, picked from the dropdowns or typed out; an amendment
- * attempt carries the strip answers that came before it, and, when it was picked, the procedure
- * the form picked on the corrected plan.
+ * A clearance attempt is the CRAFT half alone, picked from the dropdowns or typed out, with the
+ * procedure it picked where the strip asked for one; an amendment attempt carries the strip answers
+ * that came before it, and, when it was picked, the procedure the form picked on the corrected plan.
  */
 export type Attempt =
-  | ({ kind: 'clearance' } & ClearanceAnswer<PlayerPicks>)
+  | ({ kind: 'clearance' } & ClearanceAnswer<ClearancePicks>)
   | ({ kind: 'amendment'; boxes: BoxAnswers } & ClearanceAnswer<AmendmentPicks>);
 
 /**
@@ -119,8 +131,10 @@ function parseClearance(value: unknown, input: InputKind): Attempt | undefined {
     const parsed = TypedClearanceSchema.safeParse(value);
     return parsed.success ? { kind: 'clearance', input, text: parsed.data.text } : undefined;
   }
-  const parsed = PlayerPicksSchema.safeParse(value);
-  return parsed.success ? { kind: 'clearance', input, picks: toPicks(parsed.data) } : undefined;
+  const parsed = ClearancePicksSchema.safeParse(value);
+  return parsed.success
+    ? { kind: 'clearance', input, picks: toClearancePicks(parsed.data) }
+    : undefined;
 }
 
 /** Reads one stored value as the amendment attempt its input kind stores. */

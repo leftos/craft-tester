@@ -292,3 +292,28 @@ describe('typed attempts in the solved store', () => {
     expect(store.load('KSFO', 43, at('amendment', 'text', false))).toBeUndefined();
   });
 });
+
+describe('clearance attempts on a strip with no DP', () => {
+  it('loads back the procedure the student picked with the rest of the picks', () => {
+    const store = createSolvedStore(mapStorage());
+    const noDp: Attempt = {
+      kind: 'clearance',
+      input: 'dropdowns',
+      picks: { ...picks, procedure: 'heading:270' },
+    };
+    store.save('KOAK', 2, noDp, false);
+    expect(store.load('KOAK', 2, at('clearance', 'dropdowns', false))).toStrictEqual(noDp);
+  });
+
+  it('loads an attempt stored before the strip asked for the procedure, without one', () => {
+    const entries = new Map<string, string>([
+      ['craft-tester:solved:KOAK:2', JSON.stringify(picks)],
+    ]);
+    const loaded = createSolvedStore(mapStorage(entries)).load(
+      'KOAK',
+      2,
+      at('clearance', 'dropdowns', false),
+    );
+    expect(loaded).toStrictEqual({ kind: 'clearance', input: 'dropdowns', picks });
+  });
+});
