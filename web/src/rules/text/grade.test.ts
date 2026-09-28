@@ -287,9 +287,6 @@ function graded(text: string, speakInput: SpeakClearanceInput = input()): TextGr
 
 const STRAY_EXPECT = 'Expect flight level three four zero one zero minutes after departure. ';
 
-/** The remark a route reads where the student left a navaid's facility word out. */
-const FACILITY_WORD_REMARK = 'facility word left out — a navaid is said with its type';
-
 /** The remark a route reads where the student left out the "then" of "then as filed". */
 const THEN_OMITTED_REMARK = '"then" left out — the clearance says "then as filed"';
 
@@ -384,15 +381,26 @@ describe('gradeText', () => {
     expect(gradeOf(grades, 'R.route').actualLabel).toBe('Concord VOR, then as filed');
   });
 
-  it('grades a route navaid said without its facility word acceptable', () => {
+  it('grades a route navaid said without its facility word correct', () => {
     const speakInput = input({ originalRoute: 'TRUKN2 DEDHD LIN HAWKZ7' });
     const text = edited(readingOf(speakInput), 'Red Bluff VOR', 'Red Bluff');
     const grades = graded(text, speakInput);
-    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'acceptable' }));
+    expect(verdictsOf(grades)).toEqual(verdictsWith());
     const route = gradeOf(grades, 'R.route');
     expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
-    expect(route.remarks).toEqual([FACILITY_WORD_REMARK]);
+    expect(route.remarks).toEqual([]);
     expect(route.expected.filter((run) => run.missed).map((run) => run.text)).toEqual(['VOR']);
+  });
+
+  it('grades a route with every navaid said without its facility word correct, with no remark', () => {
+    const speakInput = input({ filedRoute: 'TRUKN2 DEDHD RBL CCR HAWKZ7' });
+    const route = gradeOf(
+      gradedAs(bareNavaids(speakClearance(speakInput).fullRoute), 'full', speakInput),
+      'R.route',
+    );
+    expect(route.verdict).toBe('correct');
+    expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
+    expect(route.remarks).toEqual([]);
   });
 
   it('keeps a route wrong that misses more than facility words', () => {
@@ -419,7 +427,7 @@ describe('gradeText', () => {
     const speakInput = input({ filedRoute: 'TRUKN2 DEDHD RBL CCR HAWKZ7' });
     const spoken = speakClearance(speakInput);
     const route = gradeOf(gradedAs(bareNavaids(spoken.fullRoute), 'full', speakInput), 'R.route');
-    expect(route.verdict).toBe('acceptable');
+    expect(route.verdict).toBe('correct');
     expect(idsOf(route)).toContain('R-FRC');
     expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
 
@@ -435,10 +443,7 @@ describe('gradeText', () => {
     const route = gradeOf(graded(bareNavaids(spoken.fullRoute), speakInput), 'R.route');
     expect(route.verdict).toBe('acceptable');
     expect(idsOf(route)).toContain('R-FULL-ROUTE');
-    expect(route.remarks).toEqual([
-      FACILITY_WORD_REMARK,
-      'the route read in full — the shorter reading is enough',
-    ]);
+    expect(route.remarks).toEqual(['the route read in full — the shorter reading is enough']);
   });
 
   it('grades a route that leaves out the "then" of "then as filed" acceptable', () => {
@@ -461,7 +466,7 @@ describe('gradeText', () => {
     const route = gradeOf(grades, 'R.route');
     expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
     expect(idsOf(route)).toContain('R-THEN-OMITTED');
-    expect(route.remarks).toEqual([FACILITY_WORD_REMARK, THEN_OMITTED_REMARK]);
+    expect(route.remarks).toEqual([THEN_OMITTED_REMARK]);
   });
 
   it('keeps a route wrong that leaves out the "then" and another word', () => {
@@ -508,19 +513,31 @@ describe('gradeText', () => {
     expect(gradeOf(molen, 'R.sid').verdict).toBe('correct');
   });
 
-  it('grades the group form only as a restatement', () => {
+  it('grades the group form alone wrong', () => {
+    const speakInput = input({
+      clearance: clearance({ altitude: { phrase: 'maintain', feet: 10000 } }),
+    });
+    const group = graded(
+      edited(readingOf(speakInput), 'one zero thousand', 'ten thousand'),
+      speakInput,
+    );
+    expect(verdictsOf(group)).toEqual(verdictsWith({ 'A.phrase': 'wrong' }));
+    const altitude = gradeOf(group, 'A.phrase');
+    expect(idsOf(altitude)).toEqual(['OWN-ALTITUDE', 'S-GROUP-FORM']);
+    expect(altitude.remarks).toEqual(['group form alone — say the digits']);
+  });
+
+  it('grades the group form restated after the digits correct, citing S-GROUP-FORM with no remark', () => {
     const speakInput = input({
       clearance: clearance({ altitude: { phrase: 'maintain', feet: 10000 } }),
     });
     const reading = readingOf(speakInput);
-    const group = graded(edited(reading, 'one zero thousand', 'ten thousand'), speakInput);
-    expect(verdictsOf(group)).toEqual(verdictsWith({ 'A.phrase': 'wrong' }));
-    expect(idsOf(gradeOf(group, 'A.phrase'))).toEqual(['OWN-ALTITUDE', 'S-GROUP-FORM']);
-
     for (const restated of ['one zero thousand ten thousand', 'one zero ten thousand']) {
       const grades = graded(edited(reading, 'one zero thousand', restated), speakInput);
-      expect(verdictsOf(grades)).toEqual(verdictsWith({ 'A.phrase': 'acceptable' }));
-      expect(idsOf(gradeOf(grades, 'A.phrase'))).toEqual(['OWN-ALTITUDE', 'S-GROUP-FORM']);
+      expect(verdictsOf(grades)).toEqual(verdictsWith());
+      const altitude = gradeOf(grades, 'A.phrase');
+      expect(idsOf(altitude)).toEqual(['OWN-ALTITUDE', 'S-GROUP-FORM']);
+      expect(altitude.remarks).toEqual([]);
     }
   });
 

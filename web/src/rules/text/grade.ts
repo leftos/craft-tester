@@ -159,7 +159,7 @@ const THEN_AS_FILED_ROW = 'R-THEN-AS-FILED';
  * The words that name a navaid's type, which the generator speaks after its name.
  *
  * One added after a bare fix an as-filed route hands over on is right (`R-FACILITY-WORD`), and one
- * left off a navaid the route names is acceptable (`R-FACILITY-WORD-OMITTED`).
+ * left off a navaid the route names is right too (`R-FACILITY-WORD-OMITTED`).
  */
 const FACILITY_WORDS: ReadonlySet<string> = new Set(['vor', 'ndb', 'tacan', 'dme']);
 
@@ -189,9 +189,7 @@ const REMARKS = {
   outOfOrder: 'out of CRAFT order',
   niner: 'say niner, not nine',
   groupForm: 'group form alone — say the digits',
-  restated: 'restated in group form — the digits alone are enough',
   fullRoute: 'the route read in full — the shorter reading is enough',
-  facilityWord: 'facility word left out — a navaid is said with its type',
   thenOmitted: '"then" left out — the clearance says "then as filed"',
   thenAsFiled: '"then as filed" said where the reading ends on "direct"',
   frc: '"then as filed" said on a full route clearance — read the route to its end',
@@ -829,7 +827,7 @@ function markExtraWords(gap: Gap, span: Span, walk: Walk): void {
   if (isRestatement(gap, before)) {
     const restated = marksOf(walk.marks, before.element);
     restated.blocks.push(span);
-    restated.tiers.push(tier(walk.airport, 'acceptable', 'S-GROUP-FORM'));
+    restated.tiers.push(tier(walk.airport, 'correct', 'S-GROUP-FORM'));
     return;
   }
   const owner = marksOf(walk.marks, (after ?? before).element);
@@ -921,11 +919,11 @@ function numberTiers(student: SpokenToken, expected: SpokenToken, airport: Airpo
   return [...groupFormTiers(student, expected, airport), ...niner];
 }
 
-/** A number the reading speaks digit by digit: wrong in group form alone, acceptable restated. */
+/** A number the reading speaks digit by digit: wrong in group form alone, right restated after them. */
 function groupFormTiers(student: NumberToken, expected: NumberToken, airport: AirportData): Tier[] {
   if (expected.form !== 'digits') return [];
   if (student.form === 'group') return [tier(airport, 'wrong', 'S-GROUP-FORM')];
-  return student.restated ? [tier(airport, 'acceptable', 'S-GROUP-FORM')] : [];
+  return student.restated ? [tier(airport, 'correct', 'S-GROUP-FORM')] : [];
 }
 
 /**
@@ -1153,7 +1151,7 @@ function isThenToken(token: SpokenToken): boolean {
 /**
  * The words of the route the student left off, or undefined where something else is missing.
  *
- * A navaid the route names is not the clearance limit, so the word for its type is optional there
+ * A navaid the route names is stated by its name alone, so the word for its type is optional there
  * (`R-FACILITY-WORD-OMITTED`); the "then" of a closing "then as filed" is optional too, since the
  * pilot handed "… as filed" is handed the same route over (`R-THEN-OMITTED`). Any other word of the
  * reading never said is a miss, as is a word said in a forgiven word's place, and no other element
@@ -1231,12 +1229,15 @@ function expectedFor(
   return words === undefined ? wholeExpected(label) : markedExpected(words, missed);
 }
 
-/** The tiers the route words the reading lets go unsaid set, one for each kind of word left off. */
+/**
+ * The tiers the route words the reading lets go unsaid set, one for each kind of word left off: a
+ * facility word left off is right, a "then" left off acceptable.
+ */
 function omittedWordTiers(parts: ElementParts, grading: Grading): Tier[] {
   const omitted = omittedRouteWords(parts, grading) ?? [];
   return [
     ...(omitted.some(isFacilityToken)
-      ? [tier(grading.airport, 'acceptable', 'R-FACILITY-WORD-OMITTED')]
+      ? [tier(grading.airport, 'correct', 'R-FACILITY-WORD-OMITTED')]
       : []),
     ...(omitted.some(isThenToken) ? [tier(grading.airport, 'acceptable', 'R-THEN-OMITTED')] : []),
   ];
@@ -1421,16 +1422,13 @@ function wrongValueRemark(
 }
 
 /**
- * The remark that names the words never said: the route words the reading lets go unsaid read as the
- * word left out rather than as a miss, one remark for each kind of word that went.
+ * The remark that names the words never said. The route words the reading lets go unsaid are not a
+ * miss: a "then" left out reads as that, and a facility word left out, which is right, reads as
+ * nothing.
  */
 function missedRemark(parts: ElementParts, missed: readonly string[], grading: Grading): string[] {
   const omitted = omittedRouteWords(parts, grading) ?? [];
-  const remarks = [
-    ...(omitted.some(isFacilityToken) ? [REMARKS.facilityWord] : []),
-    ...(omitted.some(isThenToken) ? [REMARKS.thenOmitted] : []),
-  ];
-  if (remarks.length > 0) return remarks;
+  if (omitted.length > 0) return omitted.some(isThenToken) ? [REMARKS.thenOmitted] : [];
   return missed.length === 0 ? [] : [`missed: ${missed.map(quoted).join(', ')}`];
 }
 
@@ -1453,7 +1451,7 @@ function hasTier(tiers: readonly Tier[], id: string, verdict: Verdict): boolean 
   );
 }
 
-/** The remarks the number rows of an element read as: "nine", the group form, and a restatement. */
+/** The remarks the number rows of an element read as: "nine" and the group form alone. */
 function tierRemarks(parts: ElementParts, grading: Grading): string[] {
   const tiers = [
     ...parts.pairs.flatMap((pair) => numberTiers(pair.student, pair.expected, grading.airport)),
@@ -1462,7 +1460,6 @@ function tierRemarks(parts: ElementParts, grading: Grading): string[] {
   return [
     ...(hasTier(tiers, 'S-NINER', 'acceptable') ? [REMARKS.niner] : []),
     ...(hasTier(tiers, 'S-GROUP-FORM', 'wrong') ? [REMARKS.groupForm] : []),
-    ...(hasTier(tiers, 'S-GROUP-FORM', 'acceptable') ? [REMARKS.restated] : []),
   ];
 }
 

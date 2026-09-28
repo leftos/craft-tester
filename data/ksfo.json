@@ -2022,25 +2022,25 @@
   "phraseologyRules": [
     {
       "id": "R-TRANSITION",
-      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions",
       "why": null
     },
     {
       "id": "R-AS-FILED",
-      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a) and d 1; ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word",
       "why": null
     },
     {
       "id": "R-SID-STRUCTURE",
-      "source": "FAA JO 7110.65 4-3-2 c 5; user rule 2026-09-17 (FFT2015)",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a); user rule 2026-09-17 (FFT2015)",
       "text": "A filed element the departure itself flies over — the SID's own name, the fix it is built on, or a fix it is restricted over — is not read back when the route files one of that same SID's published transitions further along: the route is read from that transition (R-TRANSITION) and the elements before it are dropped from the route box. Where the route files no published transition of the SID nothing is dropped and the first filed fix stands, spoken bare (R-AS-FILED)",
       "why": null
     },
     {
       "id": "R-RV-SID",
-      "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice; ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a) and d 1 / ZOA practice; ZOA CRAFT Phraseology reference",
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs",
       "why": null
     },
@@ -2076,7 +2076,7 @@
     },
     {
       "id": "R-HEADING",
-      "source": "FAA JO 7110.65 4-3-2 c 3; OAK ATCT SOP 2-1 c; S1-SFO-0 CBT No SID",
+      "source": "FAA JO 7110.65 4-3-2 c 1 (a) and d 1; OAK ATCT SOP 2-1 c; S1-SFO-0 CBT No SID",
       "text": "VIA FLY RUNWAY HEADING / VIA TURN LEFT (or RIGHT) HEADING (heading), RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading, or turned the shorter way onto the heading the row names, and vectored to the first filed fix; no procedure is named",
       "why": null
     },
@@ -2100,8 +2100,8 @@
     },
     {
       "id": "R-NAVAID",
-      "source": "FAA JO 7110.65 2-5-2 (a 1: the name or phonetic alphabet equivalent of a NAVAID in a routing); ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15; user ruling 2026-09-18 (a fix spelt letter by letter)",
-      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); in a routing its identifier said in the phonetic alphabet is the same navaid (Sierra Alpha Uniform for Sausalito VOR), and a five-letter fix may be spelt the same way; transitions keep their published name",
+      "source": "FAA JO 7110.65 2-5-2 a 1 (the name or phonetic alphabet equivalent of a NAVAID in a routing) and 2-5-3 b (a charted fix by its name); ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15; user ruling 2026-09-18 (a fix spelt letter by letter)",
+      "text": "A navaid in a routing is stated by its name or by its identifier in the phonetic alphabet (Sierra Alpha Uniform for Sausalito VOR); the reading speaks the name followed by its facility type, which is what the trainer reads, with VOR, VOR/DME and VORTAC all VOR (Sacramento VOR, Red Bluff VOR). A fix charted on a SID, STAR or en route chart is stated by its name, and a five-letter fix may be spelt in the phonetic alphabet; transitions keep their published name",
       "why": null
     },
     {
@@ -2124,37 +2124,37 @@
     },
     {
       "id": "A-CLIMB-VIA",
-      "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 e 4 (a); ZOA CRAFT Phraseology reference",
       "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO this is the form for a SID that publishes a top altitude when the flight files at or above that top, because the SOP interim table applies only where no top altitude is published",
       "why": null
     },
     {
       "id": "A-CLIMB-VIA-EXCEPT",
-      "source": "FAA JO 7110.65 4-3-2 c 4 (b); ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 e 4 (b); ZOA CRAFT Phraseology reference",
       "text": "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions and the altitude to maintain is not its published top: either no top altitude is published and an SOP interim altitude applies, or the flight files below the published top",
       "why": null
     },
     {
       "id": "A-MAINTAIN",
-      "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 e 5; ZOA CRAFT Phraseology reference",
       "text": "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment",
       "why": null
     },
     {
       "id": "A-EXPECT",
-      "source": "FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv; ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 e 3 (a) / SFO ATCT SOP 2-2 c iv; ZOA CRAFT Phraseology reference",
       "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note; three minutes when a non-standard interim altitude is issued (SFO ATCT SOP 2-2 c iv)",
       "why": null
     },
     {
       "id": "A-EXPECT-AMENDED",
-      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 4-3-2 c 3",
+      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 4-3-2 e 3 (b)",
       "text": "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one",
       "why": null
     },
     {
       "id": "A-EXPECT-REDUNDANT",
-      "source": "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3",
+      "source": "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 e 3 (a)",
       "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise",
       "why": null
     },
@@ -2166,25 +2166,25 @@
     },
     {
       "id": "C-DEST",
-      "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
+      "source": "FAA JO 7110.65 4-3-2 b 1 (a); ZOA CRAFT Phraseology reference",
       "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport",
       "why": null
     },
     {
       "id": "A-PARITY",
       "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1); 14 CFR 91.179",
-      "text": "Below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359",
+      "text": "Below 3,000 ft above the surface any altitude is assigned on any course. From there below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359",
       "why": null
     },
     {
       "id": "A-ONE-WAY-AIRWAY",
       "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1, one way routes); user ruling 2026-09-16 (FDX3875 amendment plan)",
-      "text": "A one-way route carries no opposing traffic, so the direction-of-flight rule has nothing to separate on it: any cardinal altitude or flight level at or below FL410 is assigned on any course, and above FL410 any odd cardinal flight level (FL430, FL450). The Pacific oceanic routes the Bay departs on are one-way, so a westbound flight to Hawaii keeps the odd level it filed",
+      "text": "A one-way route carries no opposing traffic, so the direction-of-flight rule has nothing to separate on it: any cardinal altitude or flight level below FL410 is assigned on any course, and above FL410 any odd cardinal flight level (FL430, FL450); FL410 itself, an odd level, is among the table's examples. The Pacific oceanic routes the Bay departs on are one-way, so a westbound flight to Hawaii keeps the odd level it filed",
       "why": null
     },
     {
       "id": "A-RVSM",
-      "source": "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 4-5-1 b",
+      "source": "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 2-1-29 a 1",
       "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band",
       "why": null
     },
@@ -2215,12 +2215,12 @@
     {
       "id": "R-FACILITY-WORD-OMITTED",
       "source": "FAA JO 7110.65 2-5-2 a 1 and a 2; tester feedback and user ruling 2026-09-19",
-      "text": "The facility word left off a navaid the route names (DIRECT RED BLUFF for DIRECT RED BLUFF VOR) is acceptable, not a miss: 7110.65 2-5-2 asks for the type of NAVAID only where it is the clearance limit, and the clearance limit here is the airport. R-NAVAID still reads the navaid with its facility word, which is what is said on frequency",
+      "text": "The facility word left off a navaid the route names (DIRECT RED BLUFF for DIRECT RED BLUFF VOR) is right: 7110.65 2-5-2 a 1 asks only for the name or the phonetic identifier in a routing, and 2-5-2 a 2 asks for the type of NAVAID only where it is the clearance limit, which here is the airport. R-NAVAID still reads the navaid with its facility word, which is what the trainer reads",
       "why": null
     },
     {
       "id": "R-THEN-OMITTED",
-      "source": "FAA JO 7110.65 4-3-2 (THEN AS FILED); instructor feedback and user ruling 2026-09-28",
+      "source": "FAA JO 7110.65 4-3-3 d and g; instructor feedback and user ruling 2026-09-28",
       "text": "AS FILED said without THEN (… DEDHD, AS FILED for … DEDHD, THEN AS FILED) is acceptable, not a miss: the pilot is handed the same route over as filed. R-THEN-AS-FILED still reads THEN AS FILED, which is what is said on frequency",
       "why": "Leaving out \"then\" still hands the pilot the rest of the filed route, so it is only marked down a little; the standard phrase is \"then as filed\"."
     },
@@ -2244,8 +2244,8 @@
     },
     {
       "id": "S-GROUP-FORM",
-      "source": "FAA JO 7110.65 2-4-17 b 2 (a) and its note; user ruling 2026-09-17 (free-text entry)",
-      "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is right only in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement for clarity (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is acceptable but longer than it needs to be; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right",
+      "source": "FAA JO 7110.65 2-4-17 b 1 and its note, and 2-4-18 a; user ruling 2026-09-17 (free-text entry)",
+      "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is said in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement \"for added clarity\" (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is as right as the digits alone; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right",
       "why": null
     },
     {

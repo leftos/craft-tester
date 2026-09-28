@@ -215,8 +215,7 @@ remembered per browser. The dropdowns stay, and the student chooses.
 - **Verdicts**, per element. Values come first, and a wrong or missing value is wrong. The fixed words come
   next:
   - extra words are filler, acceptable (`S-FILLER`);
-  - a group-form restatement after the digits is acceptable, and the group form alone is wrong
-    (`S-GROUP-FORM`);
+  - a group-form restatement after the digits is right, as 7110.65 2-4-17 b 1 NOTE and 2-4-18 a allow it for added clarity, and the group form alone is wrong (`S-GROUP-FORM`);
   - "nine" where the reading says "niner" is acceptable and the row says to say niner (`S-NINER`; not wrong,
     to match "three" and "five", which TBL 2-4-1
     lists the same way), and a chart name's "Nine" sets no tier at all;
@@ -227,8 +226,8 @@ remembered per browser. The dropdowns stay, and the student chooses.
     for "expect"; a number token never matches a word, so a misspelt number word is not guessed at.
     Because the rows' prose is part of that vocabulary, no row may spell a misspelling it forgives;
   - the facility word after a bare fix is right (`R-FACILITY-WORD`);
-  - a route whose only unsaid words are facility words ("direct Red Bluff" for "direct Red Bluff VOR") is acceptable, under either route reading, and the row says a navaid is said with its type (`R-FACILITY-WORD-OMITTED`; 7110.65 2-5-2 a 2 asks for the type only where the navaid is the clearance limit, which here is always the airport);
-  - a route whose only unsaid word is the "then" directly before "as filed" ("DEDHD, as filed") is acceptable, and the remark says the clearance says "then as filed" (`R-THEN-OMITTED`); both forgivenesses combine, each citing its row and adding its remark. The "then" is never forgiven under a full route clearance, where saying "as filed" at all is wrong (`R-FRC`). Any other unsaid word still makes the element wrong, as does a word said in a forgiven word's place ("direct Red Bluff foo");
+  - a route whose only unsaid words are facility words ("direct Red Bluff" for "direct Red Bluff VOR") is right, under either route reading, citing `R-FACILITY-WORD-OMITTED` with no remark (7110.65 2-5-2 a 1 asks only for the name or phonetic identifier in a routing, and a 2 for the type only where the navaid is the clearance limit, which here is always the airport);
+  - a route whose only unsaid word is the "then" directly before "as filed" ("DEDHD, as filed") is acceptable, and the remark says the clearance says "then as filed" (`R-THEN-OMITTED`); with a facility word also left off it stays acceptable for the "then" alone, citing both rows with only the "then" remark. The "then" is never forgiven under a full route clearance, where saying "as filed" at all is wrong (`R-FRC`). Any other unsaid word still makes the element wrong, as does a word said in a forgiven word's place ("direct Red Bluff foo");
   - the full route and "then as filed" at the route's end are acceptable (`R-FULL-ROUTE`,
     `R-THEN-AS-FILED-END`);
   - an element out of CRAFT order is wrong (`S-ORDER`).

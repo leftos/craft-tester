@@ -396,7 +396,7 @@ assignment_rules:
 # SOP 2-2 c (1): "SFO ATCT must issue interim altitudes as specified below when a Top of Climb (TOC) or Top
 # Altitude is not published." The table below therefore applies only to SIDs that publish no top altitude;
 # a SID that publishes one is cleared "climb via SID", and drops to "climb via SID except maintain (filed)"
-# only when the flight files below that top (FAA JO 7110.65 4-3-2 c 4). Where the table does apply, a SID
+# only when the flight files below that top (FAA JO 7110.65 4-3-2 e 4). Where the table does apply, a SID
 # with published crossing restrictions is phrased "climb via SID except maintain (interim)"; one without
 # them is phrased "maintain (interim)" (see `phraseology_rules`). "CVS x" in the SOP means "climb via SID
 # except maintain". Ordered; first match wins.
@@ -492,8 +492,8 @@ phraseology_rules:
     source: "SFO ATCT SOP 1-7"
     text: "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
   - id: A-CLIMB-VIA
-    source: "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference"
+    source: "FAA JO 7110.65 4-3-2 e 4 (a); ZOA CRAFT Phraseology reference"
     text: "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants; at KSFO this is the form for a SID that publishes a top altitude when the flight files at or above that top, because the SOP interim table applies only where no top altitude is published"
   - id: A-EXPECT
-    source: "FAA JO 7110.65 4-3-2 c 3 / SFO ATCT SOP 2-2 c iv; ZOA CRAFT Phraseology reference"
+    source: "FAA JO 7110.65 4-3-2 e 3 (a) / SFO ATCT SOP 2-2 c iv; ZOA CRAFT Phraseology reference"
     text: "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note; three minutes when a non-standard interim altitude is issued (SFO ATCT SOP 2-2 c iv)"
