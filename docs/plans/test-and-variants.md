@@ -2,6 +2,13 @@
 
 From a ZOA instructor's playtest feedback. Index lines are in [MAIN.md](./MAIN.md) Wave 4.
 
+The page redesign ([page-redesign.md](./page-redesign.md)) lays out where both go:
+- The Test button sits in the toolbar beside New strip (`renderToolbar` in `web/src/ui/app.ts`). While a set runs, a dark test bar replaces the toolbar: "Strip 4 of 10", progress squares, the clock and End test (mockup `#test` state).
+- The What-if chips fill the empty `div.what-if` slot after the result actions in `web/src/ui/results.ts`.
+- `scoreLine` / `sessionScoreLine` keep their string output so the set summary can reuse them.
+
+Build the two one after the other, since both touch `app.ts`, `scenario/filter.ts` (hash), `ui/state.ts` and `ui/solved.ts`.
+
 ## Test sets
 
 - **Starting one:** a "Test" control next to "New scenario". The student picks a count (5/10/20) and minutes (10/20/30, or untimed), using the current airport, mode, input and filters.
