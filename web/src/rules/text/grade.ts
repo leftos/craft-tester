@@ -1,6 +1,6 @@
 import type { AirportData, RouteTemplate } from '@/data/schema.ts';
 import { citePhraseology } from '@/rules/cite.ts';
-import { speakExpect } from '@/rules/speak.ts';
+import { speakExpect, speakRunway } from '@/rules/speak.ts';
 import type { SpokenClearance, SpokenElement, SpokenPart } from '@/rules/speak.ts';
 import { lexiconFor, normaliseSpoken } from '@/rules/text/normalise.ts';
 import type { Lexicon, SpokenToken } from '@/rules/text/normalise.ts';
@@ -322,6 +322,23 @@ function nameReadings(
   return [base, ...others.map((said) => withWords(parts, 'C', said))];
 }
 
+/**
+ * The runways a candidate may expect the flight on, the drawn runway first: the RWY part spoken
+ * again with each parallel the engine also accepts in its place.
+ */
+function runwayReadings(parts: readonly GradedPart[], expected: ResolvedClearance): GradedPart[][] {
+  const base = [...parts];
+  const words = parts.find((part) => part.element === 'RWY')?.words;
+  if (words === undefined) return [base];
+  const drawn = speakRunway(expected.runway.value);
+  return [
+    base,
+    ...expected.runway.alsoAccepted.map((runway) =>
+      withWords(parts, 'RWY', words.replace(drawn, speakRunway(runway))),
+    ),
+  ];
+}
+
 /** Every candidate reading, route-major, the base reading first. */
 function candidatesFor(
   spoken: SpokenClearance,
@@ -333,12 +350,14 @@ function candidatesFor(
   const { template } = expected.route.value;
   return routeReadings(parts, spoken.fullRouteWords, template, routeReading).flatMap((route) =>
     expectReadings(route.parts, expected).flatMap((expect) =>
-      nameReadings(expect.parts, expected, airport).map((named) => ({
-        route: route.option,
-        expect: expect.option,
-        parts: named,
-        tokens: tagged(named),
-      })),
+      nameReadings(expect.parts, expected, airport).flatMap((named) =>
+        runwayReadings(named, expected).map((runway) => ({
+          route: route.option,
+          expect: expect.option,
+          parts: runway,
+          tokens: tagged(runway),
+        })),
+      ),
     ),
   );
 }

@@ -34,6 +34,7 @@ type Case = {
   runway: string;
   direction: Direction | undefined;
   ruleId: string;
+  alsoAccepted: string[];
 };
 
 const CASES: Case[] = [
@@ -44,6 +45,7 @@ const CASES: Case[] = [
     runway: '28R',
     direction: undefined,
     ruleId: 'RWY-CLASS-DEFAULT',
+    alsoAccepted: [],
   },
   {
     name: 'a jet on the runway 28/01 issues only on request',
@@ -52,6 +54,7 @@ const CASES: Case[] = [
     runway: '28L',
     direction: 'north',
     ruleId: 'RWY-ON-REQUEST',
+    alsoAccepted: ['28R'],
   },
   {
     name: 'a northbound jet on the 01s',
@@ -60,6 +63,7 @@ const CASES: Case[] = [
     runway: '01R',
     direction: 'north',
     ruleId: 'RWY-DIRECTION',
+    alsoAccepted: [],
   },
   {
     name: 'a southbound jet on the 01s',
@@ -68,6 +72,7 @@ const CASES: Case[] = [
     runway: '01L',
     direction: 'south',
     ruleId: 'RWY-DIRECTION',
+    alsoAccepted: [],
   },
   {
     name: 'a northbound jet on the 28s of 28 RT',
@@ -76,6 +81,7 @@ const CASES: Case[] = [
     runway: '28L',
     direction: 'north',
     ruleId: 'RWY-DIRECTION',
+    alsoAccepted: ['28R'],
   },
   {
     name: 'a prop with no gate direction to split the family by',
@@ -84,6 +90,7 @@ const CASES: Case[] = [
     runway: '01L',
     direction: undefined,
     ruleId: 'RWY-FIRST',
+    alsoAccepted: [],
   },
 ];
 
@@ -189,17 +196,58 @@ describe('airlineOf', () => {
 describe('explainRunway on the generated KSFO data', () => {
   it.each(CASES)(
     'cites the configuration and the mechanism for $name',
-    ({ configId, aircraftClass, runway, direction, ruleId }) => {
+    ({ configId, aircraftClass, runway, direction, ruleId, alsoAccepted }) => {
       const cited = explainRunway(
         scenario({ runwayConfigId: configId, departureRunway: runway }),
         ksfo,
         aircraftClass,
         direction,
       );
+      const parking = alsoAccepted.length > 0 ? ['RWY-PARKING'] : [];
       expect(cited.value).toBe(runway);
-      expect(cited.citations.map((citation) => citation.id)).toEqual([configId, ruleId]);
+      expect(cited.alsoAccepted).toEqual(alsoAccepted);
+      expect(cited.citations.map((citation) => citation.id)).toEqual([
+        configId,
+        ruleId,
+        ...parking,
+      ]);
     },
   );
+
+  it('accepts no parallel at KOAK, which lists no family whose parallel follows the parking spot', () => {
+    expect(koak.parkingRunwayFamilies).toEqual([]);
+    const flight = scenario({
+      callsign: 'N172SP',
+      aircraftType: 'C172',
+      equipmentSuffix: '/G',
+      destination: 'KMRY',
+      filedRoute: 'NUEVO8 EUGEN',
+      filedAltitude: 7000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '28R',
+    });
+    const cited = explainRunway(flight, koak, 'P', 'south');
+    expect(cited.alsoAccepted).toEqual([]);
+    expect(cited.citations.map((citation) => citation.id)).not.toContain('RWY-PARKING');
+  });
+
+  it('lists 28L on every SID exactly where it lists 28R, so the parallel changes no procedure', () => {
+    const split = ksfo.sids
+      .filter((sid) => sid.runways.includes('28L') !== sid.runways.includes('28R'))
+      .map((sid) => sid.id);
+    expect(split).toEqual([]);
+  });
+
+  it('keys every TEC row on bare runway families, so the parallel changes no TEC route', () => {
+    const split = ksfo.tecRoutes
+      .filter(
+        (row) =>
+          row.runwayFamilies.includes('28L') !== row.runwayFamilies.includes('28R') ||
+          row.runwayFamilies.some((family) => !/^\d{2}$/.test(family)),
+      )
+      .map((row) => row.id);
+    expect(split).toEqual([]);
+  });
 
   it('quotes the configuration by its SOP name and source', () => {
     const [config] = explainRunway(scenario({}), ksfo, 'J', 'north').citations;

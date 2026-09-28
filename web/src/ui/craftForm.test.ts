@@ -30,7 +30,7 @@ const scenario: Scenario = {
 
 const clearance: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [] },
-  runway: { value: '01R', citations: [] },
+  runway: { value: '01R', citations: [], alsoAccepted: [] },
   procedure: {
     value: { kind: 'sid', id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
     citations: [],

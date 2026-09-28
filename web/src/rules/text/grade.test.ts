@@ -221,7 +221,7 @@ function clearance(parts: ClearanceParts = {}): ResolvedClearance {
   const redundantExpect = parts.redundantExpect ?? null;
   return {
     clearedTo: { value: 'KSEA', citations: [row('OWN-C')] },
-    runway: { value: '01R', citations: [row('OWN-RWY')] },
+    runway: { value: '01R', citations: [row('OWN-RWY')], alsoAccepted: [] },
     procedure: {
       value: parts.procedure ?? {
         kind: 'sid',
@@ -1479,5 +1479,21 @@ describe('gradeText where the expect clause ends on the word the frequency opens
       'departure frequency',
     );
     expect(gradeOf(gradedAgainst(reading, typed), 'F').verdict).toBe('correct');
+  });
+});
+
+describe('gradeText on the KSFO 28s, whose parallel follows the parking spot', () => {
+  it('grades the 28 RT jet read onto 28R correct, citing RWY-PARKING', () => {
+    const reading = settledReading('syn-trukn2-mogee-28l-28rt');
+    expect(reading.clearance.runway.alsoAccepted).toEqual(['28R']);
+    const { abbreviated, parts } = reading.spoken;
+    const words = parts.find((part) => part.element === 'RWY')?.words ?? '';
+    const at = abbreviated.toLowerCase().indexOf(words.toLowerCase());
+    expect(at).toBeGreaterThan(-1);
+    const onTheRight = edited(words, 'two eight left', 'two eight right');
+    const typed = abbreviated.slice(0, at) + onTheRight + abbreviated.slice(at + words.length);
+    const grades = gradedAgainst(reading, typed);
+    expect(verdictsOf(grades)).toEqual(verdictsWith());
+    expect(idsOf(gradeOf(grades, 'RWY'))).toContain('RWY-PARKING');
   });
 });

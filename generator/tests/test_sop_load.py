@@ -80,7 +80,7 @@ SHARED_PHRASEOLOGY_IDS = [
     "S-GROUP-FORM",
     "S-SPELLING",
 ]
-KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-TEC", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
+KSFO_PHRASEOLOGY_IDS = {"RWY-CLASS-DEFAULT", "RWY-ON-REQUEST", "RWY-DIRECTION", "RWY-PARKING", "RWY-TEC", "RWY-FIRST", "A-CLIMB-VIA", "A-EXPECT"}
 ROUTE_CONNECTION_COUNT = 31
 ROUTE_CONNECTION_SOURCE = "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16"
 COMMON_ARRIVAL_COUNT = 29
@@ -193,6 +193,7 @@ def test_runway_configs_and_sectors(ksfo_inputs: AirportInputs) -> None:
     assert [fallback.id for fallback in sop.departure_staffing_fallbacks] == ["area_d_combined", "nct_combined", "center_combined"]
     assert sop.direction_runway_preference["SFOW"]["north"] == {"01": "01R", "28": "28L"}
     assert sop.direction_runway_preference["SFOE"]["oceanic"]["19"] == "19R"
+    assert sop.parking_runway_families == ("28",)
 
 
 def test_gates_no_sid_and_noise_windows(ksfo_inputs: AirportInputs) -> None:
@@ -860,6 +861,29 @@ def test_direction_preference_runway_must_exist(tmp_path: Path, ksfo_dir: Path) 
         data["direction_runway_preference"]["SFOW"]["north"]["01"] = "01C"
 
     with pytest.raises(ValueError, match=r"direction_runway_preference.SFOW.north.01: runway '01C' is not in `runways`"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_parking_runway_families_default_to_none(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        del data["parking_runway_families"]
+
+    assert load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE).parking_runway_families == ()
+
+
+def test_parking_runway_family_without_a_parallel_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["runways"].remove("28R")
+
+    with pytest.raises(ValueError, match=r"parking_runway_families: family '28' has no parallel runways in `runways` \(it matches \['28L'\]\)"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
+def test_parking_runway_family_of_no_runway_is_named(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["parking_runway_families"] = ["27"]
+
+    with pytest.raises(ValueError, match=r"parking_runway_families: family '27' has no parallel runways in `runways` \(it matches \[\]\)"):
         load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
 
 

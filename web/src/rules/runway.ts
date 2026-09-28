@@ -8,7 +8,7 @@ import type {
 import { citePhraseology } from '@/rules/cite.ts';
 import { inAnyGroup } from '@/rules/classify.ts';
 import { usableTecRouteOn } from '@/rules/tecRoutes.ts';
-import type { Cited, RuleCitation } from '@/rules/types.ts';
+import type { ResolvedRunway, RuleCitation } from '@/rules/types.ts';
 
 /** An airline flight number: the three-letter ICAO code, the number, and an optional suffix. */
 const AIRLINE_CALLSIGN = /^([A-Z]{3})(\d+)([A-Z]*)$/;
@@ -188,6 +188,31 @@ function mechanismId(
   return explainedByTec(airport, config, scenario, aircraftClass) ? 'RWY-TEC' : 'RWY-FIRST';
 }
 
+/** The mechanisms that settle a family's parallel where the parking spot would settle it instead. */
+const PARKING_MECHANISMS: ReadonlySet<string> = new Set(['RWY-DIRECTION', 'RWY-ON-REQUEST']);
+
+/**
+ * The other parallels of the runway's family the student may answer with: the airport lists the
+ * family as one whose parallel follows the parking spot, the direction-of-turn table or an
+ * on-request runway settled the runway, and the configuration departs the class from the parallel.
+ */
+function parkingParallels(
+  airport: AirportData,
+  config: RunwayConfig | undefined,
+  aircraftClass: AircraftClass,
+  runway: string,
+  mechanism: string,
+): string[] {
+  const family = runway.slice(0, 2);
+  if (config === undefined || !PARKING_MECHANISMS.has(mechanism)) return [];
+  if (!airport.parkingRunwayFamilies.includes(family)) return [];
+  const listed = config.departureRunways
+    .filter((row) => row.classes.includes(aircraftClass))
+    .map((row) => row.runway)
+    .filter((other) => other !== runway && other.slice(0, 2) === family);
+  return [...new Set(listed)];
+}
+
 /**
  * Explains the runway the scenario departs from, citing the rows that produced it.
  *
@@ -203,6 +228,11 @@ function mechanismId(
  * real class and under the proposed ZOA CPS-004 3.1 handling, whichever handling the clearance is
  * resolved under. A type the special handling lists is explained the same way on both sides of it.
  *
+ * Where the airport lists the runway's family in `parkingRunwayFamilies` and the direction table or
+ * an on-request runway settled it, the parallel follows a parking spot the strip does not carry, so
+ * the family's other parallels the configuration departs the class from are accepted beside it and
+ * `RWY-PARKING` is cited after the mechanism.
+ *
  * @param scenario The filed flight plan and the conditions it is cleared under.
  * @param airport The airport data, whose phraseology rows carry the mechanisms.
  * @param aircraftClass The flight's real class (`Classification.aircraftClass`), the class the draw
@@ -210,23 +240,25 @@ function mechanismId(
  * @param direction The gate direction the assignment table reads the flight on under the proposed
  *   handling: its TEC route's for a flight a TEC route begins on a departure or heading for, else its
  *   filed route's; undefined when the exit fix is not a gate.
- * @returns The departure runway with the configuration row and the mechanism row that decided it.
+ * @returns The departure runway with the configuration row and the mechanism row that decided it,
+ *   and the parallels also accepted.
  */
 export function explainRunway(
   scenario: Scenario,
   airport: AirportData,
   aircraftClass: AircraftClass,
   direction: Direction | undefined,
-): Cited<string> {
+): ResolvedRunway {
   const runway = scenario.departureRunway;
   const config = airport.runwayConfigs.find((entry) => entry.id === scenario.runwayConfigId);
   const configCitations: RuleCitation[] =
     config === undefined ? [] : [{ id: config.id, source: config.source, text: config.name }];
+  const mechanism = mechanismId(airport, config, scenario, aircraftClass, direction);
+  const alsoAccepted = parkingParallels(airport, config, aircraftClass, runway, mechanism);
+  const rows = alsoAccepted.length > 0 ? [mechanism, 'RWY-PARKING'] : [mechanism];
   return {
     value: runway,
-    citations: [
-      ...configCitations,
-      ...citePhraseology(airport, mechanismId(airport, config, scenario, aircraftClass, direction)),
-    ],
+    citations: [...configCitations, ...citePhraseology(airport, ...rows)],
+    alsoAccepted,
   };
 }

@@ -962,6 +962,7 @@ def _check_runways(document: Document, runways: Sequence[RunwayRecord]) -> None:
 
 _AIRLINE_DEFAULT_RULE = "RWY-AIRLINE-DEFAULT"
 _GROUP_DEFAULT_RULE = "RWY-GROUP-DEFAULT"
+_PARKING_RULE = "RWY-PARKING"
 
 
 def _airline_classes(document: Document) -> dict[str, set[str]]:
@@ -1003,6 +1004,16 @@ def _check_runway_defaults(document: Document) -> None:
                     f"{at}.defaultForGroups: the airport has no {_GROUP_DEFAULT_RULE} phraseology row, which the engine cites when a "
                     f"group default settles the runway; add a row with that id to sop.yaml phraseology_rules"
                 )
+
+
+def _check_parking_rule(document: Document) -> None:
+    """Check that an airport whose parallels follow the parking spot has the row the engine cites for it."""
+    families = document["parkingRunwayFamilies"]
+    if families and _PARKING_RULE not in {rule["id"] for rule in document["phraseologyRules"]}:
+        raise ValueError(
+            f"parkingRunwayFamilies {list(families)}: the airport has no {_PARKING_RULE} phraseology row, which the engine cites "
+            f"when either parallel of such a family grades correct; add a row with that id to sop.yaml phraseology_rules"
+        )
 
 
 def _check_fleet(document: Document) -> None:
@@ -1277,6 +1288,7 @@ def _check(document: Document, inputs: BuildInputs) -> None:
     _check_sectors(document)
     _check_runways(document, inputs.runways)
     _check_runway_defaults(document)
+    _check_parking_rule(document)
     _check_fleet(document)
     _check_destinations(document)
     _check_outside_nct(document, inputs)
@@ -1378,6 +1390,7 @@ def build_airport(inputs: BuildInputs) -> Document:
             plan: {direction: dict(preference) for direction, preference in directions.items()}
             for plan, directions in sop.direction_runway_preference.items()
         },
+        "parkingRunwayFamilies": list(sop.parking_runway_families),
         "gates": {direction: list(fixes) for direction, fixes in _gate_items(sop.gates)},
         "noSid": {"runwayFamilies": list(sop.no_sid.runway_families), "phrasing": sop.no_sid.phrasing},
         "sids": _sids(inputs),

@@ -93,6 +93,7 @@ const minimalAirportData: AirportData = {
       oceanic: { '01': '01L' },
     },
   },
+  parkingRunwayFamilies: [],
   gates: { north: ['DEDHD'], south: ['KTINA'], oceanic: ['BEBOP'] },
   noSid: { runwayFamilies: ['01'], phrasing: 'radar_vectors_fix' },
   sids: [

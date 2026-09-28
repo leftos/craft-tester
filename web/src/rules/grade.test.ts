@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import ksfoJson from '@data/ksfo.json';
-import type { AirportData } from '@/data/schema.ts';
+import type { AirportData, Scenario } from '@/data/schema.ts';
+import { resolveClearance } from '@/rules/engine.ts';
 import {
   altitudeLabel,
   expectChoiceLabel,
@@ -12,6 +13,7 @@ import {
 } from '@/rules/grade.ts';
 import type {
   ExpectClause,
+  Grade,
   PlayerPicks,
   ResolvedClearance,
   RuleCitation,
@@ -40,7 +42,7 @@ const runwayCitation: RuleCitation = {
 
 const expected: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [] },
-  runway: { value: '01R', citations: [runwayCitation] },
+  runway: { value: '01R', citations: [runwayCitation], alsoAccepted: [] },
   procedure: {
     value: { kind: 'sid', id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
     citations: [assignmentCitation],
@@ -580,5 +582,58 @@ describe('formatAltitude', () => {
   it('writes 18,000 and everything above it as a flight level', () => {
     expect(formatAltitude(18000)).toBe('FL180');
     expect(formatAltitude(33000)).toBe('FL330');
+  });
+});
+
+describe('grade on the KSFO 28s, whose parallel follows the parking spot', () => {
+  const jet: Scenario = {
+    callsign: 'UAL1',
+    aircraftType: 'B738',
+    equipmentSuffix: '/L',
+    destination: 'KSEA',
+    filedRoute: 'TRUKN2 DEDHD RBL LMT HAWKZ7',
+    filedAltitude: 34000,
+    runwayConfigId: '28 RT',
+    departureRunway: '28L',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '1234',
+  };
+
+  /** The runway grade of one pick against the engine's own clearance for the flight. */
+  function runwayGrade(flight: Scenario, runway: string): Grade {
+    const result = resolveClearance(flight, ksfo, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    const graded = grade({ ...correct, runway }, result.clearance).at(-1);
+    if (graded === undefined) throw new Error('grade returned no runway verdict');
+    return graded;
+  }
+
+  it('grades either parallel correct for a 28 RT jet the direction table puts on 28L', () => {
+    const right = runwayGrade(jet, '28R');
+    expect(right.verdict).toBe('correct');
+    expect(right.expectedLabel).toBe('28L');
+    expect(right.citations.map((citation) => citation.id)).toEqual([
+      '28 RT',
+      'RWY-DIRECTION',
+      'RWY-PARKING',
+    ]);
+    expect(runwayGrade(jet, '28L').verdict).toBe('correct');
+    expect(runwayGrade(jet, '01R').verdict).toBe('wrong');
+  });
+
+  it('holds a 28/01 prop the class default puts on 28R to 28R', () => {
+    const prop: Scenario = {
+      ...jet,
+      callsign: 'SKW1234',
+      aircraftType: 'B350',
+      filedAltitude: 24000,
+      runwayConfigId: '28/01',
+      departureRunway: '28R',
+    };
+    const left = runwayGrade(prop, '28L');
+    expect(left.verdict).toBe('wrong');
+    expect(left.citations.map((citation) => citation.id)).not.toContain('RWY-PARKING');
+    expect(runwayGrade(prop, '28R').verdict).toBe('correct');
   });
 });

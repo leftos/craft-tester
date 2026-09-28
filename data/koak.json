@@ -3069,6 +3069,7 @@
       "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
     }
   ],
+  "parkingRunwayFamilies": [],
   "phraseology": {
     "expectAltitude": "unless_chart_publishes_it",
     "nonStandardInterimExpectMinutes": 10,

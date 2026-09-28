@@ -14,9 +14,9 @@ import type { SidSelection } from '@/rules/sidSelection.ts';
 import { selectSid, unservedSids } from '@/rules/sidSelection.ts';
 import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type {
-  Cited,
   EngineResult,
   ResolvedRoute,
+  ResolvedRunway,
   RuleCitation,
   SelectedProcedure,
   Unresolved,
@@ -142,7 +142,7 @@ function drawnRunway(
   airport: AirportData,
   filed: ParsedRoute,
   reading: Reading,
-): Cited<string> {
+): ResolvedRunway {
   const { aircraftClass } = reading.ctx;
   if (reading.handling === 'proposed') {
     return explainRunway(scenario, airport, aircraftClass, reading.direction);

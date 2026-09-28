@@ -672,6 +672,7 @@ def _sop_data(root: _Row) -> SopData:
         direction_runway_preference=_direction_runway_preference(
             root.table("direction_runway_preference"), f"{root.where}.direction_runway_preference"
         ),
+        parking_runway_families=root.optional_texts("parking_runway_families") or (),
         frequencies=tuple(_frequency_option(child) for child in root.children("frequencies")),
         gates=_gates(root.child("gates")),
         no_sid=_no_sid(root.child("no_sid")),
@@ -753,6 +754,20 @@ def _check_direction_runway_preference(sop: SopData, where: str, families: Seque
                     raise ValueError(f"{at}.{family}: runway {runway!r} is not in `runways`; use one of {list(sop.runways)}")
 
 
+_PARALLEL_RUNWAYS = 2
+"""The fewest runways a family has when it has parallels to choose between."""
+
+
+def _check_parking_runway_families(sop: SopData, where: str) -> None:
+    for family in sop.parking_runway_families:
+        parallels = [runway for runway in sop.runways if runway[:RUNWAY_FAMILY_LENGTH] == family]
+        if len(parallels) < _PARALLEL_RUNWAYS:
+            raise ValueError(
+                f"{where} parking_runway_families: family {family!r} has no parallel runways in `runways` (it matches {parallels}); "
+                "list only a family with two or more runways, whose parallel the parking spot decides"
+            )
+
+
 def _check_runway_airlines(config: RunwayConfig, where: str) -> None:
     defaulted: dict[str, str] = {}
     for runway in config.departure_runways:
@@ -814,6 +829,7 @@ def _check_sop(sop: SopData, where: str) -> None:
         _check_audience(altitude_rule.classes, altitude_rule.groups, at, sop)
     _check_runway_families(sop.no_sid.runway_families, families, f"{where} no_sid")
     _check_direction_runway_preference(sop, where, families)
+    _check_parking_runway_families(sop, where)
     _check_gates(sop.gates, where)
     _check_phraseology_rules(sop.phraseology_rules, where)
 

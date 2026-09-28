@@ -677,7 +677,11 @@ export const NoticeSchema = z.strictObject({
  * `departureStaffingFallbacks` are the sectors a departure goes to when Area D is combined or
  * offline, and have the same shape as the staffed sectors. `directionRunwayPreference` maps a plan,
  * then a departure direction, then a runway family to the runway a flight in that direction departs
- * from, e.g. SFOW north off the 01s departing 01R. `noSid` is the runway families that can be
+ * from, e.g. SFOW north off the 01s departing 01R. `parkingRunwayFamilies` lists the runway families
+ * whose parallel follows where the aircraft is parked rather than the first turn, e.g. KSFO's `28`:
+ * the strip does not say where a flight is parked, so where the direction-of-turn table or an
+ * on-request runway settles such a family, either parallel grades correct; empty at an airport with
+ * no such family. `noSid` is the runway families that can be
  * cleared without a DP and the route phrasing that clearance uses. `fixSpoken` maps a fix or navaid
  * identifier to how it is spoken, e.g. `OSI` to `Woodside`. `runways` is every runway end the CIFP
  * publishes for the airport with its magnetic bearing, and `aircraftGroups` the named aircraft sets
@@ -695,6 +699,7 @@ export const AirportDataSchema = z.strictObject({
     z.string(),
     z.record(DirectionSchema, z.record(z.string(), z.string())),
   ),
+  parkingRunwayFamilies: z.array(z.string()),
   gates: GatesSchema,
   noSid: z.strictObject({
     runwayFamilies: z.array(z.string()),

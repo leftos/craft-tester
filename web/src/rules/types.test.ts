@@ -11,7 +11,7 @@ const citation: RuleCitation = {
 
 const resolved: ResolvedClearance = {
   clearedTo: { value: 'KSEA', citations: [citation] },
-  runway: { value: '01R', citations: [citation] },
+  runway: { value: '01R', citations: [citation], alsoAccepted: [] },
   procedure: {
     value: { kind: 'sid', id: 'TRUKN2', family: 'TRUKN', spoken: 'Trukn Two' },
     citations: [citation],

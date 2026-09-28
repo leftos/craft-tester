@@ -330,6 +330,7 @@ class SopData:
     departure_sectors: tuple[DepartureSector, ...]
     departure_staffing_fallbacks: tuple[DepartureSector, ...]
     direction_runway_preference: dict[str, dict[GateDirection, dict[str, str]]]
+    parking_runway_families: tuple[str, ...]
     frequencies: tuple[FrequencyOption, ...]
     gates: Gates
     no_sid: NoSid

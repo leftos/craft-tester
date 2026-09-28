@@ -555,6 +555,22 @@ def test_an_airline_default_is_emitted_on_the_departure_runway(ksfo_build_inputs
     assert defaults == [[], [], [], [], ["PCM"]]
 
 
+def test_the_parking_runway_families_are_emitted(ksfo_document: Document) -> None:
+    assert ksfo_document["parkingRunwayFamilies"] == ["28"]
+
+
+def test_parking_runway_families_without_their_phraseology_row_fail_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    rules = tuple(rule for rule in ksfo_build_inputs.airport.sop.phraseology_rules if rule.id != "RWY-PARKING")
+    with pytest.raises(ValueError, match=r"parkingRunwayFamilies \['28'\]: the airport has no RWY-PARKING phraseology row"):
+        build_airport(_with_sop(ksfo_build_inputs, phraseology_rules=rules))
+
+
+def test_no_parking_runway_families_need_no_parking_row(ksfo_build_inputs: BuildInputs) -> None:
+    rules = tuple(rule for rule in ksfo_build_inputs.airport.sop.phraseology_rules if rule.id != "RWY-PARKING")
+    document = build_airport(_with_sop(ksfo_build_inputs, phraseology_rules=rules, parking_runway_families=()))
+    assert document["parkingRunwayFamilies"] == []
+
+
 def _defaulting_the_jet_group(inputs: BuildInputs) -> BuildInputs:
     """Make the 28/01 class-default row default the group the jets and the Dash 8 share."""
     configs = []

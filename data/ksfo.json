@@ -1931,6 +1931,9 @@
       "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
     }
   ],
+  "parkingRunwayFamilies": [
+    "28"
+  ],
   "phraseology": {
     "expectAltitude": "unless_chart_publishes_it",
     "nonStandardInterimExpectMinutes": 3,
@@ -2145,7 +2148,12 @@
     {
       "id": "RWY-DIRECTION",
       "source": "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?",
-      "text": "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the 28s and the SFOE families"
+      "text": "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the SFOE families. On the 28s the parallel follows the parking spot instead (RWY-PARKING)"
+    },
+    {
+      "id": "RWY-PARKING",
+      "source": "S1-SFO-0 CBT, Runway Assignment; instructor feedback and user ruling 2026-09-28",
+      "text": "On the 28s the parallel follows where the aircraft is parked: 28L from south of 28L, 28R from north of 28R. The strip does not say where the flight is parked, so either parallel is right; 28L is the one the trainer reads"
     },
     {
       "id": "RWY-TEC",

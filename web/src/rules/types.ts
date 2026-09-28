@@ -19,6 +19,14 @@ export type Cited<T> = {
   citations: RuleCitation[];
 };
 
+/**
+ * The departure runway with the rows that settled it, and the other runways the student may answer
+ * with: the other parallels of a family whose parallel follows the parking spot, where the
+ * direction-of-turn table or an on-request runway settled it. Empty wherever the runway is the only
+ * answer.
+ */
+export type ResolvedRunway = Cited<string> & { alsoAccepted: string[] };
+
 /** Which way a flight is turned onto an assigned heading; absent where the heading needs no turn. */
 export type Turn = 'left' | 'right' | undefined;
 
@@ -115,8 +123,9 @@ export type ResolvedRoute = Cited<{ template: RouteTemplate; fix?: string; built
  * The clearance the engine resolved for a scenario, element by element.
  *
  * `runway` is the scenario's departure runway together with the configuration row and the mechanism
- * row that settled it. `procedure.value` is the SID the assignment row assigns, or the runway
- * heading it clears the flight on where it assigns no procedure.
+ * row that settled it, and the parallels the student may answer with beside it. `procedure.value`
+ * is the SID the assignment row assigns, or the runway heading it clears the flight on where it
+ * assigns no procedure.
  * `expect.value.kind` says which of the three readings the clause takes. `redundantExpect` carries
  * the longer expect reading the rules still allow beside the one the clearance speaks, with the
  * kind of clause it is: the `filed` clause the chart already speaks for the pilot, which a
@@ -127,7 +136,7 @@ export type ResolvedRoute = Cited<{ template: RouteTemplate; fix?: string; built
  */
 export type ResolvedClearance = {
   clearedTo: Cited<string>;
-  runway: Cited<string>;
+  runway: ResolvedRunway;
   procedure: Cited<Procedure>;
   route: ResolvedRoute;
   altitude: Cited<{ phrase: AltitudePhrase; feet?: number }>;

@@ -155,7 +155,7 @@ type ClearanceParts = {
 function clearance(parts: ClearanceParts = {}): ResolvedClearance {
   return {
     clearedTo: { value: 'KSEA', citations: [] },
-    runway: { value: '01R', citations: [] },
+    runway: { value: '01R', citations: [], alsoAccepted: [] },
     procedure: {
       value: parts.procedure ?? {
         kind: 'sid',
@@ -653,7 +653,7 @@ describe('speakClearance', () => {
         callsign: 'SWA344',
         clearance: {
           ...issued,
-          runway: { value: '30', citations: [] },
+          runway: { value: '30', citations: [], alsoAccepted: [] },
           frequency: { value: { value: '135.1', sectorId: 'sutro' }, citations: [] },
         },
         destinationSpoken: 'San Diego',

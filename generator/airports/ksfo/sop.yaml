@@ -131,7 +131,7 @@ departure_staffing_fallbacks:
 
 # In 28/01, the departure runway follows the first turn (S1-SFO-0 CBT, "Runway Assignment: 28/01 1L or 1R?"):
 # right turn (northbound SIDs) -> 1R, left turn (southbound SIDs) -> 1L, which is what allows simultaneous
-# parallel departures. Heavies and 28-only SIDs go to 28L when parked south of 28L, 28R when north of 28R.
+# parallel departures. The table sends the 28s to 28L; parking_runway_families below says why 28R is right too.
 direction_runway_preference:
   SFOW:
     north: { "01": 01R, "28": 28L }
@@ -141,6 +141,12 @@ direction_runway_preference:
     north: { "10": 10L, "19": 19L }
     south: { "10": 10R, "19": 19R }
     oceanic: { "10": 10R, "19": 19R }
+
+# The runway families whose parallel follows where the aircraft is parked rather than the first turn
+# (S1-SFO-0 CBT, Runway Assignment): heavies and 28-only SIDs go to 28L when parked south of 28L, 28R when
+# north of 28R. The strip does not say where a flight is parked, so where the direction-of-turn table or an
+# on-request 28s runway settles the runway, either parallel grades correct (RWY-PARKING).
+parking_runway_families: ["28"]
 
 # Distractor pool for the frequency dropdown.
 frequencies:
@@ -464,7 +470,8 @@ phraseology:
 # The airport's own phraseology rule rows. A row whose id is in `shared/phraseology_rules.yaml`
 # overrides that shared row here; the rest are rows only this airport has, for mechanisms the
 # shared file does not describe. The `RWY-*` ids are cited by the engine's runway reasoning and
-# must exist for every airport.
+# must exist for every airport, except `RWY-PARKING`, which only an airport listing
+# `parking_runway_families` needs.
 phraseology_rules:
   - id: RWY-CLASS-DEFAULT
     source: "SFO ATCT SOP 1-7; user review 2026-09-15 (N483KA)"
@@ -474,7 +481,10 @@ phraseology_rules:
     text: "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honoured"
   - id: RWY-DIRECTION
     source: "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?"
-    text: "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the 28s and the SFOE families"
+    text: "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the SFOE families. On the 28s the parallel follows the parking spot instead (RWY-PARKING)"
+  - id: RWY-PARKING
+    source: "S1-SFO-0 CBT, Runway Assignment; instructor feedback and user ruling 2026-09-28"
+    text: "On the 28s the parallel follows where the aircraft is parked: 28L from south of 28L, 28R from north of 28R. The strip does not say where the flight is parked, so either parallel is right; 28L is the one the trainer reads"
   - id: RWY-TEC
     source: "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)"
     text: "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"

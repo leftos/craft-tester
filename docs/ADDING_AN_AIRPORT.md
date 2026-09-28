@@ -112,6 +112,7 @@ the hooks rejects the file.
 7. **`direction_runway_preference`**: plan → direction → runway family → runway. This encodes the "which
    parallel runway" convention (KSFO: right turn 1R, left turn 1L) that no SOP table states outright; the
    CBT had it.
+   **`parking_runway_families`** (optional, default none): the runway families whose parallel follows where the aircraft is parked rather than the first turn (KSFO: `["28"]`, 28L from south of 28L, 28R from north of 28R); where the direction table or an on-request runway settles such a family, either parallel the configuration departs the class from grades correct, each family needs two runways in `runways`, and a non-empty list needs an `RWY-PARKING` row in `phraseology_rules`.
 8. **`frequencies`**: the distractor pool for the frequency dropdown: clearance, ground, tower, every
    departure sector nearby, center.
 9. **`gates`**: exit fix → SOP direction (`north`/`south`/`oceanic`). Seed it with every CIFP transition

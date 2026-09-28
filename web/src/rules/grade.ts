@@ -302,11 +302,15 @@ export function gradeProcedure(
   };
 }
 
-/** Grades the runway on the bare runway the player expected, e.g. `01R`. */
+/**
+ * Grades the runway on the bare runway the player expected, e.g. `01R`: the drawn runway, or a
+ * parallel the engine also accepts where the parking spot would decide it.
+ */
 function gradeRunway(picks: PlayerPicks, expected: ResolvedClearance): Grade {
+  const { value, alsoAccepted } = expected.runway;
   return {
     element: 'RWY',
-    verdict: verdictOf(picks.runway === expected.runway.value),
+    verdict: verdictOf(picks.runway === value || alsoAccepted.includes(picks.runway)),
     expectedLabel: expected.runway.value,
     actualLabel: picks.runway,
     citations: expected.runway.citations,

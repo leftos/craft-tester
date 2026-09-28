@@ -854,6 +854,12 @@
       },
       "type": "array"
     },
+    "parkingRunwayFamilies": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "phraseology": {
       "additionalProperties": false,
       "properties": {
@@ -1755,6 +1761,7 @@
     "departureStaffingFallbacks",
     "frequencies",
     "directionRunwayPreference",
+    "parkingRunwayFamilies",
     "gates",
     "noSid",
     "sids",

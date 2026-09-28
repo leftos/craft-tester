@@ -28,7 +28,7 @@ function scenario(overrides: Partial<Scenario>): Scenario {
 function issuing(procedure: Procedure): ResolvedClearance {
   return {
     clearedTo: { value: BASE.destination, citations: [] },
-    runway: { value: BASE.departureRunway, citations: [] },
+    runway: { value: BASE.departureRunway, citations: [], alsoAccepted: [] },
     procedure: { value: procedure, citations: [] },
     route: { value: { template: 'as_filed' }, citations: [] },
     altitude: { value: { phrase: 'climb_via' }, citations: [] },
