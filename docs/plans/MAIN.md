@@ -58,3 +58,12 @@ Subplan: [what-if-variants.md](./what-if-variants.md). Gate: UI + browser check.
 ## Singles
 
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox) feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
+- [ ] **Enable "Allow GitHub Actions to create and approve pull requests"** in the repo settings (`can_approve_pull_request_reviews` is false); until then the AIRAC workflow fails at `gh pr create`. Needs the user's go-ahead: it is a repository setting
+
+## Cleanup
+
+- [ ] CLAUDE.md's browser-check example `s=1,a=KOAK,d=KLVK … "select:4=(no prefix)" "fill:0=…"` does not match its hash: `select:4` is the "fix or airway" row, `(no prefix)` sits in the "shape" row, and the page has no text input for `fill:0`. Pick a hash and indices that do what the example says
+- [ ] Bump `astral-sh/setup-uv` from v10.1.0 to v10.2.0 (`c18668ad3cf93ea998bef934396af7bb5c839dc7`) in `ci.yml`, `pages.yml` and `airac.yml` together
+- [ ] `check:browser`'s `click:` cannot press a bare `<summary>`, so `click:Filters` times out (the Test popover got `role="button"` to work around it); give `web/scripts/browser-check.ts` a way to press a summary by its text
+- [ ] Phone: after a test set ends while the toolbar is marked hidden, `--pin-top` stays unset until the next scroll, so the strip pins under a toolbar that has slid away (`hideToolbarOnScroll`, `web/src/ui/app.ts`)
+- [ ] Enter in the typing box on a test set's one-screen amendment strip calls submit while a box is still open; the state refuses it and nothing shows. Make Enter follow the Submit button's disabled state
