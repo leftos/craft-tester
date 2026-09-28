@@ -290,6 +290,9 @@ const STRAY_EXPECT = 'Expect flight level three four zero one zero minutes after
 /** The remark a route reads where the student left a navaid's facility word out. */
 const FACILITY_WORD_REMARK = 'facility word left out — a navaid is said with its type';
 
+/** The remark a route reads where the student left out the "then" of "then as filed". */
+const THEN_OMITTED_REMARK = '"then" left out — the clearance says "then as filed"';
+
 /** A reading with both of its navaids named without their facility word. */
 function bareNavaids(reading: string): string {
   return edited(edited(reading, 'Red Bluff VOR', 'Red Bluff'), 'Concord VOR', 'Concord');
@@ -436,6 +439,46 @@ describe('gradeText', () => {
       FACILITY_WORD_REMARK,
       'the route read in full — the shorter reading is enough',
     ]);
+  });
+
+  it('grades a route that leaves out the "then" of "then as filed" acceptable', () => {
+    const grades = graded(edited(readingOf(), 'then as filed', 'as filed'));
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'acceptable' }));
+    const route = gradeOf(grades, 'R.route');
+    expect(idsOf(route)).toContain('R-THEN-OMITTED');
+    expect(route.remarks).toEqual([THEN_OMITTED_REMARK]);
+    expect(route.expected.filter((run) => run.missed).map((run) => run.text)).toEqual(['then']);
+  });
+
+  it('cites both rows where a route leaves out the "then" and a facility word', () => {
+    const speakInput = input({
+      clearance: clearance({ route: { template: 'radar_vectors_fix', fix: 'CCR' } }),
+      filedRoute: 'CCR RBL',
+    });
+    const bare = edited(readingOf(speakInput), 'Concord VOR', 'Concord');
+    const grades = graded(edited(bare, 'then as filed', 'as filed'), speakInput);
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'acceptable' }));
+    const route = gradeOf(grades, 'R.route');
+    expect(idsOf(route)).toContain('R-FACILITY-WORD-OMITTED');
+    expect(idsOf(route)).toContain('R-THEN-OMITTED');
+    expect(route.remarks).toEqual([FACILITY_WORD_REMARK, THEN_OMITTED_REMARK]);
+  });
+
+  it('keeps a route wrong that leaves out the "then" and another word', () => {
+    const grades = graded(edited(readingOf(), 'then as filed', 'as'));
+    expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'wrong' }));
+    const route = gradeOf(grades, 'R.route');
+    expect(idsOf(route)).not.toContain('R-THEN-OMITTED');
+    expect(route.remarks).toEqual(['missed: "then", "filed"']);
+  });
+
+  it('keeps a handover wrong on a full route clearance, without citing R-THEN-OMITTED', () => {
+    const speakInput = input({ filedRoute: 'TRUKN2 DEDHD RBL CCR HAWKZ7' });
+    const text = edited(speakClearance(speakInput).abbreviated, 'then as filed', 'as filed');
+    const route = gradeOf(gradedAs(text, 'full', speakInput), 'R.route');
+    expect(route.verdict).toBe('wrong');
+    expect(idsOf(route)).toContain('R-FRC');
+    expect(idsOf(route)).not.toContain('R-THEN-OMITTED');
   });
 
   it('reads a SID code typed as a word as the procedure name', () => {

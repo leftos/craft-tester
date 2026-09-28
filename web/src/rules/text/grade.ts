@@ -146,6 +146,12 @@ const CLOSING_DIRECT = /\bdirect$/u;
 /** The word a clearance says only where it hands the rest of the route over: "then as filed". */
 const AS_FILED_WORD = 'filed';
 
+/** The word a route reading may leave off its closing "then as filed": "… as filed" says the same. */
+const THEN_WORD = 'then';
+
+/** The words a closing "then as filed" runs on with, which its "then" may be left off before. */
+const THEN_AS_FILED_TAIL: readonly string[] = ['as', 'filed'];
+
 /** The row that has an amended route's reading hand the rest of it over as filed. */
 const THEN_AS_FILED_ROW = 'R-THEN-AS-FILED';
 
@@ -186,6 +192,7 @@ const REMARKS = {
   restated: 'restated in group form — the digits alone are enough',
   fullRoute: 'the route read in full — the shorter reading is enough',
   facilityWord: 'facility word left out — a navaid is said with its type',
+  thenOmitted: '"then" left out — the clearance says "then as filed"',
   thenAsFiled: '"then as filed" said where the reading ends on "direct"',
   frc: '"then as filed" said on a full route clearance — read the route to its end',
   redundantExpect: 'an expect clause the clearance can do without',
@@ -1114,25 +1121,63 @@ function missedSpans(indices: readonly number[], grading: Grading): Span[] {
   return missedTokens(indices, grading).map((token) => ({ start: token.start, end: token.end }));
 }
 
-/**
- * The facility words of the route the student left off, or undefined where something else is missing.
- *
- * A navaid the route names is not the clearance limit, so the word for its type is optional there
- * (`R-FACILITY-WORD-OMITTED`); any other word of the reading never said is a miss, as is a word
- * said in the facility word's place, and no other element forgives a word.
- */
-function omittedFacilityWords(parts: ElementParts, grading: Grading): SpokenToken[] | undefined {
-  if (parts.element !== 'R.route' || parts.marks.substituted.length > 0) return undefined;
-  const missed = missedTokens(parts.indices, grading);
-  const forgiven = missed.every((token) => token.kind === 'word' && FACILITY_WORDS.has(token.text));
-  return forgiven ? missed : undefined;
+/** Whether a token is the word for a navaid's type, which a route naming that navaid may leave off. */
+function isFacilityToken(token: SpokenToken): boolean {
+  return token.kind === 'word' && FACILITY_WORDS.has(token.text);
 }
 
-/** Whether every word of an element was said, but for the facility words the route may leave off. */
+/** Whether a token is the "then" of a closing "then as filed", which a route may leave off. */
+function isThenToken(token: SpokenToken): boolean {
+  return token.kind === 'word' && token.text === THEN_WORD;
+}
+
+/**
+ * The words of the route the student left off, or undefined where something else is missing.
+ *
+ * A navaid the route names is not the clearance limit, so the word for its type is optional there
+ * (`R-FACILITY-WORD-OMITTED`); the "then" of a closing "then as filed" is optional too, since the
+ * pilot handed "… as filed" is handed the same route over (`R-THEN-OMITTED`). Any other word of the
+ * reading never said is a miss, as is a word said in a forgiven word's place, and no other element
+ * forgives a word.
+ */
+function omittedRouteWords(parts: ElementParts, grading: Grading): SpokenToken[] | undefined {
+  if (parts.element !== 'R.route' || parts.marks.substituted.length > 0) return undefined;
+  const { tokens } = grading.alignment.candidate;
+  const missed: SpokenToken[] = [];
+  for (const [at, index] of parts.indices.entries()) {
+    const token = tokens[index]?.token;
+    if (token === undefined || grading.matchedBy.has(index)) continue;
+    if (!mayLeaveOff(at, parts, grading)) return undefined;
+    missed.push(token);
+  }
+  return missed;
+}
+
+/**
+ * Whether the route may leave the word at `at` unsaid: a navaid's facility word, or the "then" of its
+ * closing "then as filed".
+ *
+ * The "then" may go only where the reading says "as filed" right after it, which is the phrase the
+ * pilot is handed the same route over with: a "then" the reading has anywhere else is a miss like any
+ * other. A route read to its end hands nothing over as filed, so no word is optional under a full
+ * route clearance, where R-FRC decides what a route read short of its end is worth.
+ */
+function mayLeaveOff(at: number, parts: ElementParts, grading: Grading): boolean {
+  const { tokens } = grading.alignment.candidate;
+  const token = tokens[parts.indices[at] ?? -1]?.token;
+  if (token === undefined) return false;
+  if (isFacilityToken(token)) return true;
+  if (!isThenToken(token) || grading.routeReading === 'full') return false;
+  return THEN_AS_FILED_TAIL.every((word, offset) => {
+    const next = tokens[parts.indices[at + 1 + offset] ?? -1]?.token;
+    return next?.kind === 'word' && next.text === word;
+  });
+}
+
+/** Whether every word of an element was said, but for the route words it may leave off. */
 function allSaid(parts: ElementParts, grading: Grading): boolean {
   return (
-    parts.pairs.length === parts.indices.length ||
-    omittedFacilityWords(parts, grading) !== undefined
+    parts.pairs.length === parts.indices.length || omittedRouteWords(parts, grading) !== undefined
   );
 }
 
@@ -1167,11 +1212,15 @@ function expectedFor(
   return words === undefined ? wholeExpected(label) : markedExpected(words, missed);
 }
 
-/** The tier a navaid the route names said without its facility word sets. */
-function facilityWordTiers(parts: ElementParts, grading: Grading): Tier[] {
-  const omitted = omittedFacilityWords(parts, grading) ?? [];
-  if (omitted.length === 0) return [];
-  return [tier(grading.airport, 'acceptable', 'R-FACILITY-WORD-OMITTED')];
+/** The tiers the route words the reading lets go unsaid set, one for each kind of word left off. */
+function omittedWordTiers(parts: ElementParts, grading: Grading): Tier[] {
+  const omitted = omittedRouteWords(parts, grading) ?? [];
+  return [
+    ...(omitted.some(isFacilityToken)
+      ? [tier(grading.airport, 'acceptable', 'R-FACILITY-WORD-OMITTED')]
+      : []),
+    ...(omitted.some(isThenToken) ? [tier(grading.airport, 'acceptable', 'R-THEN-OMITTED')] : []),
+  ];
 }
 
 /** The verdict and rows of an element every token of which matched, or all but a facility word. */
@@ -1186,7 +1235,7 @@ function matchedVerdict(
     ...pairs.flatMap((pair) => spellingTiers(pair.student, pair.expected, airport)),
     ...marks.tiers,
     ...candidateTiers(element, grading),
-    ...facilityWordTiers(parts, grading),
+    ...omittedWordTiers(parts, grading),
   ];
   const redundant = element === 'A.expect' && alignment.candidate.expect === 'redundant';
   const own = redundant ? [] : ownRows(element, grading);
@@ -1353,11 +1402,16 @@ function wrongValueRemark(
 }
 
 /**
- * The remark that names the words never said: the facility words the route may leave off read as
- * the word left out rather than as a miss.
+ * The remark that names the words never said: the route words the reading lets go unsaid read as the
+ * word left out rather than as a miss, one remark for each kind of word that went.
  */
 function missedRemark(parts: ElementParts, missed: readonly string[], grading: Grading): string[] {
-  if ((omittedFacilityWords(parts, grading) ?? []).length > 0) return [REMARKS.facilityWord];
+  const omitted = omittedRouteWords(parts, grading) ?? [];
+  const remarks = [
+    ...(omitted.some(isFacilityToken) ? [REMARKS.facilityWord] : []),
+    ...(omitted.some(isThenToken) ? [REMARKS.thenOmitted] : []),
+  ];
+  if (remarks.length > 0) return remarks;
   return missed.length === 0 ? [] : [`missed: ${missed.map(quoted).join(', ')}`];
 }
 
