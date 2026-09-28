@@ -57,7 +57,7 @@ Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser chec
 
 ## Singles
 
-- [ ] **Parity floor above the surface**: the engine's parity floor is 3,000 ft MSL (`PARITY_FLOOR_FEET`, `rules/amend/altitude.ts`) where TBL 4-5-1 says 3,000 ft above the surface; that is the same at SFO and OAK but not at a high-elevation airport
+- [ ] **Parity floor above the surface**: the engine's parity floor is 3,000 ft MSL (`PARITY_FLOOR_FEET`, `rules/amend/altitude.ts`) where TBL 4-5-1 says 3,000 ft above the surface; that is the same at SFO and OAK but not at a high-elevation airport. Ruled: the floor is the departure field's CIFP elevation plus 3,000, rounded up to the next thousand
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
   `cifp/cycle.py`. Mapped 2026-09-18: `build` fetches everything it needs through the cache and takes one

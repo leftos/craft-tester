@@ -24,6 +24,11 @@ Build the two one after the other, since both touch `app.ts`, `scenario/filter.t
   - `AppState` gets an optional `set` phase (`ui/state.ts:69`, `phaseOf` :603).
   - Hash parse/write in `scenario/filter.ts`.
   - Wiring in `ui/app.ts` (`onNewScenario` :527 and the submit handlers).
+- **Decided with the user:**
+  - A **Skip** button beside Submit leaves the strip unanswered and moves on. Skipped strips stay open: their progress squares are marked and can be pressed to go back, and when the last strip is passed the set returns to the first skipped one. A strip still unanswered when the set ends scores zero.
+  - The summary shows both totals: strips fully correct and percent of element credit (half credit counts half), e.g. "6 of 10 strips fully correct · 78% of elements", then each strip's own score line.
+  - **End test** asks first: "End the test now? Unanswered strips count as zero."
+- **Settled from the mockup and the code:** the test bar replaces the whole toolbar while a set runs, so airport, mode, answer, filters and New strip are out of reach; a strip in amendment mode is done when it reaches results (boxes, then clearance); `x=` sits beside `s=`, which stays the current strip's seed; strip seeds derive as `` seedFromString(`${setSeed}:${i}`) ``; an unresolved strip seed moves on to the next index; untimed sets count elapsed time up; set strips never open in the revisit view mid-set; a shared `x=` link opened elsewhere starts its own clock; an index equal to `n` opens the summary, so it survives a reload.
 - **Tests:** unit tests for seed derivation, time-up and resume. A DOM test for "grades hidden until end" and the summary. A browser check on phone and desktop.
 
 ## What-if variants
