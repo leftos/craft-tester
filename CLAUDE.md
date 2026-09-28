@@ -30,6 +30,7 @@ uv run craft-gen fetch-cifp --airport KSFO [--cycle 2609]
 uv run craft-gen fetch-charts --airport KSFO
 uv run craft-gen fetch-aircraft-characteristics [--from aircraft_data.xlsx]   # FAA table -> generator/shared/, no --airport
 uv run craft-gen build --airport KSFO [--cycle 2609] [--offline] [--check] [--coverage]   # --coverage: gate fixes no library route leaves at
+uv run craft-gen build --airport KSFO --skip-sop-verify   # the AIRAC workflow only: skips the SOP/CPS-004 pin check
 uv run craft-gen verify-sop --airport KSFO
 uv run craft-gen import-worksheets --airport KSFO [--check]
 
@@ -39,7 +40,9 @@ prek install && prek run --all-files
 
 Downloads cache under `generator/cache/` (gitignored) or `$CRAFT_GEN_CACHE`. CI runs the web and generator
 gates, fails if `data/schema/` differs from a fresh `schema:export`, and runs `import-worksheets --check` with
-network. CI does not run `craft-gen build`; `build --check` is a local step before committing data.
+network. CI does not run `craft-gen build`; `build --check` is a local step before committing data. The
+scheduled AIRAC workflow (`airac.yml`, `tools/airac-refresh.sh`) rebuilds every airport daily and opens a
+`data: AIRAC <cycle>` PR when the output changes; see ADDING_AN_AIRPORT.md section 6.
 
 **Browser checks run under Playwright, not the Claude in Chrome extension**, so the
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,

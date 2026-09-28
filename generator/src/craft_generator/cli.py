@@ -160,6 +160,12 @@ def build_parser() -> argparse.ArgumentParser:
             )
         if name in {"build", "verify-sop"}:
             sub.add_argument("--allow-sop-drift", action="store_true", help="report a changed sha256 as a warning while every sentinel still matches")
+        if name == "build":
+            sub.add_argument(
+                "--skip-sop-verify",
+                action="store_true",
+                help="do not check the SOP and CPS-004 pins, for a runner that cannot download those documents",
+            )
     return parser
 
 
@@ -426,6 +432,7 @@ def build(
     check: bool = False,
     force: bool = False,
     allow_sop_drift: bool = False,
+    skip_sop_verify: bool = False,
     coverage: bool = False,
 ) -> int:
     """Join every source into ``data/<icao>.json``, validated against the schema.
@@ -437,6 +444,7 @@ def build(
         check: Compare against the committed file instead of writing it.
         force: Re-download every source.
         allow_sop_drift: Accept a changed SOP sha256 as long as every sentinel still matches.
+        skip_sop_verify: Check neither the SOP pin nor the CPS-004 pin, and warn on stderr that they went unchecked.
         coverage: After the summary, print to stdout the gate fixes no route-library route leaves
             the DP at, whether or not ``check`` finds a difference.
 
@@ -445,18 +453,26 @@ def build(
     """
     if offline and force:
         raise ValueError("--offline and --force contradict each other: --force re-downloads every source, --offline forbids the network")
+    if skip_sop_verify and allow_sop_drift:
+        raise ValueError(
+            "--skip-sop-verify and --allow-sop-drift contradict each other: --allow-sop-drift relaxes a pin check that --skip-sop-verify skips"
+        )
     effective = effective_date_for_cycle(cycle) if cycle else effective_date_for(date.today())
     cycle_id = cycle_id_for(effective)
     cache = cache_dir()
     airport_faa = faa_code(airport)
     inputs = load_airport(airport_dir(airport), load_shared_route_facts(shared_dir()))
+    pinned = [] if skip_sop_verify else [source for source, _ in _pinned_sources(inputs)]
     if offline:
-        _require_cached(cache, airport_faa, cycle_id, [source for source, _ in _pinned_sources(inputs)])
+        _require_cached(cache, airport_faa, cycle_id, pinned)
     charts = _chart_inputs(airport_faa, cache, force=force)
     member = _cifp_member(cache, effective, cycle_id, force=force)
     lines = member.decode("ascii").splitlines()
     legs, runway_records = parse_records(lines, airport)
-    _verify_pins_for_build(inputs, cache, force=force, allow_drift=allow_sop_drift)
+    if skip_sop_verify:
+        print("warning: --skip-sop-verify: the SOP and CPS-004 pins were not checked", file=sys.stderr)
+    else:
+        _verify_pins_for_build(inputs, cache, force=force, allow_drift=allow_sop_drift)
     document = build_airport(
         BuildInputs(
             airport=inputs,
@@ -673,6 +689,7 @@ def _run(args: argparse.Namespace) -> int:
             check=args.check,
             force=args.force,
             allow_sop_drift=args.allow_sop_drift,
+            skip_sop_verify=args.skip_sop_verify,
             coverage=args.coverage,
         ),
         "import-worksheets": lambda: import_worksheets(args.airport, check=args.check, force=args.force, overwrite_settled=args.overwrite_settled),

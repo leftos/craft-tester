@@ -64,18 +64,6 @@ Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser chec
 
 ## Singles
 
-- [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
-  exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
-  `cifp/cycle.py`. Mapped 2026-09-18: `build` fetches everything it needs through the cache and takes one
-  `--airport` at a time (loop over `data/airports.json`); its output is byte-stable, so a PR diff is the
-  cycle's real changes; actions are pinned by full sha with `persist-credentials: false`. **Two decisions
-  for the user before a brief**: the repo has no PR-opening pattern (no workflow holds
-  `pull-requests: write`), and `build` verifies the SOP PDF, which ADDING_AN_AIRPORT.md says is placed in
-  the cache by hand. **Ruled**: the job pushes a branch and runs `gh pr create` with `GITHUB_TOKEN`
-  (`contents: write`, `pull-requests: write`; such a PR does not trigger CI by itself); `build` gains a
-  `--skip-sop-verify` flag used only by this workflow, `verify-sop` staying a local step; it runs daily on
-  a cron, builds the cycle containing today, and opens a PR only when the output differs from `main`, so a
-  late FAA publish is retried the next day
 - [ ] **Dictation for free-text entry.** Browser speech recognition (Chrome and Edge only, not Firefox) feeding the free-text box, with feature detection. The user left it out of the first cut on 2026-09-17
 - [ ] **Rule briefs contradict the settled fixtures or themselves** (friction `d5:craft-tester:2026-W38`, from the
   transcript miner: in W38 14 dispatches came back underspecified, 10 ended without a report and 8 were blocked;

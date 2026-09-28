@@ -334,6 +334,8 @@ Then:
    `generator/tests/fixtures/chart_text/` with a test, so the regex change is pinned.
 5. Run `craft-gen build --airport <ICAO> --check`, then commit `data/<icao>.json` with the YAML. CI does not run `build`, so this local check is the only one.
 
+Once the airport is listed in `data/airports.json`, the **AIRAC data refresh** workflow (`.github/workflows/airac.yml`, daily at 12:00 UTC or by hand from the Actions tab) rebuilds it every cycle with `build --skip-sop-verify` and opens or updates the PR `data: AIRAC <cycle>` on branch `airac/<cycle>`. Before merging that PR, run `uv run craft-gen verify-sop --airport <ICAO>` locally, since the runner cannot download the SOP and CPS-004 PDFs and skips their pin check. A PR the workflow opens does not trigger CI; close and reopen it, or push to its branch, to run CI. A run that fails on a 404 means the FAA has not published the cycle's CIFP yet; the next day's run retries. The workflow needs the repository setting "Allow GitHub Actions to create and approve pull requests" turned on.
+
 ## 7. Worksheets and validation
 
 1. `worksheets.yaml`: one row per trainer worksheet with the Google Doc id, `kind` (`phraseology` or

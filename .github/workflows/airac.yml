@@ -1,0 +1,35 @@
+name: AIRAC data refresh
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: airac-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: rebuild data/ and open a pull request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # push the airac/<cycle> branch
+      pull-requests: write # open the pull request for it
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          working-directory: generator
+          enable-cache: false
+      - run: uv sync --frozen
+        working-directory: generator
+      - run: bash tools/airac-refresh.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
