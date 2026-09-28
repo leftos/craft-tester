@@ -28,7 +28,7 @@ ends with their magnetic bearing), `runwayConfigs`, `departureSectors`, `frequen
 | `cli.py` | `craft-gen` subcommands: `build`, `verify-sop`, `import-worksheets` |
 | `http.py` | cached GET (stdlib urllib), sha256 |
 | `charts_api.py`, `chart_text.py` | ZOA charts API → DP list; pypdf text → top altitude, transitions, departure frequencies |
-| `cifp/` | AIRAC cycle math; ARINC 424 fixed-width slicing of SID legs and runways (`records.py`), STARs with their family, RNAV flag and enroute transitions (`stars.py`), VHF/NDB navaids (`navaids.py`) and airport reference points (`airports.py`); grouping into runways/transitions/restrictions/kind (`sid.py`). Hand-rolled on purpose: audited 2026-09-16 against `cifparse` 2.0.9's width tables and `zoa-reference-cli` with zero column drift, and neither package fits as a dependency (GPL-3.0 and no tests; no runway/navaid-name coverage). The checked-in text fixtures under `tests/fixtures/cifp/` are the regression net for every column |
+| `cifp/` | AIRAC cycle math; ARINC 424 fixed-width slicing of SID legs and runways (`records.py`), STARs with their family, RNAV flag and enroute transitions (`stars.py`), VHF/NDB navaids (`navaids.py`) and airport reference points (`airports.py`); grouping into runways/transitions/restrictions/kind (`sid.py`). Hand-rolled on purpose: audited against `cifparse` 2.0.9's width tables and `zoa-reference-cli` with zero column drift, and neither package fits as a dependency (GPL-3.0 and no tests; no runway/navaid-name coverage). The checked-in text fixtures under `tests/fixtures/cifp/` are the regression net for every column |
 | `sop/` | YAML models, loader with cross-reference validation, SOP PDF hash + sentinel verification |
 | `aircraft_classes.py` | vNAS `AircraftSpecs.json` EngineType → P/T/J |
 | `merge.py` | joins all sources, applies `overrides.yaml`, runs integrity checks |
@@ -88,7 +88,7 @@ plan checks / amendments") and the clearance ("CRAFT clearance elements") apart,
 longer than it needed to be — one citing `S-FILLER`, `S-GROUP-FORM`, `R-FULL-ROUTE`,
 `R-THEN-AS-FILED-END`, `A-EXPECT-REDUNDANT` or `A-FINAL`, the set `LONGER_ROWS` in `ui/results.ts` —
 and `acceptable` for one acceptable without being longer, "nine" for "niner" or a facility word left
-out; inefficient is also acceptable, and the two are counted apart by user steer 2026-09-19), and each
+out; inefficient is also acceptable, and the two are counted apart), and each
 box verdict reads the engine's `reason` for the box's amendment as a `why:` line. The engine reports the longer reading it
 allows as `redundantExpect` beside the clause it speaks, with its own `kind` (`filed` or `amended`, so it can be spoken): the expect clause a SID chart already publishes
 (accepted at the chart's delay, citing `A-EXPECT-REDUNDANT`), and the amended clause beside a "will be
@@ -139,7 +139,7 @@ draws are up to two faults with a fifth of them clean.
 ### TEC routes
 
 A destination inside NorCal TRACON is flown on its TEC route (`tecRoutes`, transcribed from the ZOA
-route tool), and **the TEC route overrides the SOP's departure** (user, 2026-09-18). The only
+route tool), and **the TEC route overrides the SOP's departure**. The only
 exception is a SID that cannot be used from the runways in use. Equipment, noise abatement and notices
 still win.
 
@@ -181,7 +181,7 @@ still win.
 
 ### Special aircraft (CPS-004 §3.1)
 
-ZOA CPS-004 §3.1 lists five types whose performance differs from their engine class. The SF50, C510, E50P and E55P are jets handled like turboprops, and the DH8D is a turboprop handled like a jet. The list applies "unless procedures are defined in local Standard Operating Procedures", and the consideration "is not required, but must be considered". User ruling, 2026-09-26: the trainer **proposes the jet handling and also accepts the turboprop handling**.
+ZOA CPS-004 §3.1 lists five types whose performance differs from their engine class. The SF50, C510, E50P and E55P are jets handled like turboprops, and the DH8D is a turboprop handled like a jet. The list applies "unless procedures are defined in local Standard Operating Procedures", and the consideration "is not required, but must be considered". The trainer **proposes the jet handling and also accepts the turboprop handling**.
 
 - **Data.**
   - `generator/shared/aircraft_types.yaml` gives each of these types a `performance_class`, and its `special_handling` block pins the document. The block holds the sha256 and sentinels, which `verify-sop` and the build check, plus the citable row `ZOA-CPS004-SPECIAL-AIRCRAFT`.
@@ -209,7 +209,7 @@ remembered per browser. The dropdowns stay, and the student chooses.
   numbers becomes one token that records its value and how it was said. The run may be figures or words,
   including plain or ICAO digits, group forms, "thousand", "hundred" and "point". An identifier (`NIMI6`,
   `sac`, `ksmf`) is expanded through the airport's lexicon of fix, procedure and destination names
-  whatever its case: capitalisation never changes a grade (user, 2026-09-18). A SID's family code typed
+  whatever its case: capitalisation never changes a grade. A SID's family code typed
   as a word is the name without its number ("gapp seven" is "Gap Seven", as `GAPP7` typed whole already
   was), except where a fix or navaid holds the same identifier (`SFO` stays the VOR). Two things outrank the
   lexicon, so an identifier that spells a word cannot take it over: a number word is always a number, and
@@ -217,7 +217,7 @@ remembered per browser. The dropdowns stay, and the student chooses.
   lexicon it reads the typed text with).
   A run of two or more spelling-alphabet words is the identifier it spells, fully right and with no
   remark (`R-NAVAID`; 7110.65 2-5-2 a 1 gives "the name or phonetic alphabet equivalent" of a navaid in a
-  routing, and the user extended it to a five-letter fix, 2026-09-18): the longest stretch the lexicon
+  routing, and the trainer extends it to a five-letter fix): the longest stretch the lexicon
   holds reads as that key's spoken words ("sierra alpha uniform" is "Sausalito VOR"), and five letters
   it misses read as the fix's own word. One such word alone spells nothing, so "victor six" stays an
   airway, also right after a spelt navaid. `x-ray` typed with a hyphen is not read; `xray` is.
@@ -249,8 +249,8 @@ remembered per browser. The dropdowns stay, and the student chooses.
   - extra words are filler, acceptable (`S-FILLER`);
   - a group-form restatement after the digits is acceptable, and the group form alone is wrong
     (`S-GROUP-FORM`);
-  - "nine" where the reading says "niner" is acceptable and the row says to say niner (`S-NINER`; wrong
-    until 2026-09-19, when a tester read it as inconsistent beside "three" and "five", which TBL 2-4-1
+  - "nine" where the reading says "niner" is acceptable and the row says to say niner (`S-NINER`; not wrong,
+    to match "three" and "five", which TBL 2-4-1
     lists the same way), and a chart name's "Nine" sets no tier at all;
   - a word typed a letter or two away from the word the reading has is that word, fully right
     (`S-SPELLING`, `rules/text/spelling.ts`): one edit for a word of five to eight letters, two for a
@@ -261,7 +261,7 @@ remembered per browser. The dropdowns stay, and the student chooses.
   - the facility word after a bare fix is right (`R-FACILITY-WORD`);
   - a route whose only unsaid words are facility words ("direct Red Bluff" for "direct Red Bluff VOR")
     is acceptable, under either route reading, and the row says a navaid is said with its type
-    (`R-FACILITY-WORD-OMITTED`; user ruling 2026-09-19 on a tester's report: 7110.65 2-5-2 a 2 asks for
+    (`R-FACILITY-WORD-OMITTED`; 7110.65 2-5-2 a 2 asks for
     the type only where the navaid is the clearance limit, which here is always the airport). Any other
     unsaid word still makes the element wrong, as does a word said in the facility word's place
     ("direct Red Bluff foo"; user ruling the same day);
@@ -285,7 +285,7 @@ remembered per browser. The dropdowns stay, and the student chooses.
   never said are marked, but only where the element is wrong and some of it was heard: an element not
   heard at all, or said out of order, marks nothing, because marking every word says nothing.
 - **Full route clearance.** The header's "full route" checkbox holds the student to the route read to its
-  end (user rulings 2026-09-18). It is a typed-answer setting: the dropdown form's route element is one
+  end. It is a typed-answer setting: the dropdown form's route element is one
   transition pick and cannot hold a route, so ticking the box answers by typing and choosing the dropdowns
   unticks it. It applies in both halves, rides in the hash as `r=full` (a link carrying it opens typed; a link
   with `i=text` alone opens unticked, so a shared link grades the same for whoever opens it) and is remembered
@@ -330,7 +330,7 @@ the code shows only the outcome.
 | scenarios | generated at runtime from a curated `routes.yaml`, seeded PRNG, seed in the URL hash | reproducible, shareable scenarios for trainer review |
 | aircraft class P/T/J | vNAS `AircraftSpecs.json` `EngineType`, restricted to the curated fleet | public data, already used by the user's yaat project |
 | second airport | a `generator/airports/<icao>/` directory plus a line in `data/airports.json` | no code keyed on one airport |
-| language split | Python generator, TypeScript web; the zod schema and its export are the only seam | the generator is an offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page. Reviewed 2026-09-17; it reopens only if a backend appears (accounts, shared progress, one deployment serving many facilities) or dictation moves off the browser's Web Speech API |
+| language split | Python generator, TypeScript web; the zod schema and its export are the only seam | the generator is an offline ETL over fixed-width CIFP, scrambled chart PDFs, Google Docs text and an FAA spreadsheet, where pypdf, openpyxl and pyyaml are the shortest path; the web half must run as a static page. It reopens only if a backend appears (accounts, shared progress, one deployment serving many facilities) or dictation moves off the browser's Web Speech API |
 | `half` verdict | fixture-only: no drawn fault produces it | every eligible library route files inside the RVSM band (KSFO's four at FL310-FL410, KOAK's seven at FL290-FL350) and the suffix an arrival fault writes (`/U`) is not RVSM-approved, so the altitude box is raised too and `sameBoxes` discards the draw. If it returns, the cheaper trigger is `arrivalTrigger` on `filed.arrival.rnav !== ctx.rnavCapable` in both directions, so a conventional arrival filed by an RNAV flight swaps with no suffix strip |
 | dependencies | Python `pypdf`, `pyyaml`, `jsonschema`; TS `zod` alone at runtime | stdlib `urllib` for HTTP, no UI framework: the render model above needs no diffing, because the forms hold no dynamic lists — three amend rows, eight CRAFT rows, one typing box. `happy-dom` is a dev dependency for the DOM tests only |
 

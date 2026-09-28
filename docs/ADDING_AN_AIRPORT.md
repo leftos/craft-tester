@@ -198,7 +198,7 @@ names fails the build; one only a worksheet fixture names is a warning.
 Scenarios are drawn from this file, so its breadth is the game's variety.
 
 What a destination, an airline or an aircraft type *is* holds at every airport, so those facts live once
-under `generator/shared/` and this file lists only codes into them (user rule 2026-09-16: never copy
+under `generator/shared/` and this file lists only codes into them (never copy
 airport-independent data between airports). A code the shared file lacks fails the load naming the file
 to add it to; add the row there first. The route structure is shared the same way: `generator/shared/airways.yaml`
 marks the airways flown one way only — the Pacific oceanic routes off the Bay — and every airport inherits
@@ -234,7 +234,7 @@ or comment the row out where a cycle dropped the procedure.
   aircraft_types.yaml` holds each type's class (checked against vNAS `AircraftSpecs.json` EngineType; the
   build fails on a disagreement), wake category and the equipment suffixes it files; a fleet entry's
   airlines are the airport's airlines whose `types` list it, in the airport's airline order. No service
-  ceiling: a controller does not apply aircraft performance to a filed altitude (user rule 2026-09-16).
+  ceiling: a controller does not apply aircraft performance to a filed altitude.
   The approach category comes from `generator/shared/faa_aircraft_characteristics.yaml` (the FAA Aircraft
   Characteristics Database, refreshed with `craft-gen fetch-aircraft-characteristics`), and the build fails
   naming the type when the FAA states none; an `approach_category` with a `note` on the shared type row
@@ -243,7 +243,7 @@ or comment the row out where a cycle dropped the procedure.
 - **`routes`**: keyed by `exit_fix` (where the aircraft leaves the SID), with the `tail` from that fix,
   the classes that fly it and plausible cruise altitudes. Take them from the worksheets and the route tool.
   Aim for at least one route per gate fix: a fix no route reaches never appears in a scenario.
-  `craft-gen build --coverage` lists them (39 at KSFO and 42 at KOAK on 2026-09-17); it is a report, not
+  `craft-gen build --coverage` lists them; it is a report, not
   a warning, because the gap is ordinary while the library grows.
   A row is drawn only where it is the correctly-filed plan: the scenario generator runs the amendment
   engine over every draw and redraws one that would take any amendment, so a row that is wrong in some
@@ -263,11 +263,11 @@ for it to render before reading). One row per printed line: `destination`, `plan
 with the SID written as `FAMILY#` so an AIRAC bump does not stale it, the trailing altitude pair as
 `initial_altitude_feet` / `final_altitude_feet` (the tool prints hundreds of feet as `initial/final`: `030/090`
 is 3,000 initial and 9,000 final; a single number, whether a blank final such as `100/` or a bare `060`, is the
-final altitude only and the row states no initial, user 2026-09-16; a row printed with no altitude carries
+final altitude only and the row states no initial; a row printed with no altitude carries
 neither key), and `kind: adr` for assigned departure routes, which are advisory. The engine flies a TEC-routed
 flight at the final altitude exactly, amending a filed altitude up or down to it with parity set aside; a row
 that states an initial altitude decides what the clearance climbs the flight to in place of the SOP altitude
-row ("TEC initials override the SOP for now", user 2026-09-16), and a row without one leaves the SOP row in
+row, and a row without one leaves the SOP row in
 charge. The web suite prints, per airport, where the SOP row and a TEC initial disagree, for the validation
 loop.
 Every destination must exist in `routes.yaml`; the build also checks that the DP a row begins on is
@@ -287,7 +287,7 @@ nothing.
   identifier in the gates, so add that identifier to the right gate. For example, KOAK's north gate
   lists `SFO` and `HWD`.
 
-**The TEC route overrides the SOP's departure** (user, 2026-09-18; ARCHITECTURE.md "TEC routes"). The
+**The TEC route overrides the SOP's departure** (ARCHITECTURE.md "TEC routes"). The
 exceptions are a SID the flight cannot fly or the SOP does not put in use from the runway in this
 configuration, a noise-abatement row, and a notice. The scenario draw and the worksheet importer move a
 flight to a runway its TEC departure is in use from, so every airport needs an `RWY-TEC` phraseology row
@@ -301,7 +301,7 @@ departure field (a build-time filter, never emitted). An airport's `loa.yaml` is
 a row it overrides by id or a row only it has, joined the way the phraseology rows are. Transcribe the
 LOA text into `text`, not a paraphrase: the ZOA–ZSE rule the user remembered as "even altitudes" is in
 the LOA a rotated course window, and the row carries the LOA's version. An LOA's at-or-below altitude
-for a handoff binds the enroute controller, not clearance delivery, so it is not a row (user 2026-09-16).
+for a handoff binds the enroute controller, not clearance delivery, so it is not a row.
 A `route` rule lists the fixes one of which the route must name; a cell that routes props differently from
 jets becomes two rows with `classes: [J]` and `classes: [P, T]`, and a cell whose conventional column reads
 "via filed route" carries `rnav_only: true`. A row's destinations are checked against

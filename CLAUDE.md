@@ -41,7 +41,7 @@ Downloads cache under `generator/cache/` (gitignored) or `$CRAFT_GEN_CACHE`. CI 
 gates, fails if `data/schema/` differs from a fresh `schema:export`, and runs `import-worksheets --check` with
 network. CI does not run `craft-gen build`; `build --check` is a local step before committing data.
 
-**Browser checks run under Playwright, not the Claude in Chrome extension** (user decision 2026-09-16), so the
+**Browser checks run under Playwright, not the Claude in Chrome extension**, so the
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
 then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
 survive pnpm on Windows), runs the actions (`fill:<n>` counts text inputs and textareas together, in page order;
