@@ -45,11 +45,11 @@ network. CI does not run `craft-gen build`; `build --check` is a local step befo
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
 then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
 survive pnpm on Windows), runs the actions (`fill:<n>` counts text inputs and textareas together, in page order;
-`press:Enter` presses a key on whatever has focus; `check:full route` ticks the checkbox of that label;
+`press:Enter` presses a key on whatever has focus; `click:Full route` presses that option of the toolbar's answer switch, as `click:` presses any button by its text;
 `scroll:600` scrolls the page down to that offset), and writes the
 page text, selects, buttons, console errors, whether the page scrolls sideways, a full-page screenshot and a `-view`
 screenshot of the viewport alone to `.tmp/browser-check/`. Only the `-view` shot shows what stays pinned after a
-scroll; the printed `stripTop` is the flight-plan panel's top edge in the viewport, `0` while it is pinned. The hash carries the airport in
+scroll; the printed `stripTop` is the flight-plan panel's top edge in the viewport, which equals the sticky toolbar's height while it is pinned (80 on `desktop`, 116 on `phone`). The hash carries the airport in
 its `a=<ICAO>` part (every link the app writes has one; a missing or unknown one opens the first airport of the
 index) and takes an undocumented `d=<ICAO>` part that forces the drawn destination in both modes
 (`s=4,a=KOAK,d=KSMF,m=amend`; `i=text` opens the typing box, `r=full` opens it held to the full route), so a destination is checked directly instead of drawing until the RNG lands on

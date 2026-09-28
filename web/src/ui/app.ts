@@ -30,8 +30,8 @@ import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
-import { button, checkboxControl, el, selectControl } from '@/ui/dom.ts';
-import type { SelectOption } from '@/ui/dom.ts';
+import { button, el, segmentedControl, selectControl } from '@/ui/dom.ts';
+import type { SegmentOption, SelectOption } from '@/ui/dom.ts';
 import type { FilterStore, FullRouteStore, InputKindStore } from '@/ui/preferences.ts';
 import {
   browserFilterStore,
@@ -70,24 +70,29 @@ import {
   withSubmitted,
   withText,
 } from '@/ui/state.ts';
-import { renderStrip } from '@/ui/strip.ts';
+import { addCopyLink, loadStripFont, renderStrip } from '@/ui/strip.ts';
 import type { TextFormProps } from '@/ui/textForm.ts';
 import { renderTextForm } from '@/ui/textForm.ts';
+
+/**
+ * How the clearance is answered, as the toolbar offers it: picked from dropdowns, typed, or typed
+ * and held to the route read to its end.
+ */
+type AnswerChoice = 'pick' | 'type' | 'full';
 
 /** What the page's controls call back into. */
 type Actions = {
   onAirport: (icao: string) => void;
+  /**
+   * Answers the scenario on screen another way, on the same seed, and remembers the choice: Pick
+   * answers from the dropdowns, Type types it, and Full route types it held to the route read to
+   * its end.
+   */
+  onAnswer: (answer: AnswerChoice) => void;
   onBox: (box: Box, answer: BoxAnswer) => void;
   onBoxesSubmit: () => void;
   /** Narrows the draw to what the dropdowns say; a destination forced by the hash does not survive it. */
   onFilter: (filter: ScenarioFilter) => void;
-  /**
-   * Holds the scenario on screen to the route read to its end, or lets it back to the reading
-   * spoken on frequency, and remembers the choice. Ticking it answers by typing.
-   */
-  onFullRoute: (fullRoute: boolean) => void;
-  /** Answers the scenario on screen the other way, on the same seed, and remembers the choice. */
-  onInput: (input: InputKind) => void;
   onMode: (mode: Mode) => void;
   onNewScenario: () => void;
   onPick: (key: PickKey, raw: string) => void;
@@ -103,17 +108,28 @@ const TIME_OPTIONS: readonly (SelectOption & { value: TimeFilter })[] = [
   { value: 'night', label: 'Night' },
 ];
 
-/** The two halves of the trainer, in the order the dropdown offers them. */
-const MODE_OPTIONS: readonly (SelectOption & { value: Mode })[] = [
-  { value: 'clearance', label: 'Clean clearance' },
-  { value: 'amendment', label: 'Amend and clear' },
+/** The two halves of the trainer, in the order the toolbar offers them. */
+const MODE_OPTIONS: readonly (SegmentOption & { value: Mode })[] = [
+  { value: 'clearance', label: 'Clearance', title: '' },
+  { value: 'amendment', label: 'Amend', title: '' },
 ];
 
-/** The two ways to answer the clearance, in the order the dropdown offers them. */
-const INPUT_OPTIONS: readonly (SelectOption & { value: InputKind })[] = [
-  { value: 'dropdowns', label: 'Dropdowns' },
-  { value: 'text', label: 'Typed' },
+/** The three ways to answer the clearance, in the order the toolbar offers them. */
+const ANSWER_OPTIONS: readonly (SegmentOption & { value: AnswerChoice })[] = [
+  { value: 'pick', label: 'Pick', title: 'Pick each element from dropdowns' },
+  { value: 'type', label: 'Type', title: 'Type the clearance as spoken' },
+  {
+    value: 'full',
+    label: 'Full route',
+    title: 'Type it with the route read in full, as on a full route clearance (FRC)',
+  },
 ];
+
+/** The way the session on screen is answered, as the toolbar shows it. */
+function answerChoiceOf(state: AppState): AnswerChoice {
+  if (state.input === 'dropdowns') return 'pick';
+  return state.fullRoute ? 'full' : 'type';
+}
 
 /**
  * Puts the airport, the seed, the filter, the mode and the input kind in the hash, so a reload and
@@ -121,15 +137,6 @@ const INPUT_OPTIONS: readonly (SelectOption & { value: InputKind })[] = [
  */
 function writeHash(icao: string, seed: number, settings: SessionSettings): void {
   globalThis.history.replaceState(null, '', hashFor(icao, seed, settings));
-}
-
-/** The link that shares the scenario on screen, shown as the hash it adds. */
-function shareControl(icao: string, seed: number, settings: SessionSettings): HTMLElement {
-  const wrapper = el('p', 'share');
-  const link = el('a', '', hashFor(icao, seed, settings));
-  link.href = shareLink(globalThis.location.href, icao, seed, settings);
-  wrapper.append(el('span', 'share-label', 'scenario link'), link);
-  return wrapper;
 }
 
 /** The value a configuration filter reads back as in the dropdown. */
@@ -159,50 +166,91 @@ function configOptions(airport: AirportData): SelectOption[] {
   ];
 }
 
-/** The dropdown that picks the half of the trainer the session runs in. */
+/** The segmented control that picks the half of the trainer the session runs in. */
 function modeControl(state: AppState, actions: Actions): HTMLElement {
-  return selectControl(
-    {
-      label: 'mode',
-      options: MODE_OPTIONS,
-      value: state.mode,
-      disabled: false,
-      placeholder: '—',
-    },
-    (raw) => {
-      const mode = MODE_OPTIONS.find((option) => option.value === raw)?.value ?? 'clearance';
-      actions.onMode(mode);
-    },
-  );
+  return segmentedControl({ label: 'Mode', options: MODE_OPTIONS, value: state.mode }, (raw) => {
+    const mode = MODE_OPTIONS.find((option) => option.value === raw)?.value ?? 'clearance';
+    actions.onMode(mode);
+  });
 }
 
-/** The dropdown that picks how the clearance is answered: picked from dropdowns, or typed out. */
-function inputControl(state: AppState, actions: Actions): HTMLElement {
-  return selectControl(
-    {
-      label: 'answer',
-      options: INPUT_OPTIONS,
-      value: state.input,
-      disabled: false,
-      placeholder: '—',
-    },
-    (raw) => {
-      const input = INPUT_OPTIONS.find((option) => option.value === raw)?.value ?? 'dropdowns';
-      actions.onInput(input);
-    },
-  );
+/** The segmented control that picks how the clearance is answered: Pick, Type, or Full route. */
+function answerControl(state: AppState, actions: Actions): HTMLElement {
+  const spec = { label: 'Answer by', options: ANSWER_OPTIONS, value: answerChoiceOf(state) };
+  return segmentedControl(spec, (raw) => {
+    const answer = ANSWER_OPTIONS.find((option) => option.value === raw)?.value ?? 'pick';
+    actions.onAnswer(answer);
+  });
 }
 
-/** The checkbox that holds the student to the route read to its end, which is typed out. */
-function fullRouteControl(state: AppState, actions: Actions): HTMLElement {
-  return checkboxControl(
-    {
-      label: 'full route',
-      checked: state.fullRoute,
-      title: 'Grade the route read in full, as on a full route clearance (FRC)',
-    },
-    actions.onFullRoute,
-  );
+/** The airport picker, a bare dropdown the toolbar names for a screen reader. */
+function airportControl(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
+  const select = el('select', 'airport');
+  select.setAttribute('aria-label', 'Airport');
+  for (const entry of index) {
+    const option = el('option', '', entry.icao);
+    option.value = entry.icao;
+    select.append(option);
+  }
+  select.value = state.airport.airport.icao;
+  select.addEventListener('change', () => {
+    actions.onAirport(select.value);
+  });
+  return select;
+}
+
+/** How many of the filters differ from drawing anything, which the Filters button counts. */
+function activeFilterCount(filter: ScenarioFilter): number {
+  const time = filter.time === 'either' ? 0 : 1;
+  const config = filter.config.kind === 'any' ? 0 : 1;
+  return time + config;
+}
+
+/**
+ * Closes an open popover on a press outside it or on Escape, and stops listening once it closes.
+ *
+ * @param details The popover, a `<details>` element.
+ */
+function closeOnOutsidePress(details: HTMLDetailsElement): void {
+  const stop = (): void => {
+    document.removeEventListener('pointerdown', onPress);
+    document.removeEventListener('keydown', onKey);
+  };
+  const onPress = (event: PointerEvent): void => {
+    if (!details.isConnected) {
+      stop();
+      return;
+    }
+    if (event.target instanceof Node && details.contains(event.target)) return;
+    details.open = false;
+  };
+  const onKey = (event: KeyboardEvent): void => {
+    if (event.key !== 'Escape') return;
+    details.open = false;
+    details.querySelector('summary')?.focus();
+  };
+  details.addEventListener('toggle', () => {
+    stop();
+    if (!details.open) return;
+    document.addEventListener('pointerdown', onPress);
+    document.addEventListener('keydown', onKey);
+  });
+}
+
+/**
+ * The Filters button, with a count of the filters set, and the popover it opens, which holds the
+ * time and configuration dropdowns.
+ */
+function filtersControl(state: AppState, actions: Actions): HTMLElement {
+  const details = el('details', 'filters');
+  const summary = el('summary', '', 'Filters');
+  const count = activeFilterCount(state.filter);
+  if (count > 0) summary.append(el('span', 'count', String(count)));
+  const popover = el('div', 'filters-popover');
+  popover.append(...filterControls(state, actions));
+  details.append(summary, popover);
+  closeOnOutsidePress(details);
+  return details;
 }
 
 /** The two dropdowns that narrow the draw: the time of day and the runway configuration. */
@@ -236,33 +284,24 @@ function filterControls(state: AppState, actions: Actions): HTMLElement[] {
   ];
 }
 
-/** The title, the airport picker, the mode, answer and full route switches, the filters, the new-scenario button, and the shareable seed. */
-function renderHeader(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
-  const header = el('header', 'app-header');
-  const controls = el('div', 'controls');
-  controls.append(
-    selectControl(
-      {
-        label: 'airport',
-        options: index.map((entry) => ({ value: entry.icao, label: entry.icao })),
-        value: state.airport.airport.icao,
-        disabled: false,
-        placeholder: '—',
-      },
-      actions.onAirport,
-    ),
+/**
+ * The toolbar: the product name, the airport, the mode and answer switches and the Filters button,
+ * then New strip on the right. On a phone the answer switch and Filters wrap to a second row.
+ */
+function renderToolbar(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
+  const bar = el('header', 'toolbar');
+  bar.setAttribute('aria-label', 'Session');
+  const secondRow = el('div', 'toolbar-row2');
+  secondRow.append(answerControl(state, actions), filtersControl(state, actions));
+  bar.append(
+    el('h1', 'brand', 'CRAFT trainer'),
+    airportControl(state, index, actions),
     modeControl(state, actions),
-    inputControl(state, actions),
-    fullRouteControl(state, actions),
-    ...filterControls(state, actions),
-    button('New scenario', 'primary', actions.onNewScenario),
+    secondRow,
+    el('span', 'toolbar-spacer'),
+    button('New strip', 'primary', actions.onNewScenario),
   );
-  header.append(
-    el('h1', '', 'CRAFT Clearance Trainer'),
-    controls,
-    shareControl(state.airport.airport.icao, state.seed, state),
-  );
-  return header;
+  return bar;
 }
 
 /** The panel a seed that the engine cannot clear shows instead of the form. */
@@ -273,7 +312,7 @@ function renderUnresolved(reasons: readonly string[], onNext: () => void): HTMLE
   panel.append(
     el('h2', '', 'No clearance for this scenario'),
     list,
-    button('New scenario', 'primary', onNext),
+    button('New strip', 'primary', onNext),
   );
   return panel;
 }
@@ -440,14 +479,36 @@ function renderClearanceForm(
 /** The whole page: the node on screen, and how to write a later state of the same panels into it. */
 type Page = { node: HTMLElement; sync: ((state: AppState) => void) | undefined };
 
-/** Renders the whole page from the state. */
+/**
+ * Renders the whole page from the state. The first strip on the page, the one the student was
+ * handed, carries the button that copies the link to it.
+ */
 function renderApp(state: AppState, index: AirportsIndex, actions: Actions): Page {
   const page = el('div', 'page');
   const main = el('main', 'layout');
   const panels = renderPanels(state, actions);
+  const strip = panels.nodes.find((node) => node.matches('section.panel.strip'));
+  if (strip !== undefined) {
+    const { icao } = state.airport.airport;
+    addCopyLink(strip, shareLink(globalThis.location.href, icao, state.seed, state));
+  }
   main.append(...panels.nodes);
-  page.append(renderHeader(state, index, actions), main);
+  page.append(renderToolbar(state, index, actions), main);
   return { node: page, sync: panels.sync };
+}
+
+/** The key of the control that has the focus, where it is one a page drawn again can find. */
+function focusKeyOf(root: Element): string | undefined {
+  const active = root.ownerDocument.activeElement;
+  if (!(active instanceof HTMLElement) || !root.contains(active)) return undefined;
+  return active.getAttribute('data-focus-key') ?? undefined;
+}
+
+/** Puts the focus back on the control of a page drawn again that carries the key. */
+function restoreFocus(root: Element, key: string | undefined): void {
+  if (key === undefined) return;
+  const controls = [...root.querySelectorAll<HTMLElement>('[data-focus-key]')];
+  controls.find((node) => node.getAttribute('data-focus-key') === key)?.focus();
 }
 
 /** Everything `mount` remembers between renders that is not the state itself. */
@@ -502,8 +563,10 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     writeHash(state.airport.airport.icao, state.seed, state);
     const key = viewKey(state);
     if (built === undefined || built.key !== key) {
+      const focused = focusKeyOf(root);
       const page = renderApp(state, index, actions);
       root.replaceChildren(page.node);
+      restoreFocus(root, focused);
       built = { key, sync: page.sync };
       return;
     }
@@ -536,21 +599,21 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       const seed = randomSeed();
       const { mode, input, fullRoute } = state;
       update(withFilter(state, filter, seed, store.load(icao, seed, { mode, input, fullRoute })));
+      const popover = root.querySelector('details.filters');
+      if (popover instanceof HTMLDetailsElement) popover.open = true;
     },
-    onFullRoute: (fullRoute) => {
-      const { icao } = state.airport.airport;
-      stores.fullRoute.save(fullRoute);
-      if (fullRoute) stores.input.save('text');
-      const scope = { mode: state.mode, input: 'text', fullRoute } as const;
-      update(withFullRoute(state, fullRoute, store.load(icao, state.seed, scope)));
-    },
-    onInput: (input) => {
+    onAnswer: (answer) => {
+      const input: InputKind = answer === 'pick' ? 'dropdowns' : 'text';
+      const fullRoute = answer === 'full';
       stores.input.save(input);
-      const fullRoute = input === 'text' && state.fullRoute;
-      if (input === 'dropdowns') stores.fullRoute.save(false);
+      stores.fullRoute.save(fullRoute);
       const scope = { mode: state.mode, input, fullRoute };
       const previous = store.load(state.airport.airport.icao, state.seed, scope);
-      update(withInputKind(state, input, previous));
+      update(
+        input === 'text'
+          ? withFullRoute(state, fullRoute, previous)
+          : withInputKind(state, input, previous),
+      );
     },
     onMode: (mode) => {
       const seed = randomSeed();
@@ -594,7 +657,7 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
  * @param hash The hash the page opened on, with or without its leading `#`.
  * @param input The input kind the session opens in.
  * @param remembered What this browser last chose, or `undefined` where it remembers nothing.
- * @returns True when the session opens with the full route box ticked.
+ * @returns True when the session opens on Full route.
  */
 function opensFullRoute(hash: string, input: InputKind, remembered: boolean | undefined): boolean {
   if (input !== 'text') return false;
@@ -613,7 +676,7 @@ function opensFullRoute(hash: string, input: InputKind, remembered: boolean | un
  * unless it says so. It names typed answers too; a link that does not falls back to the way this
  * browser last chose to answer, and to the dropdowns where it remembers none. A link asking for a
  * full route clearance opens typed and held to it, and one that names no input kind at all leaves
- * the full route box to the choice this browser last made.
+ * Full route to the choice this browser last made.
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
@@ -626,7 +689,7 @@ export async function startApp(root: Element): Promise<void> {
   const hash = globalThis.location.hash;
   const named = airportFromHash(hash);
   const entry = index.find((candidate) => candidate.icao === named) ?? first;
-  const airport = await loadAirportData(entry.icao);
+  const [airport] = await Promise.all([loadAirportData(entry.icao), loadStripFont()]);
   const seed = seedFromHash(hash) ?? randomSeed();
   const mode = modeFromHash(hash);
   const stores: Stores = {

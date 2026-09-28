@@ -1,65 +1,302 @@
+/* Atkinson Hyperlegible Next and Mono, vendored under web/public/fonts with their OFL licence. */
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/AtkinsonHyperlegibleNext-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/AtkinsonHyperlegibleNext-Italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/AtkinsonHyperlegibleNext-Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/AtkinsonHyperlegibleMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Mono';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/AtkinsonHyperlegibleMono-Bold.woff2') format('woff2');
+}
+
 :root {
   color-scheme: light;
-  --bg: #f4f6f8;
-  --panel: #ffffff;
-  --fg: #1b2026;
-  --muted: #5b6672;
-  --line: #d7dde4;
-  --accent: #1c4fd8;
-  --ok: #1a7f37;
-  --bad: #b42318;
-  --warn: #b45309;
-  --half: #a16207;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    Helvetica,
-    Arial,
-    sans-serif;
+  --ground: #e8ecf0;
+  --surface: #ffffff;
+  --rail: #dfe4ea;
+  --ink: #16202b;
+  --ink-2: #566371;
+  --rule: #cbd3dc;
+  --control: #ffffff;
+  --control-line: #b9c3ce;
+  --accent: #1d5ea8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3edf8;
+  --holder: #2b3642;
+  --paper: #eeebe0;
+  --paper-line: #bfbbae;
+  --paper-ink: #111111;
+  --ok: #1a7440;
+  --ok-soft: #e4f2e9;
+  --bad: #b3261e;
+  --bad-soft: #fbe9e7;
+  --long: #8a5300;
+  --long-soft: #fbf0dc;
+  --half: #6a4ea6;
+  --focus: #1d5ea8;
+  --shadow: #16202b33;
+  --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --bar-h: 56px;
+  font-family: var(--font-ui);
   line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ground: #131a21;
+    --surface: #1b242d;
+    --rail: #18212a;
+    --ink: #e2e8ee;
+    --ink-2: #9ba7b3;
+    --rule: #2d3945;
+    --control: #202b36;
+    --control-line: #3a4856;
+    --accent: #7fb0ea;
+    --accent-ink: #0d1a28;
+    --accent-soft: #1f3148;
+    --holder: #0b1117;
+    --paper: #e3dfd0;
+    --ok: #62cc8e;
+    --ok-soft: #173424;
+    --bad: #ff8a80;
+    --bad-soft: #3a1d1b;
+    --long: #f0b35a;
+    --long-soft: #372a14;
+    --half: #b9a3f0;
+    --focus: #7fb0ea;
+    --shadow: #00000080;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: #131a21;
+  --surface: #1b242d;
+  --rail: #18212a;
+  --ink: #e2e8ee;
+  --ink-2: #9ba7b3;
+  --rule: #2d3945;
+  --control: #202b36;
+  --control-line: #3a4856;
+  --accent: #7fb0ea;
+  --accent-ink: #0d1a28;
+  --accent-soft: #1f3148;
+  --holder: #0b1117;
+  --paper: #e3dfd0;
+  --ok: #62cc8e;
+  --ok-soft: #173424;
+  --bad: #ff8a80;
+  --bad-soft: #3a1d1b;
+  --long: #f0b35a;
+  --long-soft: #372a14;
+  --half: #b9a3f0;
+  --focus: #7fb0ea;
+  --shadow: #00000080;
 }
 
 body {
   margin: 0;
-  padding: 1.5rem;
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--ground);
+  color: var(--ink);
+  font-size: 16px;
 }
 
-.page {
-  margin: 0 auto;
-  max-width: 62rem;
+button,
+select,
+input,
+textarea,
+summary {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
 h1 {
   margin: 0 0 0.75rem;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 h2 {
   margin: 0 0 0.6rem;
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
 }
 
 h3 {
   margin: 0 0 0.3rem;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-.app-header {
-  margin-bottom: 1rem;
-}
-
-.controls {
+/* The toolbar: one sticky row, grouped left to right by how often a control changes. */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: flex-end;
+  align-items: center;
+  gap: var(--s3);
+  box-sizing: border-box;
+  height: var(--bar-h);
+  padding: var(--s2) var(--s5);
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.toolbar .brand {
+  margin: 0 var(--s2) 0 0;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.toolbar-row2 {
+  display: contents;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.toolbar select {
+  padding: 6px 10px;
+  border-color: var(--control-line);
+  border-radius: 6px;
+}
+
+.segmented {
+  display: inline-flex;
+}
+
+.segmented button {
+  padding: 6px 12px;
+  border: 1px solid var(--control-line);
+  border-radius: 0;
+  background: var(--control);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.segmented button + button {
+  border-left: 0;
+}
+
+.segmented button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.segmented button:last-child {
+  border-radius: 0 6px 6px 0;
+}
+
+.segmented button[aria-checked='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+}
+
+.filters {
+  position: relative;
+}
+
+.filters > summary {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid var(--control-line);
+  border-radius: 6px;
+  background: var(--control);
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.filters > summary::-webkit-details-marker {
+  display: none;
+}
+
+.filters .count {
+  display: inline-block;
+  min-width: 1.4em;
+  margin-left: var(--s1);
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Anchored to the button's right edge, so it opens leftwards and never widens the page. */
+.filters-popover {
+  position: absolute;
+  top: calc(100% + var(--s2));
+  right: 0;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+  width: max-content;
+  max-width: min(40rem, calc(100vw - 2rem));
+  padding: var(--s4);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.layout {
+  display: grid;
+  /* The strip column is as wide as the paper wants (535 px plus the panel's padding), so a desktop
+     draws the strip at full size; the ATIS takes the rest. */
+  grid-template-columns: minmax(16rem, max-content) 1fr;
+  gap: 1rem;
+  align-items: start;
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 1.5rem;
 }
 
 .field {
@@ -74,49 +311,46 @@ h3 {
 }
 
 .field-label {
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: var(--ink-2);
+  font-size: 0.875rem;
 }
 
-/* A checkbox stands under its label like a dropdown, lifted to sit level with the row of them. */
-.field.checkbox input[type='checkbox'] {
-  width: 1.1rem;
-  height: 1.1rem;
-  margin: 0 0 0.4rem;
-  align-self: flex-start;
+/* Labels read in sentence case whatever case the code writes them in. */
+.field-label::first-letter,
+.atis-rows dt::first-letter,
+.strip-full-route-label::first-letter {
+  text-transform: uppercase;
 }
 
 select {
   max-width: 100%;
   padding: 0.3rem 0.4rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 4px;
-  background: var(--panel);
+  background: var(--control);
   color: inherit;
   font: inherit;
 }
 
 select:disabled {
-  background: #eceff3;
-  color: var(--muted);
+  background: var(--ground);
+  color: var(--ink-2);
 }
 
 input[type='text'],
 textarea {
   padding: 0.3rem 0.4rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-line);
   border-radius: 4px;
-  background: var(--panel);
+  background: var(--control);
   color: inherit;
   font: inherit;
 }
 
 input[type='text']:disabled,
 textarea:disabled {
-  background: #eceff3;
-  color: var(--muted);
+  background: var(--ground);
+  color: var(--ink-2);
 }
 
 .field input[type='text'] {
@@ -126,63 +360,66 @@ textarea:disabled {
 }
 
 button.primary {
-  padding: 0.45rem 0.9rem;
-  border: 0;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
   background: var(--accent);
-  color: #ffffff;
+  color: var(--accent-ink);
   font: inherit;
+  font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 button.primary:disabled {
-  background: #a9b2c0;
+  border-color: var(--control-line);
+  background: var(--control-line);
+  color: var(--ink-2);
   cursor: not-allowed;
-}
-
-.share {
-  display: flex;
-  gap: 0.5rem;
-  align-items: baseline;
-  margin: 0.6rem 0 0;
-}
-
-.share-label {
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.share a {
-  min-width: 0;
-  color: var(--accent);
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
-  overflow-wrap: anywhere;
-}
-
-.layout {
-  display: grid;
-  /* The strip column is as wide as the paper wants (535 px plus the panel's padding), so a desktop
-     draws the strip at full size; the ATIS takes the rest. */
-  grid-template-columns: minmax(16rem, max-content) 1fr;
-  gap: 1rem;
-  align-items: start;
 }
 
 .panel {
   padding: 0.9rem 1rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--rule);
   border-radius: 6px;
-  background: var(--panel);
+  background: var(--surface);
 }
 
-/* The strip stays in view while the form below it is filled in. */
+/* The strip stays in view, under the toolbar, while the form below it is filled in. */
 .panel.strip {
   position: sticky;
-  top: 0;
+  top: var(--bar-h);
   z-index: 2;
   grid-column: 1;
+}
+
+.strip-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin: 0 0 0.6rem;
+}
+
+.strip-head h2 {
+  margin: 0;
+}
+
+.copy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  min-width: 0;
+}
+
+.copy-status {
+  color: var(--ok);
+  font-size: 0.875rem;
+}
+
+.copy-link input[readonly] {
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
 .panel.atis {
@@ -205,10 +442,8 @@ button.primary:disabled {
 }
 
 .atis-rows dt {
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: var(--ink-2);
+  font-size: 0.875rem;
 }
 
 .atis-rows dd {
@@ -219,7 +454,7 @@ button.primary:disabled {
 /*
  * The flight plan is printed as paper: a 535 px strip inside its 1 px border, scaled down to
  * whatever width the panel has by the ResizeObserver in strip.ts, which also gives this wrapper
- * the scaled height. Cream cells and black ink are the paper's own, not the theme's.
+ * the scaled height. The paper tokens stay paper in dark mode.
  */
 .strip-paper {
   height: 76px;
@@ -231,10 +466,10 @@ button.primary:disabled {
   width: 535px;
   grid-template-columns: 118px 46px 90px 1fr 32px 32px 33px;
   grid-template-rows: 28px 23px 23px;
-  border: 1px solid #bfbbae;
-  background: #eeebe0;
-  color: #111111;
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  border: 1px solid var(--paper-line);
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 700;
   line-height: 1.2;
@@ -246,7 +481,7 @@ button.primary:disabled {
   align-items: center;
   overflow: hidden;
   padding: 0 4px;
-  border-right: 1px solid #bfbbae;
+  border-right: 1px solid var(--paper-line);
 }
 
 .strip-grid > .c1 {
@@ -286,7 +521,7 @@ button.primary:disabled {
 }
 
 .strip-ruled {
-  border-bottom: 1px solid #bfbbae;
+  border-bottom: 1px solid var(--paper-line);
 }
 
 .strip-last {
@@ -344,14 +579,12 @@ button.primary:disabled {
 
 .strip-full-route-label {
   flex: 0 0 auto;
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  color: var(--ink-2);
+  font-size: 0.875rem;
 }
 
 .strip-full-route-text {
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.8rem;
   font-weight: 700;
   overflow-wrap: anywhere;
@@ -368,14 +601,14 @@ button.primary:disabled {
 
 .notice-id {
   margin-right: 0.4rem;
-  color: var(--muted);
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
   font-size: 0.8rem;
 }
 
 .notice-none {
   margin: 0.7rem 0 0;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 .craft-group {
@@ -384,7 +617,7 @@ button.primary:disabled {
   gap: 0.75rem;
   align-items: flex-end;
   padding: 0.6rem 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--rule);
 }
 
 .craft-group h3 {
@@ -395,8 +628,8 @@ button.primary:disabled {
 .craft-given {
   padding: 0.3rem 0.4rem;
   border-radius: 4px;
-  background: #eceff3;
-  color: var(--muted);
+  background: var(--ground);
+  color: var(--ink-2);
   overflow-wrap: anywhere;
 }
 
@@ -435,7 +668,7 @@ button.primary:disabled {
   align-items: end;
   row-gap: 0.75rem;
   padding: 0.6rem 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--rule);
 }
 
 .amend-box h3 {
@@ -449,9 +682,9 @@ button.primary:disabled {
 .amend-filed {
   padding: 0.3rem 0.4rem;
   border-radius: 4px;
-  background: #eceff3;
-  color: var(--muted);
-  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  background: var(--ground);
+  color: var(--ink-2);
+  font-family: var(--font-mono);
   overflow-wrap: anywhere;
 }
 
@@ -461,14 +694,14 @@ button.primary:disabled {
 
 .score {
   margin: 0 0 0.8rem;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 .verdict {
   margin: 0.6rem 0;
   padding: 0.5rem 0.8rem;
-  border-left: 4px solid var(--line);
-  background: #fbfcfd;
+  border-left: 4px solid var(--rule);
+  background: var(--surface);
 }
 
 .verdict.correct {
@@ -480,7 +713,7 @@ button.primary:disabled {
 }
 
 .verdict.acceptable {
-  border-left-color: var(--warn);
+  border-left-color: var(--long);
 }
 
 .verdict.half {
@@ -494,7 +727,7 @@ button.primary:disabled {
 
 .verdict.acceptable h3,
 .verdict.acceptable .mark {
-  color: var(--warn);
+  color: var(--long);
 }
 
 .verdict.half h3,
@@ -504,7 +737,7 @@ button.primary:disabled {
 
 .verdict .mark {
   margin-left: 0.35rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .verdict.wrong h3 {
@@ -524,7 +757,7 @@ button.primary:disabled {
 }
 
 .verdict .answer .filler {
-  color: var(--muted);
+  color: var(--ink-2);
   text-decoration: underline dotted;
   text-underline-offset: 0.2em;
 }
@@ -549,7 +782,7 @@ button.primary:disabled {
 
 /* The words of the reading the player never said; the row already carries the verdict's colour. */
 .verdict .expected .missed {
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: underline;
   text-decoration-thickness: 2px;
   text-underline-offset: 2px;
@@ -558,14 +791,14 @@ button.primary:disabled {
 .citations {
   margin: 0.4rem 0 0;
   padding-left: 1.1rem;
-  color: var(--muted);
+  color: var(--ink-2);
   font-size: 0.85rem;
 }
 
 .reveal {
   margin-top: 1rem;
   padding-top: 0.8rem;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--rule);
 }
 
 .spoken-head {
@@ -583,7 +816,7 @@ button.primary:disabled {
   margin: 0 0 0.8rem;
   padding: 0.5rem 0.7rem;
   border-radius: 4px;
-  background: #eef2f8;
+  background: var(--accent-soft);
 }
 
 button.icon {
@@ -593,30 +826,30 @@ button.icon {
   width: 1.75rem;
   height: 1.75rem;
   padding: 0;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  border: 1px solid var(--control-line);
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
 }
 
 button.icon:hover {
-  background: #eef2f8;
+  background: var(--accent-soft);
 }
 
 button.icon[aria-pressed='true'] {
   border-color: var(--accent);
   background: var(--accent);
-  color: #ffffff;
+  color: var(--accent-ink);
 }
 
 .muted {
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 .spoiler summary {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 0.6rem;
 }
 
@@ -631,14 +864,72 @@ button.icon[aria-pressed='true'] {
   padding-left: 1.1rem;
 }
 
-@media (max-width: 700px) {
-  body {
-    padding: 1rem;
+/* The phone toolbar: two rows, the strip's controls and New strip above, how to answer below. */
+@media (max-width: 899.98px) {
+  :root {
+    --bar-h: 100px;
   }
 
+  .toolbar {
+    flex-wrap: wrap;
+    align-content: center;
+    column-gap: 6px;
+    row-gap: var(--s2);
+    padding: 6px var(--s4);
+    font-size: 0.9375rem;
+  }
+
+  .toolbar .brand {
+    display: none;
+  }
+
+  .toolbar > button.primary {
+    order: 1;
+  }
+
+  .toolbar-spacer {
+    min-width: 0;
+  }
+
+  .toolbar-row2 {
+    order: 2;
+    display: flex;
+    gap: var(--s2);
+    width: 100%;
+  }
+
+  .toolbar-row2 .segmented {
+    flex: 1;
+  }
+
+  .toolbar-row2 .segmented button {
+    flex: 1;
+    padding: 5px 8px;
+  }
+
+  .toolbar select,
+  .segmented button,
+  .filters > summary,
+  .toolbar button.primary {
+    padding: 5px 9px;
+  }
+
+  /* On a phone the popover spans the screen under the toolbar rather than hanging off its button. */
+  .filters-popover {
+    position: fixed;
+    top: var(--bar-h);
+    right: var(--s4);
+    left: var(--s4);
+    width: auto;
+    max-width: none;
+  }
+}
+
+@media (max-width: 700px) {
   .layout {
     /* minmax(0, …) so a panel's widest dropdown cannot grow the column past the viewport. */
     grid-template-columns: minmax(0, 1fr);
+    padding: 1rem;
   }
 
   .panel.strip,

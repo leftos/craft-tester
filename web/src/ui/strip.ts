@@ -1,5 +1,5 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
-import { el } from '@/ui/dom.ts';
+import { el, iconButton } from '@/ui/dom.ts';
 
 /** The printed width of the paper strip, without its border. */
 const STRIP_WIDTH = 535;
@@ -17,7 +17,99 @@ const ROUTE_CELL_WIDTH = STRIP_WIDTH - (118 + 46 + 90 + 32 + 32 + 33);
 const ROUTE_CELL_PADDING = 6;
 
 /** The font the route is printed in, which is what its wrapping is measured against. */
-const ROUTE_FONT = "bold 12px ui-monospace, 'Cascadia Mono', Consolas, monospace";
+const ROUTE_FONT = "bold 12px 'Atkinson Hyperlegible Mono', ui-monospace, monospace";
+
+/**
+ * Loads the font the route is printed in before the first strip measures it.
+ *
+ * The route's wrapping is measured once per page, on a canvas, which draws in a fallback font while
+ * the web font is still loading; waiting for it first keeps the measured lines the printed ones. A
+ * font that fails to load leaves the fallback in place, which is what both the paper and the
+ * measure then use.
+ *
+ * @returns Nothing, once the font has loaded or failed to.
+ */
+export async function loadStripFont(): Promise<void> {
+  if (typeof document === 'undefined' || typeof document.fonts === 'undefined') return;
+  try {
+    await document.fonts.load(ROUTE_FONT);
+  } catch (error: unknown) {
+    console.warn('The strip font did not load; the route is measured in the fallback font.', error);
+  }
+}
+
+/** The link icon of the copy-link button, in a 24 by 24 box. */
+const LINK_ICON =
+  'M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z';
+
+/** How long the copy-link button says "Copied" for, in milliseconds. */
+const COPIED_FOR_MS = 2000;
+
+/**
+ * Shows a link the clipboard would not take in a read-only box, selected, so it can be copied by hand.
+ *
+ * @param holder The copy-link control the box goes into, replacing any box shown before.
+ * @param link The link to show.
+ */
+function showLinkBox(holder: HTMLElement, link: string): void {
+  const box = el('input');
+  box.type = 'text';
+  box.readOnly = true;
+  box.value = link;
+  box.setAttribute('aria-label', 'Link to this strip');
+  holder.querySelector('input')?.remove();
+  holder.append(box);
+  box.focus();
+  box.select();
+}
+
+/**
+ * Builds the icon button that copies the link to the strip on screen.
+ *
+ * A copy that lands says "Copied" beside the button for a moment; one the browser refuses, or a
+ * browser with no clipboard, shows the link in a read-only box, selected, instead.
+ *
+ * @param link The link that reopens this strip.
+ * @returns The button, with the status beside it.
+ */
+function copyLinkControl(link: string): HTMLElement {
+  const holder = el('span', 'copy-link');
+  const status = el('span', 'copy-status');
+  status.setAttribute('role', 'status');
+  const copy = async (): Promise<void> => {
+    try {
+      await navigator.clipboard.writeText(link);
+      status.textContent = 'Copied';
+      setTimeout(() => {
+        status.textContent = '';
+      }, COPIED_FOR_MS);
+    } catch (error: unknown) {
+      console.warn('The clipboard refused the strip link; showing it to copy by hand.', error);
+      showLinkBox(holder, link);
+    }
+  };
+  holder.append(
+    iconButton('Copy link to this strip', '', LINK_ICON, () => {
+      void copy();
+    }),
+    status,
+  );
+  return holder;
+}
+
+/**
+ * Puts the copy-link button beside a strip panel's heading.
+ *
+ * @param panel A panel `renderStrip` built.
+ * @param link The link that reopens the strip on screen.
+ * @returns Nothing; the button is added to the panel's heading row.
+ * @throws Error When the panel is not one `renderStrip` built.
+ */
+export function addCopyLink(panel: HTMLElement, link: string): void {
+  const head = panel.querySelector('.strip-head');
+  if (head === null) throw new Error('the strip panel has no heading row');
+  head.append(copyLinkControl(link));
+}
 
 /** The width of one route character where no canvas can measure it, as under a test runner. */
 const FALLBACK_CHAR_WIDTH = 7.2;
@@ -378,7 +470,9 @@ export function renderStrip(
   const fields = stripFields(scenario, airport, seed, marks);
   const grid = stripGrid(fields);
   paper.append(grid);
-  panel.append(el('h2', '', heading), paper);
+  const head = el('div', 'strip-head');
+  head.append(el('h2', '', heading));
+  panel.append(head, paper);
   if (fields.fullRoute !== undefined) panel.append(fullRouteLine(fields.fullRoute));
   scaleToFit(paper, grid);
   return panel;

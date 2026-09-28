@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InputKind, Mode, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { procedureOf } from '@/ui/amendPanels.ts';
@@ -9,7 +9,7 @@ import { headingPick } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
 import { buildScenario, clearedPlan, loadAirportData, spokenFor } from '@/ui/session.ts';
-import { picksProcedure } from '@/ui/state.ts';
+import { picksProcedure, shareLink } from '@/ui/state.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
@@ -79,17 +79,28 @@ function submitOf(root: ParentNode, panel: string): HTMLButtonElement {
   return node;
 }
 
-/** The checkbox of the header control that reads one label. */
-function checkbox(root: ParentNode, label: string): HTMLInputElement {
-  const node = field(root, label).querySelector('input[type="checkbox"]');
-  if (!(node instanceof HTMLInputElement)) throw new Error(`the page has no ${label} checkbox`);
-  return node;
+/** A segmented control of the toolbar, found by the name a screen reader reads it by. */
+function segmentGroup(root: ParentNode, group: string): HTMLElement {
+  const found = [...root.querySelectorAll('[role="radiogroup"]')].find(
+    (node) => node.getAttribute('aria-label') === group,
+  );
+  if (!(found instanceof HTMLElement)) throw new Error(`the page has no ${group} switch`);
+  return found;
 }
 
-/** Ticks or unticks a checkbox, the way the browser reports the change the student made. */
-function tick(node: HTMLInputElement, checked: boolean): void {
-  node.checked = checked;
-  node.dispatchEvent(new Event('change'));
+/** One option of a segmented control of the toolbar, found by its group and the word on it. */
+function segment(root: ParentNode, group: string, option: string): HTMLButtonElement {
+  const found = [...segmentGroup(root, group).querySelectorAll('button[role="radio"]')].find(
+    (node) => node.textContent === option,
+  );
+  if (!(found instanceof HTMLButtonElement)) throw new Error(`${group} offers no ${option}`);
+  return found;
+}
+
+/** The word on the option a segmented control of the toolbar has chosen. */
+function chosen(root: ParentNode, group: string): string {
+  const node = segmentGroup(root, group).querySelector('[aria-checked="true"]');
+  return node?.textContent ?? '';
 }
 
 /** Picks one choice of a dropdown, the way the browser reports a choice the student made. */
@@ -202,6 +213,10 @@ describe('the mounted page', () => {
     globalThis.localStorage.clear();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('keeps the text box the student is typing in', async () => {
     const root = await mountApp(AMENDMENT_SEED, 'amendment', 'dropdowns');
     choose(answerOf(root, 'route'), 'amended');
@@ -264,7 +279,7 @@ describe('the mounted page', () => {
     expect(seedPart).toBeDefined();
     expect(globalThis.location.hash).not.toContain('i=text');
 
-    choose(selectOf(field(root, 'answer')), 'text');
+    segment(root, 'Answer by', 'Type').click();
 
     expect(seedPartOf(globalThis.location.hash)).toBe(seedPart);
     expect(globalThis.location.hash).toContain('i=text');
@@ -289,7 +304,7 @@ describe('the mounted page', () => {
     const reading = root.querySelector('.panel.results .reveal .spoken')?.textContent ?? '';
     expect(reading.length).toBeGreaterThan(0);
 
-    buttonNamed(root, 'Retry').click();
+    buttonNamed(root, 'Try this strip again').click();
     typeInto(clearanceBox(root), reading);
     pressEnter(clearanceBox(root));
 
@@ -297,62 +312,158 @@ describe('the mounted page', () => {
     expect(score.startsWith('8 of 8 elements correct')).toBe(true);
   });
 
-  it('ticks full route, switches to typing and remembers it', async () => {
+  it('switches to Full route, answering by typing, and remembers it', async () => {
     const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
     expect(globalThis.location.hash).not.toContain('r=full');
-    expect(checkbox(root, 'full route').checked).toBe(false);
+    expect(chosen(root, 'Answer by')).toBe('Pick');
 
-    tick(checkbox(root, 'full route'), true);
+    segment(root, 'Answer by', 'Full route').click();
 
     expect(globalThis.location.hash).toContain('i=text&r=full');
-    const answer = selectOf(field(root, 'answer'));
-    expect(answer.value).toBe('text');
-    expect(answer.selectedOptions[0]?.textContent).toBe('Typed');
-    expect(checkbox(root, 'full route').checked).toBe(true);
+    expect(chosen(root, 'Answer by')).toBe('Full route');
     expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
     expect(globalThis.localStorage.getItem('craft-tester:full-route')).toBe('true');
     expect(globalThis.localStorage.getItem('craft-tester:input')).toBe('"text"');
   });
 
-  it('unticks full route when the answer goes back to the dropdowns', async () => {
+  it('lets go of the full route when the answer goes back to Pick', async () => {
     const root = await mountSession(CLEARANCE_SEED, {
       filter: ANY_SCENARIO,
       mode: 'clearance',
       input: 'text',
       fullRoute: true,
     });
-    expect(checkbox(root, 'full route').checked).toBe(true);
+    expect(chosen(root, 'Answer by')).toBe('Full route');
 
-    choose(selectOf(field(root, 'answer')), 'dropdowns');
+    segment(root, 'Answer by', 'Pick').click();
 
     expect(globalThis.location.hash).not.toContain('r=full');
     expect(globalThis.location.hash).not.toContain('i=text');
-    expect(checkbox(root, 'full route').checked).toBe(false);
+    expect(chosen(root, 'Answer by')).toBe('Pick');
     expect(root.querySelector('.panel.craft')).not.toBeNull();
     expect(globalThis.localStorage.getItem('craft-tester:full-route')).toBe('false');
+    expect(globalThis.localStorage.getItem('craft-tester:input')).toBe('"dropdowns"');
   });
 
-  it('opens typed with full route ticked from a link that carries r=full', async () => {
+  it('keeps what was typed when Full route goes back to Type', async () => {
+    const root = await mountSession(CLEARANCE_SEED, {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: true,
+    });
+    typeInto(clearanceBox(root), 'cleared to');
+
+    segment(root, 'Answer by', 'Type').click();
+
+    expect(chosen(root, 'Answer by')).toBe('Type');
+    expect(globalThis.location.hash).toContain('i=text');
+    expect(globalThis.location.hash).not.toContain('r=full');
+    expect(clearanceBox(root).value).toBe('cleared to');
+    expect(globalThis.localStorage.getItem('craft-tester:full-route')).toBe('false');
+    expect(globalThis.localStorage.getItem('craft-tester:input')).toBe('"text"');
+  });
+
+  it('moves the answer with the arrow keys and keeps the focus on the switch', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    segment(root, 'Answer by', 'Pick').focus();
+
+    segment(root, 'Answer by', 'Pick').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }),
+    );
+
+    expect(chosen(root, 'Answer by')).toBe('Type');
+    expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
+    expect(document.activeElement).toBe(segment(root, 'Answer by', 'Type'));
+  });
+
+  it('opens on Full route, typed, from a link that carries r=full', async () => {
     const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO&r=full`);
 
-    expect(checkbox(root, 'full route').checked).toBe(true);
-    expect(selectOf(field(root, 'answer')).value).toBe('text');
+    expect(chosen(root, 'Answer by')).toBe('Full route');
     expect(clearanceBox(root)).toBeInstanceOf(HTMLTextAreaElement);
     expect(globalThis.location.hash).toContain('i=text&r=full');
   });
 
-  it('shows FRC on the strip while full route is ticked', async () => {
+  it('shows FRC on the strip while the answer is Full route', async () => {
     const root = await mountApp(CLEARANCE_SEED, 'clearance', 'text');
     expect(remarksOf(stripTitled(root, 'Flight plan'))).not.toContain('FRC');
 
-    tick(checkbox(root, 'full route'), true);
+    segment(root, 'Answer by', 'Full route').click();
     expect(remarksOf(stripTitled(root, 'Flight plan')).startsWith('FRC')).toBe(true);
 
-    choose(selectOf(field(root, 'answer')), 'dropdowns');
+    segment(root, 'Answer by', 'Pick').click();
     expect(remarksOf(stripTitled(root, 'Flight plan'))).not.toContain('FRC');
   });
 
-  it('shows FRC on every strip of an amendment while full route is ticked', async () => {
+  it('counts the filters set on the Filters button', async () => {
+    const plain = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    expect(plain.querySelector('details.filters summary')?.textContent).toBe('Filters');
+    expect(plain.querySelector('details.filters .count')).toBeNull();
+
+    const night = { time: 'night', config: { kind: 'any' } } as const;
+    const one = await mountSession(CLEARANCE_SEED, {
+      filter: night,
+      mode: 'clearance',
+      input: 'dropdowns',
+      fullRoute: false,
+    });
+    expect(one.querySelector('details.filters .count')?.textContent).toBe('1');
+
+    const both = await mountSession(CLEARANCE_SEED, {
+      filter: { time: 'day', config: { kind: 'plan', plan: 'West' } },
+      mode: 'clearance',
+      input: 'dropdowns',
+      fullRoute: false,
+    });
+    expect(both.querySelector('details.filters .count')?.textContent).toBe('2');
+    expect(both.querySelector('details.filters .filters-popover select')).not.toBeNull();
+  });
+
+  it('copies the link to the strip on screen', async () => {
+    const writeText = vi.spyOn(globalThis.navigator.clipboard, 'writeText').mockResolvedValue();
+    const settings = {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'dropdowns',
+      fullRoute: false,
+    } as const;
+    const root = await mountSession(CLEARANCE_SEED, settings);
+    const expected = shareLink(globalThis.location.href, 'KSFO', CLEARANCE_SEED, settings);
+
+    const copy = root.querySelector(
+      'section.panel.strip button[aria-label="Copy link to this strip"]',
+    );
+    if (!(copy instanceof HTMLButtonElement)) throw new Error('the strip has no copy-link button');
+    copy.click();
+
+    await vi.waitFor(() => {
+      expect(root.querySelector('.copy-status')?.textContent).toBe('Copied');
+    });
+    expect(writeText).toHaveBeenCalledWith(expected);
+    expect(stripTitled(root, 'Flight plan')).toBeInstanceOf(HTMLElement);
+  });
+
+  it('shows the link to copy by hand where the clipboard refuses it', async () => {
+    vi.spyOn(globalThis.navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    const expected = shareLink(globalThis.location.href, 'KSFO', CLEARANCE_SEED, {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'dropdowns',
+      fullRoute: false,
+    });
+
+    root.querySelector<HTMLButtonElement>('button[aria-label="Copy link to this strip"]')?.click();
+
+    await vi.waitFor(() => {
+      expect(root.querySelector<HTMLInputElement>('.copy-link input')?.value).toBe(expected);
+    });
+    expect(root.querySelector<HTMLInputElement>('.copy-link input')?.readOnly).toBe(true);
+  });
+
+  it('shows FRC on every strip of an amendment while the answer is Full route', async () => {
     const root = await mountSession(AMENDMENT_SEED, {
       filter: ANY_SCENARIO,
       mode: 'amendment',
@@ -367,7 +478,7 @@ describe('the mounted page', () => {
     expect(remarksOf(stripTitled(root, 'Amended flight plan')).startsWith('FRC')).toBe(true);
   });
 
-  it('grades the abbreviated reading wrong once full route is ticked', async () => {
+  it('grades the abbreviated reading wrong on Full route', async () => {
     const { seed, abbreviated } = await twoWaySeed();
     const root = await mountSession(seed, {
       filter: ANY_SCENARIO,
@@ -384,11 +495,11 @@ describe('the mounted page', () => {
     expect(results).toContain('R-FRC');
   });
 
-  it('grades a typed amendment against the full route once full route is ticked', async () => {
+  it('grades a typed amendment against the full route on Full route', async () => {
     const { seed, abbreviated } = await twoWayAmendment();
     const root = await mountApp(seed, 'amendment', 'text');
 
-    tick(checkbox(root, 'full route'), true);
+    segment(root, 'Answer by', 'Full route').click();
     clearTheStrip(root);
     typeInto(clearanceBox(root), abbreviated);
     pressEnter(clearanceBox(root));
@@ -398,23 +509,22 @@ describe('the mounted page', () => {
     expect(results).toContain('R-FRC');
   });
 
-  it('opens a typed link unticked even where this browser remembers full route', async () => {
+  it('opens a typed link on Type even where this browser remembers full route', async () => {
     globalThis.localStorage.setItem('craft-tester:full-route', 'true');
 
     const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO&i=text`);
 
-    expect(checkbox(root, 'full route').checked).toBe(false);
+    expect(chosen(root, 'Answer by')).toBe('Type');
     expect(globalThis.location.hash).not.toContain('r=full');
   });
 
-  it('opens a bare link ticked where this browser remembers typed answers and full route', async () => {
+  it('opens a bare link on Full route where this browser remembers typed answers and full route', async () => {
     globalThis.localStorage.setItem('craft-tester:input', '"text"');
     globalThis.localStorage.setItem('craft-tester:full-route', 'true');
 
     const root = await mountHash(`#s=${CLEARANCE_SEED}&a=KSFO`);
 
-    expect(checkbox(root, 'full route').checked).toBe(true);
-    expect(selectOf(field(root, 'answer')).value).toBe('text');
+    expect(chosen(root, 'Answer by')).toBe('Full route');
     expect(globalThis.location.hash).toContain('r=full');
   });
 

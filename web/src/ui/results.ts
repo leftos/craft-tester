@@ -405,8 +405,8 @@ function resultsBody(props: ResultsProps): HTMLElement[] {
 function actionRow(props: ResultsProps): HTMLElement {
   const row = el('div', 'actions');
   row.append(
-    button('Retry', 'primary', props.onRetry),
-    button('Next scenario', 'primary', props.onNext),
+    button('Try this strip again', 'primary', props.onRetry),
+    button('Next strip', 'primary', props.onNext),
   );
   return row;
 }

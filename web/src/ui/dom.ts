@@ -117,33 +117,76 @@ export function syncSelect(
   node.disabled = disabled;
 }
 
-/** Everything one labelled checkbox needs to render: the label, its state, and its tooltip. */
-export type CheckboxSpec = { label: string; checked: boolean; title: string };
+/** One choice of a segmented control: the value it reads back, the word on it, and its tooltip. */
+export type SegmentOption = { value: string; label: string; title: string };
+
+/** Everything one segmented control needs to render: its name, its choices, and the one chosen. */
+export type SegmentSpec = { label: string; options: readonly SegmentOption[]; value: string };
+
+/** The step an arrow key moves the choice of a segmented control by, or 0 for any other key. */
+function arrowStep(key: string): number {
+  if (key === 'ArrowRight' || key === 'ArrowDown') return 1;
+  if (key === 'ArrowLeft' || key === 'ArrowUp') return -1;
+  return 0;
+}
 
 /**
- * Builds one labelled checkbox, which sits in a row of dropdowns like one of them.
+ * Builds a segmented control: a row of buttons of which exactly one is pressed, read by a screen
+ * reader as a radio group under the label.
  *
- * The box is inside its label, so the words above it are what a screen reader reads it as, and the
- * title says what ticking it does, which the label alone has no room for.
+ * Only the pressed button is in the tab order; the arrow keys move the choice to the next or the
+ * previous button, wrapping at the ends, and focus it. Each button carries a `data-focus-key` of
+ * the label and its value, so a page drawn again after the change can put the focus back on it.
+ * Pressing the button already chosen changes nothing and calls nothing.
  *
- * @param spec The label, whether the box is ticked, and the tooltip.
- * @param onChange Called with the state the box reads back after every change.
- * @returns The label element, with the checkbox inside it.
+ * @param spec The group's accessible name, its choices in order, and the value chosen.
+ * @param onChange Called with the value of the button newly chosen.
+ * @returns The radio group, with its buttons inside it.
  */
-export function checkboxControl(
-  spec: CheckboxSpec,
-  onChange: (checked: boolean) => void,
-): HTMLLabelElement {
-  const field = el('label', 'field checkbox');
-  field.title = spec.title;
-  const box = el('input');
-  box.type = 'checkbox';
-  box.checked = spec.checked;
-  box.addEventListener('change', () => {
-    onChange(box.checked);
+export function segmentedControl(
+  spec: SegmentSpec,
+  onChange: (value: string) => void,
+): HTMLDivElement {
+  const group = el('div', 'segmented');
+  group.setAttribute('role', 'radiogroup');
+  group.setAttribute('aria-label', spec.label);
+  const radios = spec.options.map((option) => {
+    const node = el('button', '', option.label);
+    node.type = 'button';
+    node.setAttribute('role', 'radio');
+    node.setAttribute('data-focus-key', `${spec.label}:${option.value}`);
+    if (option.title.length > 0) node.title = option.title;
+    return { node, value: option.value };
   });
-  field.append(el('span', 'field-label', spec.label), box);
-  return field;
+  const check = (value: string): void => {
+    for (const radio of radios) {
+      const chosen = radio.value === value;
+      radio.node.setAttribute('aria-checked', String(chosen));
+      radio.node.tabIndex = chosen ? 0 : -1;
+    }
+  };
+  const choose = (radio: { node: HTMLButtonElement; value: string }): void => {
+    if (radio.node.getAttribute('aria-checked') === 'true') return;
+    check(radio.value);
+    radio.node.focus();
+    onChange(radio.value);
+  };
+  check(spec.value);
+  for (const radio of radios) {
+    radio.node.addEventListener('click', () => {
+      choose(radio);
+    });
+  }
+  group.addEventListener('keydown', (event) => {
+    const step = arrowStep(event.key);
+    if (step === 0 || radios.length === 0) return;
+    event.preventDefault();
+    const current = radios.findIndex((radio) => radio.node.getAttribute('aria-checked') === 'true');
+    const next = radios[(current + step + radios.length) % radios.length];
+    if (next !== undefined) choose(next);
+  });
+  group.append(...radios.map((radio) => radio.node));
+  return group;
 }
 
 /** Everything one labelled text box needs to render. */
