@@ -48,8 +48,19 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
     because the Portland LOA never allowed it, and nothing filed reaches MACHU. Needs a ruling, not a
     proposal
 
+## Wave 4 — Page redesign, test sets and what-if variants (`web/src/ui/`, `web/src/styles.css`, `scenario/filter.ts`, `scenario/amend.ts`)
+
+Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser check. From a ZOA instructor's playtest feedback.
+
+- [ ] **Redesign the page to be more functional, before test sets and variants** (user steer, via the `frontend-design` skill). All four complaints stand: too much scrolling (put the strip and ATIS beside the form on desktop), controls hard to find (one toolbar for airport, mode, input, full route and filters, where Test and What-if will also live), results hard to read (make what was wrong and why scannable), and an unpolished look. Test sets and variants slot into the new layout
+- [ ] **Test sets**: N strips on a clock, grades hidden until the set ends, then one summary; linkable through `x=` in the hash
+- [ ] **What-if variants**: after results, "as a prop", "as /G" and similar variants re-open the strip with that one change in amendment mode; linkable through `v=`
+
 ## Singles
 
+- [ ] **Either parallel on the KSFO 28s**: where the SOP leaves the parallel to the parking spot (jets in 28 RT and 28 SO), 28L and 28R both grade correct under a new `RWY-PARKING` row; correct `RWY-DIRECTION`, which claims the 28s are split. Needs a schema flag on `direction_runway_preference`
+- [ ] **Graded procedure dropdown for no-DP plans in clearance mode**: when the SOP sends the flight off on a heading, clearance-mode dropdowns show `procedureGroup` and grade R.sid (`ui/craftForm.ts`, `rules/grade.ts`); SID plans keep the fixed row
+- [ ] **Number grading report awaiting a repro**: an instructor saw "120.9" marked wrong in full-route typing, but figures already grade correct (`normalise.test.ts`). Waiting on the strip link
 - [ ] **Scheduled workflow that re-runs the generator each AIRAC cycle and opens a PR.** Nothing scheduled
   exists (`.github/workflows/` holds `ci.yml` and `pages.yml` only); the cycle math is in
   `cifp/cycle.py`. Mapped 2026-09-18: `build` fetches everything it needs through the cache and takes one
