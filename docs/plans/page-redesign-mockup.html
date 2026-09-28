@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRAFT Trainer Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #e8ecf0;
+  --surface: #ffffff;
+  --rail: #dfe4ea;
+  --ink: #16202b;
+  --ink-2: #566371;
+  --rule: #cbd3dc;
+  --control: #ffffff;
+  --control-line: #b9c3ce;
+  --accent: #1d5ea8;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3edf8;
+  --holder: #2b3642;
+  --paper: #eeebe0;
+  --paper-line: #bfbbae;
+  --paper-ink: #111111;
+  --ok: #1a7440;
+  --ok-soft: #e4f2e9;
+  --bad: #b3261e;
+  --bad-soft: #fbe9e7;
+  --long: #8a5300;
+  --long-soft: #fbf0dc;
+  --half: #6a4ea6;
+  --focus: #1d5ea8;
+  --font: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
+  --mono: 'Atkinson Hyperlegible Mono', ui-monospace, Consolas, monospace;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --bar-h: 56px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #131a21; --surface: #1b242d; --rail: #18212a; --ink: #e2e8ee; --ink-2: #9ba7b3;
+    --rule: #2d3945; --control: #202b36; --control-line: #3a4856; --accent: #7fb0ea; --accent-ink: #0d1a28;
+    --accent-soft: #1f3148; --holder: #0b1117; --paper: #e3dfd0; --ok: #62cc8e; --ok-soft: #173424;
+    --bad: #ff8a80; --bad-soft: #3a1d1b; --long: #f0b35a; --long-soft: #372a14; --half: #b9a3f0; --focus: #7fb0ea;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #131a21; --surface: #1b242d; --rail: #18212a; --ink: #e2e8ee; --ink-2: #9ba7b3;
+  --rule: #2d3945; --control: #202b36; --control-line: #3a4856; --accent: #7fb0ea; --accent-ink: #0d1a28;
+  --accent-soft: #1f3148; --holder: #0b1117; --paper: #e3dfd0; --ok: #62cc8e; --ok-soft: #173424;
+  --bad: #ff8a80; --bad-soft: #3a1d1b; --long: #f0b35a; --long-soft: #372a14; --half: #b9a3f0; --focus: #7fb0ea;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 16px/1.5 var(--font); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; font-weight: 700; }
+h2 { font-size: 1.125rem; }
+h3 { font-size: 1rem; }
+
+/* ---------- toolbar ---------- */
+.bar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; gap: var(--s3);
+  height: var(--bar-h); padding: var(--s2) var(--s5);
+  background: var(--surface); border-bottom: 1px solid var(--rule);
+}
+.bar .row2 { display: contents; }
+.phone-link { display: none; }
+.brand { font-size: 1rem; white-space: nowrap; margin-right: var(--s2); }
+.brand small { color: var(--ink-2); font-weight: 400; }
+.bar .spacer { flex: 1; }
+.seg { display: inline-flex; border: 1px solid var(--control-line); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; background: var(--control); padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+.seg button + button { border-left: 1px solid var(--control-line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.pick { border: 1px solid var(--control-line); border-radius: 6px; background: var(--control); padding: 6px 10px; }
+.toggle { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+.btn { border: 1px solid var(--control-line); border-radius: 6px; background: var(--control); padding: 6px 14px; cursor: pointer; white-space: nowrap; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn .count { display: inline-block; min-width: 1.4em; margin-left: 4px; padding: 0 5px; border-radius: 999px; background: var(--accent-soft); font-size: 0.8rem; }
+.btn.icon { padding: 6px 9px; line-height: 0; }
+.btn.icon svg { width: 18px; height: 18px; fill: currentColor; }
+
+/* ---------- test bar (replaces the toolbar while a test runs) ---------- */
+.testbar { display: none; }
+.state-test .bar { display: none; }
+.state-test .testbar {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: var(--s4);
+  min-height: var(--bar-h); padding: var(--s2) var(--s5); background: var(--holder); color: #e8edf2;
+}
+.testbar .clock { font: 700 1.5rem/1 var(--mono); font-variant-numeric: tabular-nums; }
+.testbar .dots { display: flex; gap: 4px; }
+.testbar .dots i { width: 10px; height: 10px; border-radius: 2px; background: #5b6875; }
+.testbar .dots i.done { background: #e8edf2; }
+.testbar .dots i.now { outline: 2px solid #e8edf2; outline-offset: 1px; background: transparent; }
+.testbar .btn { background: transparent; color: inherit; border-color: #5b6875; }
+
+/* ---------- desk: rail + work ---------- */
+.desk {
+  --rail-w: 600px;
+  display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); gap: 0;
+  max-width: 1320px; margin: 0 auto; align-items: start;
+  min-height: calc(100vh - var(--bar-h));
+  background: linear-gradient(90deg, var(--rail) 0 var(--rail-w), var(--rule) var(--rail-w) calc(var(--rail-w) + 1px), transparent 0);
+}
+.rail {
+  position: sticky; top: var(--bar-h); max-height: calc(100vh - var(--bar-h)); overflow: auto;
+  padding: var(--s5);
+}
+.strip-head .btn.icon { margin-left: var(--s2); vertical-align: middle; padding: 4px 6px; }
+.work { padding: var(--s5) var(--s6) var(--s6); min-width: 0; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s3); margin-bottom: var(--s3); }
+.quiet { color: var(--ink-2); font-size: 0.875rem; }
+
+/* strip in its holder */
+.holder { padding: 5px 5px 5px 12px; background: var(--holder); border-radius: 3px; }
+.strip-paper { overflow: hidden; }
+.strip-grid {
+  display: grid; width: 535px; grid-template-columns: 118px 46px 90px 1fr 32px 32px 33px;
+  grid-template-rows: 28px 23px 23px; border: 1px solid var(--paper-line); background: var(--paper);
+  color: var(--paper-ink); font: 700 13px/1.2 var(--mono); transform-origin: top left;
+}
+.strip-grid > div { display: flex; align-items: center; overflow: hidden; padding: 0 4px; border-right: 1px solid var(--paper-line); }
+.strip-grid .route { grid-column: 4; grid-row: 1 / span 3; flex-direction: column; align-items: stretch; justify-content: flex-start; font-size: 12px; line-height: 22px; padding: 2px 6px; }
+.strip-grid .ann { border-bottom: 1px solid var(--paper-line); }
+.strip-grid .ann.r3 { border-bottom: 0; }
+.strip-grid .last { border-right: 0; }
+.rte { margin-top: var(--s2); font: 700 0.875rem/1.4 var(--mono); overflow-wrap: anywhere; }
+.rte span { font-family: var(--font); font-weight: 400; color: var(--ink-2); margin-right: 6px; }
+
+.atis { margin-top: var(--s5); }
+.atis dl { display: grid; grid-template-columns: 7.5rem 1fr; gap: var(--s1) var(--s3); margin: var(--s2) 0 0; }
+.atis dt { color: var(--ink-2); font-size: 0.875rem; padding-top: 2px; }
+.atis dd { margin: 0; }
+.atis .rwys { font: 700 1rem var(--mono); }
+.advisory { margin: var(--s3) 0 0; padding: var(--s2) var(--s3); border-left: 3px solid var(--long); background: var(--surface); font-size: 0.9375rem; }
+.advisory code { font: 700 0.8125rem var(--mono); color: var(--ink-2); display: block; }
+.atis-summary { display: none; }
+
+/* ---------- CRAFT form ---------- */
+.state-results .form-view, .state-form .results-view, .state-test .results-view { display: none; }
+.craft { border-top: 1px solid var(--rule); }
+.craft-row { display: grid; grid-template-columns: 2.25rem 8rem minmax(0, 1fr); align-items: center; gap: var(--s3); padding: 10px 0; border-bottom: 1px solid var(--rule); }
+.letter { font: 700 1.25rem/1 var(--mono); color: var(--accent); text-align: center; }
+.craft-row .name { font-weight: 700; }
+.craft-row .fields { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; }
+.craft-row select { min-width: 9rem; padding: 7px 10px; border: 1px solid var(--control-line); border-radius: 6px; background: var(--control); }
+.craft-row select:disabled { opacity: 0.55; }
+.given { color: var(--ink-2); }
+.given b { color: var(--ink); font-weight: 500; }
+.given em { font-style: normal; font-size: 0.8125rem; margin-left: 6px; padding: 1px 6px; border: 1px solid var(--rule); border-radius: 4px; }
+.submit-row { display: flex; gap: var(--s3); align-items: center; margin-top: var(--s4); }
+
+/* ---------- results ---------- */
+.summary { display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s5); align-items: center; padding-bottom: var(--s4); border-bottom: 1px solid var(--rule); }
+.score { font: 700 2.5rem/1 var(--mono); font-variant-numeric: tabular-nums; }
+.score small { font: 400 1rem var(--font); color: var(--ink-2); margin-left: 6px; }
+.score-sub { color: var(--ink-2); }
+.pills { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pills a { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 4px; text-decoration: none; color: var(--ink); font-size: 0.875rem; border: 1px solid transparent; }
+.pills .ok { background: var(--ok-soft); }
+.pills .bad { background: var(--bad-soft); border-color: var(--bad); font-weight: 700; }
+.pills .long { background: var(--long-soft); }
+.pills b { font-family: var(--mono); }
+
+.onfreq { margin-top: var(--s4); padding: var(--s3) var(--s4); background: var(--accent-soft); border-radius: 6px; }
+.onfreq .head { display: flex; align-items: center; gap: var(--s2); margin-bottom: var(--s1); font-weight: 700; }
+.onfreq p { margin: 0; }
+
+.verdicts { margin: var(--s5) 0 0; padding: 0; list-style: none; }
+.v {
+  display: grid; grid-template-columns: 2.25rem 8rem minmax(0, 1fr) auto; grid-template-areas: "l n s t";
+  gap: 0 var(--s3); padding: 10px var(--s2) 10px 0; border-bottom: 1px solid var(--rule); align-items: baseline;
+}
+.v .letter { grid-area: l; }
+.v > strong { grid-area: n; }
+.v .said { grid-area: s; }
+.v .tag { grid-area: t; }
+.v .tag { font-size: 0.8125rem; font-weight: 700; white-space: nowrap; padding: 1px 8px; border-radius: 4px; }
+.v.ok .tag { color: var(--ok); }
+.v.ok .letter { color: var(--ok); }
+.v.ok .said { color: var(--ink-2); }
+.v.bad { background: linear-gradient(90deg, var(--bad) 0 4px, var(--bad-soft) 4px); padding-left: 0; border-radius: 0 4px 4px 0; border-bottom-color: transparent; margin: var(--s2) 0; padding-top: var(--s3); padding-bottom: var(--s3); }
+.v.bad .letter, .v.bad .tag { color: var(--bad); }
+.v.bad .tag { background: var(--surface); }
+.v.long { background: linear-gradient(90deg, var(--long) 0 4px, var(--long-soft) 4px); border-radius: 0 4px 4px 0; border-bottom-color: transparent; margin: var(--s2) 0; padding-top: var(--s3); padding-bottom: var(--s3); }
+.v.long .letter, .v.long .tag { color: var(--long); }
+.v.long .tag { background: var(--surface); }
+.v .detail { grid-column: 3 / -1; display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: 2px var(--s3); margin-top: var(--s2); }
+.v .detail dt { color: var(--ink-2); font-size: 0.875rem; padding-top: 2px; }
+.v .detail dd { margin: 0; }
+.x { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: var(--bad); }
+.fill { text-decoration: underline dotted; text-underline-offset: 3px; color: var(--ink-2); }
+.miss { font-weight: 700; background: var(--surface); box-shadow: inset 0 -2px 0 var(--bad); padding: 0 2px; }
+.rules { grid-column: 3 / -1; margin-top: var(--s2); font-size: 0.875rem; color: var(--ink-2); }
+.rules summary { cursor: pointer; width: max-content; }
+.rules ul { margin: var(--s1) 0 0; padding-left: 1.1rem; }
+.rules code { font: 700 0.8125rem var(--mono); color: var(--ink); }
+
+.next { display: flex; flex-wrap: wrap; gap: var(--s3); align-items: center; margin-top: var(--s5); padding-top: var(--s4); border-top: 1px solid var(--rule); }
+.whatif { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; margin-top: var(--s4); }
+.whatif span { color: var(--ink-2); margin-right: var(--s1); }
+.chip { border: 1px dashed var(--control-line); background: transparent; border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 0.9375rem; }
+.chip:hover { border-style: solid; border-color: var(--accent); }
+
+/* mockup-only state switch */
+.mock { position: fixed; right: 12px; bottom: 12px; z-index: 20; display: flex; gap: 4px; padding: 4px; background: var(--holder); border-radius: 6px; font-size: 0.75rem; }
+.mock a { color: #e8edf2; padding: 2px 8px; text-decoration: none; border-radius: 4px; }
+.mock a.on { background: #e8edf2; color: #16202b; }
+
+/* ---------- phone ---------- */
+.bar .phone-only { display: none; }
+@media (max-width: 900px) {
+  :root { --bar-h: 100px; }
+  .bar { flex-wrap: wrap; align-content: center; padding: 6px var(--s4); gap: var(--s2); }
+  .brand, .bar .wide-only { display: none; }
+  .bar .phone-only { display: inline-flex; }
+  .bar .spacer { display: block; flex: 1; }
+  .bar > .btn.primary { order: 1; }
+  .bar .row2 { order: 2; display: flex; gap: var(--s2); width: 100%; }
+  .bar .row2 .seg { flex: 1; }
+  .bar .row2 .seg button { flex: 1; padding: 6px 8px; }
+  .bar { font-size: 0.9375rem; column-gap: 6px; }
+  .seg button, .btn, .pick { padding: 5px 9px; }
+  .bar .spacer { min-width: 0; }
+  .phone-link { display: inline-block; }
+  .desk { grid-template-columns: minmax(0, 1fr); background: none; }
+  .rail { position: sticky; top: var(--bar-h); z-index: 5; max-height: none; min-height: 0; overflow: visible; padding: var(--s2); background: var(--rail); border-bottom: 1px solid var(--rule); }
+  .rail .strip-head, .atis { display: none; }
+  .holder { padding: 3px 3px 3px 8px; }
+  .strip-grid .ann { display: none; }
+  .strip-grid { width: 438px; grid-template-columns: 118px 46px 90px 1fr; }
+  .rte { font-size: 0.8125rem; margin-top: 6px; }
+  .atis-summary { display: block; margin-top: 6px; font-size: 0.875rem; }
+  .atis-summary summary { cursor: pointer; }
+  .atis-summary .chips { display: inline-flex; flex-wrap: wrap; gap: 4px 10px; }
+  .work { padding: var(--s4); }
+  .craft-row { grid-template-columns: 1.75rem minmax(0, 1fr); }
+  .craft-row .fields { grid-column: 1 / -1; }
+  .craft-row .given { grid-column: 2 / -1; }
+  .craft-row select { flex: 1 1 8rem; min-width: 0; }
+  .v { grid-template-columns: 1.75rem minmax(0, 1fr) auto; grid-template-areas: "l n t" ". s s"; gap: 2px var(--s2); }
+  .v.bad, .v.long { padding-left: 8px; }
+  .v .detail, .v .rules { grid-column: 2 / -1; }
+  .v .detail { grid-template-columns: minmax(0, 1fr); }
+  .v .detail dt { padding-top: var(--s1); }
+  .score { font-size: 2rem; }
+  .testbar { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body class="state-results">
+
+<header class="bar" aria-label="Session">
+  <h1 class="brand">CRAFT trainer</h1>
+  <select class="pick" aria-label="Airport"><option>KSFO</option><option>KOAK</option></select>
+  <div class="seg" role="group" aria-label="Mode">
+    <button aria-pressed="true">Clearance</button><button aria-pressed="false">Amend</button>
+  </div>
+  <div class="row2">
+    <div class="seg" role="group" aria-label="Answer by">
+      <button aria-pressed="false" title="Pick each element from dropdowns">Pick</button><button aria-pressed="false" title="Type the clearance as spoken">Type</button><button aria-pressed="true" title="Type it, route read in full (FRC)">Full route</button>
+    </div>
+    <button class="btn">Filters<span class="count">1</span></button>
+    <button class="btn phone-only">Test</button>
+  </div>
+  <span class="spacer"></span>
+  <button class="btn wide-only">Test</button>
+  <button class="btn primary">New strip</button>
+</header>
+
+<div class="testbar" role="status" aria-label="Test in progress">
+  <strong>Test</strong>
+  <span>Strip 4 of 10</span>
+  <span class="dots" aria-hidden="true"><i class="done"></i><i class="done"></i><i class="done"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  <span class="clock" aria-label="Time left">12:41</span>
+  <span style="flex:1"></span>
+  <button class="btn">End test</button>
+</div>
+
+<div class="desk">
+  <aside class="rail" aria-label="Flight plan and ATIS">
+    <div class="section-head strip-head"><h2>Flight plan</h2><span class="quiet">Strip 4471 <button class="btn icon" aria-label="Copy link to this strip" title="Copy link to this strip"><svg viewBox="0 0 24 24"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"/></svg></button></span></div>
+    <div class="holder">
+      <div class="strip-paper" id="paper">
+        <div class="strip-grid" id="grid">
+          <div style="grid-column:1;grid-row:1;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:1px 4px" class="c1">JSX2811</div>
+          <div style="grid-column:1;grid-row:2">G/E135/L</div>
+          <div style="grid-column:1;grid-row:3;gap:4px">101 <svg width="60" height="12" viewBox="0 0 60 12"><g fill="#000"><rect x="0" width="2" height="12"/><rect x="4" width="1" height="12"/><rect x="7" width="3" height="12"/><rect x="12" width="1" height="12"/><rect x="15" width="2" height="12"/><rect x="19" width="1" height="12"/><rect x="22" width="3" height="12"/><rect x="27" width="1" height="12"/><rect x="30" width="2" height="12"/><rect x="34" width="1" height="12"/><rect x="37" width="3" height="12"/><rect x="42" width="1" height="12"/><rect x="45" width="2" height="12"/><rect x="49" width="1" height="12"/><rect x="52" width="3" height="12"/><rect x="57" width="2" height="12"/></g></svg></div>
+          <div style="grid-column:2;grid-row:1">1071</div>
+          <div style="grid-column:2;grid-row:2">P0033</div>
+          <div style="grid-column:2;grid-row:3">340</div>
+          <div style="grid-column:3;grid-row:1">KSFO KSEA</div>
+          <div style="grid-column:3;grid-row:2"></div>
+          <div style="grid-column:3;grid-row:3"></div>
+          <div class="route"><div>KSFO NIITE4 DEDHD RBL</div><div>LMT HAWKZ8 KSEA</div><div style="margin-top:auto">FRC</div></div>
+          <div class="ann" style="grid-column:5;grid-row:1"></div><div class="ann" style="grid-column:6;grid-row:1"></div><div class="ann last" style="grid-column:7;grid-row:1"></div>
+          <div class="ann" style="grid-column:5;grid-row:2"></div><div class="ann" style="grid-column:6;grid-row:2"></div><div class="ann last" style="grid-column:7;grid-row:2"></div>
+          <div class="ann r3" style="grid-column:5;grid-row:3"></div><div class="ann r3" style="grid-column:6;grid-row:3"></div><div class="ann r3 last" style="grid-column:7;grid-row:3"></div>
+        </div>
+      </div>
+    </div>
+    <details class="atis-summary">
+      <summary><span class="chips"><b>ATIS</b><span>28 RT</span><span>Dep 28L 28R</span><span>0033L Sat</span><span>1 advisory</span></span></summary>
+      <p style="margin:6px 0 0">28 RT: landing and departing runways 28, right turn (TRUKN DP in use).<br>SFO/OAK SEGUL/COAST SID off. Issue SSTIK#/WESLA#/CNDEL# YYUNG.</p>
+    </details>
+    <section class="atis" aria-label="ATIS">
+      <h2>ATIS</h2>
+      <dl>
+        <dt>Configuration</dt><dd><b>28 RT</b>, landing and departing runways 28, right turn (TRUKN DP in use)</dd>
+        <dt>Departing</dt><dd class="rwys">28L 28R</dd>
+        <dt>Local time</dt><dd>0033L Saturday</dd>
+      </dl>
+      <p class="advisory"><code>SFO-SEGUL-OFF</code>SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW</p>
+    </section>
+  </aside>
+
+  <main class="work">
+    <!-- answering state -->
+    <section class="form-view" aria-label="Your clearance">
+      <div class="section-head"><h2>Your clearance</h2><span class="quiet">Read in CRAFT order</span></div>
+      <div class="craft">
+        <div class="craft-row"><span class="letter">C</span><span class="name">Clearance limit</span><span class="given"><b>KSEA, Seattle-Tacoma International</b><em>given</em></span></div>
+        <div class="craft-row"><span class="letter">R</span><span class="name">Procedure</span><span class="given"><b>NIITE FOUR (RNAV)</b><em>given</em></span></div>
+        <div class="craft-row"><span class="letter">R</span><span class="name">Route</span><span class="fields"><select aria-label="Shape"><option>Transition, then as filed</option></select><select aria-label="Fix or airway"><option>DEDHD</option></select></span></div>
+        <div class="craft-row"><span class="letter">A</span><span class="name">Altitude</span><span class="fields"><select aria-label="Phrase"><option>Climb via SID</option></select><select aria-label="Altitude" disabled><option>Altitude</option></select></span></div>
+        <div class="craft-row"><span class="letter">A</span><span class="name">Expect</span><span class="fields"><select aria-label="Expect clause"><option>Choose expect clause</option></select></span></div>
+        <div class="craft-row"><span class="letter">F</span><span class="name">Frequency</span><span class="fields"><select aria-label="Departure frequency"><option>Choose frequency</option></select></span></div>
+        <div class="craft-row"><span class="letter">T</span><span class="name">Transponder</span><span class="given"><b>1071</b><em>given</em></span></div>
+        <div class="craft-row"><span class="letter">+</span><span class="name">Expect runway</span><span class="fields"><select aria-label="Expect runway"><option>Choose runway</option></select></span></div>
+      </div>
+      <div class="submit-row"><button class="btn primary" disabled style="opacity:.5">Submit clearance</button><span class="quiet">3 left to pick</span></div>
+    </section>
+
+    <!-- results state -->
+    <section class="results-view" aria-label="Results">
+      <div class="summary">
+        <div class="score">6/8<small>correct</small></div>
+        <div class="score-sub">1 wrong, 1 longer than it needs to be.<br>Route missed two words a full route clearance reads.</div>
+        <ul class="pills" aria-label="Elements">
+          <li><a class="ok" href="#v-c"><b>C</b> ✓</a></li>
+          <li><a class="ok" href="#v-rp"><b>R</b> procedure ✓</a></li>
+          <li><a class="bad" href="#v-rr"><b>R</b> route ✗</a></li>
+          <li><a class="ok" href="#v-aa"><b>A</b> altitude ✓</a></li>
+          <li><a class="long" href="#v-ae"><b>A</b> expect ~</a></li>
+          <li><a class="ok" href="#v-f"><b>F</b> ✓</a></li>
+          <li><a class="ok" href="#v-t"><b>T</b> ✓</a></li>
+          <li><a class="ok" href="#v-rw">Runway ✓</a></li>
+        </ul>
+      </div>
+
+      <div class="onfreq">
+        <div class="head">On frequency <button class="btn icon" aria-label="Read aloud"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></button></div>
+        <p>BigStripe twenty-eight eleven, cleared to Seattle-Tacoma International airport, Niite Four departure, Dedhd transition, direct Red Bluff VOR, direct Klamath Falls VOR, Hawkz Eight arrival. Climb via SID. Departure frequency one two zero point niner, squawk one zero seven one. Expect runway two eight left.</p>
+      </div>
+
+      <ol class="verdicts">
+        <li class="v ok" id="v-c"><span class="letter">C</span><strong>Clearance limit</strong><span class="said">cleared to Seattle airport</span><span class="tag">Correct</span></li>
+        <li class="v ok" id="v-rp"><span class="letter">R</span><strong>Procedure</strong><span class="said"><span class="fill">via the</span> NIITE FOUR departure</span><span class="tag">Correct</span></li>
+        <li class="v bad" id="v-rr">
+          <span class="letter">R</span><strong>Route</strong><span class="said"></span><span class="tag">✗ Wrong</span>
+          <dl class="detail">
+            <dt>You said</dt><dd>DEDHD, RBL, LMT, HAWKZ EIGHT arrival</dd>
+            <dt>Reads as</dt><dd>Dedhd <span class="miss">transition, direct</span> Red Bluff VOR, <span class="miss">direct</span> Klamath Falls VOR, Hawkz Eight arrival</dd>
+            <dt>Why</dt><dd>The strip is marked FRC, so the route is read to its end with each connector spoken. "Transition" and "direct" were missing.</dd>
+          </dl>
+          <details class="rules"><summary>2 rules applied</summary><ul>
+            <li><code>R-TRANSITION</code> (SID) departure, (transition) transition, then as filed: the first filed fix after the SID is one of its transitions.</li>
+            <li><code>R-FRC</code> FRC as the first remark means a full route clearance: the controller reads the entire route to its end.</li></ul></details>
+        </li>
+        <li class="v ok" id="v-aa"><span class="letter">A</span><strong>Altitude</strong><span class="said">climb via SID</span><span class="tag">Correct</span></li>
+        <li class="v long" id="v-ae">
+          <span class="letter">A</span><strong>Expect</strong><span class="said"></span><span class="tag">~ Longer than needed</span>
+          <dl class="detail">
+            <dt>You said</dt><dd><span class="fill">except maintain one five thousand</span>, expect flight level three four zero one zero minutes after departure</dd>
+            <dt>Shorter</dt><dd>No expect clause</dd>
+            <dt>Why</dt><dd>The NIITE FOUR chart already publishes the expect note, so saying it again only lengthens the transmission.</dd>
+          </dl>
+          <details class="rules"><summary>2 rules applied</summary><ul>
+            <li><code>A-EXPECT-REDUNDANT</code> An expect clause the SID chart already publishes is not wrong, only longer than it needs to be.</li>
+            <li><code>S-FILLER</code> Words the phraseology does not have make an element acceptable rather than right.</li></ul></details>
+        </li>
+        <li class="v ok" id="v-f"><span class="letter">F</span><strong>Frequency</strong><span class="said">departure frequency one two zero point niner</span><span class="tag">Correct</span></li>
+        <li class="v ok" id="v-t"><span class="letter">T</span><strong>Transponder</strong><span class="said">squawk one zero seven one</span><span class="tag">Correct</span></li>
+        <li class="v ok" id="v-rw"><span class="letter">+</span><strong>Expect runway</strong><span class="said">expect runway two eight left</span><span class="tag">Correct</span></li>
+      </ol>
+
+      <div class="next">
+        <button class="btn primary">Next strip</button>
+        <button class="btn">Try this strip again</button>
+        <button class="btn phone-link">Copy link</button>
+      </div>
+      <div class="whatif" aria-label="Variants of this strip">
+        <span>What if it were filed</span>
+        <button class="chip">as a turboprop</button>
+        <button class="chip">as /G</button>
+        <button class="chip">as non-RVSM</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="mock" aria-label="Mockup state">
+  <a href="#results">Results</a><a href="#form">Form</a><a href="#test">Test</a>
+</nav>
+
+<script>
+  function applyState() {
+    var s = (location.hash || '#results').slice(1);
+    if (['results', 'form', 'test'].indexOf(s) < 0) s = 'results';
+    document.body.className = 'state-' + s;
+    var answer = document.querySelectorAll('.row2 .seg button');
+    var picked = s === 'results' ? 2 : 0;
+    answer.forEach(function (b, i) { b.setAttribute('aria-pressed', String(i === picked)); });
+    document.querySelectorAll('.mock a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + s); });
+  }
+  window.addEventListener('hashchange', applyState);
+  applyState();
+  var paper = document.getElementById('paper');
+  var grid = document.getElementById('grid');
+  function fit() {
+    var w = grid.offsetWidth + 0;
+    var scale = Math.min(1, paper.clientWidth / w);
+    grid.style.transform = 'scale(' + scale + ')';
+    paper.style.height = (grid.offsetHeight * scale) + 'px';
+  }
+  new ResizeObserver(fit).observe(paper);
+  fit();
+</script>
+</body>
+</html>
