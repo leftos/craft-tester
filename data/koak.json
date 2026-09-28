@@ -3256,7 +3256,7 @@
     },
     {
       "id": "R-ROUTE-TOKEN",
-      "source": "AIM 5-1-6 b (the route of flight is described accurately and completely, by airways, jet routes, reporting points and NAVAIDs); FAA JO 7110.65 4-2-5; user rule 2026-09-17 (UAL313)",
+      "source": "AIM 5-1-6 b (the route of flight is described accurately and completely, by airways, jet routes, reporting points and NAVAIDs); FAA JO 7110.65 4-2-5; user rule 2026-09-17 (UAL313); read abbreviated by ZOA practice, not as the full route clearance 7110.65 4-3-3 b gives a route fixed for an incorrect fix name (user ruling 2026-09-28)",
       "text": "Every element of a filed route names a fix, a navaid, an airway or a procedure. An element that names none of them — two identifiers run together, or a typo — is removed from the route box and the fixes either side of it are connected through fixes that connect (R-ROUTE-BUILD), so the clearance reads a route the pilot can fly; where nothing connects them the element is dropped and the fixes either side of it join direct",
       "why": null
     },

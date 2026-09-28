@@ -17,8 +17,8 @@ Index line: [MAIN.md](./MAIN.md) Wave 4. The mockup is [page-redesign-mockup.htm
 
 Each slice is one brief, landed and browser-checked before the next. They share `web/src/ui/app.ts` and `web/src/styles.css`, so they run one after another.
 
-- **R1 Shell**: tokens and dark mode, fonts, the toolbar (segmented `Clearance | Amend` and `Pick | Type | Full route`, a Filters popover, New strip, and a copy-link icon by the strip), the rail and work layout, the strip holder, the phone strip without annotation columns, the ATIS summary line, phone toolbar hide-on-scroll, and `browser-check.ts`'s `stripTop`. Risks R1, R2, R3 (the toolbar selectors), R5, R8 and R9 below.
-- **R2 Results**: a summary score and element pills, On frequency moved up, collapsed correct rows (still expandable, R7), rows that lost credit expanded with labels, citations behind `<details>`, the action hierarchy, and the amendment box verdicts in the same row component. The Why row shows the existing remarks until R3. Risks R3 (the results selectors) and R4.
+- **R1 Shell** (landed): tokens and dark mode, fonts, the toolbar (segmented `Clearance | Amend` and `Pick | Type | Full route`, a Filters popover, New strip, and a copy-link icon by the strip), the rail and work layout, the strip holder, the phone strip without annotation columns, the ATIS summary line, phone toolbar hide-on-scroll, and `browser-check.ts`'s `stripTop`. Risks R1, R2, R3 (the toolbar selectors), R5, R8 and R9 below.
+- **R2 Results** (landed): a summary score and element pills, On frequency moved up, collapsed correct rows (still expandable, R7), rows that lost credit expanded with labels, citations behind `<details>`, the action hierarchy, and the amendment box verdicts in the same row component. The Why row shows the existing remarks until R3. Risks R3 (the results selectors) and R4.
 - **R3 Why**: the plain-English reason concept (schema, rows and generator), shown in the Why row.
 - Test sets and what-if variants ([test-and-variants.md](./test-and-variants.md)) build on R1's toolbar slot and R2's action row.
 
