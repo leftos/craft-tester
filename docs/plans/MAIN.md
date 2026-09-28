@@ -17,8 +17,8 @@ Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data c
   generator already downloads (ordered fixes plus high/low, conventional/RNAV, MEA/MAA); the vNAS
   `NavData.dat` carries only `id + fixes` and has 224 colliding ids (`J1`, `V6` resolve to foreign routes
   first-wins). No airway parsing exists in `cifp/` today — only the three-row hand-written
-  `shared/airways.yaml`. **Data concept and the rebuild rule still to plan with the user before any engine
-  change**; the subplan's three questions are open
+  `shared/airways.yaml`. The user ruled on the subplan's three questions (library route first, then a V/J
+  path; ship only the airways the Bay files; accepted among alternatives); ready to brief the `ER` parser
 
 ## Wave 2 — Destination amendment box (schema, `rules/amend/`, `ui/`, importer, `shared/destinations.yaml`)
 

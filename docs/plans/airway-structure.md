@@ -47,14 +47,10 @@ The `R` route-type flag also answers the RNAV element check's airway rule from d
 prefix, and the one-way oceanic airway table for the R464 parity rule (MAIN.md) can come off the same
 records if the direction restriction column proves populated.
 
-## Open with the user before any engine change
+## Decided with the user
 
-- **What "rebuild onto a conventional route" means**: from which navaid off the assigned SID (its transition
-  fixes are navaids on conventional SIDs; the OAK VOR for a radar-vector departure), along which airways, to
-  which LOA or TEC entry fix or the destination. That is a graph search over the airway structure, with a
-  preference order (the route library's conventional rows first, a shortest-path over V/J otherwise) and a
-  level constraint (J above 18,000, V below).
-- **How much of the structure to ship** to the browser: every airway the Bay files (the fixes of routes
-  named anywhere in the document and the fixtures, as `rnavWaypoints` does), or the whole ZOA-adjacent set.
-- **Whether a rebuilt route is graded as the single answer** or accepted among alternatives, as the
-  radar-vector navaid warning is today.
+- **Rebuild onto a conventional route**: the route library's conventional row to the same destination first; otherwise a path over V airways below 18,000 and J above, from the assigned SID's exit navaid (the OAK VOR for a radar-vector departure) to the LOA or TEC entry fix or the destination.
+- **Structure shipped to the browser**: only the airways the Bay files (named in `routes.yaml`, TEC and LOA rows and the fixtures), as `rnavWaypoints` does.
+- **Grading**: a rebuilt route is accepted among alternatives: any legal conventional route the engine confirms takes full credit, and the rebuilt one is shown as the model answer, as the radar-vector navaid warning works today.
+
+Next step: brief the `ER` parser and the data shape, then the engine's rebuild.
