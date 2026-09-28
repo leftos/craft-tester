@@ -24,13 +24,20 @@ Subplan: [airway-structure.md](./airway-structure.md). Gate: aviation + a data c
 
 Gate: aviation + UI. The only rule concept KOAK left unbuilt.
 
-- [ ] **New concept (user 2026-09-16): a fourth strip box for the destination.** AAY218 on Amendment
-  Practice 1A files `KPGI` with `KGPI` as the correction; the strip has type, altitude and route boxes
-  only. The user chose a fourth box over importing the plan as corrected. Needs: schema
-  (`amendments[].box: 'destination'`, fixture variant), a destination check in `rules/amend/` (**decide
-  with the user**: an unknown ICAO whose one-letter-transposed neighbour is in the library, or the sheet's
-  answer only), the amendment UI box, the results view, and the importer's correction-cell reading. KGPI
-  is in the CIFP cache but not among the 68 rows of `shared/destinations.yaml`, so it needs a data row too
+- [ ] **A fourth strip box for the destination.** AAY218 on **Oakland** Amendment Practice 1A files
+  `KPGI` (`ORRCA FMG J7 REO J537 MLP V536 FIKAB`; FIKAB is an approach fix of KGPI); the importer skips it
+  today because `KPGI` is no destination row, and the sheets carry no correction cells. Mapped: about 10
+  source sites hard-code three boxes (`schema.ts` ×3, `rules/amend/grade.ts`, `engine.ts`, `rules/types.ts`,
+  `ui/state.ts`, `ui/solved.ts`, `ui/labels.ts`, `ui/amendForm.ts`, `scenario/generate.ts`,
+  `scenario/amend.ts`); `applyAmendment` and `withCorrectedBox` fall through to type/route for an unknown box.
+  **Ruled**: the check reads a cited typo table (a data row per known typo, `KPGI → KGPI`), never a
+  transposition search; the drill draws no destination faults; an unknown destination with no table row
+  stays unresolved as today; the row cites 7110.65 2-2-6 ("flight plan and control information is correct
+  and up-to-date"). Settled from the code: box order type, destination, altitude, route, with the engine
+  correcting the destination before judging altitude and route; exact-ICAO verdict; the fourth key
+  optional in saved attempts; the importer gets a `worksheets.yaml` ruling that keeps the printed `KPGI`;
+  a `KGPI` row in `shared/destinations.yaml` (Glacier Park International, short Kalispell, ZLC) and in
+  KOAK's `routes.yaml` `destinations:`. Waits for test sets to land (`ui/state.ts`, `ui/solved.ts`, `ui/app.ts`)
 
 ## Wave 3 — KSFO worksheet settlement (`fixtures/ksfo/worksheets/`, `web/scripts/propose.ts`)
 
