@@ -51,7 +51,26 @@ export type SessionSettings = {
   mode: Mode;
   input: InputKind;
   fullRoute: boolean;
+  /** The test set the session is a strip of, which the hash carries in its `x=` part. */
+  set?: SetParams;
 };
+
+/**
+ * Which test set a strip belongs to, as the `x=` part of the hash carries it.
+ *
+ * `index` is the strip on screen, 0-based; an index equal to `n` is the set's summary. `minutes` is
+ * 0 for an untimed set.
+ */
+export type SetParams = { seed: number; n: number; minutes: number; index: number };
+
+/** The most strips a set read from a hash may hold. */
+const MAX_SET_STRIPS = 50;
+
+/** The longest time limit a set read from a hash may carry, in minutes. */
+const MAX_SET_MINUTES = 180;
+
+/** The seeds a hash can carry: unsigned 32-bit integers. */
+const SEED_LIMIT = 2 ** 32;
 
 /** The shape a `d=` part has to have to be read: an ICAO code, upper case. */
 const DESTINATION_PATTERN = /^[A-Z0-9]{3,4}$/;
@@ -96,7 +115,51 @@ export function hashFor(icao: string, seed: number, settings: SessionSettings): 
   if (mode === 'amendment') parts.push(AMENDMENT_PART);
   if (input === 'text') parts.push(TEXT_PART);
   if (input === 'text' && fullRoute) parts.push(FULL_ROUTE_PART);
+  if (settings.set !== undefined) parts.push(`x=${setPart(settings.set)}`);
   return `#${parts.join('&')}`;
+}
+
+/** The value of the `x=` part a test set writes: its seed in base 36, the count, the minutes, the index. */
+function setPart(set: SetParams): string {
+  return `${(set.seed >>> 0).toString(36)}.${set.n}.${set.minutes}.${set.index}`;
+}
+
+/** Reads a whole number written in decimal digits alone, or `undefined` for anything else. */
+function wholeNumber(raw: string | undefined): number | undefined {
+  if (raw === undefined || !/^\d{1,4}$/.test(raw)) return undefined;
+  return Number.parseInt(raw, 10);
+}
+
+/** Reads a set seed written in base 36, or `undefined` where it is not an unsigned 32-bit one. */
+function setSeedOf(raw: string | undefined): number | undefined {
+  if (raw === undefined || !/^[0-9a-z]{1,7}$/.test(raw)) return undefined;
+  const seed = Number.parseInt(raw, 36);
+  return seed < SEED_LIMIT ? seed : undefined;
+}
+
+/**
+ * Reads the test set back out of a URL hash.
+ *
+ * A set is shared whole or not at all, so any part that is missing or out of range reads as no set:
+ * a count from 1 to 50, minutes from 0 (untimed) to 180, and an index from 0 to the count, where the
+ * count itself is the summary.
+ *
+ * @param hash The hash, with or without its leading `#`.
+ * @returns The set the hash names, or `undefined` when it names none or one malformed.
+ */
+export function setFromHash(hash: string): SetParams | undefined {
+  const pieces = valueOf(hash, 'x')?.split('.') ?? [];
+  if (pieces.length !== 4) return undefined;
+  const [seedRaw, countRaw, minutesRaw, indexRaw] = pieces;
+  const seed = setSeedOf(seedRaw);
+  const n = wholeNumber(countRaw);
+  const minutes = wholeNumber(minutesRaw);
+  const index = wholeNumber(indexRaw);
+  if (seed === undefined || n === undefined || minutes === undefined || index === undefined) {
+    return undefined;
+  }
+  const inRange = n >= 1 && n <= MAX_SET_STRIPS && minutes <= MAX_SET_MINUTES && index <= n;
+  return inRange ? { seed, n, minutes, index } : undefined;
 }
 
 /** The `&`-separated parts of a hash, with or without its leading `#`. */

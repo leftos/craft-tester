@@ -15,6 +15,7 @@ import {
 } from '@/ui/dom.ts';
 import { aircraftLabel } from '@/ui/labels.ts';
 import { renderVerdict, scoreLine } from '@/ui/results.ts';
+import { withSkip } from '@/ui/testBar.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
 import { toBoxAnswers } from '@/ui/state.ts';
 
@@ -43,7 +44,13 @@ export type AmendFormProps = {
   scenario: Scenario;
   boxes: DraftBoxes;
   onBox: (box: Box, answer: BoxAnswer) => void;
-  onSubmit: () => void;
+  /**
+   * Submits the boxes on their own, or `undefined` where a clearance form below them submits both,
+   * as a test set's amendment strip does; the panel then shows neither Submit nor Skip.
+   */
+  onSubmit: (() => void) | undefined;
+  /** Leaves the strip unanswered, which only a test set offers; no Skip button without it. */
+  onSkip?: (() => void) | undefined;
 };
 
 /** The value one answerable box reads as filed, written the way the strip writes it. */
@@ -197,10 +204,11 @@ export function renderAmendForm(props: AmendFormProps): AmendForm {
     controls.push(built.controls);
   }
   const submit = button('Submit amendments', 'primary', () => {
-    current.onSubmit();
+    current.onSubmit?.();
   });
   submit.disabled = amendSubmitDisabled(props.boxes);
-  panel.append(el('h2', '', 'Amend the flight plan'), rows, submit);
+  panel.append(el('h2', '', 'Amend the flight plan'), rows);
+  if (props.onSubmit !== undefined) panel.append(withSkip(submit, props.onSkip));
   return {
     node: panel,
     sync: (next) => {

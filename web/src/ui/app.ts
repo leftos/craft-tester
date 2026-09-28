@@ -1,11 +1,6 @@
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
-import { grade, gradeProcedure } from '@/rules/grade.ts';
-import { citeSpecialHandling, gradeBest } from '@/rules/handling.ts';
-import type { SpokenClearance } from '@/rules/speak.ts';
-import type { RouteReading, TextGrade } from '@/rules/text/grade.ts';
-import { gradeText } from '@/rules/text/grade.ts';
-import type { Grade, ResolvedClearance } from '@/rules/types.ts';
+import type { ResolvedClearance } from '@/rules/types.ts';
 import type {
   ConfigFilter,
   InputKind,
@@ -23,6 +18,7 @@ import {
   hashFor,
   inputKindFromHash,
   modeFromHash,
+  setFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
 import type { Panels } from '@/ui/amendPanels.ts';
@@ -38,21 +34,15 @@ import {
   browserFullRouteStore,
   browserInputKindStore,
 } from '@/ui/preferences.ts';
+import { clearanceOutcome } from '@/ui/clearanceGrading.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
-import {
-  acceptedClearance,
-  clearedPlan,
-  listAirports,
-  loadAirportData,
-  spokenFor,
-} from '@/ui/session.ts';
-import type { SolvedStore } from '@/ui/solved.ts';
+import { clearedPlan, listAirports, loadAirportData } from '@/ui/session.ts';
+import type { Attempt, SolvedStore } from '@/ui/solved.ts';
 import { browserSolvedStore } from '@/ui/solved.ts';
-import type { AppState, ClearanceAnswer, ClearancePicks, PickKey } from '@/ui/state.ts';
+import type { AppState, PickKey, SetState } from '@/ui/state.ts';
 import {
   newSession,
   phaseOf,
-  picksProcedure,
   routeReadingOf,
   shareLink,
   toAmendmentAnswer,
@@ -73,6 +63,27 @@ import {
 import { addCopyLink, loadStripFont, renderStrip } from '@/ui/strip.ts';
 import type { TextFormProps } from '@/ui/textForm.ts';
 import { renderTextForm } from '@/ui/textForm.ts';
+import {
+  END_TEST_QUESTION,
+  renderSetSummary,
+  renderTestBar,
+  renderTestStart,
+} from '@/ui/testBar.ts';
+import type { SetStore } from '@/ui/testSet.ts';
+import {
+  browserSetStore,
+  clockReading,
+  endedSet,
+  isTimeUp,
+  onSetStrip,
+  openedSet,
+  recordOf,
+  setSummary,
+  withStripAnswered,
+  withStripSkipped,
+} from '@/ui/testSet.ts';
+
+export { clearancePickGrades } from '@/ui/clearanceGrading.ts';
 
 /**
  * How the clearance is answered, as the toolbar offers it: picked from dropdowns, typed, or typed
@@ -99,6 +110,14 @@ type Actions = {
   onRetry: () => void;
   onSubmit: () => void;
   onText: (text: string) => void;
+  /** Starts a test set of `n` strips, timed at `minutes` or untimed at 0, under the settings on screen. */
+  onStartTest: (n: number, minutes: number) => void;
+  /** Leaves the set's strip on screen unanswered and moves on. */
+  onSkip: () => void;
+  /** Opens a skipped strip of the set again, by its 0-based index. */
+  onGoToStrip: (index: number) => void;
+  /** Ends the set, once the student confirms it, and opens its summary. */
+  onEndTest: () => void;
 };
 
 /** The time-of-day choices, in the order the dropdown offers them. */
@@ -284,15 +303,28 @@ function filterControls(state: AppState, actions: Actions): HTMLElement[] {
   ];
 }
 
+/** The Test button and its popover, which closes on a press outside it like Filters. */
+function testControl(actions: Actions): HTMLElement {
+  const details = renderTestStart(actions.onStartTest);
+  closeOnOutsidePress(details);
+  return details;
+}
+
 /**
  * The toolbar: the product name, the airport, the mode and answer switches and the Filters button,
- * then New strip on the right. On a phone the answer switch and Filters wrap to a second row.
+ * then Test and New strip on the right. On a phone the answer switch, Filters and Test wrap to a
+ * second row. While a test set runs, and over its summary, the test bar stands in for all of it.
  */
 function renderToolbar(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
+  if (state.set !== undefined) return renderTestBar(state.set, actions, Date.now());
   const bar = el('header', 'toolbar');
   bar.setAttribute('aria-label', 'Session');
   const secondRow = el('div', 'toolbar-row2');
-  secondRow.append(answerControl(state, actions), filtersControl(state, actions));
+  secondRow.append(
+    answerControl(state, actions),
+    filtersControl(state, actions),
+    testControl(actions),
+  );
   bar.append(
     el('h1', 'brand', 'CRAFT trainer'),
     airportControl(state, index, actions),
@@ -304,100 +336,61 @@ function renderToolbar(state: AppState, index: AirportsIndex, actions: Actions):
   return bar;
 }
 
-/** The panel a seed that the engine cannot clear shows instead of the form. */
-function renderUnresolved(reasons: readonly string[], onNext: () => void): HTMLElement {
+/**
+ * The panel a seed that the engine cannot clear shows instead of the form, with New strip, or Skip
+ * on a strip of a test set.
+ */
+function renderUnresolved(reasons: readonly string[], next: HTMLButtonElement): HTMLElement {
   const panel = el('section', 'panel unresolved');
   const list = el('ul');
   for (const reason of reasons) list.append(el('li', '', reason));
-  panel.append(
-    el('h2', '', 'No clearance for this scenario'),
-    list,
-    button('New strip', 'primary', onNext),
-  );
+  panel.append(el('h2', '', 'No clearance for this scenario'), list, next);
   return panel;
 }
 
-/**
- * The verdicts a clearance-mode strip's dropdowns earn.
- *
- * A strip whose clearance names no procedure has the student pick it, and that pick is graded as
- * `R.sid` ahead of the route, in CRAFT order; a pick an older attempt never stored is graded as a
- * blank, which is wrong. Every other strip is given its SID and grades the five CRAFT picks alone.
- *
- * @param picks What the student picked.
- * @param resolved The clearance the picks are graded against, proposed or accepted.
- * @param airport The airport data, which names the published procedures.
- * @param procedurePicked Whether the strip asks for the procedure (`picksProcedure` of the
- *   proposed clearance), which holds for both sides of the special handling.
- * @returns Six verdicts where the procedure is picked, the five of `grade` otherwise.
- */
-export function clearancePickGrades(
-  picks: ClearancePicks,
-  resolved: ResolvedClearance,
-  airport: AirportData,
-  procedurePicked: boolean,
-): Grade[] {
-  if (!procedurePicked) return grade(picks, resolved);
-  return [gradeProcedure(picks.procedure ?? '', resolved, airport), ...grade(picks, resolved)];
+/** The way on from a scenario the engine cannot clear: Skip in a test set, New strip otherwise. */
+function unresolvedNext(state: AppState, actions: Actions): HTMLButtonElement {
+  return state.set === undefined
+    ? button('New strip', 'primary', actions.onNewScenario)
+    : button('Skip', 'primary', actions.onSkip);
 }
 
-/** Everything one side of a clearance answer is graded with, besides the clearance it is held to. */
-type ClearanceGrading = {
-  answer: ClearanceAnswer<ClearancePicks>;
-  airport: AirportData;
-  routeReading: RouteReading;
-  procedurePicked: boolean;
-};
-
-/**
- * The verdicts a clearance answer earns: the picks graded as picked, or the typed clearance graded
- * against the engine's reading of the same clearance.
- */
-function clearanceGrades(
-  grading: ClearanceGrading,
-  spoken: SpokenClearance,
-  resolved: ResolvedClearance,
-): (Grade | TextGrade)[] {
-  const { answer, airport, routeReading, procedurePicked } = grading;
-  return answer.input === 'text'
-    ? gradeText(answer.text, spoken, resolved, airport, routeReading)
-    : clearancePickGrades(answer.picks, resolved, airport, procedurePicked);
+/** The Skip handler a form offers: the page's while a test set runs, none otherwise. */
+function skipOf(state: AppState, actions: Actions): (() => void) | undefined {
+  return state.set === undefined ? undefined : actions.onSkip;
 }
 
-/** The verdicts of a clearance answer and the reading the reveal speaks for the clearance they won against. */
-type ClearanceOutcome = { grades: (Grade | TextGrade)[]; spoken: SpokenClearance };
-
-/**
- * Grades a clearance answer against the clearance under both sides of ZOA CPS-004 3.1 special
- * handling and keeps the better one (`gradeBest`), so a player who read the accepted handling's
- * clearance sees it confirmed, with the special-handling row cited, rather than the proposed one.
- */
-function clearanceOutcome(
-  answer: ClearanceAnswer<ClearancePicks>,
-  generated: Scenario,
-  clearance: ResolvedClearance,
-  airport: AirportData,
-  routeReading: RouteReading,
-): ClearanceOutcome {
-  const spokenOf = (resolved: ResolvedClearance): SpokenClearance =>
-    spokenFor(generated, generated, resolved, airport);
-  const grading = { answer, airport, routeReading, procedurePicked: picksProcedure(clearance) };
-  const best = gradeBest(
-    clearance,
-    acceptedClearance(generated, airport),
-    (resolved) => clearanceGrades(grading, spokenOf(resolved), resolved),
-    citeSpecialHandling(generated, airport),
-  );
-  return { grades: best.grades, spoken: spokenOf(best.resolved) };
+/** The summary of a finished set in the work column, with no strip bay beside it. */
+function summaryPanels(
+  state: AppState,
+  set: SetState,
+  actions: Actions,
+  solved: SolvedStore,
+): Panels {
+  const { icao } = state.airport.airport;
+  const scope = { mode: state.mode, input: state.input, fullRoute: state.fullRoute };
+  const summary = setSummary(state, set, (seed) => solved.load(icao, seed, scope), Date.now());
+  return {
+    rail: [],
+    pinned: [],
+    work: [renderSetSummary(summary, actions.onNewScenario)],
+    sync: undefined,
+  };
 }
 
-/** The strip and the ATIS in the rail, and either the form or the results in the work column. */
-function renderPanels(state: AppState, actions: Actions): Panels {
+/**
+ * The strip and the ATIS in the rail, and either the form or the results in the work column; a
+ * finished test set shows its summary instead.
+ */
+function renderPanels(state: AppState, actions: Actions, solved: SolvedStore): Panels {
+  if (phaseOf(state) === 'set-summary' && state.set !== undefined) {
+    return summaryPanels(state, state.set, actions, solved);
+  }
   if (state.view.kind === 'unresolved') {
     return {
       rail: [],
       pinned: [],
-      work: [renderUnresolved(state.view.reasons, actions.onNewScenario)],
+      work: [renderUnresolved(state.view.reasons, unresolvedNext(state, actions))],
       sync: undefined,
     };
   }
@@ -456,6 +449,8 @@ function renderClearanceForm(
       text: next.text,
       onText: actions.onText,
       onSubmit: actions.onSubmit,
+      boxesOpen: false,
+      onSkip: skipOf(next, actions),
     });
     const form = renderTextForm(typed(state));
     return { node: form.node, sync: (next) => form.sync(typed(next)) };
@@ -468,6 +463,8 @@ function renderClearanceForm(
     procedure: clearanceProcedureRow(clearance),
     onPick: actions.onPick,
     onSubmit: actions.onSubmit,
+    boxesOpen: false,
+    onSkip: skipOf(next, actions),
   });
   const form = renderCraftForm(picked(state));
   return { node: form.node, sync: (next) => form.sync(picked(next)) };
@@ -496,15 +493,20 @@ function renderRail(panels: Panels): HTMLElement | undefined {
  * The first strip on the page, the one the student was handed, carries the button that copies the
  * link to it.
  */
-function renderApp(state: AppState, index: AirportsIndex, actions: Actions): Page {
+function renderApp(
+  state: AppState,
+  index: AirportsIndex,
+  actions: Actions,
+  solved: SolvedStore,
+): Page {
   const page = el('div', 'page');
-  const panels = renderPanels(state, actions);
+  const panels = renderPanels(state, actions, solved);
   const rail = renderRail(panels);
   const main = el('main', rail === undefined ? 'layout no-rail' : 'layout');
   const strip = [...panels.rail, ...panels.pinned].find((node) =>
     node.matches('section.panel.strip'),
   );
-  if (strip !== undefined) {
+  if (strip !== undefined && state.set === undefined) {
     const { icao } = state.airport.airport;
     addCopyLink(strip, shareLink(globalThis.location.href, icao, state.seed, state));
   }
@@ -548,7 +550,8 @@ export function toolbarHiddenAfter(
  * The listener marks the document root with `toolbar-hidden`, which slides the toolbar up, and sets
  * `--pin-top` to `0px` so the pinned strip moves up into its place. The mark lives on the root rather
  * than on the toolbar because the toolbar is drawn again whenever the panels are. Wider than a phone
- * the toolbar never hides.
+ * the toolbar never hides. The test bar of a running set stays in place, clock and all, so while it
+ * is up the pinned strip keeps its place under it.
  */
 function hideToolbarOnScroll(): void {
   if (typeof globalThis.matchMedia !== 'function') return;
@@ -559,7 +562,8 @@ function hideToolbarOnScroll(): void {
   const apply = (next: boolean): void => {
     hidden = next;
     docRoot.classList.toggle('toolbar-hidden', next);
-    if (next) docRoot.style.setProperty('--pin-top', '0px');
+    const testBarUp = document.querySelector('.testbar') !== null;
+    if (next && !testBarUp) docRoot.style.setProperty('--pin-top', '0px');
     else docRoot.style.removeProperty('--pin-top');
   };
   globalThis.addEventListener(
@@ -603,7 +607,157 @@ type Stores = {
   filter: FilterStore;
   input: InputKindStore;
   fullRoute: FullRouteStore;
+  set: SetStore;
 };
+
+/** How often the test bar's clock is written again, in milliseconds. */
+const CLOCK_TICK_MS = 1000;
+
+/** What keeps a test set going between renders, which follows the state after every change. */
+type SetFollower = { follow: (state: AppState) => void };
+
+/**
+ * Stores a test set whenever it moves, so a reload resumes it, and ticks its clock while it runs:
+ * every second the clock writes the test bar's `.clock` text alone, outside the state and the
+ * hash, so nothing is drawn again, and at a timed set's limit it ends the set, discarding an
+ * answer not yet submitted. The interval runs only while a set runs, and stops when it ends or is
+ * left.
+ *
+ * @param root The element the page is rendered into.
+ * @param current Reads the state on screen.
+ * @param store The store the set is written to.
+ * @param update Puts a new state on screen, which ending the set at its time limit does.
+ * @returns The follower, which stores the set and starts or stops the clock as the state asks.
+ */
+function setFollower(
+  root: Element,
+  current: () => AppState,
+  store: SetStore,
+  update: (next: AppState) => void,
+): SetFollower {
+  let saved: SetState | undefined;
+  let timer: ReturnType<typeof setInterval> | undefined;
+  const stop = (): void => {
+    if (timer !== undefined) clearInterval(timer);
+    timer = undefined;
+  };
+  const tick = (): void => {
+    const set = current().set;
+    if (set === undefined || set.ended) {
+      stop();
+      return;
+    }
+    const now = Date.now();
+    if (isTimeUp(set, now)) {
+      stop();
+      update(endedAt(current(), set, now));
+      return;
+    }
+    const node = root.querySelector('.testbar .clock');
+    if (node !== null) node.textContent = clockReading(set, now).text;
+  };
+  return {
+    follow: (state) => {
+      const set = state.set;
+      if (set !== undefined && set !== saved) store.save(set.seed, recordOf(state, set));
+      saved = set;
+      if (set === undefined || set.ended) stop();
+      else timer ??= setInterval(tick, CLOCK_TICK_MS);
+    },
+  };
+}
+
+/** The actions a test set adds to the page, and the submit that moves a set on. */
+type SetActions = Pick<
+  Actions,
+  'onStartTest' | 'onSkip' | 'onGoToStrip' | 'onEndTest' | 'onSubmit'
+>;
+
+/** The state with its set ended, on the set's summary. */
+function endedAt(state: AppState, set: SetState, now: number): AppState {
+  return { ...state, set: endedSet(set, now) };
+}
+
+/**
+ * What starting, skipping, going back to a strip, ending a set and submitting a strip do.
+ *
+ * A submitted strip of a set is saved in the ordinary solved store and the set moves on to its next
+ * open strip at once, with no results between; outside a set, submit shows the results as always.
+ * A submit that comes after the time limit is discarded and the summary opens.
+ *
+ * @param current Reads the state on screen.
+ * @param update Puts a new state on screen.
+ * @param solved The store a submitted attempt is saved in.
+ * @returns The handlers.
+ */
+function setActions(
+  current: () => AppState,
+  update: (next: AppState) => void,
+  solved: SolvedStore,
+): SetActions {
+  const withSet = (act: (state: AppState, set: SetState) => void) => (): void => {
+    const state = current();
+    if (state.set !== undefined) act(state, state.set);
+  };
+  return {
+    onStartTest: (n, minutes) => {
+      const params = { seed: randomSeed(), n, minutes, index: 0 };
+      update(openedSet(current(), params, undefined, Date.now()));
+    },
+    onSkip: withSet((state, set) => {
+      update(onSetStrip(state, withStripSkipped(set, Date.now())));
+    }),
+    onGoToStrip: (index) => {
+      withSet((state, set) => {
+        update(onSetStrip(state, { ...set, index }));
+      })();
+    },
+    onEndTest: withSet((state, set) => {
+      if (globalThis.confirm(END_TEST_QUESTION)) update(endedAt(state, set, Date.now()));
+    }),
+    onSubmit: () => {
+      const state = current();
+      const set = state.set;
+      if (set === undefined) {
+        saveAttempt(state, solved);
+        update(withSubmitted(state));
+        return;
+      }
+      if (isTimeUp(set, Date.now())) {
+        update(endedAt(state, set, Date.now()));
+        return;
+      }
+      const submitted = withSubmitted(withBoxesIn(state));
+      if (!submitted.submitted) return;
+      const attempt = saveAttempt(submitted, solved);
+      if (attempt === undefined) return;
+      update(onSetStrip(state, withStripAnswered(set, Date.now(), attempt)));
+    },
+  };
+}
+
+/**
+ * The boxes of a test set's amendment strip taken in with its clearance, since one Submit stands for
+ * both; the student's own procedure pick stays as they made it. Boxes still open are not taken in,
+ * so the submit that follows is refused.
+ */
+function withBoxesIn(state: AppState): AppState {
+  if (state.mode !== 'amendment' || toBoxAnswers(state.boxes) === undefined) return state;
+  return { ...state, boxesSubmitted: true };
+}
+
+/** The attempt the answers on screen make, or `undefined` while one is still incomplete. */
+function attemptOf(state: AppState): Attempt | undefined {
+  if (state.mode === 'amendment') {
+    const boxes = toBoxAnswers(state.boxes);
+    const answer = toAmendmentAnswer(state);
+    return boxes === undefined || answer === undefined
+      ? undefined
+      : { kind: 'amendment', boxes, ...answer };
+  }
+  const answer = toClearanceAnswer(state);
+  return answer === undefined ? undefined : { kind: 'clearance', ...answer };
+}
 
 /**
  * Remembers the attempt the student just submitted, so a revisit of the seed shows it back.
@@ -611,32 +765,50 @@ type Stores = {
  * An amendment attempt is the strip answers and the clearance that followed them; a form still
  * missing a pick, or a typing box holding nothing but whitespace, is not an attempt at all and is
  * not written.
+ *
+ * @returns The attempt, or `undefined` where there was none to write.
  */
-function saveAttempt(state: AppState, store: SolvedStore): void {
-  const { icao } = state.airport.airport;
-  if (state.mode === 'amendment') {
-    const boxes = toBoxAnswers(state.boxes);
-    const answer = toAmendmentAnswer(state);
-    if (boxes !== undefined && answer !== undefined) {
-      store.save(icao, state.seed, { kind: 'amendment', boxes, ...answer }, state.fullRoute);
-    }
-    return;
+function saveAttempt(state: AppState, store: SolvedStore): Attempt | undefined {
+  const attempt = attemptOf(state);
+  if (attempt !== undefined) {
+    store.save(state.airport.airport.icao, state.seed, attempt, state.fullRoute);
   }
-  const answer = toClearanceAnswer(state);
-  if (answer !== undefined) {
-    store.save(icao, state.seed, { kind: 'clearance', ...answer }, state.fullRoute);
-  }
+  return attempt;
 }
 
 /** The panels on screen, and the view key they were built for. */
 type Built = { key: string; sync: ((state: AppState) => void) | undefined };
 
 /**
+ * Puts a state on screen: the page built again where the view key changed, with the focus kept on
+ * the control that had it, and the state written into the controls already there otherwise.
+ *
+ * @param root The element the page is rendered into.
+ * @param built The panels on screen, or `undefined` before the first render.
+ * @param state The state to show.
+ * @param build Builds the whole page for the state.
+ * @returns The panels now on screen.
+ */
+function show(root: Element, built: Built | undefined, state: AppState, build: () => Page): Built {
+  const key = viewKey(state);
+  if (built?.key === key) {
+    built.sync?.(state);
+    return built;
+  }
+  const focused = focusKeyOf(root);
+  const page = build();
+  root.replaceChildren(page.node);
+  restoreFocus(root, focused);
+  return { key, sync: page.sync };
+}
+
+/**
  * Holds the state, rewrites the hash, and puts every change on screen.
  *
  * The panels are built again only when the view key changes, which is when a different set of them
  * belongs on screen; every other change is written into the controls already there. A pick or a
- * keystroke therefore leaves the control it came from in place, with its focus and its caret.
+ * keystroke therefore leaves the control it came from in place, with its focus and its caret. A
+ * test set is stored whenever it moves, so a reload resumes it, and its clock follows every change.
  */
 function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): void {
   const store = stores.solved;
@@ -644,19 +816,19 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
   let actions: Actions;
   let built: Built | undefined;
 
+  const follower = setFollower(
+    root,
+    () => state,
+    stores.set,
+    (next) => {
+      update(next);
+    },
+  );
   const update = (next: AppState): void => {
     state = next;
     writeHash(state.airport.airport.icao, state.seed, state);
-    const key = viewKey(state);
-    if (built === undefined || built.key !== key) {
-      const focused = focusKeyOf(root);
-      const page = renderApp(state, index, actions);
-      root.replaceChildren(page.node);
-      restoreFocus(root, focused);
-      built = { key, sync: page.sync };
-      return;
-    }
-    built.sync?.(state);
+    built = show(root, built, state, () => renderApp(state, index, actions, store));
+    follower.follow(state);
   };
 
   actions = {
@@ -720,13 +892,10 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     onRetry: () => {
       update(withRetry(state));
     },
-    onSubmit: () => {
-      saveAttempt(state, store);
-      update(withSubmitted(state));
-    },
     onText: (text) => {
       update(withText(state, text));
     },
+    ...setActions(() => state, update, store),
   };
 
   update(state);
@@ -765,7 +934,8 @@ function opensFullRoute(hash: string, input: InputKind, remembered: boolean | un
  * unless it says so. It names typed answers too; a link that does not falls back to the way this
  * browser last chose to answer, and to the dropdowns where it remembers none. A link asking for a
  * full route clearance opens typed and held to it, and one that names no input kind at all leaves
- * Full route to the choice this browser last made.
+ * Full route to the choice this browser last made. A link that names a test set (`x=`) opens on
+ * the set's strip, resumed where this browser stored the set and started fresh where it did not.
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
@@ -786,6 +956,7 @@ export async function startApp(root: Element): Promise<void> {
     filter: browserFilterStore(),
     input: browserInputKindStore(),
     fullRoute: browserFullRouteStore(),
+    set: browserSetStore(),
   };
   const filter = hasFilterParams(hash)
     ? filterFromHash(hash)
@@ -794,7 +965,11 @@ export async function startApp(root: Element): Promise<void> {
   const fullRoute = opensFullRoute(hash, input, stores.fullRoute.load());
   const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute });
   const settings = { filter, mode, input, fullRoute };
-  mount(root, index, newSession(airport, seed, previous, settings), stores);
+  const session = newSession(airport, seed, previous, settings);
+  const set = setFromHash(hash);
+  const initial =
+    set === undefined ? session : openedSet(session, set, stores.set.load(set.seed), Date.now());
+  mount(root, index, initial, stores);
   if (!toolbarListening) {
     toolbarListening = true;
     hideToolbarOnScroll();

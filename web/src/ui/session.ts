@@ -190,6 +190,18 @@ export function clearedPlan(
   return cleared;
 }
 
+/**
+ * The plan and clearance of the model answer: the plan as the engine corrects it, under the proposed
+ * handling, and the clearance the view already resolved for it. A test set builds its clearance form
+ * from it, so the form shows before the student's boxes are graded.
+ *
+ * @param view The amendment session.
+ * @returns The engine's corrected plan and its clearance.
+ */
+export function modelCleared(view: AmendmentView): Pick<ClearedPlan, 'plan' | 'clearance'> {
+  return { plan: view.drawn.result.corrected, clearance: view.clearance };
+}
+
 /** Draws a plan that is already correct, and the clearance the SOP issues for it. */
 function buildClearanceView(
   airport: AirportData,

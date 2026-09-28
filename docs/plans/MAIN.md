@@ -55,11 +55,10 @@ at a time with the user. Settling a fixture is a YAML edit plus `craft-gen build
     because the Portland LOA never allowed it, and nothing filed reaches MACHU. Needs a ruling, not a
     proposal
 
-## Wave 4 — Test sets and what-if variants (`web/src/ui/`, `web/src/styles.css`, `scenario/filter.ts`, `scenario/amend.ts`)
+## Wave 4 — What-if variants (`web/src/ui/`, `web/src/styles.css`, `scenario/filter.ts`, `scenario/amend.ts`)
 
-Subplan: [test-and-variants.md](./test-and-variants.md). Gate: UI + browser check. From a ZOA instructor's playtest feedback.
+Subplan: [what-if-variants.md](./what-if-variants.md). Gate: UI + browser check. From a ZOA instructor's playtest feedback.
 
-- [ ] **Test sets**: N strips on a clock, grades hidden until the set ends, then one summary; linkable through `x=` in the hash
 - [ ] **What-if variants**: after results, "as a prop", "as /G" and similar variants re-open the strip with that one change in amendment mode; linkable through `v=`
 
 ## Singles

@@ -1,7 +1,19 @@
 import { button, el, syncButton, syncText, textAreaControl, textAreaOf } from '@/ui/dom.ts';
+import { withSkip } from '@/ui/testBar.ts';
 
 /** Everything the typing box needs to render: the clearance typed so far and the two handlers. */
-export type TextFormProps = { text: string; onText: (text: string) => void; onSubmit: () => void };
+export type TextFormProps = {
+  text: string;
+  onText: (text: string) => void;
+  onSubmit: () => void;
+  /**
+   * Whether a strip box the same Submit stands for is still open, as on a test set's amendment
+   * strip, which keeps Submit disabled until it is answered.
+   */
+  boxesOpen: boolean;
+  /** Leaves the strip unanswered, which only a test set offers; no Skip button without it. */
+  onSkip?: (() => void) | undefined;
+};
 
 /** The typing box: the panel on screen, and how to write a later state of it into the box it built. */
 export type TextForm = { node: HTMLElement; sync: (props: TextFormProps) => void };
@@ -39,7 +51,7 @@ export function renderTextForm(props: TextFormProps): TextForm {
   const submit = button('Submit clearance', 'primary', () => {
     current.onSubmit();
   });
-  submit.disabled = blank(props.text);
+  submit.disabled = props.boxesOpen || blank(props.text);
   panel.append(
     el('h2', '', 'Your clearance'),
     el(
@@ -48,14 +60,14 @@ export function renderTextForm(props: TextFormProps): TextForm {
       'Type the clearance as you would read it on frequency. The callsign is optional.',
     ),
     field,
-    submit,
+    withSkip(submit, props.onSkip),
   );
   return {
     node: panel,
     sync: (next) => {
       current = next;
       syncText(area, next.text, false);
-      syncButton(submit, blank(next.text));
+      syncButton(submit, next.boxesOpen || blank(next.text));
     },
   };
 }

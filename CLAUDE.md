@@ -55,7 +55,7 @@ screenshot of the viewport alone to `.tmp/browser-check/`. Only the `-view` shot
 scroll; the printed `stripTop` is the top edge in the viewport of the rail's pinned group (`.rail-pin`: the strip the student works from, the amended one in amendment mode once it exists, and the ATIS line): 80 on `desktop`, 100 on `phone` at the top of the page, and 0 on `phone` after a scroll down, when the toolbar slides away (`toolbarHidden: true`). `stripScale` is the pinned paper's printed scale and `workTop` the page offset of the work column's first panel. The hash carries the airport in
 its `a=<ICAO>` part (every link the app writes has one; a missing or unknown one opens the first airport of the
 index) and takes an undocumented `d=<ICAO>` part that forces the drawn destination in both modes
-(`s=4,a=KOAK,d=KSMF,m=amend`; `i=text` opens the typing box, `r=full` opens it held to the full route), so a destination is checked directly instead of drawing until the RNG lands on
+(`s=4,a=KOAK,d=KSMF,m=amend`; `i=text` opens the typing box, `r=full` opens it held to the full route; `x=<set seed>.<n>.<minutes>.<index>` opens a test set, which `click:Test` then `click:Start` also starts), so a destination is checked directly instead of drawing until the RNG lands on
 it; it is never shown in the UI or remembered. `CRAFT_PREVIEW_URL` points the run at another preview
 (`pnpm -C web preview --port 4174` plus `CRAFT_PREVIEW_URL=http://localhost:4174/craft-tester/`), so two builds
 can be checked side by side. A button with no text lists by its `aria-label`, which is how the icon buttons read.

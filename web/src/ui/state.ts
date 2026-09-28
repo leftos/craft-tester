@@ -4,7 +4,13 @@ import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { EXPECT_CHOICES } from '@/rules/options.ts';
 import type { RouteReading } from '@/rules/text/grade.ts';
 import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
-import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
+import type {
+  InputKind,
+  Mode,
+  ScenarioFilter,
+  SessionSettings,
+  SetParams,
+} from '@/scenario/filter.ts';
 import { hashFor } from '@/scenario/filter.ts';
 import { buildScenario } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
@@ -114,6 +120,25 @@ export type AppState = {
    * remembers one.
    */
   revisit: Attempt | undefined;
+  /** The test set the strip on screen belongs to, while one runs or its summary is up. */
+  set?: SetState;
+};
+
+/**
+ * A test set in progress or finished: where it is (`SetParams`, which the hash carries), when it
+ * started, which strips were answered and which skipped, and whether and when it ended.
+ */
+export type SetState = SetParams & {
+  startedAt: number;
+  answered: readonly number[];
+  skipped: readonly number[];
+  /**
+   * The attempt submitted at each answered strip this page has seen, by index, which the summary
+   * grades before it reads the solved store, so a browser that cannot store still gets a summary.
+   */
+  attempts: Readonly<Record<number, Attempt>>;
+  ended: boolean;
+  endedAt: number | undefined;
 };
 
 /** The empty option of a dropdown reads back as the empty string, which is no pick at all. */
@@ -593,6 +618,7 @@ export function withSubmitted(state: AppState): AppState {
  * the reasons instead of any of them.
  */
 export type Phase =
+  | 'set-summary'
   | 'unresolved'
   | 'clearance-revisit'
   | 'clearance-results'
@@ -624,6 +650,7 @@ function clearancePhase(state: AppState): Phase {
  * @returns The phase the state is in.
  */
 export function phaseOf(state: AppState): Phase {
+  if (state.set !== undefined && state.set.index >= state.set.n) return 'set-summary';
   if (state.view.kind === 'unresolved') return 'unresolved';
   return state.view.kind === 'amendment' ? amendmentPhase(state) : clearancePhase(state);
 }
@@ -636,14 +663,18 @@ export function phaseOf(state: AppState): Phase {
  * clearance is picked or typed, the full route flag decides which reading grades it, and the hash
  * that shares it names all six, so the panels answer to nothing else while the key holds. What
  * varies under one key is the form's picks, the typed clearance and the strip's answers, which the
- * panels write into the controls they already built.
+ * panels write into the controls they already built. A test set's progress squares are drawn from
+ * its answered and skipped strips, so they are in the key too: skipping the only strip left open
+ * draws it again, fresh, with its square marked.
  *
  * @param state The state the page renders from.
  * @returns The key; two states that render the same panel set share it.
  */
 export function viewKey(state: AppState): string {
   const hash = hashFor(state.airport.airport.icao, state.seed, state);
-  return `${hash}|${phaseOf(state)}`;
+  const set = state.set;
+  const progress = set === undefined ? '' : `|${set.answered.join(',')}|${set.skipped.join(',')}`;
+  return `${hash}|${phaseOf(state)}${progress}`;
 }
 
 /**

@@ -1178,6 +1178,11 @@ button.secondary:hover {
     transform: translateY(-100%);
   }
 
+  /* The test bar and its clock stay while a set runs. */
+  :root.toolbar-hidden .toolbar.testbar {
+    transform: none;
+  }
+
   /*
    * One column. The rail's own box goes away, so the pinned group sticks to the whole page rather
    * than to the rail: the strip the student works from and the ATIS line stay under the toolbar, or
@@ -1293,5 +1298,181 @@ button.secondary:hover {
 
   .amend-boxes {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The Test button and its popover, drawn like Filters; the popover holds the count, the time, Start. */
+.test-start {
+  position: relative;
+}
+
+.test-start > summary {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid var(--control-line);
+  border-radius: 6px;
+  background: var(--surface);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+  white-space: nowrap;
+}
+
+.test-start > summary::-webkit-details-marker {
+  display: none;
+}
+
+.test-start > summary:hover {
+  background: var(--accent-soft);
+}
+
+.test-popover {
+  position: absolute;
+  top: calc(100% + var(--s2));
+  right: 0;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s3);
+  width: max-content;
+  padding: var(--s4);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 4px 16px var(--shadow);
+}
+
+.test-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+/* On a wide screen Test sits right of the spacer, just before New strip, though it lives in row 2. */
+@media (min-width: 900px) {
+  .toolbar-row2 ~ .toolbar-spacer {
+    order: 1;
+  }
+
+  .toolbar .test-start {
+    order: 2;
+  }
+
+  .toolbar > button.primary {
+    order: 3;
+  }
+}
+
+/* Submit and Skip side by side, while a test set runs. */
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* The test bar stands in for the toolbar while a set runs: dark, with the clock and the squares. */
+.toolbar.testbar {
+  gap: var(--s4);
+  border-bottom-color: var(--holder);
+  background: var(--holder);
+  color: var(--paper);
+}
+
+.testbar .clock {
+  font: 700 1.5rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.testbar .dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.testbar .dots > * {
+  box-sizing: border-box;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: var(--ink-2);
+}
+
+.testbar .dots > .done {
+  background: var(--paper);
+}
+
+.testbar .dots > .now {
+  outline: 2px solid var(--paper);
+  outline-offset: 1px;
+  background: transparent;
+}
+
+.testbar .dots > button.skipped {
+  border: 1px dashed var(--paper);
+  background: transparent;
+  cursor: pointer;
+}
+
+.testbar button.secondary {
+  border-color: var(--ink-2);
+  background: transparent;
+  color: inherit;
+}
+
+/* The summary: both totals, the time used, then a row per strip with its link. */
+.set-rows {
+  display: grid;
+  margin: var(--s4) 0;
+  padding: 0;
+  list-style: none;
+}
+
+.set-rows li {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr) auto;
+  gap: var(--s3);
+  align-items: baseline;
+  padding: var(--s2) 0;
+  border-top: 1px solid var(--rule);
+}
+
+.set-strip {
+  font-weight: 700;
+}
+
+.set-rows li.unanswered .set-line {
+  color: var(--ink-2);
+}
+
+@media (max-width: 899.98px) {
+  .test-popover {
+    position: fixed;
+    top: var(--bar-h);
+    right: var(--s4);
+    left: var(--s4);
+    width: auto;
+  }
+
+  .toolbar-row2 .test-start > summary {
+    padding: 5px 9px;
+  }
+
+  /* Two rows on a phone: where the set is, the clock and End test, then the squares. */
+  .toolbar.testbar {
+    column-gap: var(--s3);
+  }
+
+  .testbar .dots {
+    order: 2;
+    width: 100%;
+  }
+
+  .set-rows li {
+    grid-template-columns: 4rem minmax(0, 1fr) auto;
   }
 }

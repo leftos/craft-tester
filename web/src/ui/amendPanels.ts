@@ -12,7 +12,7 @@ import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
-import { clearedPlan, spokenFor } from '@/ui/session.ts';
+import { clearedPlan, modelCleared, spokenFor } from '@/ui/session.ts';
 import type { ClearedPlan, ScenarioView } from '@/ui/session.ts';
 import type { AmendmentPicks, AppState, ClearanceAnswer, PickKey } from '@/ui/state.ts';
 import { phaseOf, routeReadingOf, toAmendmentAnswer, toBoxAnswers } from '@/ui/state.ts';
@@ -52,7 +52,14 @@ export type AmendmentHandlers = {
   onRetry: () => void;
   onSubmit: () => void;
   onText: (text: string) => void;
+  /** Leaves the strip unanswered; the forms offer it only while a test set runs. */
+  onSkip: () => void;
 };
+
+/** The Skip handler a form offers: the session's while a test set runs, none otherwise. */
+function skipOf(state: AppState, handlers: AmendmentHandlers): (() => void) | undefined {
+  return state.set === undefined ? undefined : handlers.onSkip;
+}
 
 /**
  * The SID a corrected plan files, which is the procedure the clearance then assigns.
@@ -162,24 +169,30 @@ function revisitPanels(
  *
  * The strip is read-only paper, so every box it prints is answered in the panel below rather than
  * on the strip itself, where the boxes take the full width and a route reads without wrapping.
+ *
+ * In a test set the clearance form sits under the boxes on the same screen, built from the model
+ * answer so no correction shows before the answer is in, and its Submit and Skip stand for both.
  */
 function amendingPanels(state: AppState, view: AmendmentView, handlers: AmendmentHandlers): Panels {
+  const inSet = state.set !== undefined;
   const props = (next: AppState): AmendFormProps => ({
     scenario: view.drawn.filed,
     boxes: next.boxes,
     onBox: handlers.onBox,
-    onSubmit: handlers.onBoxesSubmit,
+    onSubmit: inSet ? undefined : handlers.onBoxesSubmit,
   });
   const form = renderAmendForm(props(state));
+  const clearing = inSet ? renderClearingForm(state, modelCleared(view), handlers) : undefined;
   return {
     rail: [],
     pinned: [
       renderStrip(view.drawn.filed, state.airport, state.seed, 'Flight plan', asFiled(state)),
       renderAtis(view.drawn.filed, state.airport),
     ],
-    work: [form.node],
+    work: clearing === undefined ? [form.node] : [form.node, clearing.node],
     sync: (next) => {
       form.sync(props(next));
+      clearing?.sync(next);
     },
   };
 }
@@ -193,7 +206,7 @@ type ClearingForm = { node: HTMLElement; sync: (state: AppState) => void };
  */
 function renderClearingForm(
   state: AppState,
-  cleared: ClearedPlan,
+  cleared: Pick<ClearedPlan, 'plan' | 'clearance'>,
   handlers: AmendmentHandlers,
 ): ClearingForm {
   if (state.input === 'text') {
@@ -201,6 +214,8 @@ function renderClearingForm(
       text: next.text,
       onText: handlers.onText,
       onSubmit: handlers.onSubmit,
+      boxesOpen: toBoxAnswers(next.boxes) === undefined,
+      onSkip: skipOf(next, handlers),
     });
     const form = renderTextForm(typed(state));
     return { node: form.node, sync: (next) => form.sync(typed(next)) };
@@ -213,6 +228,8 @@ function renderClearingForm(
     procedure: 'picked',
     onPick: handlers.onPick,
     onSubmit: handlers.onSubmit,
+    boxesOpen: toBoxAnswers(next.boxes) === undefined,
+    onSkip: skipOf(next, handlers),
   });
   const form = renderCraftForm(picked(state));
   return { node: form.node, sync: (next) => form.sync(picked(next)) };

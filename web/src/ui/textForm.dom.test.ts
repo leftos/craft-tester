@@ -17,6 +17,7 @@ function rendered(text: string): { form: TextForm; calls: Calls; props: TextForm
     onSubmit: () => {
       calls.submits += 1;
     },
+    boxesOpen: false,
   };
   return { form: renderTextForm(props), calls, props };
 }

@@ -12,6 +12,7 @@ import type { ClearanceElement, ExpectClause, ResolvedClearance } from '@/rules/
 import { headingLabel } from '@/rules/types.ts';
 import type { SelectOption, SelectSpec } from '@/ui/dom.ts';
 import { button, el, selectControl, selectOf, syncButton, syncSelect } from '@/ui/dom.ts';
+import { withSkip } from '@/ui/testBar.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
 import { picksProcedure, templateNamesFix, toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
@@ -65,6 +66,13 @@ export type CraftFormProps = {
   procedure: ProcedureRow;
   onPick: (key: PickKey, raw: string) => void;
   onSubmit: () => void;
+  /**
+   * Whether a strip box the same Submit stands for is still open, as on a test set's amendment
+   * strip, which keeps Submit disabled until it is answered.
+   */
+  boxesOpen: boolean;
+  /** Leaves the strip unanswered, which only a test set offers; no Skip button without it. */
+  onSkip?: (() => void) | undefined;
 };
 
 /** A dropdown whose choices are their own labels, e.g. a list of destinations. */
@@ -404,14 +412,14 @@ export function renderCraftForm(props: CraftFormProps): CraftForm {
   const submit = button('Submit clearance', 'primary', () => {
     current.onSubmit();
   });
-  submit.disabled = submitDisabled(props.picks, props.procedure);
-  panel.append(submit);
+  submit.disabled = props.boxesOpen || submitDisabled(props.picks, props.procedure);
+  panel.append(withSkip(submit, props.onSkip));
   return {
     node: panel,
     sync: (next) => {
       current = next;
       syncGroups(groupsOf(next), controls);
-      syncButton(submit, submitDisabled(next.picks, next.procedure));
+      syncButton(submit, next.boxesOpen || submitDisabled(next.picks, next.procedure));
     },
   };
 }

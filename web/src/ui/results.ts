@@ -35,8 +35,13 @@ function countOf(grades: readonly Grade[], verdict: Verdict): number {
   return grades.filter((grade) => grade.verdict === verdict).length;
 }
 
-/** The points a set of verdicts earned: an acceptable answer counts whole, a half one half. */
-function creditOf(grades: readonly Grade[]): number {
+/**
+ * The points a set of verdicts earned: an acceptable answer counts whole, a half one half.
+ *
+ * @param grades The verdicts to count.
+ * @returns The credit, a whole or half number no greater than the count of verdicts.
+ */
+export function creditOf(grades: readonly Grade[]): number {
   return (
     countOf(grades, 'correct') +
     countOf(grades, 'acceptable') +
