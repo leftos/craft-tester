@@ -23,6 +23,7 @@ const minimalAssignmentRule: AssignmentRule = {
   classes: ['T', 'J'],
   sidFamily: 'TRUKN',
   sector: 'richmond',
+  why: null,
 };
 
 const minimalTecRoute: TecRoute = {
@@ -34,6 +35,7 @@ const minimalTecRoute: TecRoute = {
   runwayFamilies: [],
   classes: ['J'],
   route: 'TRUKN# TRUKN FEVTA FEVTA1',
+  why: null,
 };
 
 const minimalAirportData: AirportData = {
@@ -131,6 +133,7 @@ const minimalAirportData: AirportData = {
       outcome: { kind: 'interim', feet: 10000 },
       whenTopAltitudePublished: 'climb_via',
       expectAfterMinutes: 10,
+      why: null,
     },
   ],
   phraseology: {

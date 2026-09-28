@@ -26,18 +26,21 @@ const assignmentCitation: RuleCitation = {
   id: 'SFOW-N-TRUKN-01',
   source: 'SFO ATCT SOP 2-2 a',
   text: 'Northbound, runway 01, T/J -> TRUKN#',
+  why: null,
 };
 
 const altitudeCitation: RuleCitation = {
   id: 'SFOW-J-10000',
   source: 'SFO ATCT SOP 2-2 c ii',
   text: 'SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000',
+  why: null,
 };
 
 const runwayCitation: RuleCitation = {
   id: 'RWY-DIRECTION',
   source: 'S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?',
   text: 'The departure runway follows the first turn: right turn (northbound SIDs) 1R',
+  why: null,
 };
 
 const expected: ResolvedClearance = {
@@ -61,6 +64,7 @@ const headingCitation: RuleCitation = {
   id: 'SFOW-NOISE-P-RWY',
   source: 'SFO ATCT SOP 2-4 e',
   text: 'Noise abatement: runway 01, non-RNAV props -> runway heading (no DP)',
+  why: null,
 };
 
 /** The clearance the noise window issues a non-RNAV prop off the 01s: no procedure at all. */
@@ -91,6 +95,7 @@ const redundantCitation: RuleCitation = {
   id: 'A-EXPECT-REDUNDANT',
   source: 'ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3',
   text: 'the chart publishes the expect note itself, so speaking it is longer than it needs to be',
+  why: null,
 };
 
 /** A clearance whose expect clause the SID chart already publishes, so the engine drops it. */
@@ -107,6 +112,7 @@ const finalCitation: RuleCitation = {
   id: 'A-FINAL',
   source: 'ZOA practice via the user, 2026-09-16 (SKW2345 amendment plan)',
   text: '(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause',
+  why: null,
 };
 
 /** A clearance that climbs the flight straight to the amended altitude and speaks it. */

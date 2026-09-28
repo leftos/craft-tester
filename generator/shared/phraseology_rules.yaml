@@ -108,6 +108,7 @@ phraseology_rules:
   - id: R-THEN-OMITTED
     source: "FAA JO 7110.65 4-3-2 (THEN AS FILED); instructor feedback and user ruling 2026-09-28"
     text: "AS FILED said without THEN (… DEDHD, AS FILED for … DEDHD, THEN AS FILED) is acceptable, not a miss: the pilot is handed the same route over as filed. R-THEN-AS-FILED still reads THEN AS FILED, which is what is said on frequency"
+    why: "Leaving out \"then\" still hands the pilot the rest of the filed route, so it is only marked down a little; the standard phrase is \"then as filed\"."
   - id: S-FILLER
     source: "user ruling 2026-09-17 (free-text entry)"
     text: "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make an element acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss"

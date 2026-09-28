@@ -17,7 +17,9 @@ const clearanceView: ProposalView = {
       {
         label: 'C cleared to',
         value: 'KSEA',
-        citations: [{ id: 'C-DEST', source: 'FAA JO 7110.65 4-3-2 a', text: 'CLEARED TO (dest)' }],
+        citations: [
+          { id: 'C-DEST', source: 'FAA JO 7110.65 4-3-2 a', text: 'CLEARED TO (dest)', why: null },
+        ],
       },
     ],
     spoken: {
@@ -74,7 +76,9 @@ const acceptedClearance: AcceptedReading = {
       {
         label: 'R procedure',
         value: 'Nimitz Six departure (NIMI6)',
-        citations: [{ id: 'OAK-SFOW-PT-NIMI', source: 'OAK SOP 3-4', text: 'All other props' }],
+        citations: [
+          { id: 'OAK-SFOW-PT-NIMI', source: 'OAK SOP 3-4', text: 'All other props', why: null },
+        ],
       },
       { label: 'A altitude', value: 'maintain 3000', citations: [] },
     ],

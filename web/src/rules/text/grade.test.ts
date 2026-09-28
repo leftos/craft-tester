@@ -207,7 +207,7 @@ const fixSpoken = { CCR: 'Concord VOR', RBL: 'Red Bluff VOR' };
 
 /** A row a hand-built clearance cites, which only has to be told apart from the tier rows. */
 function row(id: string): RuleCitation {
-  return { id, source: 'grade.test.ts', text: id };
+  return { id, source: 'grade.test.ts', text: id, why: null };
 }
 
 type ClearanceParts = {

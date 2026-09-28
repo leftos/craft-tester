@@ -319,6 +319,7 @@ def _assignment_rule(rule: AssignmentRule) -> Document:
         "classes": list(rule.classes),
         "sidFamily": rule.sid_family,
         "sector": rule.sector,
+        "why": rule.why,
     }
     return _with_optional(
         entry,
@@ -348,6 +349,7 @@ def _altitude_rule(rule: AltitudeRule) -> Document:
         "outcome": _altitude_outcome(rule.outcome, f"sop.yaml altitude_rules[{rule.id}].outcome"),
         "whenTopAltitudePublished": rule.when_top_altitude_published,
         "expectAfterMinutes": rule.expect_after_minutes,
+        "why": rule.why,
     }
     headings = None if rule.non_dp_headings is None else list(rule.non_dp_headings)
     return _with_optional(entry, groups=_texts(rule.groups), sidFamilies=_texts(rule.sid_families), nonDpHeadings=headings)
@@ -363,6 +365,7 @@ def _notice(notice: Notice) -> Document:
         "plan": notice.plan,
         "effect": _with_optional(effect, heading=notice.effect.heading),
         "defaultActive": notice.default_active,
+        "why": notice.why,
     }
 
 
@@ -385,6 +388,7 @@ def _route_connection(connection: RouteConnection) -> Document:
         "connects": connection.connects,
         "source": connection.source,
         "text": f"{connection.from_fix} {connection.connects} connects to {connection.to}",
+        "why": connection.why,
     }
 
 
@@ -398,6 +402,7 @@ def _common_arrival(arrival: CommonArrival) -> Document:
         "source": arrival.source,
         "text": arrival.text,
         "destinations": list(arrival.destinations),
+        "why": arrival.why,
     }
     _with_optional(entry, classes=_texts(arrival.classes), cargo=arrival.cargo or None)
     entry["family"] = arrival.family
@@ -427,7 +432,7 @@ def _phraseology_rules(
     rules += [rule for rule in airport if rule.id not in shared_ids]
     if special_handling is not None:
         rules.append(special_handling.rule)
-    return [{"id": rule.id, "source": rule.source, "text": rule.text} for rule in rules]
+    return [{"id": rule.id, "source": rule.source, "text": rule.text, "why": rule.why} for rule in rules]
 
 
 def _arrivals(icao: str, destination_stars: Mapping[str, tuple[CifpStar, ...]]) -> list[Document]:
@@ -645,6 +650,7 @@ def _tec_route(route: TecRoute, source: str) -> Document:
         "runwayFamilies": list(route.runway_families),
         "classes": list(route.classes),
         "route": route.route,
+        "why": route.why,
     }
     return _with_optional(entry, initialAltitudeFeet=route.initial_altitude_feet, finalAltitudeFeet=route.final_altitude_feet)
 
@@ -667,7 +673,7 @@ def _loa_effect(rule: LoaRuleKind) -> Document:
 
 
 def _loa_rule(rule: LoaRule) -> Document:
-    entry: Document = {"id": rule.id, "source": rule.source, "text": rule.text, "rule": _loa_effect(rule.rule)}
+    entry: Document = {"id": rule.id, "source": rule.source, "text": rule.text, "rule": _loa_effect(rule.rule), "why": rule.why}
     return _with_optional(entry, artcc=rule.artcc, destinations=_texts(rule.destinations))
 
 

@@ -24,7 +24,7 @@ const redundantExpect: Grade = {
   verdict: 'acceptable',
   expectedLabel: 'no expect altitude',
   actualLabel: 'expect filed altitude 10 minutes after departure',
-  citations: [{ id: 'A-EXPECT-REDUNDANT', source: '', text: '' }],
+  citations: [{ id: 'A-EXPECT-REDUNDANT', source: '', text: '', why: null }],
 };
 
 /** A frequency said with "nine" for "niner": acceptable, and no longer than the reading. */
@@ -33,7 +33,7 @@ const nineFrequency: Grade = {
   verdict: 'acceptable',
   expectedLabel: 'one two zero point niner',
   actualLabel: 'one two zero point nine',
-  citations: [{ id: 'S-NINER', source: '', text: '' }],
+  citations: [{ id: 'S-NINER', source: '', text: '', why: null }],
 };
 
 /** The route box that reads the proposal but for the arrival it swaps: half a point. */

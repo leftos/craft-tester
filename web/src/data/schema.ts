@@ -322,6 +322,8 @@ export const AssignmentRuleSchema = z
     id: z.string(),
     source: z.string(),
     text: z.string(),
+    /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+    why: z.string().nullable(),
     plan: z.string(),
     direction: z.union([DirectionSchema, z.literal('any')]),
     runwayFamilies: z.array(z.string()),
@@ -362,6 +364,8 @@ export const AltitudeRuleSchema = z.strictObject({
   id: z.string(),
   source: z.string(),
   text: z.string(),
+  /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+  why: z.string().nullable(),
   plan: z.string(),
   runwayFamilies: z.array(z.string()),
   classes: z.array(AircraftClassSchema),
@@ -400,6 +404,8 @@ export const PhraseologyRuleSchema = z.strictObject({
   id: z.string(),
   source: z.string(),
   text: z.string(),
+  /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+  why: z.string().nullable(),
 });
 
 /**
@@ -429,6 +435,8 @@ export const RouteConnectionSchema = z.strictObject({
   connects: z.enum(['always', 'usually']),
   source: z.string(),
   text: z.string(),
+  /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+  why: z.string().nullable(),
 });
 
 /**
@@ -458,6 +466,8 @@ export const CommonArrivalSchema = z.strictObject({
   id: z.string(),
   source: z.string(),
   text: z.string(),
+  /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+  why: z.string().nullable(),
   destinations: z.array(z.string()),
   classes: z.array(AircraftClassSchema).optional(),
   cargo: z.literal(true).optional(),
@@ -484,6 +494,8 @@ export const TecRouteSchema = z
     route: z.string(),
     initialAltitudeFeet: feet.optional(),
     finalAltitudeFeet: feet.optional(),
+    /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+    why: z.string().nullable(),
   })
   .check((ctx) => {
     const row = ctx.value;
@@ -537,6 +549,8 @@ export const LoaRuleSchema = z.strictObject({
   id: z.string(),
   source: z.string(),
   text: z.string(),
+  /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+  why: z.string().nullable(),
   artcc: z.string().optional(),
   destinations: z.array(z.string()).optional(),
   rule: LoaRuleKindSchema,
@@ -659,6 +673,8 @@ export const NoticeSchema = z.strictObject({
   source: z.string(),
   dated: z.string(),
   text: z.string(),
+  /** One sentence for the student saying why the row reads as it does, or null where it states none. */
+  why: z.string().nullable(),
   plan: z.string().optional(),
   effect: z.discriminatedUnion('kind', [
     z.strictObject({

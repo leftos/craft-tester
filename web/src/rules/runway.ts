@@ -252,7 +252,9 @@ export function explainRunway(
   const runway = scenario.departureRunway;
   const config = airport.runwayConfigs.find((entry) => entry.id === scenario.runwayConfigId);
   const configCitations: RuleCitation[] =
-    config === undefined ? [] : [{ id: config.id, source: config.source, text: config.name }];
+    config === undefined
+      ? []
+      : [{ id: config.id, source: config.source, text: config.name, why: null }];
   const mechanism = mechanismId(airport, config, scenario, aircraftClass, direction);
   const alsoAccepted = parkingParallels(airport, config, aircraftClass, runway, mechanism);
   const rows = alsoAccepted.length > 0 ? [mechanism, 'RWY-PARKING'] : [mechanism];

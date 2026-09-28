@@ -7,6 +7,7 @@ const CPS004: RuleCitation = {
   id: 'ZOA-CPS004-SPECIAL-AIRCRAFT',
   source: 'ZOA CPS-004 3.1',
   text: 'special aircraft',
+  why: null,
 };
 
 /** A resolution as the tests grade against it: what it expects of each element. */

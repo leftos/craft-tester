@@ -11,6 +11,8 @@ export type RuleCitation = {
   id: string;
   source: string;
   text: string;
+  /** One sentence for the student saying why the row reads as it does, null where the row states none. */
+  why: string | null;
 };
 
 /** A resolved value together with the rule rows that produced it. */

@@ -81,6 +81,7 @@ const CLIMB_VIA_ROW: AltitudeRule = {
   outcome: { kind: 'climb_via' },
   whenTopAltitudePublished: 'interim',
   expectAfterMinutes: 10,
+  why: null,
 };
 
 /**
@@ -421,6 +422,7 @@ function withTecRow(row: Partial<TecRoute>, airport: AirportData = ksfo): Airpor
     runwayFamilies: [],
     classes: ['J'],
     route: 'TRUKN# TRUKN FEVTA FEVTA1',
+    why: null,
   };
   return { ...airport, tecRoutes: [{ ...base, ...row }, ...airport.tecRoutes] };
 }

@@ -91,7 +91,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a i (SFOW Northbound)",
       "text": "SFOW: OAK#, runways 28/30, DH8D -> CVS x 10,000",
-      "whenTopAltitudePublished": "interim"
+      "whenTopAltitudePublished": "interim",
+      "why": null
     },
     {
       "classes": [
@@ -113,7 +114,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a i (SFOW Northbound)",
       "text": "SFOW: OAK#, runways 28/30, J -> CVS x FL190",
-      "whenTopAltitudePublished": "interim"
+      "whenTopAltitudePublished": "interim",
+      "why": null
     },
     {
       "classes": [],
@@ -135,7 +137,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic/Southbound)",
       "text": "SFOW: CNDEL#, runways 28/30, J & DH8D -> CVS",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -156,7 +159,8 @@
       ],
       "source": "OAK ATCT SOP Appendix B d i",
       "text": "SFOW noise abatement: HUSSH#, runway 30, J & DH8D -> CVS",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -178,7 +182,8 @@
       ],
       "source": "OAK ATCT SOP Appendix B d i",
       "text": "SFOW noise abatement: SLNT#, runway 30, J & DH8D -> CVS x FL190",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -201,7 +206,8 @@
       ],
       "source": "OAK ATCT SOP Appendix B d i",
       "text": "SFOW noise abatement: SUNNE#, runways 28/30, J & DH8D -> 5,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -222,7 +228,8 @@
       ],
       "source": "OAK ATCT SOP Appendix B d i",
       "text": "SFOW noise abatement: SALAD#, runway 28, P and approach category A/B -> CVS x 4,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -248,7 +255,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic/Southbound, Via BSR, EUGEN, SHOEY, or SNS)",
       "text": "SFOW: SKYL#, COAST#, NUEVO#, runways 28/30, P/T/J -> CVS x 10,000 (Others); the SOP merges the NUEVO# row's altitude cell with the southbound rows above it, so it carries the same 10,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -271,7 +279,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a i (SFOW, All other props)",
       "text": "SFOW: NIMI#, runways 28/30, P/T -> 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -290,7 +299,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
       "text": "SFOW: runway 33, J & DH8D on a heading -> 2,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -309,7 +319,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
       "text": "SFOW: runway 33, P/T on a heading -> 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -329,7 +340,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b ii (SFOW); OAK ATCT SOP Appendix B d i",
       "text": "SFOW: runways 28/30, J & DH8D on a heading -> 10,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -352,7 +364,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
       "text": "SFOW: runways 28/30, P/T on 315 degrees -> 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -376,7 +389,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b ii (SFOW); OAK ATCT SOP Appendix B d i",
       "text": "SFOW: runways 28/30, P/T on runway heading or 270 degrees -> 10,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -399,7 +413,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a ii (OAKE)",
       "text": "OAKE: QUAKE#, runways 10/12, J & DH8D -> 5,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -419,7 +434,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b iii (OAKE); OAK ATCT SOP Appendix B d ii",
       "text": "OAKE: runways 10/12, J & DH8D on a heading -> 5,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -439,7 +455,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a ii (OAKE, All)",
       "text": "OAKE: runways 10/12, P/T on 090 degrees -> 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -462,7 +479,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a iii (SFOE Northbound/Oceanic)",
       "text": "SFOE: OAK#, runways 10/12, J & DH8D -> 3,000",
-      "whenTopAltitudePublished": "interim"
+      "whenTopAltitudePublished": "interim",
+      "why": null
     },
     {
       "classes": [],
@@ -486,7 +504,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a iii (SFOE Southbound)",
       "text": "SFOE: KATFH#, SKYL#, runways 10/12, J & DH8D -> CVS x 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [],
@@ -506,7 +525,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 b iv (SFOE); OAK ATCT SOP Appendix B d iii",
       "text": "SFOE: runways 10/12, J & DH8D on a heading -> 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     },
     {
       "classes": [
@@ -526,7 +546,8 @@
       ],
       "source": "OAK ATCT SOP 2-2 a iii (SFOE, All)",
       "text": "SFOE: runways 10/12, P/T on 090 degrees -> 3,000",
-      "whenTopAltitudePublished": "climb_via"
+      "whenTopAltitudePublished": "climb_via",
+      "why": null
     }
   ],
   "assignmentRules": [
@@ -548,7 +569,8 @@
       "when": {
         "noiseWindow": "hussh_required",
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -569,7 +591,8 @@
         "forcedTransition": "GOBBS",
         "noiseWindow": "hussh_required",
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -590,7 +613,8 @@
         "forcedTransition": "GOBBS",
         "noiseWindow": "hussh_required",
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -610,7 +634,8 @@
       "when": {
         "noiseWindow": "sfow_night",
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -629,7 +654,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 30, J & DH8D -> SLNT# (Richmond), CVS x FL190; not authorized between 0100L and 0500L",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -649,7 +675,8 @@
       "when": {
         "noiseWindow": "sfow_night",
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -669,7 +696,8 @@
       "when": {
         "noiseWindow": "sfow_night",
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -689,7 +717,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runway 30, J & DH8D -> 270 degrees (Sutro), 10,000; not authorized between 0100L and 0500L",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -709,7 +738,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): Oceanic, runway 30, J & DH8D -> 270 degrees (Sutro), 10,000; not authorized between 0100L and 0500L",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -729,7 +759,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runways 28/30, J & DH8D -> SUNNE# (Sutro), 5,000; SUNNE# DP will be authorized by NCT when traffic levels allow",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -750,7 +781,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): Southbound, runways 28/30, J & DH8D -> 270 degrees (Sutro), 10,000",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -770,7 +802,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): Northbound, runway 28, J & DH8D -> 270 degrees (Richmond), 10,000",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -790,7 +823,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Richmond for northbound departures",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -810,7 +844,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Sutro for oceanic/southbound departures",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -830,7 +865,8 @@
       "text": "Noise abatement (2200L-0700L, 0800L Sun): All, runway 30, P/T -> 270 degrees, 10,000; Sutro for oceanic/southbound departures",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "approachCategories": [
@@ -852,7 +888,8 @@
       "text": "SALAD# is in use 2200L until 0700L daily: All, runway 28, P and approach category A/B -> SALAD# (Richmond), CVS x 4,000",
       "when": {
         "noiseWindow": "salad"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -873,7 +910,8 @@
       "text": "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Richmond for northbound departures",
       "when": {
         "noiseWindow": "sfoe_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -894,7 +932,8 @@
       "text": "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Sutro for oceanic/southbound departures",
       "when": {
         "noiseWindow": "sfoe_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -915,7 +954,8 @@
       "text": "Noise abatement (2200L-0600L): All, runways 10/12, J & DH8D -> 140 degrees, 3,000; Sutro for oceanic/southbound departures",
       "when": {
         "noiseWindow": "sfoe_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -936,7 +976,8 @@
       "text": "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Richmond for northbound departures",
       "when": {
         "noiseWindow": "sfoe_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -957,7 +998,8 @@
       "text": "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Sutro for oceanic/southbound departures",
       "when": {
         "noiseWindow": "sfoe_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -978,7 +1020,8 @@
       "text": "Noise abatement (2200L-0600L): All, runways 10/12, P/T -> 090 degrees, 3,000; Sutro for oceanic/southbound departures",
       "when": {
         "noiseWindow": "sfoe_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -998,7 +1041,8 @@
       "text": "Noise abatement: All, runways 10/12, J & DH8D -> QUAKE# (Grove), 5,000",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1019,7 +1063,8 @@
       "text": "Noise abatement: All, runways 10/12, J & DH8D -> 270 degrees (Grove), 5,000",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -1040,7 +1085,8 @@
       "text": "Noise abatement: All, runways 10/12, P/T -> 090 degrees (Grove), 3,000",
       "when": {
         "noiseWindow": "sfow_night"
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1057,7 +1103,8 @@
       "sector": "richmond",
       "sidFamily": "OAK",
       "source": "OAK ATCT SOP 2-2 a i (SFOW Northbound)",
-      "text": "Northbound, runways 28L/28R/30, J & DH8D -> OAK# (Richmond), CVS x FL190 (J) / CVS x 10,000 (DH8D)"
+      "text": "Northbound, runways 28L/28R/30, J & DH8D -> OAK# (Richmond), CVS x FL190 (J) / CVS x 10,000 (DH8D)",
+      "why": null
     },
     {
       "classes": [],
@@ -1077,7 +1124,8 @@
       "text": "Oceanic, runways 28L/28R/30, J & DH8D -> CNDEL# (Sutro), CVS",
       "when": {
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1094,7 +1142,8 @@
       "sector": "sutro",
       "sidFamily": "SKYL",
       "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic)",
-      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000"
+      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1111,7 +1160,8 @@
       "sector": "sutro",
       "sidFamily": "COAST",
       "source": "OAK ATCT SOP 2-2 a i (SFOW Oceanic)",
-      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000"
+      "text": "Oceanic, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1131,7 +1181,8 @@
       "text": "Southbound, runways 28L/28R/30, J & DH8D -> CNDEL# (Sutro), CVS",
       "when": {
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1148,7 +1199,8 @@
       "sector": "sutro",
       "sidFamily": "SKYL",
       "source": "OAK ATCT SOP 2-2 a i (SFOW Southbound)",
-      "text": "Southbound, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000"
+      "text": "Southbound, runways 28L/28R/30, J & DH8D -> SKYL# (Sutro), CVS x 10,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1165,7 +1217,8 @@
       "sector": "sutro",
       "sidFamily": "COAST",
       "source": "OAK ATCT SOP 2-2 a i (SFOW Southbound)",
-      "text": "Southbound, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000"
+      "text": "Southbound, runways 28L/28R/30, J & DH8D -> COAST# (Sutro), CVS x 10,000",
+      "why": null
     },
     {
       "classes": [
@@ -1191,7 +1244,8 @@
           "SHOEY",
           "SNS"
         ]
-      }
+      },
+      "why": null
     },
     {
       "classes": [
@@ -1208,7 +1262,8 @@
       "sector": "richmond",
       "sidFamily": "NIMI",
       "source": "OAK ATCT SOP 2-2 a i (SFOW, All other props)",
-      "text": "All other props, runways 28L/28R/30, P/T -> NIMI# (Richmond), 3,000"
+      "text": "All other props, runways 28L/28R/30, P/T -> NIMI# (Richmond), 3,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1229,7 +1284,8 @@
       "text": "Initial headings shall only be issued when a DP cannot be used or an applicable one does not exist (e.g. TEC route does not include DP): northbound, runways 10/12, J & DH8D on a TEC route with no DP -> 270 degrees (Richmond), 5,000",
       "when": {
         "tecRouteWithoutDp": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1250,7 +1306,8 @@
       "text": "Initial headings shall only be issued when a DP cannot be used or an applicable one does not exist (e.g. TEC route does not include DP): southbound, runways 10/12, J & DH8D on a TEC route with no DP -> 270 degrees (Sutro), 5,000",
       "when": {
         "tecRouteWithoutDp": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1267,7 +1324,8 @@
       "sector": "richmond",
       "sidFamily": "QUAKE",
       "source": "OAK ATCT SOP 2-2 a ii (OAKE Northbound)",
-      "text": "Northbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Richmond), 5,000"
+      "text": "Northbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Richmond), 5,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1284,7 +1342,8 @@
       "sector": "sutro",
       "sidFamily": "QUAKE",
       "source": "OAK ATCT SOP 2-2 a ii (OAKE Southbound)",
-      "text": "Southbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Sutro), 5,000"
+      "text": "Southbound, runways 10L/10R/12, J & DH8D -> QUAKE# (Sutro), 5,000",
+      "why": null
     },
     {
       "classes": [
@@ -1302,7 +1361,8 @@
       "sector": "grove",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 a ii (OAKE, All)",
-      "text": "All, runways 10L/10R/12, P/T -> 090 degrees (Grove), 3,000"
+      "text": "All, runways 10L/10R/12, P/T -> 090 degrees (Grove), 3,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1319,7 +1379,8 @@
       "sector": "richmond",
       "sidFamily": "OAK",
       "source": "OAK ATCT SOP 2-2 a iii (SFOE Northbound)",
-      "text": "Northbound, runways 10L/10R/12, J & DH8D -> OAK# (Richmond), 3,000"
+      "text": "Northbound, runways 10L/10R/12, J & DH8D -> OAK# (Richmond), 3,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1336,7 +1397,8 @@
       "sector": "sutro",
       "sidFamily": "OAK",
       "source": "OAK ATCT SOP 2-2 a iii (SFOE Oceanic)",
-      "text": "Oceanic, runways 10L/10R/12, J & DH8D -> OAK# (Sutro), 3,000"
+      "text": "Oceanic, runways 10L/10R/12, J & DH8D -> OAK# (Sutro), 3,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1356,7 +1418,8 @@
       "text": "Southbound, runways 10L/10R/12, J & DH8D -> KATFH# (Sutro), CVS x 3,000",
       "when": {
         "rnav": true
-      }
+      },
+      "why": null
     },
     {
       "classes": [],
@@ -1373,7 +1436,8 @@
       "sector": "sutro",
       "sidFamily": "SKYL",
       "source": "OAK ATCT SOP 2-2 a iii (SFOE Southbound)",
-      "text": "Southbound, runways 10L/10R/12, J & DH8D -> SKYL# (Sutro), CVS x 3,000"
+      "text": "Southbound, runways 10L/10R/12, J & DH8D -> SKYL# (Sutro), CVS x 3,000",
+      "why": null
     },
     {
       "classes": [
@@ -1391,7 +1455,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 a iii (SFOE, All)",
-      "text": "All, runways 10L/10R/12, P/T -> 090 degrees (Richmond), 3,000"
+      "text": "All, runways 10L/10R/12, P/T -> 090 degrees (Richmond), 3,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1408,7 +1473,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Richmond for northbound departures"
+      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Richmond for northbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1425,7 +1491,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures"
+      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1442,7 +1509,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures"
+      "text": "All, runway 33, J & DH8D -> 270 degrees, 2,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [
@@ -1459,7 +1527,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runway 33, P/T -> 315 degrees (Richmond), 3,000"
+      "text": "All, runway 33, P/T -> 315 degrees (Richmond), 3,000",
+      "why": null
     },
     {
       "classes": [
@@ -1477,7 +1546,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "Northbound, runways 28/30, P/T -> 315 degrees (Richmond), 3,000"
+      "text": "Northbound, runways 28/30, P/T -> 315 degrees (Richmond), 3,000",
+      "why": null
     },
     {
       "classes": [
@@ -1495,7 +1565,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "Southbound, runways 28/30, P/T -> runway heading (Sutro), 10,000"
+      "text": "Southbound, runways 28/30, P/T -> runway heading (Sutro), 10,000",
+      "why": null
     },
     {
       "classes": [],
@@ -1513,7 +1584,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Richmond for northbound departures"
+      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Richmond for northbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1531,7 +1603,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures"
+      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1549,7 +1622,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b ii (SFOW)",
-      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures"
+      "text": "All, runways 28/30, J & DH8D -> runway heading, 10,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1567,7 +1641,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b iii (OAKE)",
-      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Richmond for northbound departures"
+      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Richmond for northbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1585,7 +1660,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b iii (OAKE)",
-      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures"
+      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1603,7 +1679,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b iii (OAKE)",
-      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures"
+      "text": "All, runways 10/12, J & DH8D -> 270 degrees, 5,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1621,7 +1698,8 @@
       "sector": "richmond",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b iv (SFOE)",
-      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Richmond for northbound departures"
+      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Richmond for northbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1639,7 +1717,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b iv (SFOE)",
-      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
+      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures",
+      "why": null
     },
     {
       "classes": [],
@@ -1657,7 +1736,8 @@
       "sector": "sutro",
       "sidFamily": null,
       "source": "OAK ATCT SOP 2-2 b iv (SFOE)",
-      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
+      "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures",
+      "why": null
     }
   ],
   "commonArrivals": [
@@ -1675,7 +1755,8 @@
       "transitions": [
         "BURGL",
         "REBRG"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1690,7 +1771,8 @@
       "text": "LAX jets: SADDE# via DERBB (west flow, non-RNAV)",
       "transitions": [
         "DERBB"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1705,7 +1787,8 @@
       "text": "LAX jets: HUULL# via TOKIO (west flow)",
       "transitions": [
         "TOKIO"
-      ]
+      ],
+      "why": null
     },
     {
       "cargo": true,
@@ -1721,7 +1804,8 @@
       "text": "LAX jets, cargo aircraft: BAYST# via BURGL (west flow, cargo aircraft)",
       "transitions": [
         "BURGL"
-      ]
+      ],
+      "why": null
     },
     {
       "cargo": true,
@@ -1737,7 +1821,8 @@
       "text": "LAX jets, cargo aircraft: DIRBY# via TILLT (west flow, cargo aircraft)",
       "transitions": [
         "TILLT"
-      ]
+      ],
+      "why": null
     },
     {
       "cargo": true,
@@ -1753,7 +1838,8 @@
       "text": "LAX jets, cargo aircraft: LEENA# via MCKEY (west flow, cargo aircraft, non-RNAV)",
       "transitions": [
         "MCKEY"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1769,7 +1855,8 @@
       "transitions": [
         "BURGL",
         "REBRG"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1784,7 +1871,8 @@
       "text": "LAX jets: MOOR# via DERBB (east flow, non-RNAV)",
       "transitions": [
         "DERBB"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1802,7 +1890,8 @@
       "transitions": [
         "EHF",
         "LHS"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1820,7 +1909,8 @@
       "transitions": [
         "EHF",
         "LHS"
-      ]
+      ],
+      "why": null
     },
     {
       "destinations": [
@@ -1834,7 +1924,8 @@
         "REBRG",
         "RDHOT",
         "HONZK"
-      ]
+      ],
+      "why": null
     },
     {
       "destinations": [
@@ -1848,7 +1939,8 @@
         "AVE",
         "FLW",
         "DERBB"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1863,7 +1955,8 @@
       "text": "LAS jets: COKTL# via FLCHR",
       "transitions": [
         "FLCHR"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1878,7 +1971,8 @@
       "text": "LAS jets: PUMLE# via BTY (non-RNAV)",
       "transitions": [
         "BTY"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1895,7 +1989,8 @@
       "text": "LAS, HND props: GAMES# via FUULL",
       "transitions": [
         "FUULL"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1912,7 +2007,8 @@
       "transitions": [
         "LAX",
         "HUULK"
-      ]
+      ],
+      "why": null
     },
     {
       "destinations": [
@@ -1924,7 +2020,8 @@
       "text": "SAN all: HUBRD# via LAX (west flow, non-RNAV)",
       "transitions": [
         "LAX"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1940,7 +2037,8 @@
       "text": "SAN jets and turboprops: PLYYA# via LAX (east flow)",
       "transitions": [
         "LAX"
-      ]
+      ],
+      "why": null
     },
     {
       "destinations": [
@@ -1952,7 +2050,8 @@
       "text": "SAN all: SHAMU# via LAX (east flow, non-RNAV)",
       "transitions": [
         "LAX"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1968,7 +2067,8 @@
       "text": "LGB jets and turboprops: BAUBB# via TILLT (jets and high-performance turboprops)",
       "transitions": [
         "TILLT"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -1986,7 +2086,8 @@
         "RDHOT",
         "REBRG",
         "ELLBC"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2002,7 +2103,8 @@
       "text": "SNA jets and turboprops: RUKKI# via TILLT (jets and high-performance turboprops; the sheet spells RUUKI, the CIFP publishes RUKKI)",
       "transitions": [
         "TILLT"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2020,7 +2122,8 @@
         "RDHOT",
         "REBRG",
         "ELLBC"
-      ]
+      ],
+      "why": null
     },
     {
       "destinations": [
@@ -2033,7 +2136,8 @@
       "text": "LGB, SNA all: TANDY# via FLW",
       "transitions": [
         "FLW"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2051,7 +2155,8 @@
         "RDHOT",
         "REBRG",
         "HONZK"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2069,7 +2174,8 @@
         "AVE",
         "FLW",
         "DERBB"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2087,7 +2193,8 @@
         "RDHOT",
         "REBRG",
         "HONZK"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2105,7 +2212,8 @@
         "AVE",
         "FLW",
         "DERBB"
-      ]
+      ],
+      "why": null
     },
     {
       "classes": [
@@ -2123,7 +2231,8 @@
       "transitions": [
         "EHF",
         "NINTY"
-      ]
+      ],
+      "why": null
     }
   ],
   "departureSectors": [
@@ -2532,7 +2641,8 @@
         "oddCourseTo": 199
       },
       "source": "ZOA-ZSE LOA 4 c (1)-(2), effective 2025-09-04",
-      "text": "Aircraft tracking a course of 020 through 199 degrees are assigned altitudes as 7110.65 specifies for 0 through 179 degrees (odd); 200 through 019 degrees as for 180 through 359 (even)"
+      "text": "Aircraft tracking a course of 020 through 199 degrees are assigned altitudes as 7110.65 specifies for 0 through 179 degrees (odd); 200 through 019 degrees as for 180 through 359 (even)",
+      "why": null
     },
     {
       "destinations": [
@@ -2552,7 +2662,8 @@
         ]
       },
       "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
-      "text": "SEA arrivals from the Bay: ..RBL..LMT then the HAWKZ STAR, or ..BTG then the OLM STAR; non-RNAV ..KNGDM or ..BTG"
+      "text": "SEA arrivals from the Bay: ..RBL..LMT then the HAWKZ STAR, or ..BTG then the OLM STAR; non-RNAV ..KNGDM or ..BTG",
+      "why": null
     },
     {
       "destinations": [
@@ -2568,7 +2679,8 @@
         ]
       },
       "source": "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)",
-      "text": "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
+      "text": "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED",
+      "why": null
     },
     {
       "destinations": [
@@ -2593,7 +2705,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Jets) LAX, effective 2026-04-26",
-      "text": "LAX jets: ..BURGL, ..REBRG, ..DOUIT, ..DERBB (non-RNAV); ..BURGL.BAYST STAR, ..TILLT.DIRBY STAR, ..MCKEY.LEENA STAR (non-RNAV) only for known cargo aircraft on or west of J501"
+      "text": "LAX jets: ..BURGL, ..REBRG, ..DOUIT, ..DERBB (non-RNAV); ..BURGL.BAYST STAR, ..TILLT.DIRBY STAR, ..MCKEY.LEENA STAR (non-RNAV) only for known cargo aircraft on or west of J501",
+      "why": null
     },
     {
       "destinations": [
@@ -2616,7 +2729,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) LAX, effective 2026-04-26",
-      "text": "LAX props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..AVE, ..FLW, ..RZS (which side of J1 is not modelled)"
+      "text": "LAX props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..AVE, ..FLW, ..RZS (which side of J1 is not modelled)",
+      "why": null
     },
     {
       "destinations": [
@@ -2640,7 +2754,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Jets) SMO, effective 2026-04-26",
-      "text": "SMO jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
+      "text": "SMO jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)",
+      "why": null
     },
     {
       "destinations": [
@@ -2662,7 +2777,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) SMO, effective 2026-04-26",
-      "text": "SMO props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..FLW, ..RZS (which side of J1 is not modelled)"
+      "text": "SMO props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..FLW, ..RZS (which side of J1 is not modelled)",
+      "why": null
     },
     {
       "destinations": [
@@ -2690,7 +2806,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Jets) LGB/SNA, effective 2026-04-26",
-      "text": "LGB and SNA jets: ..TILLT, ..RDHOT, ..MMTLY, ..ELLBC, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..MCKEY..DAISY..BENET (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
+      "text": "LGB and SNA jets: ..TILLT, ..RDHOT, ..MMTLY, ..ELLBC, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..MCKEY..DAISY..BENET (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)",
+      "why": null
     },
     {
       "destinations": [
@@ -2711,7 +2828,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Props) LGB/SNA, effective 2026-04-26",
-      "text": "LGB and SNA props east of J7: ..EHF; all other props: ..FLW, ..GVO (which side of J7 is not modelled)"
+      "text": "LGB and SNA props east of J7: ..EHF; all other props: ..FLW, ..GVO (which side of J7 is not modelled)",
+      "why": null
     },
     {
       "destinations": [
@@ -2736,7 +2854,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Jets) BUR/VNY, effective 2026-04-26",
-      "text": "BUR and VNY jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
+      "text": "BUR and VNY jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)",
+      "why": null
     },
     {
       "destinations": [
@@ -2759,7 +2878,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Props) BUR/VNY, effective 2026-04-26",
-      "text": "BUR and VNY props east of J1: ..NINTY, ..EHF, ..LHS; all other props: ..RZS, ..FLW (which side of J1 is not modelled)"
+      "text": "BUR and VNY props east of J1: ..NINTY, ..EHF, ..LHS; all other props: ..RZS, ..FLW (which side of J1 is not modelled)",
+      "why": null
     },
     {
       "destinations": [
@@ -2777,7 +2897,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL SAN, effective 2026-04-26",
-      "text": "SAN via LAX, over or west of J1: ..HUULK, ..PASKE, ..EHF, ..LANDO, ..LAX (if via the PLYYA STAR)"
+      "text": "SAN via LAX, over or west of J1: ..HUULK, ..PASKE, ..EHF, ..LANDO, ..LAX (if via the PLYYA STAR)",
+      "why": null
     },
     {
       "destinations": [
@@ -2802,7 +2923,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per the user 2026-09-16",
-      "text": "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (LXJ351, GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (user, 2026-09-16)"
+      "text": "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (LXJ351, GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (user, 2026-09-16)",
+      "why": null
     },
     {
       "destinations": [
@@ -2822,7 +2944,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Palm Springs, ALL PSP/TRM/UDD, effective 2026-04-26",
-      "text": "PSP, TRM and UDD: ..CLASN, ..OYVEY, ..BTY..ZELMA, ..PMD (non-RNAV, LANDO..PMD to avoid R2508)"
+      "text": "PSP, TRM and UDD: ..CLASN, ..OYVEY, ..BTY..ZELMA, ..PMD (non-RNAV, LANDO..PMD to avoid R2508)",
+      "why": null
     },
     {
       "destinations": [
@@ -2844,7 +2967,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Empire Area, ALL, effective 2026-04-26",
-      "text": "Empire area (ONT, CNO, POC, AJO, EMT, RAL, SBD): ..CLASN, ..OYVEY, ..PMD (LANDO..PMD to avoid R2508)"
+      "text": "Empire area (ONT, CNO, POC, AJO, EMT, RAL, SBD): ..CLASN, ..OYVEY, ..PMD (LANDO..PMD to avoid R2508)",
+      "why": null
     },
     {
       "destinations": [
@@ -2865,7 +2989,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL LAS Jets, effective 2026-04-26",
-      "text": "LAS jets: ..BASIC, .Q174.FLCHR, .J92.BTY (non-RNAV)"
+      "text": "LAS jets: ..BASIC, .Q174.FLCHR, .J92.BTY (non-RNAV)",
+      "why": null
     },
     {
       "destinations": [
@@ -2884,7 +3009,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL LAS Non-Jets, effective 2026-04-26",
-      "text": "LAS non-jets: ..FUULL or .J92 (non-RNAV)"
+      "text": "LAS non-jets: ..FUULL or .J92 (non-RNAV)",
+      "why": null
     },
     {
       "destinations": [
@@ -2899,7 +3025,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL HND, effective 2026-04-26",
-      "text": "HND: ..FUULL or .J92 (non-RNAV)"
+      "text": "HND: ..FUULL or .J92 (non-RNAV)",
+      "why": null
     },
     {
       "destinations": [
@@ -2913,7 +3040,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Other Airports, ALL SBA, effective 2026-04-26",
-      "text": "SBA via GVO"
+      "text": "SBA via GVO",
+      "why": null
     },
     {
       "destinations": [
@@ -2929,7 +3057,8 @@
         ]
       },
       "source": "ZOA-ZLA LOA Attachment 1, Other Airports, ALL SBP, effective 2026-04-26",
-      "text": "SBP: ..MQO.., ..CREPE.., ..CADAB.."
+      "text": "SBP: ..MQO.., ..CREPE.., ..CADAB..",
+      "why": null
     },
     {
       "destinations": [
@@ -2946,7 +3075,8 @@
         ]
       },
       "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, and 4 h, effective 2025-09-04",
-      "text": "SLC from the ZOA north and east areas: ..BVL, ..MLF, ..FLECC, ..REO across the attachment's RNAV and conventional columns; aircraft landing SLC routed through ZLC Area D must be cleared no further east than BVL"
+      "text": "SLC from the ZOA north and east areas: ..BVL, ..MLF, ..FLECC, ..REO across the attachment's RNAV and conventional columns; aircraft landing SLC routed through ZLC Area D must be cleared no further east than BVL",
+      "why": null
     },
     {
       "destinations": [
@@ -2962,7 +3092,8 @@
         ]
       },
       "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, effective 2025-09-04",
-      "text": "BOI from the ZOA north and east areas, RNAV: ..NEERO..PRNCS; the conventional column reads via filed route"
+      "text": "BOI from the ZOA north and east areas, RNAV: ..NEERO..PRNCS; the conventional column reads via filed route",
+      "why": null
     },
     {
       "destinations": [
@@ -2978,7 +3109,8 @@
         ]
       },
       "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, effective 2025-09-04",
-      "text": "BIL from the ZOA north and east areas: ..YLSTN, ..BAM, ..REO across the attachment's RNAV and conventional columns"
+      "text": "BIL from the ZOA north and east areas: ..YLSTN, ..BAM, ..REO across the attachment's RNAV and conventional columns",
+      "why": null
     },
     {
       "destinations": [
@@ -2992,7 +3124,8 @@
         ]
       },
       "source": "ZOA-ZLC LOA Attachment 1, from ZOA Area North/East, effective 2025-09-04",
-      "text": "TWF from the ZOA north and east areas: ..BAM across the attachment's RNAV and conventional columns"
+      "text": "TWF from the ZOA north and east areas: ..BAM across the attachment's RNAV and conventional columns",
+      "why": null
     }
   ],
   "noSid": {
@@ -3041,7 +3174,8 @@
       "id": "OAK-QUAKE-OFF",
       "plan": "OAKE",
       "source": "ZOA notice relayed by the user, 2026-09-15",
-      "text": "OAK QUAKE SID: OFF. Issue 270 HDG RV first fix for 12/10 jet departures. CFG: OAKE"
+      "text": "OAK QUAKE SID: OFF. Issue 270 HDG RV first fix for 12/10 jet departures. CFG: OAKE",
+      "why": null
     },
     {
       "dated": "2026-09-15",
@@ -3054,7 +3188,8 @@
       "id": "OAK-SUNNE-OFF",
       "plan": "SFOW",
       "source": "ZOA notice relayed by the user, 2026-09-15",
-      "text": "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement"
+      "text": "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement",
+      "why": null
     },
     {
       "dated": "2026-09-16",
@@ -3066,7 +3201,8 @@
       "id": "OAK-COAST-OFF",
       "plan": "SFOW",
       "source": "ZOA operational notice relayed by the user, 2026-09-16",
-      "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
+      "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW",
+      "why": null
     }
   ],
   "parkingRunwayFamilies": [],
@@ -3079,237 +3215,284 @@
     {
       "id": "R-TRANSITION",
       "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
-      "text": "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions"
+      "text": "(SID name and number) DEPARTURE, (transition name) TRANSITION, THEN AS FILED — used when the first filed fix after the SID is one of its published transitions",
+      "why": null
     },
     {
       "id": "R-AS-FILED",
       "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
-      "text": "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word"
+      "text": "(SID name and number) DEPARTURE, (fix), THEN AS FILED — used when the first filed fix after the SID is not one of its published transitions, including the SID's own base fix; the fix is spoken bare, without a facility word",
+      "why": null
     },
     {
       "id": "R-SID-STRUCTURE",
       "source": "FAA JO 7110.65 4-3-2 c 5; user rule 2026-09-17 (FFT2015)",
-      "text": "A filed element the departure itself flies over — the SID's own name, the fix it is built on, or a fix it is restricted over — is not read back when the route files one of that same SID's published transitions further along: the route is read from that transition (R-TRANSITION) and the elements before it are dropped from the route box. Where the route files no published transition of the SID nothing is dropped and the first filed fix stands, spoken bare (R-AS-FILED)"
+      "text": "A filed element the departure itself flies over — the SID's own name, the fix it is built on, or a fix it is restricted over — is not read back when the route files one of that same SID's published transitions further along: the route is read from that transition (R-TRANSITION) and the elements before it are dropped from the route box. Where the route files no published transition of the SID nothing is dropped and the first filed fix stands, spoken bare (R-AS-FILED)",
+      "why": null
     },
     {
       "id": "R-RV-SID",
       "source": "FAA JO 7110.65 4-3-2 c 5 / ZOA practice; ZOA CRAFT Phraseology reference",
-      "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs"
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS (fix), THEN AS FILED — used for radar-vector and vector-segment SIDs",
+      "why": null
     },
     {
       "id": "R-RV-NAVAID",
       "source": "ZOA practice relayed by the user, 2026-09-16",
-      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK6 OAK RBL, SFO5 SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
+      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK6 OAK RBL, SFO5 SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong",
+      "why": null
     },
     {
       "id": "R-THEN-AS-FILED",
       "source": "ZOA CRAFT Phraseology reference; user rule 2026-09-16 (N172SP amendment plan)",
-      "text": "THEN AS FILED — only when the last fix spoken connects to the rest of the route the pilot filed: on an amended route the controller reads every element up to the first fix that was already on the filed plan and after which the two routes are identical, then THEN AS FILED; when no such fix exists, or nothing follows it, the route is read in full to the end"
+      "text": "THEN AS FILED — only when the last fix spoken connects to the rest of the route the pilot filed: on an amended route the controller reads every element up to the first fix that was already on the filed plan and after which the two routes are identical, then THEN AS FILED; when no such fix exists, or nothing follows it, the route is read in full to the end",
+      "why": null
     },
     {
       "id": "R-ROUTE-BUILD",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; user rules 2026-09-16 (SWA984 amendment plan) and 2026-09-17 (PXT415: WAGES LOSHN off SKYL1)",
-      "text": "Before falling back to the vector SID or a heading, route-build: keep a SID the SOP assigns by connecting one of its published transitions, or the fix the SID itself ends on, to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route"
+      "text": "Before falling back to the vector SID or a heading, route-build: keep a SID the SOP assigns by connecting one of its published transitions, or the fix the SID itself ends on, to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route",
+      "why": null
     },
     {
       "id": "R-ROUTE-TOKEN",
       "source": "AIM 5-1-6 b (the route of flight is described accurately and completely, by airways, jet routes, reporting points and NAVAIDs); FAA JO 7110.65 4-2-5; user rule 2026-09-17 (UAL313)",
-      "text": "Every element of a filed route names a fix, a navaid, an airway or a procedure. An element that names none of them — two identifiers run together, or a typo — is removed from the route box and the fixes either side of it are connected through fixes that connect (R-ROUTE-BUILD), so the clearance reads a route the pilot can fly; where nothing connects them the element is dropped and the fixes either side of it join direct"
+      "text": "Every element of a filed route names a fix, a navaid, an airway or a procedure. An element that names none of them — two identifiers run together, or a typo — is removed from the route box and the fixes either side of it are connected through fixes that connect (R-ROUTE-BUILD), so the clearance reads a route the pilot can fly; where nothing connects them the element is dropped and the fixes either side of it join direct",
+      "why": null
     },
     {
       "id": "R-ARRIVAL",
       "source": "ZOA Common ZLA Arrivals from ZOA (current as of 2025-01-13); ZOA-ZLA LOA Attachment 1 (effective 2026-04-26); user rules 2026-09-16 (SWA984: an RNAV jet filing the non-RNAV SADDE8 is put on IRNMN2 via BURGL; a missed arrival costs half a point) and 2026-09-17 (NKS510: a non-RNAV jet filing IRNMN2 is put on SKYL1 AVE SADDE8)",
-      "text": "A departure is routed onto an arrival of its destination that its equipment can fly, RNAV or conventional, entered at a transition the common-arrivals table or the letter of agreement names where the route-building connections reach one, fewest changes first; the arrival is a nice-to-have the enroute controller can change on the fly, so a route box left on the arrival as filed costs half a point, not a full one"
+      "text": "A departure is routed onto an arrival of its destination that its equipment can fly, RNAV or conventional, entered at a transition the common-arrivals table or the letter of agreement names where the route-building connections reach one, fewest changes first; the arrival is a nice-to-have the enroute controller can change on the fly, so a route box left on the arrival as filed costs half a point, not a full one",
+      "why": null
     },
     {
       "id": "R-HEADING",
       "source": "FAA JO 7110.65 4-3-2 c 3; OAK ATCT SOP 2-1 c; S1-SFO-0 CBT No SID",
-      "text": "VIA FLY RUNWAY HEADING / VIA TURN LEFT (or RIGHT) HEADING (heading), RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading, or turned the shorter way onto the heading the row names, and vectored to the first filed fix; no procedure is named"
+      "text": "VIA FLY RUNWAY HEADING / VIA TURN LEFT (or RIGHT) HEADING (heading), RADAR VECTORS (first fix), THEN AS FILED — a departure the SOP sends off without a DP is cleared on the runway heading, or turned the shorter way onto the heading the row names, and vectored to the first filed fix; no procedure is named",
+      "why": null
     },
     {
       "id": "R-RV-AIRWAY",
       "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 2-6-4 (VECTOR TO JOIN (airway)), 4-4-1 a (JOIN VICTOR (airway number)) and 2-5-1 a (Victor Twelve); user ruling 2026-09-18 (no word AIRWAY)",
-      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway; the airway is spoken as its designator alone (radar vectors to join Victor six), with no word AIRWAY after it"
+      "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway; the airway is spoken as its designator alone (radar vectors to join Victor six), with no word AIRWAY after it",
+      "why": null
     },
     {
       "id": "R-RV-DIRECT",
       "source": "SOP 2-1 b (\"if a pilot cannot accept one, vectors direct\"); user ruling 2026-09-18",
-      "text": "RADAR VECTORS DIRECT — used when the route names no fix after the departure: a TEC route that ends in RV, or a radar-vector SID with nothing after the airport navaid; the flight is vectored straight to the destination"
+      "text": "RADAR VECTORS DIRECT — used when the route names no fix after the departure: a TEC route that ends in RV, or a radar-vector SID with nothing after the airport navaid; the flight is vectored straight to the destination",
+      "why": null
     },
     {
       "id": "R-AIRWAY",
       "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15; user steer 2026-09-17 (pacing comma)",
-      "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically; a comma follows the airway before the fix it leads to, for pacing (Queue one seventy-four, Flchr), where DIRECT (fix) takes none"
+      "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically; a comma follows the airway before the fix it leads to, for pacing (Queue one seventy-four, Flchr), where DIRECT (fix) takes none",
+      "why": null
     },
     {
       "id": "R-NAVAID",
       "source": "FAA JO 7110.65 2-5-2 (a 1: the name or phonetic alphabet equivalent of a NAVAID in a routing); ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15; user ruling 2026-09-18 (a fix spelt letter by letter)",
-      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); in a routing its identifier said in the phonetic alphabet is the same navaid (Sierra Alpha Uniform for Sausalito VOR), and a five-letter fix may be spelt the same way; transitions keep their published name"
+      "text": "A navaid in a clearance is spoken by name followed by its facility type; VOR, VOR/DME and VORTAC are all VOR (Sacramento VOR, Red Bluff VOR); in a routing its identifier said in the phonetic alphabet is the same navaid (Sierra Alpha Uniform for Sausalito VOR), and a five-letter fix may be spelt the same way; transitions keep their published name",
+      "why": null
     },
     {
       "id": "R-RNAV-AIRWAY",
       "source": "AIM 5-3-4 c 1",
-      "text": "A published RNAV route is filed only by an aircraft with the navigation it needs: a Q route by an RNAV-capable aircraft (GPS or DME/DME/IRU), a T or Y route by a GPS-equipped one; a non-RNAV aircraft files a conventional airway or a navaid route instead"
+      "text": "A published RNAV route is filed only by an aircraft with the navigation it needs: a Q route by an RNAV-capable aircraft (GPS or DME/DME/IRU), a T or Y route by a GPS-equipped one; a non-RNAV aircraft files a conventional airway or a navaid route instead",
+      "why": null
     },
     {
       "id": "R-RNAV-WAYPOINT",
       "source": "AIM 5-3-4 c 1; ARINC 424 enroute waypoint type (CIFP)",
-      "text": "A fix the CIFP publishes as an RNAV waypoint is filed only by an RNAV-capable aircraft; a combined fix that is also a named intersection, and a navaid, need no RNAV"
+      "text": "A fix the CIFP publishes as an RNAV waypoint is filed only by an RNAV-capable aircraft; a combined fix that is also a named intersection, and a navaid, need no RNAV",
+      "why": null
     },
     {
       "id": "T-MODE-C",
       "source": "VATSIM Code of Conduct B4(a); VATSIM transponder simulation (standby or Mode A+C only); user, 2026-09-17",
-      "text": "Every aircraft on VATSIM simulates a Mode C transponder, so an equipment suffix without Mode C (/X, /T, /D, /B, /M, /N, /Y, /C, /V, /S, /H, /O) is not filed on the network; the type box carries the suffix the fleet files for the type"
+      "text": "Every aircraft on VATSIM simulates a Mode C transponder, so an equipment suffix without Mode C (/X, /T, /D, /B, /M, /N, /Y, /C, /V, /S, /H, /O) is not filed on the network; the type box carries the suffix the fleet files for the type",
+      "why": null
     },
     {
       "id": "A-CLIMB-VIA",
       "source": "FAA JO 7110.65 4-3-2 c 4 (a); ZOA CRAFT Phraseology reference",
-      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants",
+      "why": null
     },
     {
       "id": "A-CLIMB-VIA-EXCEPT",
       "source": "FAA JO 7110.65 4-3-2 c 4 (b); ZOA CRAFT Phraseology reference",
-      "text": "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions and the altitude to maintain is not its published top: either no top altitude is published and an SOP interim altitude applies, or the flight files below the published top"
+      "text": "CLIMB VIA SID EXCEPT MAINTAIN (altitude) — the SID has published crossing restrictions and the altitude to maintain is not its published top: either no top altitude is published and an SOP interim altitude applies, or the flight files below the published top",
+      "why": null
     },
     {
       "id": "A-MAINTAIN",
       "source": "FAA JO 7110.65 4-3-2 c 5; ZOA CRAFT Phraseology reference",
-      "text": "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment"
+      "text": "MAINTAIN (altitude) — the SID has no published crossing restrictions, or is a radar-vector SID or has a radar-vector segment",
+      "why": null
     },
     {
       "id": "A-EXPECT",
       "source": "FAA JO 7110.65 4-3-2 c 3; ZOA CRAFT Phraseology reference",
-      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note"
+      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the filed altitude is above the altitude cleared to and the SID chart does not itself publish the expect note",
+      "why": null
     },
     {
       "id": "A-EXPECT-AMENDED",
       "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 4-3-2 c 3",
-      "text": "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one"
+      "text": "EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE — spoken when the controller amended the final altitude from what was filed; the SID chart's own expect note covers only the filed altitude, so this clause is spoken even where the chart publishes one",
+      "why": null
     },
     {
       "id": "A-EXPECT-REDUNDANT",
       "source": "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 c 3",
-      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise"
+      "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise",
+      "why": null
     },
     {
       "id": "A-FINAL",
       "source": "ZOA practice via the user, 2026-09-16 (SKW2345 amendment plan)",
-      "text": "(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause when the controller amended the final altitude and the clearance climbs the flight straight to it, speaking that altitude (CLIMB VIA SID EXCEPT MAINTAIN or MAINTAIN at the amended altitude): there is nothing further to expect, so the pilot is told the altitude just assigned is the final one. A plain CLIMB VIA SID speaks no altitude of its own, so the amended expect clause is spoken there instead, even where the published top altitude is the amended one. EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE spoken there instead is acceptable, only longer than it needs to be, at the delay the amended clause would carry"
+      "text": "(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause when the controller amended the final altitude and the clearance climbs the flight straight to it, speaking that altitude (CLIMB VIA SID EXCEPT MAINTAIN or MAINTAIN at the amended altitude): there is nothing further to expect, so the pilot is told the altitude just assigned is the final one. A plain CLIMB VIA SID speaks no altitude of its own, so the amended expect clause is spoken there instead, even where the published top altitude is the amended one. EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE spoken there instead is acceptable, only longer than it needs to be, at the delay the amended clause would carry",
+      "why": null
     },
     {
       "id": "C-DEST",
       "source": "FAA JO 7110.65 4-3-2 a; ZOA CRAFT Phraseology reference",
-      "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport"
+      "text": "CLEARED TO (destination) AIRPORT — the clearance limit is the destination airport",
+      "why": null
     },
     {
       "id": "A-PARITY",
       "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1); 14 CFR 91.179",
-      "text": "Below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359"
+      "text": "Below FL290 a magnetic course of 0 through 179 degrees takes the odd thousands and 180 through 359 the even thousands, FL290 through FL410 the same rule by flight level (FL310, FL330 against FL320, FL340), and above FL410 the 4,000-ft series: FL450 and FL490 for 0 through 179, FL430 and FL470 for 180 through 359",
+      "why": null
     },
     {
       "id": "A-ONE-WAY-AIRWAY",
       "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1, one way routes); user ruling 2026-09-16 (FDX3875 amendment plan)",
-      "text": "A one-way route carries no opposing traffic, so the direction-of-flight rule has nothing to separate on it: any cardinal altitude or flight level at or below FL410 is assigned on any course, and above FL410 any odd cardinal flight level (FL430, FL450). The Pacific oceanic routes the Bay departs on are one-way, so a westbound flight to Hawaii keeps the odd level it filed"
+      "text": "A one-way route carries no opposing traffic, so the direction-of-flight rule has nothing to separate on it: any cardinal altitude or flight level at or below FL410 is assigned on any course, and above FL410 any odd cardinal flight level (FL430, FL450). The Pacific oceanic routes the Bay departs on are one-way, so a westbound flight to Hawaii keeps the odd level it filed",
+      "why": null
     },
     {
       "id": "A-RVSM",
       "source": "14 CFR 91.180 and part 91 appendix G; AIM 4-6-1 (RVSM mandate, FL290-FL410 inclusive); FAA JO 7110.65 4-5-1 b",
-      "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band"
+      "text": "FL290 through FL410 inclusive is RVSM airspace, so an aircraft whose equipment suffix does not carry RVSM approval is not assigned an altitude in that band",
+      "why": null
     },
     {
       "id": "R-THEN-AS-FILED-END",
       "source": "ZOA CRAFT Phraseology reference; user ruling 2026-09-17 (free-text entry)",
-      "text": "THEN AS FILED spoken where the route is read to its end — nothing is filed after the last fix read, so the reading closes on DIRECT — is acceptable, not wrong: the pilot flies the same route either way, but R-THEN-AS-FILED reads such a route in full"
+      "text": "THEN AS FILED spoken where the route is read to its end — nothing is filed after the last fix read, so the reading closes on DIRECT — is acceptable, not wrong: the pilot flies the same route either way, but R-THEN-AS-FILED reads such a route in full",
+      "why": null
     },
     {
       "id": "R-FULL-ROUTE",
       "source": "ZOA CRAFT Phraseology reference; user ruling 2026-09-17 (free-text entry)",
-      "text": "Reading the whole of an amended or built route, where the clearance hands it over as filed from the fix the two routes run together from (R-THEN-AS-FILED), is acceptable, not wrong: the pilot is cleared along the same route, only at greater length than the clearance needs"
+      "text": "Reading the whole of an amended or built route, where the clearance hands it over as filed from the fix the two routes run together from (R-THEN-AS-FILED), is acceptable, not wrong: the pilot is cleared along the same route, only at greater length than the clearance needs",
+      "why": null
     },
     {
       "id": "R-FRC",
       "source": "FAA JO 7110.65 4-3-3 b and 4-3-3 g 1; user ruling 2026-09-18 (full route clearance mode)",
-      "text": "FRC as the first remark on the strip means a full route clearance is necessary: with no fix named the controller reads the entire route, element by element to its end, and THEN AS FILED is not spoken. A reading that hands any part of the route over as filed is wrong"
+      "text": "FRC as the first remark on the strip means a full route clearance is necessary: with no fix named the controller reads the entire route, element by element to its end, and THEN AS FILED is not spoken. A reading that hands any part of the route over as filed is wrong",
+      "why": null
     },
     {
       "id": "R-FACILITY-WORD",
       "source": "FAA JO 7110.65 2-5-2; user ruling 2026-09-17 (free-text entry)",
-      "text": "The facility word spoken after a fix the clearance reads bare (R-AS-FILED) is as right as the bare name: CONCORD VOR, THEN AS FILED names the same navaid as CONCORD, THEN AS FILED"
+      "text": "The facility word spoken after a fix the clearance reads bare (R-AS-FILED) is as right as the bare name: CONCORD VOR, THEN AS FILED names the same navaid as CONCORD, THEN AS FILED",
+      "why": null
     },
     {
       "id": "R-FACILITY-WORD-OMITTED",
       "source": "FAA JO 7110.65 2-5-2 a 1 and a 2; tester feedback and user ruling 2026-09-19",
-      "text": "The facility word left off a navaid the route names (DIRECT RED BLUFF for DIRECT RED BLUFF VOR) is acceptable, not a miss: 7110.65 2-5-2 asks for the type of NAVAID only where it is the clearance limit, and the clearance limit here is the airport. R-NAVAID still reads the navaid with its facility word, which is what is said on frequency"
+      "text": "The facility word left off a navaid the route names (DIRECT RED BLUFF for DIRECT RED BLUFF VOR) is acceptable, not a miss: 7110.65 2-5-2 asks for the type of NAVAID only where it is the clearance limit, and the clearance limit here is the airport. R-NAVAID still reads the navaid with its facility word, which is what is said on frequency",
+      "why": null
     },
     {
       "id": "R-THEN-OMITTED",
       "source": "FAA JO 7110.65 4-3-2 (THEN AS FILED); instructor feedback and user ruling 2026-09-28",
-      "text": "AS FILED said without THEN (… DEDHD, AS FILED for … DEDHD, THEN AS FILED) is acceptable, not a miss: the pilot is handed the same route over as filed. R-THEN-AS-FILED still reads THEN AS FILED, which is what is said on frequency"
+      "text": "AS FILED said without THEN (… DEDHD, AS FILED for … DEDHD, THEN AS FILED) is acceptable, not a miss: the pilot is handed the same route over as filed. R-THEN-AS-FILED still reads THEN AS FILED, which is what is said on frequency",
+      "why": "Leaving out \"then\" still hands the pilot the rest of the filed route, so it is only marked down a little; the standard phrase is \"then as filed\"."
     },
     {
       "id": "S-FILLER",
       "source": "user ruling 2026-09-17 (free-text entry)",
-      "text": "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make an element acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss"
+      "text": "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make an element acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss",
+      "why": null
     },
     {
       "id": "S-ORDER",
       "source": "FAA JO 7110.65 4-2-1; user ruling 2026-09-17 (free-text entry)",
-      "text": "Clearance items are issued in the order 7110.65 4-2-1 lists them: clearance limit, departure procedure or vectors, route, altitude, then frequency and beacon code. An element read out of that order is a miss, and the elements marked are the fewest whose removal leaves the rest in order"
+      "text": "Clearance items are issued in the order 7110.65 4-2-1 lists them: clearance limit, departure procedure or vectors, route, altitude, then frequency and beacon code. An element read out of that order is a miss, and the elements marked are the fewest whose removal leaves the rest in order",
+      "why": null
     },
     {
       "id": "S-NINER",
       "source": "FAA JO 7110.65 2-4-16 (TBL 2-4-1); user rulings 2026-09-17 (free-text entry) and 2026-09-19 (NINE acceptable)",
-      "text": "Digits are spoken in the ICAO pronunciation, the digit 9 as NINER. TREE, FIFE, FOWER and the other ICAO forms are as right as the plain words. NINE said for the digit is acceptable, since TBL 2-4-1 lists NIN-ER beside TREE and FIFE and no plain word is held to a miss, but NINER is what is said on frequency. A procedure's name is exempt, because it is spoken as its chart name (Coast Nine)"
+      "text": "Digits are spoken in the ICAO pronunciation, the digit 9 as NINER. TREE, FIFE, FOWER and the other ICAO forms are as right as the plain words. NINE said for the digit is acceptable, since TBL 2-4-1 lists NIN-ER beside TREE and FIFE and no plain word is held to a miss, but NINER is what is said on frequency. A procedure's name is exempt, because it is spoken as its chart name (Coast Nine)",
+      "why": null
     },
     {
       "id": "S-GROUP-FORM",
       "source": "FAA JO 7110.65 2-4-17 b 2 (a) and its note; user ruling 2026-09-17 (free-text entry)",
-      "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is right only in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement for clarity (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is acceptable but longer than it needs to be; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right"
+      "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is right only in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement for clarity (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is acceptable but longer than it needs to be; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right",
+      "why": null
     },
     {
       "id": "S-SPELLING",
       "source": "user ruling 2026-09-18 (free-text entry)",
-      "text": "Typing stands in for speaking, so a word typed a letter or two away from the word the reading has (DEPARTURE with a letter dropped, SQUAWK with two letters swapped, SACRAMENTO with a wrong vowel) is that word: one edit for a word of five to eight letters, two for a longer one, none for a shorter one. A typed word that is itself a word of the phraseology, or of a fix, procedure or airport name, is read as typed, and a number is never guessed at"
+      "text": "Typing stands in for speaking, so a word typed a letter or two away from the word the reading has (DEPARTURE with a letter dropped, SQUAWK with two letters swapped, SACRAMENTO with a wrong vowel) is that word: one edit for a word of five to eight letters, two for a longer one, none for a shorter one. A typed word that is itself a word of the phraseology, or of a fix, procedure or airport name, is read as typed, and a number is never guessed at",
+      "why": null
     },
     {
       "id": "RWY-AIRLINE-DEFAULT",
       "source": "ZOA senior staff via the user, 2026-09-16",
-      "text": "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"
+      "text": "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults",
+      "why": null
     },
     {
       "id": "RWY-GROUP-DEFAULT",
       "source": "OAK ATCT SOP 3-4 a",
-      "text": "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the jets depart the south field, and the Dash 8-400 is grouped with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
+      "text": "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the jets depart the south field, and the Dash 8-400 is grouped with them: runway 30 in SFOW, runway 12 in OAKE and SFOE",
+      "why": null
     },
     {
       "id": "RWY-CLASS-DEFAULT",
       "source": "OAK ATCT SOP 3-4 a; ZOA senior staff via the user, 2026-09-16",
-      "text": "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway"
+      "text": "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway",
+      "why": null
     },
     {
       "id": "RWY-ON-REQUEST",
       "source": "OAK ATCT SOP 1-6 and 3-4 b",
-      "text": "OAK has no runway issued only on request: SOP 3-4 b lets a controller deviate from the runway-assignment practice for safety, weather, emergencies, flow, construction and pilot requests, but the SOP names no class or route that is given another runway on request"
+      "text": "OAK has no runway issued only on request: SOP 3-4 b lets a controller deviate from the runway-assignment practice for safety, weather, emergencies, flow, construction and pilot requests, but the SOP names no class or route that is given another runway on request",
+      "why": null
     },
     {
       "id": "RWY-DIRECTION",
       "source": "OAK ATCT SOP 1-6 and 2-2",
-      "text": "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction"
+      "text": "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction",
+      "why": null
     },
     {
       "id": "RWY-TEC",
       "source": "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)",
-      "text": "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
+      "text": "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from",
+      "why": null
     },
     {
       "id": "RWY-FIRST",
       "source": "OAK ATCT SOP 1-6",
-      "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"
+      "text": "The configuration departs a single runway of this family for this aircraft class, so that runway is issued",
+      "why": null
     },
     {
       "id": "ZOA-CPS004-SPECIAL-AIRCRAFT",
       "source": "ZOA CPS-004 v1.2 3.1",
-      "text": "The following aircraft require special handling and coordination unless procedures are defined in local Standard Operating Procedures. The “performance consideration” for each aircraft is not required, but must be considered, given current traffic levels. Aircraft / Performance Consideration / Reason: SF50, T - Turboprop, slow climb/cruise performance; C510, T - Turboprop, slow climb/cruise performance; E50P, T - Turboprop, slow climb/cruise performance; E55P, T - Turboprop, slow climb/cruise performance; DH8D, J - Jet, capable of jet-like performance. ZOA training (user ruling 2026-09-26): the trainer proposes the jet handling and also accepts the turboprop handling for these types; an airport SOP that names the type in its aircraft groups defines it locally."
+      "text": "The following aircraft require special handling and coordination unless procedures are defined in local Standard Operating Procedures. The “performance consideration” for each aircraft is not required, but must be considered, given current traffic levels. Aircraft / Performance Consideration / Reason: SF50, T - Turboprop, slow climb/cruise performance; C510, T - Turboprop, slow climb/cruise performance; E50P, T - Turboprop, slow climb/cruise performance; E55P, T - Turboprop, slow climb/cruise performance; DH8D, J - Jet, capable of jet-like performance. ZOA training (user ruling 2026-09-26): the trainer proposes the jet handling and also accepts the turboprop handling for these types; an airport SOP that names the type in its aircraft groups defines it locally.",
+      "why": null
     }
   ],
   "provenance": {
@@ -3389,7 +3572,8 @@
       "id": "CONN-YYUNG-TILLT",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "YYUNG usually connects to TILLT",
-      "to": "TILLT"
+      "to": "TILLT",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3397,7 +3581,8 @@
       "id": "CONN-YYUNG-LAX",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "YYUNG usually connects to LAX",
-      "to": "LAX"
+      "to": "LAX",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3405,7 +3590,8 @@
       "id": "CONN-YYUNG-GVO",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "YYUNG usually connects to GVO",
-      "to": "GVO"
+      "to": "GVO",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3413,7 +3599,8 @@
       "id": "CONN-MCKEY-TILLT",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "MCKEY usually connects to TILLT",
-      "to": "TILLT"
+      "to": "TILLT",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3421,7 +3608,8 @@
       "id": "CONN-MCKEY-LAX",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "MCKEY usually connects to LAX",
-      "to": "LAX"
+      "to": "LAX",
+      "why": null
     },
     {
       "connects": "always",
@@ -3429,7 +3617,8 @@
       "id": "CONN-KTINA-CISKO",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "KTINA always connects to CISKO",
-      "to": "CISKO"
+      "to": "CISKO",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3437,7 +3626,8 @@
       "id": "CONN-CISKO-RDHOT",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "CISKO usually connects to RDHOT",
-      "to": "RDHOT"
+      "to": "RDHOT",
+      "why": null
     },
     {
       "connects": "always",
@@ -3445,7 +3635,8 @@
       "id": "CONN-SUSEY-EBAYE",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "SUSEY always connects to EBAYE",
-      "to": "EBAYE"
+      "to": "EBAYE",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3453,7 +3644,8 @@
       "id": "CONN-EBAYE-BURGL",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "EBAYE usually connects to BURGL",
-      "to": "BURGL"
+      "to": "BURGL",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3461,7 +3653,8 @@
       "id": "CONN-EBAYE-AVE",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "EBAYE usually connects to AVE",
-      "to": "AVE"
+      "to": "AVE",
+      "why": null
     },
     {
       "connects": "always",
@@ -3469,7 +3662,8 @@
       "id": "CONN-KAYEX-LOSHN",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "KAYEX always connects to LOSHN",
-      "to": "LOSHN"
+      "to": "LOSHN",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3477,7 +3671,8 @@
       "id": "CONN-LOSHN-BOILE",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "LOSHN usually connects to BOILE",
-      "to": "BOILE"
+      "to": "BOILE",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3485,7 +3680,8 @@
       "id": "CONN-LOSHN-CLASN",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "LOSHN usually connects to CLASN",
-      "to": "CLASN"
+      "to": "CLASN",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3493,7 +3689,8 @@
       "id": "CONN-LOSHN-EHF",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "LOSHN usually connects to EHF",
-      "to": "EHF"
+      "to": "EHF",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3501,7 +3698,8 @@
       "id": "CONN-WAGES-LOSHN",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "WAGES usually connects to LOSHN",
-      "to": "LOSHN"
+      "to": "LOSHN",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3509,7 +3707,8 @@
       "id": "CONN-NTELL-Q174",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "NTELL usually connects to Q174",
-      "to": "Q174"
+      "to": "Q174",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3517,7 +3716,8 @@
       "id": "CONN-Q174-FLCHR",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "Q174 usually connects to FLCHR",
-      "to": "FLCHR"
+      "to": "FLCHR",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3525,7 +3725,8 @@
       "id": "CONN-DEDHD-RBL",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "DEDHD usually connects to RBL",
-      "to": "RBL"
+      "to": "RBL",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3533,7 +3734,8 @@
       "id": "CONN-ORRCA-Q120",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "ORRCA usually connects to Q120",
-      "to": "Q120"
+      "to": "Q120",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3541,7 +3743,8 @@
       "id": "CONN-SAC-Q120",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "SAC usually connects to Q120",
-      "to": "Q120"
+      "to": "Q120",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3549,7 +3752,8 @@
       "id": "CONN-ANAHO-PRNCS",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "ANAHO usually connects to PRNCS",
-      "to": "PRNCS"
+      "to": "PRNCS",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3557,7 +3761,8 @@
       "id": "CONN-MOGEE-Q122",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "MOGEE usually connects to Q122",
-      "to": "Q122"
+      "to": "Q122",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3565,7 +3770,8 @@
       "id": "CONN-MOGEE-Q124",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "MOGEE usually connects to Q124",
-      "to": "Q124"
+      "to": "Q124",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3573,7 +3779,8 @@
       "id": "CONN-Q124-BVL",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "Q124 usually connects to BVL",
-      "to": "BVL"
+      "to": "BVL",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3581,7 +3788,8 @@
       "id": "CONN-TIPRE-Q126",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "TIPRE usually connects to Q126",
-      "to": "Q126"
+      "to": "Q126",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3589,7 +3797,8 @@
       "id": "CONN-SYRAH-Q128",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "SYRAH usually connects to Q128",
-      "to": "Q128"
+      "to": "Q128",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3597,7 +3806,8 @@
       "id": "CONN-SYRAH-Q130",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "SYRAH usually connects to Q130",
-      "to": "Q130"
+      "to": "Q130",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3605,7 +3815,8 @@
       "id": "CONN-LIN-J84",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "LIN usually connects to J84",
-      "to": "J84"
+      "to": "J84",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3613,7 +3824,8 @@
       "id": "CONN-ALCOA-R463",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "ALCOA usually connects to R463",
-      "to": "R463"
+      "to": "R463",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3621,7 +3833,8 @@
       "id": "CONN-BEBOP-R464",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "BEBOP usually connects to R464",
-      "to": "R464"
+      "to": "R464",
+      "why": null
     },
     {
       "connects": "usually",
@@ -3629,7 +3842,8 @@
       "id": "CONN-CINNY-A220",
       "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), Common Fixes, routes dated 2025-01-20; retrieved 2026-09-16",
       "text": "CINNY usually connects to A220",
-      "to": "A220"
+      "to": "A220",
+      "why": null
     }
   ],
   "routeLibrary": {
@@ -8506,7 +8720,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK FEVTA FEVTA1",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8520,7 +8735,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8534,7 +8750,8 @@
       "plan": "OAKE",
       "route": "H270 FEVTA FEVTA1",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8548,7 +8765,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8562,7 +8780,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8577,7 +8796,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8590,7 +8810,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8604,7 +8825,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8618,7 +8840,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8633,7 +8856,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8646,7 +8870,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8660,7 +8885,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8674,7 +8900,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8689,7 +8916,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8702,7 +8930,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8715,7 +8944,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8730,7 +8960,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8744,7 +8975,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8758,7 +8990,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8771,7 +9004,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8784,7 +9018,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8799,7 +9034,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8813,7 +9049,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8827,7 +9064,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8840,7 +9078,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8853,7 +9092,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8868,7 +9108,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8882,7 +9123,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8896,7 +9138,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8909,7 +9152,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8922,7 +9166,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK ORRCA",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8937,7 +9182,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V6 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8951,7 +9197,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8965,7 +9212,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM V334 SAC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8978,7 +9226,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -8991,7 +9240,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9005,7 +9255,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9019,7 +9270,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9034,7 +9286,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9047,7 +9300,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9060,7 +9314,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9074,7 +9329,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9088,7 +9344,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9103,7 +9360,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9116,7 +9374,8 @@
       "plan": "SFOW",
       "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9129,7 +9388,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9143,7 +9403,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9157,7 +9418,8 @@
       "plan": "SFOW",
       "route": "NIMI# OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9172,7 +9434,8 @@
       "plan": "SFOE",
       "route": "OAK V244 ALTAM MOD",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9186,7 +9449,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9200,7 +9464,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9214,7 +9479,8 @@
       "plan": "OAKE",
       "route": "EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9228,7 +9494,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9243,7 +9510,8 @@
       "plan": "SFOE",
       "route": "OAK V301 KARNN V111 SNS",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9258,7 +9526,8 @@
       "plan": "OAKE",
       "route": "OAK V244 ALTAM MOD V111 SNS",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9272,7 +9541,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9286,7 +9556,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9300,7 +9571,8 @@
       "plan": "OAKE",
       "route": "EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9314,7 +9586,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9329,7 +9602,8 @@
       "plan": "SFOE",
       "route": "OAK V301 KARNN V111 SNS",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9344,7 +9618,8 @@
       "plan": "OAKE",
       "route": "OAK V244 ALTAM MOD V111 SNS",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9359,7 +9634,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9373,7 +9649,8 @@
       "plan": "SFOE",
       "route": "OAK# SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9388,7 +9665,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9403,7 +9681,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9417,7 +9696,8 @@
       "plan": "SFOE",
       "route": "OAK# SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9432,7 +9712,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9447,7 +9728,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9461,7 +9743,8 @@
       "plan": "SFOE",
       "route": "OAK# SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9476,7 +9759,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9491,7 +9775,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9504,7 +9789,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK ARTAQ",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9519,7 +9805,8 @@
       "plan": "SFOE",
       "route": "OAK# OAK SUNOL SJC",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9533,7 +9820,8 @@
       "plan": "SFOW",
       "route": "NUEVO# EUGEN OSI",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9549,7 +9837,8 @@
       "plan": "SFOW",
       "route": "RH RV",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9565,7 +9854,8 @@
       "plan": "SFOE",
       "route": "RH RV",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9581,7 +9871,8 @@
       "plan": "OAKE",
       "route": "H270 OSI",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9595,7 +9886,8 @@
       "plan": "SFOW",
       "route": "OAK# RV",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9610,7 +9902,8 @@
       "plan": "SFOW",
       "route": "NIMI# RV",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     },
     {
       "classes": [
@@ -9626,7 +9919,8 @@
       "plan": "SFOE",
       "route": "H090 RV",
       "runwayFamilies": [],
-      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes",
+      "why": null
     }
   ]
 }
