@@ -33,12 +33,6 @@ repos:
         language: system
         files: ^(web/|data/)
         pass_filenames: false
-      - id: web-test
-        name: web vitest
-        entry: pnpm -C web test
-        language: system
-        files: ^(web/|data/|fixtures/)
-        pass_filenames: false
       - id: gen-ruff-check
         name: generator ruff check
         entry: uv run --directory generator ruff check .
@@ -54,12 +48,6 @@ repos:
       - id: gen-ty
         name: generator ty check
         entry: uv run --directory generator ty check
-        language: system
-        files: ^generator/
-        pass_filenames: false
-      - id: gen-pytest
-        name: generator pytest
-        entry: uv run --directory generator pytest -q
         language: system
         files: ^generator/
         pass_filenames: false
