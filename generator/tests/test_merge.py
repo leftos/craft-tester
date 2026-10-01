@@ -945,10 +945,30 @@ def test_an_airport_phraseology_row_replaces_the_shared_row_of_its_id() -> None:
     assert rules[0]["text"] == "shared A text"
 
 
+_AIRAC_STAMP = re.compile(r'("cifpSha256": |"cycle": |"effective": )"[^"]+"|/d-tpp/\d{4}/')
+
+
+def _without_airac_stamp(text: str) -> str:
+    """Blank the provenance values and chart URL segments a new AIRAC cycle changes, since the fixtures stay on their own cycle."""
+    return _AIRAC_STAMP.sub(lambda match: f'{match.group(1)}"<cycle>"' if match.group(1) else "/d-tpp/<cycle>/", text)
+
+
 def test_build_matches_committed_data(ksfo_document: Document) -> None:
     committed = data_path("KSFO")
     assert committed.exists(), f"{committed} is missing; run `uv run craft-gen build --airport KSFO`"
-    assert dump(ksfo_document) == committed.read_text(encoding="utf-8", newline="")
+    assert _without_airac_stamp(dump(ksfo_document)) == _without_airac_stamp(committed.read_text(encoding="utf-8", newline=""))
+
+
+def test_the_parity_check_ignores_only_the_airac_stamp(ksfo_document: Document) -> None:
+    built = dump(ksfo_document)
+    next_cycle = re.sub(r'"cycle": "\d{4}"', '"cycle": "9999"', built)
+    next_cycle = re.sub(r'"effective": "[\d-]+"', '"effective": "2099-01-01"', next_cycle)
+    next_cycle = re.sub(r'"cifpSha256": "[0-9a-f]+"', f'"cifpSha256": "{"0" * 64}"', next_cycle)
+    next_cycle = re.sub(r"/d-tpp/\d{4}/", "/d-tpp/9999/", next_cycle)
+    assert next_cycle != built
+    assert _without_airac_stamp(next_cycle) == _without_airac_stamp(built)
+    changed_procedure = built.replace('"family": "TRUKN"', '"family": "TRUKX"')
+    assert _without_airac_stamp(changed_procedure) != _without_airac_stamp(built)
 
 
 def test_ksfo_emits_its_runway_bearings(ksfo_document: Document) -> None:
