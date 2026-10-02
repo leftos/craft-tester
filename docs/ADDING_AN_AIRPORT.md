@@ -3,7 +3,7 @@
 How the KSFO data was built, written as the procedure to repeat for the next airport. An airport is a
 directory `generator/airports/<icao>/` of hand-transcribed YAML plus one line in `data/airports.json`. No
 code in either half is keyed on KSFO; if adding an airport needs a code change, the change is a new rule
-concept and goes through `docs/plans/MAIN.md` first.
+concept and goes into the plan (Linear team CRAFT) first.
 
 Read `docs/ARCHITECTURE.md` for the pipeline and `CLAUDE.md` for the rules of the repo. The field-level
 contract is `web/src/data/schema.ts`; the loaders in `generator/src/craft_generator/sop/load.py` enforce it

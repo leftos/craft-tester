@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 IFR clearance trainer for KSFO and KOAK (VATSIM ZOA). Two halves: a Python **generator** that emits `data/<icao>.json`
 from FAA CIFP, FAA chart PDFs, and hand-transcribed SOP/TEC/LOA YAML, and a static Vite + TypeScript **web**
 app whose rules engine grades clearances in the browser. Read `docs/ARCHITECTURE.md` before touching either
-half; `docs/plans/MAIN.md` is the task index; `docs/ADDING_AN_AIRPORT.md` is the runbook for a new airport.
+half; the plan lives in Linear (team CRAFT), with `docs/plans/MAIN.md` its generated snapshot, never edited by hand: every task is a Linear issue, a steer or finding mid-task gets an **add** first, and the operations are in `~/.claude/docs/plan-operations.md`; `docs/ADDING_AN_AIRPORT.md` is the runbook for a new airport.
 
 ## Commands
 
@@ -107,7 +107,7 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   and every airport inherits it; an airport's `sop.yaml` overrides a row by id. The ZOA route-building
   connections (`generator/shared/route_connections.yaml`) are shared the same way. A worksheet correction is a
   YAML edit plus `craft-gen build`, not an engine change. If a correction cannot be expressed as data,
-  stop and add the new rule concept to the plan first.
+  stop and **add** the new rule concept to the plan first.
 - **No code keyed on KSFO.** Adding an airport is a YAML directory plus a line in `data/airports.json`;
   a code change needed for a new airport is a new rule concept and goes through the plan first.
 - **`web/src/data/schema.ts` is the single source of truth** for the data shape. Change it, run

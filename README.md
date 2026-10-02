@@ -32,7 +32,7 @@ runway-configuration filters ride in it.
 | `generator/` | Python (uv) generator that turns FAA CIFP, FAA chart PDFs and hand-transcribed ZOA SOP, TEC and LOA tables into `data/<icao>.json`. `generator/airports/<icao>/` is one airport's hand-authored input; `generator/shared/` is what every airport inherits (the FAA suffix table, the national CRAFT phraseology rows, the ZOA route-building connections). |
 | `data/` | Generated airport data the app loads, plus the JSON Schemas exported from the zod definitions. Never hand-edited. |
 | `fixtures/` | Expected clearances: `worksheets/` imported from the ZOA training worksheets, `synthetic/` hand-written edge cases. Every settled fixture runs as a test. |
-| `docs/` | [Architecture](docs/ARCHITECTURE.md), the [runbook for adding an airport](docs/ADDING_AN_AIRPORT.md), the [glossary](docs/GLOSSARY.md) and the plans; start at [`docs/plans/MAIN.md`](docs/plans/MAIN.md). |
+| `docs/` | [Architecture](docs/ARCHITECTURE.md), the [runbook for adding an airport](docs/ADDING_AN_AIRPORT.md), the [glossary](docs/GLOSSARY.md) and the plans; the plan lives in Linear, snapshot in [`docs/plans/MAIN.md`](docs/plans/MAIN.md). |
 
 ## Develop
 

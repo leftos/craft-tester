@@ -1,0 +1,82 @@
+{
+  "issues": {
+    "L15": {
+      "id": "96f7fd6e-0a01-4a63-81d9-93ee6f3d887d",
+      "identifier": "CRAFT-3",
+      "linked": true
+    },
+    "L21": {
+      "id": "805c797e-a0a1-4297-955f-2ee086eba558",
+      "identifier": "CRAFT-4",
+      "linked": true
+    },
+    "L34": {
+      "id": "6da5b437-96c0-441c-8aa1-1449c202b2d4",
+      "identifier": "CRAFT-5",
+      "linked": true
+    },
+    "L41": {
+      "id": "9971a1b1-35c0-4113-82c3-0391203696c2",
+      "identifier": "CRAFT-6",
+      "linked": true
+    },
+    "L48": {
+      "id": "0b5419c4-45d7-40bc-a887-bcc89df06eae",
+      "identifier": "CRAFT-7",
+      "linked": true
+    },
+    "L52": {
+      "id": "7fcd1b34-3838-4b21-836b-4c7c4d026772",
+      "identifier": "CRAFT-8",
+      "linked": true
+    },
+    "L60": {
+      "id": "54c0477f-a9d6-45fb-bc52-808465b5c213",
+      "identifier": "CRAFT-9",
+      "linked": true
+    },
+    "L61": {
+      "id": "9dac0af5-148f-498c-a51e-558b0135d657",
+      "identifier": "CRAFT-10",
+      "linked": true
+    },
+    "L62": {
+      "id": "449fbc44-b7cb-40e5-ab4c-5ea3dcd8413f",
+      "identifier": "CRAFT-13",
+      "linked": true
+    },
+    "L63": {
+      "id": "1e29f1c6-abec-46b7-a094-19e80abfe79f",
+      "identifier": "CRAFT-14",
+      "linked": true
+    },
+    "L64": {
+      "id": "1976ecdf-0c43-4c87-b89c-3339616da054",
+      "identifier": "CRAFT-15",
+      "linked": true
+    },
+    "L65": {
+      "id": "3ff7914f-2a13-40ac-be27-93136565664a",
+      "identifier": "CRAFT-16",
+      "linked": true
+    },
+    "PR6": {
+      "id": "fa196d11-2558-4049-a07e-5e1e3536706a",
+      "identifier": "CRAFT-11",
+      "linked": true
+    },
+    "PR7": {
+      "id": "c306c5fd-f20b-4c76-bc5a-c397f3e95b2c",
+      "identifier": "CRAFT-12",
+      "linked": true
+    }
+  },
+  "projects": {
+    "CL": "c08ff1ba-7d8d-4f63-80de-0474bd3cbb50",
+    "SG": "b06309e9-feff-4a62-9dbc-521da7d6f44e",
+    "W1": "049d329b-2a39-42f3-938e-992ba386123f",
+    "W2": "11904d01-9586-40bb-a626-11c26bb07dff",
+    "W3": "dd690bbb-007f-40f3-94a0-1bf1bacc53e7",
+    "W4": "b27d5b08-1230-4e4d-802e-6ae7be38f6a7"
+  }
+}
