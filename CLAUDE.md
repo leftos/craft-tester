@@ -34,8 +34,8 @@ uv run craft-gen build --airport KSFO --skip-sop-verify   # the AIRAC workflow o
 uv run craft-gen verify-sop --airport KSFO
 uv run craft-gen import-worksheets --airport KSFO [--check]
 
-# hooks (same gates as CI)
-prek install && prek run --all-files
+# hooks (same gates as CI: lint and format at commit, the type checks at push)
+prek install && prek run --all-files && prek run --hook-stage pre-push --all-files
 ```
 
 Downloads cache under `generator/cache/` (gitignored) or `$CRAFT_GEN_CACHE`. CI runs the web and generator

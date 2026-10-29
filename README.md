@@ -49,7 +49,8 @@ uv run ruff check && uv run ruff format --check && uv run ty check && uv run pyt
 uv run craft-gen build --airport KSFO --check    # data/ksfo.json matches the sources
 ```
 
-Install the git hooks once with `prek install`; `prek run` runs the same gates as CI. CI runs the web
+Install the git hooks once with `prek install`; a commit runs the lint and format gates and a push the
+type checks, together the same gates as CI. CI runs the web
 and generator gates, checks that the schema export is committed and that the worksheet fixtures are
 up to date; the Pages workflow builds and deploys `web/dist` on every push to `main`. `craft-gen
 build` is a local step, because the generated data is committed.
