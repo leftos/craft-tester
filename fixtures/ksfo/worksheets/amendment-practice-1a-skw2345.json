@@ -30,6 +30,10 @@
     "squawk": "4615"
   },
   "sidVersions": {
+    "SFO": {
+      "id": "SFO5",
+      "spoken": "San Francisco Five"
+    },
     "TRUKN": {
       "id": "TRUKN2",
       "spoken": "Trukn Two"

@@ -31,6 +31,10 @@
     "squawk": "4610"
   },
   "sidVersions": {
+    "NIMI": {
+      "id": "NIMI7",
+      "spoken": "Nimitz Seven"
+    },
     "OAK": {
       "id": "OAK6",
       "spoken": "Oakland Six"

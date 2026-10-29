@@ -29,6 +29,10 @@
     "CNDEL": {
       "id": "CNDEL5",
       "spoken": "Candle Five"
+    },
+    "COAST": {
+      "id": "COAST9",
+      "spoken": "Coast Nine"
     }
   },
   "source": {

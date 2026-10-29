@@ -1196,9 +1196,17 @@ def test_a_restrictions_override_takes_the_cifp_shape(
             [{"fix": "WAGES", "constraint": "at_or_above", "feet": 20000, "feet_high": 30000}],
             r"sids\[GAP SEVEN\]\.restrictions\[0\]: feet_high is only for a between restriction",
         ),
+        (
+            [{"fix": "SIXDY", "constraint": "between", "feet": 3000, "feet_high": 1900}],
+            r"sids\[GAP SEVEN\]\.restrictions\[0\]: a between restriction needs feet_high above feet, got 3000 and 1900",
+        ),
+        (
+            [{"fix": "SIXDY", "constraint": "between", "feet": 3000, "feet_high": 3000}],
+            r"sids\[GAP SEVEN\]\.restrictions\[0\]: a between restriction needs feet_high above feet, got 3000 and 3000",
+        ),
         ([], r"sids\[GAP SEVEN\]: restrictions lists no restriction; leave the key out to keep the CIFP's"),
     ],
-    ids=["between-without-feet-high", "feet-high-on-at-or-above", "empty-list"],
+    ids=["between-without-feet-high", "feet-high-on-at-or-above", "between-reversed", "between-equal", "empty-list"],
 )
 def test_a_malformed_restrictions_override_is_named(tmp_path: Path, ksfo_dir: Path, restrictions: list[Any], message: str) -> None:
     def mutate(data: Any) -> None:

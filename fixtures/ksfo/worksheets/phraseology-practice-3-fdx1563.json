@@ -33,6 +33,10 @@
     "GAPP": {
       "id": "GAPP7",
       "spoken": "Gap Seven"
+    },
+    "SFO": {
+      "id": "SFO5",
+      "spoken": "San Francisco Five"
     }
   },
   "source": {

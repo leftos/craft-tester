@@ -30,6 +30,10 @@
     "squawk": "2431"
   },
   "sidVersions": {
+    "SFO": {
+      "id": "SFO5",
+      "spoken": "San Francisco Five"
+    },
     "SNTNA": {
       "id": "SNTNA2",
       "spoken": "Sntna Two"

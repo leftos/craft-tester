@@ -50,6 +50,64 @@ function rewritesOf(fixture: Fixture, airport: AirportData): Rewrite[] {
   return rewrites;
 }
 
+/** Every string inside a JSON-shaped value, depth first. */
+function stringsIn(value: unknown): string[] {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap(stringsIn);
+  if (value !== null && typeof value === 'object') return Object.values(value).flatMap(stringsIn);
+  return [];
+}
+
+/**
+ * The SID families of an airport that a value names by a versioned token, e.g. `OAK` for `OAK9`.
+ *
+ * Any version counts, a stale one included, because a fixture filing a stale version still needs
+ * the family stamped so its answer follows the next reissue.
+ *
+ * @param value A string, or a JSON-shaped value whose strings are searched.
+ * @param airport The airport whose SID families are looked for.
+ * @returns The families named, in the airport's SID order.
+ */
+export function sidFamiliesNamed(value: unknown, airport: AirportData): string[] {
+  const text = stringsIn(value).join('\n');
+  const families = [...new Set(airport.sids.map((sid) => sid.family))];
+  return families.filter((family) =>
+    new RegExp(`(?<![A-Z0-9])${escaped(family)}\\d(?![A-Z0-9])`).test(text),
+  );
+}
+
+/**
+ * A value written at the airport's current SID versions, put back into the versions a stamp names.
+ *
+ * This is the inverse of the mapping {@link withCurrentVersions} applies to `expected`: an answer
+ * the engine prints at today's ids reads, once pasted under the stamp, as the fixture was written.
+ * A family the stamp does not name, or whose version has not moved, is left as it is.
+ *
+ * @param value A JSON-shaped value, e.g. a fixture's `expected`; it is not changed.
+ * @param stamp The fixture's `sidVersions`.
+ * @param airport The data of the airport the fixture is filed at.
+ * @returns A copy with each moved family's current id and spoken name replaced by the stamped ones.
+ * @throws Error When a stamped family is no longer published at the airport.
+ */
+export function withStampedVersions<T>(
+  value: T,
+  stamp: NonNullable<Fixture['sidVersions']>,
+  airport: AirportData,
+): T {
+  const rewrites: Rewrite[] = [];
+  for (const [family, stamped] of Object.entries(stamp)) {
+    const current = airport.sids.find((sid) => sid.family === family);
+    if (current === undefined) {
+      throw new Error(
+        `the stamp names SID family ${family}, which the airport no longer publishes`,
+      );
+    }
+    if (current.id === stamped.id) continue;
+    rewrites.push({ from: { id: current.id, spoken: current.spoken }, to: stamped });
+  }
+  return rewriteDeep(value, rewrites);
+}
+
 /**
  * A fixture with every SID it stamps moved to the version the airport publishes today.
  *

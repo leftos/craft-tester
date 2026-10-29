@@ -25,6 +25,10 @@
     "squawk": "4607"
   },
   "sidVersions": {
+    "NIITE": {
+      "id": "NIITE4",
+      "spoken": "Niite Four"
+    },
     "TRUKN": {
       "id": "TRUKN2",
       "spoken": "Trukn Two"

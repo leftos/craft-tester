@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import koakJson from '@data/koak.json';
 import type { AirportData, Fixture, Sid } from '@/data/schema.ts';
-import { withCurrentVersions } from '@/rules/fixtureVersions.ts';
+import {
+  sidFamiliesNamed,
+  withCurrentVersions,
+  withStampedVersions,
+} from '@/rules/fixtureVersions.ts';
 
 const koak = koakJson as unknown as AirportData;
 
@@ -93,6 +97,24 @@ describe('withCurrentVersions', () => {
     expect(() => withCurrentVersions(fixtureFiling('OAK6 OAK'), airport)).toThrow(
       'fixture versions-test stamps SID family OAK, which KOAK no longer publishes',
     );
+  });
+
+  it('puts an answer at the current versions back into the stamped ones', () => {
+    const answer = { route: 'OAK42 OAK', spoken: 'Oakland Forty departure, then as filed' };
+    const stamp = { OAK: { id: 'OAK6', spoken: 'Oakland Six' } };
+    expect(withStampedVersions(answer, stamp, airportPublishingOak())).toEqual({
+      route: 'OAK6 OAK',
+      spoken: 'Oakland Six departure, then as filed',
+    });
+    expect(answer.route).toBe('OAK42 OAK');
+  });
+
+  it('names each family a versioned token stands for, a stale one included', () => {
+    const answer = {
+      reason: 'OAK9 is not the current version; OAKLAND and OAK are not tokens of it',
+    };
+    expect(sidFamiliesNamed(answer, airportPublishingOak())).toEqual(['OAK']);
+    expect(sidFamiliesNamed('OAK OAKX1 XOAK1', airportPublishingOak())).toEqual([]);
   });
 
   it('returns a fixture with no stamp equal to the one given', () => {

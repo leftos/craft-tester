@@ -89,6 +89,11 @@ export type ProposalView = {
   outcome: ProposalOutcome;
   /** The reading the trainer also accepts, which only a type ZOA CPS-004 3.1 lists has. */
   accepted?: AcceptedReading;
+  /**
+   * The `sidVersions` the fixture needs beside the printed `expected`: its existing stamp, plus the
+   * current version of every family the answer names that it does not stamp yet.
+   */
+  sidVersions?: Record<string, { id: string; spoken: string }>;
 };
 
 /**
@@ -127,6 +132,16 @@ function expectedBlock(expected: unknown): string {
     .map((line, index) => (index === 0 ? line : `  ${line}`))
     .join('\n');
   return `  "expected": ${json}`;
+}
+
+/** Renders the `"sidVersions": {…}` block a fixture pastes in, or nothing when it stamps no SID. */
+function sidVersionsBlock(sidVersions: ProposalView['sidVersions']): string[] {
+  if (sidVersions === undefined || Object.keys(sidVersions).length === 0) return [];
+  const json = JSON.stringify(sortKeys(sidVersions), null, 2)
+    .split('\n')
+    .map((line, index) => (index === 0 ? line : `  ${line}`))
+    .join('\n');
+  return [`  "sidVersions": ${json}`];
 }
 
 /** The CRAFT elements of one reading, each with the rows that decided it. */
@@ -215,24 +230,23 @@ function acceptedReadingLines(accepted: AcceptedReading | undefined): string[] {
 }
 
 /** Everything a proposal prints below the strip, which depends on what the engine made of it. */
-function outcomeLines(outcome: ProposalOutcome, accepted: AcceptedReading | undefined): string[] {
+function outcomeLines(view: ProposalView): string[] {
+  const { outcome, accepted } = view;
   if (outcome.kind === 'unresolved') return unresolvedLines(outcome.reasons);
+  const fixtureLines = [
+    '',
+    'FIXTURE',
+    expectedBlock(outcome.expected),
+    ...sidVersionsBlock(view.sidVersions),
+  ];
   if (outcome.kind === 'amendments') {
     return [
       ...amendmentLines(outcome.amendments, outcome.corrected),
       ...acceptedReadingLines(accepted),
-      '',
-      'FIXTURE',
-      expectedBlock(outcome.expected),
+      ...fixtureLines,
     ];
   }
-  return [
-    ...clearanceLines(outcome),
-    ...acceptedReadingLines(accepted),
-    '',
-    'FIXTURE',
-    expectedBlock(outcome.expected),
-  ];
+  return [...clearanceLines(outcome), ...acceptedReadingLines(accepted), ...fixtureLines];
 }
 
 /**
@@ -248,7 +262,7 @@ export function formatProposal(view: ProposalView): string {
   if (view.note !== undefined) lines.push(`note: ${view.note}`);
   lines.push('', 'STRIP');
   for (const [label, value] of view.strip) lines.push(`  ${label.padEnd(12)} ${value}`);
-  return [...lines, ...outcomeLines(view.outcome, view.accepted)].join('\n');
+  return [...lines, ...outcomeLines(view)].join('\n');
 }
 
 /** Renders one row of the `--pending` table. */
@@ -431,6 +445,9 @@ async function loadRuntime() {
 
 /** Everything the CLI half needs from the app. */
 type Runtime = Awaited<ReturnType<typeof loadRuntime>>;
+
+/** The app functions that write a pasteable block in a fixture's stamped SID versions. */
+type StampRuntime = Pick<Runtime, 'sidFamiliesNamed' | 'withStampedVersions'>;
 
 /** Reads and parses one JSON file under the repository root. */
 function readJson(relativePath: string): unknown {
@@ -637,15 +654,50 @@ function printProposal(entry: { path: string; fixture: Fixture }, runtime: Runti
   const airport = loadAirportData(entry.fixture.airport, runtime);
   const fixture = runtime.withCurrentVersions(entry.fixture, airport);
   const accepted = acceptedReading(fixture, airport, runtime);
+  const outcome = outcomeOf(fixture, airport, runtime);
   const view: ProposalView = {
     id: fixture.id,
     status: fixture.status,
     note: fixture.source.note,
     strip: stripLines(fixture.scenario, airport),
-    outcome: outcomeOf(fixture, airport, runtime),
+    outcome: stampedOutcome(outcome, entry.fixture, airport, runtime),
+    sidVersions: neededStamp(outcome, entry.fixture, airport, runtime),
   };
   if (accepted !== undefined) view.accepted = accepted;
   console.log(formatProposal(view));
+}
+
+/**
+ * The outcome with its pasteable `expected` written in the fixture's stamped SID versions, so the
+ * block matches the stamp the file keeps; the printed elements stay at the current versions.
+ */
+export function stampedOutcome(
+  outcome: ProposalOutcome,
+  fixture: Fixture,
+  airport: AirportData,
+  runtime: StampRuntime,
+): ProposalOutcome {
+  if (outcome.kind === 'unresolved') return outcome;
+  const stamp = fixture.sidVersions ?? {};
+  return { ...outcome, expected: runtime.withStampedVersions(outcome.expected, stamp, airport) };
+}
+
+/** The fixture's stamp, plus the current version of each family the answer names unstamped. */
+export function neededStamp(
+  outcome: ProposalOutcome,
+  fixture: Fixture,
+  airport: AirportData,
+  runtime: StampRuntime,
+): NonNullable<ProposalView['sidVersions']> {
+  const stamp = { ...fixture.sidVersions };
+  if (outcome.kind === 'unresolved') return stamp;
+  for (const family of runtime.sidFamiliesNamed(outcome.expected, airport)) {
+    const current = airport.sids.find((sid) => sid.family === family);
+    if (stamp[family] === undefined && current !== undefined) {
+      stamp[family] = { id: current.id, spoken: current.spoken };
+    }
+  }
+  return stamp;
 }
 
 /** Prints one line per pending fixture, so a batch review fits on a screen. */

@@ -881,6 +881,8 @@ def _sid_restriction(row: _Row) -> Restriction:
         raise ValueError(f"{row.where}: a between restriction needs feet_high")
     if constraint != "between" and feet_high is not None:
         raise ValueError(f"{row.where}: feet_high is only for a between restriction")
+    if constraint == "between" and feet_high is not None and feet_high <= feet:
+        raise ValueError(f"{row.where}: a between restriction needs feet_high above feet, got {feet} and {feet_high}")
     if constraint == "at":
         return Restriction(fix, constraint, feet_low=feet, feet_high=feet)
     if constraint == "at_or_below":
