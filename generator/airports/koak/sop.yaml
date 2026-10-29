@@ -90,8 +90,8 @@ runway_configs:
 
 # NCT departure sectors named in SOP 2-2. Frequencies from the ZOA positions reference
 # (Area D Richmond 120.900, Area D Sutro 135.100, Area C Grove 125.350) and the OAK charts' NORCAL
-# DEP CON boxes (OAKLAND SIX/SILENT THREE/SALAD FIVE 120.9, CNDEL/COAST/KATFH/NUEVO/QUAKE/SKYLINE/
-# SUNNE 135.1, NIMITZ SIX 127.0, which is the Diablo low-altitude sector rather than a SOP sector).
+# DEP CON boxes (OAKLAND/SILENT/SALAD 120.9, CNDEL/COAST/KATFH/NUEVO/QUAKE/SKYLINE/
+# SUNNE 135.1, NIMITZ 127.0, which is the Diablo low-altitude sector rather than a SOP sector).
 departure_sectors:
   - { id: richmond, name: NorCal Richmond, frequency: "120.9" }
   - { id: sutro, name: NorCal Sutro, frequency: "135.1" }
@@ -138,15 +138,15 @@ frequencies:
 # follow the SOP's own grouping: the OAK#/HUSSH#/SLNT# fixes are northbound, the CNDEL#/SKYL#/
 # COAST#/KATFH#/NUEVO# fixes southbound, and the W oceanic fixes oceanic. Extend during validation.
 gates:
-  # HUSSH2 and SLNT3 transitions, the TEC heads that leave to the north and east, and the Altamont
+  # HUSSH# and SLNT# transitions, the TEC heads that leave to the north and east, and the Altamont
   # corridor (ALTAM, MOD), which the TEC rows work east out of the Bay the way KSFO works OAK.
   # CCR, RDD and LKV are worksheet exit fixes north of the field (KSFO lists them the same way).
   # SFO and HWD: the user ruled that vectors-direct departures to San Francisco and Hayward get
   # Richmond (2026-09-18). The destinations' identifiers stand in as gate fixes for those routes; no
   # other KOAK route exits on the SFO VOR.
   north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY, CCR, RDD, LKV, SFO, HWD]
-  # CNDEL5 and KATFH3 transitions (and their common fix PORTE), COAST9 and SKYL1 transitions,
-  # NUEVO8 transitions and the fixes the SOP's NUEVO# row names; SUNNE (the SUNNE1 end fix) and the
+  # CNDEL# and KATFH# transitions (and their common fix PORTE), COAST# and SKYL# transitions,
+  # NUEVO# transitions and the fixes the SOP's NUEVO# row names; SUNNE (the SUNNE# end fix) and the
   # valley and coastal fixes worksheet plans leave on (CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO).
   south: [KAYEX, KTINA, NTELL, SUSEY, YYUNG, PORTE, FLW, GVO, RZS, SXC, MCKEY, AVE, PXN, WAGES, SHOEY, SNS, EUGEN, BSR, OSI, SJC, ARTAQ, KARNN, SUNNE, CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO]
   # The user's notes: ALCOA to R463, BEBOP to R464, CINNY to A220, AMAKR to the north-west oceanic.

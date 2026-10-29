@@ -6,10 +6,10 @@ touch the network.
 
 | field | value |
 |---|---|
-| AIRAC cycle | 2609 |
-| effective | 2026-09-03 |
-| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_260903.zip`, member `FAACIFP18` |
-| captured | 2026-09-17 |
+| AIRAC cycle | 2611 |
+| effective | 2026-10-29 |
+| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261029.zip`, member `FAACIFP18` |
+| captured | 2026-10-29 |
 | filter | `line[0] == "S"` and either `line[4:6] == "EA"` or `line[4] == "P" and line[12] == "C"`, keeping the 84 five-letter identifiers the KSFO data and fixtures file, plus `COLLI`, `AAAME` and `AAERO` |
 | rows | 78, one per identifier, every row 132 characters, sorted by identifier |
 
@@ -25,8 +25,8 @@ filter, and `NTELL` (`W`), `ALTAM` (`C`) and `COLLI` (`R`) are the three type le
 
 Two rows are here for the tests alone. `AAAME` is a KOAK terminal waypoint, the row shape whose
 airport sits at `[6:10]` and whose subsection sits at `[12]`. `AAERO` is a real enroute row with its
-continuation number edited from `0` to `2`: the 2609 cycle publishes no waypoint continuation record
-at all - all 70,085 rows are continuation `0` - so a row the continuation guard must skip has to be
+continuation number edited from `0` to `2`: the 2611 cycle publishes no waypoint continuation record
+at all - all 70,056 rows are continuation `0` - so a row the continuation guard must skip has to be
 made rather than copied.
 
 Public domain: FAA Coded Instrument Flight Procedures data, published free of charge by the FAA

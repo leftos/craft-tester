@@ -5,10 +5,10 @@ the network.
 
 | field | value |
 |---|---|
-| AIRAC cycle | 2609 |
-| effective | 2026-09-03 |
-| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_260903.zip`, member `FAACIFP18` |
-| captured | 2026-09-15 |
+| AIRAC cycle | 2611 |
+| effective | 2026-10-29 |
+| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261029.zip`, member `FAACIFP18` |
+| captured | 2026-10-29 |
 | filter | `line[6:10] == "KSFO" and line[12] in "DG"` |
 | rows | 218 (210 SID legs, 8 runways), every row 132 characters |
 

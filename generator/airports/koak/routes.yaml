@@ -40,7 +40,7 @@ routes:
   - { exit_fix: KAYEX, destination: KPHX, tail: KAYEX LOSHN BOILE BLH HYDRR#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: AVE, destination: KPHX, tail: AVE BOILE BLH HYDRR#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: SNS, destination: KLAX, tail: SNS AVE LAX, classes: [P, T], altitudes: [9000, 11000] }
-  # Northbound and eastbound jets off OAK6, which is a vector SID: the first filed fix is the
+  # Northbound and eastbound jets off OAK#, which is a vector SID: the first filed fix is the
   # Oakland VOR itself. KSEA and KPDX take even altitudes under the ZOA-ZSE parity LOA.
   - { exit_fix: OAK, destination: KSEA, tail: OAK DEDHD RBL LMT HAWKZ#, classes: [J], altitudes: [34000, 36000] }
   - { exit_fix: OAK, destination: KPDX, tail: OAK GRTFL MACHU TMBRS#, classes: [J], altitudes: [34000, 36000] }
@@ -94,7 +94,7 @@ routes:
   # San Francisco and Hayward file what their TEC rows issue after the procedure. The OAKE row to
   # KSFO departs on H270 and the SFOE row to KHWD on H090, and a heading is filed at the head of the
   # tail; the other KSFO rows depart on the runway heading, and the SFOW rows to KHWD file RV after the
-  # OAK6 or NIMI6 the SOP prepends. A route vectored direct to its destination names no fix, so its
+  # OAK# or NIMI# the SOP prepends. A route vectored direct to its destination names no fix, so its
   # exit_fix is the destination's identifier, which the north gate carries for that reason.
   - { exit_fix: OSI, destination: KSFO, tail: H270 OSI, classes: [P, T, J], altitudes: [5000] }
   - { exit_fix: SFO, destination: KSFO, tail: RH RV, classes: [P, T, J], altitudes: [4000, 5000] }
