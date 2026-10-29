@@ -28,6 +28,12 @@
     "runwayConfigId": "10/10",
     "squawk": "6411"
   },
+  "sidVersions": {
+    "SAHEY": {
+      "id": "SAHEY4",
+      "spoken": "Sahey Four"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOE-S-SAHEY: the east plan southbound off 10R, the runway the south gate departs; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); SAHEY4 publishes FL190 and the plan files 33,000, above it, so the altitude is plain climb via SID (SOP 2-2 c (1) issues the interim table only when no top altitude is published, user decision 2026-09-15)"

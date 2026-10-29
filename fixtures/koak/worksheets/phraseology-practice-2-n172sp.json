@@ -29,6 +29,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "3331"
   },
+  "sidVersions": {
+    "NUEVO": {
+      "id": "NUEVO8",
+      "spoken": "Nuevo Eight"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: Nuevo Eight departure, Eugen, direct, climb via SID except maintain 7,000, 135.1; the chart publishes the expect note"

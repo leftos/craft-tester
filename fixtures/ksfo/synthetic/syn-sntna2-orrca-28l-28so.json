@@ -28,6 +28,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "5123"
   },
+  "sidVersions": {
+    "SNTNA": {
+      "id": "SNTNA2",
+      "spoken": "Sntna Two"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-N-SNTNA-28: SNTNA# replaces TRUKN# off the 28s when the TRUKN DP is not in use (notConfigs: 28 RT); expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15); SNTNA2 publishes 3,000 and the plan files 41,000, above it, so the altitude is plain climb via SID (SOP 2-2 c (1) issues the interim table only when no top altitude is published, user decision 2026-09-15)"

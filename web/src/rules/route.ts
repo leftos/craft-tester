@@ -177,7 +177,7 @@ function misplacedToken(headed: boolean, afterHead: readonly string[]): string |
 /**
  * Whether a route names no fix after its departure, and so is vectored straight to the destination.
  *
- * That is a route whose head is followed by `RV` alone (`RH RV`, `H090 RV`, `OAK6 OAK RV`), or one
+ * That is a route whose head is followed by `RV` alone (`RH RV`, `H090 RV`, `OAK# OAK RV`), or one
  * that files a radar-vector SID with nothing after it but the airport's own navaid (`GAPP7 SFO`,
  * `GAPP7`). A radar-vector SID is one filed with the airport navaid after it (R-RV-NAVAID), read by
  * family so a stale version reads as the current one.
@@ -276,7 +276,7 @@ type StructurePrefix = { length: number; sids: string[] };
  *
  * A token is dropped when it names some SID's own structure and the next token to survive is one of
  * that same SID's published transitions: `CNDEL PORTE SUSEY EBAYE BURGL` is read from SUSEY, the
- * transition CNDEL5 publishes, CNDEL naming the procedure and PORTE the fix it is built on. Where
+ * transition CNDEL# publishes, CNDEL naming the procedure and PORTE the fix it is built on. Where
  * the route files no published transition of such a SID nothing is dropped and the first filed fix
  * stands, spoken bare: `TRUKN2 TRUKN CCR CCR2` is read from TRUKN, CCR being no transition of
  * TRUKN2. The longest such prefix wins, and at least one token always survives.

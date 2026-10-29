@@ -28,6 +28,16 @@
     "runwayConfigId": "SFOW",
     "squawk": "3331"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    },
+    "COAST": {
+      "id": "COAST9",
+      "spoken": "Coast Nine"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: COAST9 is off by the ZOA notice ('issue CNDEL# YYUNG'), so the clearance route-builds onto CNDEL5, Yyung transition, direct Los Angeles VOR, then as filed, climb via SID, 135.1"

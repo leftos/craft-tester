@@ -25,6 +25,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4601"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: LYNXX8 is conventional, so the RNAV jet is built onto ROKKR3 via RDHOT (KTINA always connects to CISKO, CISKO usually to RDHOT)"

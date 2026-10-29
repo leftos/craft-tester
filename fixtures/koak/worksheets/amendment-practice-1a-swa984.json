@@ -24,6 +24,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4602"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: B737/G at FL350: an RVSM-capable type filing a non-RVSM suffix has its altitude amended to FL270, the type stays as filed (user rule 2026-09-16)"

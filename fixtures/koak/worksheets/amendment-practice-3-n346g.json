@@ -29,6 +29,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4601"
   },
+  "sidVersions": {
+    "NIMI": {
+      "id": "NIMI6",
+      "spoken": "Nimitz Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: TEC route to Rio Vista: NIMI6 OAK V6 SAC at 5,000"

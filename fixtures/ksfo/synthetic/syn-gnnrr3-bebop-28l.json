@@ -28,6 +28,12 @@
     "runwayConfigId": "28/01",
     "squawk": "2617"
   },
+  "sidVersions": {
+    "GNNRR": {
+      "id": "GNNRR3",
+      "spoken": "Gnnrr Three"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-O-GNNRR-28: oceanic off the 28s in 28/01, the configuration exception SOP 2-1 e allows. GNNRR3 publishes 3,000 and the plan files 35,000, above it, so the altitude is plain climb via SID: SOP 2-2 c (1) issues the interim table only when no top altitude is published (user decision 2026-09-15). Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."

@@ -25,6 +25,16 @@
     "runwayConfigId": "28 SO",
     "squawk": "4602"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    },
+    "SSTIK": {
+      "id": "SSTIK5",
+      "spoken": "Sstik Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation; validated by the user 2026-09-17: GAPP7 radar vectors EBAYE, then BURGL onto IRNMN2, the filed EBAYE kept"

@@ -4,6 +4,7 @@ import type { AirportData, Fixture } from '@/data/schema.ts';
 import { FixtureSchema } from '@/data/schema.ts';
 import { citePhraseology } from '@/rules/cite.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { withCurrentVersions } from '@/rules/fixtureVersions.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { SpeakClearanceInput, SpokenClearance } from '@/rules/speak.ts';
 import { gradeText } from '@/rules/text/grade.ts';
@@ -11,6 +12,7 @@ import type { RouteReading, TextGrade } from '@/rules/text/grade.ts';
 import type { ClearanceElement, ResolvedClearance, RuleCitation, Verdict } from '@/rules/types.ts';
 // spokenFor is the one place the reading's input is assembled from a scenario and its clearance.
 import { spokenFor } from '@/ui/session.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 /** Every checked-in airport, keyed by ICAO, so a fixture is graded against the field it names. */
 const airports = new Map<string, AirportData>(
@@ -26,6 +28,7 @@ function airportOf(icao: string): AirportData {
 }
 
 const ksfo = airportOf('KSFO');
+const oak = sidOf(airportOf('KOAK'), 'OAK');
 
 /**
  * Every checked-in fixture, loaded by a relative glob.
@@ -41,7 +44,8 @@ const documents = import.meta.glob<unknown>('../../../../fixtures/**/*.json', {
 /** Every fixture the glob loads and the schema parses, whatever mode it is written for. */
 const parsedFixtures: Fixture[] = Object.values(documents)
   .map((json) => FixtureSchema.safeParse(json))
-  .flatMap((parsed) => (parsed.success ? [parsed.data] : []));
+  .flatMap((parsed) => (parsed.success ? [parsed.data] : []))
+  .map((fixture) => withCurrentVersions(fixture, airportOf(fixture.airport)));
 
 const settledClearances: Fixture[] = parsedFixtures.filter(
   (fixture) => fixture.mode === 'clearance' && fixture.status === 'settled',
@@ -505,7 +509,7 @@ describe('gradeText', () => {
     expect(verdictsOf(grades)).toEqual(verdictsWith({ F: 'acceptable' }));
     expect(idsOf(gradeOf(grades, 'F'))).toEqual(['OWN-F', 'S-NINER']);
 
-    // No settled clearance fixture flies COAST9 (the ZOA notice route-builds it onto CNDEL5), so the
+    // No settled clearance fixture flies COAST9 (the ZOA notice route-builds it onto CNDEL#), so the
     // procedure whose chart name says "Nine" is the MOLEN NINE.
     const { airport, clearance: resolved, spoken } = settledReading('syn-molen9-molen-28l');
     expect(spoken.abbreviated).toContain('Molen Nine departure');
@@ -786,14 +790,14 @@ describe('gradeText on a word typed a letter or two away from the reading', () =
 describe('gradeText on an identifier typed in place of the words it is spoken as', () => {
   it('reads a procedure identifier in lower case as the procedure', () => {
     const grades = fdxGraded((reading) =>
-      edited(reading, 'Oakland Six departure', 'oak6 departure'),
+      edited(reading, `${oak.spoken} departure`, `${oak.id.toLowerCase()} departure`),
     );
     expect(misgraded(grades, {})).toEqual([]);
   });
 
   it('reads a procedure identifier in capitals as the procedure', () => {
     const grades = fdxGraded((reading) =>
-      edited(reading, 'Oakland Six departure', 'OAK6 departure'),
+      edited(reading, `${oak.spoken} departure`, `${oak.id} departure`),
     );
     expect(misgraded(grades, {})).toEqual([]);
   });
@@ -953,8 +957,8 @@ function codedGraded(limit: string): TextGrade[] {
   return fdxGraded((reading) =>
     edited(
       edited(reading, 'cleared to Seattle-Tacoma International airport', limit),
-      'Oakland Six departure',
-      'oak6 depature',
+      `${oak.spoken} departure`,
+      `${oak.id.toLowerCase()} depature`,
     ),
   );
 }
@@ -1154,7 +1158,7 @@ describe('the marks and the remarks of a typed grade', () => {
     const sid = gradeOf(grades, 'R.sid');
     expect(sid.verdict).toBe('correct');
     expect(sid.said).toEqual([
-      { text: 'Oakland Six ', kind: 'said' },
+      { text: `${oak.spoken} `, kind: 'said' },
       { text: 'depature', kind: 'spelling', readAs: 'departure' },
     ]);
     expect(sid.remarks).toEqual([]);

@@ -30,6 +30,12 @@
     "runwayConfigId": "28/01",
     "squawk": "3346"
   },
+  "sidVersions": {
+    "SEGUL": {
+      "id": "SEGUL1",
+      "spoken": "Segul One"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-S-SEGUL with every notice cancelled: SEGUL# publishes no top altitude, so SFOW-J-10000 becomes climb via SID except maintain 10,000 off the 01s; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

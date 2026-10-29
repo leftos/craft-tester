@@ -29,6 +29,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "5044"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-N-GAPP-28: the northbound fallback off the 28s for a jet that cannot fly an RNAV SID, with SFOW-28-3000 spoken as maintain; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

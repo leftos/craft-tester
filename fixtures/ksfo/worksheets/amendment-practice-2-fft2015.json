@@ -24,6 +24,12 @@
     "runwayConfigId": "28 RT",
     "squawk": "4612"
   },
+  "sidVersions": {
+    "WESLA": {
+      "id": "WESLA5",
+      "spoken": "Wesla Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the runway configuration 28 RT departs south per direction_runway_preference; type A32N filed on the sheet, read as A20N; settled by the user 2026-09-17: PORTE is the base fix of WESLA5, and the route files its published transition SUSEY further along, so the route is read from SUSEY (R-SID-STRUCTURE); PORTE8 names no KSFO procedure"

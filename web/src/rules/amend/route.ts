@@ -173,7 +173,7 @@ function familyOf(token: string): string | undefined {
  * A route box with the departure airport's navaid after a radar-vector SID, where one belongs.
  *
  * A radar-vector SID publishes no route of its own, so the computerized flight plan needs the
- * airport's own navaid to leave the field on: the box reads `OAK6 OAK RBL`, `SFO5 SFO RBL`. The
+ * airport's own navaid to leave the field on: the box reads `OAK# OAK RBL`, `SFO5 SFO RBL`. The
  * navaid is filed, not spoken — `routeFromExitFix` skips it and the clearance still reads radar
  * vectors to the first fix — so this only shapes the box the engine writes.
  *

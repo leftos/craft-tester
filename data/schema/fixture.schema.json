@@ -351,6 +351,28 @@
       ],
       "type": "object"
     },
+    "sidVersions": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "spoken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "spoken"
+        ],
+        "type": "object"
+      },
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
     "source": {
       "additionalProperties": false,
       "properties": {

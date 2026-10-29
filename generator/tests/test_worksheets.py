@@ -44,6 +44,7 @@ from craft_generator.worksheets import (
     settled_fixture_at,
     sheet_fixtures,
     slug,
+    with_sid_versions,
 )
 
 WORKSHEET_TEXT = Path(__file__).parent / "fixtures" / "worksheets"
@@ -621,6 +622,39 @@ def test_overwrite_flag_keeps_a_settled_fixture_whose_scenario_is_unchanged(turb
     settled = settled_fixture_at(path, turboprop_fixture, overwrite_settled=True)
     assert settled is not None
     assert settled.changed_fields == ()
+
+
+GAPP_SIDS = (
+    PublishedSid(id="GAPP8", family="GAPP", spoken="Gap Eight", runways=("28L",), rnav_required=False),
+    PublishedSid(id="CIITY3", family="CIITY", spoken="Ciity Three", runways=("28L",), rnav_required=True),
+)
+
+
+def filing(fixture: Fixture, route: str) -> Fixture:
+    """Return a copy of a fixture filing another route."""
+    return {**fixture, "scenario": {**fixture["scenario"], "filedRoute": route}}
+
+
+def test_a_new_fixture_is_stamped_with_the_sid_its_route_files(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    fixture = filing(turboprop_fixture, "GAPP8 SAU V27 GAPPS")
+    stamped = with_sid_versions(tmp_path / "new.json", fixture, GAPP_SIDS)
+    assert stamped["sidVersions"] == {"GAPP": {"id": "GAPP8", "spoken": "Gap Eight"}}
+    assert list(stamped).index("sidVersions") == list(stamped).index("airport") + 1
+    assert "sidVersions" not in fixture
+    validate(stamped, fixture_schema_path())
+
+
+def test_a_route_filing_no_published_sid_is_not_stamped(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    fixture = filing(turboprop_fixture, "GAPP7 SAU V27 GAPPS")
+    assert "sidVersions" not in with_sid_versions(tmp_path / "new.json", fixture, GAPP_SIDS)
+
+
+def test_an_existing_stamp_is_kept_after_the_published_version_moves_on(turboprop_fixture: Fixture, tmp_path: Path) -> None:
+    path = tmp_path / "committed.json"
+    committed = {**turboprop_fixture, "sidVersions": {"GAPP": {"id": "GAPP7", "spoken": "Gap Seven"}}}
+    path.write_text(dump(committed), encoding="utf-8", newline="")
+    stamped = with_sid_versions(path, filing(turboprop_fixture, "GAPP8 SAU V27 GAPPS"), GAPP_SIDS)
+    assert stamped["sidVersions"] == {"GAPP": {"id": "GAPP7", "spoken": "Gap Seven"}}
 
 
 def test_a_worksheet_plan_becomes_a_pending_fixture(worksheet_config: WorksheetConfig, importer: Importer) -> None:

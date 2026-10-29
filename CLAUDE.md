@@ -121,7 +121,9 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   semantics (number runs, how many boxes may be amended, composition order) gets its worked examples and
   non-examples written into the rule row's `text` or `docs/ARCHITECTURE.md` before it is briefed. Cite the
   matching recipe in `docs/ARCHITECTURE.md` "Change recipes" for the files to open.
-- **SIDs compare by family** (`TRUKN`), never by versioned id, because AIRAC cycles bump versions.
+- **SIDs compare by family** (`TRUKN`), never by versioned id, because AIRAC cycles bump versions. That holds for tests too: a unit test that reads airport data takes its SID with `sidOf(airport, 'TRUKN')`, and a fixture carries a SID version stamp (`sidVersions`) that the runner maps to the current cycle, so a cycle that reissues a SID edits no fixture.
+
+  `overrides.yaml` is the exception on purpose: its keys are versioned chart names, so a reissue fails the build until each hand-stated fact is re-checked against the new chart.
 - **Hand-transcribed sources are pinned.** `sop.yaml` records the SOP PDF sha256 and sentinel strings, and
   `generator/shared/aircraft_types.yaml` pins ZOA CPS-004 (special aircraft) the same way; `verify-sop` and
   the build fail when either document changes. Re-transcribe, then update the hash.

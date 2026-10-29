@@ -30,6 +30,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4610"
   },
+  "sidVersions": {
+    "OAK": {
+      "id": "OAK6",
+      "spoken": "Oakland Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: FL410 odd for the course to Boise; NIMI5 is a prop SID, OAK6 OAK SAC ANAHO; re-validated by the user 2026-09-17: the BOI LOA names PRNCS, so OAK6 OAK SAC ANAHO PRNCS SADYL4 (ANAHO to PRNCS added to the connection table), FL410"

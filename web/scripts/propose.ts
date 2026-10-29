@@ -402,7 +402,7 @@ function registerAliasHook(): void {
 
 /** The app modules, imported after the alias hook is in place. */
 async function loadRuntime() {
-  const [schema, load, engine, types, speak, grade, amend, amendTypes, handling] =
+  const [schema, load, engine, types, speak, grade, amend, amendTypes, handling, versions] =
     await Promise.all([
       import('#src/data/schema.ts'),
       import('#src/data/load.ts'),
@@ -413,6 +413,7 @@ async function loadRuntime() {
       import('#src/rules/amend/engine.ts'),
       import('#src/rules/amend/types.ts'),
       import('#src/rules/handling.ts'),
+      import('#src/rules/fixtureVersions.ts'),
     ]);
   return {
     ...schema,
@@ -424,6 +425,7 @@ async function loadRuntime() {
     ...amend,
     ...amendTypes,
     ...handling,
+    ...versions,
   };
 }
 
@@ -633,13 +635,14 @@ function pendingRow(fixture: Fixture, outcome: ProposalOutcome): PendingRow {
 /** Prints one fixture's proposal. */
 function printProposal(entry: { path: string; fixture: Fixture }, runtime: Runtime): void {
   const airport = loadAirportData(entry.fixture.airport, runtime);
-  const accepted = acceptedReading(entry.fixture, airport, runtime);
+  const fixture = runtime.withCurrentVersions(entry.fixture, airport);
+  const accepted = acceptedReading(fixture, airport, runtime);
   const view: ProposalView = {
-    id: entry.fixture.id,
-    status: entry.fixture.status,
-    note: entry.fixture.source.note,
-    strip: stripLines(entry.fixture.scenario, airport),
-    outcome: outcomeOf(entry.fixture, airport, runtime),
+    id: fixture.id,
+    status: fixture.status,
+    note: fixture.source.note,
+    strip: stripLines(fixture.scenario, airport),
+    outcome: outcomeOf(fixture, airport, runtime),
   };
   if (accepted !== undefined) view.accepted = accepted;
   console.log(formatProposal(view));
@@ -653,9 +656,8 @@ function printPending(entries: readonly { fixture: Fixture }[], runtime: Runtime
     const icao = entry.fixture.airport;
     const airport = airports.get(icao) ?? loadAirportData(icao, runtime);
     airports.set(icao, airport);
-    console.log(
-      formatPendingLine(pendingRow(entry.fixture, outcomeOf(entry.fixture, airport, runtime))),
-    );
+    const fixture = runtime.withCurrentVersions(entry.fixture, airport);
+    console.log(formatPendingLine(pendingRow(fixture, outcomeOf(fixture, airport, runtime))));
   }
   console.log(`${pending.length} pending fixtures`);
 }

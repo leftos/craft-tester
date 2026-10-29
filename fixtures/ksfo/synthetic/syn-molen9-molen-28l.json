@@ -29,6 +29,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "2622"
   },
+  "sidVersions": {
+    "MOLEN": {
+      "id": "MOLEN9",
+      "spoken": "Molen Nine"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-O-MOLEN-28: the flight leaves MOLEN9 at its base fix, so the route is spoken \"then as filed\"; MOLEN# publishes no top altitude, so SFOW-28-3000 gives climb via SID except maintain 3,000. The oceanic tail after MOLEN is invented because no routeLibrary row covers a MOLEN departure; replace it when one is added.; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

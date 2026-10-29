@@ -29,6 +29,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "3357"
   },
+  "sidVersions": {
+    "WESLA": {
+      "id": "WESLA5",
+      "spoken": "Wesla Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Phraseology Practice 3; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation; validated by the user 2026-09-15: WESLA5 KTINA transition off 28L, climb via SID except maintain 3,000, no expect clause, 135.1; full route confirmed"

@@ -30,6 +30,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "3352"
   },
+  "sidVersions": {
+    "SEGUL": {
+      "id": "SEGUL1",
+      "spoken": "Segul One"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "The same row off the 28s, where SFOW-28-3000 lowers the interim altitude to 3,000; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

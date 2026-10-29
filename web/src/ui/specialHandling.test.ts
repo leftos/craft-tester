@@ -11,8 +11,11 @@ import type { Grade, PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import { amendmentGrades } from '@/ui/amendPanels.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import { acceptedClearance, clearedPlan } from '@/ui/session.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const koak = koakJson as unknown as AirportData;
+const nimi = sidOf(koak, 'NIMI');
+const oak = sidOf(koak, 'OAK');
 
 /** The special-handling row of ZOA CPS-004 3.1. */
 const CPS004 = 'ZOA-CPS004-SPECIAL-AIRCRAFT';
@@ -31,7 +34,7 @@ function ksmfPlan(overrides: Partial<Scenario>): Scenario {
     aircraftType: 'DH8D',
     equipmentSuffix: '/L',
     destination: 'KSMF',
-    filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+    filedRoute: `${oak.id} OAK FEVTA FEVTA1`,
     filedAltitude: 10000,
     runwayConfigId: 'SFOW',
     departureRunway: '30',
@@ -167,7 +170,7 @@ describe('amendment mode for a type ZOA CPS-004 3.1 hands special handling', () 
   const filed = ksmfPlan({
     callsign: 'N510CJ',
     aircraftType: 'C510',
-    filedRoute: 'NIMI6 OAK V6 SAC',
+    filedRoute: `${nimi.id} OAK V6 SAC`,
     filedAltitude: 9000,
   });
 
@@ -192,7 +195,7 @@ describe('amendment mode for a type ZOA CPS-004 3.1 hands special handling', () 
       airport: koak,
       answer: {
         input: 'dropdowns',
-        picks: { ...picksFor(accepted.clearance), procedure: 'NIMI6' },
+        picks: { ...picksFor(accepted.clearance), procedure: nimi.id },
       },
       routeReading: 'abbreviated',
     });

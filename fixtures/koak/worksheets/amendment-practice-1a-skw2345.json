@@ -29,6 +29,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4615"
   },
+  "sidVersions": {
+    "OAK": {
+      "id": "OAK6",
+      "spoken": "Oakland Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: TEC route to Sacramento: OAK6 OAK FEVTA FEVTA1 at 10,000"

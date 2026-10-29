@@ -25,6 +25,16 @@
     "runwayConfigId": "28/01",
     "squawk": "4602"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    },
+    "SSTIK": {
+      "id": "SSTIK5",
+      "spoken": "Sstik Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation; validated by the user 2026-09-16: route-build to keep SSTIK5 (EBAYE connects off the SUSEY transition per the OAK Route Building Cheat Sheet) rather than falling back to GAPP7 radar vectors; read \"Sstik Five departure, Susey transition, direct Ebaye, then as filed\"; re-opened 2026-09-16: the user ruled that an RNAV jet filing the non-RNAV SADDE8 is amended onto IRNMN2 via BURGL (`SSTIK5 SUSEY EBAYE BURGL IRNMN2`, the LOA's LAX jet routing); pending until the arrival-swap concept lands; validated by the user 2026-09-17: an RNAV jet filing the conventional SADDE8 is put on IRNMN2 via BURGL (route building EBAYE to BURGL), read \"Sstik Five departure, Susey transition, direct Ebaye, direct Burgl, Irnmn Two arrival\""

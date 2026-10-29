@@ -77,6 +77,7 @@ EXPORT_URL = "https://docs.google.com/document/d/{document_id}/export?format=txt
 LOCAL_TIME = "1400"
 DAY_OF_WEEK = "tuesday"
 SETTLED_STATUS = "settled"
+SID_VERSIONS = "sidVersions"
 FIXTURE_MODES: Mapping[WorksheetKind, str] = {"phraseology": "clearance", "amendment": "amendment"}
 FIRST_SQUAWK = 0o4601
 TRUNCATION_MARKER = "(continued)"
@@ -564,10 +565,13 @@ class PublishedSid:
     """One departure procedure as the built airport document publishes it, for the TEC move to read.
 
     ``family`` is the versionless name a ``tec.yaml`` route begins on, e.g. ``TRUKN`` for ``TRUKN2``.
+    ``spoken`` is the name the procedure is read as, e.g. ``Gap Seven`` for ``GAPP7``, which a fixture's
+    ``sidVersions`` stamp records beside the id.
     """
 
     id: str
     family: str
+    spoken: str
     runways: tuple[str, ...]
     rnav_required: bool
 
@@ -1066,6 +1070,36 @@ def fixture_for(worksheet: Worksheet, row: PlanRow, index: int, *, icao: str, ru
             "squawk": _squawk_for(row, index),
         },
     }
+
+
+def with_sid_versions(path: Path, fixture: Fixture, sids: Sequence[PublishedSid]) -> Fixture:
+    """Return the fixture stamped with the SID versions it was written against.
+
+    A stamp is written once: when the file at ``path`` already carries ``sidVersions``, that value is
+    copied unchanged, so a later AIRAC cycle that reissues a procedure does not change the fixture.
+    Otherwise every published SID whose id is a token of the filed route is stamped under its family.
+
+    Args:
+        path: The fixture file the import is about to write.
+        fixture: The regenerated fixture document; it is not changed.
+        sids: The procedures the built airport document publishes.
+
+    Returns:
+        A copy of the fixture with ``sidVersions`` after ``airport``, or the fixture itself when the
+        file carries no stamp and the route names no published SID.
+    """
+    stamp = _fixture_on_disk(path).get(SID_VERSIONS) if path.exists() else None
+    if stamp is None:
+        tokens = set(fixture["scenario"]["filedRoute"].split())
+        stamp = {sid.family: {"id": sid.id, "spoken": sid.spoken} for sid in sids if sid.id in tokens}
+    if not stamp:
+        return fixture
+    stamped: Fixture = {}
+    for key, value in fixture.items():
+        stamped[key] = value
+        if key == "airport":
+            stamped[SID_VERSIONS] = stamp
+    return stamped
 
 
 @dataclass(frozen=True, slots=True)

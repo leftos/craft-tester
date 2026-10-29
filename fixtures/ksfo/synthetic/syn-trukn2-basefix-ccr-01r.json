@@ -29,6 +29,12 @@
     "runwayConfigId": "28/01",
     "squawk": "4117"
   },
+  "sidVersions": {
+    "TRUKN": {
+      "id": "TRUKN2",
+      "spoken": "Trukn Two"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "The flight leaves TRUKN2 at its base fix, so the route is spoken \"then as filed\". TRUKN2 publishes FL190 and the TBM9 files 11,000, below it, so SOP 2-2 c (1) gives climb via SID except maintain 11,000, the filed altitude, and the class-T SFOW-PT-5000 interim does not apply (user decision 2026-09-15). Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."

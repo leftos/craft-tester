@@ -29,6 +29,12 @@
     "runwayConfigId": "28/01",
     "squawk": "4231"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SOP 2-2 a: northbound off the 01s is SFO#, GAPP# is runway 28 only; the CBT's props-via-GAPP# reading was dropped on user review 2026-09-15. The sheet files GAPP7 SGD YAGER, which is a filed SID the clearance replaces.; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

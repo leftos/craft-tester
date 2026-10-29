@@ -12,6 +12,7 @@ import { FixtureSchema } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { toExpectedAmendments } from '@/rules/amend/types.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { withCurrentVersions } from '@/rules/fixtureVersions.ts';
 import { toExpectedClearance } from '@/rules/types.ts';
 import { tecRunway } from '@/scenario/generate.ts';
 
@@ -53,9 +54,11 @@ const loaded: LoadedFixture[] = Object.entries(documents)
   .sort(([left], [right]) => (left < right ? -1 : 1))
   .map(([path, json]) => ({ path, parsed: FixtureSchema.safeParse(json) }));
 
+/** Every fixture that parsed, with the SIDs it stamps moved to its airport's current versions. */
 const fixtures: Fixture[] = loaded
   .map((entry) => (entry.parsed.success ? entry.parsed.data : undefined))
-  .filter((fixture) => fixture !== undefined);
+  .filter((fixture) => fixture !== undefined)
+  .map((fixture) => withCurrentVersions(fixture, airportOf(fixture)));
 
 /** Whether a fixture expects a full clearance rather than a list of amendments. */
 function expectsClearance(fixture: Fixture): fixture is Fixture & { expected: ExpectedClearance } {

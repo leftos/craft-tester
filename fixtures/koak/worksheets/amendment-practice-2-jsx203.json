@@ -30,6 +30,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4605"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: CNDEL5 NTELL Q174 FLCHR COKTL4, the LAS jets LOA routing .Q174.FLCHR (Q174 to FLCHR added to the connection table)"

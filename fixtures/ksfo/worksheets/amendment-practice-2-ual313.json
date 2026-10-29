@@ -29,6 +29,12 @@
     "runwayConfigId": "28 RT",
     "squawk": "4614"
   },
+  "sidVersions": {
+    "TRUKN": {
+      "id": "TRUKN2",
+      "spoken": "Trukn Two"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 2; the sheet states no departure runway, so this is 28L, the runway configuration 28 RT departs north per direction_runway_preference; settled by the user 2026-09-17: /Q is not in FAA JO 7110.65 TBL 2-3-10 so the type box reads B752/L, which is RVSM-approved and leaves FL330 as filed; BVLQ124 is an identifier too long to be one and is dropped, the gap connected MOGEE Q124 BVL (R-ROUTE-TOKEN)"
