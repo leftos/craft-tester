@@ -180,9 +180,10 @@ One entry per chart name the charts API returns; the build lists the names it is
 - `crossing_restrictions_by_runway_family` when one runway's version of the SID has a restriction and
   another's does not (SFO5: the 01 side has a DME crossing, the 28 side does not), because that decides
   "climb via SID except maintain" versus "maintain".
+- `restrictions`, a list of rows with `fix`, `constraint` (`at`, `at_or_above`, `at_or_below`, `between`), `feet` and, for `between` only, `feet_high`, when the CIFP codes only part of a procedure: the list replaces the CIFP's crossing restrictions outright and sets `has_crossing_restrictions` unless that is stated too. SKYLINE at KOAK is the case: the CIFP codes only its enroute transitions from WAGES, so the restrictions the chart depicts are transcribed here.
 - `route_phrasing` and `transitions_spoken_as_transition` for vector SIDs.
 - `climb_via_eligible` where the SOP clears a procedure "climb via SID" against the computed reading
-  (OAK6 is a vector SID the SOP clears "CVS x FL190"); the override replaces the computation outright.
+  (OAK# is a vector SID the SOP clears "CVS x FL190"); the override replaces the computation outright.
 - `note` with the reasoning and the source, every time.
 
 `fix_spoken` is for corrections only. The build reads every navaid the routes, TEC rows, gates, SID

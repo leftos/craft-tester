@@ -6,6 +6,7 @@ import pytest
 
 from craft_generator.aircraft_characteristics import AircraftCharacteristic
 from craft_generator.cifp.airways import AirwayFix, CifpAirway
+from craft_generator.cifp.sid import Restriction
 from craft_generator.emit import data_path, dump, schema_path, validate
 from craft_generator.merge import (
     BuildInputs,
@@ -126,6 +127,35 @@ def test_a_hand_expect_note_wins_over_the_one_read_off_the_chart(ksfo_build_inpu
     sids = _sids(build_airport(replace(ksfo_build_inputs, airport=airport)))
     assert sids["SFO5"]["chartExpectFiledAltitudeMinutes"] == HAND_EXPECT_MINUTES
     assert sids["TRUKN2"]["chartExpectFiledAltitudeMinutes"] == CHART_EXPECT_MINUTES
+
+
+def _with_sid_override(inputs: BuildInputs, chart_name: str, **changes: Any) -> dict[str, Document]:
+    overrides = inputs.airport.overrides
+    sid = replace(overrides.sids[chart_name], **changes)
+    airport = replace(inputs.airport, overrides=replace(overrides, sids={**overrides.sids, chart_name: sid}))
+    return _sids(build_airport(replace(inputs, airport=airport)))
+
+
+def test_a_stated_restrictions_list_replaces_the_cifp_one(ksfo_build_inputs: BuildInputs) -> None:
+    stated = (Restriction("SIXDY", "between", feet_low=1900, feet_high=3000), Restriction("WAGES", "at_or_above", feet_low=20000, feet_high=None))
+    sids = _with_sid_override(ksfo_build_inputs, "TRUKN TWO (RNAV)", restrictions=stated)
+    assert sids["TRUKN2"]["restrictions"] == [
+        {"fix": "SIXDY", "altitudeDescription": "between", "altitudeOneFeet": 1900, "altitudeTwoFeet": 3000},
+        {"fix": "WAGES", "altitudeDescription": "at_or_above", "altitudeOneFeet": 20000},
+    ]
+
+
+def test_a_stated_restrictions_list_sets_has_crossing_restrictions(ksfo_build_inputs: BuildInputs) -> None:
+    stated = (Restriction("SNTNA", "at_or_above", feet_low=5000, feet_high=None),)
+    sids = _with_sid_override(ksfo_build_inputs, "SNTNA TWO (RNAV)", restrictions=stated)
+    assert sids["SNTNA2"]["hasCrossingRestrictions"] is True
+
+
+def test_an_explicit_has_crossing_restrictions_wins_over_a_stated_restrictions_list(ksfo_build_inputs: BuildInputs) -> None:
+    stated = (Restriction("SNTNA", "at_or_above", feet_low=5000, feet_high=None),)
+    sids = _with_sid_override(ksfo_build_inputs, "SNTNA TWO (RNAV)", restrictions=stated, has_crossing_restrictions=False)
+    assert sids["SNTNA2"]["hasCrossingRestrictions"] is False
+    assert sids["SNTNA2"]["restrictions"] == [{"fix": "SNTNA", "altitudeDescription": "at_or_above", "altitudeOneFeet": 5000}]
 
 
 def test_a_chart_expect_note_reaches_the_document(ksfo_document: Document) -> None:

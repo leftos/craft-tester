@@ -21,6 +21,7 @@ from datetime import date
 from typing import ClassVar, Literal
 
 from craft_generator.chart_text import TopAltitudeKind
+from craft_generator.cifp.sid import ConstraintKind, Restriction
 
 AircraftClass = Literal["P", "T", "J"]
 ApproachCategory = Literal["A", "B", "C", "D"]
@@ -54,6 +55,7 @@ ALTITUDE_OUTCOME_KINDS: tuple[AltitudeOutcomeKind, ...] = ("interim", "climb_via
 NOTICE_EFFECT_KINDS: tuple[NoticeEffectKind, ...] = ("sid_off",)
 EXPECT_ALTITUDE_POLICIES: tuple[ExpectAltitudePolicy, ...] = ("always", "unless_chart_publishes_it", "never")
 TOP_ALTITUDE_KINDS: tuple[TopAltitudeKind, ...] = ("published", "assigned_by_atc", "none")
+CONSTRAINT_KINDS: tuple[ConstraintKind, ...] = ("at", "at_or_above", "at_or_below", "between")
 WORKSHEET_KINDS: tuple[WorksheetKind, ...] = ("phraseology", "amendment")
 PHRASEOLOGY_READINGS: tuple[PhraseologyReading, ...] = ("abbreviated", "full_route")
 ON_REQUEST_KINDS: tuple[OnRequestKind, ...] = ("cargo", "heavy", "oceanic")
@@ -355,7 +357,8 @@ class SidOverride:
     """Per-DP facts the CIFP and the chart text do not carry, keyed by charts-API chart name.
 
     Every field but ``chart_name`` and ``cifp_id`` is optional: an absent field means the merge step
-    keeps what CIFP and the chart said.
+    keeps what CIFP and the chart said. ``restrictions``, when stated, replaces the CIFP's crossing
+    restrictions outright, for a procedure whose CIFP coding omits the legs the chart restricts.
     """
 
     chart_name: str
@@ -366,6 +369,7 @@ class SidOverride:
     top_altitude: SidTopAltitude | None
     has_crossing_restrictions: bool | None
     crossing_restrictions_by_runway_family: dict[str, bool] | None
+    restrictions: tuple[Restriction, ...] | None
     route_phrasing: RoutePhrasing | None
     transitions_spoken_as_transition: bool | None
     climb_via_eligible: bool | None
