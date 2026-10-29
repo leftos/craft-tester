@@ -182,6 +182,16 @@ describe('the fixture stamp', () => {
     expect(block).toContain('      "id": "OAK6",\n      "spoken": "Oakland Six"');
   });
 
+  it('prints each block as a property that pastes into a fixture as valid JSON', () => {
+    const sidVersions = { OAK: { id: 'OAK6', spoken: 'Oakland Six' } };
+    const block = formatProposal({ ...clearanceView, sidVersions }).split('FIXTURE\n')[1] ?? '';
+    const pasted = JSON.parse(`{${block.trimEnd()} "status": "settled"}`) as Record<
+      string,
+      unknown
+    >;
+    expect(Object.keys(pasted)).toEqual(['expected', 'sidVersions', 'status']);
+  });
+
   it('prints no stamp for a fixture that names no SID', () => {
     expect(formatProposal(clearanceView)).not.toContain('sidVersions');
     expect(formatProposal({ ...clearanceView, sidVersions: {} })).not.toContain('sidVersions');

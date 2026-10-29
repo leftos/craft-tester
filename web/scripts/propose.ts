@@ -125,23 +125,24 @@ function sortKeys(value: unknown): unknown {
   return value;
 }
 
-/** Renders the engine's clearance as the `"expected": {…}` block a fixture pastes in. */
-function expectedBlock(expected: unknown): string {
-  const json = JSON.stringify(sortKeys(expected), null, 2)
+/**
+ * Renders one top-level fixture property as the line block a fixture pastes in.
+ *
+ * It ends with a comma: in a fixture's sorted keys `id` follows `expected` and `source` follows
+ * `sidVersions`, so neither is ever the last property.
+ */
+function propertyBlock(key: string, value: unknown): string {
+  const json = JSON.stringify(sortKeys(value), null, 2)
     .split('\n')
     .map((line, index) => (index === 0 ? line : `  ${line}`))
     .join('\n');
-  return `  "expected": ${json}`;
+  return `  "${key}": ${json},`;
 }
 
 /** Renders the `"sidVersions": {…}` block a fixture pastes in, or nothing when it stamps no SID. */
 function sidVersionsBlock(sidVersions: ProposalView['sidVersions']): string[] {
   if (sidVersions === undefined || Object.keys(sidVersions).length === 0) return [];
-  const json = JSON.stringify(sortKeys(sidVersions), null, 2)
-    .split('\n')
-    .map((line, index) => (index === 0 ? line : `  ${line}`))
-    .join('\n');
-  return [`  "sidVersions": ${json}`];
+  return [propertyBlock('sidVersions', sidVersions)];
 }
 
 /** The CRAFT elements of one reading, each with the rows that decided it. */
@@ -236,7 +237,7 @@ function outcomeLines(view: ProposalView): string[] {
   const fixtureLines = [
     '',
     'FIXTURE',
-    expectedBlock(outcome.expected),
+    propertyBlock('expected', outcome.expected),
     ...sidVersionsBlock(view.sidVersions),
   ];
   if (outcome.kind === 'amendments') {
