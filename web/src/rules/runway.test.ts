@@ -5,9 +5,12 @@ import type { AircraftClass, AirportData, Direction, Scenario } from '@/data/sch
 import type { Handling } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { airlineOf, explainRunway } from '@/rules/runway.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
+const nuevo = sidOf(koak, 'NUEVO');
+const oak = sidOf(koak, 'OAK');
 
 const BASE: Scenario = {
   callsign: 'UAL1',
@@ -221,7 +224,7 @@ describe('explainRunway on the generated KSFO data', () => {
       aircraftType: 'C172',
       equipmentSuffix: '/G',
       destination: 'KMRY',
-      filedRoute: 'NUEVO8 EUGEN',
+      filedRoute: `${nuevo.id} EUGEN`,
       filedAltitude: 7000,
       runwayConfigId: 'SFOW',
       departureRunway: '28R',
@@ -341,7 +344,7 @@ describe('explainRunway for a flight its TEC route decides the runway of', () =>
       aircraftType: 'C172',
       equipmentSuffix: '/G',
       destination: 'KMRY',
-      filedRoute: 'NUEVO8 EUGEN',
+      filedRoute: `${nuevo.id} EUGEN`,
       filedAltitude: 7000,
       runwayConfigId: 'SFOW',
       departureRunway,
@@ -393,7 +396,7 @@ describe('the runway explanation of a type ZOA CPS-004 3.1 hands special handlin
       callsign: 'N510CJ',
       aircraftType: 'C510',
       destination: 'KSMF',
-      filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+      filedRoute: `${oak.id} OAK FEVTA FEVTA1`,
       filedAltitude: 10000,
       runwayConfigId: 'SFOW',
       departureRunway: '28L',
@@ -407,7 +410,7 @@ describe('the runway explanation of a type ZOA CPS-004 3.1 hands special handlin
       callsign: 'N510CJ',
       aircraftType: 'C510',
       destination: 'KSMF',
-      filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+      filedRoute: `${oak.id} OAK FEVTA FEVTA1`,
       filedAltitude: 10000,
       runwayConfigId: 'SFOW',
       departureRunway: '28L',

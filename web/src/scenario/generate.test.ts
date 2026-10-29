@@ -673,7 +673,7 @@ describe('tecRunway', () => {
     expect(tecRunway(flight, ksfo)).toBe('01R');
   });
 
-  it('moves a KOAK prop to KMRY in SFOW off 33, which NUEVO8 is not published from, to 28L', () => {
+  it('moves a KOAK prop to KMRY in SFOW off 33, which NUEVO# is not published from, to 28L', () => {
     const flight = drawnFlight({
       callsign: 'N172SP',
       aircraftType: 'C172',
@@ -687,7 +687,7 @@ describe('tecRunway', () => {
     expect(tecRunway(flight, koak)).toBe('28L');
   });
 
-  /** A KOAK DH8D to KSMF drawn onto 33, which OAK6, the jet row's departure, is not published from. */
+  /** A KOAK DH8D to KSMF drawn onto 33, which OAK#, the jet row's departure, is not published from. */
   const dash8 = drawnFlight({
     callsign: 'QXE2451',
     aircraftType: 'DH8D',

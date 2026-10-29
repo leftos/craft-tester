@@ -29,6 +29,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "3342"
   },
+  "sidVersions": {
+    "NIMI": {
+      "id": "NIMI6",
+      "spoken": "Nimitz Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class T to it (default_for_classes), pending validation; validated by the user 2026-09-16: Nimitz Six departure, radar vectors to join Victor six, then as filed, maintain 3,000, 120.9; the chart publishes the expect note"

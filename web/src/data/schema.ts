@@ -908,6 +908,13 @@ export const FixtureSchema = z.strictObject({
    */
   mode: z.enum(['clearance', 'amendment']),
   airport: z.string(),
+  /**
+   * Each stamped SID family's procedure id and spoken name as they were when the fixture was
+   * written; tests map them to the current cycle. Absent for a fixture that names no SID.
+   */
+  sidVersions: z
+    .record(z.string(), z.strictObject({ id: z.string(), spoken: z.string() }))
+    .optional(),
   scenario: ScenarioSchema,
   expected: ExpectedSchema.optional(),
 });

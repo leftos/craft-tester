@@ -24,6 +24,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4612"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 2; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups); type A32N filed on the sheet, read as A20N; settled by the user 2026-09-17: a filed element the CNDEL5 already flies over (CNDEL, its family; PORTE, its base fix) is not read back where the route files one of its published transitions further along, so the route is read from SUSEY (R-SID-STRUCTURE)"

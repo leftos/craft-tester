@@ -180,9 +180,10 @@ One entry per chart name the charts API returns; the build lists the names it is
 - `crossing_restrictions_by_runway_family` when one runway's version of the SID has a restriction and
   another's does not (SFO5: the 01 side has a DME crossing, the 28 side does not), because that decides
   "climb via SID except maintain" versus "maintain".
+- `restrictions`, a list of rows with `fix`, `constraint` (`at`, `at_or_above`, `at_or_below`, `between`), `feet` and, for `between` only, `feet_high`, when the CIFP codes only part of a procedure: the list replaces the CIFP's crossing restrictions outright and sets `has_crossing_restrictions` unless that is stated too. SKYLINE at KOAK is the case: the CIFP codes only its enroute transitions from WAGES, so the restrictions the chart depicts are transcribed here.
 - `route_phrasing` and `transitions_spoken_as_transition` for vector SIDs.
 - `climb_via_eligible` where the SOP clears a procedure "climb via SID" against the computed reading
-  (OAK6 is a vector SID the SOP clears "CVS x FL190"); the override replaces the computation outright.
+  (OAK# is a vector SID the SOP clears "CVS x FL190"); the override replaces the computation outright.
 - `note` with the reasoning and the source, every time.
 
 `fix_spoken` is for corrections only. The build reads every navaid the routes, TEC rows, gates, SID
@@ -335,6 +336,13 @@ Then:
 5. Run `craft-gen build --airport <ICAO> --check`, then commit `data/<icao>.json` with the YAML. CI does not run `build`, so this local check is the only one.
 
 Once the airport is listed in `data/airports.json`, the **AIRAC data refresh** workflow (`.github/workflows/airac.yml`, daily at 12:00 UTC or by hand from the Actions tab) rebuilds it every cycle with `build --skip-sop-verify` and opens or updates the PR `data: AIRAC <cycle>` on branch `airac/<cycle>`. Before merging that PR, run `uv run craft-gen verify-sop --airport <ICAO>` locally, since the runner cannot download the SOP and CPS-004 PDFs and skips their pin check. A PR the workflow opens does not trigger CI; close and reopen it, or push to its branch, to run CI. A run that fails on a 404 means the FAA has not published the cycle's CIFP yet; the next day's run retries. The workflow needs the repository setting "Allow GitHub Actions to create and approve pull requests" turned on. The generator test `test_build_matches_committed_data` builds KSFO from the checked-in fixtures, which stay on their own cycle, and compares it with `data/ksfo.json` ignoring only the AIRAC stamp (`cycle`, `effective`, `cifpSha256` and the `/d-tpp/<cycle>/` segment of chart URLs); a cycle that changes KSFO's content fails it, and the PR then needs the fixtures under `generator/tests/fixtures/` re-extracted from the new cycle with the filter each fixture's README records.
+
+A cycle that reissues a SID (OAK6 becoming OAK7) fails the workflow's build on purpose, with `overrides.yaml sids[<old chart name>]: no CIFP records carry …`: the override keys are versioned chart names, so nothing hand-stated rides into a new cycle unchecked. Work it locally on the `airac/<cycle>` branch:
+
+1. Run `fetch-cifp --cycle <cycle>` and `fetch-charts`, rename each override key and its `cifp_id` (and `spoken`), and leave a quote from a training module as it was.
+2. Read each reissued chart's takeoff runways, top altitude, crossing restrictions and expect-filed-altitude note against every fact the entry states by hand. Then diff each SID's emitted facts against the previous cycle's `data/<icao>.json` by family.
+3. Where the CIFP coding thins out (no records at all, or only enroute transitions), the build passes, but the entry comes out with no runways or fewer restrictions. State `kind`, `runways` or `restrictions` from the chart, as QUAKE, SALAD and SKYLINE at KOAK needed.
+4. No fixture or unit test needs an edit for the version bump itself (the SID version stamp, `docs/ARCHITECTURE.md` "Fixture lifecycle"). A settled answer that still moves is a real data change, which goes to the owner as a ruling.
 
 ## 7. Worksheets and validation
 

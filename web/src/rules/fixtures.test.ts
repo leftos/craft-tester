@@ -12,6 +12,7 @@ import { FixtureSchema } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { toExpectedAmendments } from '@/rules/amend/types.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { sidFamiliesNamed, withCurrentVersions } from '@/rules/fixtureVersions.ts';
 import { toExpectedClearance } from '@/rules/types.ts';
 import { tecRunway } from '@/scenario/generate.ts';
 
@@ -53,9 +54,38 @@ const loaded: LoadedFixture[] = Object.entries(documents)
   .sort(([left], [right]) => (left < right ? -1 : 1))
   .map(([path, json]) => ({ path, parsed: FixtureSchema.safeParse(json) }));
 
-const fixtures: Fixture[] = loaded
+/** Every fixture that parsed, as written. */
+const parsedFixtures: Fixture[] = loaded
   .map((entry) => (entry.parsed.success ? entry.parsed.data : undefined))
   .filter((fixture) => fixture !== undefined);
+
+/** Every fixture that parsed, with the SIDs it stamps moved to its airport's current versions. */
+const fixtures: Fixture[] = parsedFixtures.map((fixture) =>
+  withCurrentVersions(fixture, airportOf(fixture)),
+);
+
+/** Each SID family a fixture's route, remarks or answer names that its `sidVersions` leaves out. */
+function missingStamps(fixture: Fixture): string[] {
+  const airport = airportOf(fixture);
+  const named = sidFamiliesNamed(
+    [fixture.scenario.filedRoute, fixture.scenario.remarks, fixture.expected],
+    airport,
+  );
+  return named
+    .filter((family) => fixture.sidVersions?.[family] === undefined)
+    .map((family) => {
+      const current = airport.sids.find((sid) => sid.family === family);
+      const stamp = JSON.stringify({ id: current?.id, spoken: current?.spoken });
+      return `${fixture.id} names SID family ${family} unstamped; add "sidVersions": { "${family}": ${stamp} }`;
+    });
+}
+
+// A fixture whose answer names a SID it does not stamp breaks on that SID's next reissue.
+describe('fixture SID stamps', () => {
+  it('every fixture stamps each SID family its filed route or expected answer names', () => {
+    expect(parsedFixtures.flatMap(missingStamps)).toEqual([]);
+  });
+});
 
 /** Whether a fixture expects a full clearance rather than a list of amendments. */
 function expectsClearance(fixture: Fixture): fixture is Fixture & { expected: ExpectedClearance } {

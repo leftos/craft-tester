@@ -24,6 +24,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4614"
   },
+  "sidVersions": {
+    "NIMI": {
+      "id": "NIMI6",
+      "spoken": "Nimitz Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: TEC route to Marysville: NIMI6 OAK V6 SAC"

@@ -15,9 +15,12 @@ import {
 import { phraseRoute } from '@/rules/routePhrasing.ts';
 import type { SelectedProcedure } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
+const cndel = sidOf(koak, 'CNDEL');
+const oak = sidOf(koak, 'OAK');
 
 /** A destination far outside the TRACON, which no route these tests file is vectored direct to. */
 const FAR_DESTINATION = 'KSEA';
@@ -187,7 +190,7 @@ describe('parseFiledRoute on the RH, RV and heading tokens', () => {
   it.each([
     ['RH RV', koak, 'KSFO', 'SFO'],
     ['H090 RV', koak, 'KSFO', 'SFO'],
-    ['OAK6 OAK RV', koak, 'KSFO', 'SFO'],
+    [`${oak.id} OAK RV`, koak, 'KSFO', 'SFO'],
     ['GAPP7 SFO', ksfo, 'KOAK', 'OAK'],
     ['GAPP7', ksfo, 'KOAK', 'OAK'],
   ])(
@@ -262,7 +265,7 @@ describe('parseFiledRoute past the departure structure', () => {
   it('drops a procedure name and its base fix filed as plain route elements', () => {
     expect(parseFiledRoute('CNDEL PORTE SUSEY EBAYE BURGL', koak, FAR_DESTINATION)).toEqual({
       droppedStructureTokens: ['CNDEL', 'PORTE'],
-      structureSids: ['CNDEL5'],
+      structureSids: [cndel.id],
       exitElement: 'SUSEY',
       exitFix: 'SUSEY',
       tokens: ['SUSEY', 'EBAYE', 'BURGL'],

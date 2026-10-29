@@ -15,9 +15,13 @@ import { checkRoute } from '@/rules/amend/route.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
+const cndel = sidOf(koak, 'CNDEL');
+const oak = sidOf(koak, 'OAK');
+const skyl = sidOf(koak, 'SKYL');
 
 /** The optional keys an LOA routing row narrows itself with: the classes and the RNAV column. */
 type LoaRouteNarrowing = Omit<Extract<LoaRuleKind, { kind: 'route' }>, 'kind' | 'tokens'>;
@@ -155,7 +159,7 @@ describe('checkRoute departure structure', () => {
       runwayConfigId: 'SFOW',
     });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('CNDEL5 SUSEY EBAYE BURGL');
+    expect(result.proposed).toBe(`${cndel.id} SUSEY EBAYE BURGL`);
     expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
   });
 
@@ -171,17 +175,17 @@ describe('checkRoute departure structure', () => {
   it('cites the structure rule on a KOAK box the route builder reads past the base fix in', () => {
     const flight = fft2015({
       destination: 'KSBA',
-      filedRoute: 'CNDEL5 PORTE AVE GVO',
+      filedRoute: `${cndel.id} PORTE AVE GVO`,
       departureRunway: '30',
       runwayConfigId: 'SFOW',
     });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('CNDEL5 YYUNG GVO');
+    expect(result.proposed).toBe(`${cndel.id} YYUNG GVO`);
     expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
     expect(result.reason).toBe(
-      'CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and AVE is not one of ' +
+      `${cndel.id} is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and AVE is not one of ` +
         'its transitions, but YYUNG is and YYUNG usually connects to GVO (route building), so the ' +
-        'SID is kept, and PORTE lies on the SKYL1 structure; the route is read from its published ' +
+        `SID is kept, and PORTE lies on the ${skyl.id} structure; the route is read from its published ` +
         'transition AVE',
     );
   });
@@ -229,12 +233,12 @@ describe('checkRoute malformed route element', () => {
 
   it('repairs the KOAK twin of the same plan, whose box carries the airport navaid', () => {
     const flight = ual313({
-      filedRoute: 'OAK6 MOGEE BVLQ124 BVL WAATS5',
+      filedRoute: `${oak.id} MOGEE BVLQ124 BVL WAATS5`,
       departureRunway: '30',
       runwayConfigId: 'SFOW',
     });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('OAK6 OAK MOGEE Q124 BVL WAATS5');
+    expect(result.proposed).toBe(`${oak.id} OAK MOGEE Q124 BVL WAATS5`);
     expect(result.citations.map((citation) => citation.id)).toContain('R-ROUTE-TOKEN');
     expect(result.warning).toBeUndefined();
   });
@@ -324,14 +328,14 @@ describe('checkRoute route building', () => {
       callsign: 'LXJ351',
       aircraftType: 'E55P',
       destination: 'KCRQ',
-      filedRoute: 'OAK6 EHF LHS V459 SLI V23 OCN',
+      filedRoute: `${oak.id} EHF LHS V459 SLI V23 OCN`,
       filedAltitude: 39000,
       runwayConfigId: 'SFOW',
       departureRunway: '30',
       squawk: '4611',
     });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('CNDEL5 KAYEX LOSHN EHF LHS V459 SLI V23 OCN');
+    expect(result.proposed).toBe(`${cndel.id} KAYEX LOSHN EHF LHS V459 SLI V23 OCN`);
     expect(result.reason).toContain('so the SID is issued in place of the heading');
     expect(result.citations.map((citation) => citation.id)).toEqual([
       'OAK-SFOW-S-CNDEL',
@@ -341,7 +345,7 @@ describe('checkRoute route building', () => {
     ]);
   });
 
-  /** The worksheet plan the SOP sends off 30 on a heading, whose route SKYL1 reaches by WAGES. */
+  /** The worksheet plan the SOP sends off 30 on a heading, whose route SKYL# reaches by WAGES. */
   function pxt415(): Scenario {
     return scenario({
       callsign: 'PXT415',
@@ -358,9 +362,9 @@ describe('checkRoute route building', () => {
 
   it("builds from the SID's own end fix when no transition of it reaches the filed route", () => {
     const result = amendmentAt(pxt415(), withoutRnavWaypoints(koak));
-    expect(result.proposed).toBe('SKYL1 WAGES LOSHN PMD V137 PSP');
+    expect(result.proposed).toBe(`${skyl.id} WAGES LOSHN PMD V137 PSP`);
     expect(result.reason).toBe(
-      'SKYL1 is the procedure the SOP assigns a non-RNAV jet from 30 in SFOW, and SUNNE is not one ' +
+      `${skyl.id} is the procedure the SOP assigns a non-RNAV jet from 30 in SFOW, and SUNNE is not one ` +
         'of its transitions, but WAGES is its own end fix and WAGES usually connects to LOSHN ' +
         '(route building), so the SID is issued in place of the heading',
     );
@@ -387,7 +391,7 @@ describe('checkRoute route building', () => {
       ],
     };
     const result = amendmentAt(pxt415(), airport);
-    expect(result.proposed).toBe('SKYL1 PXN LOSHN PMD V137 PSP');
+    expect(result.proposed).toBe(`${skyl.id} PXN LOSHN PMD V137 PSP`);
     expect(result.reason).toContain('but PXN is and PXN usually connects to LOSHN');
     expect(result.citations.map((citation) => citation.id)).toEqual([
       'OAK-SFOW-S-SKYL',
@@ -526,8 +530,8 @@ describe('checkRoute a TEC route over the SOP assignment', () => {
 
   it('issues the TEC row SID over a SOP heading and routes the box on it', () => {
     const flight = kmryJet();
-    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({ kind: 'sid', id: 'OAK6' });
-    expect(amendmentAt(flight, koak).proposed).toBe('OAK6 OAK EUGEN');
+    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({ kind: 'sid', id: oak.id });
+    expect(amendmentAt(flight, koak).proposed).toBe(`${oak.id} OAK EUGEN`);
   });
 
   it('keeps a noise-window heading and routes the box on the TEC route after its departure', () => {
@@ -696,7 +700,7 @@ describe('the sector of a departure a TEC route supplies', () => {
       runwayConfigId: 'SFOE',
       departureRunway: '10R',
     });
-    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({ kind: 'sid', id: 'OAK6' });
+    expect(clearanceAt(flight, koak).procedure.value).toMatchObject({ kind: 'sid', id: oak.id });
     expect(handoff(flight, koak)).toEqual(['OAK-B-SFOE-J-RWY-S', 'sutro']);
   });
 });
@@ -769,13 +773,13 @@ describe('checkRoute on the runway heading', () => {
 });
 
 describe('checkRoute vector-SID navaid', () => {
-  /** The KOAK jet the SOP clears on the OAK6, whose box files the vector SID and the navaid. */
+  /** The KOAK jet the SOP clears on the OAK#, whose box files the vector SID and the navaid. */
   function swa126(overrides: Partial<Scenario> = {}): Scenario {
     return scenario({
       callsign: 'SWA126',
       aircraftType: 'B737',
       destination: 'KSEA',
-      filedRoute: 'OAK6 OAK DEDHD RBL LMT HAWKZ7',
+      filedRoute: `${oak.id} OAK DEDHD RBL LMT HAWKZ7`,
       filedAltitude: 32000,
       runwayConfigId: 'SFOW',
       departureRunway: '30',
@@ -828,14 +832,14 @@ describe('checkRoute vector-SID navaid', () => {
 
   it('writes the navaid once into the box of a plan filed with no procedure', () => {
     const flight = swa126({ filedRoute: 'DEDHD RBL LMT HAWKZ7' });
-    expect(amendmentAt(flight, koak).proposed).toBe('OAK6 OAK DEDHD RBL LMT HAWKZ7');
+    expect(amendmentAt(flight, koak).proposed).toBe(`${oak.id} OAK DEDHD RBL LMT HAWKZ7`);
     expect(checkAt(swa126(), koak)).toBeUndefined();
   });
 
-  it('warns on a KOAK box that files the OAK6 without OAK', () => {
-    const flight = swa126({ filedRoute: 'OAK6 DEDHD RBL LMT HAWKZ7' });
+  it('warns on a KOAK box that files the OAK# without OAK', () => {
+    const flight = swa126({ filedRoute: `${oak.id} DEDHD RBL LMT HAWKZ7` });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('OAK6 OAK DEDHD RBL LMT HAWKZ7');
+    expect(result.proposed).toBe(`${oak.id} OAK DEDHD RBL LMT HAWKZ7`);
     expect(result.warning).toBe(true);
     expect(result.citations.map((citation) => citation.id)).toEqual(['R-RV-NAVAID']);
   });
@@ -947,7 +951,7 @@ describe('checkRoute arrivals', () => {
       aircraftType: 'A320',
       equipmentSuffix: '/A',
       destination: 'KLAX',
-      filedRoute: 'CNDEL5 SUSEY EBAYE BURGL IRNMN2',
+      filedRoute: `${cndel.id} SUSEY EBAYE BURGL IRNMN2`,
       filedAltitude: 35000,
       squawk: '4611',
       ...overrides,
@@ -956,7 +960,7 @@ describe('checkRoute arrivals', () => {
 
   it('issues the conventional southbound SID onto SADDE8 for a non-RNAV jet filing IRNMN2', () => {
     const result = amendmentAt(nks510(), koak);
-    expect(result.proposed).toBe('SKYL1 AVE SADDE8');
+    expect(result.proposed).toBe(`${skyl.id} AVE SADDE8`);
     expect(result.arrivalSwap).toBe('SUSEY EBAYE BURGL IRNMN2');
     const cited = result.citations.map((citation) => citation.id);
     expect(cited[0]).toBe('OAK-SFOW-S-SKYL');
@@ -964,8 +968,8 @@ describe('checkRoute arrivals', () => {
     expect(cited).not.toContain('R-HEADING');
   });
 
-  it('leaves a non-RNAV jet filing SKYL1 AVE SADDE8 as filed', () => {
-    const flight = nks510({ filedRoute: 'SKYL1 AVE SADDE8', filedAltitude: 27000 });
+  it('leaves a non-RNAV jet filing SKYL# AVE SADDE8 as filed', () => {
+    const flight = nks510({ filedRoute: `${skyl.id} AVE SADDE8`, filedAltitude: 27000 });
     expect(checkAt(flight, koak)).toBeUndefined();
   });
 
@@ -980,7 +984,7 @@ describe('checkRoute arrivals', () => {
       squawk: '4610',
     });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('CNDEL5 YYUNG TILLT LEGOZ4');
+    expect(result.proposed).toBe(`${cndel.id} YYUNG TILLT LEGOZ4`);
     expect(result.arrivalSwap).toBe('MCKEY LEGOZ LEGOZ1');
     expect(result.reason).toContain(
       'LOA-ZLA-CRQ-ROUTE routes CRQ via BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF or LHS and ' +
@@ -994,13 +998,13 @@ describe('checkRoute arrivals', () => {
       aircraftType: 'B738',
       equipmentSuffix: '/G',
       destination: 'KPDX',
-      filedRoute: 'OAK6 DEDHD LMT OCITY7',
+      filedRoute: `${oak.id} DEDHD LMT OCITY7`,
       filedAltitude: 35000,
       squawk: '4604',
     });
     const result = amendmentAt(flight, koak);
-    expect(result.proposed).toBe('OAK6 OAK DEDHD LMT MACHU TMBRS4');
-    expect(result.arrivalSwap).toBe('OAK6 OAK DEDHD LMT OCITY7');
+    expect(result.proposed).toBe(`${oak.id} OAK DEDHD LMT MACHU TMBRS4`);
+    expect(result.arrivalSwap).toBe(`${oak.id} OAK DEDHD LMT OCITY7`);
     expect(result.reason).toContain('so the flight continues to MACHU for TMBRS4');
   });
 

@@ -6,9 +6,13 @@ import { resolveAmendedClearance, resolveAmendments } from '@/rules/amend/engine
 import { resolveClearance } from '@/rules/engine.ts';
 import { speakClearance } from '@/rules/speak.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
+const cndel = sidOf(koak, 'CNDEL');
+const hussh = sidOf(koak, 'HUSSH');
+const oak = sidOf(koak, 'OAK');
 
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
@@ -316,7 +320,7 @@ describe('resolveAmendments RNAV pair', () => {
       aircraftType: 'A320',
       equipmentSuffix: '/A',
       destination: 'KLAX',
-      filedRoute: 'CNDEL5 SUSEY EBAYE BURGL IRNMN2',
+      filedRoute: `${cndel.id} SUSEY EBAYE BURGL IRNMN2`,
       filedAltitude: 35000,
       runwayConfigId: 'SFOW',
       departureRunway: '30',
@@ -379,7 +383,7 @@ describe('resolveAmendments RNAV route elements', () => {
       aircraftType: 'B752',
       equipmentSuffix: '/A',
       destination: 'KDEN',
-      filedRoute: 'HUSSH2 MOGEE Q124 BVL TCH KAMPR LONGZ1',
+      filedRoute: `${hussh.id} MOGEE Q124 BVL TCH KAMPR LONGZ1`,
       filedAltitude: 34000,
       runwayConfigId: 'SFOW',
       departureRunway: '30',
@@ -461,7 +465,7 @@ describe('resolveAmendments RNAV route elements', () => {
     expect(type.proposed).toBe('B752/L');
     expect(type.reason).toContain('(Q124 is an RNAV route, KAMPR is an RNAV waypoint)');
     expect(altitude.proposedFeet).toBe(33000);
-    expect(route.proposed).toBe('OAK6 OAK MOGEE Q124 BVL TCH KAMPR LONGZ1');
+    expect(route.proposed).toBe(`${oak.id} OAK MOGEE Q124 BVL TCH KAMPR LONGZ1`);
     expect(amended(result.corrected).amendments).toEqual([]);
   });
 });

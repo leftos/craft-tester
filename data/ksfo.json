@@ -18040,32 +18040,18 @@
             "navaid": true
           },
           {
-            "distanceNm": 28.3,
+            "distanceNm": 37.3,
             "fix": "BOOSI",
             "maa": 17500,
             "mea": 2000,
             "navaid": false
           },
           {
-            "distanceNm": 9.0,
-            "fix": "YONUD",
-            "maa": 17500,
-            "mea": 2000,
-            "navaid": false
-          },
-          {
-            "distanceNm": 9.0,
+            "distanceNm": 17.1,
             "fix": "SQS",
             "maa": 17500,
             "mea": 2100,
             "navaid": true
-          },
-          {
-            "distanceNm": 8.1,
-            "fix": "GUBEC",
-            "maa": 17500,
-            "mea": 2100,
-            "navaid": false
           },
           {
             "distanceNm": 14.6,
@@ -27119,39 +27105,49 @@
             "distanceNm": 20.9,
             "fix": "EWN",
             "maa": 17500,
-            "mea": 2900,
+            "mea": 2500,
             "navaid": true
           },
           {
             "distanceNm": 10.0,
             "fix": "WILUN",
             "maa": 17500,
-            "mea": 2900,
+            "mea": 2500,
             "navaid": false
           },
           {
             "distanceNm": 10.0,
             "fix": "ISO",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": true
           },
           {
             "distanceNm": 1.1,
             "fix": "HOPIM",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": false
           },
           {
             "distanceNm": 3.4,
             "fix": "TILTZ",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": false
           },
           {
             "distanceNm": 8.8,
             "fix": "ESTER",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": false
           },
           {
             "distanceNm": 13.8,
             "fix": "WADUG",
+            "maa": 17500,
+            "mea": 3000,
             "navaid": false
           },
           {
@@ -27940,14 +27936,9 @@
             "navaid": false
           },
           {
-            "distanceNm": 21.1,
+            "distanceNm": 44.8,
             "fix": "CAE",
             "navaid": true
-          },
-          {
-            "distanceNm": 23.8,
-            "fix": "WIDER",
-            "navaid": false
           },
           {
             "distanceNm": 11.2,
@@ -34733,21 +34724,21 @@
             "distanceNm": 22.0,
             "fix": "OGD",
             "maa": 17500,
-            "mea": 9400,
+            "mea": 9600,
             "navaid": true
           },
           {
             "distanceNm": 3.5,
             "fix": "KREBS",
             "maa": 17500,
-            "mea": 9400,
+            "mea": 9600,
             "navaid": false
           },
           {
             "distanceNm": 13.5,
             "fix": "BEARR",
             "maa": 17500,
-            "mea": 9400,
+            "mea": 9600,
             "navaid": false
           },
           {
@@ -35527,26 +35518,11 @@
             "navaid": true
           },
           {
-            "distanceNm": 7.1,
             "fix": "CROIT",
-            "maa": 17500,
-            "mea": 3000,
             "navaid": false
-          },
-          {
-            "distanceNm": 7.3,
-            "fix": "CCR",
-            "maa": 17500,
-            "mea": 3500,
-            "navaid": true
-          },
-          {
-            "distanceNm": 10.4,
-            "fix": "PITTS",
-            "maa": 17500,
-            "mea": 3500,
-            "navaid": false
-          },
+          }
+        ],
+        [
           {
             "distanceNm": 16.9,
             "fix": "OAKEY",
@@ -41677,15 +41653,8 @@
             "navaid": false
           },
           {
-            "distanceNm": 4.9,
+            "distanceNm": 5.9,
             "fix": "WIWHE",
-            "maa": 17500,
-            "mea": 2300,
-            "navaid": false
-          },
-          {
-            "distanceNm": 1.0,
-            "fix": "FEGOP",
             "maa": 17500,
             "mea": 2300,
             "navaid": false
@@ -43710,14 +43679,14 @@
             "distanceNm": 21.6,
             "fix": "PVD",
             "maa": 17500,
-            "mea": 2500,
+            "mea": 3000,
             "navaid": true
           },
           {
             "distanceNm": 6.9,
             "fix": "TUTOR",
             "maa": 17500,
-            "mea": 2500,
+            "mea": 3000,
             "navaid": false
           },
           {
@@ -44182,15 +44151,8 @@
             "navaid": false
           },
           {
-            "distanceNm": 11.5,
+            "distanceNm": 20.0,
             "fix": "EWAWI",
-            "maa": 17500,
-            "mea": 3000,
-            "navaid": false
-          },
-          {
-            "distanceNm": 8.5,
-            "fix": "WIDKI",
             "maa": 17500,
             "mea": 3000,
             "navaid": false
@@ -44881,21 +44843,21 @@
             "distanceNm": 21.4,
             "fix": "HYK",
             "maa": 17500,
-            "mea": 8000,
+            "mea": 10000,
             "navaid": true
           },
           {
             "distanceNm": 21.3,
             "fix": "LOGIC",
             "maa": 17500,
-            "mea": 8000,
+            "mea": 10000,
             "navaid": false
           },
           {
             "distanceNm": 81.1,
             "fix": "TRENT",
             "maa": 17500,
-            "mea": 8000,
+            "mea": 10000,
             "navaid": false
           },
           {
@@ -51222,18 +51184,11 @@
             "navaid": false
           },
           {
-            "distanceNm": 13.0,
+            "distanceNm": 14.0,
             "fix": "MSO",
             "maa": 17500,
             "mea": 9700,
             "navaid": true
-          },
-          {
-            "distanceNm": 1.0,
-            "fix": "SULFY",
-            "maa": 17500,
-            "mea": 9700,
-            "navaid": false
           },
           {
             "distanceNm": 11.0,
@@ -55485,15 +55440,8 @@
             "navaid": true
           },
           {
-            "distanceNm": 6.5,
+            "distanceNm": 7.5,
             "fix": "JACKS",
-            "maa": 17500,
-            "mea": 13000,
-            "navaid": false
-          },
-          {
-            "distanceNm": 1.0,
-            "fix": "YUSUN",
             "maa": 17500,
             "mea": 13000,
             "navaid": false
@@ -61126,7 +61074,7 @@
             "distanceNm": 20.9,
             "fix": "GUADA",
             "maa": 17500,
-            "mea": 4000,
+            "mea": 4100,
             "navaid": false
           },
           {
@@ -74306,7 +74254,7 @@
             "distanceNm": 20.9,
             "fix": "GUADA",
             "maa": 17500,
-            "mea": 4000,
+            "mea": 4100,
             "navaid": false
           },
           {
@@ -78081,7 +78029,7 @@
     {
       "id": "R-RV-NAVAID",
       "source": "ZOA practice relayed by the user, 2026-09-16",
-      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK6 OAK RBL, SFO5 SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
+      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK# OAK RBL, SFO# SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
     },
     {
       "id": "R-THEN-AS-FILED",
@@ -78291,9 +78239,9 @@
   ],
   "provenance": {
     "airac": {
-      "cifpSha256": "f4511aeffa79a07fa620bf0f2110ec9ec54c2e9b9bf60db04c64bbcd84d2a77a",
-      "cycle": "2610",
-      "effective": "2026-10-01"
+      "cifpSha256": "877bd911e105b9b1e85fa970c55488f6ad987760814f45c42b84017cd5d6c1c9",
+      "cycle": "2611",
+      "effective": "2026-10-29"
     },
     "chartsApi": "https://charts-api.oakartcc.org/v1/charts?apt=SFO",
     "secondarySources": [
@@ -78919,7 +78867,7 @@
           },
           {
             "family": "CARTR",
-            "id": "CARTR1",
+            "id": "CARTR2",
             "rnav": true,
             "transitions": [
               "BOBRT",
@@ -78962,7 +78910,7 @@
           },
           {
             "family": "PITTT",
-            "id": "PITTT2",
+            "id": "PITTT3",
             "rnav": true,
             "transitions": [
               "BCE",
@@ -78984,7 +78932,7 @@
           },
           {
             "family": "SKEES",
-            "id": "SKEES6",
+            "id": "SKEES7",
             "rnav": true,
             "transitions": [
               "BYI",
@@ -79002,7 +78950,7 @@
           },
           {
             "family": "YUTES",
-            "id": "YUTES2",
+            "id": "YUTES3",
             "rnav": true,
             "transitions": [
               "FLECC"
@@ -82285,7 +82233,7 @@
     {
       "baseFix": "CIITY",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375CIITY.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375CIITY.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82370,7 +82318,7 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375GAP.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375GAP.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82455,7 +82403,7 @@
     {
       "baseFix": "GNNRR",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375GNNRR.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375GNNRR.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82518,7 +82466,7 @@
     {
       "baseFix": "MOLEN",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375MOLEN.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375MOLEN.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82571,7 +82519,7 @@
     {
       "baseFix": "NIITE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375NIITE.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375NIITE.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82653,7 +82601,7 @@
     {
       "baseFix": "SAHEY",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375SAHEY.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SAHEY.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82731,7 +82679,7 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375SANFRANCISCO.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SANFRANCISCO.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82768,7 +82716,7 @@
     {
       "baseFix": "SEGUL",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375SEGUL.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SEGUL.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82818,7 +82766,7 @@
     {
       "baseFix": "SNTNA",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375SNTNA.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SNTNA.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82886,7 +82834,7 @@
     {
       "baseFix": "PORTE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375SSTIK.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SSTIK.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82954,7 +82902,7 @@
     {
       "baseFix": "TRUKN",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375TRUKN.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375TRUKN.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -83030,7 +82978,7 @@
     {
       "baseFix": "PORTE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00375WESLA.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375WESLA.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [

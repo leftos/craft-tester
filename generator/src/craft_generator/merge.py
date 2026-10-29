@@ -49,7 +49,9 @@ restrictions **or** a top altitude, and when it has no vector segment - so the r
 vector-hybrid kinds are never eligible, while SNTNA2, which publishes 3,000 as its top altitude and
 no crossing restriction, is (the ZOA S1-SFO-0 CBT clears it with "climb via SID, top altitude
 3000"). A ``climb_via_eligible`` override replaces that reading outright, for the procedure whose
-SOP clears it "climb via SID" against the rule - the OAK6 vector SID is one.
+SOP clears it "climb via SID" against the rule - the OAKLAND vector SID is one. A ``restrictions``
+override replaces the CIFP's crossing restrictions outright, for a procedure whose CIFP coding omits
+the legs the chart restricts, and sets ``hasCrossingRestrictions`` unless that flag is stated too.
 ``baseFix`` is the fix the enroute transitions of a SID all begin at - TRUKN2 starts each of
 its six transitions at TRUKN - which is the fix a route may exit the procedure at without naming a
 transition. It is omitted when the transitions do not agree on one fix, when the procedure codes no
@@ -836,6 +838,21 @@ def _climb_via_eligible(kind: str, top_altitude: Document, *, has_restrictions: 
     return has_restrictions or top_altitude["kind"] == PUBLISHED_TOP_ALTITUDE
 
 
+def _restrictions(override: SidOverride, cifp: CifpSid | None) -> tuple[Sequence[Restriction], bool]:
+    """The crossing restrictions a SID emits and whether it has any: a stated list wins over the CIFP's, an explicit flag over both."""
+    if override.restrictions is not None:
+        restrictions: Sequence[Restriction] = override.restrictions
+        derived = bool(override.restrictions)
+    elif cifp is not None:
+        restrictions = cifp.restrictions
+        derived = cifp.has_crossing_restrictions
+    else:
+        restrictions = ()
+        derived = False
+    flag = override.has_crossing_restrictions
+    return restrictions, derived if flag is None else flag
+
+
 def _sid(
     chart_name: str,
     chart: ChartInput,
@@ -849,9 +866,7 @@ def _sid(
     where = f"overrides.yaml sids[{chart_name}]"
     kind = override.kind if override.kind is not None else _required(None if cifp is None else cifp.kind, where, "kind")
     runways = override.runways if override.runways is not None else _required(None if cifp is None else cifp.runways, where, "runways")
-    has_restrictions = override.has_crossing_restrictions
-    if has_restrictions is None:
-        has_restrictions = cifp is not None and cifp.has_crossing_restrictions
+    restrictions, has_restrictions = _restrictions(override, cifp)
     transitions = _transitions(cifp, override, navaids, fix_spoken)
     _check_chart_transitions(override.cifp_id, chart, transitions)
     top_altitude = _top_altitude(override.top_altitude, chart.facts.top_altitude, where)
@@ -869,7 +884,7 @@ def _sid(
         if override.expect_filed_altitude_minutes is not None
         else chart.facts.expect_filed_altitude_minutes,
         "hasCrossingRestrictions": has_restrictions,
-        "restrictions": [] if cifp is None else [_restriction(restriction) for restriction in cifp.restrictions],
+        "restrictions": [_restriction(restriction) for restriction in restrictions],
         "climbViaEligible": override.climb_via_eligible
         if override.climb_via_eligible is not None
         else _climb_via_eligible(kind, top_altitude, has_restrictions=has_restrictions),

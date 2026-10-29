@@ -25,11 +25,13 @@ from typing import Any
 
 import yaml
 
+from craft_generator.cifp.sid import Restriction
 from craft_generator.sop.model import (
     AIRCRAFT_CLASSES,
     ALTITUDE_OUTCOME_KINDS,
     APPROACH_CATEGORIES,
     CONNECTION_STRENGTHS,
+    CONSTRAINT_KINDS,
     DEPARTURE_SID_KINDS,
     DIRECTIONS,
     EXPECT_ALTITUDE_POLICIES,
@@ -331,6 +333,11 @@ class _Row:
         """Read an optional list of mappings; an absent key reads as an empty list."""
         value = self._optional_raw(key)
         return [] if value is None else self._rows(key, value)
+
+    def optional_children_or_none(self, key: str) -> list["_Row"] | None:
+        """Read an optional list of mappings, keeping an absent key distinct from an empty list."""
+        value = self._optional_raw(key)
+        return None if value is None else self._rows(key, value)
 
     def _rows(self, key: str, value: object) -> list["_Row"]:
         at = self._at(key)
@@ -864,6 +871,34 @@ def _sid_top_altitude(row: _Row) -> SidTopAltitude:
     return top_altitude
 
 
+def _sid_restriction(row: _Row) -> Restriction:
+    constraint = row.choice("constraint", CONSTRAINT_KINDS)
+    fix = row.text("fix")
+    feet = row.number("feet")
+    feet_high = row.optional_number("feet_high")
+    row.finish()
+    if constraint == "between" and feet_high is None:
+        raise ValueError(f"{row.where}: a between restriction needs feet_high")
+    if constraint != "between" and feet_high is not None:
+        raise ValueError(f"{row.where}: feet_high is only for a between restriction")
+    if constraint == "between" and feet_high is not None and feet_high <= feet:
+        raise ValueError(f"{row.where}: a between restriction needs feet_high above feet, got {feet} and {feet_high}")
+    if constraint == "at":
+        return Restriction(fix, constraint, feet_low=feet, feet_high=feet)
+    if constraint == "at_or_below":
+        return Restriction(fix, constraint, feet_low=None, feet_high=feet)
+    return Restriction(fix, constraint, feet_low=feet, feet_high=feet_high)
+
+
+def _sid_restrictions(row: _Row) -> tuple[Restriction, ...] | None:
+    rows = row.optional_children_or_none("restrictions")
+    if rows is None:
+        return None
+    if not rows:
+        raise ValueError(f"{row.where}: restrictions lists no restriction; leave the key out to keep the CIFP's")
+    return tuple(_sid_restriction(item) for item in rows)
+
+
 def _sid_override(chart_name: str, row: _Row) -> SidOverride:
     top_altitude = row.optional_child("top_altitude")
     restrictions = row.optional_table("crossing_restrictions_by_runway_family")
@@ -878,6 +913,7 @@ def _sid_override(chart_name: str, row: _Row) -> SidOverride:
         crossing_restrictions_by_runway_family=None
         if restrictions is None
         else _flag_table(restrictions, f"{row.where}.crossing_restrictions_by_runway_family"),
+        restrictions=_sid_restrictions(row),
         route_phrasing=row.optional_choice("route_phrasing", ROUTE_PHRASINGS),
         transitions_spoken_as_transition=row.optional_flag("transitions_spoken_as_transition"),
         climb_via_eligible=row.optional_flag("climb_via_eligible"),

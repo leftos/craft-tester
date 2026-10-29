@@ -4,12 +4,12 @@ The CIFP enroute airway (`ER`) rows of every airway `data/ksfo.json` ships, plus
 
 | field | value |
 |---|---|
-| AIRAC cycle | 2609 |
-| effective | 2026-09-03 |
-| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_260903.zip`, member `FAACIFP18` |
-| captured | 2026-09-28 |
+| AIRAC cycle | 2611 |
+| effective | 2026-10-29 |
+| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261029.zip`, member `FAACIFP18` |
+| captured | 2026-10-29 |
 | filter | `line.startswith("SUSAER")`, keeping every row of each airway id in `data/ksfo.json`'s `airways`, and of `V6`, `J501`, `Q1`, `T257`, `V137` and `J108` |
-| rows | 10,425 of 637 airways, every row 132 characters |
+| rows | 10,416 of 637 airways, every row 132 characters |
 
 ## Why every row of every shipped airway
 
@@ -24,5 +24,5 @@ Public domain: FAA Coded Instrument Flight Procedures data, published free of ch
 After an AIRAC bump, rebuild `data/ksfo.json` first (`uv run craft-gen build --airport KSFO`), then from `generator/`:
 
 ```sh
-uv run python -c "import json; ids = {r['id'] for r in json.load(open('../data/ksfo.json', encoding='utf-8'))['airways']} | {'V6', 'J501', 'Q1', 'T257', 'V137', 'J108'}; rows = [l.rstrip('\r\n') for l in open('cache/cifp/2609/FAACIFP18', encoding='ascii') if l.startswith('SUSAER') and l[13:18].strip() in ids]; open('tests/fixtures/cifp/airway_records.txt', 'w', encoding='ascii', newline='\n').write('\n'.join(rows) + '\n')"
+uv run python -c "import json; ids = {r['id'] for r in json.load(open('../data/ksfo.json', encoding='utf-8'))['airways']} | {'V6', 'J501', 'Q1', 'T257', 'V137', 'J108'}; rows = [l.rstrip('\r\n') for l in open('cache/cifp/2611/FAACIFP18', encoding='ascii') if l.startswith('SUSAER') and l[13:18].strip() in ids]; open('tests/fixtures/cifp/airway_records.txt', 'w', encoding='ascii', newline='\n').write('\n'.join(rows) + '\n')"
 ```

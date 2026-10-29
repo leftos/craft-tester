@@ -24,6 +24,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "4610"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs north per direction_runway_preference, pending validation; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"

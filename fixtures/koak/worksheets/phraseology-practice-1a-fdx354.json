@@ -29,6 +29,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "3342"
   },
+  "sidVersions": {
+    "OAK": {
+      "id": "OAK6",
+      "spoken": "Oakland Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Phraseology Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: Oakland Six departure, radar vectors Dedhd, then as filed, climb via SID except maintain FL190, 120.9; the chart publishes the expect note"

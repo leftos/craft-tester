@@ -15,6 +15,12 @@
     "runwayConfigId": "28/01",
     "squawk": "4612"
   },
+  "sidVersions": {
+    "SSTIK": {
+      "id": "SSTIK5",
+      "spoken": "Sstik Five"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 3; the sheet states no departure runway, so this is 01L, the runway configuration 28/01 departs south per direction_runway_preference, pending validation"

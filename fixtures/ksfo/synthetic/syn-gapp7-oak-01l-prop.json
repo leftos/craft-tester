@@ -29,6 +29,16 @@
     "runwayConfigId": "28/01",
     "squawk": "4223"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    },
+    "SFO": {
+      "id": "SFO5",
+      "spoken": "San Francisco Five"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SOP 2-2 a: northbound off the 01s is SFO#, GAPP# is runway 28 only; the CBT's props-via-GAPP# row was dropped on user review 2026-09-15. SFO5 carries crossing restrictions off the 01s, so the SFOW-PT-5000 interim is spoken as climb via SID except maintain 5,000, and the OAK leg is a vector transition spoken as radar vectors. The filed 15,000 is above the interim, so the expect clause stays.; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

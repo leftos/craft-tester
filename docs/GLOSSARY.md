@@ -8,4 +8,6 @@ Terms the docs, plans and commit messages use in a project-specific sense.
 - **Proposed handling**: the resolution the trainer shows as the answer (`handling: 'proposed'`). For a special aircraft it keys TEC rows with the jet class.
 - **Test set**: a run of N strips drawn from one set seed, taken against an optional clock with grades hidden until the set ends, then shown in one summary.
 - **Variant**: a graded strip re-opened with one attribute changed (the aircraft class, the equipment suffix, RVSM), in amendment mode, so the student sees what that change would need amending.
+- **SID family**: a departure procedure's name without its version number (`OAK` for OAK7, written `OAK#` in SOP notation). AIRAC cycles bump the version, so rules, tests and fixtures compare SIDs by family.
+- **SID version stamp**: a fixture's `sidVersions` field, which records the id and spoken name of each SID family it names, as they were when the fixture was written. The fixture runner maps those to the current cycle's versions.
 - **Special aircraft**: the five types ZOA CPS-004 §3.1 lists (SF50, C510, E50P, E55P, DH8D). Each has a proposed and an accepted handling.

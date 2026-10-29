@@ -277,7 +277,11 @@ remembered per browser. The dropdowns stay, and the student chooses.
    engine the runner exercises.
 2. `pnpm -C web propose <id>` prints the engine's clearance with citations.
 3. The user confirms or corrects; a correction is a YAML edit plus `craft-gen build`.
-4. The fixture gains `expected` and becomes `settled`. Settled fixtures fail the suite when they break.
+4. The fixture gains `expected` and becomes `settled`. Settled fixtures fail the suite when they break. `propose` prints the `sidVersions` block to paste beside `expected`, and the fixtures suite fails any fixture whose filed route or answer names a SID family it does not stamp.
+
+A fixture outlives the AIRAC cycle it was written in through its **SID version stamp** (`sidVersions`: family → the `id` and `spoken` name current when it was written). The importer stamps the SIDs a new plan's route names and keeps an existing stamp unchanged.
+
+`withCurrentVersions` (`web/src/rules/fixtureVersions.ts`) rewrites each stamped id and spoken name to the current cycle's in the filed route, remarks and `expected`, for `rules/fixtures.test.ts` and `propose` alike. A token whose version differs from the stamp is a deliberately stale filing and is left alone, so a fixture that files OAK9 keeps exercising the "not the current version" reason. A unit test that reads airport data takes a SID by family through `sidOf` (`web/src/data/sidOf.ts`), never by versioned id; a test that feeds hand-written text to a pure function keeps its literal.
 
 ## Change recipes
 

@@ -18010,32 +18010,18 @@
             "navaid": true
           },
           {
-            "distanceNm": 28.3,
+            "distanceNm": 37.3,
             "fix": "BOOSI",
             "maa": 17500,
             "mea": 2000,
             "navaid": false
           },
           {
-            "distanceNm": 9.0,
-            "fix": "YONUD",
-            "maa": 17500,
-            "mea": 2000,
-            "navaid": false
-          },
-          {
-            "distanceNm": 9.0,
+            "distanceNm": 17.1,
             "fix": "SQS",
             "maa": 17500,
             "mea": 2100,
             "navaid": true
-          },
-          {
-            "distanceNm": 8.1,
-            "fix": "GUBEC",
-            "maa": 17500,
-            "mea": 2100,
-            "navaid": false
           },
           {
             "distanceNm": 14.6,
@@ -27089,39 +27075,49 @@
             "distanceNm": 20.9,
             "fix": "EWN",
             "maa": 17500,
-            "mea": 2900,
+            "mea": 2500,
             "navaid": true
           },
           {
             "distanceNm": 10.0,
             "fix": "WILUN",
             "maa": 17500,
-            "mea": 2900,
+            "mea": 2500,
             "navaid": false
           },
           {
             "distanceNm": 10.0,
             "fix": "ISO",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": true
           },
           {
             "distanceNm": 1.1,
             "fix": "HOPIM",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": false
           },
           {
             "distanceNm": 3.4,
             "fix": "TILTZ",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": false
           },
           {
             "distanceNm": 8.8,
             "fix": "ESTER",
+            "maa": 17500,
+            "mea": 1900,
             "navaid": false
           },
           {
             "distanceNm": 13.8,
             "fix": "WADUG",
+            "maa": 17500,
+            "mea": 3000,
             "navaid": false
           },
           {
@@ -27910,14 +27906,9 @@
             "navaid": false
           },
           {
-            "distanceNm": 21.1,
+            "distanceNm": 44.8,
             "fix": "CAE",
             "navaid": true
-          },
-          {
-            "distanceNm": 23.8,
-            "fix": "WIDER",
-            "navaid": false
           },
           {
             "distanceNm": 11.2,
@@ -34703,21 +34694,21 @@
             "distanceNm": 22.0,
             "fix": "OGD",
             "maa": 17500,
-            "mea": 9400,
+            "mea": 9600,
             "navaid": true
           },
           {
             "distanceNm": 3.5,
             "fix": "KREBS",
             "maa": 17500,
-            "mea": 9400,
+            "mea": 9600,
             "navaid": false
           },
           {
             "distanceNm": 13.5,
             "fix": "BEARR",
             "maa": 17500,
-            "mea": 9400,
+            "mea": 9600,
             "navaid": false
           },
           {
@@ -35497,26 +35488,11 @@
             "navaid": true
           },
           {
-            "distanceNm": 7.1,
             "fix": "CROIT",
-            "maa": 17500,
-            "mea": 3000,
             "navaid": false
-          },
-          {
-            "distanceNm": 7.3,
-            "fix": "CCR",
-            "maa": 17500,
-            "mea": 3500,
-            "navaid": true
-          },
-          {
-            "distanceNm": 10.4,
-            "fix": "PITTS",
-            "maa": 17500,
-            "mea": 3500,
-            "navaid": false
-          },
+          }
+        ],
+        [
           {
             "distanceNm": 16.9,
             "fix": "OAKEY",
@@ -41647,15 +41623,8 @@
             "navaid": false
           },
           {
-            "distanceNm": 4.9,
+            "distanceNm": 5.9,
             "fix": "WIWHE",
-            "maa": 17500,
-            "mea": 2300,
-            "navaid": false
-          },
-          {
-            "distanceNm": 1.0,
-            "fix": "FEGOP",
             "maa": 17500,
             "mea": 2300,
             "navaid": false
@@ -43680,14 +43649,14 @@
             "distanceNm": 21.6,
             "fix": "PVD",
             "maa": 17500,
-            "mea": 2500,
+            "mea": 3000,
             "navaid": true
           },
           {
             "distanceNm": 6.9,
             "fix": "TUTOR",
             "maa": 17500,
-            "mea": 2500,
+            "mea": 3000,
             "navaid": false
           },
           {
@@ -44152,15 +44121,8 @@
             "navaid": false
           },
           {
-            "distanceNm": 11.5,
+            "distanceNm": 20.0,
             "fix": "EWAWI",
-            "maa": 17500,
-            "mea": 3000,
-            "navaid": false
-          },
-          {
-            "distanceNm": 8.5,
-            "fix": "WIDKI",
             "maa": 17500,
             "mea": 3000,
             "navaid": false
@@ -44851,21 +44813,21 @@
             "distanceNm": 21.4,
             "fix": "HYK",
             "maa": 17500,
-            "mea": 8000,
+            "mea": 10000,
             "navaid": true
           },
           {
             "distanceNm": 21.3,
             "fix": "LOGIC",
             "maa": 17500,
-            "mea": 8000,
+            "mea": 10000,
             "navaid": false
           },
           {
             "distanceNm": 81.1,
             "fix": "TRENT",
             "maa": 17500,
-            "mea": 8000,
+            "mea": 10000,
             "navaid": false
           },
           {
@@ -51192,18 +51154,11 @@
             "navaid": false
           },
           {
-            "distanceNm": 13.0,
+            "distanceNm": 14.0,
             "fix": "MSO",
             "maa": 17500,
             "mea": 9700,
             "navaid": true
-          },
-          {
-            "distanceNm": 1.0,
-            "fix": "SULFY",
-            "maa": 17500,
-            "mea": 9700,
-            "navaid": false
           },
           {
             "distanceNm": 11.0,
@@ -55455,15 +55410,8 @@
             "navaid": true
           },
           {
-            "distanceNm": 6.5,
+            "distanceNm": 7.5,
             "fix": "JACKS",
-            "maa": 17500,
-            "mea": 13000,
-            "navaid": false
-          },
-          {
-            "distanceNm": 1.0,
-            "fix": "YUSUN",
             "maa": 17500,
             "mea": 13000,
             "navaid": false
@@ -61096,7 +61044,7 @@
             "distanceNm": 20.9,
             "fix": "GUADA",
             "maa": 17500,
-            "mea": 4000,
+            "mea": 4100,
             "navaid": false
           },
           {
@@ -74276,7 +74224,7 @@
             "distanceNm": 20.9,
             "fix": "GUADA",
             "maa": 17500,
-            "mea": 4000,
+            "mea": 4100,
             "navaid": false
           },
           {
@@ -79170,7 +79118,7 @@
     {
       "id": "R-RV-NAVAID",
       "source": "ZOA practice relayed by the user, 2026-09-16",
-      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK6 OAK RBL, SFO5 SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
+      "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK# OAK RBL, SFO# SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
     },
     {
       "id": "R-THEN-AS-FILED",
@@ -79385,9 +79333,9 @@
   ],
   "provenance": {
     "airac": {
-      "cifpSha256": "f4511aeffa79a07fa620bf0f2110ec9ec54c2e9b9bf60db04c64bbcd84d2a77a",
-      "cycle": "2610",
-      "effective": "2026-10-01"
+      "cifpSha256": "877bd911e105b9b1e85fa970c55488f6ad987760814f45c42b84017cd5d6c1c9",
+      "cycle": "2611",
+      "effective": "2026-10-29"
     },
     "chartsApi": "https://charts-api.oakartcc.org/v1/charts?apt=OAK",
     "secondarySources": [
@@ -80000,7 +79948,7 @@
           },
           {
             "family": "CARTR",
-            "id": "CARTR1",
+            "id": "CARTR2",
             "rnav": true,
             "transitions": [
               "BOBRT",
@@ -80043,7 +79991,7 @@
           },
           {
             "family": "PITTT",
-            "id": "PITTT2",
+            "id": "PITTT3",
             "rnav": true,
             "transitions": [
               "BCE",
@@ -80065,7 +80013,7 @@
           },
           {
             "family": "SKEES",
-            "id": "SKEES6",
+            "id": "SKEES7",
             "rnav": true,
             "transitions": [
               "BYI",
@@ -80083,7 +80031,7 @@
           },
           {
             "family": "YUTES",
-            "id": "YUTES2",
+            "id": "YUTES3",
             "rnav": true,
             "transitions": [
               "FLECC"
@@ -83058,7 +83006,7 @@
         ],
         "destination": "KSLC",
         "exitFix": "OAK",
-        "tail": "OAK MOGEE Q124 BVL YUTES2"
+        "tail": "OAK MOGEE Q124 BVL YUTES3"
       },
       {
         "altitudes": [
@@ -83367,7 +83315,7 @@
         ],
         "destination": "KAPC",
         "exitFix": "OAK",
-        "tail": "OAK ALTAM V334 OAKEY V108 SGD"
+        "tail": "OAK V195 CROIT V108 SGD"
       },
       {
         "altitudes": [
@@ -83918,21 +83866,21 @@
     {
       "baseFix": "PORTE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294CNDEL.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294CNDEL.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "135.1"
         }
       ],
-      "chartName": "CNDEL FIVE (RNAV)",
+      "chartName": "CNDEL SIX (RNAV)",
       "climbViaEligible": true,
       "family": "CNDEL",
       "hasCrossingRestrictions": true,
-      "id": "CNDEL5",
+      "id": "CNDEL6",
       "kind": "rnav_pilot_nav",
-      "note": "RNAV pilot-nav SID off 28L/28R/30 with published crossing restrictions and a published top altitude of 10,000, which is why SOP 2-2 a clears it with a plain CVS. Spoken name from the S1-OAK-1 module: 'Candle Five (CNDEL5) departure, Susie (SUSEY) transition'.",
+      "note": "RNAV pilot-nav SID off 28L/28R/30 with published crossing restrictions and a published top altitude of 10,000, which is why SOP 2-2 a clears it with a plain CVS. Spoken name from the S1-OAK-1 module, which read the previous version: 'Candle Five (CNDEL5) departure, Susie (SUSEY) transition'.",
       "restrictions": [
         {
           "altitudeDescription": "at_or_below",
@@ -83952,7 +83900,7 @@
         "28R",
         "30"
       ],
-      "spoken": "Candle Five",
+      "spoken": "Candle Six",
       "topAltitude": {
         "feet": 10000,
         "kind": "published"
@@ -83993,7 +83941,7 @@
     {
       "baseFix": "MCKEY",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294COAST.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294COAST.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -84050,21 +83998,21 @@
     {
       "baseFix": "NIITE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294HUSSH.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294HUSSH.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "120.9"
         }
       ],
-      "chartName": "HUSSH TWO (RNAV)",
+      "chartName": "HUSSH THREE (RNAV)",
       "climbViaEligible": true,
       "family": "HUSSH",
       "hasCrossingRestrictions": true,
-      "id": "HUSSH2",
+      "id": "HUSSH3",
       "kind": "rnav_pilot_nav",
-      "note": "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush Two confirmed by the user: HUSSH is read as the word 'hush'.",
+      "note": "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush confirmed by the user: HUSSH is read as the word 'hush'.",
       "restrictions": [
         {
           "altitudeDescription": "at_or_above",
@@ -84077,7 +84025,7 @@
       "runways": [
         "30"
       ],
-      "spoken": "Hush Two",
+      "spoken": "Hush Three",
       "topAltitude": {
         "feet": 19000,
         "kind": "published"
@@ -84130,21 +84078,21 @@
     {
       "baseFix": "KATFH",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294KATFH.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294KATFH.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "135.1"
         }
       ],
-      "chartName": "KATFH THREE (RNAV)",
+      "chartName": "KATFH FOUR (RNAV)",
       "climbViaEligible": true,
       "family": "KATFH",
       "hasCrossingRestrictions": true,
-      "id": "KATFH3",
+      "id": "KATFH4",
       "kind": "rnav_pilot_nav",
-      "note": "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish Three confirmed by the user: KATFH is read as the word 'catfish'.",
+      "note": "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish confirmed by the user: KATFH is read as the word 'catfish'.",
       "restrictions": [
         {
           "altitudeDescription": "at_or_below",
@@ -84169,7 +84117,7 @@
         "10R",
         "12"
       ],
-      "spoken": "Katfish Three",
+      "spoken": "Katfish Four",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84202,31 +84150,30 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294NIMITZ.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294NIMITZ.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "127.0"
         }
       ],
-      "chartName": "NIMITZ SIX",
+      "chartName": "NIMITZ SEVEN",
       "climbViaEligible": false,
       "family": "NIMI",
       "hasCrossingRestrictions": false,
-      "id": "NIMI6",
+      "id": "NIMI7",
       "kind": "radar_vectors",
-      "note": "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30; runway 33 is added because SOP 2-2 b ii departs props from it as well. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table. The chart reads 'Maintain ATC assigned altitude. Expect filed altitude ten minutes after departure'.",
+      "note": "Radar-vector SID with no CIFP records at all, like KSFO's SAN FRANCISCO FIVE, so every fact here is hand-transcribed. SOP 2-2 a i issues it to 'all other props' in SFOW, whose departure runways are 28L/28R/30, the chart's only takeoff runways (10L/10R/12/15/33 are NA - Air traffic). Runway 33 has no SID at all: a departure off it is vectored off the ground. The chart publishes no top altitude and no crossing restriction, so the clearance is 'maintain 3,000' from the SOP table. The chart reads 'Maintain ATC assigned altitude. Expect filed altitude 5 minutes after departure'.",
       "restrictions": [],
       "rnavRequired": false,
       "routePhrasing": "radar_vectors_fix",
       "runways": [
         "28L",
         "28R",
-        "30",
-        "33"
+        "30"
       ],
-      "spoken": "Nimitz Six",
+      "spoken": "Nimitz Seven",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84235,19 +84182,19 @@
     {
       "baseFix": "EUGEN",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294NUEVO.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294NUEVO.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "135.1"
         }
       ],
-      "chartName": "NUEVO EIGHT",
+      "chartName": "NUEVO NINE",
       "climbViaEligible": true,
       "family": "NUEVO",
       "hasCrossingRestrictions": false,
-      "id": "NUEVO8",
+      "id": "NUEVO9",
       "kind": "conventional_pilot_nav",
       "note": "Conventional pilot-nav SID off 28L/28R/30 with the SHOEY and SNS transitions on the CONT.1 sheet; SOP 2-2 a i issues it to P/T/J filed via BSR, EUGEN, SHOEY or SNS and clears it 'CVS x 10,000'. Spoken name proposed from the chart name. Its only CIFP altitude leg is the VD initial climb, which carries no fix and is not a crossing restriction, so the computed reading finds no restriction to climb via and climb_via_eligible is forced true.",
       "restrictions": [],
@@ -84258,7 +84205,7 @@
         "28R",
         "30"
       ],
-      "spoken": "Nuevo Eight",
+      "spoken": "Nuevo Nine",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84279,21 +84226,21 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294OAKLAND.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294OAKLAND.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "120.9"
         }
       ],
-      "chartName": "OAKLAND SIX",
+      "chartName": "OAKLAND SEVEN",
       "climbViaEligible": true,
       "family": "OAK",
       "hasCrossingRestrictions": false,
-      "id": "OAK6",
+      "id": "OAK7",
       "kind": "vector_hybrid",
-      "note": "Vector SID (CIFP route type T for every runway) whose CIFP 'transitions' are the runway vector legs the chart never names, so it is read like KSFO's GAP SEVEN: 'Oakland Six departure, radar vectors (fix)'. SOP 2-2 a i nevertheless clears it 'CVS x FL190' and the S1-OAK-1 module reads 'Oakland Six departure, radar vectors Deadhead, then as filed. Climb via SID except maintain flight level one niner zero', so climb_via_eligible is forced true against the computed reading, which excludes vector SIDs.",
+      "note": "Vector SID (CIFP route type T for every runway) whose CIFP 'transitions' are the runway vector legs the chart never names, so it is read like KSFO's GAP SEVEN: 'Oakland Seven departure, radar vectors (fix)'. SOP 2-2 a i nevertheless clears it 'CVS x FL190' and the S1-OAK-1 module, written for the previous version, reads 'Oakland Six departure, radar vectors Deadhead, then as filed. Climb via SID except maintain flight level one niner zero', so climb_via_eligible is forced true against the computed reading, which excludes vector SIDs.",
       "restrictions": [],
       "rnavRequired": false,
       "routePhrasing": "radar_vectors_fix",
@@ -84305,7 +84252,7 @@
         "28R",
         "30"
       ],
-      "spoken": "Oakland Six",
+      "spoken": "Oakland Seven",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84313,21 +84260,21 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294QUAKE.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294QUAKE.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "135.1"
         }
       ],
-      "chartName": "QUAKE TWO",
+      "chartName": "QUAKE THREE",
       "climbViaEligible": false,
       "family": "QUAKE",
-      "hasCrossingRestrictions": false,
-      "id": "QUAKE2",
+      "hasCrossingRestrictions": true,
+      "id": "QUAKE3",
       "kind": "vector_hybrid",
-      "note": "Vector SID (CIFP route type T for every runway), read like OAK6: 'Quake Two departure, radar vectors (fix)'. SOP 2-2 a ii issues it to J & DH8D in OAKE at 5,000; the current ZOA notice has it off. Spoken name proposed from the chart name.",
+      "note": "Vector SID with no CIFP records, so its kind, runways and top altitude are transcribed from the chart: a heading for radar vectors to the assigned route or fix off 10L/10R/12 and 28L/28R/30 (15 and 33 are NA - ATC), 'maintain ATC assigned altitude'. Off 28L/28R/30 it publishes 'cross 4 DME northwest of OAK VOR/DME at or above 1400 and at or below 2000', which a vector SID never turns into climb via. Read like OAK7: 'Quake Three departure, radar vectors (fix)'. SOP 2-2 a ii issues it to J & DH8D in OAKE at 5,000; the current ZOA notice has it off. Spoken name proposed from the chart name.",
       "restrictions": [],
       "rnavRequired": false,
       "routePhrasing": "radar_vectors_fix",
@@ -84339,7 +84286,7 @@
         "28R",
         "30"
       ],
-      "spoken": "Quake Two",
+      "spoken": "Quake Three",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84348,26 +84295,31 @@
     {
       "baseFix": "SALAD",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294SALAD.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294SALAD.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "120.9"
         }
       ],
-      "chartName": "SALAD FIVE",
+      "chartName": "SALAD SIX",
       "climbViaEligible": true,
       "family": "SALAD",
       "hasCrossingRestrictions": true,
-      "id": "SALAD5",
+      "id": "SALAD6",
       "kind": "conventional_pilot_nav",
-      "note": "Conventional pilot-nav SID off 28L/28R only, with the ALTAM transition; Appendix B b iii puts it in use 2200L until 0700L daily for runway 28 props of approach category A/B. Spoken name proposed from the chart name.",
+      "note": "Conventional pilot-nav SID off 28L/28R only, with the ALTAM transition; Appendix B b iii puts it in use 2200L until 0700L daily for runway 28 props of approach category A/B. CIFP codes only its ALTAM enroute transition (route type 3), no runway leg, so the runways are stated here from the chart. Spoken name proposed from the chart name.",
       "restrictions": [
         {
           "altitudeDescription": "at_or_above",
           "altitudeOneFeet": 4000,
           "fix": "SALAD"
+        },
+        {
+          "altitudeDescription": "at_or_above",
+          "altitudeOneFeet": 4000,
+          "fix": "ALTAM"
         }
       ],
       "rnavRequired": false,
@@ -84376,7 +84328,7 @@
         "28L",
         "28R"
       ],
-      "spoken": "Salad Five",
+      "spoken": "Salad Six",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84392,19 +84344,19 @@
     {
       "baseFix": "REBAS",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294SILENT.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294SILENT.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "120.9"
         }
       ],
-      "chartName": "SILENT THREE",
+      "chartName": "SILENT FOUR",
       "climbViaEligible": true,
       "family": "SLNT",
       "hasCrossingRestrictions": true,
-      "id": "SLNT3",
+      "id": "SLNT4",
       "kind": "conventional_pilot_nav",
       "note": "Conventional pilot-nav SID off runway 30. CIFP codes its runway 30 leg as a common route (route type 2, transition RW30) rather than a runway transition, so the grouper derives no runway for it and the Appendix B northbound row would be unreachable; the runway is stated here from that RW30 record. Spoken name from the chart name.",
       "restrictions": [
@@ -84419,7 +84371,7 @@
       "runways": [
         "30"
       ],
-      "spoken": "Silent Three",
+      "spoken": "Silent Four",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84453,21 +84405,21 @@
     {
       "baseFix": "WAGES",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294SKYLINE.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294SKYLINE.PDF"
       },
-      "chartExpectFiledAltitudeMinutes": 10,
+      "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [
         {
           "frequency": "135.1"
         }
       ],
-      "chartName": "SKYLINE ONE",
+      "chartName": "SKYLINE TWO",
       "climbViaEligible": true,
       "family": "SKYL",
       "hasCrossingRestrictions": true,
-      "id": "SKYL1",
+      "id": "SKYL2",
       "kind": "conventional_pilot_nav",
-      "note": "Conventional pilot-nav SID published for every departure runway, with the AVE, FLW and PXN transitions on the CONT.1 sheet; SOP 2-2 a issues it southbound and oceanic in SFOW and southbound in SFOE. Spoken name from the chart name.",
+      "note": "Conventional pilot-nav SID published for every departure runway but 15 and 33, with the AVE, FLW and PXN transitions on the CONT.1 sheet; SOP 2-2 a issues it southbound and oceanic in SFOW and southbound in SFOE. CIFP codes only the three enroute transitions from WAGES (route type 3), no runway leg, so the runways and the crossing restrictions the chart depicts are stated here from the chart. Spoken name from the chart name.",
       "restrictions": [
         {
           "altitudeDescription": "between",
@@ -84487,13 +84439,13 @@
         },
         {
           "altitudeDescription": "at_or_above",
-          "altitudeOneFeet": 20000,
-          "fix": "WAGES"
+          "altitudeOneFeet": 9000,
+          "fix": "PORTE"
         },
         {
           "altitudeDescription": "at_or_above",
-          "altitudeOneFeet": 9000,
-          "fix": "PORTE"
+          "altitudeOneFeet": 20000,
+          "fix": "WAGES"
         }
       ],
       "rnavRequired": false,
@@ -84506,7 +84458,7 @@
         "28R",
         "30"
       ],
-      "spoken": "Skyline One",
+      "spoken": "Skyline Two",
       "topAltitude": {
         "kind": "assigned_by_atc"
       },
@@ -84533,7 +84485,7 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2610/00294SUNNE.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00294SUNNE.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 5,
       "chartFrequencies": [

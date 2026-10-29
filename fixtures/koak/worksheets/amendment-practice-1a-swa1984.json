@@ -24,6 +24,16 @@
     "runwayConfigId": "SFOW",
     "squawk": "4603"
   },
+  "sidVersions": {
+    "HUSSH": {
+      "id": "HUSSH2",
+      "spoken": "Hush Two"
+    },
+    "OAK": {
+      "id": "OAK6",
+      "spoken": "Oakland Six"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1A; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-16: HUSSH2 is issued only 0100-0500L; at 1400L OAK6 GRTFL …; the proposed route will gain OAK after the vector SID when that concept lands; re-settled 2026-09-17: the route carries SFO/OAK after the vector SID (R-RV-NAVAID, warning tier)"

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { AcceptedReading, ProposalView } from './propose.ts';
-import { formatPendingLine, formatProposal } from './propose.ts';
+import koakJson from '@data/koak.json';
+import type { AirportData, Fixture, Sid } from '@/data/schema.ts';
+import { sidFamiliesNamed, withStampedVersions } from '@/rules/fixtureVersions.ts';
+import type { AcceptedReading, ProposalOutcome, ProposalView } from './propose.ts';
+import { formatPendingLine, formatProposal, neededStamp, stampedOutcome } from './propose.ts';
+
+const koak = koakJson as unknown as AirportData;
 
 /** A proposal with one of each part, so the assertions can point at exact lines. */
 const clearanceView: ProposalView = {
@@ -128,6 +133,94 @@ describe('the accepted reading', () => {
 
   it('prints no section for a type without special handling', () => {
     expect(formatProposal(clearanceView)).not.toContain('ALSO ACCEPTED');
+  });
+});
+
+/** KOAK's data publishing OAK and CNDEL at versions no real cycle has, so the cases stay put. */
+function koakAtLaterVersions(): AirportData {
+  const template = koak.sids[0] as Sid;
+  return {
+    ...koak,
+    sids: [
+      { ...template, family: 'OAK', id: 'OAK42', spoken: 'Oakland Forty' },
+      { ...template, family: 'CNDEL', id: 'CNDEL9', spoken: 'Candle Nine' },
+    ],
+  };
+}
+
+/** An amendment outcome the engine printed at the current versions, naming OAK and CNDEL. */
+const currentOutcome: ProposalOutcome = {
+  kind: 'amendments',
+  amendments: [],
+  corrected: { kind: 'unresolved', reasons: [] },
+  expected: {
+    amendments: [
+      {
+        box: 'route',
+        proposed: 'OAK42 OAK GRTFL',
+        reason: 'OAK9 is not the current version of the OAK departure, which is OAK42',
+      },
+      { box: 'route', proposed: 'CNDEL9 YYUNG', reason: 'CNDEL9 is the SOP procedure' },
+    ],
+  },
+};
+
+/** A fixture written against OAK6 that stamps nothing else. */
+const stampedOnOak = {
+  id: 'syn-stamped',
+  airport: 'KOAK',
+  sidVersions: { OAK: { id: 'OAK6', spoken: 'Oakland Six' } },
+} as unknown as Fixture;
+
+const stampRuntime = { sidFamiliesNamed, withStampedVersions };
+
+describe('the fixture stamp', () => {
+  it('prints the stamp the fixture needs after the expected block', () => {
+    const sidVersions = { OAK: { id: 'OAK6', spoken: 'Oakland Six' } };
+    const block = formatProposal({ ...clearanceView, sidVersions }).split('FIXTURE\n')[1] ?? '';
+    expect(block.indexOf('  "sidVersions": {')).toBeGreaterThan(block.indexOf('  "expected": {'));
+    expect(block).toContain('      "id": "OAK6",\n      "spoken": "Oakland Six"');
+  });
+
+  it('prints each block as a property that pastes into a fixture as valid JSON', () => {
+    const sidVersions = { OAK: { id: 'OAK6', spoken: 'Oakland Six' } };
+    const block = formatProposal({ ...clearanceView, sidVersions }).split('FIXTURE\n')[1] ?? '';
+    const pasted = JSON.parse(`{${block.trimEnd()} "status": "settled"}`) as Record<
+      string,
+      unknown
+    >;
+    expect(Object.keys(pasted)).toEqual(['expected', 'sidVersions', 'status']);
+  });
+
+  it('prints no stamp for a fixture that names no SID', () => {
+    expect(formatProposal(clearanceView)).not.toContain('sidVersions');
+    expect(formatProposal({ ...clearanceView, sidVersions: {} })).not.toContain('sidVersions');
+  });
+
+  it('keeps the existing stamp and adds the current version of a family the answer names', () => {
+    expect(neededStamp(currentOutcome, stampedOnOak, koakAtLaterVersions(), stampRuntime)).toEqual({
+      OAK: { id: 'OAK6', spoken: 'Oakland Six' },
+      CNDEL: { id: 'CNDEL9', spoken: 'Candle Nine' },
+    });
+  });
+
+  it('writes the answer of a stamped family in its stamped version and the rest as current', () => {
+    const outcome = stampedOutcome(
+      currentOutcome,
+      stampedOnOak,
+      koakAtLaterVersions(),
+      stampRuntime,
+    );
+    expect(outcome.kind === 'unresolved' ? undefined : outcome.expected).toEqual({
+      amendments: [
+        {
+          box: 'route',
+          proposed: 'OAK6 OAK GRTFL',
+          reason: 'OAK9 is not the current version of the OAK departure, which is OAK6',
+        },
+        { box: 'route', proposed: 'CNDEL9 YYUNG', reason: 'CNDEL9 is the SOP procedure' },
+      ],
+    });
   });
 });
 

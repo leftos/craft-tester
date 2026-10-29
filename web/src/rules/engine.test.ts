@@ -15,9 +15,12 @@ import { resolveClearance } from '@/rules/engine.ts';
 import type { Procedure, ResolvedClearance } from '@/rules/types.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 import { spokenFor } from '@/ui/session.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
+const cndel = sidOf(koak, 'CNDEL');
+const oak = sidOf(koak, 'OAK');
 
 const BASE: Scenario = {
   callsign: 'UAL1',
@@ -453,7 +456,7 @@ describe('resolveClearance on the generated KSFO data', () => {
 });
 
 describe('route building before a heading', () => {
-  /** Phraseology Practice 1A: the ZOA notice takes COAST9 out of use, and CNDEL5 has no MCKEY
+  /** Phraseology Practice 1A: the ZOA notice takes COAST9 out of use, and CNDEL# has no MCKEY
    * transition, so the flight would be sent off on the runway heading were nothing built. */
   const SWA344: Scenario = {
     callsign: 'SWA344',
@@ -471,11 +474,11 @@ describe('route building before a heading', () => {
 
   it("issues the SID a transition connects onward from, in the heading's place", () => {
     const clearance = clearanceFor(SWA344, koak);
-    expect(assigned(clearance).id).toBe('CNDEL5');
+    expect(assigned(clearance).id).toBe(cndel.id);
     expect(clearance.route.value).toEqual({
       template: 'transition',
       fix: 'YYUNG',
-      builtRoute: 'CNDEL5 YYUNG LAX COMIX2',
+      builtRoute: `${cndel.id} YYUNG LAX COMIX2`,
     });
     expect(clearance.altitude.value).toEqual({ phrase: 'climb_via' });
     expect(clearance.frequency.value.value).toBe('135.1');
@@ -499,11 +502,11 @@ describe('route building before a heading', () => {
       },
       koak,
     );
-    expect(assigned(clearance).id).toBe('CNDEL5');
+    expect(assigned(clearance).id).toBe(cndel.id);
     expect(clearance.route.value).toEqual({
       template: 'transition',
       fix: 'YYUNG',
-      builtRoute: 'CNDEL5 YYUNG GVO HABUT',
+      builtRoute: `${cndel.id} YYUNG GVO HABUT`,
     });
   });
 
@@ -579,7 +582,7 @@ describe('radar vectors direct on an RH RV TEC route', () => {
       'via fly runway heading, radar vectors direct',
     );
     expect(proposedBox(flight, koak)).toBeUndefined();
-    expect(proposedBox({ ...flight, filedRoute: 'OAK6 OAK SFO' }, koak)).toBe('RH RV');
+    expect(proposedBox({ ...flight, filedRoute: `${oak.id} OAK SFO` }, koak)).toBe('RH RV');
   });
 });
 

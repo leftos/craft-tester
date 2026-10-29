@@ -34,6 +34,20 @@
     "runwayConfigId": "SFOW",
     "squawk": "4605"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    },
+    "SKYL": {
+      "id": "SKYL1",
+      "spoken": "Skyline One"
+    },
+    "SUNNE": {
+      "id": "SUNNE1",
+      "spoken": "Sunne One"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: FL270 (non-RVSM suffix, type as filed); SUNNE1 is off and CNDEL5 needs RNAV, so the route builds on SKYL1 from its end fix WAGES to LOSHN; re-opened 2026-09-17: a /A aircraft cannot file KAYEX / LOSHN (RNAV waypoints), the engine now answers with the type box; awaiting the user's confirmation; confirmed by the user 2026-09-17: type box to the fleet's RNAV suffix (RNAV elements), altitude and route judged on that plan"

@@ -38,6 +38,16 @@
     "runwayConfigId": "SFOW",
     "squawk": "4611"
   },
+  "sidVersions": {
+    "CNDEL": {
+      "id": "CNDEL5",
+      "spoken": "Candle Five"
+    },
+    "SKYL": {
+      "id": "SKYL1",
+      "spoken": "Skyline One"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 3; the sheet states no departure runway, so this is 30, the runway configuration SFOW defaults group jets_and_dh8d to it (default_for_groups), pending validation; validated by the user 2026-09-17: as /A the flight is non-RNAV and non-RVSM, so SKYL1 AVE SADDE8 (SADDE8 the conventional arrival, AVE its entry fix and a SKYL1 transition) and FL270; the type box A320/L is the other side of the pair, under which the whole plan stands as filed"

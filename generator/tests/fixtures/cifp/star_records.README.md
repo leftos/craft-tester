@@ -5,10 +5,10 @@ checked in so the STAR tests never touch the network.
 
 | field | value |
 |---|---|
-| AIRAC cycle | 2609 |
-| effective | 2026-09-03 |
-| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_260903.zip`, member `FAACIFP18` |
-| captured | 2026-09-17 |
+| AIRAC cycle | 2611 |
+| effective | 2026-10-29 |
+| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261029.zip`, member `FAACIFP18` |
+| captured | 2026-10-29 |
 | filter | `line[0] == "S" and line[4] == "P" and line[12] == "E"`, keeping the 42 destinations, then the first row of each (airport, procedure, route type) triple, and of each (airport, procedure, enroute transition) |
 | rows | 839, every row 132 characters |
 
@@ -41,7 +41,7 @@ Aeronautical Information Services (AJV-A).
 After an AIRAC bump run `uv run craft-gen fetch-cifp --airport KSFO`, then from the repo root:
 
 ```sh
-F=generator/cache/cifp/2609/FAACIFP18
+F=generator/cache/cifp/2611/FAACIFP18
 DESTS="CYVR ESSA KACV KAPC KBFI KBLI KBOI KBUR KCRQ KDEN KFAT KGPZ KJAC KLAS KLAX KLGB KLVK KMCI KMRY KMYV KOAK KONT KOVE KPDX KRNO KSAC KSAN KSBA KSEA KSJC KSLC KSMF KSMO KSNA KTRK KUDD KVNY KWVI MMMX O88 PHNL RKSI"
 pat=$(echo $DESTS | tr ' ' '|')
 rg -N "^S.{3}P.($pat)..E" "$F" |

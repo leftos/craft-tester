@@ -29,6 +29,12 @@
     "runwayConfigId": "10/10",
     "squawk": "6425"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOE-S-GAPP: the same aircraft southbound instead, which hands off to Sutro 135.1 because the frequency follows the gate direction, not the SID; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

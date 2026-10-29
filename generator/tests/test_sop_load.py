@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 import yaml
 
+from craft_generator.cifp.sid import Restriction
 from craft_generator.sop.load import (
     AIRCRAFT_TYPES_FILE,
     AIRLINES_FILE,
@@ -1147,4 +1148,69 @@ def test_a_non_positive_expect_filed_altitude_minutes_is_named(tmp_path: Path, k
         data["sids"]["GAP SEVEN"]["expect_filed_altitude_minutes"] = 0
 
     with pytest.raises(ValueError, match=r"sids\[GAP SEVEN\]: expect_filed_altitude_minutes must be a positive whole number, got 0"):
+        load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
+
+
+def test_a_restrictions_override_round_trips(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["sids"]["GAP SEVEN"]["restrictions"] = [
+            {"fix": "SIXDY", "constraint": "between", "feet": 1900, "feet_high": 3000},
+            {"fix": "WAGES", "constraint": "at_or_above", "feet": 20000},
+        ]
+
+    overrides = load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
+    assert overrides.sids["GAP SEVEN"].restrictions == (
+        Restriction("SIXDY", "between", feet_low=1900, feet_high=3000),
+        Restriction("WAGES", "at_or_above", feet_low=20000, feet_high=None),
+    )
+    assert overrides.sids["TRUKN TWO (RNAV)"].restrictions is None
+
+
+@pytest.mark.parametrize(
+    ("row", "feet"),
+    [
+        ({"constraint": "at", "feet": 5000}, (5000, 5000)),
+        ({"constraint": "at_or_above", "feet": 5000}, (5000, None)),
+        ({"constraint": "at_or_below", "feet": 5000}, (None, 5000)),
+        ({"constraint": "between", "feet": 5000, "feet_high": 7000}, (5000, 7000)),
+    ],
+    ids=["at", "at-or-above", "at-or-below", "between"],
+)
+def test_a_restrictions_override_takes_the_cifp_shape(
+    tmp_path: Path, ksfo_dir: Path, row: dict[str, Any], feet: tuple[int | None, int | None]
+) -> None:
+    def mutate(data: Any) -> None:
+        data["sids"]["GAP SEVEN"]["restrictions"] = [{"fix": "SIXDY", **row}]
+
+    overrides = load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
+    restrictions = overrides.sids["GAP SEVEN"].restrictions
+    assert restrictions is not None
+    assert (restrictions[0].feet_low, restrictions[0].feet_high) == feet
+
+
+@pytest.mark.parametrize(
+    ("restrictions", "message"),
+    [
+        ([{"fix": "SIXDY", "constraint": "between", "feet": 1900}], r"sids\[GAP SEVEN\]\.restrictions\[0\]: a between restriction needs feet_high"),
+        (
+            [{"fix": "WAGES", "constraint": "at_or_above", "feet": 20000, "feet_high": 30000}],
+            r"sids\[GAP SEVEN\]\.restrictions\[0\]: feet_high is only for a between restriction",
+        ),
+        (
+            [{"fix": "SIXDY", "constraint": "between", "feet": 3000, "feet_high": 1900}],
+            r"sids\[GAP SEVEN\]\.restrictions\[0\]: a between restriction needs feet_high above feet, got 3000 and 1900",
+        ),
+        (
+            [{"fix": "SIXDY", "constraint": "between", "feet": 3000, "feet_high": 3000}],
+            r"sids\[GAP SEVEN\]\.restrictions\[0\]: a between restriction needs feet_high above feet, got 3000 and 3000",
+        ),
+        ([], r"sids\[GAP SEVEN\]: restrictions lists no restriction; leave the key out to keep the CIFP's"),
+    ],
+    ids=["between-without-feet-high", "feet-high-on-at-or-above", "between-reversed", "between-equal", "empty-list"],
+)
+def test_a_malformed_restrictions_override_is_named(tmp_path: Path, ksfo_dir: Path, restrictions: list[Any], message: str) -> None:
+    def mutate(data: Any) -> None:
+        data["sids"]["GAP SEVEN"]["restrictions"] = restrictions
+
+    with pytest.raises(ValueError, match=message):
         load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)

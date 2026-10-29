@@ -28,6 +28,12 @@
     "runwayConfigId": "28/01",
     "squawk": "4271"
   },
+  "sidVersions": {
+    "TRUKN": {
+      "id": "TRUKN2",
+      "spoken": "Trukn Two"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-N-TRUKN-01: northbound off the 01s. TRUKN2 publishes FL190 and the plan files above it, so the altitude is plain climb via SID: SOP 2-2 c (1) issues the interim table only when no top altitude is published (user decision 2026-09-15, reversing the DAL653 reading of the same day). Expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)."

@@ -14,9 +14,12 @@ import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
 import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
+const nimi = sidOf(koak, 'NIMI');
+const oak = sidOf(koak, 'OAK');
 
 const config: RunwayConfig = {
   id: '28 RT',
@@ -277,20 +280,20 @@ describe('tecTokens on the RH, RV and heading tokens', () => {
     expect(tokensOf('H270 OSI', koak).join(' ')).toBe('H270 OSI');
   });
 
-  it('reads OAK# RV at KOAK as OAK6 RV, boxed OAK6 OAK RV after the airport navaid', () => {
+  it('reads OAK# RV at KOAK as OAK# RV, boxed OAK# OAK RV after the airport navaid', () => {
     const tokens = tokensOf('OAK# RV', koak);
-    expect(tokens.join(' ')).toBe('OAK6 RV');
-    expect(withVectorNavaid(tokens, koak).join(' ')).toBe('OAK6 OAK RV');
+    expect(tokens.join(' ')).toBe(`${oak.id} RV`);
+    expect(withVectorNavaid(tokens, koak).join(' ')).toBe(`${oak.id} OAK RV`);
   });
 
-  it('reads NIMI# RV at KOAK as NIMI6 RV, boxed NIMI6 OAK RV, NIMI6 being a radar-vector SID', () => {
-    expect(koak.sids.find((sid) => sid.id === 'NIMI6')).toMatchObject({
+  it('reads NIMI# RV at KOAK as NIMI# RV, boxed NIMI# OAK RV, NIMI# being a radar-vector SID', () => {
+    expect(nimi).toMatchObject({
       kind: 'radar_vectors',
       routePhrasing: 'radar_vectors_fix',
     });
     const tokens = tokensOf('NIMI# RV', koak);
-    expect(tokens.join(' ')).toBe('NIMI6 RV');
-    expect(withVectorNavaid(tokens, koak).join(' ')).toBe('NIMI6 OAK RV');
+    expect(tokens.join(' ')).toBe(`${nimi.id} RV`);
+    expect(withVectorNavaid(tokens, koak).join(' ')).toBe(`${nimi.id} OAK RV`);
   });
 
   it('reads the bare GAPP# at KSFO as GAPP7, boxed GAPP7 SFO', () => {
@@ -306,7 +309,7 @@ describe('usableTecRoute for a type ZOA CPS-004 3.1 handles as another class', (
     const flight: Scenario = {
       ...SCENARIO,
       aircraftType,
-      filedRoute: 'OAK6 OAK FEVTA FEVTA1',
+      filedRoute: `${oak.id} OAK FEVTA FEVTA1`,
       runwayConfigId: 'SFOW',
       departureRunway: '30',
     };

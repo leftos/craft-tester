@@ -29,6 +29,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "4411"
   },
+  "sidVersions": {
+    "WESLA": {
+      "id": "WESLA5",
+      "spoken": "Wesla Five"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "SFOW-S-WESLA-28 with SFOW-28-3000: WESLA# publishes no top altitude, so the interim altitude is spoken as climb via SID except maintain 3,000; expect clause dropped: the chart publishes expect filed altitude 10 minutes after departure (user rule 2026-09-15)"

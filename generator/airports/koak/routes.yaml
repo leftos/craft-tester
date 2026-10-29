@@ -40,7 +40,7 @@ routes:
   - { exit_fix: KAYEX, destination: KPHX, tail: KAYEX LOSHN BOILE BLH HYDRR#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: AVE, destination: KPHX, tail: AVE BOILE BLH HYDRR#, classes: [J], altitudes: [33000, 35000] }
   - { exit_fix: SNS, destination: KLAX, tail: SNS AVE LAX, classes: [P, T], altitudes: [9000, 11000] }
-  # Northbound and eastbound jets off OAK6, which is a vector SID: the first filed fix is the
+  # Northbound and eastbound jets off OAK#, which is a vector SID: the first filed fix is the
   # Oakland VOR itself. KSEA and KPDX take even altitudes under the ZOA-ZSE parity LOA.
   - { exit_fix: OAK, destination: KSEA, tail: OAK DEDHD RBL LMT HAWKZ#, classes: [J], altitudes: [34000, 36000] }
   - { exit_fix: OAK, destination: KPDX, tail: OAK GRTFL MACHU TMBRS#, classes: [J], altitudes: [34000, 36000] }
@@ -79,7 +79,9 @@ routes:
   - { exit_fix: OAK, destination: KSCK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
   - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000] }
-  - { exit_fix: OAK, destination: KAPC, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000] }
+  # V108's CROIT-OAKEY segment was revoked with the Concord VOR (FAA docket 25-AWP-149, effective
+  # 2026-10-29), so Napa routes off V195 to CROIT and the V108 stretch that still reaches SGD (user, 2026-10-29).
+  - { exit_fix: OAK, destination: KAPC, tail: OAK V195 CROIT V108 SGD, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T, J], altitudes: [7000, 11000] }
   - { exit_fix: OAK, destination: KMRY, tail: OAK EUGEN, classes: [J], altitudes: [11000] }
   - { exit_fix: OAK, destination: KMRY, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [7000] }
@@ -94,7 +96,7 @@ routes:
   # San Francisco and Hayward file what their TEC rows issue after the procedure. The OAKE row to
   # KSFO departs on H270 and the SFOE row to KHWD on H090, and a heading is filed at the head of the
   # tail; the other KSFO rows depart on the runway heading, and the SFOW rows to KHWD file RV after the
-  # OAK6 or NIMI6 the SOP prepends. A route vectored direct to its destination names no fix, so its
+  # OAK# or NIMI# the SOP prepends. A route vectored direct to its destination names no fix, so its
   # exit_fix is the destination's identifier, which the north gate carries for that reason.
   - { exit_fix: OSI, destination: KSFO, tail: H270 OSI, classes: [P, T, J], altitudes: [5000] }
   - { exit_fix: SFO, destination: KSFO, tail: RH RV, classes: [P, T, J], altitudes: [4000, 5000] }

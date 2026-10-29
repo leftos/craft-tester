@@ -15,6 +15,12 @@
     "runwayConfigId": "28 SO",
     "squawk": "4612"
   },
+  "sidVersions": {
+    "SEGUL": {
+      "id": "SEGUL1",
+      "spoken": "Segul One"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 1C; the sheet states no departure runway, so this is 28L, the runway configuration 28 SO departs south per direction_runway_preference, pending validation"

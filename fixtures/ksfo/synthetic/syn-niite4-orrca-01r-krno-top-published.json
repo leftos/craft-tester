@@ -28,6 +28,12 @@
     "runwayConfigId": "28/01",
     "squawk": "2520"
   },
+  "sidVersions": {
+    "NIITE": {
+      "id": "NIITE4",
+      "spoken": "Niite Four"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "user example 2026-09-15, seed etebh9 in 28/01: NIITE4 publishes FL190 and the plan files 21,000, so the altitude is plain climb via SID (SFO ATCT SOP 2-2 c (1))"

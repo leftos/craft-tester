@@ -29,6 +29,12 @@
     "runwayConfigId": "28/01",
     "squawk": "3331"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Phraseology Practice 2; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-15: GAPP7 off 28R at Echo, radar vectors EUGEN, maintain 3,000, no expect clause, 135.1"

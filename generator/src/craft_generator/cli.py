@@ -77,6 +77,7 @@ from craft_generator.worksheets import (
     fixture_dir,
     settled_fixture_at,
     sheet_fixtures,
+    with_sid_versions,
 )
 
 EXIT_OK = 0
@@ -563,7 +564,13 @@ def published_sids(airport: str) -> tuple[PublishedSid, ...]:
         return ()
     document = json.loads(path.read_text(encoding="utf-8"))
     return tuple(
-        PublishedSid(id=sid["id"], family=sid["family"], runways=tuple(sid["runways"]), rnav_required=sid["rnavRequired"] is True)
+        PublishedSid(
+            id=sid["id"],
+            family=sid["family"],
+            spoken=sid["spoken"],
+            runways=tuple(sid["runways"]),
+            rnav_required=sid["rnavRequired"] is True,
+        )
         for sid in document["sids"]
     )
 
@@ -582,7 +589,8 @@ def _settled_diff(settled: SettledFixture) -> str:
     return f"    settled fixture {settled.id} would change scenario field(s) {', '.join(settled.changed_fields)}\n"
 
 
-def _fixture_result(path: Path, fixture: Fixture, *, check: bool, overwrite_settled: bool) -> _FixtureOutcome:
+def _fixture_result(path: Path, fixture: Fixture, sids: Sequence[PublishedSid], *, check: bool, overwrite_settled: bool) -> _FixtureOutcome:
+    fixture = with_sid_versions(path, fixture, sids)
     validate(fixture, fixture_schema_path())
     settled = settled_fixture_at(path, fixture, overwrite_settled=overwrite_settled)
     if settled is None:
@@ -670,7 +678,7 @@ def import_worksheets(airport: str, *, check: bool = False, force: bool = False,
             equipment_suffixes=equipment_suffixes,
             corrections=config.corrections,
         )
-        results = [_fixture_result(path, fixture, check=check, overwrite_settled=overwrite_settled) for path, fixture in sheet.fixtures.items()]
+        results = [_fixture_result(path, fixture, sids, check=check, overwrite_settled=overwrite_settled) for path, fixture in sheet.fixtures.items()]
         for result in results:
             if result.refused is not None:
                 refused.append(result.refused)

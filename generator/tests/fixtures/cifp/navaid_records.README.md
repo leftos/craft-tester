@@ -5,10 +5,10 @@ twice, checked in so the navaid and merge tests never touch the network.
 
 | field | value |
 |---|---|
-| AIRAC cycle | 2609 |
-| effective | 2026-09-03 |
-| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_260903.zip`, member `FAACIFP18` |
-| captured | 2026-09-15 |
+| AIRAC cycle | 2611 |
+| effective | 2026-10-29 |
+| source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261029.zip`, member `FAACIFP18` |
+| captured | 2026-10-29 |
 | filter | `line[0] == "S" and line[4] == "D"`, keeping the 53 identifiers KSFO routes name and `AA`, `HLE`, `NEL`, `ST` |
 | rows | 61 over 57 identifiers, every row 132 characters, sorted by identifier |
 

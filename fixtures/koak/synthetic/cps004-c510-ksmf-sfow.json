@@ -29,6 +29,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4522"
   },
+  "sidVersions": {
+    "OAK": {
+      "id": "OAK6",
+      "spoken": "Oakland Six"
+    }
+  },
   "source": {
     "kind": "synthetic",
     "note": "ZOA CPS-004 3.1: the C510, a light jet, is proposed its own class's TEC row TEC-KSMF-SFOW-J (OAK# OAK FEVTA FEVTA1, 10,000) and the turboprop row TEC-KSMF-SFOW-T (NIMI# OAK V6 SAC, 3,000 then 9,000) is also accepted; 30 is the runway SFOW departs the jets from (jets_and_dh8d); the expected clearance is the proposed jet one (user confirmed 2026-09-26)"

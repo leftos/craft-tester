@@ -24,6 +24,12 @@
     "runwayConfigId": "SFOW",
     "squawk": "4613"
   },
+  "sidVersions": {
+    "NUEVO": {
+      "id": "NUEVO8",
+      "spoken": "Nuevo Eight"
+    }
+  },
   "source": {
     "kind": "worksheet",
     "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-16: TEC route to Watsonville: NUEVO8 EUGEN"

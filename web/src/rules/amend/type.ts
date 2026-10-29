@@ -139,7 +139,7 @@ function elementClauses(elements: readonly RnavElement[]): string[] {
  * The reason the type box could carry an RNAV suffix instead, which names what needs one.
  *
  * A plan that only files an RNAV procedure names it and reads straight on into what stands: "the
- * filed CNDEL5, the route and FL350 all stand for a /L flight". Where the route carries RNAV
+ * filed CNDEL#, the route and FL350 all stand for a /L flight". Where the route carries RNAV
  * elements as well, each group of them is a clause of its own and the procedure becomes one too, so
  * the reason reads as a list rather than running the procedure and the first group together.
  *
