@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home layout</title>
+<style>
+  @font-face { font-family: 'AHN'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleNext-Regular.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'AHN'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleNext-Bold.woff2') format('woff2'); font-weight: 700; }
+  @font-face { font-family: 'AHM'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleMono-Regular.woff2') format('woff2'); }
+  :root {
+    --ground: #e8ecf0; --surface: #fff; --rail: #dfe4ea; --ink: #16202b; --ink-2: #566371;
+    --rule: #cbd3dc; --control-line: #b9c3ce; --accent: #1d5ea8; --accent-soft: #e3edf8;
+    --paper: #eeebe0; --ok: #1a7440; --ok-soft: #e4f2e9; --long: #8a5300; --long-soft: #fbf0dc;
+    font-family: 'AHN', system-ui, sans-serif; line-height: 1.45; color: var(--ink);
+  }
+  body { margin: 0; background: #c9d0d8; padding: 24px; }
+  h1.mock { margin: 0 0 4px; font-size: 22px; }
+  p.mock { margin: 0 0 20px; color: var(--ink-2); max-width: 1100px; }
+  .lane { background: #f6f7f9; border: 1px solid #aab4bf; border-radius: 10px; padding: 16px 20px 20px; margin-bottom: 28px; }
+  .lane > h2 { margin: 0 0 4px; font-size: 19px; }
+  .lane > p { margin: 0 0 14px; color: var(--ink-2); max-width: 1150px; }
+  .row { display: flex; gap: 20px; align-items: flex-start; flex-wrap: nowrap; }
+  .cap { font-size: 12px; color: var(--ink-2); margin: 0 0 4px; font-family: 'AHM', monospace; }
+  .frame { background: var(--ground); border: 1px solid #8995a2; border-radius: 6px; overflow: hidden; }
+  .desk { width: 1000px; }
+  .phone { width: 390px; }
+  .small { width: 448px; }
+  .bar { display: flex; align-items: center; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--rule); padding: 10px 18px; }
+  .brand { font-weight: 700; }
+  .crumb { color: var(--ink-2); font-size: 14px; }
+  .crumb a { color: var(--accent); text-decoration: none; }
+  .sp { flex: 1; }
+  .who { font-size: 13px; color: var(--ink-2); }
+  .btn { display: inline-block; border: 1px solid var(--control-line); background: #fff; border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.big { padding: 10px 18px; font-size: 16px; }
+  .body { padding: 18px 22px 22px; }
+  .lead { margin: 0 0 14px; font-size: 15px; color: var(--ink-2); }
+  .resume { display: flex; align-items: center; gap: 12px; background: var(--long-soft); border: 1px solid #e3c98f; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 14px; }
+  .resume b { color: var(--long); }
+  .grid { display: grid; grid-template-columns: 130px 1fr; gap: 12px 16px; align-items: start; }
+  .lbl { font-weight: 700; padding-top: 10px; font-size: 15px; }
+  .cards { display: flex; gap: 10px; flex-wrap: wrap; }
+  .card { flex: 1 1 0; min-width: 140px; background: #fff; border: 1px solid var(--control-line); border-radius: 8px; padding: 9px 12px; font-size: 13px; color: var(--ink-2); }
+  .card strong { display: block; color: var(--ink); font-size: 15px; }
+  .card.on { border: 2px solid var(--accent); background: var(--accent-soft); padding: 8px 11px; }
+  .seg { display: inline-flex; border: 1px solid var(--control-line); border-radius: 6px; overflow: hidden; background: #fff; }
+  .seg span { padding: 6px 12px; font-size: 14px; border-right: 1px solid var(--control-line); }
+  .seg span:last-child { border-right: 0; }
+  .seg span.on { background: var(--accent); color: #fff; font-weight: 700; }
+  .sub { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-size: 13px; color: var(--ink-2); }
+  .more { font-size: 14px; color: var(--accent); }
+  .start { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--rule); flex-wrap: wrap; }
+  .link { font-family: 'AHM', monospace; font-size: 12px; color: var(--ink-2); background: #fff; border: 1px dashed var(--control-line); border-radius: 4px; padding: 3px 7px; }
+  .recent { margin-top: 18px; }
+  .recent h3 { font-size: 15px; margin: 0 0 6px; }
+  .recent table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border: 1px solid var(--rule); }
+  .recent td { padding: 6px 10px; border-top: 1px solid var(--rule); }
+  .recent td.a { text-align: right; color: var(--accent); font-weight: 700; }
+  .tour { margin-top: 14px; font-size: 14px; color: var(--ink-2); }
+  .tour a { color: var(--accent); font-weight: 700; text-decoration: none; }
+  .phone .grid { grid-template-columns: 1fr; gap: 4px; }
+  .phone .lbl { padding-top: 10px; }
+  .phone .body { padding: 14px 16px; }
+  .phone .card { min-width: 0; }
+  .big-cards .card { padding: 16px; font-size: 14px; }
+  .big-cards .card strong { font-size: 18px; margin-bottom: 4px; }
+  .big-cards .card.on { padding: 15px; }
+  .step-h { font-size: 18px; font-weight: 700; margin: 0 0 4px; }
+  .notes { margin: 12px 0 0; padding-left: 18px; color: var(--ink); font-size: 14px; max-width: 1150px; }
+  .notes li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<h1 class="mock">Home page layout: one page or one step per screen?</h1>
+<p class="mock">Both lanes use the same pieces: VATSIM sign-in, a Continue banner for an unfinished test, airport, mode, practice or test, answer method, filters behind "More options", a copyable link for the session being set up, recent tests, and the tour link. The difference is whether they all sit on one screen or arrive one step at a time.</p>
+
+<section class="lane">
+  <h2>A. One page</h2>
+  <p>Everything on one screen, with the last choices already selected. A returning student presses Start once. The link under Start changes as choices change, so every combination can be copied.</p>
+  <div class="row">
+    <div>
+      <p class="cap">desktop 1000px · #/</p>
+      <div class="frame desk">
+        <div class="bar"><span class="brand">CRAFT trainer</span><span class="sp"></span><span class="who">Signed in · 1234567</span><span class="btn">Sign out</span></div>
+        <div class="body">
+          <p class="lead">Practise IFR clearance delivery for Bay Area departures, graded against the ZOA SOPs.</p>
+          <div class="resume"><b>Unfinished test</b> KSFO · Clearance · strip 4 of 10 · 12:31 left <span class="sp"></span><span class="btn primary">Continue</span></div>
+          <div class="grid">
+            <div class="lbl">Airport</div>
+            <div class="cards"><div class="card"><strong>KSFO</strong>San Francisco Intl</div><div class="card on"><strong>KOAK</strong>Oakland Intl</div></div>
+            <div class="lbl">Mode</div>
+            <div class="cards"><div class="card"><strong>Clearance</strong>Read a plan that is already right</div><div class="card on"><strong>Amend</strong>Fix the strip, then clear it</div></div>
+            <div class="lbl">Format</div>
+            <div>
+              <div class="cards"><div class="card"><strong>Practice</strong>One strip at a time, results after each</div><div class="card on"><strong>Test</strong>A set of strips, graded at the end</div></div>
+              <div class="sub">Strips <span class="seg"><span>5</span><span class="on">10</span><span>20</span></span> Time <span class="seg"><span>10 min</span><span class="on">20 min</span><span>30 min</span><span>Untimed</span></span></div>
+            </div>
+            <div class="lbl">Answer by</div>
+            <div><span class="seg"><span class="on">Pick</span><span>Type</span><span>Full route</span></span> <span class="more">&nbsp; More options ▸</span></div>
+          </div>
+          <div class="start"><span class="btn primary big">Start test</span><span class="link">leftos.dev/craft-tester/#/KOAK/amend/test/10x20</span><span class="btn">Copy link</span></div>
+          <div class="recent"><h3>Your tests</h3>
+            <table>
+              <tr><td>KSFO · Clearance · 10 strips, 20 min</td><td>in progress, 3 of 10</td><td class="a">Continue</td></tr>
+              <tr><td>KOAK · Amend · 5 strips, untimed</td><td>8 Oct · 4 of 5 fully correct · 91%</td><td class="a">Results</td></tr>
+            </table>
+          </div>
+          <p class="tour">New here? <a>Take the tour</a> (about 3 minutes)</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="cap">phone 390px · #/</p>
+      <div class="frame phone">
+        <div class="bar"><span class="brand">CRAFT trainer</span><span class="sp"></span><span class="btn">Sign out</span></div>
+        <div class="body">
+          <div class="resume"><b>Unfinished</b> KSFO · 4/10 <span class="sp"></span><span class="btn primary">Continue</span></div>
+          <div class="grid">
+            <div class="lbl">Airport</div>
+            <div class="cards"><div class="card"><strong>KSFO</strong>San Francisco</div><div class="card on"><strong>KOAK</strong>Oakland</div></div>
+            <div class="lbl">Mode</div>
+            <div class="cards"><div class="card"><strong>Clearance</strong>Plan is right</div><div class="card on"><strong>Amend</strong>Fix, then clear</div></div>
+            <div class="lbl">Format</div>
+            <div>
+              <div class="cards"><div class="card"><strong>Practice</strong>Own pace</div><div class="card on"><strong>Test</strong>Graded set</div></div>
+              <div class="sub">Strips <span class="seg"><span>5</span><span class="on">10</span><span>20</span></span></div>
+              <div class="sub">Time <span class="seg"><span>10</span><span class="on">20</span><span>30</span><span>∞</span></span></div>
+            </div>
+            <div class="lbl">Answer by</div>
+            <div><span class="seg"><span class="on">Pick</span><span>Type</span><span>Full route</span></span></div>
+          </div>
+          <p class="more">More options ▸</p>
+          <div class="start"><span class="btn primary big">Start test</span><span class="btn">Copy link</span></div>
+          <p class="tour">New here? <a>Take the tour</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lane">
+  <h2>B. One step per screen</h2>
+  <p>Each choice is its own screen and its own link: #/ picks the airport, #/KOAK picks the mode, #/KOAK/amend picks practice or test. The breadcrumb walks back. A returning student starts from their last screen's Start, or clicks through three screens.</p>
+  <div class="row">
+    <div>
+      <p class="cap">step 1 · #/</p>
+      <div class="frame small">
+        <div class="bar"><span class="brand">CRAFT trainer</span><span class="sp"></span><span class="btn">Sign out</span></div>
+        <div class="body">
+          <div class="resume"><b>Unfinished</b> KSFO · 4/10 <span class="sp"></span><span class="btn primary">Continue</span></div>
+          <p class="step-h">Which airport?</p>
+          <div class="cards big-cards"><div class="card"><strong>KSFO</strong>San Francisco Intl</div><div class="card on"><strong>KOAK</strong>Oakland Intl</div></div>
+          <p class="tour">New here? <a>Take the tour</a></p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="cap">step 2 · #/KOAK</p>
+      <div class="frame small">
+        <div class="bar"><span class="brand">CRAFT trainer</span><span class="crumb">› <a>KOAK</a></span><span class="sp"></span><span class="btn">Sign out</span></div>
+        <div class="body">
+          <p class="step-h">Which mode?</p>
+          <div class="cards big-cards"><div class="card"><strong>Clearance</strong>Read a plan that is already right</div><div class="card on"><strong>Amend</strong>Fix the strip, then clear it</div></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="cap">step 3 · #/KOAK/amend</p>
+      <div class="frame small">
+        <div class="bar"><span class="brand">CRAFT trainer</span><span class="crumb">› <a>KOAK</a> › <a>Amend</a></span><span class="sp"></span><span class="btn">Sign out</span></div>
+        <div class="body">
+          <p class="step-h">Practice or test?</p>
+          <div class="cards big-cards"><div class="card"><strong>Practice</strong>One strip at a time<br><span class="btn primary">Start practice</span></div><div class="card on"><strong>Test</strong>Graded at the end
+            <div class="sub">Strips <span class="seg"><span>5</span><span class="on">10</span><span>20</span></span></div>
+            <div class="sub">Time <span class="seg"><span>10</span><span class="on">20</span><span>30</span><span>∞</span></span></div>
+            <div class="sub"><span class="btn primary">Start test</span></div></div></div>
+          <div class="sub">Answer by <span class="seg"><span class="on">Pick</span><span>Type</span><span>Full route</span></span> <span class="more">More options ▸</span></div>
+          <div class="start"><span class="link">#/KOAK/amend/test/10x20</span><span class="btn">Copy link</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ul class="notes">
+  <li>In both lanes the trainer's toolbar gains a Home link (the brand), and its airport and mode switches stay, so a student can still change them mid-session.</li>
+  <li>"More options" opens the time-of-day and runway-configuration filters, and the runway grading switch from CRAFT-28 if it lands.</li>
+  <li>Signed out, "Sign in with VATSIM" stands in place of Sign out (whether sign-in is required is asked beside this mock).</li>
+</ul>
+</body>
+</html>

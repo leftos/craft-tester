@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial style</title>
+<style>
+  @font-face { font-family: 'AHN'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleNext-Regular.woff2') format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'AHN'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleNext-Bold.woff2') format('woff2'); font-weight: 700; }
+  @font-face { font-family: 'AHM'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleMono-Regular.woff2') format('woff2'); }
+  @font-face { font-family: 'AHM'; src: url('../../../../web/public/fonts/AtkinsonHyperlegibleMono-Bold.woff2') format('woff2'); font-weight: 700; }
+  :root {
+    --ground: #e8ecf0; --surface: #fff; --ink: #16202b; --ink-2: #566371; --rule: #cbd3dc;
+    --control-line: #b9c3ce; --accent: #1d5ea8; --accent-soft: #e3edf8; --holder: #2b3642;
+    --paper: #eeebe0; --paper-line: #bfbbae; --ok: #1a7440; --ok-soft: #e4f2e9;
+    font-family: 'AHN', system-ui, sans-serif; line-height: 1.45; color: var(--ink);
+  }
+  body { margin: 0; background: #c9d0d8; padding: 24px; }
+  h1.mock { margin: 0 0 4px; font-size: 22px; }
+  p.mock { margin: 0 0 20px; color: var(--ink-2); max-width: 1150px; }
+  .lane { background: #f6f7f9; border: 1px solid #aab4bf; border-radius: 10px; padding: 16px 20px 20px; margin-bottom: 28px; }
+  .lane > h2 { margin: 0 0 4px; font-size: 19px; }
+  .lane > p { margin: 0 0 14px; color: var(--ink-2); max-width: 1150px; }
+  .row { display: flex; gap: 20px; align-items: flex-start; }
+  .cap { font-size: 12px; color: var(--ink-2); margin: 0 0 4px; font-family: 'AHM', monospace; }
+  .frame { border: 1px solid #8995a2; border-radius: 6px; overflow: hidden; position: relative; background: var(--ground); }
+  /* A desktop capture is 1280x800, shown at 0.6. */
+  .shot { width: 768px; height: 480px; }
+  .shot .inner { position: absolute; left: 0; top: 0; width: 1280px; height: 800px; transform: scale(0.6); transform-origin: 0 0; }
+  .shot .inner img { display: block; width: 1280px; height: 800px; }
+  .phone { width: 312px; height: 675px; }
+  .phone .inner { position: absolute; left: 0; top: 0; width: 390px; height: 844px; transform: scale(0.8); transform-origin: 0 0; }
+  .phone .inner img { display: block; width: 390px; height: 844px; }
+  .spot { position: absolute; border-radius: 8px; box-shadow: 0 0 0 4000px rgba(10, 16, 24, 0.58); outline: 3px solid #ffd166; }
+  .tip { position: absolute; background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 8px 30px rgba(0,0,0,.35); font-size: 20px; }
+  .tip .n { font-size: 16px; color: var(--ink-2); font-weight: 700; }
+  .tip h4 { margin: 2px 0 6px; font-size: 24px; }
+  .tip p { margin: 0 0 12px; }
+  .tip .acts { display: flex; gap: 10px; align-items: center; }
+  .tip .wait { font-size: 17px; color: var(--accent); font-weight: 700; }
+  .btn { display: inline-block; border: 1px solid var(--control-line); background: #fff; border-radius: 6px; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tip .btn { font-size: 18px; padding: 8px 14px; }
+  .sp { flex: 1; }
+  .skip { color: var(--ink-2); font-size: 17px; }
+  /* Lane B */
+  .lesson { width: 1000px; }
+  .bar { display: flex; align-items: center; gap: 12px; background: var(--surface); border-bottom: 1px solid var(--rule); padding: 10px 18px; }
+  .brand { font-weight: 700; }
+  .crumb { color: var(--ink-2); font-size: 14px; }
+  .lwrap { display: grid; grid-template-columns: 220px 1fr; min-height: 470px; }
+  .toc { background: #dfe4ea; padding: 14px 0; font-size: 14px; }
+  .toc div { padding: 5px 16px; color: var(--ink-2); }
+  .toc div.done { color: var(--ok); }
+  .toc div.done::before { content: '✓ '; }
+  .toc div.on { background: var(--accent-soft); color: var(--accent); font-weight: 700; border-left: 4px solid var(--accent); padding-left: 12px; }
+  .toc h5 { margin: 0 16px 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-2); }
+  .lmain { padding: 20px 26px; }
+  .lmain h3 { margin: 0 0 6px; font-size: 20px; }
+  .lmain p { margin: 0 0 12px; max-width: 640px; }
+  .strip { display: inline-grid; grid-template-columns: 120px 52px 96px 190px; background: var(--paper); border: 6px solid var(--holder); border-radius: 4px; font-family: 'AHM', monospace; font-size: 12px; font-weight: 700; margin: 4px 0 14px; }
+  .strip > div { border-right: 1px solid var(--paper-line); padding: 4px 6px; line-height: 1.7; }
+  .strip mark { background: #ffd166; padding: 0 2px; }
+  .try { background: #fff; border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; max-width: 640px; }
+  .try b { display: block; margin-bottom: 6px; }
+  .sel { display: inline-block; border: 1px solid var(--control-line); border-radius: 6px; padding: 6px 10px; min-width: 260px; background: #fff; font-size: 14px; }
+  .fb { margin-top: 10px; background: var(--ok-soft); color: var(--ok); border-radius: 6px; padding: 8px 10px; font-size: 14px; }
+  .nav { display: flex; gap: 10px; margin-top: 16px; }
+  .notes { margin: 12px 0 0; padding-left: 18px; font-size: 14px; max-width: 1150px; }
+  .notes li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<h1 class="mock">First-time tutorial: coach marks on the trainer, or a lesson page?</h1>
+<p class="mock">Both are interactive: the student answers a fixed demo strip (KOAK, JSX2811 to KLAX on the CNDEL SIX) and each step waits for them to do the thing it describes. Both open on first visit, can be skipped, and are replayed from the home page's "Take the tour" link at #/tutorial.</p>
+
+<section class="lane">
+  <h2>A. Coach marks over the real trainer</h2>
+  <p>The page dims except the control being taught, and a card says what it is and what to do. The student works the real form; the tour moves on when they pick the right thing, or explains why a wrong pick is wrong. What they learn is exactly the screen they will use.</p>
+  <div class="row">
+    <div>
+      <p class="cap">desktop · step 1 of 9 · the strip</p>
+      <div class="frame shot"><div class="inner">
+        <img src="trainer.png" alt="">
+        <div class="spot" style="left:20px; top:112px; width:560px; height:96px"></div>
+        <div class="tip" style="left:620px; top:96px; width:470px">
+          <div class="n">1 of 9</div>
+          <h4>This is the flight strip</h4>
+          <p>Callsign and type on the left, then squawk, proposed time and filed altitude, the airports, and the filed route. Everything you clear comes from here and the ATIS below it.</p>
+          <div class="acts"><span class="skip">Skip tour</span><span class="sp"></span><span class="btn primary">Next</span></div>
+        </div>
+      </div></div>
+    </div>
+    <div>
+      <p class="cap">phone · step 4 of 9 · the route</p>
+      <div class="frame phone"><div class="inner">
+        <img src="trainer-phone.png" alt="">
+        <div class="spot" style="left:6px; top:486px; width:378px; height:104px"></div>
+        <div class="tip" style="left:15px; top:612px; width:330px; font-size:17px">
+          <div class="n">4 of 9</div>
+          <h4 style="font-size:20px">R: how the route is read</h4>
+          <p>The filed route joins the CNDEL SIX at its SUSEY transition. Pick the shape that says so.</p>
+          <div class="acts"><span class="wait">Waiting for your pick…</span><span class="sp"></span><span class="skip">Skip</span></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section class="lane">
+  <h2>B. A lesson page of its own</h2>
+  <p>A separate page at #/tutorial/&lt;step&gt; with a lesson list down the side, a short explanation, the part of the strip it concerns highlighted, and one "try it" question with feedback. Room for more teaching per step (the why, the 7110.65 paragraph), but the student meets the real trainer screen only after the last lesson.</p>
+  <div class="row">
+    <div>
+      <p class="cap">desktop · #/tutorial/4</p>
+      <div class="frame lesson">
+        <div class="bar"><span class="brand">CRAFT trainer</span><span class="crumb">› Tour</span><span class="sp"></span><span class="btn">Exit tour</span></div>
+        <div class="lwrap">
+          <div class="toc">
+            <h5>Clearance</h5>
+            <div class="done">1 The strip</div><div class="done">2 The ATIS</div><div class="done">3 C · clearance limit</div><div class="on">4 R · procedure and route</div><div>5 A · altitude and expect</div><div>6 F · frequency</div><div>7 T · squawk, expect runway</div>
+            <h5 style="margin-top:12px">After that</h5>
+            <div>8 Amend mode</div><div>9 Tests</div>
+          </div>
+          <div class="lmain">
+            <h3>R: the procedure and the route</h3>
+            <p>The procedure is the SID the SOP assigns. The route says where the flight leaves it: here the filed route joins the CNDEL SIX at SUSEY, so the clearance reads "Candle Six departure, Susey transition, then as filed".</p>
+            <div class="strip"><div>JSX2811<br>G/E135/L</div><div>3510<br>P1805<br>350</div><div>KOAK KLAX</div><div>KOAK <mark>CNDEL6 SUSEY</mark><br>EBAYE BURGL IRNMN2<br>KLAX</div></div>
+            <div class="try"><b>Try it: how is the route read?</b>
+              <span class="sel">Transition, then as filed&nbsp;&nbsp;▾</span> <span class="sel" style="min-width:90px">SUSEY ▾</span>
+              <div class="fb">Right. SUSEY is the SID's transition and the filed route carries on from it, so the rest is "then as filed".</div>
+            </div>
+            <div class="nav"><span class="btn">Back</span><span class="btn primary">Next: altitude</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<ul class="notes">
+  <li>Either way, the tour has a short branch for Amend mode and one for tests, and a returning student is never shown it again unless they ask (remembered per account, or per browser when signed out).</li>
+  <li>The demo strip and its expected answers are a settled fixture, so the tour cannot drift from what the engine grades.</li>
+</ul>
+</body>
+</html>
