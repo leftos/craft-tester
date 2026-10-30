@@ -74,7 +74,7 @@ The Linear project is "Home, tour and accounts". Its issues by step:
    - Practice and test links rewrite to today's `#s=…` and `x=…` forms once the session starts, so a strip link stays what it is now.
 2. **Store listing.** `SetStore` gains `list()`, which widens its storage pick to `length`/`key` and parses the base-36 seed back out of each `craft-tester:set:` key.
    - A new `HomeStore` in `preferences.ts` remembers the airport, mode, format, test size and time.
-   - Export the stored-value zod schemas from `solved.ts`, `preferences.ts` and `testSet.ts`. M3 reuses them as the API's wire format.
+   - The stored-value zod schemas in `solved.ts`, `preferences.ts` and `testSet.ts` are exported in step 8, alongside the server that uses them as its wire format.
 3. **Home page** (new `web/src/ui/home.ts`), as mock lane A:
    - the Continue banner;
    - airport, mode and format cards;
@@ -140,11 +140,13 @@ The Linear project is "Home, tour and accounts". Its issues by step:
     - Secrets in `/etc/craft-tester/env`, copied from `G:\My Drive\Private Config\craft-tester\secrets\server\.env` with `dotenv-keys ssh-set`, never through the context.
     - nginx gets `location ^~ /craft-tester/api/` (`proxy_pass`, the forwarded headers, `no-store`), and a `/craft-tester/` static location that restates the security headers.
     - The nginx, legal-page and homepage-card edits belong to the leftos.dev repo, so they go to its inbox as one request (`cross-repo-coordination`).
-11. **Deploy**: new `tools/deploy.ps1` and `tools/deploy.sh` in this repo. They build `web/` and `server/`, then tar over ssh with the host key pinned in leftos.dev's `deploy-known-hosts`.
-    - The web build goes to `/var/www/leftos.dev/craft-tester/`, with old hashed assets cleared first.
-    - The server goes to `/opt/craft-tester/`, followed by `pnpm install --prod` and a unit restart.
-    - `pages.yml` is replaced by a one-file Pages site that sends any old URL to `https://leftos.dev/craft-tester/` with its hash kept.
-    - A `deploy.yml` workflow is not in scope; deploys run by hand at checkpoints.
+11. **Deploy, automatic on merge**: a merge to `main` reaches leftos.dev with no one deploying by hand, and that includes the daily AIRAC PRs. The details are recorded on CRAFT-40.
+    - **Trigger and build.** A new `.github/workflows/deploy.yml` runs when `ci.yml` succeeds on `main` (`workflow_run`, plus `workflow_dispatch`). It builds `web/` and `server/` at the tested sha and sends one release tarball over ssh, with the host key pinned from leftos.dev's `deploy-known-hosts`.
+    - **The key.** It belongs to a non-root `craft-deploy` user and is restricted to `command="/opt/craft-tester/bin/receive-deploy"`.
+    - **Releasing.** `receive-deploy` unpacks into `/opt/craft-tester/releases/<sha>/`, runs `pnpm install --prod`, and swaps the `current` and web-root symlinks. It then restarts the unit, through a sudoers rule limited to that one restart. It keeps five releases.
+    - **Failure.** A failed `/craft-tester/api/health` check swaps back to the previous release and fails the job.
+    - **By hand.** `tools/deploy.ps1` and `tools/deploy.sh` run the same `receive-deploy`, for the first install and for rollback.
+    - **Pages.** `pages.yml` is replaced by a one-file Pages site that sends any old URL to `https://leftos.dev/craft-tester/` with its hash kept.
 
 ### M4: Accounts in the app
 
@@ -174,7 +176,8 @@ The Linear project is "Home, tour and accounts". Its issues by step:
 ### Needed from you, before M3
 
 - Register a VATSIM Connect OAuth client, with callback `https://leftos.dev/craft-tester/api/auth/callback`, and a dev-sandbox client for local runs. Put both in `G:\My Drive\Private Config\craft-tester\secrets\server\.env`.
-- Say yes, when asked during M3, to each droplet change: installing Node, the unit, nginx, the first deploy.
+- Say yes, when asked during M3, to each droplet change: installing Node, the unit, nginx, the deploy user, the first deploy.
+- Generate the deploy ssh key, keep it in the Private Config drive folder, and set it as the `CRAFT_DEPLOY_SSH_KEY` Actions secret with `gh secret set`.
 
 ## Verification
 
