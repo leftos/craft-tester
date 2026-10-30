@@ -12,7 +12,7 @@
  *   select:<index>=<label>   choose an option of the n-th `<select>` on the page by its label
  *   fill:<index>=<text>      type into the n-th text field (text inputs and textareas, in page order)
  *   press:<key>              press a key on whatever has focus, e.g. `press:Enter` after a `fill`
- *   click:<button text>      press the button with that text
+ *   click:<text>             press the button or the <summary> with that text
  *   scroll:<pixels>          scroll the page down to that offset
  *
  * The page's text, its selects, inputs and buttons, every console error, and whether it scrolls
@@ -109,7 +109,11 @@ for (const action of actions) {
   } else if (kind === 'press') {
     await page.keyboard.press(rest);
   } else if (kind === 'click') {
-    await page.getByRole('button', { name: rest }).first().click();
+    await page
+      .getByRole('button', { name: rest })
+      .or(page.locator('summary', { hasText: rest }))
+      .first()
+      .click();
   } else if (kind === 'scroll') {
     await page.evaluate((top) => window.scrollTo(0, top), Number(rest));
   } else {
