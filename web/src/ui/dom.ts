@@ -1,6 +1,9 @@
 /** One choice of a dropdown: the value the form reads back, and the text the player sees. */
 export type SelectOption = { value: string; label: string };
 
+/** The media query under which the app lays out for a phone. */
+export const PHONE_QUERY = '(max-width: 899.98px)';
+
 /** Everything one labelled dropdown needs to render. */
 export type SelectSpec = {
   label: string;

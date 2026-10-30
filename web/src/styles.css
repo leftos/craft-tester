@@ -65,6 +65,8 @@
   --half: #6a4ea6;
   --focus: #1d5ea8;
   --shadow: #16202b33;
+  --tour-dim: rgba(10, 16, 24, 0.58);
+  --tour-ring: #ffd166;
   --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
   --font-mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
   --s1: 4px;
@@ -104,6 +106,8 @@
     --half: #b9a3f0;
     --focus: #7fb0ea;
     --shadow: #00000080;
+    --tour-dim: rgba(0, 0, 0, 0.66);
+    --tour-ring: #ffdb85;
   }
 }
 
@@ -131,6 +135,8 @@
   --half: #b9a3f0;
   --focus: #7fb0ea;
   --shadow: #00000080;
+  --tour-dim: rgba(0, 0, 0, 0.66);
+  --tour-ring: #ffdb85;
 }
 
 body {
@@ -1018,6 +1024,121 @@ div.verdict .tag {
 .citations .rule-id {
   color: var(--ink);
   font: 700 0.8125rem var(--font-mono);
+}
+
+/* The tour: a ring over its anchor that dims the rest of the page, and a card beside it. */
+.tour-spot {
+  position: fixed;
+  z-index: 20;
+  border-radius: 8px;
+  outline: 3px solid var(--tour-ring);
+  box-shadow: 0 0 0 4000px var(--tour-dim);
+  pointer-events: none;
+}
+
+/* Transparent panes around the anchor that take the pointer, so the page behind is inert. */
+.tour-shield {
+  position: fixed;
+  z-index: 20;
+  background: transparent;
+}
+
+/* With the anchor not drawn yet, one shield covers and dims the whole viewport. */
+.tour-shield.full {
+  inset: 0;
+  background: var(--tour-dim);
+}
+
+.tour-card {
+  position: fixed;
+  z-index: 21;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  font-size: 20px;
+}
+
+.tour-card.centred {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.tour-card:focus {
+  outline: none;
+}
+
+.tour-card .tour-count {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.tour-card h4 {
+  margin: 2px 0 6px;
+  font-size: 24px;
+}
+
+.tour-card .tour-body p {
+  margin: 0 0 12px;
+}
+
+.tour-card .tour-term {
+  color: var(--ink-2);
+  font-weight: 700;
+}
+
+.tour-card .tour-said .wrong {
+  text-decoration: line-through;
+  text-decoration-color: var(--bad);
+  text-decoration-thickness: 2px;
+}
+
+.tour-card .tour-expected .missed {
+  padding: 0 2px;
+  box-shadow: inset 0 -2px 0 var(--bad);
+  font-weight: 700;
+}
+
+.tour-card .tour-acts {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tour-card .tour-spacer {
+  flex: 1;
+}
+
+.tour-card .tour-skip {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 17px;
+}
+
+.tour-card .wait {
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* The tour sets `.phone` from the app's phone query, so the query lives in one place. */
+.tour-card.phone {
+  width: min(330px, calc(100vw - 32px));
+  font-size: 17px;
+}
+
+.tour-card.phone h4 {
+  font-size: 20px;
 }
 
 /* A pill scrolls its row to just under the sticky toolbar. */
