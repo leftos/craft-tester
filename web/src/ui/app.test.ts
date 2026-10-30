@@ -21,16 +21,25 @@ import { CLEARANCE_TOUR, TOUR_STEPS_VERSION } from '@/ui/tourSteps.ts';
 const heldLoad = vi.hoisted(() => {
   let gate: Promise<void> | undefined;
   let open: (() => void) | undefined;
+  let refuse: ((reason: Error) => void) | undefined;
   let asked = false;
   return {
-    /** Holds every airport load, until `release`. */
+    /** Holds the next airport load, until `release` or `fail`; later loads run meanwhile. */
     hold(): void {
       asked = false;
-      gate = new Promise<void>((resolve) => {
+      gate = new Promise<void>((resolve, reject) => {
         open = () => {
           resolve();
         };
+        refuse = reject;
       });
+    },
+    /** Fails the held load, and lets every later one run. */
+    fail(reason: Error): void {
+      gate = undefined;
+      refuse?.(reason);
+      open = undefined;
+      refuse = undefined;
     },
     /** Whether a load has reached the held gate. */
     asked(): boolean {
@@ -42,10 +51,10 @@ const heldLoad = vi.hoisted(() => {
       open?.();
       open = undefined;
     },
-    /** Waits at the gate while one is held. */
+    /** Waits at the gate while one is held, for the first load to reach it only. */
     async pass(): Promise<void> {
       const waiting = gate;
-      if (waiting === undefined) return;
+      if (waiting === undefined || asked) return;
       asked = true;
       await waiting;
     },
@@ -272,6 +281,31 @@ describe('the first route', () => {
 
   afterEach(() => {
     heldLoad.release();
+    vi.restoreAllMocks();
+  });
+
+  // First in the file: a failed load is not cached, and the tutorial loads KOAK alone, so KSFO is
+  // still unloaded for the next test's held load.
+  it('keeps the page a newer link opened when the first strip fails to load', async () => {
+    globalThis.location.hash = '#s=1&a=KSFO';
+    const root = document.createElement('div');
+    document.body.replaceChildren(root);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    heldLoad.hold();
+
+    const started = startApp(root);
+    await vi.waitFor(() => {
+      expect(heldLoad.asked()).toBe(true);
+    });
+
+    followLink('#/tutorial');
+    heldLoad.fail(new Error('the airport file did not load'));
+    await expect(started).resolves.toBeUndefined();
+
+    await vi.waitFor(() => {
+      expect(root.textContent).toContain('SWA1740');
+    });
+    expect(root.textContent).not.toContain('could not start');
   });
 
   it('opens the link followed while the first strip is still loading, and keeps its hash', async () => {

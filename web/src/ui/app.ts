@@ -1649,6 +1649,22 @@ function reasonOf(error: unknown): string {
 }
 
 /**
+ * Opens the route the page loaded on. Its failure is the trainer's failure to start, which the
+ * caller writes into the page, unless a newer route has taken the page over since: then it is
+ * logged and the newer page stays.
+ */
+async function openFirstRoute(target: Active, hash: string): Promise<void> {
+  const opened = openRoute(target, hash);
+  const generation = target.generation;
+  try {
+    await opened;
+  } catch (error) {
+    if (isCurrent({ target, generation })) throw error;
+    console.error(`The trainer could not open ${hash}.`, error);
+  }
+}
+
+/**
  * Opens the route of a hash the page moved to, from a link or Back. A route that fails to load is
  * written into the page and logged, unless a newer route has taken the page over since.
  */
@@ -1730,7 +1746,7 @@ export async function startApp(root: Element): Promise<void> {
     routeListening = true;
     globalThis.addEventListener('hashchange', onHashChange);
   }
-  await openRoute(target, globalThis.location.hash);
+  await openFirstRoute(target, globalThis.location.hash);
   if (!toolbarListening) {
     toolbarListening = true;
     hideToolbarOnScroll();
