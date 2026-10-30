@@ -1,0 +1,4 @@
+# optional per-airport LOA override, read by name in generator/src/craft_generator/sop/load.py; no airport has one yet
+loa.yaml
+# the vNAS aircraft table, fetched into cache/vnas/ and never tracked
+AircraftSpecs.json

@@ -1,8 +1,8 @@
 # What-if variants
 
-From a ZOA instructor's playtest feedback. The index line is in [MAIN.md](./MAIN.md) Wave 4.
+From a ZOA instructor's playtest feedback. The work is CRAFT-7 in Linear (project What-if variants).
 
-The What-if chips fill the empty `div.what-if` slot after the result actions in `web/src/ui/results.ts` (the page mockup, [page-redesign-mockup.html](./page-redesign-mockup.html), shows them under the results). A test set shows no results until it ends, so the row never appears mid-set.
+The What-if chips fill the empty `div.what-if` slot after the result actions in `web/src/ui/results.ts`, under the results. A test set shows no results until it ends, so the row never appears mid-set.
 
 
 - **Where:** after results, in either mode, a "What if…" row offers variants:

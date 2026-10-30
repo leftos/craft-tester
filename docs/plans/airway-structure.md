@@ -43,9 +43,7 @@ fixes plus level, conventional-vs-RNAV and MEA/MAA, which the engine needs to bu
 route and altitude. NASR `AWY.txt` (per-segment MOCA) is a second download and a second format; add it only
 if MOCA ever matters.
 
-The `R` route-type flag also answers the RNAV element check's airway rule from data instead of the Q/T/Y
-prefix, and the one-way oceanic airway table for the R464 parity rule (MAIN.md) can come off the same
-records if the direction restriction column proves populated.
+The `R` route-type flag also answers the RNAV element check's airway rule from data instead of the Q/T/Y prefix, and the one-way oceanic airway table behind the `A-ONE-WAY-AIRWAY` row (`generator/shared/phraseology_rules.yaml`) can come off the same records if the direction restriction column proves populated.
 
 ## Decided with the user
 
