@@ -4,23 +4,24 @@
 
 ## Home, tour and accounts
 
-### M1 Router and home page (0/4 done)
-- [ ] CRAFT-29 Route path-style hashes: home, practice, new and continued tests, tutorial
-- [ ] CRAFT-30 List stored test sets and remember the home choices
-- [ ] CRAFT-31 One-page home: airport, mode, practice or test, answer method, filters, links, your tests
-- [ ] CRAFT-32 Trainer links back to home and remembers the airport and mode it was on
+### M1 Router and home page (4/5 done)
+- [ ] CRAFT-44 Home page, page links and first-run tour (feat/home-tour)
+  - [ ] CRAFT-33 Run a session on a given scenario from a settled fixture
+  - [ ] CRAFT-34 Coach-mark engine: spotlight and card over data-tour anchors
+  - [ ] CRAFT-35 Tour content: clearance on SWA1740, amend on JSX201, home's Test card; first-visit trigger
+  - [ ] CRAFT-45 Merge feat/home-tour to main (#30)
 
 ### M2 First-run tour (0/3 done)
-- [ ] CRAFT-33 Run a session on a given scenario from a settled fixture
-- [ ] CRAFT-34 Coach-mark engine: spotlight and card over data-tour anchors
-- [ ] CRAFT-35 Tour content: clearance on SWA1740, amend on JSX201, home's Test card; first-visit trigger
+- [ ] CRAFT-33 Run a session on a given scenario from a settled fixture (sub-issue of CRAFT-44)
+- [ ] CRAFT-34 Coach-mark engine: spotlight and card over data-tour anchors (sub-issue of CRAFT-44)
+- [ ] CRAFT-35 Tour content: clearance on SWA1740, amend on JSX201, home's Test card; first-visit trigger (sub-issue of CRAFT-44)
 
 ### M3 Server and leftos.dev (0/5 done)
 - [ ] CRAFT-36 server/ half: Node 24, node:http, node:sqlite, docs and shares API
 - [ ] CRAFT-37 VATSIM Connect sign-in with PKCE and a server-side session
-- [ ] CRAFT-38 Register VATSIM Connect clients (production and dev sandbox) and store their secrets
+- [ ] CRAFT-38 Register VATSIM Connect clients and the deploy ssh key; store their secrets
 - [ ] CRAFT-39 Droplet: Node 24, systemd unit, SQLite backups, nginx locations; leftos.dev inbox request for nginx, legal pages and card
-- [ ] CRAFT-40 Deploy scripts for web and server; Pages redirects to leftos.dev
+- [ ] CRAFT-40 Automatic deploy on merge to main, hand scripts for rollback; Pages redirects to leftos.dev
 
 ### M4 Accounts in the app (0/2 done)
 - [ ] CRAFT-41 Local-first sync layer: queued writes, merge on sign-in
@@ -70,3 +71,4 @@
 - [ ] CRAFT-26 KSFO unit tests look SIDs up by family, not by versioned id
 - [ ] CRAFT-27 Check KOAK no-DP draws reach the non-runway-heading rows (270/090/140/315)
 - [ ] CRAFT-28 Let a student turn off runway grading in clearance mode
+- [ ] CRAFT-43 Toolbar airport switch swallows a failed airport load
