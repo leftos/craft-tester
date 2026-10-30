@@ -1,5 +1,6 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { el, iconButton } from '@/ui/dom.ts';
+import type { TourAnchor } from '@/ui/tour.ts';
 
 /** The printed width of the paper strip, without its border. */
 const STRIP_WIDTH = 535;
@@ -495,6 +496,7 @@ export function renderStrip(
   marks: StripMarks,
 ): HTMLElement {
   const panel = el('section', 'panel strip');
+  panel.dataset['tour'] = 'strip' satisfies TourAnchor;
   const holder = el('div', 'strip-holder');
   const paper = el('div', 'strip-paper');
   const fields = stripFields(scenario, airport, seed, marks);

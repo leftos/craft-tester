@@ -5,6 +5,7 @@ import type { Grade, RuleCitation, Verdict } from '@/rules/types.ts';
 import { button, el, iconButton } from '@/ui/dom.ts';
 import { elementParts } from '@/ui/labels.ts';
 import { readAloud, speechAvailable, stopReading } from '@/ui/speech.ts';
+import type { TourAnchor } from '@/ui/tour.ts';
 import { diffWords } from '@/ui/wordDiff.ts';
 
 /** Everything the results view shows after the form is submitted. */
@@ -664,6 +665,7 @@ function actionRows(props: ResultsProps): HTMLElement[] {
  */
 export function renderResults(props: ResultsProps): HTMLElement {
   const panel = el('section', 'panel results');
+  panel.dataset['tour'] = 'results' satisfies TourAnchor;
   panel.append(el('h2', '', 'Results'), ...resultsBody(props), ...actionRows(props));
   return panel;
 }

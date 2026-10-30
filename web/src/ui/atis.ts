@@ -1,6 +1,7 @@
 import type { AirportData, Notice, RunwayConfig, Scenario } from '@/data/schema.ts';
 import { el, rowList } from '@/ui/dom.ts';
 import { timeLabel } from '@/ui/labels.ts';
+import type { TourAnchor } from '@/ui/tour.ts';
 
 /**
  * The operational notices in force for a scenario.
@@ -125,6 +126,7 @@ function wideScreen(): boolean {
  */
 export function renderAtis(scenario: Scenario, airport: AirportData): HTMLElement {
   const panel = el('section', 'panel atis');
+  panel.dataset['tour'] = 'atis' satisfies TourAnchor;
   const details = el('details', 'atis-details');
   details.open = wideScreen();
   const summary = el('summary', 'atis-summary');

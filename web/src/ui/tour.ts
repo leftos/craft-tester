@@ -43,11 +43,22 @@ export type TourAdvance =
  * @property title The card's heading, and the dialog's accessible name.
  * @property body What the card says.
  * @property advance What moves the student on to the next step.
+ * @property continueLabel On a part's last step, the label of a button before Finish that ends the
+ *   tour as `'continue'`, for the caller to open the next part; ignored on any other step.
  */
-export type TourStep = { anchor: TourAnchor; title: string; body: string; advance: TourAdvance };
+export type TourStep = {
+  anchor: TourAnchor;
+  title: string;
+  body: string;
+  advance: TourAdvance;
+  continueLabel?: string;
+};
 
-/** How a tour ended: Finish on its last step, or Skip (the button or Escape). */
-export type TourEnd = 'finish' | 'skip';
+/**
+ * How a tour ended: Finish on its last step, Skip (the button or Escape), or the last step's button
+ * on to the next part.
+ */
+export type TourEnd = 'finish' | 'skip' | 'continue';
 
 /**
  * What a wrong pick or box answer showed, for the card to set against what the step expects.
@@ -64,7 +75,8 @@ export type WrongPick = { said: string; expected: string; citations: readonly st
  * @property steps The steps, in order; at least one.
  * @property from The index of the step to open on, to resume a tour left part way.
  * @property onStep Called with a step's index each time it opens, for the caller to store progress.
- * @property onEnd Called once when the tour finishes or is skipped; never after `stop()`.
+ * @property onEnd Called once when the tour finishes, is skipped or continues to the next part;
+ *   never after `stop()`.
  */
 export type TourOptions = {
   steps: readonly TourStep[];
@@ -286,19 +298,25 @@ function canGoBack(tour: Tour): boolean {
 }
 
 /**
- * Next (Finish on the last step), or the wait line on a step that waits on the student and has not
- * been done yet; a step below the furthest one reached was done, so it moves on with Next.
+ * Next (Finish on the last step, after the button on to the next part where the step names one), or
+ * the wait line on a step that waits on the student and has not been done yet; a step below the
+ * furthest one reached was done, so it moves on with Next.
  */
-function forwardNode(tour: Tour, step: TourStep): HTMLElement {
+function forwardNodes(tour: Tour, step: TourStep): HTMLElement[] {
   const waits = tour.index >= tour.furthest || tour.wrong !== null;
   if (step.advance !== 'next' && waits) {
-    return el('span', 'wait', waitText(step.advance));
+    return [el('span', 'wait', waitText(step.advance))];
   }
   const last = tour.index === tour.options.steps.length - 1;
-  return button(last ? 'Finish' : 'Next', 'primary', () => moveTo(tour, tour.index + 1));
+  const forward = button(last ? 'Finish' : 'Next', 'primary', () => moveTo(tour, tour.index + 1));
+  if (!last || step.continueLabel === undefined) return [forward];
+  return [button(step.continueLabel, 'secondary', () => end(tour, 'continue')), forward];
 }
 
-/** Writes the card's buttons: Back where it applies, Skip, and Next or the wait line. */
+/**
+ * Writes the card's buttons: Back where it applies, Skip, and Next, Finish with the button on to the
+ * next part, or the wait line.
+ */
 function fillActions(tour: Tour, step: TourStep): void {
   const back = canGoBack(tour)
     ? [button('Back', 'secondary', () => moveTo(tour, tour.index - 1))]
@@ -307,7 +325,7 @@ function fillActions(tour: Tour, step: TourStep): void {
     ...back,
     button('Skip', 'tour-skip', () => end(tour, 'skip')),
     el('span', 'tour-spacer'),
-    forwardNode(tour, step),
+    ...forwardNodes(tour, step),
   );
 }
 

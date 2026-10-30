@@ -15,6 +15,7 @@ import { button, el, selectControl, selectOf, syncButton, syncSelect } from '@/u
 import { withSkip } from '@/ui/testBar.ts';
 import { elementLabel } from '@/ui/labels.ts';
 import type { DraftPicks, PickKey } from '@/ui/state.ts';
+import type { TourAnchor } from '@/ui/tour.ts';
 import { picksProcedure, templateNamesFix, toAmendmentPicks, toPlayerPicks } from '@/ui/state.ts';
 
 /** The blank choice every dropdown opens on. */
@@ -342,7 +343,11 @@ function renderGroup(
 ): HTMLElement {
   const row = el('div', 'craft-group');
   if (group.kind === 'given') {
-    row.append(el('h3', '', group.heading), el('div', 'craft-given', group.value));
+    const given = el('div', 'craft-given', group.value);
+    if (group.heading === elementLabel('R.sid')) {
+      given.dataset['tour'] = 'procedure' satisfies TourAnchor;
+    }
+    row.append(el('h3', '', group.heading), given);
     return row;
   }
   row.append(el('h3', '', elementLabel(group.element)));
@@ -350,6 +355,7 @@ function renderGroup(
     const control = selectControl(field, (value) => {
       current().onPick(field.key, value);
     });
+    control.dataset['tour'] = field.key satisfies TourAnchor;
     controls[field.key] = selectOf(control);
     row.append(control);
   }
@@ -413,6 +419,7 @@ export function renderCraftForm(props: CraftFormProps): CraftForm {
     current.onSubmit();
   });
   submit.disabled = props.boxesOpen || submitDisabled(props.picks, props.procedure);
+  submit.dataset['tour'] = 'submit' satisfies TourAnchor;
   panel.append(withSkip(submit, props.onSkip));
   return {
     node: panel,

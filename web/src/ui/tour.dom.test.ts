@@ -40,6 +40,12 @@ const SUBMITS: readonly TourStep[] = [
   { anchor: 'strip', title: 'Results', body: 'Here is how it went.', advance: 'next' },
 ];
 
+/** Two plain steps, each offering a way on to another part; only the last step's counts. */
+const PARTS: readonly TourStep[] = [
+  { anchor: 'strip', title: 'One', body: 'First.', advance: 'next', continueLabel: 'Not here' },
+  { anchor: 'submit', title: 'Two', body: 'Last.', advance: 'next', continueLabel: 'Next: more' },
+];
+
 /** What the tour's callbacks were called with. */
 type Calls = { steps: number[]; ends: TourEnd[] };
 
@@ -145,6 +151,30 @@ describe('the coach-mark tour', () => {
   it('finishes on the last step and takes everything off the page', () => {
     const { calls } = started(NEXTS, 2);
     expect(cardButtons()).not.toContain('Next');
+    press('Finish');
+    expect(calls.ends).toStrictEqual(['finish']);
+    expect(tourNodes()).toBe(0);
+  });
+
+  it('offers the way on to the next part only on the last step, before Finish', () => {
+    started(PARTS);
+    expect(cardButtons()).not.toContain('Not here');
+    expect(cardButtons()).not.toContain('Next: more');
+    press('Next');
+    const buttons = cardButtons();
+    expect(buttons).toContain('Next: more');
+    expect(buttons.indexOf('Next: more')).toBeLessThan(buttons.indexOf('Finish'));
+  });
+
+  it('continues on the way-on button once, and takes everything off the page', () => {
+    const { calls } = started(PARTS, 1);
+    press('Next: more');
+    expect(calls.ends).toStrictEqual(['continue']);
+    expect(tourNodes()).toBe(0);
+  });
+
+  it('still finishes on Finish beside the way-on button', () => {
+    const { calls } = started(PARTS, 1);
     press('Finish');
     expect(calls.ends).toStrictEqual(['finish']);
     expect(tourNodes()).toBe(0);

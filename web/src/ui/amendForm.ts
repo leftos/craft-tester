@@ -17,6 +17,7 @@ import { aircraftLabel } from '@/ui/labels.ts';
 import { renderVerdict, scoreLine } from '@/ui/results.ts';
 import { withSkip } from '@/ui/testBar.ts';
 import type { DraftBoxes } from '@/ui/state.ts';
+import type { TourAnchor } from '@/ui/tour.ts';
 import { toBoxAnswers } from '@/ui/state.ts';
 
 /** The blank choice the answer dropdown opens on. */
@@ -160,6 +161,7 @@ function renderBox(
   current: () => AmendFormProps,
 ): { node: HTMLElement; controls: BoxControls } {
   const node = el('div', `amend-box ${row.box}`);
+  node.dataset['tour'] = `box-${row.box}` satisfies TourAnchor;
   const answer = selectControl(
     {
       label: 'answer',
@@ -207,6 +209,7 @@ export function renderAmendForm(props: AmendFormProps): AmendForm {
     current.onSubmit?.();
   });
   submit.disabled = amendSubmitDisabled(props.boxes);
+  submit.dataset['tour'] = 'boxes-submit' satisfies TourAnchor;
   panel.append(el('h2', '', 'Amend the flight plan'), rows);
   if (props.onSubmit !== undefined) panel.append(withSkip(submit, props.onSkip));
   return {
