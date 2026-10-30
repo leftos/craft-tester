@@ -18,6 +18,10 @@ updates:
     groups:
       node:
         patterns: ["*"]
+    # The types follow the Node major CI and Pages run (node-version in ci.yml and pages.yml).
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
