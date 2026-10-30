@@ -9,8 +9,59 @@ import { headingPick } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
 import { buildScenario, clearedPlan, loadAirportData, spokenFor } from '@/ui/session.ts';
+import { browserSolvedStore } from '@/ui/solved.ts';
 import { picksProcedure, shareLink } from '@/ui/state.ts';
+import { browserSetStore, setStripSeed } from '@/ui/testSet.ts';
 import { CLEARANCE_TOUR, TOUR_STEPS_VERSION } from '@/ui/tourSteps.ts';
+
+/**
+ * The airport load one test holds open, so a link followed while the page is still loading has a
+ * route to overtake.
+ */
+const heldLoad = vi.hoisted(() => {
+  let gate: Promise<void> | undefined;
+  let open: (() => void) | undefined;
+  let asked = false;
+  return {
+    /** Holds every airport load, until `release`. */
+    hold(): void {
+      asked = false;
+      gate = new Promise<void>((resolve) => {
+        open = () => {
+          resolve();
+        };
+      });
+    },
+    /** Whether a load has reached the held gate. */
+    asked(): boolean {
+      return asked;
+    },
+    /** Lets the held load, and every later one, run. */
+    release(): void {
+      gate = undefined;
+      open?.();
+      open = undefined;
+    },
+    /** Waits at the gate while one is held. */
+    async pass(): Promise<void> {
+      const waiting = gate;
+      if (waiting === undefined) return;
+      asked = true;
+      await waiting;
+    },
+  };
+});
+
+vi.mock('@/ui/session.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/ui/session.ts')>();
+  return {
+    ...actual,
+    loadAirportData: async (icao: string) => {
+      await heldLoad.pass();
+      return actual.loadAirportData(icao);
+    },
+  };
+});
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
@@ -208,6 +259,42 @@ function clearTheStrip(root: Element): void {
   for (const box of ['type', 'altitude', 'route']) choose(answerOf(root, box), 'as_filed');
   submitOf(root, '.panel.amend').click();
 }
+
+/**
+ * Runs before every other test in the file, so no airport of the index has been loaded yet when the
+ * first route is held open.
+ */
+describe('the first route', () => {
+  beforeEach(() => {
+    globalThis.localStorage.clear();
+    globalThis.localStorage.setItem(TOUR_SEEN_KEY, 'true');
+  });
+
+  afterEach(() => {
+    heldLoad.release();
+  });
+
+  it('opens the link followed while the first strip is still loading, and keeps its hash', async () => {
+    globalThis.location.hash = '#s=1&a=KSFO';
+    const root = document.createElement('div');
+    document.body.replaceChildren(root);
+    heldLoad.hold();
+
+    const started = startApp(root);
+    await vi.waitFor(() => {
+      expect(heldLoad.asked()).toBe(true);
+    });
+
+    followLink('#/');
+    heldLoad.release();
+    await started;
+
+    await vi.waitFor(() => {
+      expect(root.querySelector('.home-page')).not.toBeNull();
+    });
+    expect(globalThis.location.hash).toBe('#/');
+  });
+});
 
 describe('the mounted page', () => {
   beforeEach(() => {
@@ -971,6 +1058,81 @@ describe('routing', () => {
 
     expect(root.querySelector('.home-resume')?.textContent).toContain('Unfinished test');
     expect(hrefAt(root, '.home-resume a')).toBe(`#/KSFO/clearance/test/${seed}`);
+  });
+
+  it('shows a finished set the score of the attempt it was resubmitted with', async () => {
+    const settings: SessionSettings = {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: false,
+    };
+    const setSeed = 100;
+    const airport = await loadAirportData('KSFO');
+    const { seed } = setStripSeed(airport, setSeed, 0, settings);
+    const strip = await mountHash(hashFor('KSFO', seed, settings));
+    typeInto(clearanceBox(strip), 'cleared to');
+    pressEnter(clearanceBox(strip));
+    const reading = strip.querySelector('.panel.results .reveal .spoken')?.textContent ?? '';
+    expect(reading.length).toBeGreaterThan(0);
+
+    const startedAt = Date.now();
+    browserSetStore().save(setSeed, {
+      startedAt,
+      minutes: 0,
+      n: 1,
+      icao: 'KSFO',
+      mode: 'clearance',
+      input: 'text',
+      fullRoute: false,
+      filter: ANY_SCENARIO,
+      answered: [0],
+      skipped: [],
+      ended: true,
+      endedAt: startedAt,
+    });
+
+    const home = await mountHash('');
+    expect(home.textContent).toContain('0 of 1 fully correct · 13%');
+
+    browserSolvedStore().save(
+      'KSFO',
+      seed,
+      { kind: 'clearance', input: 'text', text: reading },
+      false,
+    );
+
+    const again = await mountHash('');
+    expect(again.textContent).toContain('1 of 1 fully correct · 100%');
+  });
+
+  it('offers Continue for an unfinished set older than the ten newest', async () => {
+    const store = browserSetStore();
+    const startedAt = Date.now();
+    const finished = (at: number) => ({
+      startedAt: at,
+      minutes: 0,
+      n: 1,
+      icao: 'KSFO',
+      mode: 'clearance' as const,
+      input: 'dropdowns' as const,
+      fullRoute: false,
+      filter: ANY_SCENARIO,
+      answered: [0],
+      skipped: [],
+      ended: true,
+      endedAt: at,
+    });
+    store.save(50, { ...finished(startedAt), answered: [], ended: false, endedAt: undefined });
+    for (let index = 1; index <= 10; index += 1) {
+      store.save(50 + index, finished(startedAt + index * 1000));
+    }
+
+    const root = await mountHash('');
+
+    expect(root.querySelectorAll('.home-tests li')).toHaveLength(10);
+    expect(root.querySelector('.home-resume')?.textContent).toContain('Unfinished test');
+    expect(hrefAt(root, '.home-resume a')).toBe('#/KSFO/clearance/test/1e');
   });
 
   it('links the toolbar brand to home', async () => {

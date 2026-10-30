@@ -30,7 +30,7 @@ import { button, el, PHONE_QUERY, segmentedControl } from '@/ui/dom.ts';
 import type { SegmentOption } from '@/ui/dom.ts';
 import { filterControls } from '@/ui/filterControls.ts';
 import type { HomeProps } from '@/ui/home.ts';
-import { homeTestRows, renderHome } from '@/ui/home.ts';
+import { continueTestRow, homeTestRows, renderHome } from '@/ui/home.ts';
 import type {
   FilterStore,
   FullRouteStore,
@@ -1438,9 +1438,6 @@ async function openContinueTest(
   takeOver(opening, () => mount(root, index, initial, stores, TRAINER));
 }
 
-/** The score lines of finished sets, by set seed, since a finished set never changes. */
-const scoreCache = new Map<number, string>();
-
 /**
  * The score line home shows for a finished set, or `undefined` where its airport is not loaded.
  *
@@ -1454,16 +1451,12 @@ function scoreOf(
   airports: ReadonlyMap<string, AirportData>,
   solved: SolvedStore,
 ): string | undefined {
-  const known = scoreCache.get(listing.setSeed);
-  if (known !== undefined) return known;
   const { icao, mode, input, fullRoute } = listing.record;
   const airport = airports.get(icao);
   if (airport === undefined) return undefined;
   const load = (seed: number): Attempt | undefined =>
     solved.load(icao, seed, { mode, input, fullRoute });
-  const score = storedSetScore(airport, listing, load);
-  scoreCache.set(listing.setSeed, score);
-  return score;
+  return storedSetScore(airport, listing, load);
 }
 
 /**
@@ -1509,14 +1502,14 @@ type HomeListing = Pick<HomeProps, 'airports' | 'tests' | 'resume' | 'linkBase' 
 /** What home lists: the airports in index order, the remembered sets, and the base of its links. */
 function homeListing(airports: readonly AirportData[], stores: Stores): HomeListing {
   const byIcao = new Map(airports.map((data) => [data.airport.icao, data]));
-  const tests = homeTestRows(stores.set.list(), Date.now(), (listing) =>
-    scoreOf(listing, byIcao, stores.solved),
-  );
+  const listings = stores.set.list();
+  const now = Date.now();
+  const tests = homeTestRows(listings, now, (listing) => scoreOf(listing, byIcao, stores.solved));
   const { origin, pathname, search } = globalThis.location;
   return {
     airports: airports.map((data) => ({ icao: data.airport.icao, spoken: data.airport.spoken })),
     tests,
-    resume: tests.find((row) => row.action === 'Continue'),
+    resume: continueTestRow(listings, now),
     linkBase: origin + pathname + search,
     copy: (text) => {
       void copyLink(text);
@@ -1687,8 +1680,9 @@ function opensTourFirst(hash: string, stores: Stores): boolean {
  * Starts the trainer on the route the URL names: home on an empty hash or `#/`, a practice strip or
  * a test from an `#/<ICAO>/<mode>/…` link, a part of the tour from `#/tutorial` or
  * `#/tutorial/amend`, and a strip from every other hash, as before. A change of hash afterwards,
- * from a link or Back, opens its route in place of the page on screen. A first visit, with no hash
- * and the tour never seen, has `#/tutorial` written over its history entry and opens the tour.
+ * from a link or Back, opens its route in place of the page on screen, even where it arrives while
+ * the first route is still loading. A first visit, with no hash and the tour never seen, has
+ * `#/tutorial` written over its history entry and opens the tour.
  *
  * A strip link loads the airport the URL names, or the first of the index when it names none, and
  * renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
@@ -1729,11 +1723,14 @@ export async function startApp(root: Element): Promise<void> {
   if (opensTourFirst(globalThis.location.hash, stores)) {
     replaceHash(hrefOf({ kind: 'tutorial', part: 'clearance' }));
   }
-  await openRoute(target, globalThis.location.hash);
+  // The listener goes in before the first route loads, so a link followed, or Back, while that load
+  // is still running overtakes it through the same check every later route uses, and the first route
+  // never writes its hash over the newer one.
   if (!routeListening) {
     routeListening = true;
     globalThis.addEventListener('hashchange', onHashChange);
   }
+  await openRoute(target, globalThis.location.hash);
   if (!toolbarListening) {
     toolbarListening = true;
     hideToolbarOnScroll();

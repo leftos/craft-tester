@@ -310,18 +310,31 @@ function isUnfinished(listing: SetListing, now: number): boolean {
   return !ended && answered.length < n && (deadline === undefined || now < deadline);
 }
 
+/** One unfinished set as the row Continue offers it. */
+function continueRow(listing: SetListing, now: number): HomeTestRow {
+  const { icao, mode } = listing.record;
+  return {
+    title: testTitle(listing),
+    status: unfinishedStatus(listing, now),
+    action: 'Continue',
+    href: hrefOf({ kind: 'continueTest', icao, mode, setSeed: listing.setSeed }),
+  };
+}
+
 /** One set as a row of "Your tests". */
 function testRow(
   listing: SetListing,
   now: number,
   scoreOf: (listing: SetListing) => string | undefined,
 ): HomeTestRow {
+  if (isUnfinished(listing, now)) return continueRow(listing, now);
   const { icao, mode } = listing.record;
-  const title = testTitle(listing);
-  const href = hrefOf({ kind: 'continueTest', icao, mode, setSeed: listing.setSeed });
-  return isUnfinished(listing, now)
-    ? { title, status: unfinishedStatus(listing, now), action: 'Continue', href }
-    : { title, status: finishedStatus(listing, scoreOf(listing)), action: 'Results', href };
+  return {
+    title: testTitle(listing),
+    status: finishedStatus(listing, scoreOf(listing)),
+    action: 'Results',
+    href: hrefOf({ kind: 'continueTest', icao, mode, setSeed: listing.setSeed }),
+  };
 }
 
 /**
@@ -342,6 +355,22 @@ export function homeTestRows(
   scoreOf: (listing: SetListing) => string | undefined,
 ): HomeTestRow[] {
   return listings.slice(0, MAX_TEST_ROWS).map((listing) => testRow(listing, now, scoreOf));
+}
+
+/**
+ * The row Continue offers: the newest unfinished set of every one this browser remembers, which the
+ * rows "Your tests" lists may stop short of.
+ *
+ * @param listings The remembered sets, newest first.
+ * @param now The time now, in epoch milliseconds.
+ * @returns The unfinished set's row, or `undefined` where every set is finished.
+ */
+export function continueTestRow(
+  listings: readonly SetListing[],
+  now: number,
+): HomeTestRow | undefined {
+  const unfinished = listings.find((listing) => isUnfinished(listing, now));
+  return unfinished === undefined ? undefined : continueRow(unfinished, now);
 }
 
 /**
