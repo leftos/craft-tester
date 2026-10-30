@@ -577,12 +577,15 @@ class RouteTokenRule:
     ``classes`` narrows the rule to those aircraft classes, for an attachment cell that routes props
     differently from jets; ``None`` covers every class. ``rnav_only`` narrows it to an RNAV-capable
     flight, for a cell whose conventional column reads via filed route and so demands no fix.
+    ``non_rnav_tokens`` lists the tokens a non-RNAV flight may use, each one also in ``tokens``;
+    ``None`` draws no line, so every token serves either kind of flight.
     """
 
     kind: ClassVar[LoaRuleKindName] = "route"
     tokens: tuple[str, ...]
     classes: tuple[AircraftClass, ...] | None
     rnav_only: bool
+    non_rnav_tokens: tuple[str, ...] | None
 
 
 LoaRuleKind = ParityRotatedRule | EvenAltitudeRule | OddAltitudeRule | RouteTokenRule

@@ -306,7 +306,7 @@ the LOA a rotated course window, and the row carries the LOA's version. An LOA's
 for a handoff binds the enroute controller, not clearance delivery, so it is not a row.
 A `route` rule lists the fixes one of which the route must name; a cell that routes props differently from
 jets becomes two rows with `classes: [J]` and `classes: [P, T]`, and a cell whose conventional column reads
-"via filed route" carries `rnav_only: true`. A row's destinations are checked against
+"via filed route" carries `rnav_only: true`. A cell that marks some options "(non-RNAV)" lists the fixes of those options in `non_rnav_tokens`, each also in `tokens`; leave out a fix the cell also offers on its own as an RNAV option, and an airway. A row's destinations are checked against
 `generator/shared/destinations.yaml`, not the airport's `routes.yaml`, so an LOA row may name a field no
 scenario files to; add the field to the shared table first.
 

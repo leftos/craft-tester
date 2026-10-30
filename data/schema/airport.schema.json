@@ -748,6 +748,12 @@
                     "const": "route",
                     "type": "string"
                   },
+                  "nonRnavTokens": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
                   "rnavOnly": {
                     "type": "boolean"
                   },
@@ -760,7 +766,8 @@
                 },
                 "required": [
                   "kind",
-                  "tokens"
+                  "tokens",
+                  "nonRnavTokens"
                 ],
                 "type": "object"
               }

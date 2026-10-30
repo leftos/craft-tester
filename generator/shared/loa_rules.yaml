@@ -36,17 +36,18 @@ rules:
     source: "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)"
     text: "SEA arrivals from the Bay: ..RBL..LMT then the HAWKZ STAR, or ..BTG then the OLM STAR; non-RNAV ..KNGDM or ..BTG"
     destinations: [KSEA, KBFI]
-    rule: { kind: route, tokens: [RBL, LMT, BTG, KNGDM, HAWKZ, OLM] }
+    rule: { kind: route, tokens: [RBL, LMT, BTG, KNGDM, HAWKZ, OLM], non_rnav_tokens: [BTG, KNGDM] }
   - id: LOA-ZSE-PDX-ROUTE
     source: "ZOA-ZSE LOA Attachment 1 (from ZOA 36/41, Bay + SMF)"
     text: "PDX arrivals from the Bay: ..MACHU or ..MOXEE; non-RNAV ..OED"
     destinations: [KPDX]
-    rule: { kind: route, tokens: [MACHU, MOXEE, OED] }
+    rule: { kind: route, tokens: [MACHU, MOXEE, OED], non_rnav_tokens: [OED] }
   - id: LOA-ZLA-LAX-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Jets) LAX, effective 2026-04-26"
     text: "LAX jets: ..BURGL, ..REBRG, ..DOUIT, ..DERBB (non-RNAV); ..BURGL.BAYST STAR, ..TILLT.DIRBY STAR, ..MCKEY.LEENA STAR (non-RNAV) only for known cargo aircraft on or west of J501"
     destinations: [KLAX]
-    rule: { kind: route, tokens: [BURGL, REBRG, DOUIT, DERBB, BAYST, DIRBY, LEENA, TILLT, MCKEY], classes: [J] }
+    # MCKEY.LEENA is non-RNAV only for known cargo aircraft on or west of J501, which no row models, so it is not a non_rnav_token.
+    rule: { kind: route, tokens: [BURGL, REBRG, DOUIT, DERBB, BAYST, DIRBY, LEENA, TILLT, MCKEY], non_rnav_tokens: [DERBB], classes: [J] }
   - id: LOA-ZLA-LAX-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) LAX, effective 2026-04-26"
     text: "LAX props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..AVE, ..FLW, ..RZS (which side of J1 is not modeled)"
@@ -56,7 +57,7 @@ rules:
     source: "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Jets) SMO, effective 2026-04-26"
     text: "SMO jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
     destinations: [KSMO]
-    rule: { kind: route, tokens: [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB], classes: [J] }
+    rule: { kind: route, tokens: [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB], non_rnav_tokens: [AVE, FLW, DERBB], classes: [J] }
   - id: LOA-ZLA-SMO-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) SMO, effective 2026-04-26"
     text: "SMO props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..FLW, ..RZS (which side of J1 is not modeled)"
@@ -66,7 +67,7 @@ rules:
     source: "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Jets) LGB/SNA, effective 2026-04-26"
     text: "LGB and SNA jets: ..TILLT, ..RDHOT, ..MMTLY, ..ELLBC, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..MCKEY..DAISY..BENET (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
     destinations: [KLGB, KSNA]
-    rule: { kind: route, tokens: [TILLT, RDHOT, MMTLY, ELLBC, REBRG, AVE, FLW, MCKEY, DAISY, BENET, DERBB], classes: [J] }
+    rule: { kind: route, tokens: [TILLT, RDHOT, MMTLY, ELLBC, REBRG, AVE, FLW, MCKEY, DAISY, BENET, DERBB], non_rnav_tokens: [AVE, FLW, MCKEY, DAISY, BENET, DERBB], classes: [J] }
   - id: LOA-ZLA-LGB-SNA-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Props) LGB/SNA, effective 2026-04-26"
     text: "LGB and SNA props east of J7: ..EHF; all other props: ..FLW, ..GVO (which side of J7 is not modeled)"
@@ -76,7 +77,7 @@ rules:
     source: "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Jets) BUR/VNY, effective 2026-04-26"
     text: "BUR and VNY jets: ..BURGL, ..HONZK, ..MMTLY, ..RDHOT, ..REBRG, ..AVE (non-RNAV), ..FLW (non-RNAV), ..REBRG.J7.DERBB (non-RNAV)"
     destinations: [KBUR, KVNY]
-    rule: { kind: route, tokens: [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB], classes: [J] }
+    rule: { kind: route, tokens: [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB], non_rnav_tokens: [AVE, FLW, DERBB], classes: [J] }
   - id: LOA-ZLA-BUR-VNY-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Props) BUR/VNY, effective 2026-04-26"
     text: "BUR and VNY props east of J1: ..NINTY, ..EHF, ..LHS; all other props: ..RZS, ..FLW (which side of J1 is not modeled)"
@@ -91,12 +92,12 @@ rules:
     source: "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per instructor ruling"
     text: "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (such as GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (instructor ruling)"
     destinations: [KCRQ, KNFG]
-    rule: { kind: route, tokens: [BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF, LHS], classes: [J] }
+    rule: { kind: route, tokens: [BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF, LHS], non_rnav_tokens: [DERBB, FIM], classes: [J] }
   - id: LOA-ZLA-UDD-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Palm Springs, ALL PSP/TRM/UDD, effective 2026-04-26"
     text: "PSP, TRM and UDD: ..CLASN, ..OYVEY, ..BTY..ZELMA, ..PMD (non-RNAV, LANDO..PMD to avoid R2508)"
     destinations: [KPSP, KTRM, KUDD]
-    rule: { kind: route, tokens: [CLASN, OYVEY, BTY, ZELMA, PMD] }
+    rule: { kind: route, tokens: [CLASN, OYVEY, BTY, ZELMA, PMD], non_rnav_tokens: [PMD] }
   - id: LOA-ZLA-ONT-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Empire Area, ALL, effective 2026-04-26"
     text: "Empire area (ONT, CNO, POC, AJO, EMT, RAL, SBD): ..CLASN, ..OYVEY, ..PMD (LANDO..PMD to avoid R2508)"
@@ -106,17 +107,17 @@ rules:
     source: "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL LAS Jets, effective 2026-04-26"
     text: "LAS jets: ..BASIC, .Q174.FLCHR, .J92.BTY (non-RNAV)"
     destinations: [KLAS]
-    rule: { kind: route, tokens: [BASIC, Q174, FLCHR, J92, BTY], classes: [J] }
+    rule: { kind: route, tokens: [BASIC, Q174, FLCHR, J92, BTY], non_rnav_tokens: [J92, BTY], classes: [J] }
   - id: LOA-ZLA-LAS-NONJET-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL LAS Non-Jets, effective 2026-04-26"
     text: "LAS non-jets: ..FUULL or .J92 (non-RNAV)"
     destinations: [KLAS]
-    rule: { kind: route, tokens: [FUULL, J92], classes: [P, T] }
+    rule: { kind: route, tokens: [FUULL, J92], non_rnav_tokens: [J92], classes: [P, T] }
   - id: LOA-ZLA-HND-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Las Vegas Terminal Area, ALL HND, effective 2026-04-26"
     text: "HND: ..FUULL or .J92 (non-RNAV)"
     destinations: [KHND]
-    rule: { kind: route, tokens: [FUULL, J92] }
+    rule: { kind: route, tokens: [FUULL, J92], non_rnav_tokens: [J92] }
   - id: LOA-ZLA-SBA-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Other Airports, ALL SBA, effective 2026-04-26"
     text: "SBA via GVO"

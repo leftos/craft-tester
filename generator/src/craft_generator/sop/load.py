@@ -1676,6 +1676,17 @@ def _loa_route_classes(row: _Row) -> tuple[AircraftClass, ...] | None:
     return classes
 
 
+def _loa_non_rnav_tokens(row: _Row, tokens: tuple[str, ...]) -> tuple[str, ...] | None:
+    non_rnav = row.optional_texts("non_rnav_tokens")
+    for index, token in enumerate(non_rnav or ()):
+        if token not in tokens:
+            raise ValueError(
+                f"{row.where}.non_rnav_tokens[{index}]: {token!r} is not one of the row's tokens {list(tokens)}; "
+                "`non_rnav_tokens` names the tokens of the row a non-RNAV flight may use"
+            )
+    return non_rnav
+
+
 def _loa_rule_kind(kind: LoaRuleKindName, row: _Row) -> LoaRuleKind:
     if kind == "parity_rotated":
         return ParityRotatedRule(
@@ -1683,10 +1694,12 @@ def _loa_rule_kind(kind: LoaRuleKindName, row: _Row) -> LoaRuleKind:
             odd_course_to=_check_course(row.number("odd_course_to"), f"{row.where}.odd_course_to"),
         )
     if kind == "route":
+        tokens = row.texts("tokens")
         return RouteTokenRule(
-            tokens=row.texts("tokens"),
+            tokens=tokens,
             classes=_loa_route_classes(row),
             rnav_only=bool(row.optional_flag("rnav_only", default=False)),
+            non_rnav_tokens=_loa_non_rnav_tokens(row, tokens),
         )
     return EvenAltitudeRule() if kind == "even" else OddAltitudeRule()
 
