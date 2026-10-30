@@ -26,6 +26,7 @@
 
     "paths": {
       "@data/*": ["../data/*"],
+      "@fixtures/*": ["../fixtures/*"],
       "@/*": ["./src/*"]
     }
   },

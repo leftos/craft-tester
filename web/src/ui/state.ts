@@ -1,4 +1,4 @@
-import type { AirportData, AltitudePhrase, RouteTemplate } from '@/data/schema.ts';
+import type { AirportData, AltitudePhrase, RouteTemplate, Scenario } from '@/data/schema.ts';
 import { AltitudePhraseSchema, RouteTemplateSchema } from '@/data/schema.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { EXPECT_CHOICES } from '@/rules/options.ts';
@@ -12,7 +12,7 @@ import type {
   SetParams,
 } from '@/scenario/filter.ts';
 import { hashFor } from '@/scenario/filter.ts';
-import { buildScenario } from '@/ui/session.ts';
+import { buildScenario, buildScenarioFrom } from '@/ui/session.ts';
 import type { ScenarioView } from '@/ui/session.ts';
 import type { Attempt } from '@/ui/solved.ts';
 
@@ -386,6 +386,41 @@ export function newSession(
     boxesSubmitted: false,
     submitted: false,
     revisit: previous,
+  };
+}
+
+/**
+ * Starts a session on a plan given whole rather than drawn.
+ *
+ * The seed is meaningless for a fixed session: the plan on screen is the same whichever seed it
+ * carried, so the caller writes no seed hash with it and saves no attempt for it.
+ *
+ * @param airport The airport data the plan is filed at.
+ * @param scenario The plan the session runs on.
+ * @param settings The half the session trains, how the student answers the clearance, and the
+ *   reading they are held to.
+ * @returns The state the page renders from.
+ */
+export function newSessionFrom(
+  airport: AirportData,
+  scenario: Scenario,
+  settings: SessionSettings,
+): AppState {
+  const { filter, mode, input, fullRoute } = settings;
+  return {
+    airport,
+    seed: 0,
+    filter,
+    mode,
+    input,
+    fullRoute,
+    view: buildScenarioFrom(airport, scenario, mode),
+    picks: EMPTY_PICKS,
+    text: '',
+    boxes: EMPTY_BOXES,
+    boxesSubmitted: false,
+    submitted: false,
+    revisit: undefined,
   };
 }
 

@@ -11,7 +11,7 @@ import { speakClearance } from '@/rules/speak.ts';
 import type { SpokenClearance } from '@/rules/speak.ts';
 import type { ResolvedClearance, Unresolved } from '@/rules/types.ts';
 import type { AmendmentScenario } from '@/scenario/amend.ts';
-import { generateAmendmentScenario } from '@/scenario/amend.ts';
+import { amendmentScenarioOf, generateAmendmentScenario } from '@/scenario/amend.ts';
 import type { Mode, ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import { createRng } from '@/scenario/rng.ts';
@@ -202,6 +202,13 @@ export function modelCleared(view: AmendmentView): Pick<ClearedPlan, 'plan' | 'c
   return { plan: view.drawn.result.corrected, clearance: view.clearance };
 }
 
+/** Reads the clearance the SOP issues for a plan that is already correct. */
+function clearanceViewOf(generated: Scenario, airport: AirportData): ScenarioView {
+  const result = resolveClearance(generated, airport, 'proposed');
+  if (!result.ok) return unresolvedView(result.unresolved);
+  return { kind: 'clearance', generated, clearance: result.clearance };
+}
+
 /** Draws a plan that is already correct, and the clearance the SOP issues for it. */
 function buildClearanceView(
   airport: AirportData,
@@ -214,9 +221,7 @@ function buildClearanceView(
   } catch (error) {
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }
-  const result = resolveClearance(generated, airport, 'proposed');
-  if (!result.ok) return unresolvedView(result.unresolved);
-  return { kind: 'clearance', generated, clearance: result.clearance };
+  return clearanceViewOf(generated, airport);
 }
 
 /**
@@ -237,6 +242,13 @@ export function acceptedClearance(
   return result.ok ? result.clearance : null;
 }
 
+/** Reads the clearance for the plan an amendment scenario is corrected into. */
+function amendmentViewOf(drawn: AmendmentScenario, airport: AirportData): ScenarioView {
+  const result = resolveAmendedClearance(drawn.filed, drawn.result.corrected, airport, 'proposed');
+  if (!result.ok) return unresolvedView(result.unresolved);
+  return { kind: 'amendment', drawn, clearance: result.clearance };
+}
+
 /** Draws a plan that needs amending, and the clearance read for it once it is corrected. */
 function buildAmendmentView(
   airport: AirportData,
@@ -249,9 +261,7 @@ function buildAmendmentView(
   } catch (error) {
     return { kind: 'unresolved', reasons: [reasonOf(error)] };
   }
-  const result = resolveAmendedClearance(drawn.filed, drawn.result.corrected, airport, 'proposed');
-  if (!result.ok) return unresolvedView(result.unresolved);
-  return { kind: 'amendment', drawn, clearance: result.clearance };
+  return amendmentViewOf(drawn, airport);
 }
 
 /**
@@ -274,6 +284,32 @@ export function buildScenario(
 ): ScenarioView {
   if (mode === 'amendment') return buildAmendmentView(airport, seed, filter);
   return buildClearanceView(airport, seed, filter);
+}
+
+/**
+ * Reads the clearance for a plan given whole rather than drawn, which is how a session runs on a
+ * settled fixture.
+ *
+ * Clearance mode reads the clearance the SOP issues for the plan as given. Amendment mode reads the
+ * amendments the engine raises for it: nothing was injected into the plan, so it has no faults, and
+ * the clearance is the one read for the plan the controller corrects it into.
+ *
+ * @param airport The airport data the plan is filed at.
+ * @param scenario The plan the session runs on.
+ * @param mode Which half the session trains.
+ * @returns The scenario with its clearance, or the reasons no clearance could be issued.
+ */
+export function buildScenarioFrom(
+  airport: AirportData,
+  scenario: Scenario,
+  mode: Mode,
+): ScenarioView {
+  if (mode === 'amendment') {
+    const drawn = amendmentScenarioOf(scenario, airport);
+    if ('unresolved' in drawn) return unresolvedView(drawn.unresolved);
+    return amendmentViewOf(drawn, airport);
+  }
+  return clearanceViewOf(scenario, airport);
 }
 
 /** The spoken name of a destination, falling back to its identifier. */

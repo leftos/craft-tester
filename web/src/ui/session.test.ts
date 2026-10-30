@@ -1,5 +1,9 @@
+import swa1740 from '@fixtures/koak/worksheets/phraseology-practice-1a-swa1740.json';
+import jsx201 from '@fixtures/koak/worksheets/amendment-practice-1a-jsx201.json';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { AirportData, Amendment } from '@/data/schema.ts';
+import { FixtureSchema } from '@/data/schema.ts';
+import { withCurrentVersions } from '@/rules/fixtureVersions.ts';
 import { resolveAmendedClearance } from '@/rules/amend/engine.ts';
 import type { Box, BoxAnswer, BoxAnswers } from '@/rules/amend/grade.ts';
 import { studentPlan } from '@/rules/amend/grade.ts';
@@ -13,6 +17,7 @@ import { craftGroups } from '@/ui/craftForm.ts';
 import type { CraftField, CraftGroup } from '@/ui/craftForm.ts';
 import {
   buildScenario,
+  buildScenarioFrom,
   clearedPlan,
   listAirports,
   loadAirportData,
@@ -409,5 +414,40 @@ describe('the CRAFT form', () => {
   it('refuses to submit a form with a dropdown still blank', () => {
     const state = newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'));
     expect(withSubmitted(state).submitted).toBe(false);
+  });
+});
+
+describe('buildScenarioFrom', () => {
+  let koak: AirportData;
+
+  beforeAll(async () => {
+    koak = await loadAirportData('KOAK');
+  });
+
+  it('builds the clearance a settled fixture expects, from the plan as filed', () => {
+    const fixture = withCurrentVersions(FixtureSchema.parse(swa1740), koak);
+    const view = buildScenarioFrom(koak, fixture.scenario, 'clearance');
+    if (view.kind !== 'clearance') throw new Error(`the fixture resolved to ${view.kind}`);
+    expect(view.generated).toEqual(fixture.scenario);
+    const expected = fixture.expected;
+    if (expected === undefined || !('route' in expected)) {
+      throw new Error('swa1740 expects no clearance');
+    }
+    expect(view.clearance.route.value.template).toBe(expected.route.template);
+    expect(view.clearance.route.value.fix).toBe(expected.route.fix);
+  });
+
+  it('builds the amendment scenario a settled as-filed fixture files', () => {
+    const fixture = withCurrentVersions(FixtureSchema.parse(jsx201), koak);
+    const view = buildScenarioFrom(koak, fixture.scenario, 'amendment');
+    if (view.kind !== 'amendment') throw new Error(`the fixture resolved to ${view.kind}`);
+    expect(view.drawn.filed).toEqual(fixture.scenario);
+    expect(view.drawn.result.amendments).toEqual([]);
+    expect(view.drawn.faults).toEqual([]);
+  });
+
+  it('parses both tour fixtures, and both are settled', () => {
+    expect(FixtureSchema.parse(swa1740).status).toBe('settled');
+    expect(FixtureSchema.parse(jsx201).status).toBe('settled');
   });
 });

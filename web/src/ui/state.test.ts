@@ -1,5 +1,9 @@
+import swa1740 from '@fixtures/koak/worksheets/phraseology-practice-1a-swa1740.json';
+import jsx201 from '@fixtures/koak/worksheets/amendment-practice-1a-jsx201.json';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { AirportData } from '@/data/schema.ts';
+import { FixtureSchema } from '@/data/schema.ts';
+import { withCurrentVersions } from '@/rules/fixtureVersions.ts';
 import type { BoxAnswer } from '@/rules/amend/grade.ts';
 import type { PlayerPicks } from '@/rules/types.ts';
 import type { Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
@@ -21,6 +25,7 @@ import {
   EMPTY_BOXES,
   EMPTY_PICKS,
   newSession,
+  newSessionFrom,
   phaseOf,
   routeReadingOf,
   shareLink,
@@ -883,5 +888,31 @@ describe('withInputKind', () => {
     expect(phaseOf(after)).toBe(phaseOf(before));
     expect(viewKey(after)).not.toBe(viewKey(before));
     expect(viewKey(withInputKind(after, 'dropdowns', undefined))).toBe(viewKey(before));
+  });
+});
+
+describe('newSessionFrom', () => {
+  let koak: AirportData;
+
+  beforeAll(async () => {
+    koak = await loadAirportData('KOAK');
+  });
+
+  it('opens a fixed clearance scenario with no seed and nothing answered', () => {
+    const fixture = withCurrentVersions(FixtureSchema.parse(swa1740), koak);
+    const state = newSessionFrom(koak, fixture.scenario, dropdowns(ANY_SCENARIO, 'clearance'));
+    expect(state.seed).toBe(0);
+    expect(state.revisit).toBeUndefined();
+    expect(state.picks).toStrictEqual(EMPTY_PICKS);
+    expect(state.boxes).toStrictEqual(EMPTY_BOXES);
+    expect(state.boxesSubmitted).toBe(false);
+    expect(state.submitted).toBe(false);
+    expect(state.view.kind).toBe('clearance');
+  });
+
+  it('opens a fixed amendment scenario', () => {
+    const fixture = withCurrentVersions(FixtureSchema.parse(jsx201), koak);
+    const state = newSessionFrom(koak, fixture.scenario, dropdowns(ANY_SCENARIO, 'amendment'));
+    expect(state.view.kind).toBe('amendment');
   });
 });

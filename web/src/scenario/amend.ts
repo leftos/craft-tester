@@ -4,6 +4,7 @@ import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
 import { hasSpecialHandling } from '@/rules/handling.ts';
+import type { Unresolved } from '@/rules/types.ts';
 import { isSidToken, rnavElements } from '@/rules/route.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
@@ -67,6 +68,23 @@ function acceptedAmendments(
   if (!hasSpecialHandling(filed, airport)) return null;
   const result = resolveAmendments(filed, airport, 'accepted');
   return result.ok ? result : null;
+}
+
+/**
+ * The amendment scenario for a plan given whole rather than drawn: nothing was injected into it,
+ * so it has no faults, and the engine alone says which boxes it amends.
+ *
+ * @param filed The plan as filed.
+ * @param airport The airport data.
+ * @returns The scenario, or the gaps the engine could not answer.
+ */
+export function amendmentScenarioOf(
+  filed: Scenario,
+  airport: AirportData,
+): AmendmentScenario | { unresolved: Unresolved[] } {
+  const result = resolveAmendments(filed, airport, 'proposed');
+  if (!result.ok) return { unresolved: result.unresolved };
+  return { filed, result, acceptedResult: acceptedAmendments(filed, airport), faults: [] };
 }
 
 /** A draw the injection threw away, and why, which is the caller's cue to draw again. */
