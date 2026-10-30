@@ -7,16 +7,38 @@ import {
   createFullRouteStore,
   createHomeStore,
   createInputKindStore,
+  createTourProgressStore,
+  createTourSeenStore,
 } from '@/ui/preferences.ts';
 
 const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
 
 /** A storage backed by a Map, which is how the browser's behaves when nothing goes wrong. */
-function mapStorage(entries = new Map<string, string>()): Pick<Storage, 'getItem' | 'setItem'> {
+function mapStorage(
+  entries = new Map<string, string>(),
+): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
   return {
     getItem: (key) => entries.get(key) ?? null,
     setItem: (key, value) => {
       entries.set(key, value);
+    },
+    removeItem: (key) => {
+      entries.delete(key);
+    },
+  };
+}
+
+/** A storage that refuses every operation, as a browser with storage blocked does. */
+function refusingStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> {
+  return {
+    getItem: () => {
+      throw new Error('reads denied');
+    },
+    setItem: () => {
+      throw new Error('quota exceeded');
+    },
+    removeItem: () => {
+      throw new Error('writes denied');
     },
   };
 }
@@ -186,6 +208,78 @@ describe('createFullRouteStore', () => {
       none.save(true);
     }).not.toThrow();
     expect(none.load()).toBeUndefined();
+  });
+});
+
+describe('createTourSeenStore', () => {
+  it('remembers that the tour was seen, under one key for the whole browser', () => {
+    const entries = new Map<string, string>();
+    const store = createTourSeenStore(mapStorage(entries));
+    expect(store.load()).toBeUndefined();
+    store.save(true);
+    expect(store.load()).toBe(true);
+    expect([...entries]).toStrictEqual([['craft-tester:tour-seen', 'true']]);
+  });
+
+  it('reads a malformed value as nothing remembered', () => {
+    for (const raw of ['"true"', '1', '{not json', 'null']) {
+      const entries = new Map([['craft-tester:tour-seen', raw]]);
+      expect(createTourSeenStore(mapStorage(entries)).load()).toBeUndefined();
+    }
+  });
+
+  it('survives a storage that refuses both operations, and no storage at all', () => {
+    for (const store of [createTourSeenStore(refusingStorage()), createTourSeenStore(undefined)]) {
+      expect(() => {
+        store.save(true);
+      }).not.toThrow();
+      expect(store.load()).toBeUndefined();
+    }
+  });
+});
+
+describe('createTourProgressStore', () => {
+  const progress = { version: 3, part: 'amend', step: 4 } as const;
+
+  it('loads back the progress it saved, under one key, and forgets it once cleared', () => {
+    const entries = new Map<string, string>();
+    const store = createTourProgressStore(mapStorage(entries));
+    expect(store.load()).toBeUndefined();
+    store.save(progress);
+    expect(store.load()).toStrictEqual(progress);
+    expect([...entries.keys()]).toStrictEqual(['craft-tester:tour-progress']);
+    store.clear();
+    expect(store.load()).toBeUndefined();
+    expect(entries.size).toBe(0);
+  });
+
+  it('reads garbage as no progress', () => {
+    for (const raw of [
+      '{not json',
+      'null',
+      '"amend"',
+      JSON.stringify({ ...progress, part: 'home' }),
+      JSON.stringify({ ...progress, step: -1 }),
+      JSON.stringify({ ...progress, step: 1.5 }),
+      JSON.stringify({ part: 'clearance', step: 2 }),
+      JSON.stringify({ ...progress, extra: true }),
+    ]) {
+      const entries = new Map([['craft-tester:tour-progress', raw]]);
+      expect(createTourProgressStore(mapStorage(entries)).load()).toBeUndefined();
+    }
+  });
+
+  it('survives a storage that refuses every operation, and no storage at all', () => {
+    for (const store of [
+      createTourProgressStore(refusingStorage()),
+      createTourProgressStore(undefined),
+    ]) {
+      expect(() => {
+        store.save(progress);
+        store.clear();
+      }).not.toThrow();
+      expect(store.load()).toBeUndefined();
+    }
   });
 });
 

@@ -123,6 +123,7 @@ function revealBoxes(routeReading: RouteReading): { heading: string; text: strin
     grades: [typedCorrect],
     spoken,
     routeReading,
+    nextActions: true,
     onNext: () => undefined,
     onRetry: () => undefined,
   });
@@ -280,6 +281,7 @@ function resultsOf(grades: readonly Grade[]): HTMLElement {
     grades,
     spoken,
     routeReading: 'abbreviated',
+    nextActions: true,
     onNext: () => undefined,
     onRetry: () => undefined,
   });

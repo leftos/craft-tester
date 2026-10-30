@@ -53,6 +53,8 @@ describe('routeOf', () => {
         setSeed: Number.parseInt('k3f9', 36),
       },
     ],
+    ['#/tutorial', { kind: 'tutorial', part: 'clearance' }],
+    ['#/tutorial/amend', { kind: 'tutorial', part: 'amend' }],
   ])('reads %s', (hash, route) => {
     expect(routeOf(hash)).toEqual(route);
   });
@@ -67,7 +69,8 @@ describe('routeOf', () => {
     '#/KOAK/amend',
     '#/KOAK/amend/practice/',
     '#/KOA/amend/practice',
-    '#/tutorial',
+    '#/tutorial/x',
+    '#/tutorial/amend/x',
     '#/KOAK/amend/test',
     '#/KOAK/amend/quiz',
     '#/KOAK/amendment/practice',
@@ -97,6 +100,8 @@ describe('hrefOf', () => {
       },
       '#/KOAK/clearance/test/k3f9',
     ],
+    [{ kind: 'tutorial', part: 'clearance' }, '#/tutorial'],
+    [{ kind: 'tutorial', part: 'amend' }, '#/tutorial/amend'],
   ])('writes %o as %s', (route, href) => {
     expect(hrefOf(route)).toBe(href);
   });
@@ -107,6 +112,8 @@ describe('hrefOf', () => {
     { kind: 'newTest', icao: 'KOAK', mode: 'amendment', n: 10, minutes: 20, query: 'i=text' },
     { kind: 'newTest', icao: 'KSFO', mode: 'clearance', n: 5, minutes: 0, query: '' },
     { kind: 'continueTest', icao: 'KOAK', mode: 'amendment', setSeed: 123_456_789 },
+    { kind: 'tutorial', part: 'clearance' },
+    { kind: 'tutorial', part: 'amend' },
   ])('reads back %o', (route) => {
     expect(routeOf(hrefOf(route))).toEqual(route);
   });

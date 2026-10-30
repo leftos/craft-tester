@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { InputKind, Mode, ScenarioFilter } from '@/scenario/filter.ts';
 import { MAX_SET_MINUTES, MAX_SET_STRIPS } from '@/scenario/filter.ts';
+import type { TutorialPart } from '@/ui/router.ts';
+import { TUTORIAL_PART_NAMES } from '@/ui/router.ts';
 
 /**
  * The shape a remembered filter has to have to be loaded back.
@@ -207,6 +209,161 @@ export function browserFullRouteStore(): FullRouteStore {
     return createFullRouteStore(globalThis.localStorage);
   } catch {
     return createFullRouteStore(undefined);
+  }
+}
+
+/** The shape a remembered "tour seen" mark has to have to be loaded back. */
+const TourSeenSchema = z.boolean();
+
+/** The storage key the tour being seen is remembered under: one per browser. */
+const TOUR_SEEN_KEY = 'craft-tester:tour-seen';
+
+/** Remembers whether a viewer finished or skipped the tour, in this browser only. */
+export type TourSeenStore = { load(): boolean | undefined; save(seen: boolean): void };
+
+/**
+ * Builds a tour-seen store over one storage.
+ *
+ * Remembering the mark is a convenience, as the input kind is, so every failure the storage can
+ * raise — a refused read, a full quota, a value another version wrote — reads as "nothing
+ * remembered", and the caller treats the tour as not yet seen.
+ *
+ * @param storage The storage to read and write, or `undefined` where the browser offers none.
+ * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
+ */
+export function createTourSeenStore(storage: PreferenceStorage | undefined): TourSeenStore {
+  if (storage === undefined) {
+    return {
+      load: () => undefined,
+      save: () => {
+        // Without a storage there is nowhere to remember the tour was seen.
+      },
+    };
+  }
+  return {
+    load: () => {
+      try {
+        const raw = storage.getItem(TOUR_SEEN_KEY);
+        if (raw === null) return undefined;
+        const parsed = TourSeenSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? parsed.data : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    save: (seen) => {
+      try {
+        storage.setItem(TOUR_SEEN_KEY, JSON.stringify(seen));
+      } catch {
+        // A storage that refuses the write costs the viewer the mark, so the tour may open again.
+      }
+    },
+  };
+}
+
+/**
+ * Builds the tour-seen store the page runs on.
+ *
+ * @returns A store over `localStorage`, or one that remembers nothing where reaching it throws.
+ */
+export function browserTourSeenStore(): TourSeenStore {
+  try {
+    return createTourSeenStore(globalThis.localStorage);
+  } catch {
+    return createTourSeenStore(undefined);
+  }
+}
+
+/**
+ * How far a viewer got through one part of the tour.
+ *
+ * @property version The version of the step lists the step counts in, so a changed list is not
+ *   resumed part way.
+ * @property part The part of the tour.
+ * @property step The index of the step the part was on.
+ */
+export type TourProgress = { version: number; part: TutorialPart; step: number };
+
+/** The shape stored tour progress has to have to be loaded back. */
+const TourProgressSchema = z.strictObject({
+  version: z.number().int(),
+  part: z.enum(TUTORIAL_PART_NAMES),
+  step: z.number().int().min(0),
+});
+
+/** The storage key tour progress is stored under: one per browser, whichever part it is. */
+const TOUR_PROGRESS_KEY = 'craft-tester:tour-progress';
+
+/** Remembers the step a viewer left the tour on, in this browser only, until it ends. */
+export type TourProgressStore = {
+  load(): TourProgress | undefined;
+  save(progress: TourProgress): void;
+  clear(): void;
+};
+
+/** The storage members the progress store touches, which forgets as well as remembers. */
+type ClearableStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+
+/**
+ * Builds a tour-progress store over one storage.
+ *
+ * Resuming the tour is a convenience, as the filter is, so every failure the storage can raise — a
+ * refused read, a full quota, a value another version wrote — reads as "no progress", and the part
+ * starts from its first step.
+ *
+ * @param storage The storage to read and write, or `undefined` where the browser offers none.
+ * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
+ */
+export function createTourProgressStore(storage: ClearableStorage | undefined): TourProgressStore {
+  if (storage === undefined) {
+    return {
+      load: () => undefined,
+      save: () => {
+        // Without a storage there is nowhere to remember the step.
+      },
+      clear: () => {
+        // Without a storage there is nothing to forget.
+      },
+    };
+  }
+  return {
+    load: () => {
+      try {
+        const raw = storage.getItem(TOUR_PROGRESS_KEY);
+        if (raw === null) return undefined;
+        const parsed = TourProgressSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? parsed.data : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    save: (progress) => {
+      try {
+        storage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+      } catch {
+        // A storage that refuses the write costs the viewer the resume, nothing more.
+      }
+    },
+    clear: () => {
+      try {
+        storage.removeItem(TOUR_PROGRESS_KEY);
+      } catch {
+        // A storage that refuses the removal leaves progress that a later part start overrides.
+      }
+    },
+  };
+}
+
+/**
+ * Builds the tour-progress store the page runs on.
+ *
+ * @returns A store over `localStorage`, or one that remembers nothing where reaching it throws.
+ */
+export function browserTourProgressStore(): TourProgressStore {
+  try {
+    return createTourProgressStore(globalThis.localStorage);
+  } catch {
+    return createTourProgressStore(undefined);
   }
 }
 

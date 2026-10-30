@@ -14,6 +14,8 @@ export type ResultsProps = {
   spoken: SpokenClearance;
   /** The reading the student was held to, which is the one the reveal shows on frequency. */
   routeReading: RouteReading;
+  /** Whether the results offer the next strip and another try at this one; the tour's do not. */
+  nextActions: boolean;
   onNext: () => void;
   onRetry: () => void;
 };
@@ -645,9 +647,10 @@ function resultsBody(props: ResultsProps): HTMLElement[] {
 
 /**
  * The two ways on from a graded clearance, the next strip first, and the slot the variants of this
- * strip are offered in.
+ * strip are offered in; none of them where the results offer no way on.
  */
 function actionRows(props: ResultsProps): HTMLElement[] {
+  if (!props.nextActions) return [];
   const row = el('div', 'actions');
   row.append(
     button('Next strip', 'primary', props.onNext),

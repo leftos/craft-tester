@@ -24,6 +24,9 @@ import { renderTextForm } from '@/ui/textForm.ts';
 /** The view an amendment session renders from. */
 type AmendmentView = Extract<ScenarioView, { kind: 'amendment' }>;
 
+/** A whole answer to an amendment session: the strip's boxes and the clearance after them. */
+type AmendmentAttempt = Extract<AppState['revisit'], { kind: 'amendment' }>;
+
 /**
  * A built panel set, split between the two regions of the page, and how to write a later state of
  * the same phase into it.
@@ -135,7 +138,8 @@ function revisitPanels(
   state: AppState,
   view: AmendmentView,
   handlers: AmendmentHandlers,
-  attempt: Extract<AppState['revisit'], { kind: 'amendment' }>,
+  attempt: AmendmentAttempt,
+  nextActions: boolean,
 ): Panels {
   const { drawn } = view;
   const cleared = clearedPlan(view, attempt.boxes, state.airport);
@@ -156,6 +160,7 @@ function revisitPanels(
         }),
         spoken: spokenFor(cleared.plan, drawn.filed, cleared.clearance, state.airport),
         routeReading: routeReadingOf(state),
+        nextActions,
         onNext: handlers.onNewScenario,
         onRetry: handlers.onRetry,
       }),
@@ -275,11 +280,11 @@ function resultPanels(
   state: AppState,
   view: AmendmentView,
   handlers: AmendmentHandlers,
-  answers: BoxAnswers,
-  answer: ClearanceAnswer<AmendmentPicks>,
+  attempt: AmendmentAttempt,
+  nextActions: boolean,
 ): Panels {
   const { drawn } = view;
-  const cleared = clearedPlan(view, answers, state.airport);
+  const cleared = clearedPlan(view, attempt.boxes, state.airport);
   return {
     rail: [
       renderStrip(drawn.filed, state.airport, state.seed, 'Flight plan as filed', asFiled(state)),
@@ -294,11 +299,12 @@ function resultPanels(
           drawn,
           cleared,
           airport: state.airport,
-          answer,
+          answer: attempt,
           routeReading: routeReadingOf(state),
         }),
         spoken: spokenFor(cleared.plan, drawn.filed, cleared.clearance, state.airport),
         routeReading: routeReadingOf(state),
+        nextActions,
         onNext: handlers.onNewScenario,
         onRetry: handlers.onRetry,
       }),
@@ -313,6 +319,7 @@ function resultPanels(
  * @param state The state the page renders from.
  * @param view The plan to amend, and the clearance its corrected form earns.
  * @param handlers What the panels call back into.
+ * @param nextActions Whether the results offer the next strip and another try at this one.
  * @returns The rail and work panels, each in the order the page lays them out, with the sync of
  *   the form among them.
  */
@@ -320,11 +327,12 @@ export function renderAmendmentPanels(
   state: AppState,
   view: AmendmentView,
   handlers: AmendmentHandlers,
+  nextActions: boolean,
 ): Panels {
   const phase = phaseOf(state);
   const revisit = state.revisit;
   if (phase === 'amendment-revisit' && revisit?.kind === 'amendment') {
-    return revisitPanels(state, view, handlers, revisit);
+    return revisitPanels(state, view, handlers, revisit, nextActions);
   }
   const answers = toBoxAnswers(state.boxes);
   if (phase === 'amending' || answers === undefined) {
@@ -334,5 +342,6 @@ export function renderAmendmentPanels(
   if (phase === 'clearing' || answer === undefined) {
     return clearingPanels(state, view, handlers, answers);
   }
-  return resultPanels(state, view, handlers, answers, answer);
+  const attempt: AmendmentAttempt = { kind: 'amendment', boxes: answers, ...answer };
+  return resultPanels(state, view, handlers, attempt, nextActions);
 }

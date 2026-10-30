@@ -6,14 +6,27 @@ import { MAX_SET_MINUTES, MAX_SET_STRIPS, parseSetSeed } from '@/scenario/filter
  *
  * `query` is the `&`-separated settings after the path's `?`, kept verbatim for the hash readers in
  * `filter.ts`. `strip` is every hash that does not start with `#/`: the `#s=…` links the trainer
- * writes, which open a strip as they always have.
+ * writes, which open a strip as they always have. `tutorial` is one part of the guided tour.
  */
 export type Route =
   | { kind: 'home' }
   | { kind: 'practice'; icao: string; mode: Mode; query: string }
   | { kind: 'newTest'; icao: string; mode: Mode; n: number; minutes: number; query: string }
   | { kind: 'continueTest'; icao: string; mode: Mode; setSeed: number }
+  | { kind: 'tutorial'; part: TutorialPart }
   | { kind: 'strip' };
+
+/** The parts of the guided tour that have a route: clearance first, then Amend. */
+export const TUTORIAL_PART_NAMES = ['clearance', 'amend'] as const;
+
+/** One part of the guided tour that has a route. */
+export type TutorialPart = (typeof TUTORIAL_PART_NAMES)[number];
+
+/** The path each tutorial part is written as after `#/`. */
+const TUTORIAL_PATHS: Readonly<Record<TutorialPart, string>> = {
+  clearance: 'tutorial',
+  amend: 'tutorial/amend',
+};
 
 /** A route that has an `#/…` link of its own. */
 export type PageRoute = Exclude<Route, { kind: 'strip' }>;
@@ -53,8 +66,13 @@ function testRoute(icao: string, mode: Mode, rawSpec: string, query: string): Ro
   return setSeed === undefined ? HOME : { kind: 'continueTest', icao, mode, setSeed };
 }
 
-/** Reads the path after `#/`: `<ICAO>/<mode>/practice` or `<ICAO>/<mode>/test/<spec>`. */
+/**
+ * Reads the path after `#/`: `tutorial` or `tutorial/amend`, `<ICAO>/<mode>/practice`, or
+ * `<ICAO>/<mode>/test/<spec>`.
+ */
 function pathRoute(path: string, query: string): Route {
+  if (path === TUTORIAL_PATHS.clearance) return { kind: 'tutorial', part: 'clearance' };
+  if (path === TUTORIAL_PATHS.amend) return { kind: 'tutorial', part: 'amend' };
   const segments = path.split('/');
   const [rawIcao = '', rawMode = '', format, spec] = segments;
   const icao = rawIcao.toUpperCase();
@@ -98,10 +116,11 @@ function withQuery(path: string, query: string): string {
  * Writes the link a route opens from, which `routeOf` reads back as the same route.
  *
  * @param route The route.
- * @returns The hash, e.g. `#/KOAK/amend/test/10x20?i=text`, or `#/` for home.
+ * @returns The hash, e.g. `#/KOAK/amend/test/10x20?i=text`, `#/tutorial/amend`, or `#/` for home.
  */
 export function hrefOf(route: PageRoute): string {
   if (route.kind === 'home') return '#/';
+  if (route.kind === 'tutorial') return `#/${TUTORIAL_PATHS[route.part]}`;
   const base = `#/${route.icao}/${MODE_SEGMENTS[route.mode]}`;
   switch (route.kind) {
     case 'practice':

@@ -1211,7 +1211,8 @@ button.icon[aria-pressed='true'] {
 }
 
 button.secondary,
-a.button.secondary {
+a.button.secondary,
+.home-bar a.home-tour {
   padding: 6px 14px;
   border: 1px solid var(--control-line);
   border-radius: 6px;
@@ -1224,8 +1225,14 @@ a.button.secondary {
 }
 
 button.secondary:hover,
-a.button.secondary:hover {
+a.button.secondary:hover,
+.home-bar a.home-tour:hover {
   background: var(--accent-soft);
+}
+
+/* The tour link reads as the bar's secondary button, which a link does not underline. */
+.home-bar a.home-tour {
+  text-decoration: none;
 }
 
 /* The slot the variants of this strip are offered in, empty until there are any. */

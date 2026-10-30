@@ -4,7 +4,7 @@ import type { TourStep } from '@/ui/tour.ts';
  * The version of the step lists below; a change to their steps bumps it, so progress stored against
  * an older list is not resumed on the new one.
  */
-export const TOUR_STEPS_VERSION = 1;
+export const TOUR_STEPS_VERSION = 2;
 
 /** The clearance part, run over KOAK `ws-koak-phraseology-practice-1a-swa1740` in clearance mode. */
 export const CLEARANCE_TOUR: readonly TourStep[] = [
@@ -23,7 +23,7 @@ export const CLEARANCE_TOUR: readonly TourStep[] = [
   {
     anchor: 'procedure',
     title: 'Clearance limit and departure',
-    body: 'These are filled in for you: Southwest 1740 is cleared to Los Angeles on the Candle departure, the SID the SOP assigns this route from runway 30.',
+    body: 'The departure is filled in for you: the Candle, the SID the SOP assigns this route from runway 30. The clearance limit above it, Los Angeles, is too.',
     advance: 'next',
   },
   {
@@ -71,7 +71,7 @@ export const CLEARANCE_TOUR: readonly TourStep[] = [
   {
     anchor: 'results',
     title: 'Results',
-    body: 'Each row shows what you picked, what the SOP expects and the rule behind it. Read it aloud to hear the whole clearance.',
+    body: 'Each row shows what you picked, what the SOP expects and the rule behind it.',
     advance: 'next',
     continueLabel: 'Next: amending a flight plan',
   },
@@ -112,7 +112,7 @@ export const AMEND_TOUR: readonly TourStep[] = [
   {
     anchor: 'procedure',
     title: 'Now clear it',
-    body: 'With the plan checked, you clear it as in the first part. Nothing changed here, so you would read the clearance for the plan as filed.',
+    body: 'With the plan checked, you now clear it. In Amend mode you also pick the departure, since an amendment can change it; here nothing changed, so the clearance reads the plan as filed.',
     advance: 'next',
     continueLabel: 'Next: test yourself',
   },
@@ -123,7 +123,7 @@ export const HOME_TOUR: readonly TourStep[] = [
   {
     anchor: 'home-test',
     title: 'Test yourself',
-    body: 'When you are ready, a test draws several strips against the clock, and shows your score at the end. Start one from here.',
+    body: 'When you are ready, a test draws several strips, timed if you choose, and shows your score at the end. Start one from here.',
     advance: 'next',
   },
 ];

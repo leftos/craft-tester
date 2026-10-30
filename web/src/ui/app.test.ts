@@ -10,6 +10,7 @@ import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import { selectOf, textAreaOf, textOf } from '@/ui/dom.ts';
 import { buildScenario, clearedPlan, loadAirportData, spokenFor } from '@/ui/session.ts';
 import { picksProcedure, shareLink } from '@/ui/state.ts';
+import { CLEARANCE_TOUR, TOUR_STEPS_VERSION } from '@/ui/tourSteps.ts';
 
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
@@ -830,9 +831,57 @@ function followLink(hash: string): void {
   globalThis.dispatchEvent(new HashChangeEvent('hashchange'));
 }
 
+/** The key the tour being seen is remembered under. */
+const TOUR_SEEN_KEY = 'craft-tester:tour-seen';
+
+/** The key the step a tour part was left on is stored under. */
+const TOUR_PROGRESS_KEY = 'craft-tester:tour-progress';
+
+/** The key the remembered way of answering, dropdowns or typing, is stored under. */
+const INPUT_KEY = 'craft-tester:input';
+
+/** The key the remembered full route choice is stored under. */
+const FULL_ROUTE_KEY = 'craft-tester:full-route';
+
+/** Presses Escape on the page, where the tour listens for it. */
+function pressEscape(): void {
+  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', cancelable: true }));
+}
+
+/** The tour's card, which lives in the document's body, outside the app's root. */
+function tourCard(): HTMLElement {
+  const card = document.querySelector('.tour-card');
+  if (!(card instanceof HTMLElement)) throw new Error('no tour is running');
+  return card;
+}
+
+/** The step the tour's card is on, e.g. `4 of 11`. */
+function tourCount(): string {
+  return tourCard().querySelector('.tour-count')?.textContent ?? '';
+}
+
+/** The page element that carries one tour anchor. */
+function anchored(root: ParentNode, anchor: string): HTMLElement {
+  const node = root.querySelector(`[data-tour="${anchor}"]`);
+  if (!(node instanceof HTMLElement)) throw new Error(`the page has no ${anchor} anchor`);
+  return node;
+}
+
+/** Every key the browser's storage holds. */
+function storedKeys(): string[] {
+  const storage = globalThis.localStorage;
+  return Array.from({ length: storage.length }, (_, at) => storage.key(at) ?? '');
+}
+
+/** The text of the strip the page shows, its callsign among it. */
+function stripText(root: ParentNode): string {
+  return root.querySelector('section.panel.strip')?.textContent ?? '';
+}
+
 describe('routing', () => {
   beforeEach(() => {
     globalThis.localStorage.clear();
+    globalThis.localStorage.setItem(TOUR_SEEN_KEY, 'true');
   });
 
   afterEach(() => {
@@ -942,6 +991,238 @@ describe('routing', () => {
     const root = await mountHash('#s=1&a=KSFO');
     expect(root.querySelector('section.panel.strip')).not.toBeNull();
     expect(globalThis.location.hash).toBe('#s=1&a=KSFO');
+  });
+
+  it('opens the clearance part of the tour on SWA1740', async () => {
+    const root = await mountHash('#/tutorial');
+    expect(stripText(root)).toContain('SWA1740');
+    expect(tourCount()).toBe('1 of 11');
+  });
+
+  it('walks the clearance part to the results without writing a strip link or an attempt', async () => {
+    const replace = vi.spyOn(globalThis.history, 'replaceState');
+    const root = await mountHash('#/tutorial');
+    expect(root.querySelector('.copy-link')).toBeNull();
+    for (const [at, step] of CLEARANCE_TOUR.entries()) {
+      expect(tourCount()).toBe(`${at + 1} of ${CLEARANCE_TOUR.length}`);
+      const advance = step.advance;
+      if (advance === 'submit') anchored(root, 'submit').click();
+      else if (advance !== 'next' && 'pick' in advance) {
+        choose(selectOf(anchored(root, advance.pick)), advance.value);
+      } else if (at < CLEARANCE_TOUR.length - 1) buttonNamed(tourCard(), 'Next').click();
+      expect(globalThis.location.hash).toBe('#/tutorial');
+    }
+    expect(anchored(root, 'results')).toBeDefined();
+    buttonNamed(tourCard(), 'Finish').click();
+    expect(document.querySelector('.tour-card')).toBeNull();
+    expect(globalThis.location.hash).toBe('#/');
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
+    expect(replace.mock.calls.some((call) => String(call[2]).includes('s='))).toBe(false);
+    expect(storedKeys().filter((key) => key.startsWith('craft-tester:solved'))).toEqual([]);
+    expect(storedKeys()).not.toContain(INPUT_KEY);
+    expect(storedKeys()).not.toContain(FULL_ROUTE_KEY);
+  });
+
+  it('offers neither the next strip nor another try on the results of the tour', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'clearance', step: 10 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    const root = await mountHash('#/tutorial');
+    const labels = [...anchored(root, 'results').querySelectorAll('button')].map(
+      (node) => node.textContent,
+    );
+    expect(labels).not.toContain('Next strip');
+    expect(labels).not.toContain('Try this strip again');
+  });
+
+  it('takes the page out of reach once a part ends, until the next page opens', async () => {
+    const root = await mountHash('#/tutorial');
+    buttonNamed(tourCard(), 'Skip').click();
+    expect(root.hasAttribute('inert')).toBe(true);
+    followLink('#/');
+    await vi.waitFor(() => {
+      expect(root.querySelector('.home-page')).not.toBeNull();
+    });
+    expect(root.hasAttribute('inert')).toBe(false);
+  });
+
+  it('remembers the tour as seen, forgets its progress and opens home on Escape', async () => {
+    globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
+    await mountHash('#/tutorial');
+    buttonNamed(tourCard(), 'Next').click();
+    pressEscape();
+    expect(document.querySelector('.tour-card')).toBeNull();
+    expect(globalThis.location.hash).toBe('#/');
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
+    expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).toBeNull();
+  });
+
+  it('shows "amend to" as wrong at once on a box the step keeps as filed', async () => {
+    const root = await mountHash('#/tutorial/amend');
+    buttonNamed(tourCard(), 'Next').click();
+    choose(answerOf(root, 'type'), 'amended');
+    expect(tourCount()).toBe('2 of 6');
+    const wrong = tourCard().querySelector('.tour-wrong')?.textContent ?? '';
+    expect(wrong).toContain('amend to');
+    expect(wrong).toContain('correct as filed');
+  });
+
+  it('starts no tour of home once the way to home is overtaken by another link', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'amend', step: 5 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    const root = await mountHash('#/tutorial/amend');
+    buttonNamed(tourCard(), 'Next: test yourself').click();
+    followLink('#/');
+    followLink('#s=1&a=KSFO');
+    await vi.waitFor(() => {
+      expect(root.querySelector('section.panel.strip')).not.toBeNull();
+    });
+    followLink('#/');
+    await vi.waitFor(() => {
+      expect(root.querySelector('.home-page')).not.toBeNull();
+    });
+    expect(document.querySelector('.tour-card')).toBeNull();
+  });
+
+  it('keeps the route step and shows what is wrong with a wrong pick', async () => {
+    const root = await mountHash('#/tutorial');
+    for (let next = 0; next < 3; next += 1) buttonNamed(tourCard(), 'Next').click();
+    const template = selectOf(anchored(root, 'routeTemplate'));
+    const wrong = [...template.options].find(
+      (option) => !['', 'transition'].includes(option.value),
+    );
+    if (wrong === undefined) throw new Error('the route template offers nothing wrong to pick');
+    choose(template, wrong.value);
+    expect(tourCount()).toBe('4 of 11');
+    expect(tourCard().querySelector('.tour-wrong')?.textContent).toContain(wrong.textContent);
+  });
+
+  it('remembers the tour as seen and forgets its progress on Skip', async () => {
+    globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
+    await mountHash('#/tutorial');
+    buttonNamed(tourCard(), 'Next').click();
+    expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).not.toBeNull();
+    buttonNamed(tourCard(), 'Skip').click();
+    expect(document.querySelector('.tour-card')).toBeNull();
+    expect(globalThis.location.hash).toBe('#/');
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
+    expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).toBeNull();
+  });
+
+  it('opens the tour on a first visit with no hash, and home once the tour was seen', async () => {
+    globalThis.localStorage.clear();
+    const first = await mountHash('');
+    expect(globalThis.location.hash).toBe('#/tutorial');
+    expect(stripText(first)).toContain('SWA1740');
+    expect(tourCount()).toBe('1 of 11');
+
+    globalThis.localStorage.setItem(TOUR_SEEN_KEY, 'true');
+    const again = await mountHash('');
+    expect(again.querySelector('.home-page')).not.toBeNull();
+  });
+
+  it('takes the tour off the page when a link leaves its part', async () => {
+    globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
+    const root = await mountHash('#/tutorial');
+    followLink('#s=1&a=KSFO');
+    await vi.waitFor(() => {
+      expect(stripText(root)).not.toContain('SWA1740');
+    });
+    expect(document.body.querySelector('.tour')).toBeNull();
+    const hash = globalThis.location.hash;
+    pressEscape();
+    expect(globalThis.location.hash).toBe(hash);
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBeNull();
+  });
+
+  it('opens home on a first visit that holds progress through the Amend part', async () => {
+    globalThis.localStorage.clear();
+    const progress = { version: TOUR_STEPS_VERSION, part: 'amend', step: 2 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    const root = await mountHash('');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+    expect(document.querySelector('.tour-card')).toBeNull();
+  });
+
+  it('starts a part from its first step on progress stored for the other part', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'amend', step: 3 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    await mountHash('#/tutorial');
+    expect(tourCount()).toBe(`1 of ${CLEARANCE_TOUR.length}`);
+  });
+
+  it('opens the last step on a stored step past the end of the part', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'clearance', step: 99 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    await mountHash('#/tutorial');
+    expect(tourCount()).toBe(`${CLEARANCE_TOUR.length} of ${CLEARANCE_TOUR.length}`);
+  });
+
+  it('opens the Amend part on JSX201 and walks its boxes to the clearance form', async () => {
+    const root = await mountHash('#/tutorial/amend');
+    expect(stripText(root)).toContain('JSX201');
+    expect(tourCount()).toBe('1 of 6');
+    buttonNamed(tourCard(), 'Next').click();
+    for (const [at, box] of ['type', 'altitude', 'route'].entries()) {
+      choose(answerOf(root, box), 'as_filed');
+      expect(tourCount()).toBe(`${at + 3} of 6`);
+    }
+    anchored(root, 'boxes-submit').click();
+    expect(tourCount()).toBe('6 of 6');
+    expect(anchored(root, 'procedure')).toBeDefined();
+    expect(anchored(root, 'routeTemplate')).toBeDefined();
+    expect(globalThis.location.hash).toBe('#/tutorial/amend');
+  });
+
+  it('moves on from the clearance part to the Amend part', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'clearance', step: 10 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
+    const root = await mountHash('#/tutorial');
+    expect(tourCount()).toBe('11 of 11');
+    expect(anchored(root, 'results')).toBeDefined();
+    buttonNamed(tourCard(), 'Next: amending a flight plan').click();
+    expect(globalThis.location.hash).toBe('#/tutorial/amend');
+    expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).toBeNull();
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBeNull();
+  });
+
+  it('moves on from the Amend part to the tour of home, whose Finish marks the tour seen', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'amend', step: 5 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
+    const root = await mountHash('#/tutorial/amend');
+    expect(tourCount()).toBe('6 of 6');
+    expect(anchored(root, 'procedure')).toBeDefined();
+    buttonNamed(tourCard(), 'Next: test yourself').click();
+    expect(globalThis.location.hash).toBe('#/');
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
+    expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).toBeNull();
+    followLink('#/');
+    await vi.waitFor(() => {
+      expect(root.querySelector('.home-page')).not.toBeNull();
+      expect(tourCount()).toBe('1 of 1');
+    });
+    const spot = document.querySelector('.tour-spot');
+    expect(spot?.getAttribute('data-anchor')).toBe('home-test');
+    buttonNamed(tourCard(), 'Finish').click();
+    expect(document.querySelector('.tour-card')).toBeNull();
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
+  });
+
+  it('resumes the clearance part on the stored step, with the picks before it made', async () => {
+    const progress = { version: TOUR_STEPS_VERSION, part: 'clearance', step: 5 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    const root = await mountHash('#/tutorial');
+    expect(tourCount()).toBe('6 of 11');
+    expect(selectOf(anchored(root, 'routeTemplate')).value).toBe('transition');
+    expect(selectOf(anchored(root, 'routeFix')).value).toBe('SUSEY');
+  });
+
+  it('starts the part over on progress stored against another version of the steps', async () => {
+    const progress = { version: TOUR_STEPS_VERSION + 1, part: 'clearance', step: 5 };
+    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
+    await mountHash('#/tutorial');
+    expect(tourCount()).toBe('1 of 11');
   });
 });
 

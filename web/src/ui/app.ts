@@ -1,5 +1,9 @@
+import swa1740 from '@fixtures/koak/worksheets/phraseology-practice-1a-swa1740.json';
+import jsx201 from '@fixtures/koak/worksheets/amendment-practice-1a-jsx201.json';
 import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
+import { FixtureSchema } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
+import { withCurrentVersions } from '@/rules/fixtureVersions.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import {
@@ -18,10 +22,11 @@ import type { AnswerChoice } from '@/ui/answerChoice.ts';
 import { ANSWER_OPTIONS } from '@/ui/answerChoice.ts';
 import type { Panels } from '@/ui/amendPanels.ts';
 import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
+import { boxInputName } from '@/ui/amendForm.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
-import { button, el, segmentedControl } from '@/ui/dom.ts';
+import { button, el, PHONE_QUERY, segmentedControl } from '@/ui/dom.ts';
 import type { SegmentOption } from '@/ui/dom.ts';
 import { filterControls } from '@/ui/filterControls.ts';
 import type { HomeProps } from '@/ui/home.ts';
@@ -32,15 +37,20 @@ import type {
   HomeChoices,
   HomeStore,
   InputKindStore,
+  TourProgress,
+  TourProgressStore,
+  TourSeenStore,
 } from '@/ui/preferences.ts';
 import {
   browserFilterStore,
   browserFullRouteStore,
   browserHomeStore,
   browserInputKindStore,
+  browserTourProgressStore,
+  browserTourSeenStore,
 } from '@/ui/preferences.ts';
-import type { Route } from '@/ui/router.ts';
-import { newSetSeed, routeOf } from '@/ui/router.ts';
+import type { Route, TutorialPart } from '@/ui/router.ts';
+import { hrefOf, newSetSeed, routeOf } from '@/ui/router.ts';
 import { clearanceOutcome } from '@/ui/clearanceGrading.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { clearedPlan, listAirports, loadAirportData } from '@/ui/session.ts';
@@ -49,6 +59,7 @@ import { browserSolvedStore } from '@/ui/solved.ts';
 import type { AppState, PickKey, SetState } from '@/ui/state.ts';
 import {
   newSession,
+  newSessionFrom,
   phaseOf,
   routeReadingOf,
   shareLink,
@@ -92,6 +103,9 @@ import {
   withStripAnswered,
   withStripSkipped,
 } from '@/ui/testSet.ts';
+import type { TourDriver, TourEnd, TourStep, WrongPick } from '@/ui/tour.ts';
+import { startTour } from '@/ui/tour.ts';
+import { AMEND_TOUR, CLEARANCE_TOUR, HOME_TOUR, TOUR_STEPS_VERSION } from '@/ui/tourSteps.ts';
 
 export { clearancePickGrades } from '@/ui/clearanceGrading.ts';
 
@@ -346,9 +360,14 @@ function summaryPanels(
 
 /**
  * The strip and the ATIS in the rail, and either the form or the results in the work column; a
- * finished test set shows its summary instead.
+ * finished test set shows its summary instead. The tour's results offer no way on to another strip.
  */
-function renderPanels(state: AppState, actions: Actions, solved: SolvedStore): Panels {
+function renderPanels(
+  state: AppState,
+  actions: Actions,
+  solved: SolvedStore,
+  tutorial: boolean,
+): Panels {
   if (phaseOf(state) === 'set-summary' && state.set !== undefined) {
     return summaryPanels(state, state.set, actions, solved);
   }
@@ -361,7 +380,7 @@ function renderPanels(state: AppState, actions: Actions, solved: SolvedStore): P
     };
   }
   if (state.view.kind === 'amendment') {
-    return renderAmendmentPanels(state, state.view, actions);
+    return renderAmendmentPanels(state, state.view, actions, !tutorial);
   }
   const phase = phaseOf(state);
   const { generated, clearance } = state.view;
@@ -377,6 +396,7 @@ function renderPanels(state: AppState, actions: Actions, solved: SolvedStore): P
     const work = renderRevisit({
       ...clearanceOutcome(revisit, generated, clearance, state.airport, routeReadingOf(state)),
       routeReading: routeReadingOf(state),
+      nextActions: !tutorial,
       onNext: actions.onNewScenario,
       onRetry: actions.onRetry,
     });
@@ -387,6 +407,7 @@ function renderPanels(state: AppState, actions: Actions, solved: SolvedStore): P
     const work = renderResults({
       ...clearanceOutcome(answer, generated, clearance, state.airport, routeReadingOf(state)),
       routeReading: routeReadingOf(state),
+      nextActions: !tutorial,
       onNext: actions.onNewScenario,
       onRetry: actions.onRetry,
     });
@@ -457,22 +478,23 @@ function renderRail(panels: Panels): HTMLElement | undefined {
 /**
  * Renders the whole page from the state: the toolbar over the strip bay (rail) and the work column.
  * The first strip on the page, the one the student was handed, carries the button that copies the
- * link to it.
+ * link to it, except in a test set and in the tutorial, whose strip has no link of its own.
  */
 function renderApp(
   state: AppState,
   index: AirportsIndex,
   actions: Actions,
   solved: SolvedStore,
+  tutorial: boolean,
 ): Page {
   const page = el('div', 'page');
-  const panels = renderPanels(state, actions, solved);
+  const panels = renderPanels(state, actions, solved, tutorial);
   const rail = renderRail(panels);
   const main = el('main', rail === undefined ? 'layout no-rail' : 'layout');
   const strip = [...panels.rail, ...panels.pinned].find((node) =>
     node.matches('section.panel.strip'),
   );
-  if (strip !== undefined && state.set === undefined) {
+  if (strip !== undefined && state.set === undefined && !tutorial) {
     const { icao } = state.airport.airport;
     addCopyLink(strip, shareLink(globalThis.location.href, icao, state.seed, state));
   }
@@ -486,9 +508,6 @@ function renderApp(
 
 /** How far the page must scroll in one direction before the phone toolbar hides or comes back. */
 const TOOLBAR_SCROLL_THRESHOLD = 8;
-
-/** The widths the phone layout applies to, which is where the toolbar hides on scroll. */
-const PHONE_QUERY = '(max-width: 899.98px)';
 
 /**
  * Whether the phone toolbar is hidden after a scroll: a scroll down hides it, a scroll up brings it
@@ -575,6 +594,8 @@ type Stores = {
   fullRoute: FullRouteStore;
   set: SetStore;
   home: HomeStore;
+  tourSeen: TourSeenStore;
+  tourProgress: TourProgressStore;
 };
 
 /** How often the test bar's clock is written again, in milliseconds. */
@@ -777,6 +798,338 @@ function show(root: Element, built: Built | undefined, state: AppState, build: (
   return { key, sync: page.sync };
 }
 
+/** A tutorial part on screen: which part, its steps, and the index of the step the tour opens on. */
+type TutorialRun = { part: TutorialPart; steps: readonly TourStep[]; from: number };
+
+/** What `mount` runs: a tutorial part, or `undefined` for the trainer itself. */
+type MountOptions = { tutorial: TutorialRun | undefined };
+
+/** The options of every page but the tutorial's. */
+const TRAINER: MountOptions = { tutorial: undefined };
+
+/**
+ * What the page tells the tour of a tutorial part: the start, each redraw, each pick, box answer and
+ * submit the student makes, and the page being left.
+ */
+type TourLink = {
+  start: (actions: Actions) => void;
+  refresh: () => void;
+  picked: (key: PickKey, raw: string) => void;
+  boxed: (box: Box, answer: BoxAnswer) => void;
+  submitted: () => void;
+  stop: () => void;
+};
+
+/** How the tour's card writes a box left as filed. */
+const AS_FILED_LABEL = 'correct as filed';
+
+/** How the tour's card writes the choice to amend a box. */
+const AMEND_TO_LABEL = 'amend to';
+
+/** The boxes of the amend form, whose text boxes a typed answer is committed in. */
+const BOXES: readonly Box[] = ['type', 'altitude', 'route'];
+
+/** The label of one choice of a dropdown the tour points at, or the value where it offers none. */
+function choiceLabel(root: Element, key: PickKey, value: string): string {
+  const node = root.querySelector(`[data-tour="${key}"]`);
+  const select = node instanceof HTMLSelectElement ? node : node?.querySelector('select');
+  const option = [...(select?.options ?? [])].find((candidate) => candidate.value === value);
+  return option?.textContent ?? value;
+}
+
+/**
+ * What the tour's card shows for a pick, set against the step: `null` where the step expects no
+ * pick of this dropdown or the pick is the one it expects.
+ */
+function wrongPick(
+  root: Element,
+  step: TourStep | undefined,
+  key: PickKey,
+  raw: string,
+): WrongPick | null {
+  const advance = step?.advance;
+  if (typeof advance !== 'object' || !('pick' in advance) || advance.pick !== key) return null;
+  if (advance.value === raw) return null;
+  const expected = choiceLabel(root, key, advance.value);
+  return { said: choiceLabel(root, key, raw), expected, citations: [] };
+}
+
+/** A box answer as the tour's card writes it: "correct as filed", or the value typed. */
+function boxAnswerLabel(answer: BoxAnswer): string {
+  return answer.kind === 'as_filed' ? AS_FILED_LABEL : answer.value;
+}
+
+/**
+ * What the tour's card shows for a box answer, set against the step: `null` where the step expects
+ * no answer to this box or the answer is the one it expects.
+ */
+function wrongBox(step: TourStep | undefined, box: Box, answer: BoxAnswer): WrongPick | null {
+  const advance = step?.advance;
+  if (typeof advance !== 'object' || !('box' in advance) || advance.box !== box) return null;
+  const expected = advance.answer;
+  const same =
+    answer.kind === 'as_filed' || expected.kind === 'as_filed'
+      ? answer.kind === expected.kind
+      : answer.value === expected.value;
+  if (same) return null;
+  return { said: boxAnswerLabel(answer), expected: boxAnswerLabel(expected), citations: [] };
+}
+
+/**
+ * What the tour's card shows for the choice to amend a box: wrong at once where the step keeps the
+ * box as filed, and `null` otherwise, since an amendment is judged only once its value is committed.
+ */
+function wrongAmend(step: TourStep | undefined, box: Box): WrongPick | null {
+  const advance = step?.advance;
+  if (typeof advance !== 'object' || !('box' in advance) || advance.box !== box) return null;
+  if (advance.answer.kind !== 'as_filed') return null;
+  return { said: AMEND_TO_LABEL, expected: AS_FILED_LABEL, citations: [] };
+}
+
+/** The box a text box of the amend form writes in, and what it holds, or `undefined` for any other. */
+function typedBox(target: EventTarget | null): { box: Box; value: string } | undefined {
+  if (!(target instanceof HTMLInputElement)) return undefined;
+  const box = BOXES.find((candidate) => boxInputName(candidate) === target.name);
+  return box === undefined ? undefined : { box, value: target.value };
+}
+
+/** The box whose answer dropdown was just set to amend it, or `undefined` for any other control. */
+function amendChosen(target: EventTarget | null): Box | undefined {
+  if (!(target instanceof HTMLSelectElement) || target.value !== 'amended') return undefined;
+  return BOXES.find((box) => target.closest(`[data-tour="box-${box}"]`) !== null);
+}
+
+/**
+ * Makes the answer a step already done expects through the action its control calls, so a part
+ * resumed after it holds that answer.
+ */
+function replayStep(step: TourStep, actions: Actions): void {
+  const advance = step.advance;
+  if (advance === 'next') return;
+  if (advance === 'submit') {
+    if (step.anchor === 'boxes-submit') actions.onBoxesSubmit();
+    else actions.onSubmit();
+    return;
+  }
+  if ('pick' in advance) actions.onPick(advance.pick, advance.value);
+  else actions.onBox(advance.box, advance.answer);
+}
+
+/** Whether the home tour waits for home's next render, which the Amend part moving on to it sets. */
+let homeTourPending = false;
+
+/**
+ * Ends a tutorial part: its progress is forgotten, and its page is put out of reach while the next
+ * page loads. Moving on from the clearance part opens the Amend part; anything else marks the tour
+ * seen and opens home, with home's tour waiting for it where the Amend part moved on.
+ */
+function endTutorial(root: Element, part: TutorialPart, how: TourEnd, stores: Stores): void {
+  stores.tourProgress.clear();
+  root.setAttribute('inert', '');
+  if (how === 'continue' && part === 'clearance') {
+    globalThis.location.hash = hrefOf({ kind: 'tutorial', part: 'amend' });
+    return;
+  }
+  stores.tourSeen.save(true);
+  homeTourPending = how === 'continue';
+  globalThis.location.hash = hrefOf({ kind: 'home' });
+}
+
+/**
+ * The link to the tour of a tutorial part.
+ *
+ * Starting it replays the expected answer of every step before the one it opens on, then opens the
+ * tour, storing each step it reaches. A box left as filed is reported at once, and so is the choice
+ * to amend a box the step keeps as filed; a value typed in a box only once it is committed, by the
+ * box's `change` or Enter, never per keystroke. Stopping it gives the page back its pointer.
+ *
+ * @param root The element the page is rendered into.
+ * @param run The part, its steps, and the step it opens on.
+ * @param stores What this browser remembers, where the progress and the "tour seen" mark go.
+ * @returns The link the page reports to.
+ */
+function tourLink(root: Element, run: TutorialRun, stores: Stores): TourLink {
+  let driver: TourDriver | undefined;
+  let at = run.from;
+  const boxed = (box: Box, answer: BoxAnswer): void => {
+    driver?.boxed(box, answer, wrongBox(run.steps[at], box, answer));
+  };
+  const onCommit = (event: Event): void => {
+    if (event instanceof KeyboardEvent && event.key !== 'Enter') return;
+    const typed = typedBox(event.target);
+    if (typed !== undefined) boxed(typed.box, { kind: 'amended', value: typed.value });
+  };
+  const onAmend = (event: Event): void => {
+    const box = amendChosen(event.target);
+    const wrong = box === undefined ? null : wrongAmend(run.steps[at], box);
+    if (box !== undefined && wrong !== null)
+      driver?.boxed(box, { kind: 'amended', value: '' }, wrong);
+  };
+  return {
+    start: (actions) => {
+      for (const done of run.steps.slice(0, run.from)) replayStep(done, actions);
+      root.addEventListener('change', onAmend, { capture: true });
+      root.addEventListener('change', onCommit);
+      root.addEventListener('keydown', onCommit);
+      driver = startTour({
+        steps: run.steps,
+        from: run.from,
+        onStep: (index) => {
+          at = index;
+          stores.tourProgress.save({ version: TOUR_STEPS_VERSION, part: run.part, step: index });
+        },
+        onEnd: (how) => {
+          endTutorial(root, run.part, how, stores);
+        },
+      });
+    },
+    refresh: () => driver?.refresh(),
+    picked: (key, raw) => driver?.picked(key, raw, wrongPick(root, run.steps[at], key, raw)),
+    boxed: (box, answer) => {
+      if (answer.kind === 'as_filed') boxed(box, answer);
+    },
+    submitted: () => driver?.submitted(),
+    stop: () => {
+      root.removeEventListener('change', onAmend, { capture: true });
+      root.removeEventListener('change', onCommit);
+      root.removeEventListener('keydown', onCommit);
+      root.removeAttribute('inert');
+      driver?.stop();
+    },
+  };
+}
+
+/** What the page's actions work on: its root, the stores, the state on screen and how to change it. */
+type ActionContext = {
+  root: Element;
+  stores: Stores;
+  current: () => AppState;
+  update: (next: AppState) => void;
+};
+
+/** The way of answering a choice of the toolbar's answer switch stands for. */
+function inputKindOf(answer: AnswerChoice): InputKind {
+  return answer === 'pick' ? 'dropdowns' : 'text';
+}
+
+/** The scenario on screen answered another way, on the same seed, with the attempt held for it. */
+function answeredAs(state: AppState, answer: AnswerChoice, solved: SolvedStore): AppState {
+  const input = inputKindOf(answer);
+  const fullRoute = answer === 'full';
+  const scope = { mode: state.mode, input, fullRoute };
+  const previous = solved.load(state.airport.airport.icao, state.seed, scope);
+  return input === 'text'
+    ? withFullRoute(state, fullRoute, previous)
+    : withInputKind(state, input, previous);
+}
+
+/**
+ * What the trainer's controls do: each makes the next state from the one on screen and puts it up,
+ * remembering for home and for later visits what the student chose.
+ */
+function trainerActions(context: ActionContext): Actions {
+  const { root, stores, current, update } = context;
+  const solved = stores.solved;
+  return {
+    onAirport: (icao) => {
+      void cachedAirport(icao).then((airport) => {
+        const state = current();
+        const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
+        const { mode, input, fullRoute } = state;
+        const previous = solved.load(icao, state.seed, { mode, input, fullRoute });
+        rememberPractice(stores.home, icao, mode);
+        update(newSession(airport, state.seed, previous, { filter, mode, input, fullRoute }));
+      });
+    },
+    onBox: (box, answer) => {
+      update(withBox(current(), box, answer));
+    },
+    onBoxesSubmit: () => {
+      const state = current();
+      if (state.view.kind !== 'amendment') return;
+      const answers = toBoxAnswers(state.boxes);
+      if (answers === undefined) return;
+      const { plan } = clearedPlan(state.view, answers, state.airport);
+      update(withBoxesSubmitted(state, procedureOf(plan, state.airport)));
+    },
+    onFilter: ({ time, config }) => {
+      const state = current();
+      const { icao } = state.airport.airport;
+      const filter: ScenarioFilter = { time, config };
+      stores.filter.save(icao, filter);
+      const seed = randomSeed();
+      const { mode, input, fullRoute } = state;
+      update(withFilter(state, filter, seed, solved.load(icao, seed, { mode, input, fullRoute })));
+      const popover = root.querySelector('details.filters');
+      if (popover instanceof HTMLDetailsElement) popover.open = true;
+    },
+    onAnswer: (answer) => {
+      stores.input.save(inputKindOf(answer));
+      stores.fullRoute.save(answer === 'full');
+      update(answeredAs(current(), answer, solved));
+    },
+    onMode: (mode) => {
+      const state = current();
+      const seed = randomSeed();
+      const { input, fullRoute } = state;
+      const previous = solved.load(state.airport.airport.icao, seed, { mode, input, fullRoute });
+      rememberPractice(stores.home, state.airport.airport.icao, mode);
+      update(withMode(state, mode, seed, previous));
+    },
+    onNewScenario: () => {
+      const state = current();
+      const seed = randomSeed();
+      const { icao } = state.airport.airport;
+      const { mode, input, fullRoute } = state;
+      const previous = solved.load(icao, seed, { mode, input, fullRoute });
+      update(newSession(state.airport, seed, previous, state));
+    },
+    onPick: (key, raw) => {
+      update(withPick(current(), key, raw));
+    },
+    onRetry: () => {
+      update(withRetry(current()));
+    },
+    onText: (text) => {
+      update(withText(current(), text));
+    },
+    ...setActions(current, update, solved, stores.home),
+  };
+}
+
+/**
+ * The trainer's actions as a tutorial part runs them: each pick, box answer and submit that happened
+ * is told to the part's tour, a submit is graded without being saved, and the way of answering is
+ * not remembered.
+ */
+function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink): Actions {
+  const { stores, current, update } = context;
+  return {
+    ...trainer,
+    onAnswer: (answer) => {
+      update(answeredAs(current(), answer, stores.solved));
+    },
+    onBox: (box, answer) => {
+      trainer.onBox(box, answer);
+      tour.boxed(box, answer);
+    },
+    onBoxesSubmit: () => {
+      const before = current().boxesSubmitted;
+      trainer.onBoxesSubmit();
+      if (!before && current().boxesSubmitted) tour.submitted();
+    },
+    onPick: (key, raw) => {
+      trainer.onPick(key, raw);
+      tour.picked(key, raw);
+    },
+    onSubmit: () => {
+      const state = current();
+      update(withSubmitted(state));
+      if (!state.submitted && current().submitted) tour.submitted();
+    },
+  };
+}
+
 /**
  * Holds the state, rewrites the hash, and puts every change on screen.
  *
@@ -785,9 +1138,21 @@ function show(root: Element, built: Built | undefined, state: AppState, build: (
  * keystroke therefore leaves the control it came from in place, with its focus and its caret. A
  * test set is stored whenever it moves, so a reload resumes it, and its clock follows every change.
  * Once the page is disposed its clock stops and nothing it still has under way reaches the screen.
+ *
+ * A tutorial part writes no hash, so the address bar keeps its `#/tutorial` link, saves no attempt,
+ * offers no copy link and no way on from its results, and leaves the remembered way of answering
+ * alone; its tour starts after the first render, hears every pick, box answer and submit, and comes
+ * off the page with it.
  */
-function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): Mounted {
-  const store = stores.solved;
+function mount(
+  root: Element,
+  index: AirportsIndex,
+  initial: AppState,
+  stores: Stores,
+  options: MountOptions,
+): Mounted {
+  const run = options.tutorial;
+  const tour = run === undefined ? undefined : tourLink(root, run, stores);
   let state = initial;
   let actions: Actions;
   let built: Built | undefined;
@@ -804,85 +1169,25 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
   const update = (next: AppState): void => {
     if (disposed) return;
     state = next;
-    writeHash(state.airport.airport.icao, state.seed, state);
-    built = show(root, built, state, () => renderApp(state, index, actions, store));
+    if (tour === undefined) writeHash(state.airport.airport.icao, state.seed, state);
+    const tutorial = tour !== undefined;
+    built = show(root, built, state, () =>
+      renderApp(state, index, actions, stores.solved, tutorial),
+    );
     follower.follow(state);
+    tour?.refresh();
   };
-
-  actions = {
-    onAirport: (icao) => {
-      void cachedAirport(icao).then((airport) => {
-        const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
-        const { mode, input, fullRoute } = state;
-        const previous = store.load(icao, state.seed, { mode, input, fullRoute });
-        rememberPractice(stores.home, icao, mode);
-        update(newSession(airport, state.seed, previous, { filter, mode, input, fullRoute }));
-      });
-    },
-    onBox: (box, answer) => {
-      update(withBox(state, box, answer));
-    },
-    onBoxesSubmit: () => {
-      if (state.view.kind !== 'amendment') return;
-      const answers = toBoxAnswers(state.boxes);
-      if (answers === undefined) return;
-      const { plan } = clearedPlan(state.view, answers, state.airport);
-      update(withBoxesSubmitted(state, procedureOf(plan, state.airport)));
-    },
-    onFilter: ({ time, config }) => {
-      const { icao } = state.airport.airport;
-      const filter: ScenarioFilter = { time, config };
-      stores.filter.save(icao, filter);
-      const seed = randomSeed();
-      const { mode, input, fullRoute } = state;
-      update(withFilter(state, filter, seed, store.load(icao, seed, { mode, input, fullRoute })));
-      const popover = root.querySelector('details.filters');
-      if (popover instanceof HTMLDetailsElement) popover.open = true;
-    },
-    onAnswer: (answer) => {
-      const input: InputKind = answer === 'pick' ? 'dropdowns' : 'text';
-      const fullRoute = answer === 'full';
-      stores.input.save(input);
-      stores.fullRoute.save(fullRoute);
-      const scope = { mode: state.mode, input, fullRoute };
-      const previous = store.load(state.airport.airport.icao, state.seed, scope);
-      update(
-        input === 'text'
-          ? withFullRoute(state, fullRoute, previous)
-          : withInputKind(state, input, previous),
-      );
-    },
-    onMode: (mode) => {
-      const seed = randomSeed();
-      const { input, fullRoute } = state;
-      const previous = store.load(state.airport.airport.icao, seed, { mode, input, fullRoute });
-      rememberPractice(stores.home, state.airport.airport.icao, mode);
-      update(withMode(state, mode, seed, previous));
-    },
-    onNewScenario: () => {
-      const seed = randomSeed();
-      const { icao } = state.airport.airport;
-      const { mode, input, fullRoute } = state;
-      const previous = store.load(icao, seed, { mode, input, fullRoute });
-      update(newSession(state.airport, seed, previous, state));
-    },
-    onPick: (key, raw) => {
-      update(withPick(state, key, raw));
-    },
-    onRetry: () => {
-      update(withRetry(state));
-    },
-    onText: (text) => {
-      update(withText(state, text));
-    },
-    ...setActions(() => state, update, store, stores.home),
-  };
+  const context: ActionContext = { root, stores, current: () => state, update };
+  const trainer = trainerActions(context);
+  actions = tour === undefined ? trainer : withTutorial(trainer, context, tour);
 
   update(state);
+  tour?.start(actions);
   return {
     dispose: () => {
       disposed = true;
       follower.stop();
+      tour?.stop();
     },
   };
 }
@@ -1015,7 +1320,7 @@ async function openStrip(opening: Opening, hash: string): Promise<void> {
   const set = setFromHash(hash);
   const initial =
     set === undefined ? session : openedSet(session, set, stores.set.load(set.seed), Date.now());
-  takeOver(opening, () => mount(root, index, initial, stores));
+  takeOver(opening, () => mount(root, index, initial, stores, TRAINER));
 }
 
 /** A route that opens a fresh strip at an airport: practice, or a new test. */
@@ -1044,7 +1349,57 @@ async function openPractice(
   const session = await routeSession(opening, route);
   if (!isCurrent(opening)) return;
   rememberPractice(stores.home, route.icao, route.mode);
-  takeOver(opening, () => mount(root, index, session, stores));
+  takeOver(opening, () => mount(root, index, session, stores, TRAINER));
+}
+
+/** The airport the tutorial runs at. */
+const TUTORIAL_AIRPORT = 'KOAK';
+
+/** What one tutorial part runs on: the worksheet whose plan it shows, the trainer's half, its steps. */
+type TutorialSpec = { fixture: unknown; mode: Mode; steps: readonly TourStep[] };
+
+/** Each tutorial part's worksheet, mode and steps. */
+const TUTORIAL_PARTS: Readonly<Record<TutorialPart, TutorialSpec>> = {
+  clearance: { fixture: swa1740, mode: 'clearance', steps: CLEARANCE_TOUR },
+  amend: { fixture: jsx201, mode: 'amendment', steps: AMEND_TOUR },
+};
+
+/**
+ * The step a tutorial part opens on: the stored one, kept within the part, where it was stored for
+ * this part under the current step lists; the first step otherwise.
+ */
+function tutorialFrom(
+  progress: TourProgress | undefined,
+  part: TutorialPart,
+  steps: number,
+): number {
+  if (progress?.part !== part || progress.version !== TOUR_STEPS_VERSION) return 0;
+  return Math.min(progress.step, steps - 1);
+}
+
+/**
+ * Opens a tutorial part on its worksheet's plan at KOAK, answered from the dropdowns, resumed on the
+ * step this browser stored for it.
+ */
+async function openTutorial(
+  opening: Opening,
+  route: Extract<Route, { kind: 'tutorial' }>,
+): Promise<void> {
+  const { root, index, stores } = opening.target;
+  const airport = await cachedAirport(TUTORIAL_AIRPORT);
+  if (!isCurrent(opening)) return;
+  const { fixture, mode, steps } = TUTORIAL_PARTS[route.part];
+  const { scenario } = withCurrentVersions(FixtureSchema.parse(fixture), airport);
+  const settings: SessionSettings = {
+    filter: ANY_SCENARIO,
+    mode,
+    input: 'dropdowns',
+    fullRoute: false,
+  };
+  const session = newSessionFrom(airport, scenario, settings);
+  const from = tutorialFrom(stores.tourProgress.load(), route.part, steps.length);
+  const tutorial = { part: route.part, steps, from };
+  takeOver(opening, () => mount(root, index, session, stores, { tutorial }));
 }
 
 /** Starts the new test a link asks for and remembers it for home. */
@@ -1060,7 +1415,7 @@ async function openNewTest(
   const params = { seed: newSetSeed(randomSeed), n, minutes, index: 0 };
   stores.home.save({ icao, mode, format: 'test', n, minutes });
   const initial = openedSet(session, params, undefined, Date.now());
-  takeOver(opening, () => mount(root, index, initial, stores));
+  takeOver(opening, () => mount(root, index, initial, stores, TRAINER));
 }
 
 /**
@@ -1080,7 +1435,7 @@ async function openContinueTest(
   const session = newSession(airport, randomSeed(), undefined, { filter, mode, input, fullRoute });
   const params = { seed: route.setSeed, n: record.n, minutes: record.minutes, index: 0 };
   const initial = openedSet(session, params, record, Date.now());
-  takeOver(opening, () => mount(root, index, initial, stores));
+  takeOver(opening, () => mount(root, index, initial, stores, TRAINER));
 }
 
 /** The score lines of finished sets, by set seed, since a finished set never changes. */
@@ -1177,7 +1532,7 @@ function homeListing(airports: readonly AirportData[], stores: Stores): HomeList
  * @param airports Every airport of the index, loaded, in index order.
  * @param stores What this browser remembers.
  * @param initial The choices home opens on.
- * @returns Home's teardown, which has nothing to stop.
+ * @returns Home's teardown, which takes home's tour off the page where one runs.
  */
 function mountHome(
   root: Element,
@@ -1186,6 +1541,7 @@ function mountHome(
   initial: HomeChoices,
 ): Mounted {
   const listing = homeListing(airports, stores);
+  let tour: TourDriver | undefined;
   let choices = initial;
   let answer = rememberedAnswer(stores);
   let filter = stores.filter.load(choices.icao) ?? ANY_SCENARIO;
@@ -1217,16 +1573,49 @@ function mountHome(
       },
     });
     redrawHome(root, page);
+    tour?.refresh();
   };
   draw();
-  return { dispose: NOTHING_TO_DISPOSE };
+  if (homeTourPending) tour = startHomeTour(stores);
+  return {
+    dispose: () => {
+      tour?.stop();
+    },
+  };
 }
 
-/** Opens home once every airport of the index is loaded, since its cards name each one. */
+/** Starts the tour's last part over home, once; Finish and Skip there mark the tour seen. */
+function startHomeTour(stores: Stores): TourDriver {
+  homeTourPending = false;
+  return startTour({
+    steps: HOME_TOUR,
+    from: 0,
+    onStep: () => {
+      // Home's part is one step, with no progress worth resuming.
+    },
+    onEnd: () => {
+      stores.tourSeen.save(true);
+    },
+  });
+}
+
+/**
+ * Opens home once every airport of the index is loaded, since its cards name each one. A tour of
+ * home waiting for it is dropped where another route overtakes it or the load fails.
+ */
 async function openHome(opening: Opening): Promise<void> {
   const { root, index, stores } = opening.target;
-  const airports = await Promise.all(index.map((entry) => cachedAirport(entry.icao)));
-  if (!isCurrent(opening)) return;
+  let airports: AirportData[];
+  try {
+    airports = await Promise.all(index.map((entry) => cachedAirport(entry.icao)));
+  } catch (error) {
+    homeTourPending = false;
+    throw error;
+  }
+  if (!isCurrent(opening)) {
+    homeTourPending = false;
+    return;
+  }
   const choices = homeChoicesOf(stores.home, index);
   takeOver(opening, () => mountHome(root, airports, stores, choices));
 }
@@ -1254,6 +1643,8 @@ async function openRoute(target: Active, hash: string): Promise<void> {
       return openNewTest(opening, route);
     case 'continueTest':
       return openContinueTest(opening, route);
+    case 'tutorial':
+      return openTutorial(opening, route);
     case 'home':
       return openHome(opening);
   }
@@ -1284,9 +1675,20 @@ function onHashChange(): void {
 }
 
 /**
+ * Whether a visit opens the tour in place of home: the URL carries no hash, this browser has never
+ * finished or skipped the tour, and it holds no progress through the Amend part.
+ */
+function opensTourFirst(hash: string, stores: Stores): boolean {
+  if (hash !== '' || stores.tourSeen.load() === true) return false;
+  return (stores.tourProgress.load()?.part ?? 'clearance') === 'clearance';
+}
+
+/**
  * Starts the trainer on the route the URL names: home on an empty hash or `#/`, a practice strip or
- * a test from an `#/<ICAO>/<mode>/…` link, and a strip from every other hash, as before. A change
- * of hash afterwards, from a link or Back, opens its route in place of the page on screen.
+ * a test from an `#/<ICAO>/<mode>/…` link, a part of the tour from `#/tutorial` or
+ * `#/tutorial/amend`, and a strip from every other hash, as before. A change of hash afterwards,
+ * from a link or Back, opens its route in place of the page on screen. A first visit, with no hash
+ * and the tour never seen, has `#/tutorial` written over its history entry and opens the tour.
  *
  * A strip link loads the airport the URL names, or the first of the index when it names none, and
  * renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
@@ -1318,10 +1720,15 @@ export async function startApp(root: Element): Promise<void> {
     fullRoute: browserFullRouteStore(),
     set: browserSetStore(),
     home: browserHomeStore(),
+    tourSeen: browserTourSeenStore(),
+    tourProgress: browserTourProgressStore(),
   };
   active?.dispose();
   const target: Active = { root, index, stores, dispose: NOTHING_TO_DISPOSE, generation: 0 };
   active = target;
+  if (opensTourFirst(globalThis.location.hash, stores)) {
+    replaceHash(hrefOf({ kind: 'tutorial', part: 'clearance' }));
+  }
   await openRoute(target, globalThis.location.hash);
   if (!routeListening) {
     routeListening = true;

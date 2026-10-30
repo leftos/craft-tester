@@ -170,6 +170,7 @@ describe('the clearance part of the tour, over swa1740', () => {
       renderResults({
         ...clearanceOutcome(answer, generated, clearance, koak, routeReading),
         routeReading,
+        nextActions: false,
         onNext: unexpected('onNext'),
         onRetry: unexpected('onRetry'),
       }),
@@ -208,7 +209,7 @@ describe('the Amend part of the tour, over jsx201', () => {
       onSkip: unexpected('onSkip'),
     };
     const render = (): void => {
-      const panels = renderAmendmentPanels(state, view, handlers);
+      const panels = renderAmendmentPanels(state, view, handlers, false);
       sync = panels.sync;
       show([...panels.rail, ...panels.pinned, ...panels.work]);
     };

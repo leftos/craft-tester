@@ -11,6 +11,7 @@ import { hrefOf } from '@/ui/router.ts';
 import { MINUTE_OPTIONS, SIZE_OPTIONS } from '@/ui/testBar.ts';
 import type { SetListing } from '@/ui/testSet.ts';
 import { formatClock } from '@/ui/testSet.ts';
+import type { TourAnchor } from '@/ui/tour.ts';
 
 /** One airport home offers: its ICAO code and its spoken name, e.g. "Oakland". */
 export type AirportCard = { icao: string; spoken: string };
@@ -43,8 +44,11 @@ export type HomeProps = {
   copy: (text: string) => void;
 };
 
-/** One card of a card group: the value it reads back, its heading, and the line under it. */
-type CardOption = { value: string; title: string; detail: string };
+/**
+ * One card of a card group: the value it reads back, its heading, the line under it, and the tour
+ * anchor it carries where a tour step points at it.
+ */
+type CardOption = { value: string; title: string; detail: string; anchor?: TourAnchor };
 
 /** The most rows "Your tests" lists. */
 const MAX_TEST_ROWS = 10;
@@ -65,7 +69,12 @@ const MODE_CARDS: readonly (CardOption & { value: HomeChoices['mode'] })[] = [
 /** Practice or a test, as home's cards offer them. */
 const FORMAT_CARDS: readonly (CardOption & { value: HomeChoices['format'] })[] = [
   { value: 'practice', title: 'Practice', detail: 'One strip at a time, results after each' },
-  { value: 'test', title: 'Test', detail: 'A set of strips, graded at the end' },
+  {
+    value: 'test',
+    title: 'Test',
+    detail: 'A set of strips, graded at the end',
+    anchor: 'home-test',
+  },
 ];
 
 /**
@@ -88,6 +97,7 @@ function cardChoice(
     card.setAttribute('role', 'radio');
     card.setAttribute('aria-checked', String(option.value === value));
     card.setAttribute('data-focus-key', `${label}:${option.value}`);
+    if (option.anchor !== undefined) card.dataset['tour'] = option.anchor;
     card.append(el('strong', '', option.title), el('span', 'card-detail', option.detail));
     card.addEventListener('click', () => {
       if (option.value !== value) onPick(option.value);
@@ -238,8 +248,8 @@ function testList(tests: readonly HomeTestRow[]): HTMLElement {
 }
 
 /**
- * Renders home: the header, the lead line, the unfinished set if there is one, the choices, Start
- * with the link it opens, and the sets this browser remembers.
+ * Renders home: the header with its link to the tour, the lead line, the unfinished set if there
+ * is one, the choices, Start with the link it opens, and the sets this browser remembers.
  *
  * Nothing here holds state: every control calls back with the whole new value, and the caller draws
  * home again from it.
@@ -250,7 +260,9 @@ function testList(tests: readonly HomeTestRow[]): HTMLElement {
 export function renderHome(props: HomeProps): HTMLElement {
   const page = el('div', 'home-page');
   const bar = el('header', 'toolbar home-bar');
-  bar.append(el('h1', 'brand', 'CRAFT trainer'));
+  const tour = el('a', 'home-tour', 'Take the tour');
+  tour.href = hrefOf({ kind: 'tutorial', part: 'clearance' });
+  bar.append(el('h1', 'brand', 'CRAFT trainer'), el('span', 'toolbar-spacer'), tour);
   const main = el('main', 'home');
   main.append(el('p', 'home-lead', LEAD));
   if (props.resume !== undefined) main.append(resumeBanner(props.resume));

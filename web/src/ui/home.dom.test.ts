@@ -95,6 +95,22 @@ describe('renderHome', () => {
     expect(page.querySelector('[role="radiogroup"][aria-label="Time"]')).not.toBeNull();
   });
 
+  it('links "Take the tour" in its bar to the tutorial', () => {
+    const page = renderHome(props());
+    const link = [...page.querySelectorAll('header.home-bar a')].find(
+      (node) => node.textContent === 'Take the tour',
+    );
+    expect(link?.getAttribute('href')).toBe('#/tutorial');
+  });
+
+  it('marks the Test card of Format as the tour anchor, whichever format is chosen', () => {
+    for (const format of ['test', 'practice'] as const) {
+      const page = renderHome(props({ choices: { ...CHOICES, format } }));
+      const anchors = [...page.querySelectorAll('[data-tour="home-test"]')];
+      expect(anchors.map((node) => node.getAttribute('data-focus-key'))).toEqual(['Format:test']);
+    }
+  });
+
   it('picks another airport, keeping every other choice', () => {
     const onChoices = vi.fn();
     const page = renderHome(props({ onChoices }));
