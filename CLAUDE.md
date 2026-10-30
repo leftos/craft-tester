@@ -61,6 +61,8 @@ it; it is never shown in the UI or remembered. `CRAFT_PREVIEW_URL` points the ru
 (`pnpm -C web preview --port 4174` plus `CRAFT_PREVIEW_URL=http://localhost:4174/craft-tester/`), so two builds
 can be checked side by side. A button with no text lists by its `aria-label`, which is how the icon buttons read.
 
+The page links open the same way: `/` is home, `/KOAK/amend/practice` a practice strip, `/KSFO/clearance/test/5x0` a new untimed test of five. From Git Bash, run them with `MSYS_NO_PATHCONV=1` set and the path written without its `#`. Git Bash rewrites an argument that starts with `/` into a Windows path, and a `#/…` argument does not reach the page intact either; both open a strip instead. `click:` matches a button's whole text, so home's two-line cards cannot be pressed by name.
+
 ## References cached outside git
 
 `docs/refs/` is gitignored and holds FAA JO 7110.65, the AIM and AC 90-66B for paragraph lookups. Read

@@ -431,6 +431,39 @@ export function setSummary(
   };
 }
 
+/**
+ * The score line of a set this browser stored, graded as its summary grades it: every strip the
+ * record counts answered from the attempt saved at its seed, every other strip as unanswered, and a
+ * strip no seed resolved in neither total.
+ *
+ * @param airport The airport the set ran at.
+ * @param listing The set and its stored record.
+ * @param load Reads the attempt saved at one seed under the set's settings.
+ * @returns The line, e.g. `3 of 10 fully correct · 72%`.
+ */
+export function storedSetScore(
+  airport: AirportData,
+  listing: SetListing,
+  load: (seed: number) => Attempt | undefined,
+): string {
+  const { setSeed, record } = listing;
+  const plain: SessionSettings = {
+    filter: record.filter,
+    mode: record.mode,
+    input: record.input,
+    fullRoute: record.fullRoute,
+  };
+  const drawn: StripResult[] = [];
+  for (let index = 0; index < record.n; index += 1) {
+    const { seed, resolved } = setStripSeed(airport, setSeed, index, plain);
+    if (!resolved) continue;
+    const attempt = record.answered.includes(index) ? load(seed) : undefined;
+    drawn.push(stripResult(airport, seed, plain, attempt));
+  }
+  const { fullyCorrect, percent } = setTotals(drawn);
+  return `${fullyCorrect} of ${drawn.length} fully correct · ${percent}%`;
+}
+
 /** The filter a set record stores, as the store writes it. */
 const FilterSchema = z.strictObject({
   time: z.enum(['either', 'day', 'night']),

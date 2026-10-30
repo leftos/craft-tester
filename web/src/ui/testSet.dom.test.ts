@@ -234,6 +234,14 @@ describe('a test set', () => {
     expect(globalThis.location.hash).not.toContain('x=');
   });
 
+  it('the summary links home', async () => {
+    const root = await mountHash('#a=KSFO&i=text&x=b.5.20.5');
+    const home = [...root.querySelectorAll('.set-summary .actions a')].find(
+      (node) => node.textContent === 'Home',
+    );
+    expect(home?.getAttribute('href')).toBe('#/');
+  });
+
   it('reloading with x= resumes at the same strip with the same clock', async () => {
     const first = await startedSet('5', '10 min');
     answerStrip(first);

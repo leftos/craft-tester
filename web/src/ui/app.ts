@@ -1,4 +1,4 @@
-import type { AirportsIndex, Scenario } from '@/data/schema.ts';
+import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
 import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
@@ -24,12 +24,23 @@ import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, segmentedControl } from '@/ui/dom.ts';
 import type { SegmentOption } from '@/ui/dom.ts';
 import { filterControls } from '@/ui/filterControls.ts';
-import type { FilterStore, FullRouteStore, InputKindStore } from '@/ui/preferences.ts';
+import type { HomeProps } from '@/ui/home.ts';
+import { homeTestRows, renderHome } from '@/ui/home.ts';
+import type {
+  FilterStore,
+  FullRouteStore,
+  HomeChoices,
+  HomeStore,
+  InputKindStore,
+} from '@/ui/preferences.ts';
 import {
   browserFilterStore,
   browserFullRouteStore,
+  browserHomeStore,
   browserInputKindStore,
 } from '@/ui/preferences.ts';
+import type { Route } from '@/ui/router.ts';
+import { newSetSeed, routeOf } from '@/ui/router.ts';
 import { clearanceOutcome } from '@/ui/clearanceGrading.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { clearedPlan, listAirports, loadAirportData } from '@/ui/session.ts';
@@ -60,12 +71,14 @@ import { addCopyLink, loadStripFont, renderStrip } from '@/ui/strip.ts';
 import type { TextFormProps } from '@/ui/textForm.ts';
 import { renderTextForm } from '@/ui/textForm.ts';
 import {
+  DEFAULT_SET_MINUTES,
+  DEFAULT_SET_SIZE,
   END_TEST_QUESTION,
   renderSetSummary,
   renderTestBar,
   renderTestStart,
 } from '@/ui/testBar.ts';
-import type { SetStore } from '@/ui/testSet.ts';
+import type { SetListing, SetStore } from '@/ui/testSet.ts';
 import {
   browserSetStore,
   clockReading,
@@ -75,6 +88,7 @@ import {
   openedSet,
   recordOf,
   setSummary,
+  storedSetScore,
   withStripAnswered,
   withStripSkipped,
 } from '@/ui/testSet.ts';
@@ -127,7 +141,41 @@ function answerChoiceOf(state: AppState): AnswerChoice {
  * a link both restore them.
  */
 function writeHash(icao: string, seed: number, settings: SessionSettings): void {
-  globalThis.history.replaceState(null, '', hashFor(icao, seed, settings));
+  replaceHash(hashFor(icao, seed, settings));
+}
+
+/**
+ * The hash the page last opened or wrote. A `hashchange` to it opens nothing: the test DOM reports
+ * the page's own `replaceState` writes as one, which a browser does not.
+ */
+let routedHash = '';
+
+/** Writes a hash over the history entry on screen, which a reload and Back then read. */
+function replaceHash(hash: string): void {
+  globalThis.history.replaceState(null, '', hash);
+  routedHash = globalThis.location.hash;
+}
+
+/** Every airport file this page has loaded or is loading, so each is parsed once. */
+const airportCache = new Map<string, Promise<AirportData>>();
+
+/**
+ * Loads one airport's data, once per page: a later call gets the same promise, and a failed load is
+ * forgotten so the next call tries again.
+ *
+ * @param icao The airport's ICAO identifier.
+ * @returns The validated airport data.
+ * @throws Error When the load fails, as `loadAirportData` does.
+ */
+function cachedAirport(icao: string): Promise<AirportData> {
+  const cached = airportCache.get(icao);
+  if (cached !== undefined) return cached;
+  const loading = loadAirportData(icao).catch((error: unknown) => {
+    airportCache.delete(icao);
+    throw error;
+  });
+  airportCache.set(icao, loading);
+  return loading;
 }
 
 /** The segmented control that picks the half of the trainer the session runs in. */
@@ -225,7 +273,7 @@ function testControl(actions: Actions): HTMLElement {
 }
 
 /**
- * The toolbar: the product name, the airport, the mode and answer switches and the Filters button,
+ * The toolbar: the product name, which links home, the airport, the mode and answer switches and the Filters button,
  * then Test and New strip on the right. On a phone the answer switch, Filters and Test wrap to a
  * second row. While a test set runs, and over its summary, the test bar stands in for all of it.
  */
@@ -239,8 +287,12 @@ function renderToolbar(state: AppState, index: AirportsIndex, actions: Actions):
     filtersControl(state, actions),
     testControl(actions),
   );
+  const brand = el('h1', 'brand');
+  const home = el('a', '', 'CRAFT trainer');
+  home.href = '#/';
+  brand.append(home);
   bar.append(
-    el('h1', 'brand', 'CRAFT trainer'),
+    brand,
     airportControl(state, index, actions),
     modeControl(state, actions),
     secondRow,
@@ -522,13 +574,17 @@ type Stores = {
   input: InputKindStore;
   fullRoute: FullRouteStore;
   set: SetStore;
+  home: HomeStore;
 };
 
 /** How often the test bar's clock is written again, in milliseconds. */
 const CLOCK_TICK_MS = 1000;
 
-/** What keeps a test set going between renders, which follows the state after every change. */
-type SetFollower = { follow: (state: AppState) => void };
+/**
+ * What keeps a test set going between renders, which follows the state after every change and stops
+ * its clock when the page is left.
+ */
+type SetFollower = { follow: (state: AppState) => void; stop: () => void };
 
 /**
  * Stores a test set whenever it moves, so a reload resumes it, and ticks its clock while it runs:
@@ -578,6 +634,7 @@ function setFollower(
       if (set === undefined || set.ended) stop();
       else timer ??= setInterval(tick, CLOCK_TICK_MS);
     },
+    stop,
   };
 }
 
@@ -602,12 +659,14 @@ function endedAt(state: AppState, set: SetState, now: number): AppState {
  * @param current Reads the state on screen.
  * @param update Puts a new state on screen.
  * @param solved The store a submitted attempt is saved in.
+ * @param home The store a started set is remembered in, for home to offer it again.
  * @returns The handlers.
  */
 function setActions(
   current: () => AppState,
   update: (next: AppState) => void,
   solved: SolvedStore,
+  home: HomeStore,
 ): SetActions {
   const withSet = (act: (state: AppState, set: SetState) => void) => (): void => {
     const state = current();
@@ -615,8 +674,10 @@ function setActions(
   };
   return {
     onStartTest: (n, minutes) => {
-      const params = { seed: randomSeed(), n, minutes, index: 0 };
-      update(openedSet(current(), params, undefined, Date.now()));
+      const state = current();
+      const params = { seed: newSetSeed(randomSeed), n, minutes, index: 0 };
+      home.save({ icao: state.airport.airport.icao, mode: state.mode, format: 'test', n, minutes });
+      update(openedSet(state, params, undefined, Date.now()));
     },
     onSkip: withSet((state, set) => {
       update(onSetStrip(state, withStripSkipped(set, Date.now())));
@@ -723,12 +784,14 @@ function show(root: Element, built: Built | undefined, state: AppState, build: (
  * belongs on screen; every other change is written into the controls already there. A pick or a
  * keystroke therefore leaves the control it came from in place, with its focus and its caret. A
  * test set is stored whenever it moves, so a reload resumes it, and its clock follows every change.
+ * Once the page is disposed its clock stops and nothing it still has under way reaches the screen.
  */
-function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): void {
+function mount(root: Element, index: AirportsIndex, initial: AppState, stores: Stores): Mounted {
   const store = stores.solved;
   let state = initial;
   let actions: Actions;
   let built: Built | undefined;
+  let disposed = false;
 
   const follower = setFollower(
     root,
@@ -739,6 +802,7 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     },
   );
   const update = (next: AppState): void => {
+    if (disposed) return;
     state = next;
     writeHash(state.airport.airport.icao, state.seed, state);
     built = show(root, built, state, () => renderApp(state, index, actions, store));
@@ -747,10 +811,11 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
 
   actions = {
     onAirport: (icao) => {
-      void loadAirportData(icao).then((airport) => {
+      void cachedAirport(icao).then((airport) => {
         const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
         const { mode, input, fullRoute } = state;
         const previous = store.load(icao, state.seed, { mode, input, fullRoute });
+        rememberPractice(stores.home, icao, mode);
         update(newSession(airport, state.seed, previous, { filter, mode, input, fullRoute }));
       });
     },
@@ -791,6 +856,7 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
       const seed = randomSeed();
       const { input, fullRoute } = state;
       const previous = store.load(state.airport.airport.icao, seed, { mode, input, fullRoute });
+      rememberPractice(stores.home, state.airport.airport.icao, mode);
       update(withMode(state, mode, seed, previous));
     },
     onNewScenario: () => {
@@ -809,11 +875,25 @@ function mount(root: Element, index: AirportsIndex, initial: AppState, stores: S
     onText: (text) => {
       update(withText(state, text));
     },
-    ...setActions(() => state, update, store),
+    ...setActions(() => state, update, store, stores.home),
   };
 
   update(state);
+  return {
+    dispose: () => {
+      disposed = true;
+      follower.stop();
+    },
+  };
 }
+
+/** A page on screen, and how to tear it down before another takes its root. */
+type Mounted = { dispose: () => void };
+
+/** The teardown of a page that leaves nothing running: home, and the root before its first page. */
+const NOTHING_TO_DISPOSE = (): void => {
+  // Nothing of the page outlives its nodes.
+};
 
 /** Whether the scroll listener of the phone toolbar is installed, which `startApp` does once. */
 let toolbarListening = false;
@@ -838,8 +918,378 @@ function opensFullRoute(hash: string, input: InputKind, remembered: boolean | un
 }
 
 /**
- * Starts the trainer: loads the airport the URL names, or the first of the index when it names
- * none, and renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
+ * The settings a session opens under, from the settings a link carries and what this browser last
+ * chose where the link names none.
+ *
+ * @param hash The hash or route query the page opened on, with or without its leading `#`.
+ * @param icao The airport the session opens at, whose remembered filter applies.
+ * @param stores What this browser remembers.
+ * @returns The filter, the mode, the input kind and whether Full route holds.
+ */
+function settingsFrom(
+  hash: string,
+  icao: string,
+  stores: Stores,
+): Omit<SessionSettings, 'set'> & { mode: Mode } {
+  const mode = modeFromHash(hash);
+  const filter = hasFilterParams(hash)
+    ? filterFromHash(hash)
+    : (stores.filter.load(icao) ?? ANY_SCENARIO);
+  const input = inputKindFromHash(hash) ?? stores.input.load() ?? 'dropdowns';
+  const fullRoute = opensFullRoute(hash, input, stores.fullRoute.load());
+  return { filter, mode, input, fullRoute };
+}
+
+/** Whether the page listens for hash changes, which `startApp` installs once. */
+let routeListening = false;
+
+/**
+ * The page `startApp` runs: its root, the airports index, what this browser remembers, the teardown
+ * of the page on screen, and the number of the newest route opened into it.
+ */
+type Active = {
+  root: Element;
+  index: AirportsIndex;
+  stores: Stores;
+  dispose: () => void;
+  generation: number;
+};
+
+/** The page the hash listener opens routes into, once `startApp` has run. */
+let active: Active | undefined;
+
+/** A route on its way to the screen: the page it opens into, and the number it was opened as. */
+type Opening = { target: Active; generation: number };
+
+/** Whether no newer route, and no newer `startApp`, has started since this one. */
+function isCurrent(opening: Opening): boolean {
+  return active === opening.target && opening.target.generation === opening.generation;
+}
+
+/** Hands the root to a new page: the page on screen is torn down first, then the new one drawn. */
+function takeOver(opening: Opening, draw: () => Mounted): void {
+  opening.target.dispose();
+  opening.target.dispose = NOTHING_TO_DISPOSE;
+  opening.target.dispose = draw().dispose;
+}
+
+/**
+ * The first airport of the index, which a link that names none opens.
+ *
+ * @throws Error When the index lists no airports.
+ */
+function firstAirport(index: AirportsIndex): AirportsIndex[number] {
+  const first = index[0];
+  if (first === undefined) throw new Error('airports.json lists no airports');
+  return first;
+}
+
+/** Whether the index lists an airport. */
+function lists(index: AirportsIndex, icao: string): boolean {
+  return index.some((entry) => entry.icao === icao);
+}
+
+/** Remembers a practice session for home, keeping the test size and time home last had. */
+function rememberPractice(home: HomeStore, icao: string, mode: Mode): void {
+  const remembered = home.load();
+  const n = remembered?.n ?? DEFAULT_SET_SIZE;
+  const minutes = remembered?.minutes ?? DEFAULT_SET_MINUTES;
+  home.save({ icao, mode, format: 'practice', n, minutes });
+}
+
+/**
+ * Opens a `#s=…` strip link as the trainer always has: the airport it names, or the first; its seed,
+ * or a fresh one; its settings, or what this browser last chose; and its test set where it names one.
+ */
+async function openStrip(opening: Opening, hash: string): Promise<void> {
+  const { root, index, stores } = opening.target;
+  const named = airportFromHash(hash);
+  const entry = index.find((candidate) => candidate.icao === named) ?? firstAirport(index);
+  const airport = await cachedAirport(entry.icao);
+  if (!isCurrent(opening)) return;
+  const seed = seedFromHash(hash) ?? randomSeed();
+  const settings = settingsFrom(hash, entry.icao, stores);
+  const { mode, input, fullRoute } = settings;
+  const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute });
+  const session = newSession(airport, seed, previous, settings);
+  const set = setFromHash(hash);
+  const initial =
+    set === undefined ? session : openedSet(session, set, stores.set.load(set.seed), Date.now());
+  takeOver(opening, () => mount(root, index, initial, stores));
+}
+
+/** A route that opens a fresh strip at an airport: practice, or a new test. */
+type FreshRoute = Extract<Route, { kind: 'practice' | 'newTest' }>;
+
+/** A fresh session at a route's airport, under the route's mode and the settings its query carries. */
+async function routeSession(opening: Opening, route: FreshRoute): Promise<AppState> {
+  const airport = await cachedAirport(route.icao);
+  const from = settingsFrom(route.query, route.icao, opening.target.stores);
+  return newSession(airport, randomSeed(), undefined, { ...from, mode: route.mode });
+}
+
+/** Opens home in place of a link that names nothing this browser can open, with `#/` written over it. */
+async function openHomeInstead(opening: Opening): Promise<void> {
+  replaceHash('#/');
+  return openHome(opening);
+}
+
+/** Opens a practice link on a fresh strip and remembers its airport and mode for home. */
+async function openPractice(
+  opening: Opening,
+  route: Extract<Route, { kind: 'practice' }>,
+): Promise<void> {
+  const { root, index, stores } = opening.target;
+  if (!lists(index, route.icao)) return openHomeInstead(opening);
+  const session = await routeSession(opening, route);
+  if (!isCurrent(opening)) return;
+  rememberPractice(stores.home, route.icao, route.mode);
+  takeOver(opening, () => mount(root, index, session, stores));
+}
+
+/** Starts the new test a link asks for and remembers it for home. */
+async function openNewTest(
+  opening: Opening,
+  route: Extract<Route, { kind: 'newTest' }>,
+): Promise<void> {
+  const { root, index, stores } = opening.target;
+  if (!lists(index, route.icao)) return openHomeInstead(opening);
+  const session = await routeSession(opening, route);
+  if (!isCurrent(opening)) return;
+  const { icao, mode, n, minutes } = route;
+  const params = { seed: newSetSeed(randomSeed), n, minutes, index: 0 };
+  stores.home.save({ icao, mode, format: 'test', n, minutes });
+  const initial = openedSet(session, params, undefined, Date.now());
+  takeOver(opening, () => mount(root, index, initial, stores));
+}
+
+/**
+ * Continues the set a link names, under the airport and settings this browser stored for it, which
+ * win over the link's own; a set this browser does not hold opens home.
+ */
+async function openContinueTest(
+  opening: Opening,
+  route: Extract<Route, { kind: 'continueTest' }>,
+): Promise<void> {
+  const { root, index, stores } = opening.target;
+  const record = stores.set.load(route.setSeed);
+  if (record === undefined || !lists(index, record.icao)) return openHomeInstead(opening);
+  const airport = await cachedAirport(record.icao);
+  if (!isCurrent(opening)) return;
+  const { filter, mode, input, fullRoute } = record;
+  const session = newSession(airport, randomSeed(), undefined, { filter, mode, input, fullRoute });
+  const params = { seed: route.setSeed, n: record.n, minutes: record.minutes, index: 0 };
+  const initial = openedSet(session, params, record, Date.now());
+  takeOver(opening, () => mount(root, index, initial, stores));
+}
+
+/** The score lines of finished sets, by set seed, since a finished set never changes. */
+const scoreCache = new Map<number, string>();
+
+/**
+ * The score line home shows for a finished set, or `undefined` where its airport is not loaded.
+ *
+ * @param listing The set and its stored record.
+ * @param airports The loaded airports, by ICAO code.
+ * @param solved The store the set's answers were saved in.
+ * @returns The line, e.g. `3 of 10 fully correct · 72%`.
+ */
+function scoreOf(
+  listing: SetListing,
+  airports: ReadonlyMap<string, AirportData>,
+  solved: SolvedStore,
+): string | undefined {
+  const known = scoreCache.get(listing.setSeed);
+  if (known !== undefined) return known;
+  const { icao, mode, input, fullRoute } = listing.record;
+  const airport = airports.get(icao);
+  if (airport === undefined) return undefined;
+  const load = (seed: number): Attempt | undefined =>
+    solved.load(icao, seed, { mode, input, fullRoute });
+  const score = storedSetScore(airport, listing, load);
+  scoreCache.set(listing.setSeed, score);
+  return score;
+}
+
+/**
+ * The choices home opens on: the ones this browser remembers, or practice in clearance mode at the
+ * first airport where it remembers none or remembers an airport the index no longer lists.
+ */
+function homeChoicesOf(home: HomeStore, index: AirportsIndex): HomeChoices {
+  const remembered = home.load();
+  if (remembered !== undefined && lists(index, remembered.icao)) return remembered;
+  const { icao } = firstAirport(index);
+  const minutes = DEFAULT_SET_MINUTES;
+  return { icao, mode: 'clearance', format: 'practice', n: DEFAULT_SET_SIZE, minutes };
+}
+
+/** The way this browser last chose to answer, as home's switch shows it. */
+function rememberedAnswer(stores: Stores): AnswerChoice {
+  if (stores.input.load() !== 'text') return 'pick';
+  return stores.fullRoute.load() === true ? 'full' : 'type';
+}
+
+/** Copies a link home shows; a refusal is logged, since home shows the link to copy by hand anyway. */
+async function copyLink(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error: unknown) {
+    console.warn('The clipboard refused the link; home shows it to copy by hand.', error);
+  }
+}
+
+/** Puts a home page on screen, keeping the focus and an open More options as they were. */
+function redrawHome(root: Element, page: HTMLElement): void {
+  const focused = focusKeyOf(root);
+  const moreOpen = root.querySelector<HTMLDetailsElement>('details.home-more')?.open === true;
+  root.replaceChildren(page);
+  const more = root.querySelector<HTMLDetailsElement>('details.home-more');
+  if (moreOpen && more !== null) more.open = true;
+  restoreFocus(root, focused);
+}
+
+/** The airports, tests and links home lists, which no choice on home changes. */
+type HomeListing = Pick<HomeProps, 'airports' | 'tests' | 'resume' | 'linkBase' | 'copy'>;
+
+/** What home lists: the airports in index order, the remembered sets, and the base of its links. */
+function homeListing(airports: readonly AirportData[], stores: Stores): HomeListing {
+  const byIcao = new Map(airports.map((data) => [data.airport.icao, data]));
+  const tests = homeTestRows(stores.set.list(), Date.now(), (listing) =>
+    scoreOf(listing, byIcao, stores.solved),
+  );
+  const { origin, pathname, search } = globalThis.location;
+  return {
+    airports: airports.map((data) => ({ icao: data.airport.icao, spoken: data.airport.spoken })),
+    tests,
+    resume: tests.find((row) => row.action === 'Continue'),
+    linkBase: origin + pathname + search,
+    copy: (text) => {
+      void copyLink(text);
+    },
+  };
+}
+
+/**
+ * Puts home on screen and draws it again after every choice, each remembered as it is made: the
+ * airport, mode and format for home itself, the answer and the filter as the trainer remembers them.
+ *
+ * @param root The element the page is rendered into.
+ * @param airports Every airport of the index, loaded, in index order.
+ * @param stores What this browser remembers.
+ * @param initial The choices home opens on.
+ * @returns Home's teardown, which has nothing to stop.
+ */
+function mountHome(
+  root: Element,
+  airports: readonly AirportData[],
+  stores: Stores,
+  initial: HomeChoices,
+): Mounted {
+  const listing = homeListing(airports, stores);
+  let choices = initial;
+  let answer = rememberedAnswer(stores);
+  let filter = stores.filter.load(choices.icao) ?? ANY_SCENARIO;
+  const draw = (): void => {
+    const airport = airports.find((data) => data.airport.icao === choices.icao);
+    if (airport === undefined) throw new Error(`home has no data loaded for ${choices.icao}`);
+    const page = renderHome({
+      ...listing,
+      airport,
+      choices,
+      answer,
+      filter,
+      onChoices: (next) => {
+        stores.home.save(next);
+        if (next.icao !== choices.icao) filter = stores.filter.load(next.icao) ?? ANY_SCENARIO;
+        choices = next;
+        draw();
+      },
+      onAnswer: (next) => {
+        stores.input.save(next === 'pick' ? 'dropdowns' : 'text');
+        stores.fullRoute.save(next === 'full');
+        answer = next;
+        draw();
+      },
+      onFilter: (next) => {
+        stores.filter.save(choices.icao, next);
+        filter = next;
+        draw();
+      },
+    });
+    redrawHome(root, page);
+  };
+  draw();
+  return { dispose: NOTHING_TO_DISPOSE };
+}
+
+/** Opens home once every airport of the index is loaded, since its cards name each one. */
+async function openHome(opening: Opening): Promise<void> {
+  const { root, index, stores } = opening.target;
+  const airports = await Promise.all(index.map((entry) => cachedAirport(entry.icao)));
+  if (!isCurrent(opening)) return;
+  const choices = homeChoicesOf(stores.home, index);
+  takeOver(opening, () => mountHome(root, airports, stores, choices));
+}
+
+/**
+ * Opens the route a hash names into the page, in place of the page on screen. A route that a newer
+ * one overtakes while it loads renders nothing.
+ *
+ * @param target The page to open the route into.
+ * @param hash The hash, with or without its leading `#`.
+ * @returns Nothing, once the route is on screen or overtaken.
+ * @throws Error When an airport file the route needs fails to load or validate.
+ */
+async function openRoute(target: Active, hash: string): Promise<void> {
+  target.generation += 1;
+  routedHash = hash;
+  const opening = { target, generation: target.generation };
+  const route = routeOf(hash);
+  switch (route.kind) {
+    case 'strip':
+      return openStrip(opening, hash);
+    case 'practice':
+      return openPractice(opening, route);
+    case 'newTest':
+      return openNewTest(opening, route);
+    case 'continueTest':
+      return openContinueTest(opening, route);
+    case 'home':
+      return openHome(opening);
+  }
+}
+
+/** Renders a thrown value as the line the page shows when it cannot start. */
+function reasonOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/**
+ * Opens the route of a hash the page moved to, from a link or Back. A route that fails to load is
+ * written into the page and logged, unless a newer route has taken the page over since.
+ */
+function onHashChange(): void {
+  const target = active;
+  const hash = globalThis.location.hash;
+  if (target === undefined || hash === routedHash) return;
+  const opened = openRoute(target, hash);
+  const generation = target.generation;
+  void opened.catch((error: unknown) => {
+    console.error(`The trainer could not open ${hash}.`, error);
+    if (!isCurrent({ target, generation })) return;
+    target.dispose();
+    target.dispose = NOTHING_TO_DISPOSE;
+    target.root.textContent = `The trainer could not start: ${reasonOf(error)}`;
+  });
+}
+
+/**
+ * Starts the trainer on the route the URL names: home on an empty hash or `#/`, a practice strip or
+ * a test from an `#/<ICAO>/<mode>/…` link, and a strip from every other hash, as before. A change
+ * of hash afterwards, from a link or Back, opens its route in place of the page on screen.
+ *
+ * A strip link loads the airport the URL names, or the first of the index when it names none, and
+ * renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
  *
  * A link that names an airport the index does not list opens on the first one, the way a link that
  * names no airport does. A link that names a filter opens under that filter, so a shared scenario
@@ -853,37 +1303,30 @@ function opensFullRoute(hash: string, input: InputKind, remembered: boolean | un
  *
  * @param root The element the page is rendered into.
  * @returns Nothing, once the first render is on screen.
- * @throws Error When the airports index is empty, or its airport file fails to load or validate.
+ * @throws Error When the airports index is empty, or an airport file the first route needs fails to
+ *   load or validate.
  */
 export async function startApp(root: Element): Promise<void> {
+  routedHash = globalThis.location.hash;
   const index = listAirports();
-  const first = index[0];
-  if (first === undefined) throw new Error('airports.json lists no airports');
-  const hash = globalThis.location.hash;
-  const named = airportFromHash(hash);
-  const entry = index.find((candidate) => candidate.icao === named) ?? first;
-  const [airport] = await Promise.all([loadAirportData(entry.icao), loadStripFont()]);
-  const seed = seedFromHash(hash) ?? randomSeed();
-  const mode = modeFromHash(hash);
+  firstAirport(index);
+  await loadStripFont();
   const stores: Stores = {
     solved: browserSolvedStore(),
     filter: browserFilterStore(),
     input: browserInputKindStore(),
     fullRoute: browserFullRouteStore(),
     set: browserSetStore(),
+    home: browserHomeStore(),
   };
-  const filter = hasFilterParams(hash)
-    ? filterFromHash(hash)
-    : (stores.filter.load(entry.icao) ?? ANY_SCENARIO);
-  const input = inputKindFromHash(hash) ?? stores.input.load() ?? 'dropdowns';
-  const fullRoute = opensFullRoute(hash, input, stores.fullRoute.load());
-  const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute });
-  const settings = { filter, mode, input, fullRoute };
-  const session = newSession(airport, seed, previous, settings);
-  const set = setFromHash(hash);
-  const initial =
-    set === undefined ? session : openedSet(session, set, stores.set.load(set.seed), Date.now());
-  mount(root, index, initial, stores);
+  active?.dispose();
+  const target: Active = { root, index, stores, dispose: NOTHING_TO_DISPOSE, generation: 0 };
+  active = target;
+  await openRoute(target, globalThis.location.hash);
+  if (!routeListening) {
+    routeListening = true;
+    globalThis.addEventListener('hashchange', onHashChange);
+  }
   if (!toolbarListening) {
     toolbarListening = true;
     hideToolbarOnScroll();

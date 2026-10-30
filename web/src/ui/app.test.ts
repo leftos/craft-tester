@@ -795,6 +795,156 @@ describe('the rail and the work column', () => {
   });
 });
 
+/** One card of a home card group, found by its group and the value it reads back. */
+function homeCard(root: ParentNode, group: string, value: string): HTMLElement {
+  const found = root.querySelector(`[data-focus-key="${group}:${value}"]`);
+  if (!(found instanceof HTMLElement)) throw new Error(`home offers no ${value} under ${group}`);
+  return found;
+}
+
+/** Whether a home card is the one chosen in its group. */
+function cardChecked(root: ParentNode, group: string, value: string): string | null {
+  return homeCard(root, group, value).getAttribute('aria-checked');
+}
+
+/** The `href` of the first link a selector finds, or `null` where it finds none. */
+function hrefAt(root: ParentNode, selector: string): string | null {
+  return root.querySelector(selector)?.getAttribute('href') ?? null;
+}
+
+/** Where the test bar says the set is, e.g. "Strip 1 of 5". */
+function setWhere(root: ParentNode): string {
+  return root.querySelector('.testbar .where')?.textContent ?? '';
+}
+
+/** The set seed of the hash's `x=` part, in base 36. */
+function setSeedOf(hash: string): string {
+  const seed = /[#&]x=([0-9a-z]+)\./.exec(hash)?.[1];
+  if (seed === undefined) throw new Error(`the hash ${hash} names no test set`);
+  return seed;
+}
+
+/** Sets the hash and tells the page, the way a link the student follows does. */
+function followLink(hash: string): void {
+  globalThis.location.hash = hash;
+  globalThis.dispatchEvent(new HashChangeEvent('hashchange'));
+}
+
+describe('routing', () => {
+  beforeEach(() => {
+    globalThis.localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('opens home on an empty hash, offering practice at the first airport', async () => {
+    const root = await mountHash('');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+    expect(hrefAt(root, '.home-start a.button')).toBe('#/KSFO/clearance/practice');
+    expect(cardChecked(root, 'Airport', 'KSFO')).toBe('true');
+  });
+
+  it('opens practice from its link and writes the strip link over it', async () => {
+    const root = await mountHash('#/KOAK/amend/practice');
+    expect(root.querySelector('section.panel.strip')).not.toBeNull();
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&m=amend$/);
+  });
+
+  it('starts a new test from its link', async () => {
+    const root = await mountHash('#/KSFO/clearance/test/5x0');
+    expect(root.querySelector('.testbar')).not.toBeNull();
+    expect(setWhere(root)).toBe('Strip 1 of 5');
+    expect(globalThis.location.hash).toMatch(/&x=[0-9a-z]+\.5\.0\.0$/);
+  });
+
+  it('continues a stored test from its link', async () => {
+    await mountHash('#/KSFO/clearance/test/5x0');
+    const seed = setSeedOf(globalThis.location.hash);
+
+    const root = await mountHash(`#/KSFO/clearance/test/${seed}`);
+
+    expect(root.querySelector('.testbar')).not.toBeNull();
+    expect(setWhere(root)).toBe('Strip 1 of 5');
+    expect(setSeedOf(globalThis.location.hash)).toBe(seed);
+  });
+
+  it('opens home on a link to a test this browser does not hold', async () => {
+    const root = await mountHash('#/KSFO/clearance/test/zzz');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+    expect(globalThis.location.hash).toBe('#/');
+  });
+
+  it('opens home on a practice link to an airport the index does not list', async () => {
+    const root = await mountHash('#/ZZZZ/clearance/practice');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+  });
+
+  it('follows a hash change to practice and back home', async () => {
+    const root = await mountHash('#/');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+
+    followLink('#/KSFO/clearance/practice');
+    await vi.waitFor(() => {
+      expect(root.querySelector('section.panel.strip')).not.toBeNull();
+    });
+
+    followLink('#/');
+    await vi.waitFor(() => {
+      expect(root.querySelector('.home-page')).not.toBeNull();
+    });
+  });
+
+  it('remembers the airport chosen on home', async () => {
+    const root = await mountHash('');
+    homeCard(root, 'Airport', 'KOAK').click();
+
+    const again = await mountHash('');
+
+    expect(cardChecked(again, 'Airport', 'KOAK')).toBe('true');
+  });
+
+  it('remembers the airport and mode a practice link opened', async () => {
+    await mountHash('#/KOAK/amend/practice');
+
+    const root = await mountHash('');
+
+    expect(cardChecked(root, 'Airport', 'KOAK')).toBe('true');
+    expect(cardChecked(root, 'Mode', 'amendment')).toBe('true');
+  });
+
+  it('offers an unfinished test back on home', async () => {
+    await mountHash('#/KSFO/clearance/test/5x0');
+    const seed = setSeedOf(globalThis.location.hash);
+
+    const root = await mountHash('');
+
+    expect(root.querySelector('.home-resume')?.textContent).toContain('Unfinished test');
+    expect(hrefAt(root, '.home-resume a')).toBe(`#/KSFO/clearance/test/${seed}`);
+  });
+
+  it('links the toolbar brand to home', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    expect(hrefAt(root, '.toolbar .brand a')).toBe('#/');
+  });
+
+  it('remembers the mode the toolbar switched to for home', async () => {
+    const root = await mountApp(CLEARANCE_SEED, 'clearance', 'dropdowns');
+    segment(root, 'Mode', 'Amend').click();
+
+    const home = await mountHash('');
+
+    expect(cardChecked(home, 'Mode', 'amendment')).toBe('true');
+  });
+
+  it('opens an old strip link as it always has', async () => {
+    const root = await mountHash('#s=1&a=KSFO');
+    expect(root.querySelector('section.panel.strip')).not.toBeNull();
+    expect(globalThis.location.hash).toBe('#s=1&a=KSFO');
+  });
+});
+
 describe('toolbarHiddenAfter', () => {
   it('hides the toolbar on a scroll down past the threshold', () => {
     expect(toolbarHiddenAfter(100, 400, 8)).toBe(true);

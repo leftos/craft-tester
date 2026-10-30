@@ -164,7 +164,7 @@ export function renderTestBar(set: SetState, handlers: TestBarHandlers, now: num
 /**
  * The summary of a finished set: both totals, the time used, and one row per strip with its score
  * line and a link that opens the strip in the revisit view, in a tab of its own so the summary
- * stays.
+ * stays. New strip leaves the set for a fresh strip, and Home links home.
  *
  * @param summary The totals, the time used and the rows.
  * @param onNewStrip Leaves the set for a fresh strip.
@@ -189,7 +189,9 @@ export function renderSetSummary(summary: SetSummary, onNewStrip: () => void): H
     list.append(item);
   }
   const actions = el('div', 'actions');
-  actions.append(button('New strip', 'primary', onNewStrip));
+  const home = el('a', 'button secondary', 'Home');
+  home.href = '#/';
+  actions.append(button('New strip', 'primary', onNewStrip), home);
   panel.append(
     el('h2', '', 'Test results'),
     el(

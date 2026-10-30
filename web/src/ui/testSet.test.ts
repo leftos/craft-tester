@@ -5,6 +5,7 @@ import { ANY_SCENARIO, hashFor, setFromHash } from '@/scenario/filter.ts';
 import { seedFromString } from '@/scenario/rng.ts';
 import { buildScenario, loadAirportData } from '@/ui/session.ts';
 import type { Attempt } from '@/ui/solved.ts';
+import { createSolvedStore } from '@/ui/solved.ts';
 import type { SetState } from '@/ui/state.ts';
 import { newSession } from '@/ui/state.ts';
 import type { SetRecord } from '@/ui/testSet.ts';
@@ -16,9 +17,11 @@ import {
   isTimeUp,
   nextOpenIndex,
   openedSet,
+  setStripSeed,
   setSummary,
   setTotals,
   squareOf,
+  storedSetScore,
   stripResult,
   stripSeed,
   timeUsed,
@@ -399,5 +402,51 @@ describe('the summary totals', () => {
     const amendment = { ...SETTINGS, mode: 'amendment' as const };
     const amended = stripResult(airport, seedIn('amendment'), amendment, undefined);
     expect(amended.count).toBe(3 + 1 + 5);
+  });
+});
+
+describe('the score of a stored set', () => {
+  const typed: SessionSettings = { ...SETTINGS, input: 'text' };
+
+  /** A finished set of three strips under `typed`, stored with the strips it answered. */
+  function stored(answered: number[]): SetRecord {
+    return {
+      ...typed,
+      startedAt: START,
+      minutes: 20,
+      n: 3,
+      icao: 'KSFO',
+      answered,
+      skipped: [],
+      ended: true,
+      endedAt: START + MINUTE,
+    };
+  }
+
+  it('reads a set with no answers as none correct of the strips drawn', async () => {
+    const airport = await loadAirportData('KSFO');
+    const drawn = [0, 1, 2].filter((index) => setStripSeed(airport, 42, index, typed).resolved);
+    const listing = { setSeed: 42, record: stored([]) };
+    expect(storedSetScore(airport, listing, () => undefined)).toBe(
+      `0 of ${drawn.length} fully correct · 0%`,
+    );
+  });
+
+  it('counts an answer the solved store holds, as the summary does', async () => {
+    const airport = await loadAirportData('KSFO');
+    const solved = createSolvedStore(mapStorage());
+    const { seed } = setStripSeed(airport, 42, 0, typed);
+    solved.save('KSFO', seed, ATTEMPT, false);
+    const scope = { mode: typed.mode, input: typed.input, fullRoute: typed.fullRoute };
+    const load = (at: number): Attempt | undefined => solved.load('KSFO', at, scope);
+    expect(load(seed)).toEqual(ATTEMPT);
+
+    const score = storedSetScore(airport, { setSeed: 42, record: stored([0]) }, load);
+
+    const state = newSession(airport, 1, undefined, typed);
+    const set = endedSet(aSet(3, 20, { answered: [0] }), START + MINUTE);
+    const { totals, n } = setSummary(state, set, load, START + MINUTE);
+    expect(totals.percent).toBeGreaterThan(0);
+    expect(score).toBe(`${totals.fullyCorrect} of ${n} fully correct · ${totals.percent}%`);
   });
 });
