@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { AirportData } from '@/data/schema.ts';
 import type { Grade } from '@/rules/types.ts';
 import type { ScenarioFilter, SessionSettings, SetParams } from '@/scenario/filter.ts';
-import { hashFor } from '@/scenario/filter.ts';
+import { hashFor, parseSetSeed } from '@/scenario/filter.ts';
 import { seedFromString } from '@/scenario/rng.ts';
 import { amendmentGrades } from '@/ui/amendPanels.ts';
 import { clearanceOutcome } from '@/ui/clearanceGrading.ts';
@@ -470,18 +470,50 @@ export type SetRecord = Omit<SessionSettings, 'set'> & {
   endedAt: number | undefined;
 };
 
-/** Remembers the sets this browser started, so a reload resumes one. */
+/** One set this browser remembers: its seed and its record. */
+export type SetListing = { setSeed: number; record: SetRecord };
+
+/** Remembers the sets this browser started, so a reload resumes one and home lists them. */
 export type SetStore = {
   load(setSeed: number): SetRecord | undefined;
   save(setSeed: number, record: SetRecord): void;
+  /** Every set remembered whose record reads back, newest started first. */
+  list(): SetListing[];
 };
 
 /** The storage members the store touches, so a test can stand a Map in for the browser's. */
-type SetStorage = Pick<Storage, 'getItem' | 'setItem'>;
+type SetStorage = Pick<Storage, 'getItem' | 'setItem' | 'key' | 'length'>;
 
 /** The storage key one set is remembered under. */
 function setKey(setSeed: number): string {
   return `craft-tester:set:${(setSeed >>> 0).toString(36)}`;
+}
+
+/** The storage keys sets are remembered under, the seed in base 36 captured. */
+const SET_KEY_PATTERN = /^craft-tester:set:([0-9a-z]{1,7})$/;
+
+/** The set remembered under one storage key, or `undefined` where the key or its value is not one. */
+function listingAt(storage: SetStorage, key: string | null): SetListing | undefined {
+  const setSeed = parseSetSeed(SET_KEY_PATTERN.exec(key ?? '')?.[1]);
+  if (key === null || setSeed === undefined) return undefined;
+  const raw = storage.getItem(key);
+  if (raw === null) return undefined;
+  try {
+    const record = parseRecord(raw);
+    return record === undefined ? undefined : { setSeed, record };
+  } catch {
+    return undefined;
+  }
+}
+
+/** Every set remembered in one storage, newest first; a value that does not read is skipped. */
+function listSets(storage: SetStorage): SetListing[] {
+  const listings: SetListing[] = [];
+  for (let index = 0; index < storage.length; index += 1) {
+    const listing = listingAt(storage, storage.key(index));
+    if (listing !== undefined) listings.push(listing);
+  }
+  return listings.sort((a, b) => b.record.startedAt - a.record.startedAt);
 }
 
 /** Rebuilds a filter from a parsed value, leaving out a destination it stored none of. */
@@ -502,7 +534,8 @@ function parseRecord(raw: string): SetRecord | undefined {
  * Builds a set store over one storage.
  *
  * Resuming a set is a convenience, so every failure the storage can raise reads as "nothing
- * remembered", and a set whose record cannot be written still runs, only without resume.
+ * remembered", and a set whose record cannot be written still runs, only without resume. Listing
+ * the sets skips a record that does not read, and lists none when the storage fails.
  *
  * @param storage The storage to read and write, or `undefined` where the browser offers none.
  * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
@@ -523,6 +556,13 @@ export function createSetStore(storage: SetStorage | undefined): SetStore {
         storage?.setItem(setKey(setSeed), JSON.stringify(stored));
       } catch {
         // A storage that refuses the write costs the set its resume, nothing more.
+      }
+    },
+    list: () => {
+      try {
+        return storage === undefined ? [] : listSets(storage);
+      } catch {
+        return [];
       }
     },
   };

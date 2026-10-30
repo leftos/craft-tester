@@ -8,13 +8,13 @@ import { clockReading, formatClock, squareOf, timeUsed } from '@/ui/testSet.ts';
 const SET_SIZES: readonly number[] = [5, 10, 20];
 
 /** The strip count the Test popover starts on. */
-const DEFAULT_SET_SIZE = 10;
+export const DEFAULT_SET_SIZE = 10;
 
 /** The time limits a set is started with, in minutes; 0 is untimed. */
 const SET_MINUTES: readonly number[] = [10, 20, 30, 0];
 
 /** The time limit the Test popover starts on, in minutes. */
-const DEFAULT_SET_MINUTES = 20;
+export const DEFAULT_SET_MINUTES = 20;
 
 /** The question End test asks before it ends the set. */
 export const END_TEST_QUESTION = 'End the test now? Unanswered strips count as zero.';
@@ -41,14 +41,14 @@ export function withSkip(submit: HTMLButtonElement, onSkip: (() => void) | undef
 }
 
 /** The strip-count choices of the Test popover. */
-const SIZE_OPTIONS: readonly SegmentOption[] = SET_SIZES.map((n) => ({
+export const SIZE_OPTIONS: readonly SegmentOption[] = SET_SIZES.map((n) => ({
   value: String(n),
   label: String(n),
   title: `${n} strips`,
 }));
 
 /** The time-limit choices of the Test popover. */
-const MINUTE_OPTIONS: readonly SegmentOption[] = SET_MINUTES.map((minutes) => ({
+export const MINUTE_OPTIONS: readonly SegmentOption[] = SET_MINUTES.map((minutes) => ({
   value: String(minutes),
   label: minutes === 0 ? 'Untimed' : `${minutes} min`,
   title: '',

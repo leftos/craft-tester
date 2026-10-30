@@ -54,6 +54,22 @@ function verdict(value: Verdict): Grade {
   return { element: 'RWY', verdict: value, expectedLabel: '', actualLabel: '', citations: [] };
 }
 
+/** A storage backed by a Map, keys listed in the order they were first written. */
+function mapStorage(
+  map = new Map<string, string>(),
+): Pick<Storage, 'getItem' | 'setItem' | 'key' | 'length'> {
+  return {
+    getItem: (key) => map.get(key) ?? null,
+    setItem: (key, value) => {
+      map.set(key, value);
+    },
+    key: (index) => [...map.keys()][index] ?? null,
+    get length() {
+      return map.size;
+    },
+  };
+}
+
 const SETTINGS: SessionSettings = {
   filter: ANY_SCENARIO,
   mode: 'clearance',
@@ -135,11 +151,7 @@ describe('the set store', () => {
 
   it('round-trips a record under the set seed in base 36', () => {
     const map = new Map<string, string>();
-    const storage = {
-      getItem: (key: string) => map.get(key) ?? null,
-      setItem: (key: string, value: string) => map.set(key, value),
-    };
-    const store = createSetStore(storage);
+    const store = createSetStore(mapStorage(map));
     store.save(42, record);
     expect([...map.keys()]).toEqual(['craft-tester:set:16']);
     expect(store.load(42)).toEqual(record);
@@ -147,11 +159,14 @@ describe('the set store', () => {
   });
 
   it('reads corrupted JSON and a record of another shape as nothing', () => {
-    const values: Record<string, string> = {
-      'craft-tester:set:1': '{not json',
-      'craft-tester:set:2': JSON.stringify({ ...record, n: 'ten' }),
-    };
-    const store = createSetStore({ getItem: (key) => values[key] ?? null, setItem: () => {} });
+    const store = createSetStore(
+      mapStorage(
+        new Map([
+          ['craft-tester:set:1', '{not json'],
+          ['craft-tester:set:2', JSON.stringify({ ...record, n: 'ten' })],
+        ]),
+      ),
+    );
     expect(store.load(1)).toBeUndefined();
     expect(store.load(2)).toBeUndefined();
   });
@@ -164,11 +179,58 @@ describe('the set store', () => {
       setItem: (): void => {
         throw new Error('quota');
       },
+      key: (): string | null => {
+        throw new Error('denied');
+      },
+      length: 1,
     };
     for (const store of [createSetStore(throwing), createSetStore(undefined)]) {
       expect(() => store.save(1, record)).not.toThrow();
       expect(store.load(1)).toBeUndefined();
+      expect(store.list()).toEqual([]);
     }
+  });
+
+  it('lists the saved sets newest first', () => {
+    const store = createSetStore(mapStorage());
+    store.save(42, record);
+    const newer = { ...record, startedAt: START + MINUTE, icao: 'KOAK' };
+    store.save(7, newer);
+    expect(store.list()).toEqual([
+      { setSeed: 7, record: newer },
+      { setSeed: 42, record },
+    ]);
+  });
+
+  it('lists past a key holding invalid JSON or a record of another shape', () => {
+    const map = new Map([
+      ['craft-tester:set:1', '{not json'],
+      ['craft-tester:set:2', JSON.stringify({ ...record, n: 'ten' })],
+    ]);
+    const store = createSetStore(mapStorage(map));
+    store.save(3, record);
+    expect(store.list()).toEqual([{ setSeed: 3, record }]);
+  });
+
+  it('lists only the keys sets are saved under', () => {
+    const map = new Map([
+      ['craft-tester:filter:KSFO', JSON.stringify({ time: 'day', config: { kind: 'any' } })],
+      ['craft-tester:set:', JSON.stringify({ ...record, endedAt: null })],
+    ]);
+    expect(createSetStore(mapStorage(map)).list()).toEqual([]);
+  });
+
+  it('lists nothing when reading a key throws', () => {
+    const map = new Map<string, string>();
+    const store = createSetStore({
+      ...mapStorage(map),
+      key: () => {
+        throw new Error('denied');
+      },
+      length: 1,
+    });
+    store.save(42, record);
+    expect(store.list()).toEqual([]);
   });
 });
 

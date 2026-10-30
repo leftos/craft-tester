@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import type { InputKind, ScenarioFilter } from '@/scenario/filter.ts';
+import type { InputKind, Mode, ScenarioFilter } from '@/scenario/filter.ts';
+import { MAX_SET_MINUTES, MAX_SET_STRIPS } from '@/scenario/filter.ts';
 
 /**
  * The shape a remembered filter has to have to be loaded back.
@@ -206,5 +207,82 @@ export function browserFullRouteStore(): FullRouteStore {
     return createFullRouteStore(globalThis.localStorage);
   } catch {
     return createFullRouteStore(undefined);
+  }
+}
+
+/** What home opens on: the airport, the mode, practice or a test, and the test's size and time. */
+export type HomeChoices = {
+  icao: string;
+  mode: Mode;
+  format: 'practice' | 'test';
+  n: number;
+  minutes: number;
+};
+
+/** The shape remembered home choices have to have to be loaded back. */
+const HomeChoicesSchema = z.strictObject({
+  icao: z.string().regex(/^[A-Z]{4}$/),
+  mode: z.enum(['clearance', 'amendment']),
+  format: z.enum(['practice', 'test']),
+  n: z.number().int().min(1).max(MAX_SET_STRIPS),
+  minutes: z.number().int().min(0).max(MAX_SET_MINUTES),
+});
+
+/** The storage key home's choices are remembered under: one per browser. */
+const HOME_KEY = 'craft-tester:home';
+
+/** Remembers what a viewer last chose on home, in this browser only. */
+export type HomeStore = { load(): HomeChoices | undefined; save(choices: HomeChoices): void };
+
+/**
+ * Builds a home store over one storage.
+ *
+ * Remembering the choices is a convenience, as the filter is, so every failure the storage can
+ * raise — a refused read, a full quota, a value another version wrote — reads as "nothing
+ * remembered", and home falls back to its defaults.
+ *
+ * @param storage The storage to read and write, or `undefined` where the browser offers none.
+ * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
+ */
+export function createHomeStore(storage: PreferenceStorage | undefined): HomeStore {
+  if (storage === undefined) {
+    return {
+      load: () => undefined,
+      save: () => {
+        // Without a storage there is nowhere to remember the choices.
+      },
+    };
+  }
+  return {
+    load: () => {
+      try {
+        const raw = storage.getItem(HOME_KEY);
+        if (raw === null) return undefined;
+        const parsed = HomeChoicesSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? parsed.data : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    save: (choices) => {
+      try {
+        storage.setItem(HOME_KEY, JSON.stringify(choices));
+      } catch {
+        // A storage that refuses the write costs the viewer the remembered choices, nothing more.
+      }
+    },
+  };
+}
+
+/**
+ * Builds the home store the page runs on.
+ *
+ * @returns A store over `localStorage`, or one that remembers nothing where reaching it throws.
+ */
+export function browserHomeStore(): HomeStore {
+  try {
+    return createHomeStore(globalThis.localStorage);
+  } catch {
+    return createHomeStore(undefined);
   }
 }

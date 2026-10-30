@@ -1,14 +1,7 @@
-import type { AirportData, AirportsIndex, Scenario } from '@/data/schema.ts';
+import type { AirportsIndex, Scenario } from '@/data/schema.ts';
 import type { Box, BoxAnswer } from '@/rules/amend/grade.ts';
 import type { ResolvedClearance } from '@/rules/types.ts';
-import type {
-  ConfigFilter,
-  InputKind,
-  Mode,
-  ScenarioFilter,
-  SessionSettings,
-  TimeFilter,
-} from '@/scenario/filter.ts';
+import type { InputKind, Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import {
   ANY_SCENARIO,
   airportFromHash,
@@ -21,13 +14,16 @@ import {
   setFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
+import type { AnswerChoice } from '@/ui/answerChoice.ts';
+import { ANSWER_OPTIONS } from '@/ui/answerChoice.ts';
 import type { Panels } from '@/ui/amendPanels.ts';
 import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
-import { button, el, segmentedControl, selectControl } from '@/ui/dom.ts';
-import type { SegmentOption, SelectOption } from '@/ui/dom.ts';
+import { button, el, segmentedControl } from '@/ui/dom.ts';
+import type { SegmentOption } from '@/ui/dom.ts';
+import { filterControls } from '@/ui/filterControls.ts';
 import type { FilterStore, FullRouteStore, InputKindStore } from '@/ui/preferences.ts';
 import {
   browserFilterStore,
@@ -85,12 +81,6 @@ import {
 
 export { clearancePickGrades } from '@/ui/clearanceGrading.ts';
 
-/**
- * How the clearance is answered, as the toolbar offers it: picked from dropdowns, typed, or typed
- * and held to the route read to its end.
- */
-type AnswerChoice = 'pick' | 'type' | 'full';
-
 /** What the page's controls call back into. */
 type Actions = {
   onAirport: (icao: string) => void;
@@ -120,28 +110,10 @@ type Actions = {
   onEndTest: () => void;
 };
 
-/** The time-of-day choices, in the order the dropdown offers them. */
-const TIME_OPTIONS: readonly (SelectOption & { value: TimeFilter })[] = [
-  { value: 'either', label: 'Either' },
-  { value: 'day', label: 'Day' },
-  { value: 'night', label: 'Night' },
-];
-
 /** The two halves of the trainer, in the order the toolbar offers them. */
 const MODE_OPTIONS: readonly (SegmentOption & { value: Mode })[] = [
   { value: 'clearance', label: 'Clearance', title: '' },
   { value: 'amendment', label: 'Amend', title: '' },
-];
-
-/** The three ways to answer the clearance, in the order the toolbar offers them. */
-const ANSWER_OPTIONS: readonly (SegmentOption & { value: AnswerChoice })[] = [
-  { value: 'pick', label: 'Pick', title: 'Pick each element from dropdowns' },
-  { value: 'type', label: 'Type', title: 'Type the clearance as spoken' },
-  {
-    value: 'full',
-    label: 'Full route',
-    title: 'Type it with the route read in full, as on a full route clearance (FRC)',
-  },
 ];
 
 /** The way the session on screen is answered, as the toolbar shows it. */
@@ -156,33 +128,6 @@ function answerChoiceOf(state: AppState): AnswerChoice {
  */
 function writeHash(icao: string, seed: number, settings: SessionSettings): void {
   globalThis.history.replaceState(null, '', hashFor(icao, seed, settings));
-}
-
-/** The value a configuration filter reads back as in the dropdown. */
-function configValue(config: ConfigFilter): string {
-  if (config.kind === 'any') return 'any';
-  return config.kind === 'plan' ? `plan:${config.plan}` : `id:${config.id}`;
-}
-
-/** Reads the configuration dropdown, which offers every configuration and every plan of them. */
-function configFromValue(raw: string): ConfigFilter {
-  const plan = raw.startsWith('plan:') ? raw.slice('plan:'.length) : '';
-  if (plan.length > 0) return { kind: 'plan', plan };
-  const id = raw.startsWith('id:') ? raw.slice('id:'.length) : '';
-  return id.length > 0 ? { kind: 'id', id } : { kind: 'any' };
-}
-
-/** Every configuration choice: all of them, each plan of them, then each configuration by name. */
-function configOptions(airport: AirportData): SelectOption[] {
-  const plans = [...new Set(airport.runwayConfigs.map((config) => config.plan))];
-  return [
-    { value: 'any', label: 'Any' },
-    ...plans.map((plan) => ({ value: `plan:${plan}`, label: `Any ${plan}` })),
-    ...airport.runwayConfigs.map((config) => ({
-      value: `id:${config.id}`,
-      label: `${config.id} — ${config.name}`,
-    })),
-  ];
 }
 
 /** The segmented control that picks the half of the trainer the session runs in. */
@@ -266,41 +211,10 @@ function filtersControl(state: AppState, actions: Actions): HTMLElement {
   const count = activeFilterCount(state.filter);
   if (count > 0) summary.append(el('span', 'count', String(count)));
   const popover = el('div', 'filters-popover');
-  popover.append(...filterControls(state, actions));
+  popover.append(...filterControls(state.filter, state.airport, actions.onFilter));
   details.append(summary, popover);
   closeOnOutsidePress(details);
   return details;
-}
-
-/** The two dropdowns that narrow the draw: the time of day and the runway configuration. */
-function filterControls(state: AppState, actions: Actions): HTMLElement[] {
-  return [
-    selectControl(
-      {
-        label: 'time',
-        options: TIME_OPTIONS,
-        value: state.filter.time,
-        disabled: false,
-        placeholder: '—',
-      },
-      (raw) => {
-        const time = TIME_OPTIONS.find((option) => option.value === raw)?.value ?? 'either';
-        actions.onFilter({ ...state.filter, time });
-      },
-    ),
-    selectControl(
-      {
-        label: 'configuration',
-        options: configOptions(state.airport),
-        value: configValue(state.filter.config),
-        disabled: false,
-        placeholder: '—',
-      },
-      (raw) => {
-        actions.onFilter({ ...state.filter, config: configFromValue(raw) });
-      },
-    ),
-  ];
 }
 
 /** The Test button and its popover, which closes on a press outside it like Filters. */

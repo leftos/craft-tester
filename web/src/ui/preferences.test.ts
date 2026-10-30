@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
-import { createFilterStore, createFullRouteStore, createInputKindStore } from '@/ui/preferences.ts';
+import type { HomeChoices } from '@/ui/preferences.ts';
+import {
+  createFilterStore,
+  createFullRouteStore,
+  createHomeStore,
+  createInputKindStore,
+} from '@/ui/preferences.ts';
 
 const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
 
@@ -180,5 +186,52 @@ describe('createFullRouteStore', () => {
       none.save(true);
     }).not.toThrow();
     expect(none.load()).toBeUndefined();
+  });
+});
+
+describe('createHomeStore', () => {
+  const choices: HomeChoices = {
+    icao: 'KOAK',
+    mode: 'amendment',
+    format: 'test',
+    n: 10,
+    minutes: 20,
+  };
+
+  it('loads back the choices it saved, under one key for the whole browser', () => {
+    const entries = new Map<string, string>();
+    const store = createHomeStore(mapStorage(entries));
+    store.save(choices);
+    expect(store.load()).toStrictEqual(choices);
+    expect([...entries.keys()]).toStrictEqual(['craft-tester:home']);
+  });
+
+  it('remembers nothing before anything is saved', () => {
+    expect(createHomeStore(mapStorage()).load()).toBeUndefined();
+  });
+
+  it('ignores choices with a test of no strips', () => {
+    const entries = new Map([['craft-tester:home', JSON.stringify({ ...choices, n: 0 })]]);
+    expect(createHomeStore(mapStorage(entries)).load()).toBeUndefined();
+  });
+
+  it('ignores choices with a member this app does not know', () => {
+    const entries = new Map([['craft-tester:home', JSON.stringify({ ...choices, input: 'text' })]]);
+    expect(createHomeStore(mapStorage(entries)).load()).toBeUndefined();
+  });
+
+  it('survives a storage that refuses both operations', () => {
+    const store = createHomeStore({
+      getItem: () => {
+        throw new Error('reads denied');
+      },
+      setItem: () => {
+        throw new Error('quota exceeded');
+      },
+    });
+    expect(() => {
+      store.save(choices);
+    }).not.toThrow();
+    expect(store.load()).toBeUndefined();
   });
 });

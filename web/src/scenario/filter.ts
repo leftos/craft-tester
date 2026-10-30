@@ -64,10 +64,10 @@ export type SessionSettings = {
 export type SetParams = { seed: number; n: number; minutes: number; index: number };
 
 /** The most strips a set read from a hash may hold. */
-const MAX_SET_STRIPS = 50;
+export const MAX_SET_STRIPS = 50;
 
 /** The longest time limit a set read from a hash may carry, in minutes. */
-const MAX_SET_MINUTES = 180;
+export const MAX_SET_MINUTES = 180;
 
 /** The seeds a hash can carry: unsigned 32-bit integers. */
 const SEED_LIMIT = 2 ** 32;
@@ -107,16 +107,41 @@ function configParam(config: ConfigFilter): string | undefined {
  */
 export function hashFor(icao: string, seed: number, settings: SessionSettings): string {
   const { filter, mode, input, fullRoute } = settings;
-  const parts = [seedToHash(seed).slice(1), `a=${icao}`];
+  const parts = [seedToHash(seed).slice(1), `a=${icao}`, ...filterParts(filter)];
+  if (mode === 'amendment') parts.push(AMENDMENT_PART);
+  parts.push(...answerParts(input, fullRoute));
+  if (settings.set !== undefined) parts.push(`x=${setPart(settings.set)}`);
+  return `#${parts.join('&')}`;
+}
+
+/** The `t=`, `c=` and `d=` parts a filter writes; a member that narrows nothing writes none. */
+function filterParts(filter: ScenarioFilter): string[] {
+  const parts: string[] = [];
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
   if (config !== undefined) parts.push(`c=${config}`);
   if (filter.destination !== undefined) parts.push(`d=${filter.destination}`);
-  if (mode === 'amendment') parts.push(AMENDMENT_PART);
-  if (input === 'text') parts.push(TEXT_PART);
-  if (input === 'text' && fullRoute) parts.push(FULL_ROUTE_PART);
-  if (settings.set !== undefined) parts.push(`x=${setPart(settings.set)}`);
-  return `#${parts.join('&')}`;
+  return parts;
+}
+
+/** The `i=` and `r=` parts typed answers write; the dropdowns write none, `r=full` included. */
+function answerParts(input: InputKind, fullRoute: boolean): string[] {
+  if (input !== 'text') return [];
+  return fullRoute ? [TEXT_PART, FULL_ROUTE_PART] : [TEXT_PART];
+}
+
+/**
+ * Renders the settings of a session as the `&`-separated parts a home link carries after its `?`.
+ *
+ * The parts are the ones `hashFor` writes for the same settings, in the same order, so the hash
+ * readers in this module read them back unchanged.
+ *
+ * @param settings The filter, how the student answers, and whether they are held to the full route.
+ * @returns The parts joined by `&`, e.g. `t=night&c=plan:SFOW&i=text`, or `''` when nothing is set.
+ */
+export function settingsQuery(settings: Omit<SessionSettings, 'mode' | 'set'>): string {
+  const { filter, input, fullRoute } = settings;
+  return [...filterParts(filter), ...answerParts(input, fullRoute)].join('&');
 }
 
 /** The value of the `x=` part a test set writes: its seed in base 36, the count, the minutes, the index. */
@@ -130,8 +155,13 @@ function wholeNumber(raw: string | undefined): number | undefined {
   return Number.parseInt(raw, 10);
 }
 
-/** Reads a set seed written in base 36, or `undefined` where it is not an unsigned 32-bit one. */
-function setSeedOf(raw: string | undefined): number | undefined {
+/**
+ * Reads a set seed written in base 36.
+ *
+ * @param raw One to seven lower-case base-36 digits, or `undefined`.
+ * @returns The seed, or `undefined` where it is not an unsigned 32-bit one written that way.
+ */
+export function parseSetSeed(raw: string | undefined): number | undefined {
   if (raw === undefined || !/^[0-9a-z]{1,7}$/.test(raw)) return undefined;
   const seed = Number.parseInt(raw, 36);
   return seed < SEED_LIMIT ? seed : undefined;
@@ -151,7 +181,7 @@ export function setFromHash(hash: string): SetParams | undefined {
   const pieces = valueOf(hash, 'x')?.split('.') ?? [];
   if (pieces.length !== 4) return undefined;
   const [seedRaw, countRaw, minutesRaw, indexRaw] = pieces;
-  const seed = setSeedOf(seedRaw);
+  const seed = parseSetSeed(seedRaw);
   const n = wholeNumber(countRaw);
   const minutes = wholeNumber(minutesRaw);
   const index = wholeNumber(indexRaw);

@@ -11,6 +11,7 @@ import {
   inputKindFromHash,
   matchesConfig,
   modeFromHash,
+  settingsQuery,
 } from '@/scenario/filter.ts';
 import { seedFromHash } from '@/scenario/rng.ts';
 
@@ -51,6 +52,41 @@ const CONFIGS: readonly ScenarioFilter['config'][] = [
   { kind: 'id', id: '28/01' },
   { kind: 'id', id: '28 RT' },
 ];
+
+describe('settingsQuery', () => {
+  it.each([
+    ['all defaults', { filter: ANY_SCENARIO, input: 'dropdowns', fullRoute: false }, ''],
+    [
+      'a night filter',
+      { filter: { ...ANY_SCENARIO, time: 'night' }, input: 'dropdowns', fullRoute: false },
+      't=night',
+    ],
+    [
+      'typed and full route',
+      { filter: ANY_SCENARIO, input: 'text', fullRoute: true },
+      'i=text&r=full',
+    ],
+    [
+      'night, a plan and typed',
+      {
+        filter: { time: 'night', config: { kind: 'plan', plan: 'SFOW' } },
+        input: 'text',
+        fullRoute: false,
+      },
+      't=night&c=plan:SFOW&i=text',
+    ],
+    [
+      'full route on the dropdowns',
+      { filter: ANY_SCENARIO, input: 'dropdowns', fullRoute: true },
+      '',
+    ],
+  ] satisfies [string, Omit<SessionSettings, 'mode' | 'set'>, string][])(
+    'writes %s',
+    (_, settings, query) => {
+      expect(settingsQuery(settings)).toBe(query);
+    },
+  );
+});
 
 describe('hashFor', () => {
   it('writes nothing but the seed and the airport when the filter narrows nothing', () => {
