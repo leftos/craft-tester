@@ -36,11 +36,15 @@ export type HomeProps = {
   tests: readonly HomeTestRow[];
   /** The newest unfinished set, or `undefined` when there is none. */
   resume: HomeTestRow | undefined;
+  /** Whether this browser has not seen the tour, so home offers it. */
+  offerTour: boolean;
   /** The page URL without its hash, which the shown link is written against. */
   linkBase: string;
   onChoices: (choices: HomeChoices) => void;
   onAnswer: (answer: AnswerChoice) => void;
   onFilter: (filter: ScenarioFilter) => void;
+  /** The viewer turned the tour down, which home remembers so it is not offered again. */
+  onDismissTour: () => void;
   copy: (text: string) => void;
 };
 
@@ -228,6 +232,30 @@ function resumeBanner(resume: HomeTestRow): HTMLElement {
   return banner;
 }
 
+/**
+ * The card that offers the tour to a viewer who has not seen it: what the tour does, the link that
+ * starts it, and the way to turn it down, which takes the card off the page.
+ */
+function tourOffer(props: HomeProps): HTMLElement {
+  const card = el('div', 'home-resume home-tour-card');
+  const take = el('a', 'button primary', 'Take the tour');
+  take.href = hrefOf({ kind: 'tutorial', part: 'clearance' });
+  card.append(
+    el('strong', '', 'New here?'),
+    el(
+      'span',
+      '',
+      'The tour walks one clearance and one amendment on the real trainer, a step at a time.',
+    ),
+    take,
+    button('Not now', 'secondary', () => {
+      props.onDismissTour();
+      card.remove();
+    }),
+  );
+  return card;
+}
+
 /** "Your tests": one row per remembered set, with the link that continues it or shows its results. */
 function testList(tests: readonly HomeTestRow[]): HTMLElement {
   const section = el('section', 'home-tests');
@@ -248,8 +276,9 @@ function testList(tests: readonly HomeTestRow[]): HTMLElement {
 }
 
 /**
- * Renders home: the header with its link to the tour, the lead line, the unfinished set if there
- * is one, the choices, Start with the link it opens, and the sets this browser remembers.
+ * Renders home: the header with its link to the tour, the lead line, the card offering the tour
+ * while this browser has not seen it, the unfinished set if there is one, the choices, Start with
+ * the link it opens, and the sets this browser remembers.
  *
  * Nothing here holds state: every control calls back with the whole new value, and the caller draws
  * home again from it.
@@ -265,6 +294,7 @@ export function renderHome(props: HomeProps): HTMLElement {
   bar.append(el('h1', 'brand', 'CRAFT trainer'), el('span', 'toolbar-spacer'), tour);
   const main = el('main', 'home');
   main.append(el('p', 'home-lead', LEAD));
+  if (props.offerTour) main.append(tourOffer(props));
   if (props.resume !== undefined) main.append(resumeBanner(props.resume));
   main.append(choiceGrid(props), startRow(props));
   if (props.tests.length > 0) main.append(testList(props.tests));

@@ -1665,6 +1665,11 @@ a.button.big {
   margin-left: auto;
 }
 
+/* The tour card's line of text takes the room between its heading and its two buttons. */
+.home-tour-card > span {
+  flex: 1 1 20rem;
+}
+
 .home-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

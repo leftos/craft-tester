@@ -1497,9 +1497,15 @@ function redrawHome(root: Element, page: HTMLElement): void {
 }
 
 /** The airports, tests and links home lists, which no choice on home changes. */
-type HomeListing = Pick<HomeProps, 'airports' | 'tests' | 'resume' | 'linkBase' | 'copy'>;
+type HomeListing = Pick<
+  HomeProps,
+  'airports' | 'tests' | 'resume' | 'offerTour' | 'onDismissTour' | 'linkBase' | 'copy'
+>;
 
-/** What home lists: the airports in index order, the remembered sets, and the base of its links. */
+/**
+ * What home lists: the airports in index order, the remembered sets, whether the tour is offered,
+ * and the base of its links.
+ */
 function homeListing(airports: readonly AirportData[], stores: Stores): HomeListing {
   const byIcao = new Map(airports.map((data) => [data.airport.icao, data]));
   const listings = stores.set.list();
@@ -1510,6 +1516,10 @@ function homeListing(airports: readonly AirportData[], stores: Stores): HomeList
     airports: airports.map((data) => ({ icao: data.airport.icao, spoken: data.airport.spoken })),
     tests,
     resume: continueTestRow(listings, now),
+    offerTour: stores.tourSeen.load() !== true,
+    onDismissTour: () => {
+      stores.tourSeen.save(true);
+    },
     linkBase: origin + pathname + search,
     copy: (text) => {
       void copyLink(text);
@@ -1533,7 +1543,6 @@ function mountHome(
   stores: Stores,
   initial: HomeChoices,
 ): Mounted {
-  const listing = homeListing(airports, stores);
   let tour: TourDriver | undefined;
   let choices = initial;
   let answer = rememberedAnswer(stores);
@@ -1542,7 +1551,7 @@ function mountHome(
     const airport = airports.find((data) => data.airport.icao === choices.icao);
     if (airport === undefined) throw new Error(`home has no data loaded for ${choices.icao}`);
     const page = renderHome({
-      ...listing,
+      ...homeListing(airports, stores),
       airport,
       choices,
       answer,
@@ -1684,21 +1693,12 @@ function onHashChange(): void {
 }
 
 /**
- * Whether a visit opens the tour in place of home: the URL carries no hash, this browser has never
- * finished or skipped the tour, and it holds no progress through the Amend part.
- */
-function opensTourFirst(hash: string, stores: Stores): boolean {
-  if (hash !== '' || stores.tourSeen.load() === true) return false;
-  return (stores.tourProgress.load()?.part ?? 'clearance') === 'clearance';
-}
-
-/**
  * Starts the trainer on the route the URL names: home on an empty hash or `#/`, a practice strip or
  * a test from an `#/<ICAO>/<mode>/…` link, a part of the tour from `#/tutorial` or
  * `#/tutorial/amend`, and a strip from every other hash, as before. A change of hash afterwards,
  * from a link or Back, opens its route in place of the page on screen, even where it arrives while
- * the first route is still loading. A first visit, with no hash and the tour never seen, has
- * `#/tutorial` written over its history entry and opens the tour.
+ * the first route is still loading. Home offers the tour to a browser that has not seen it, and
+ * nothing opens the tour by itself.
  *
  * A strip link loads the airport the URL names, or the first of the index when it names none, and
  * renders the scenario the URL asks for, or a fresh one when the URL carries no seed.
@@ -1736,9 +1736,6 @@ export async function startApp(root: Element): Promise<void> {
   active?.dispose();
   const target: Active = { root, index, stores, dispose: NOTHING_TO_DISPOSE, generation: 0 };
   active = target;
-  if (opensTourFirst(globalThis.location.hash, stores)) {
-    replaceHash(hrefOf({ kind: 'tutorial', part: 'clearance' }));
-  }
   // The listener goes in before the first route loads, so a link followed, or Back, while that load
   // is still running overtakes it through the same check every later route uses, and the first route
   // never writes its hash over the newer one.

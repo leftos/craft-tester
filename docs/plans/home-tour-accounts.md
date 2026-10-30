@@ -108,7 +108,7 @@ The Linear project is "Home, tour and accounts". Its issues by step:
    - The clearance part runs over KOAK `swa1740`: the strip, the ATIS, then C, R procedure, R route, A, the expect clause, F, T, expect runway, Submit, and the results.
    - The Amend part runs over `jsx201`: the three boxes, "correct as filed", and the carry-on into the clearance.
    - A last step covers home's Test card.
-   - `#/tutorial` and `#/tutorial/amend` start each part. The tour opens itself on a first visit to home, with no hash and `tourSeen` unset, and Skip or Finish sets `tourSeen`.
+   - `#/tutorial` and `#/tutorial/amend` start each part. Home offers the tour in a small card while `tourSeen` is unset, with Take the tour and Not now; nothing opens the tour by itself. Skip, Finish and Not now set `tourSeen`.
 
 ### M3: Server and the move to leftos.dev
 

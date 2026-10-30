@@ -1304,16 +1304,27 @@ describe('routing', () => {
     expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).toBeNull();
   });
 
-  it('opens the tour on a first visit with no hash, and home once the tour was seen', async () => {
+  it('offers the tour on home on a first visit, without opening it', async () => {
     globalThis.localStorage.clear();
-    const first = await mountHash('');
-    expect(globalThis.location.hash).toBe('#/tutorial');
-    expect(stripText(first)).toContain('SWA1740');
-    expect(tourCount()).toBe('1 of 11');
+    const root = await mountHash('');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+    expect(['', '#/']).toContain(globalThis.location.hash);
+    expect(root.querySelector('.home-tour-card')).not.toBeNull();
+    expect(document.querySelector('.tour-card')).toBeNull();
+  });
 
-    globalThis.localStorage.setItem(TOUR_SEEN_KEY, 'true');
-    const again = await mountHash('');
-    expect(again.querySelector('.home-page')).not.toBeNull();
+  it('offers no tour card on home once the tour was seen', async () => {
+    const root = await mountHash('');
+    expect(root.querySelector('.home-page')).not.toBeNull();
+    expect(root.querySelector('.home-tour-card')).toBeNull();
+  });
+
+  it('remembers the tour as seen when the card is refused', async () => {
+    globalThis.localStorage.clear();
+    const root = await mountHash('');
+    buttonNamed(root, 'Not now').click();
+    expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
+    expect(root.querySelector('.home-tour-card')).toBeNull();
   });
 
   it('takes the tour off the page when a link leaves its part', async () => {
@@ -1330,13 +1341,14 @@ describe('routing', () => {
     expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBeNull();
   });
 
-  it('opens home on a first visit that holds progress through the Amend part', async () => {
-    globalThis.localStorage.clear();
-    const progress = { version: TOUR_STEPS_VERSION, part: 'amend', step: 2 };
-    globalThis.localStorage.setItem(TOUR_PROGRESS_KEY, JSON.stringify(progress));
-    const root = await mountHash('');
-    expect(root.querySelector('.home-page')).not.toBeNull();
-    expect(document.querySelector('.tour-card')).toBeNull();
+  it('offers no tour card on home once a part of the tour was finished', async () => {
+    globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
+    const root = await mountHash('#/tutorial');
+    buttonNamed(tourCard(), 'Skip').click();
+    await vi.waitFor(() => {
+      expect(root.querySelector('.home-page')).not.toBeNull();
+    });
+    expect(root.querySelector('.home-tour-card')).toBeNull();
   });
 
   it('starts a part from its first step on progress stored for the other part', async () => {

@@ -39,10 +39,12 @@ function props(overrides: Partial<HomeProps> = {}): HomeProps {
     filter: ANY_SCENARIO,
     tests: [],
     resume: undefined,
+    offerTour: false,
     linkBase: LINK_BASE,
     onChoices: vi.fn(),
     onAnswer: vi.fn(),
     onFilter: vi.fn(),
+    onDismissTour: vi.fn(),
     copy: vi.fn(),
     ...overrides,
   };
@@ -101,6 +103,34 @@ describe('renderHome', () => {
       (node) => node.textContent === 'Take the tour',
     );
     expect(link?.getAttribute('href')).toBe('#/tutorial');
+  });
+
+  it('offers the tour while it has not been seen, with the link that takes it', () => {
+    const page = renderHome(props({ offerTour: true }));
+    const card = find(page, '.home-tour-card');
+    expect(card.textContent).toContain('New here?');
+    const take = [...card.querySelectorAll('a')].find(
+      (node) => node.textContent === 'Take the tour',
+    );
+    expect(take?.getAttribute('href')).toBe('#/tutorial');
+    expect([...card.querySelectorAll('button')].map((node) => node.textContent)).toContain(
+      'Not now',
+    );
+  });
+
+  it('offers no tour card once the tour was seen', () => {
+    expect(renderHome(props()).querySelector('.home-tour-card')).toBeNull();
+  });
+
+  it('takes the tour card out of the page when it is refused, calling back once', () => {
+    const onDismissTour = vi.fn();
+    const page = renderHome(props({ offerTour: true, onDismissTour }));
+    const notNow = [...page.querySelectorAll('button')].find(
+      (node) => node.textContent === 'Not now',
+    );
+    notNow?.click();
+    expect(onDismissTour).toHaveBeenCalledTimes(1);
+    expect(page.querySelector('.home-tour-card')).toBeNull();
   });
 
   it('marks the Test card of Format as the tour anchor, whichever format is chosen', () => {
