@@ -478,7 +478,7 @@ phraseology_rules:
     text: "The configuration departs this aircraft class from this runway by default, before the direction-of-turn split: in 28/01, props and turboprops depart 28R at intersection Echo, a short taxi from the north ramp"
   - id: RWY-ON-REQUEST
     source: "SFO ATCT SOP 2-1 e; user review 2026-09-15 (FDX1563, UPS2896)"
-    text: "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honoured"
+    text: "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honored"
   - id: RWY-DIRECTION
     source: "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?"
     text: "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the SFOE families. On the 28s the parallel follows the parking spot instead (RWY-PARKING)"

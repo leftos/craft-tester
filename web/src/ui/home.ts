@@ -62,7 +62,7 @@ const MINUTE_MS = 60_000;
 
 /** The line home opens with. */
 const LEAD =
-  'Practise IFR clearance delivery for Bay Area departures, graded against the ZOA SOPs.';
+  'Practice IFR clearance delivery for Bay Area departures, graded against the ZOA SOPs.';
 
 /** The two halves of the trainer, as home's cards offer them. */
 const MODE_CARDS: readonly (CardOption & { value: HomeChoices['mode'] })[] = [

@@ -49,7 +49,7 @@ rules:
     rule: { kind: route, tokens: [BURGL, REBRG, DOUIT, DERBB, BAYST, DIRBY, LEENA, TILLT, MCKEY], classes: [J] }
   - id: LOA-ZLA-LAX-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) LAX, effective 2026-04-26"
-    text: "LAX props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..AVE, ..FLW, ..RZS (which side of J1 is not modelled)"
+    text: "LAX props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..AVE, ..FLW, ..RZS (which side of J1 is not modeled)"
     destinations: [KLAX]
     rule: { kind: route, tokens: [PAIDD, EHF, LHS, AVE, FLW, RZS], classes: [P, T] }
   - id: LOA-ZLA-SMO-ROUTE
@@ -59,7 +59,7 @@ rules:
     rule: { kind: route, tokens: [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB], classes: [J] }
   - id: LOA-ZLA-SMO-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Los Angeles Area, ALL (Props) SMO, effective 2026-04-26"
-    text: "SMO props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..FLW, ..RZS (which side of J1 is not modelled)"
+    text: "SMO props east of J1: ..PAIDD, ..EHF, ..LHS; all other props: ..FLW, ..RZS (which side of J1 is not modeled)"
     destinations: [KSMO]
     rule: { kind: route, tokens: [PAIDD, EHF, LHS, FLW, RZS], classes: [P, T] }
   - id: LOA-ZLA-LGB-SNA-ROUTE
@@ -69,7 +69,7 @@ rules:
     rule: { kind: route, tokens: [TILLT, RDHOT, MMTLY, ELLBC, REBRG, AVE, FLW, MCKEY, DAISY, BENET, DERBB], classes: [J] }
   - id: LOA-ZLA-LGB-SNA-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Coast Area, ALL (Props) LGB/SNA, effective 2026-04-26"
-    text: "LGB and SNA props east of J7: ..EHF; all other props: ..FLW, ..GVO (which side of J7 is not modelled)"
+    text: "LGB and SNA props east of J7: ..EHF; all other props: ..FLW, ..GVO (which side of J7 is not modeled)"
     destinations: [KLGB, KSNA]
     rule: { kind: route, tokens: [EHF, FLW, GVO], classes: [P, T] }
   - id: LOA-ZLA-BUR-VNY-ROUTE
@@ -79,7 +79,7 @@ rules:
     rule: { kind: route, tokens: [BURGL, HONZK, MMTLY, RDHOT, REBRG, AVE, FLW, DERBB], classes: [J] }
   - id: LOA-ZLA-BUR-VNY-PROPS-ROUTE
     source: "ZOA-ZLA LOA Attachment 1, Burbank Area, ALL (Props) BUR/VNY, effective 2026-04-26"
-    text: "BUR and VNY props east of J1: ..NINTY, ..EHF, ..LHS; all other props: ..RZS, ..FLW (which side of J1 is not modelled)"
+    text: "BUR and VNY props east of J1: ..NINTY, ..EHF, ..LHS; all other props: ..RZS, ..FLW (which side of J1 is not modeled)"
     destinations: [KBUR, KVNY]
     rule: { kind: route, tokens: [NINTY, EHF, LHS, RZS, FLW], classes: [P, T] }
   - id: LOA-ZLA-SAN-ROUTE

@@ -111,6 +111,7 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   stop and **add** the new rule concept to the plan first.
 - **No code keyed on KSFO.** Adding an airport is a YAML directory plus a line in `data/airports.json`;
   a code change needed for a new airport is a new rule concept and goes through the plan first.
+- **What the student reads is US English.** Page text, tour copy, reason strings and the rule rows' `text` and `source` the results quote use US spelling (practice as a verb, honored, modeled, spelled, canceled, centered); a word quoted from a source document keeps that document's spelling.
 - **`web/src/data/schema.ts` is the single source of truth** for the data shape. Change it, run
   `pnpm -C web schema:export`, then rebuild data. The schema sync test fails when the export is stale.
 - **`data/*.json` is generated.** Never hand-edit; run `craft-gen build --check` to confirm it matches.
