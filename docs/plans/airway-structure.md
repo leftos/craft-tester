@@ -54,6 +54,12 @@ The `R` route-type flag also answers the RNAV element check's airway rule from d
 - **Data shape**: `airways` widens to one list, `{id, rnav, level, oneWay, stretches}`, with the three hand one-way rows of `shared/airways.yaml` merged in by id.
 - **What ships**: V and J with their structure; Q and T as id plus RNAV flag, so the RNAV check reads data. Y keeps its prefix rule (the CIFP codes Y routes conventional).
 - **No path**: ship more airways rather than fall back: the filed set is widened by connectivity (a V/J airway sharing a fix with a shipped one), to depth 2. Measured: depth 0 ships 20 V/J airways (+84 KB a file), depth 1 381 (+1.15 MB), depth 2 626 of the 634 US V/J airways (+1.7 MB a file); the user accepted depth 2 as measured.
+- **Pair altitude**: graded per side. Raised to an RNAV suffix, the altitude is the RNAV plan's (FDX3859 FL330, PXT415 FL310); kept non-RNAV on a rebuilt route, it is the non-RVSM altitude (FL270 for both). Each side is graded whole.
+- **A student's own route**: a legality validator, not a match against the engine's route. Every airway is V or J in the data, consecutive fixes sit on one stretch, every leg's MEA is at or below and its MAA at or above the filed altitude (no published MEA is no lower limit), no RNAV element, from the exit navaid to an accepted entry fix. Full credit; the engine's route is the model answer.
+- **Model answer among ties**: fewest airway changes, then an LOA-token end, then a common-sheet entry fix, then the shortest distance.
+- **Levels**: V below FL180, J at or above; one V-to-J change is allowed, which is how a KSFO jet (SFO sits on no J airway) gets a route.
+- **No path**: the type box alone, with a reason saying no conventional route reaches the destination.
+- **Where the route ends**: open, pending worked examples of the nearest arrival entry fix or LOA token, the filed route's first conventional fix keeping its tail, and the destination.
 - **Type box and route**: when a path exists, raising the type to an RNAV suffix and rebuilding the route are an alternative pair, both full credit, as the RNAV clash pairs today. The settled KOAK fixtures `rnav-elements-b738w-klas`, `amendment-practice-2-fdx3859` and `amendment-practice-3-pxt415` then gain a route alternative and go back to the user for a re-ruling.
 
 ## Mapped facts (explorer)
@@ -65,4 +71,4 @@ The `R` route-type flag also answers the RNAV element check's airway rule from d
 
 ## Slices
 
-- **A** has landed (`cifp/airways.py`, the widened `airways`, the RNAV check reading the Q/T flag). Next, **C**: the rebuild search (reusing `routeBuild.ts`'s breadth-first walk), the alternative pair in `rules/amend/engine.ts`, a grading tier in `grade.ts` and `ui/results.ts` distinct from the navaid-acceptable one, a rule row, and the three settled fixtures re-ruled. Open for C's brief: level at FL180, tie-break among equal paths, the exit navaid per SID kind, where the route stops, MEA use, and what a "confirmed conventional route" is for grading.
+- **A** has landed (`cifp/airways.py`, the widened `airways`, the RNAV check reading the Q/T flag). Next, **C**: the rebuild search (reusing `routeBuild.ts`'s breadth-first walk), the alternative pair in `rules/amend/engine.ts`, a grading tier in `grade.ts` and `ui/results.ts` distinct from the navaid-acceptable one, a rule row, and the three settled fixtures re-ruled. C runs on `feat/airway-rebuild`. Open for C's brief: where the route stops (examples first), the exit navaid per SID kind, the tier's representation, the rule row, the reason wording, and how the rebuild meets the arrival swap; the code map is in the CRAFT-3 issue.
