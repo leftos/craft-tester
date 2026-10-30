@@ -4,17 +4,9 @@
 
 ## Home, tour and accounts
 
-### M1 Router and home page (4/6 done)
-- [ ] CRAFT-44 Home page, page links and first-run tour (feat/home-tour)
-  - [ ] CRAFT-33 Run a session on a given scenario from a settled fixture
-  - [ ] CRAFT-34 Coach-mark engine: spotlight and card over data-tour anchors
-  - [ ] CRAFT-35 Tour content: clearance on SWA1740, amend on JSX201, home's Test card; first-visit trigger
-  - [ ] CRAFT-45 Merge feat/home-tour to main (#30)
+### M1 Router and home page (6/6 done)
 
-### M2 First-run tour (0/3 done)
-- [ ] CRAFT-33 Run a session on a given scenario from a settled fixture (sub-issue of CRAFT-44)
-- [ ] CRAFT-34 Coach-mark engine: spotlight and card over data-tour anchors (sub-issue of CRAFT-44)
-- [ ] CRAFT-35 Tour content: clearance on SWA1740, amend on JSX201, home's Test card; first-visit trigger (sub-issue of CRAFT-44)
+### M2 First-run tour (3/3 done)
 
 ### M3 Server and leftos.dev (0/5 done)
 - [ ] CRAFT-36 server/ half: Node 24, node:http, node:sqlite, docs and shares API
@@ -27,9 +19,14 @@
 - [ ] CRAFT-41 Local-first sync layer: queued writes, merge on sign-in
 - [ ] CRAFT-42 Signed-in UI, server-backed test list, and shareable read-only results
 
+### No milestone
+- [ ] CRAFT-47 Tour: make the page behind the coach marks inert to screen readers
+- [ ] CRAFT-51 Tour tests: pin commit-only box reports, continue rendering JSX201, stores after the answer switch
+
 ## Airway structure for conventional rebuilds
 
 - [ ] CRAFT-3 Rebuild a conventional route for a non-RNAV plan that files RNAV elements
+  - [ ] CRAFT-48 Merge feat/airway-rebuild to main (#31)
 
 ## Destination amendment box
 
@@ -54,11 +51,6 @@
 
 ## Cleanup
 
-- [ ] CRAFT-9 Fix CLAUDE.md's browser-check example hash and indices
-- [ ] CRAFT-10 Review and land PR #27: actions group bump (setup-uv 10.2.0, setup-node)
-- [ ] CRAFT-11 Review and land PR #26: python group bump in generator/
-- [ ] CRAFT-12 Review and land PR #28: node group bump in web/
-- [ ] CRAFT-13 browser-check: press a <summary> by its text
 - [ ] CRAFT-14 Phone: --pin-top stays unset after a test set ends with the toolbar hidden
 - [ ] CRAFT-15 Enter on a test set's amendment strip follows Submit's disabled state
 - [ ] CRAFT-16 Bring docs/ARCHITECTURE.md to the architecture entry-point template
