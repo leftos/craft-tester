@@ -60,6 +60,8 @@ The `R` route-type flag also answers the RNAV element check's airway rule from d
 - **Levels**: V below FL180, J at or above; one V-to-J change is allowed, which is how a KSFO jet (SFO sits on no J airway) gets a route.
 - **No path**: the type box alone, with a reason saying no conventional route reaches the destination.
 - **Where the route ends**: at the nearest LOA token or conventional-arrival entry fix, the arrival carrying on from there; a field with neither builds to its VOR when that is on the network (KSAC: OAK V6 SAC). Joining the filed route was rejected: at KUDD its V137 tail fails the level check at FL270 and above, and at KSEA it ends on an RNAV-only entry. LOA tokens need a non-RNAV marker first (KSEA lists RNAV RBL beside conventional BTG).
+- **Arrival**: the rebuilt route carries the conventional arrival from its entry fix as part of the same full-credit answer; `R-ARRIVAL`'s half credit stays for a student who keeps the filed route.
+- **Reasons**: the engine's new reason text goes to the owner on the three re-ruled fixtures, as pending with `propose` output.
 - **TEC fields**: the TEC table's conventional row for the field (KSAC: `NIMI7 OAK V6 SAC`), not an airway search.
 - **Type box and route**: when a path exists, raising the type to an RNAV suffix and rebuilding the route are an alternative pair, both full credit, as the RNAV clash pairs today. The settled KOAK fixtures `rnav-elements-b738w-klas`, `amendment-practice-2-fdx3859` and `amendment-practice-3-pxt415` then gain a route alternative and go back to the user for a re-ruling.
 
@@ -72,4 +74,4 @@ The `R` route-type flag also answers the RNAV element check's airway rule from d
 
 ## Slices
 
-- **A** has landed (`cifp/airways.py`, the widened `airways`, the RNAV check reading the Q/T flag). Next, **C**: the rebuild search (reusing `routeBuild.ts`'s breadth-first walk), the alternative pair in `rules/amend/engine.ts`, a grading tier in `grade.ts` and `ui/results.ts` distinct from the navaid-acceptable one, a rule row, and the three settled fixtures re-ruled. C runs on `feat/airway-rebuild`. Open for C's brief: the exit navaid per SID kind, the tier's representation, the rule row, the reason wording, and how the rebuild meets the arrival swap; the code map is in the CRAFT-3 issue.
+- **A** has landed (`cifp/airways.py`, the widened `airways`, the RNAV check reading the Q/T flag). Next, **C**: the rebuild search (reusing `routeBuild.ts`'s breadth-first walk), the alternative pair in `rules/amend/engine.ts`, a grading tier in `grade.ts` and `ui/results.ts` distinct from the navaid-acceptable one, a rule row, and the three settled fixtures re-ruled. C runs on `feat/airway-rebuild`. Open for C's brief: the exit navaid per SID kind, the tier's representation and the rule row; the code map is in the CRAFT-3 issue.
