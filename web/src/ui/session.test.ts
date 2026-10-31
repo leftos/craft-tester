@@ -10,8 +10,9 @@ import { studentPlan } from '@/rules/amend/grade.ts';
 import { formatAltitude, grade } from '@/rules/grade.ts';
 import type { Mode, ScenarioFilter, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO } from '@/scenario/filter.ts';
-import type { ResolvedClearance } from '@/rules/types.ts';
+import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
 import { amendmentGrades } from '@/ui/amendPanels.ts';
+import { clearanceOutcome } from '@/ui/clearanceGrading.ts';
 import { activeNotices, atisRows } from '@/ui/atis.ts';
 import { craftGroups } from '@/ui/craftForm.ts';
 import type { CraftField, CraftGroup } from '@/ui/craftForm.ts';
@@ -36,7 +37,7 @@ let view: ScenarioView;
 
 /** The settings of a session answered with the dropdowns. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns', fullRoute: false };
+  return { filter, mode, input: 'dropdowns', fullRoute: false, gradeRunway: true };
 }
 
 /**
@@ -64,7 +65,7 @@ function clearanceOf(scenarioView: ScenarioView): ResolvedClearance {
 
 /** The dropdown values that spell out the clearance the engine resolved, in the order to pick them. */
 /** The expect pick that answers the clause the engine resolved. */
-function expectAnswer(clause: ResolvedClearance['expect']['value']): string {
+function expectAnswer(clause: ResolvedClearance['expect']['value']): PlayerPicks['expect'] {
   if (clause === null) return 'none';
   if (clause.kind === 'final') return 'final';
   return clause.minutes === 10 ? 'ten_minutes' : 'three_minutes';
@@ -89,13 +90,10 @@ function answerFor(clearance: ResolvedClearance): [PickKey, string][] {
 function groupsOf(state: AppState): readonly CraftGroup[] {
   if (state.view.kind !== 'clearance')
     throw new Error('the seeded scenario is not a clean clearance');
-  return craftGroups(
-    state.view.generated,
-    state.airport,
-    state.view.clearance,
-    state.picks,
-    'given',
-  );
+  return craftGroups(state.view.generated, state.airport, state.view.clearance, state.picks, {
+    procedure: 'given',
+    gradeRunway: state.gradeRunway,
+  });
 }
 
 /** Every dropdown of the form, flattened out of its CRAFT groups. */
@@ -228,6 +226,7 @@ describe('an amendment scenario', () => {
       airport,
       answer: { input: 'text', text: spoken.abbreviated },
       routeReading: 'abbreviated',
+      gradeRunway: true,
     });
     const boxes = ['BOX.type', 'BOX.altitude', 'BOX.route'];
     const typed = ['C', 'R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'T', 'RWY'];
@@ -236,6 +235,50 @@ describe('an amendment scenario', () => {
       grades.map(({ element, verdict }) => `${element} ${verdict}`),
       `seed ${seed}: ${spoken.abbreviated}`,
     ).toStrictEqual(elements.map((element) => `${element} correct`));
+  });
+
+  it('drops the runway grade of a session that does not grade it, typed or picked', () => {
+    const seed = SEEDS.find((candidate) => {
+      const { amendments } = amendmentOf(candidate).drawn.result;
+      return amendments.length > 0 && amendments.every((one) => one.alternativeTo === undefined);
+    });
+    if (seed === undefined) throw new Error('no seed of 1 to 20 amends a box without a pair');
+    const view = amendmentOf(seed);
+    const { drawn, clearance } = view;
+    const spoken = spokenFor(drawn.result.corrected, drawn.filed, clearance, airport);
+    const cleared = clearedPlan(view, correctedAnswers(drawn.result.amendments), airport);
+    const session = {
+      drawn,
+      cleared,
+      airport,
+      routeReading: 'abbreviated',
+      gradeRunway: false,
+    } as const;
+    const typed = amendmentGrades({
+      ...session,
+      answer: { input: 'text', text: spoken.abbreviated },
+    });
+    const boxes = ['BOX.type', 'BOX.altitude', 'BOX.route'];
+    expect(typed.map(({ element, verdict }) => `${element} ${verdict}`)).toStrictEqual(
+      [...boxes, 'C', 'R.sid', 'R.route', 'A.phrase', 'A.expect', 'F', 'T'].map(
+        (element) => `${element} correct`,
+      ),
+    );
+    const picks = {
+      ...somePicks(cleared.clearance),
+      procedure:
+        cleared.clearance.procedure.value.kind === 'sid'
+          ? cleared.clearance.procedure.value.id
+          : '',
+    };
+    const picked = amendmentGrades({ ...session, answer: { input: 'dropdowns', picks } });
+    const pickedGraded = amendmentGrades({
+      ...session,
+      gradeRunway: true,
+      answer: { input: 'dropdowns', picks },
+    });
+    expect(picked.map((one) => one.element)).not.toContain('RWY');
+    expect(picked).toStrictEqual(pickedGraded.filter((one) => one.element !== 'RWY'));
   });
 
   /** One verdict of an amendment session, whichever way the clearance was answered. */
@@ -269,6 +312,7 @@ describe('an amendment scenario', () => {
       cleared: clearedPlan(view, correctedAnswers(drawn.result.amendments), airport),
       airport,
       routeReading: 'full',
+      gradeRunway: true,
     } as const;
     const handedOver = routeGrade(
       amendmentGrades({ ...session, answer: { input: 'text', text: spoken.abbreviated } }),
@@ -357,7 +401,7 @@ describe('the CRAFT form', () => {
     const clearance = clearanceOf(view);
     let state = newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'));
     for (const [key, raw] of answerFor(clearance)) state = withPick(state, key, raw);
-    const picks = toPlayerPicks(state.picks);
+    const picks = toPlayerPicks(state.picks, true);
     if (picks === undefined) throw new Error("the engine's own clearance did not fill the form");
     for (const [key, raw] of answerFor(clearance)) {
       const field = fieldsOf(state).find((candidate) => candidate.key === key);
@@ -449,5 +493,60 @@ describe('buildScenarioFrom', () => {
   it('parses both tour fixtures, and both are settled', () => {
     expect(FixtureSchema.parse(swa1740).status).toBe('settled');
     expect(FixtureSchema.parse(jsx201).status).toBe('settled');
+  });
+});
+
+/** The picks that answer a clearance as the engine resolved it, the runway among them. */
+function somePicks(clearance: ResolvedClearance): PlayerPicks {
+  const feet = clearance.altitude.value.feet;
+  const fix = clearance.route.value.fix;
+  return {
+    routeTemplate: clearance.route.value.template,
+    ...(fix === undefined ? {} : { routeFix: fix }),
+    altitudePhrase: clearance.altitude.value.phrase,
+    ...(feet === undefined ? {} : { altitudeFeet: feet }),
+    expect: expectAnswer(clearance.expect.value),
+    frequency: clearance.frequency.value.value,
+    runway: clearance.runway.value,
+  };
+}
+
+describe('a clean clearance that does not grade the runway', () => {
+  it('reads the expect runway words of a typed clearance and marks nothing for them', () => {
+    if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
+    const { generated, clearance } = view;
+    const spoken = spokenFor(generated, generated, clearance, airport);
+    const text = spoken.abbreviated.replace(/expect runway [^.]*/i, 'expect runway 30');
+    expect(text).toContain('expect runway 30');
+    const answer = { input: 'text', text } as const;
+    const outcome = (gradeRunway: boolean) =>
+      clearanceOutcome(answer, generated, clearance, airport, {
+        routeReading: 'abbreviated',
+        gradeRunway,
+      }).grades;
+    const graded = outcome(true);
+    const notGraded = outcome(false);
+    expect(graded.find((one) => one.element === 'RWY')?.verdict).toBe('wrong');
+    expect(notGraded.map((one) => one.element)).not.toContain('RWY');
+    expect(notGraded).toHaveLength(graded.length - 1);
+    expect(notGraded.every((one) => one.verdict === 'correct')).toBe(true);
+    const marked = notGraded.flatMap((one) =>
+      'said' in one ? one.said.filter((run) => run.kind !== 'said' && run.kind !== 'break') : [],
+    );
+    expect(marked).toStrictEqual([]);
+  });
+
+  it('drops the runway grade of a picked clearance and counts one element fewer', () => {
+    if (view.kind !== 'clearance') throw new Error('the seeded scenario is not a clean clearance');
+    const { generated, clearance } = view;
+    const answer = { input: 'dropdowns', picks: somePicks(clearance) } as const;
+    const outcome = (gradeRunway: boolean) =>
+      clearanceOutcome(answer, generated, clearance, airport, {
+        routeReading: 'abbreviated',
+        gradeRunway,
+      }).grades;
+    expect(outcome(true).map((one) => one.element)).toContain('RWY');
+    expect(outcome(false).map((one) => one.element)).not.toContain('RWY');
+    expect(outcome(false)).toHaveLength(outcome(true).length - 1);
   });
 });

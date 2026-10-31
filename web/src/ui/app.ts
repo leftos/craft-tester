@@ -15,6 +15,7 @@ import {
   hashFor,
   inputKindFromHash,
   modeFromHash,
+  runwayGradingFromHash,
   setFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
@@ -28,7 +29,7 @@ import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, PHONE_QUERY, segmentedControl } from '@/ui/dom.ts';
 import type { SegmentOption } from '@/ui/dom.ts';
-import { filterControls } from '@/ui/filterControls.ts';
+import { filterControls, runwayGradingControl } from '@/ui/filterControls.ts';
 import type { HomeProps } from '@/ui/home.ts';
 import { continueTestRow, homeTestRows, renderHome } from '@/ui/home.ts';
 import type {
@@ -37,6 +38,7 @@ import type {
   HomeChoices,
   HomeStore,
   InputKindStore,
+  RunwayGradingStore,
   TourProgress,
   TourProgressStore,
   TourSeenStore,
@@ -46,11 +48,13 @@ import {
   browserFullRouteStore,
   browserHomeStore,
   browserInputKindStore,
+  browserRunwayGradingStore,
   browserTourProgressStore,
   browserTourSeenStore,
 } from '@/ui/preferences.ts';
 import type { Route, TutorialPart } from '@/ui/router.ts';
 import { hrefOf, newSetSeed, routeOf } from '@/ui/router.ts';
+import type { AnswerGrading } from '@/ui/clearanceGrading.ts';
 import { clearanceOutcome } from '@/ui/clearanceGrading.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { clearedPlan, listAirports, loadAirportData } from '@/ui/session.ts';
@@ -75,6 +79,7 @@ import {
   withMode,
   withPick,
   withRetry,
+  withRunwayGrading,
   withSubmitted,
   withText,
 } from '@/ui/state.ts';
@@ -122,6 +127,11 @@ type Actions = {
   onBoxesSubmit: () => void;
   /** Narrows the draw to what the dropdowns say; a destination forced by the hash does not survive it. */
   onFilter: (filter: ScenarioFilter) => void;
+  /**
+   * Grades the runway on the scenario on screen, or stops grading it, and remembers the choice.
+   * Undefined on a tutorial page, which offers no Runway control: the tour always grades the runway.
+   */
+  onRunwayGrading: ((graded: boolean) => void) | undefined;
   onMode: (mode: Mode) => void;
   onNewScenario: () => void;
   onPick: (key: PickKey, raw: string) => void;
@@ -225,11 +235,15 @@ function airportControl(state: AppState, index: AirportsIndex, actions: Actions)
   return select;
 }
 
-/** How many of the filters differ from drawing anything, which the Filters button counts. */
-function activeFilterCount(filter: ScenarioFilter): number {
-  const time = filter.time === 'either' ? 0 : 1;
-  const config = filter.config.kind === 'any' ? 0 : 1;
-  return time + config;
+/**
+ * How many of the Filters choices differ from their defaults, which the Filters button counts: the
+ * filters that narrow the draw, and the runway when it is not graded.
+ */
+function activeFilterCount(state: AppState): number {
+  const time = state.filter.time === 'either' ? 0 : 1;
+  const config = state.filter.config.kind === 'any' ? 0 : 1;
+  const runway = state.gradeRunway ? 0 : 1;
+  return time + config + runway;
 }
 
 /**
@@ -265,15 +279,18 @@ function closeOnOutsidePress(details: HTMLDetailsElement): void {
 
 /**
  * The Filters button, with a count of the filters set, and the popover it opens, which holds the
- * time and configuration dropdowns.
+ * time and configuration dropdowns and, where the page offers it, the runway grading after them.
  */
 function filtersControl(state: AppState, actions: Actions): HTMLElement {
   const details = el('details', 'filters');
   const summary = el('summary', '', 'Filters');
-  const count = activeFilterCount(state.filter);
+  const count = activeFilterCount(state);
   if (count > 0) summary.append(el('span', 'count', String(count)));
   const popover = el('div', 'filters-popover');
   popover.append(...filterControls(state.filter, state.airport, actions.onFilter));
+  if (actions.onRunwayGrading !== undefined) {
+    popover.append(runwayGradingControl(state.gradeRunway, actions.onRunwayGrading));
+  }
   details.append(summary, popover);
   closeOnOutsidePress(details);
   return details;
@@ -347,7 +364,8 @@ function summaryPanels(
   solved: SolvedStore,
 ): Panels {
   const { icao } = state.airport.airport;
-  const scope = { mode: state.mode, input: state.input, fullRoute: state.fullRoute };
+  const { mode, input, fullRoute, gradeRunway } = state;
+  const scope = { mode, input, fullRoute, gradeRunway };
   const summary = setSummary(state, set, (seed) => solved.load(icao, seed, scope), Date.now());
   return {
     rail: [],
@@ -355,6 +373,11 @@ function summaryPanels(
     work: [renderSetSummary(summary, actions.onNewScenario)],
     sync: undefined,
   };
+}
+
+/** What the clearance answer on screen is held to: the reading, and whether the runway is graded. */
+function answerGradingOf(state: AppState): AnswerGrading {
+  return { routeReading: routeReadingOf(state), gradeRunway: state.gradeRunway };
 }
 
 /**
@@ -393,7 +416,7 @@ function renderPanels(
   const revisit = state.revisit;
   if (phase === 'clearance-revisit' && revisit?.kind === 'clearance') {
     const work = renderRevisit({
-      ...clearanceOutcome(revisit, generated, clearance, state.airport, routeReadingOf(state)),
+      ...clearanceOutcome(revisit, generated, clearance, state.airport, answerGradingOf(state)),
       routeReading: routeReadingOf(state),
       nextActions: !tutorial,
       onNext: actions.onNewScenario,
@@ -404,7 +427,7 @@ function renderPanels(
   const answer = toClearanceAnswer(state);
   if (phase === 'clearance-results' && answer !== undefined) {
     const work = renderResults({
-      ...clearanceOutcome(answer, generated, clearance, state.airport, routeReadingOf(state)),
+      ...clearanceOutcome(answer, generated, clearance, state.airport, answerGradingOf(state)),
       routeReading: routeReadingOf(state),
       nextActions: !tutorial,
       onNext: actions.onNewScenario,
@@ -447,6 +470,7 @@ function renderClearanceForm(
     clearance,
     picks: next.picks,
     procedure: clearanceProcedureRow(clearance),
+    gradeRunway: next.gradeRunway,
     onPick: actions.onPick,
     onSubmit: actions.onSubmit,
     boxesOpen: false,
@@ -591,6 +615,7 @@ type Stores = {
   filter: FilterStore;
   input: InputKindStore;
   fullRoute: FullRouteStore;
+  runwayGrading: RunwayGradingStore;
   set: SetStore;
   home: HomeStore;
   tourSeen: TourSeenStore;
@@ -766,7 +791,8 @@ function attemptOf(state: AppState): Attempt | undefined {
 function saveAttempt(state: AppState, store: SolvedStore): Attempt | undefined {
   const attempt = attemptOf(state);
   if (attempt !== undefined) {
-    store.save(state.airport.airport.icao, state.seed, attempt, state.fullRoute);
+    const { icao } = state.airport.airport;
+    store.save(icao, state.seed, attempt, state.fullRoute, state.gradeRunway);
   }
   return attempt;
 }
@@ -1015,11 +1041,19 @@ function inputKindOf(answer: AnswerChoice): InputKind {
 function answeredAs(state: AppState, answer: AnswerChoice, solved: SolvedStore): AppState {
   const input = inputKindOf(answer);
   const fullRoute = answer === 'full';
-  const scope = { mode: state.mode, input, fullRoute };
+  const scope = { mode: state.mode, input, fullRoute, gradeRunway: state.gradeRunway };
   const previous = solved.load(state.airport.airport.icao, state.seed, scope);
   return input === 'text'
     ? withFullRoute(state, fullRoute, previous)
     : withInputKind(state, input, previous);
+}
+
+/** The scenario on screen with the runway graded or not, with the attempt held for that choice. */
+function gradedAs(state: AppState, gradeRunway: boolean, solved: SolvedStore): AppState {
+  const { mode, input, fullRoute } = state;
+  const scope = { mode, input, fullRoute, gradeRunway };
+  const previous = solved.load(state.airport.airport.icao, state.seed, scope);
+  return withRunwayGrading(state, gradeRunway, previous);
 }
 
 /**
@@ -1034,10 +1068,11 @@ function trainerActions(context: ActionContext): Actions {
       void cachedAirport(icao).then((airport) => {
         const state = current();
         const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
-        const { mode, input, fullRoute } = state;
-        const previous = solved.load(icao, state.seed, { mode, input, fullRoute });
+        const { mode, input, fullRoute, gradeRunway } = state;
+        const previous = solved.load(icao, state.seed, { mode, input, fullRoute, gradeRunway });
         rememberPractice(stores.home, icao, mode);
-        update(newSession(airport, state.seed, previous, { filter, mode, input, fullRoute }));
+        const settings = { filter, mode, input, fullRoute, gradeRunway };
+        update(newSession(airport, state.seed, previous, settings));
       });
     },
     onBox: (box, answer) => {
@@ -1057,8 +1092,9 @@ function trainerActions(context: ActionContext): Actions {
       const filter: ScenarioFilter = { time, config };
       stores.filter.save(icao, filter);
       const seed = randomSeed();
-      const { mode, input, fullRoute } = state;
-      update(withFilter(state, filter, seed, solved.load(icao, seed, { mode, input, fullRoute })));
+      const { mode, input, fullRoute, gradeRunway } = state;
+      const previous = solved.load(icao, seed, { mode, input, fullRoute, gradeRunway });
+      update(withFilter(state, filter, seed, previous));
       const popover = root.querySelector('details.filters');
       if (popover instanceof HTMLDetailsElement) popover.open = true;
     },
@@ -1067,11 +1103,18 @@ function trainerActions(context: ActionContext): Actions {
       stores.fullRoute.save(answer === 'full');
       update(answeredAs(current(), answer, solved));
     },
+    onRunwayGrading: (graded) => {
+      stores.runwayGrading.save(graded);
+      update(gradedAs(current(), graded, solved));
+      const popover = root.querySelector('details.filters');
+      if (popover instanceof HTMLDetailsElement) popover.open = true;
+    },
     onMode: (mode) => {
       const state = current();
       const seed = randomSeed();
-      const { input, fullRoute } = state;
-      const previous = solved.load(state.airport.airport.icao, seed, { mode, input, fullRoute });
+      const { input, fullRoute, gradeRunway } = state;
+      const scope = { mode, input, fullRoute, gradeRunway };
+      const previous = solved.load(state.airport.airport.icao, seed, scope);
       rememberPractice(stores.home, state.airport.airport.icao, mode);
       update(withMode(state, mode, seed, previous));
     },
@@ -1079,8 +1122,8 @@ function trainerActions(context: ActionContext): Actions {
       const state = current();
       const seed = randomSeed();
       const { icao } = state.airport.airport;
-      const { mode, input, fullRoute } = state;
-      const previous = solved.load(icao, seed, { mode, input, fullRoute });
+      const { mode, input, fullRoute, gradeRunway } = state;
+      const previous = solved.load(icao, seed, { mode, input, fullRoute, gradeRunway });
       update(newSession(state.airport, seed, previous, state));
     },
     onPick: (key, raw) => {
@@ -1098,8 +1141,8 @@ function trainerActions(context: ActionContext): Actions {
 
 /**
  * The trainer's actions as a tutorial part runs them: each pick, box answer and submit that happened
- * is told to the part's tour, a submit is graded without being saved, and the way of answering is
- * not remembered.
+ * is told to the part's tour, a submit is graded without being saved, the way of answering is not
+ * remembered, and no Runway control is offered.
  */
 function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink): Actions {
   const { stores, current, update } = context;
@@ -1108,6 +1151,7 @@ function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink):
     onAnswer: (answer) => {
       update(answeredAs(current(), answer, stores.solved));
     },
+    onRunwayGrading: undefined,
     onBox: (box, answer) => {
       trainer.onBox(box, answer);
       tour.boxed(box, answer);
@@ -1228,7 +1272,9 @@ function opensFullRoute(hash: string, input: InputKind, remembered: boolean | un
  * @param hash The hash or route query the page opened on, with or without its leading `#`.
  * @param icao The airport the session opens at, whose remembered filter applies.
  * @param stores What this browser remembers.
- * @returns The filter, the mode, the input kind and whether Full route holds.
+ * @returns The filter, the mode, the input kind, whether Full route holds, and whether the runway is
+ *   graded, which the link alone decides: home writes `rwy=off` into its links when this browser
+ *   chose not to grade it.
  */
 function settingsFrom(
   hash: string,
@@ -1241,7 +1287,7 @@ function settingsFrom(
     : (stores.filter.load(icao) ?? ANY_SCENARIO);
   const input = inputKindFromHash(hash) ?? stores.input.load() ?? 'dropdowns';
   const fullRoute = opensFullRoute(hash, input, stores.fullRoute.load());
-  return { filter, mode, input, fullRoute };
+  return { filter, mode, input, fullRoute, gradeRunway: runwayGradingFromHash(hash) };
 }
 
 /** Whether the page listens for hash changes, which `startApp` installs once. */
@@ -1313,8 +1359,8 @@ async function openStrip(opening: Opening, hash: string): Promise<void> {
   if (!isCurrent(opening)) return;
   const seed = seedFromHash(hash) ?? randomSeed();
   const settings = settingsFrom(hash, entry.icao, stores);
-  const { mode, input, fullRoute } = settings;
-  const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute });
+  const { mode, input, fullRoute, gradeRunway } = settings;
+  const previous = stores.solved.load(entry.icao, seed, { mode, input, fullRoute, gradeRunway });
   const session = newSession(airport, seed, previous, settings);
   const set = setFromHash(hash);
   const initial =
@@ -1378,7 +1424,8 @@ function tutorialFrom(
 
 /**
  * Opens a tutorial part on its worksheet's plan at KOAK, answered from the dropdowns, resumed on the
- * step this browser stored for it.
+ * step this browser stored for it. The runway is graded whatever this browser chose, since the tour
+ * has a step on the runway row.
  */
 async function openTutorial(
   opening: Opening,
@@ -1394,6 +1441,7 @@ async function openTutorial(
     mode,
     input: 'dropdowns',
     fullRoute: false,
+    gradeRunway: true,
   };
   const session = newSessionFrom(airport, scenario, settings);
   const from = tutorialFrom(stores.tourProgress.load(), route.part, steps.length);
@@ -1430,8 +1478,9 @@ async function openContinueTest(
   if (record === undefined || !lists(index, record.icao)) return openHomeInstead(opening);
   const airport = await cachedAirport(record.icao);
   if (!isCurrent(opening)) return;
-  const { filter, mode, input, fullRoute } = record;
-  const session = newSession(airport, randomSeed(), undefined, { filter, mode, input, fullRoute });
+  const { filter, mode, input, fullRoute, gradeRunway } = record;
+  const settings = { filter, mode, input, fullRoute, gradeRunway };
+  const session = newSession(airport, randomSeed(), undefined, settings);
   const params = { seed: route.setSeed, n: record.n, minutes: record.minutes, index: 0 };
   const initial = openedSet(session, params, record, Date.now());
   takeOver(opening, () => mount(root, index, initial, stores, TRAINER));
@@ -1450,11 +1499,11 @@ function scoreOf(
   airports: ReadonlyMap<string, AirportData>,
   solved: SolvedStore,
 ): string | undefined {
-  const { icao, mode, input, fullRoute } = listing.record;
+  const { icao, mode, input, fullRoute, gradeRunway } = listing.record;
   const airport = airports.get(icao);
   if (airport === undefined) return undefined;
   const load = (seed: number): Attempt | undefined =>
-    solved.load(icao, seed, { mode, input, fullRoute });
+    solved.load(icao, seed, { mode, input, fullRoute, gradeRunway });
   return storedSetScore(airport, listing, load);
 }
 
@@ -1546,6 +1595,7 @@ function mountHome(
   let choices = initial;
   let answer = rememberedAnswer(stores);
   let filter = stores.filter.load(choices.icao) ?? ANY_SCENARIO;
+  let gradeRunway = stores.runwayGrading.load() ?? true;
   const draw = (): void => {
     const airport = airports.find((data) => data.airport.icao === choices.icao);
     if (airport === undefined) throw new Error(`home has no data loaded for ${choices.icao}`);
@@ -1555,6 +1605,7 @@ function mountHome(
       choices,
       answer,
       filter,
+      gradeRunway,
       onChoices: (next) => {
         stores.home.save(next);
         if (next.icao !== choices.icao) filter = stores.filter.load(next.icao) ?? ANY_SCENARIO;
@@ -1570,6 +1621,11 @@ function mountHome(
       onFilter: (next) => {
         stores.filter.save(choices.icao, next);
         filter = next;
+        draw();
+      },
+      onRunwayGrading: (next) => {
+        stores.runwayGrading.save(next);
+        gradeRunway = next;
         draw();
       },
     });
@@ -1723,6 +1779,7 @@ export async function startApp(root: Element): Promise<void> {
     filter: browserFilterStore(),
     input: browserInputKindStore(),
     fullRoute: browserFullRouteStore(),
+    runwayGrading: browserRunwayGradingStore(),
     set: browserSetStore(),
     home: browserHomeStore(),
     tourSeen: browserTourSeenStore(),

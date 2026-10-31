@@ -65,6 +65,8 @@ export type CraftFormProps = {
   clearance: ResolvedClearance;
   picks: DraftPicks;
   procedure: ProcedureRow;
+  /** Whether the runway is graded; the form asks for it only then. */
+  gradeRunway: boolean;
   onPick: (key: PickKey, raw: string) => void;
   onSubmit: () => void;
   /**
@@ -290,8 +292,12 @@ function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
   };
 }
 
+/** Which of the form's optional rows it holds: the procedure given or picked, and the runway. */
+export type FormRows = { procedure: ProcedureRow; gradeRunway: boolean };
+
 /**
- * Builds the eight rows of the form, the five or six of them the player answers the clearance with.
+ * Builds the eight rows of the form, the five or six of them the player answers the clearance with;
+ * a form that does not grade the runway leaves its row out, for seven and one fewer to answer.
  *
  * The clearance limit and the squawk are given rows: the engine resolved them and the reveal speaks
  * them, and they sit in their CRAFT positions so the whole clearance reads in order. The procedure
@@ -303,7 +309,7 @@ function procedureGroup(airport: AirportData, picks: DraftPicks): PickedGroup {
  * @param airport The airport data.
  * @param clearance The clearance the engine resolved, which fills the given rows.
  * @param picks What the player has picked so far, which settles the dependent dropdowns.
- * @param procedure Whether the procedure row is given or picked.
+ * @param rows Whether the procedure row is given or picked, and whether the runway row is asked.
  * @returns The rows, in the order CRAFT speaks them.
  */
 export function craftGroups(
@@ -311,19 +317,19 @@ export function craftGroups(
   airport: AirportData,
   clearance: ResolvedClearance,
   picks: DraftPicks,
-  procedure: ProcedureRow,
+  rows: FormRows,
 ): readonly CraftGroup[] {
   const options = buildOptions(scenario, airport, clearance);
-  return [
+  const groups: CraftGroup[] = [
     clearanceLimitRow(clearance, airport),
-    procedure === 'given' ? procedureRow(clearance, airport) : procedureGroup(airport, picks),
+    rows.procedure === 'given' ? procedureRow(clearance, airport) : procedureGroup(airport, picks),
     routeGroup(options, picks),
     altitudeGroup(options, picks),
     expectGroup(options, picks, clearance.expect.value, scenario.filedAltitude),
     frequencyGroup(options, airport, picks),
     { kind: 'given', heading: 'T — squawk', value: scenario.squawk },
-    runwayGroup(options, picks),
   ];
+  return rows.gradeRunway ? [...groups, runwayGroup(options, picks)] : groups;
 }
 
 /** The dropdown built for each pick the form offers; a pick it does not offer has none. */
@@ -376,15 +382,21 @@ function syncGroups(groups: readonly CraftGroup[], controls: FieldControls): voi
 /**
  * Whether the form still has a dropdown to fill before it can be submitted.
  *
- * A form whose procedure row is picked needs that pick too, which an ordinary clearance is given.
+ * A form whose procedure row is picked needs that pick too, which an ordinary clearance is given;
+ * a form that does not grade the runway does not ask for it.
  *
  * @param picks What the player has picked so far.
  * @param procedure Whether the procedure row is given or picked.
+ * @param gradeRunway Whether the runway is graded, and so asked.
  * @returns True while a required dropdown is blank.
  */
-export function submitDisabled(picks: DraftPicks, procedure: ProcedureRow): boolean {
+export function submitDisabled(
+  picks: DraftPicks,
+  procedure: ProcedureRow,
+  gradeRunway: boolean,
+): boolean {
   const read = procedure === 'picked' ? toAmendmentPicks : toPlayerPicks;
-  return read(picks) === undefined;
+  return read(picks, gradeRunway) === undefined;
 }
 
 /** The CRAFT form: the panel on screen, and how to write a later pick into the dropdowns it built. */
@@ -392,7 +404,8 @@ export type CraftForm = { node: HTMLElement; sync: (props: CraftFormProps) => vo
 
 /** The rows of the form, which both the build and every later sync are derived from. */
 function groupsOf(props: CraftFormProps): readonly CraftGroup[] {
-  return craftGroups(props.scenario, props.airport, props.clearance, props.picks, props.procedure);
+  const rows = { procedure: props.procedure, gradeRunway: props.gradeRunway };
+  return craftGroups(props.scenario, props.airport, props.clearance, props.picks, rows);
 }
 
 /**
@@ -418,7 +431,8 @@ export function renderCraftForm(props: CraftFormProps): CraftForm {
   const submit = button('Submit clearance', 'primary', () => {
     current.onSubmit();
   });
-  submit.disabled = props.boxesOpen || submitDisabled(props.picks, props.procedure);
+  submit.disabled =
+    props.boxesOpen || submitDisabled(props.picks, props.procedure, props.gradeRunway);
   submit.dataset['tour'] = 'submit' satisfies TourAnchor;
   panel.append(withSkip(submit, props.onSkip));
   return {
@@ -426,7 +440,10 @@ export function renderCraftForm(props: CraftFormProps): CraftForm {
     sync: (next) => {
       current = next;
       syncGroups(groupsOf(next), controls);
-      syncButton(submit, next.boxesOpen || submitDisabled(next.picks, next.procedure));
+      syncButton(
+        submit,
+        next.boxesOpen || submitDisabled(next.picks, next.procedure, next.gradeRunway),
+      );
     },
   };
 }

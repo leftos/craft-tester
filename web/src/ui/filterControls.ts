@@ -37,6 +37,37 @@ function configOptions(airport: AirportData): SelectOption[] {
   ];
 }
 
+/** The runway grading choices, in the order the dropdown offers them. */
+const RUNWAY_GRADING_OPTIONS: readonly SelectOption[] = [
+  { value: 'graded', label: 'Graded' },
+  { value: 'off', label: 'Not graded' },
+];
+
+/**
+ * The dropdown that turns runway grading on or off, which sits after the filters.
+ *
+ * @param graded Whether the runway is graded now.
+ * @param onChange Called with whether the runway is graded after the dropdown changes.
+ * @returns The Runway dropdown.
+ */
+export function runwayGradingControl(
+  graded: boolean,
+  onChange: (graded: boolean) => void,
+): HTMLElement {
+  return selectControl(
+    {
+      label: 'Runway',
+      options: RUNWAY_GRADING_OPTIONS,
+      value: graded ? 'graded' : 'off',
+      disabled: false,
+      placeholder: '—',
+    },
+    (raw) => {
+      onChange(raw !== 'off');
+    },
+  );
+}
+
 /**
  * The two dropdowns that narrow the draw: the time of day and the runway configuration.
  *

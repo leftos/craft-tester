@@ -55,7 +55,7 @@ const full: DraftPicks = {
 
 /** The row the procedure sits in, which is the second of the form either way. */
 function procedureRowOf(picks: DraftPicks, procedure: 'given' | 'picked'): CraftGroup {
-  const row = craftGroups(scenario, ksfo, clearance, picks, procedure)[1];
+  const row = craftGroups(scenario, ksfo, clearance, picks, { procedure, gradeRunway: true })[1];
   if (row === undefined) throw new Error('the form has no procedure row');
   return row;
 }
@@ -109,7 +109,10 @@ describe('craftGroups', () => {
         { ...headingRule, id: 'TEST-270-AGAIN', nonDpHeading: 270 },
       ],
     };
-    const row = craftGroups(scenario, airport, clearance, EMPTY_PICKS, 'picked')[1];
+    const row = craftGroups(scenario, airport, clearance, EMPTY_PICKS, {
+      procedure: 'picked',
+      gradeRunway: true,
+    })[1];
     if (row?.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.fields[0]?.options.slice(-3)).toStrictEqual([
       { value: 'heading:runway', label: 'fly runway heading (no SID)' },
@@ -132,7 +135,10 @@ describe('craftGroups', () => {
         citations: [],
       },
     };
-    const row = craftGroups(scenario, ksfo, onTheHeading, EMPTY_PICKS, 'given')[1];
+    const row = craftGroups(scenario, ksfo, onTheHeading, EMPTY_PICKS, {
+      procedure: 'given',
+      gradeRunway: true,
+    })[1];
     expect(row).toStrictEqual({
       kind: 'given',
       heading: 'R — procedure',
@@ -151,8 +157,14 @@ describe('craftGroups', () => {
   });
 
   it('leaves every other row of the form where it was', () => {
-    const given = craftGroups(scenario, ksfo, clearance, full, 'given');
-    const picked = craftGroups(scenario, ksfo, clearance, full, 'picked');
+    const given = craftGroups(scenario, ksfo, clearance, full, {
+      procedure: 'given',
+      gradeRunway: true,
+    });
+    const picked = craftGroups(scenario, ksfo, clearance, full, {
+      procedure: 'picked',
+      gradeRunway: true,
+    });
     expect(picked.length).toBe(given.length);
     expect(picked.filter((_, index) => index !== 1)).toStrictEqual(
       given.filter((_, index) => index !== 1),
@@ -163,7 +175,10 @@ describe('craftGroups', () => {
 describe('the expect row', () => {
   /** The labels of the expect dropdown, in the order the form offers them. */
   function expectLabels(plan: Scenario, resolved: ResolvedClearance): string[] {
-    const row = craftGroups(plan, ksfo, resolved, full, 'given')[4];
+    const row = craftGroups(plan, ksfo, resolved, full, {
+      procedure: 'given',
+      gradeRunway: true,
+    })[4];
     if (row?.kind !== 'picked') throw new Error('the expect row is not a picked row');
     return (row.fields[0]?.options ?? []).map((option) => option.label);
   }
@@ -192,7 +207,10 @@ describe('the expect row', () => {
 
 describe('the altitude row', () => {
   it('labels every altitude at or above 18,000 as a flight level and the rest in feet', () => {
-    const row = craftGroups(scenario, ksfo, clearance, full, 'given')[3];
+    const row = craftGroups(scenario, ksfo, clearance, full, {
+      procedure: 'given',
+      gradeRunway: true,
+    })[3];
     if (row?.kind !== 'picked') throw new Error('the altitude row is not a picked row');
     const options = row.fields[1]?.options ?? [];
     expect(options.map((option) => option.value)).toContain('34000');
@@ -206,23 +224,50 @@ describe('the altitude row', () => {
 
 describe('submitDisabled', () => {
   it('takes a filled clearance form whose procedure was never picked', () => {
-    expect(submitDisabled({ ...full, procedure: undefined }, 'given')).toBe(false);
+    expect(submitDisabled({ ...full, procedure: undefined }, 'given', true)).toBe(false);
   });
 
   it('holds a corrected plan back until the procedure is picked', () => {
-    expect(submitDisabled({ ...full, procedure: undefined }, 'picked')).toBe(true);
-    expect(submitDisabled(full, 'picked')).toBe(false);
+    expect(submitDisabled({ ...full, procedure: undefined }, 'picked', true)).toBe(true);
+    expect(submitDisabled(full, 'picked', true)).toBe(false);
   });
 
   it('takes the runway heading as the procedure pick of a corrected plan', () => {
-    expect(submitDisabled({ ...full, procedure: headingPick('runway heading') }, 'picked')).toBe(
-      false,
-    );
+    expect(
+      submitDisabled({ ...full, procedure: headingPick('runway heading') }, 'picked', true),
+    ).toBe(false);
   });
 
   it('holds either form back while a CRAFT dropdown is blank', () => {
-    expect(submitDisabled({ ...full, runway: undefined }, 'given')).toBe(true);
-    expect(submitDisabled({ ...full, runway: undefined }, 'picked')).toBe(true);
+    expect(submitDisabled({ ...full, runway: undefined }, 'given', true)).toBe(true);
+    expect(submitDisabled({ ...full, runway: undefined }, 'picked', true)).toBe(true);
+  });
+});
+
+describe('the form with the runway not graded', () => {
+  it('leaves the runway row out and keeps every other row', () => {
+    for (const procedure of ['given', 'picked'] as const) {
+      const graded = craftGroups(scenario, ksfo, clearance, full, { procedure, gradeRunway: true });
+      const notGraded = craftGroups(scenario, ksfo, clearance, full, {
+        procedure,
+        gradeRunway: false,
+      });
+      const pickedElements = (groups: readonly CraftGroup[]): string[] =>
+        groups.flatMap((group) => (group.kind === 'picked' ? [group.element] : []));
+      expect(pickedElements(graded)).toContain('RWY');
+      expect(pickedElements(notGraded)).not.toContain('RWY');
+      expect(notGraded).toStrictEqual(
+        graded.filter((group) => group.kind !== 'picked' || group.element !== 'RWY'),
+      );
+    }
+  });
+
+  it('takes a form with every other row picked and no runway', () => {
+    const noRunway = { ...full, runway: undefined };
+    expect(submitDisabled(noRunway, 'given', false)).toBe(false);
+    expect(submitDisabled(noRunway, 'picked', false)).toBe(false);
+    expect(submitDisabled({ ...noRunway, frequency: undefined }, 'given', false)).toBe(true);
+    expect(submitDisabled({ ...noRunway, procedure: undefined }, 'picked', false)).toBe(true);
   });
 });
 
@@ -245,7 +290,10 @@ describe('the procedure row of a clearance-mode strip', () => {
     expect(drawn.clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
     const procedure = clearanceProcedureRow(drawn.clearance);
     expect(procedure).toBe('picked');
-    const row = craftGroups(drawn.scenario, koak, drawn.clearance, EMPTY_PICKS, procedure)[1];
+    const row = craftGroups(drawn.scenario, koak, drawn.clearance, EMPTY_PICKS, {
+      procedure,
+      gradeRunway: true,
+    })[1];
     if (row?.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.element).toBe('R.sid');
     expect(row.fields[0]?.value).toBeUndefined();
@@ -258,13 +306,16 @@ describe('the procedure row of a clearance-mode strip', () => {
     const drawn = koakClearance(SID_SEED);
     const procedure = clearanceProcedureRow(drawn.clearance);
     expect(procedure).toBe('given');
-    const row = craftGroups(drawn.scenario, koak, drawn.clearance, EMPTY_PICKS, procedure)[1];
+    const row = craftGroups(drawn.scenario, koak, drawn.clearance, EMPTY_PICKS, {
+      procedure,
+      gradeRunway: true,
+    })[1];
     expect(row?.kind).toBe('given');
   });
 
   it('holds the no-DP form back until the procedure is picked', () => {
     const procedure = clearanceProcedureRow(koakClearance(NO_DP_SEED).clearance);
-    expect(submitDisabled({ ...full, procedure: undefined }, procedure)).toBe(true);
-    expect(submitDisabled({ ...full, procedure: headingPick(270) }, procedure)).toBe(false);
+    expect(submitDisabled({ ...full, procedure: undefined }, procedure, true)).toBe(true);
+    expect(submitDisabled({ ...full, procedure: headingPick(270) }, procedure, true)).toBe(false);
   });
 });

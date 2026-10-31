@@ -11,23 +11,24 @@ import {
   inputKindFromHash,
   matchesConfig,
   modeFromHash,
+  runwayGradingFromHash,
   settingsQuery,
 } from '@/scenario/filter.ts';
 import { seedFromHash } from '@/scenario/rng.ts';
 
 /** The settings of a session answered with the dropdowns, which write no input part. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns', fullRoute: false };
+  return { filter, mode, input: 'dropdowns', fullRoute: false, gradeRunway: true };
 }
 
 /** The settings of a session answered by typing the clearance out. */
 function typed(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'text', fullRoute: false };
+  return { filter, mode, input: 'text', fullRoute: false, gradeRunway: true };
 }
 
 /** The settings of a session typed out and held to the full route. */
 function fullRoute(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'text', fullRoute: true };
+  return { filter, mode, input: 'text', fullRoute: true, gradeRunway: true };
 }
 
 /** A runway configuration with nothing in it but the id and the plan the filter reads. */
@@ -55,15 +56,24 @@ const CONFIGS: readonly ScenarioFilter['config'][] = [
 
 describe('settingsQuery', () => {
   it.each([
-    ['all defaults', { filter: ANY_SCENARIO, input: 'dropdowns', fullRoute: false }, ''],
+    [
+      'all defaults',
+      { filter: ANY_SCENARIO, input: 'dropdowns', fullRoute: false, gradeRunway: true },
+      '',
+    ],
     [
       'a night filter',
-      { filter: { ...ANY_SCENARIO, time: 'night' }, input: 'dropdowns', fullRoute: false },
+      {
+        filter: { ...ANY_SCENARIO, time: 'night' },
+        input: 'dropdowns',
+        fullRoute: false,
+        gradeRunway: true,
+      },
       't=night',
     ],
     [
       'typed and full route',
-      { filter: ANY_SCENARIO, input: 'text', fullRoute: true },
+      { filter: ANY_SCENARIO, input: 'text', fullRoute: true, gradeRunway: true },
       'i=text&r=full',
     ],
     [
@@ -72,12 +82,13 @@ describe('settingsQuery', () => {
         filter: { time: 'night', config: { kind: 'plan', plan: 'SFOW' } },
         input: 'text',
         fullRoute: false,
+        gradeRunway: true,
       },
       't=night&c=plan:SFOW&i=text',
     ],
     [
       'full route on the dropdowns',
-      { filter: ANY_SCENARIO, input: 'dropdowns', fullRoute: true },
+      { filter: ANY_SCENARIO, input: 'dropdowns', fullRoute: true, gradeRunway: true },
       '',
     ],
   ] satisfies [string, Omit<SessionSettings, 'mode' | 'set'>, string][])(
@@ -306,6 +317,61 @@ describe('the full route clearance in the hash', () => {
     expect(fullRouteFromHash('')).toBe(false);
     expect(fullRouteFromHash('#s=1&a=KSFO&r=bogus')).toBe(false);
     expect(fullRouteFromHash('#s=1&a=KSFO&r=')).toBe(false);
+  });
+});
+
+describe('the runway grading in the hash', () => {
+  const notGraded: SessionSettings = {
+    ...fullRoute(ANY_SCENARIO, 'amendment'),
+    gradeRunway: false,
+  };
+
+  it('writes rwy=off after the answer parts and before x= only when the runway is not graded', () => {
+    expect(hashFor('KSFO', 1, notGraded)).toBe('#s=1&a=KSFO&m=amend&i=text&r=full&rwy=off');
+    const set = { seed: 10, n: 5, minutes: 0, index: 2 };
+    expect(hashFor('KSFO', 1, { ...notGraded, set })).toBe(
+      '#s=1&a=KSFO&m=amend&i=text&r=full&rwy=off&x=a.5.0.2',
+    );
+    expect(
+      hashFor('KSFO', 1, { ...dropdowns(ANY_SCENARIO, 'clearance'), gradeRunway: false }),
+    ).toBe('#s=1&a=KSFO&rwy=off');
+    expect(hashFor('KSFO', 1, fullRoute(ANY_SCENARIO, 'amendment'))).toBe(
+      '#s=1&a=KSFO&m=amend&i=text&r=full',
+    );
+  });
+
+  it('writes rwy=off into a home query after the answer parts, and nothing when graded', () => {
+    const night = { ...ANY_SCENARIO, time: 'night' as const };
+    const typedOff = {
+      filter: night,
+      input: 'text' as const,
+      fullRoute: false,
+      gradeRunway: false,
+    };
+    expect(settingsQuery(typedOff)).toBe('t=night&i=text&rwy=off');
+    expect(settingsQuery({ ...typedOff, input: 'dropdowns', filter: ANY_SCENARIO })).toBe(
+      'rwy=off',
+    );
+    expect(settingsQuery({ ...typedOff, gradeRunway: true })).toBe('t=night&i=text');
+  });
+
+  it.each([
+    ['an rwy=off part', '#s=1&a=KSFO&rwy=off', false],
+    ['an rwy=off part without the leading #', 's=1&rwy=off', false],
+    ['a hash with no rwy= part', '#s=1&a=KSFO&i=text', true],
+    ['an empty hash', '', true],
+    ['an rwy=on part', '#s=1&a=KSFO&rwy=on', true],
+    ['an empty rwy= part', '#s=1&a=KSFO&rwy=', true],
+    ['an upper-case value', '#s=1&a=KSFO&rwy=OFF', true],
+  ])('reads %s', (_, hash, graded) => {
+    expect(runwayGradingFromHash(hash)).toBe(graded);
+  });
+
+  it('round-trips through hashFor', () => {
+    expect(runwayGradingFromHash(hashFor('KSFO', 1, notGraded))).toBe(false);
+    expect(runwayGradingFromHash(hashFor('KSFO', 1, { ...notGraded, gradeRunway: true }))).toBe(
+      true,
+    );
   });
 });
 

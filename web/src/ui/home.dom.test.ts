@@ -37,6 +37,7 @@ function props(overrides: Partial<HomeProps> = {}): HomeProps {
     choices: CHOICES,
     answer: 'pick',
     filter: ANY_SCENARIO,
+    gradeRunway: true,
     tests: [],
     resume: undefined,
     offerTour: false,
@@ -44,6 +45,7 @@ function props(overrides: Partial<HomeProps> = {}): HomeProps {
     onChoices: vi.fn(),
     onAnswer: vi.fn(),
     onFilter: vi.fn(),
+    onRunwayGrading: vi.fn(),
     onDismissTour: vi.fn(),
     copy: vi.fn(),
     ...overrides,
@@ -81,6 +83,29 @@ describe('renderHome', () => {
   it('carries typed answers and the time filter in the link', () => {
     const page = renderHome(props({ answer: 'type', filter: { ...ANY_SCENARIO, time: 'night' } }));
     expect(startLink(page).getAttribute('href')).toBe('#/KOAK/amend/test/10x20?t=night&i=text');
+  });
+
+  it('offers the runway grading under Filters, and carries it in the Start link when off', () => {
+    const onRunwayGrading = vi.fn();
+    const page = renderHome(props({ onRunwayGrading }));
+    const runway = [...page.querySelectorAll('details.home-more label.field')].find(
+      (node) => node.querySelector('.field-label')?.textContent === 'Runway',
+    );
+    const select = runway?.querySelector('select');
+    if (select === null || select === undefined) throw new Error('Filters holds no Runway select');
+    const options = [...select.options].filter((option) => option.value !== '');
+    expect(options.map((option) => [option.value, option.textContent])).toStrictEqual([
+      ['graded', 'Graded'],
+      ['off', 'Not graded'],
+    ]);
+    expect(select.value).toBe('graded');
+    expect(startLink(page).getAttribute('href')).toBe('#/KOAK/amend/test/10x20');
+    select.value = 'off';
+    select.dispatchEvent(new Event('change'));
+    expect(onRunwayGrading).toHaveBeenCalledWith(false);
+
+    const off = renderHome(props({ gradeRunway: false, answer: 'type' }));
+    expect(startLink(off).getAttribute('href')).toBe('#/KOAK/amend/test/10x20?i=text&rwy=off');
   });
 
   it('offers no strips or time for practice, and links Start to practice', () => {
@@ -205,6 +230,7 @@ describe('homeTestRows', () => {
     mode: 'amendment',
     input: 'dropdowns',
     fullRoute: false,
+    gradeRunway: true,
     filter: ANY_SCENARIO,
     answered: [0, 1, 2],
     skipped: [],

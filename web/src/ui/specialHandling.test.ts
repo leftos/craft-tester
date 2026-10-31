@@ -198,6 +198,7 @@ describe('amendment mode for a type ZOA CPS-004 3.1 hands special handling', () 
         picks: { ...picksFor(accepted.clearance), procedure: nimi.id },
       },
       routeReading: 'abbreviated',
+      gradeRunway: true,
     });
     const clearanceGrades = grades.filter((one) => !one.element.startsWith('BOX.'));
     expect(clearanceGrades.map((one) => `${one.element} ${one.verdict}`)).toStrictEqual(

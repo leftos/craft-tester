@@ -106,6 +106,10 @@ export type AppState = {
    * URL hash carries it beside the input kind. Only a typed answer can be held to it.
    */
   fullRoute: boolean;
+  /**
+   * Whether the expected runway is asked and graded; the URL hash carries it beside the input kind.
+   */
+  gradeRunway: boolean;
   view: ScenarioView;
   picks: DraftPicks;
   /** The clearance typed so far, exactly as typed; only typed answers read it. */
@@ -224,14 +228,11 @@ export function applyPick(picks: DraftPicks, key: PickKey, raw: string): DraftPi
   return SETTERS[key](picks, raw);
 }
 
-/** The dropdowns every clearance needs, whatever the route shape and the altitude phrase. */
-const ALWAYS_REQUIRED = [
-  'routeTemplate',
-  'altitudePhrase',
-  'expect',
-  'frequency',
-  'runway',
-] as const;
+/**
+ * The dropdowns every clearance needs, whatever the route shape and the altitude phrase; the runway
+ * is needed besides only while it is graded (`runwayOf`).
+ */
+const ALWAYS_REQUIRED = ['routeTemplate', 'altitudePhrase', 'expect', 'frequency'] as const;
 
 /** The picks once every dropdown but the route element and the feet has a value. */
 type FilledPicks = DraftPicks & {
@@ -243,18 +244,26 @@ function isFilled(picks: DraftPicks): picks is FilledPicks {
   return ALWAYS_REQUIRED.every((key) => picks[key] !== undefined);
 }
 
+/** The runway picked, or `''` where the runway is not graded and so never asked. */
+function runwayOf(picks: DraftPicks, gradeRunway: boolean): string | undefined {
+  return gradeRunway ? picks.runway : '';
+}
+
 /**
  * Turns the form's picks into a gradable clearance, once the player has made every pick it needs.
  *
  * Every route shape but "radar vectors direct" names the element the flight leaves the terminal on,
  * so the route element is required by all of them; the feet are required by every altitude phrase
- * except "climb via SID".
+ * except "climb via SID". The runway is required only while it is graded; a form that does not ask
+ * for it gives `''` in its place.
  *
  * @param picks What the player has picked so far.
+ * @param gradeRunway Whether the runway is graded, and so asked.
  * @returns The picks to grade, or `undefined` while a required dropdown is still blank.
  */
-export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
-  if (!isFilled(picks)) return undefined;
+export function toPlayerPicks(picks: DraftPicks, gradeRunway: boolean): PlayerPicks | undefined {
+  const runway = runwayOf(picks, gradeRunway);
+  if (!isFilled(picks) || runway === undefined) return undefined;
   const routeFix = templateNamesFix(picks.routeTemplate) ? picks.routeFix : undefined;
   if (templateNamesFix(picks.routeTemplate) && routeFix === undefined) return undefined;
   const altitudeFeet = picks.altitudePhrase === 'climb_via' ? undefined : picks.altitudeFeet;
@@ -265,7 +274,7 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
     altitudePhrase: picks.altitudePhrase,
     expect: picks.expect,
     frequency: picks.frequency,
-    runway: picks.runway,
+    runway,
     ...(altitudeFeet === undefined ? {} : { altitudeFeet }),
   };
 }
@@ -277,10 +286,14 @@ export function toPlayerPicks(picks: DraftPicks): PlayerPicks | undefined {
  * and is required on top of everything an ordinary clearance needs.
  *
  * @param picks What the player has picked so far.
+ * @param gradeRunway Whether the runway is graded, and so asked.
  * @returns The picks to grade, or `undefined` while a required dropdown is still blank.
  */
-export function toAmendmentPicks(picks: DraftPicks): AmendmentPicks | undefined {
-  const player = toPlayerPicks(picks);
+export function toAmendmentPicks(
+  picks: DraftPicks,
+  gradeRunway: boolean,
+): AmendmentPicks | undefined {
+  const player = toPlayerPicks(picks, gradeRunway);
   if (player === undefined || picks.procedure === undefined) return undefined;
   return { ...player, procedure: picks.procedure };
 }
@@ -305,7 +318,8 @@ function typedAnswer(text: string): { input: 'text'; text: string } | undefined 
 export function toClearanceAnswer(state: AppState): ClearanceAnswer<ClearancePicks> | undefined {
   if (state.input === 'text') return typedAnswer(state.text);
   const picked = state.view.kind === 'clearance' && picksProcedure(state.view.clearance);
-  const picks = picked ? toAmendmentPicks(state.picks) : toPlayerPicks(state.picks);
+  const read = picked ? toAmendmentPicks : toPlayerPicks;
+  const picks = read(state.picks, state.gradeRunway);
   return picks === undefined ? undefined : { input: 'dropdowns', picks };
 }
 
@@ -320,7 +334,7 @@ export function toClearanceAnswer(state: AppState): ClearanceAnswer<ClearancePic
  */
 export function toAmendmentAnswer(state: AppState): ClearanceAnswer<AmendmentPicks> | undefined {
   if (state.input === 'text') return typedAnswer(state.text);
-  const picks = toAmendmentPicks(state.picks);
+  const picks = toAmendmentPicks(state.picks, state.gradeRunway);
   return picks === undefined ? undefined : { input: 'dropdowns', picks };
 }
 
@@ -371,7 +385,7 @@ export function newSession(
   previous: Attempt | undefined,
   settings: SessionSettings,
 ): AppState {
-  const { filter, mode, input, fullRoute } = settings;
+  const { filter, mode, input, fullRoute, gradeRunway } = settings;
   return {
     airport,
     seed,
@@ -379,6 +393,7 @@ export function newSession(
     mode,
     input,
     fullRoute,
+    gradeRunway,
     view: buildScenario(airport, seed, filter, mode),
     picks: EMPTY_PICKS,
     text: '',
@@ -406,7 +421,7 @@ export function newSessionFrom(
   scenario: Scenario,
   settings: SessionSettings,
 ): AppState {
-  const { filter, mode, input, fullRoute } = settings;
+  const { filter, mode, input, fullRoute, gradeRunway } = settings;
   return {
     airport,
     seed: 0,
@@ -414,6 +429,7 @@ export function newSessionFrom(
     mode,
     input,
     fullRoute,
+    gradeRunway,
     view: buildScenarioFrom(airport, scenario, mode),
     picks: EMPTY_PICKS,
     text: '',
@@ -449,6 +465,7 @@ export function withFilter(
     mode: state.mode,
     input: state.input,
     fullRoute: state.fullRoute,
+    gradeRunway: state.gradeRunway,
   });
 }
 
@@ -478,6 +495,7 @@ export function withMode(
     mode,
     input: state.input,
     fullRoute: state.fullRoute,
+    gradeRunway: state.gradeRunway,
   });
 }
 
@@ -547,6 +565,33 @@ export function withFullRoute(
   const typed = withInputKind(state, 'text', previous);
   const keepsText = previous === undefined && state.input === 'text';
   return { ...typed, fullRoute, text: keepsText ? state.text : '' };
+}
+
+/**
+ * Grades the runway on the scenario on screen, or stops grading it.
+ *
+ * The scenario and the seed stay, as they do when full route is toggled. An attempt the browser
+ * remembers under the new choice is shown back and the clearance answer starts again; where it
+ * remembers none, the answer in progress stays, the typed text and every pick but the runway, which
+ * is cleared whichever way the switch goes, and a submitted answer goes back to the form rather than
+ * being graded again under the other choice.
+ *
+ * @param state The state before the change.
+ * @param gradeRunway Whether the runway is now graded.
+ * @param previous The attempt an earlier answer at this seed, mode and input kind submitted under
+ *   the choice now made, or `undefined`.
+ * @returns The same scenario under the new choice.
+ */
+export function withRunwayGrading(
+  state: AppState,
+  gradeRunway: boolean,
+  previous: Attempt | undefined,
+): AppState {
+  if (previous !== undefined) {
+    return { ...withInputKind(state, state.input, previous), gradeRunway };
+  }
+  const picks = { ...state.picks, runway: undefined };
+  return { ...state, gradeRunway, picks, submitted: false, revisit: undefined };
 }
 
 /** The reading a typed clearance is graded against: the route read to its end, or the one spoken. */

@@ -96,14 +96,25 @@ export type Attempt =
 
 /**
  * Which attempt at one seed a key names: the half of the trainer it was made in, how it was
- * answered, and whether it was held to the route read to its end.
+ * answered, whether it was held to the route read to its end, and whether the runway was graded.
  */
-export type SolvedScope = { mode: Mode; input: InputKind; fullRoute: boolean };
+export type SolvedScope = {
+  mode: Mode;
+  input: InputKind;
+  fullRoute: boolean;
+  gradeRunway: boolean;
+};
 
 /** Remembers the attempt a viewer already submitted for a scenario, in this browser only. */
 export type SolvedStore = {
   load(icao: string, seed: number, scope: SolvedScope): Attempt | undefined;
-  save(icao: string, seed: number, attempt: Attempt, fullRoute: boolean): void;
+  save(
+    icao: string,
+    seed: number,
+    attempt: Attempt,
+    fullRoute: boolean,
+    gradeRunway: boolean,
+  ): void;
 };
 
 /** The storage members the store touches, so a test can stand a Map in for the browser's. */
@@ -116,13 +127,16 @@ type PicksStorage = Pick<Storage, 'getItem' | 'setItem'>;
  * before the trainer gained a second mode or typed answers is still remembered, and a picked
  * attempt and a typed attempt at one seed are remembered apart. A full route clearance scopes
  * itself further, under `:text:frc`, because the same typed words grade differently under the two
- * readings; the dropdowns cannot be held to one, so they scope as they always did.
+ * readings; the dropdowns cannot be held to one, so they scope as they always did. An attempt made
+ * without the runway graded scopes itself under `:norwy`, so it never revisits as one graded with it;
+ * a graded attempt keeps the key it always had.
  */
 function keyFor(icao: string, seed: number, scope: SolvedScope): string {
   const modeScope = scope.mode === 'amendment' ? ':amend' : '';
   const readingScope = scope.fullRoute ? ':text:frc' : ':text';
   const inputScope = scope.input === 'text' ? readingScope : '';
-  return `craft-tester:solved:${icao}${modeScope}${inputScope}:${seed}`;
+  const runwayScope = scope.gradeRunway ? '' : ':norwy';
+  return `craft-tester:solved:${icao}${modeScope}${inputScope}${runwayScope}:${seed}`;
 }
 
 /** Reads one stored value as the clearance attempt its input kind stores. */
@@ -197,9 +211,9 @@ export function createSolvedStore(storage: PicksStorage | undefined): SolvedStor
         return undefined;
       }
     },
-    save: (icao, seed, attempt, fullRoute) => {
+    save: (icao, seed, attempt, fullRoute, gradeRunway) => {
       try {
-        const scope = { mode: attempt.kind, input: attempt.input, fullRoute };
+        const scope = { mode: attempt.kind, input: attempt.input, fullRoute, gradeRunway };
         storage.setItem(keyFor(icao, seed, scope), storedValue(attempt));
       } catch {
         // A storage that refuses the write costs the viewer the reminder, nothing more.

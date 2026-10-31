@@ -52,6 +52,7 @@ function sessionOn(fixture: Fixture, mode: Mode): AppState {
     mode,
     input: 'dropdowns',
     fullRoute: false,
+    gradeRunway: true,
   });
 }
 
@@ -123,6 +124,7 @@ describe('the clearance part of the tour, over swa1740', () => {
       clearance,
       picks: next.picks,
       procedure: clearanceProcedureRow(clearance),
+      gradeRunway: true,
       onPick: (key, raw) => {
         state = withPick(state, key, raw);
         form.sync(props(state));
@@ -168,7 +170,10 @@ describe('the clearance part of the tour, over swa1740', () => {
     const routeReading = routeReadingOf(state);
     show([
       renderResults({
-        ...clearanceOutcome(answer, generated, clearance, koak, routeReading),
+        ...clearanceOutcome(answer, generated, clearance, koak, {
+          routeReading,
+          gradeRunway: true,
+        }),
         routeReading,
         nextActions: false,
         onNext: unexpected('onNext'),

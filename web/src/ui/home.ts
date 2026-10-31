@@ -4,7 +4,7 @@ import { settingsQuery } from '@/scenario/filter.ts';
 import type { AnswerChoice } from '@/ui/answerChoice.ts';
 import { ANSWER_OPTIONS } from '@/ui/answerChoice.ts';
 import { button, el, segmentedControl } from '@/ui/dom.ts';
-import { filterControls } from '@/ui/filterControls.ts';
+import { filterControls, runwayGradingControl } from '@/ui/filterControls.ts';
 import type { HomeChoices } from '@/ui/preferences.ts';
 import type { PageRoute } from '@/ui/router.ts';
 import { hrefOf } from '@/ui/router.ts';
@@ -32,6 +32,8 @@ export type HomeProps = {
   choices: HomeChoices;
   answer: AnswerChoice;
   filter: ScenarioFilter;
+  /** Whether the runway is graded, which the start link carries. */
+  gradeRunway: boolean;
   /** The sets this browser remembers, newest first. */
   tests: readonly HomeTestRow[];
   /** The newest unfinished set, or `undefined` when there is none. */
@@ -43,6 +45,8 @@ export type HomeProps = {
   onChoices: (choices: HomeChoices) => void;
   onAnswer: (answer: AnswerChoice) => void;
   onFilter: (filter: ScenarioFilter) => void;
+  /** The viewer turned runway grading on or off, which home remembers. */
+  onRunwayGrading: (graded: boolean) => void;
   /** The viewer turned the tour down, which home remembers so it is not offered again. */
   onDismissTour: () => void;
   copy: (text: string) => void;
@@ -144,7 +148,10 @@ function formatRow(props: HomeProps): HTMLElement {
   return cell;
 }
 
-/** Answer by, with Filters beside it holding the time of day and runway configuration filters. */
+/**
+ * Answer by, with Filters beside it holding the time of day and runway configuration filters and
+ * whether the runway is graded.
+ */
 function answerRow(props: HomeProps): HTMLElement {
   const cell = el('div', 'home-answer');
   const answer = segmentedControl(
@@ -155,7 +162,10 @@ function answerRow(props: HomeProps): HTMLElement {
   );
   const more = el('details', 'home-more');
   const filters = el('div', 'home-filters');
-  filters.append(...filterControls(props.filter, props.airport, props.onFilter));
+  filters.append(
+    ...filterControls(props.filter, props.airport, props.onFilter),
+    runwayGradingControl(props.gradeRunway, props.onRunwayGrading),
+  );
   more.append(el('summary', '', 'Filters'), filters);
   cell.append(answer, more);
   return cell;
@@ -196,6 +206,7 @@ function startHref(props: HomeProps): string {
     filter: { time, config },
     input: props.answer === 'pick' ? 'dropdowns' : 'text',
     fullRoute: props.answer === 'full',
+    gradeRunway: props.gradeRunway,
   });
   return hrefOf(startRoute(props.choices, query));
 }

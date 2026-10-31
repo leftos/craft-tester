@@ -7,6 +7,7 @@ import {
   createFullRouteStore,
   createHomeStore,
   createInputKindStore,
+  createRunwayGradingStore,
   createTourProgressStore,
   createTourSeenStore,
 } from '@/ui/preferences.ts';
@@ -206,6 +207,37 @@ describe('createFullRouteStore', () => {
     const none = createFullRouteStore(undefined);
     expect(() => {
       none.save(true);
+    }).not.toThrow();
+    expect(none.load()).toBeUndefined();
+  });
+});
+
+describe('createRunwayGradingStore', () => {
+  it('remembers whether the runway is graded', () => {
+    const entries = new Map<string, string>();
+    const store = createRunwayGradingStore(mapStorage(entries));
+    expect(store.load()).toBeUndefined();
+    store.save(false);
+    expect(store.load()).toBe(false);
+    expect(entries.get('craft-tester:runway-grading')).toBe('false');
+    store.save(true);
+    expect(store.load()).toBe(true);
+    expect([...entries.keys()]).toStrictEqual(['craft-tester:runway-grading']);
+  });
+
+  it('reads a malformed or unreachable value as nothing remembered', () => {
+    for (const raw of ['"false"', '0', '{not json', 'null']) {
+      const entries = new Map([['craft-tester:runway-grading', raw]]);
+      expect(createRunwayGradingStore(mapStorage(entries)).load()).toBeUndefined();
+    }
+    const refused = createRunwayGradingStore(refusingStorage());
+    expect(() => {
+      refused.save(false);
+    }).not.toThrow();
+    expect(refused.load()).toBeUndefined();
+    const none = createRunwayGradingStore(undefined);
+    expect(() => {
+      none.save(false);
     }).not.toThrow();
     expect(none.load()).toBeUndefined();
   });

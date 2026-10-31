@@ -35,6 +35,21 @@ const START = 1_000_000;
 /** The attempt a strip is answered with where only its being answered counts. */
 const ATTEMPT: Attempt = { kind: 'clearance', input: 'text', text: 'as filed' };
 
+/** A picked clearance attempt, whose verdicts carry one per element the dropdowns grade. */
+const ATTEMPT_PICKED: Attempt = {
+  kind: 'clearance',
+  input: 'dropdowns',
+  picks: {
+    routeTemplate: 'transition',
+    routeFix: 'DEDHD',
+    altitudePhrase: 'maintain',
+    altitudeFeet: 10_000,
+    expect: 'ten_minutes',
+    frequency: '120.9',
+    runway: '01R',
+  },
+};
+
 /** A set of `n` strips on its first, started at `START`, timed or not. */
 function aSet(n: number, minutes: number, overrides: Partial<SetState> = {}): SetState {
   return {
@@ -78,6 +93,7 @@ const SETTINGS: SessionSettings = {
   mode: 'clearance',
   input: 'dropdowns',
   fullRoute: false,
+  gradeRunway: true,
 };
 
 describe('stripSeed', () => {
@@ -145,6 +161,7 @@ describe('the set store', () => {
     mode: 'amendment',
     input: 'text',
     fullRoute: true,
+    gradeRunway: true,
     filter: { time: 'night', config: { kind: 'plan', plan: 'West' }, destination: 'KLAX' },
     answered: [0, 2],
     skipped: [1],
@@ -159,6 +176,17 @@ describe('the set store', () => {
     expect([...map.keys()]).toEqual(['craft-tester:set:16']);
     expect(store.load(42)).toEqual(record);
     expect(store.load(43)).toBeUndefined();
+  });
+
+  it('reads a record stored without gradeRunway as one that grades the runway', () => {
+    const { gradeRunway, ...older } = record;
+    expect(gradeRunway).toBe(true);
+    const stored = JSON.stringify({ ...older, endedAt: null });
+    const store = createSetStore(mapStorage(new Map([['craft-tester:set:16', stored]])));
+    expect(store.load(42)).toEqual(record);
+    const notGraded = { ...record, gradeRunway: false };
+    store.save(42, notGraded);
+    expect(store.load(42)).toEqual(notGraded);
   });
 
   it('reads corrupted JSON and a record of another shape as nothing', () => {
@@ -344,6 +372,7 @@ describe('opening a set from a link', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: false,
+      gradeRunway: true,
       filter: ANY_SCENARIO,
       answered: [0, 1],
       skipped: [],
@@ -400,6 +429,27 @@ describe('the summary totals', () => {
     const amended = stripResult(airport, seedIn('amendment'), amendment, undefined);
     expect(amended.count).toBe(3 + 1 + 5);
   });
+
+  it('leaves the runway out of the count and the grades of a set that does not grade it', async () => {
+    const airport = await loadAirportData('KSFO');
+    const seed = stripSeed(
+      42,
+      0,
+      (at) => buildScenario(airport, at, ANY_SCENARIO, 'clearance').kind !== 'unresolved',
+    ).seed;
+    const graded = stripResult(airport, seed, SETTINGS, ATTEMPT_PICKED);
+    const notGraded = stripResult(
+      airport,
+      seed,
+      { ...SETTINGS, gradeRunway: false },
+      ATTEMPT_PICKED,
+    );
+    expect(graded.grades?.some((grade) => grade.element === 'RWY')).toBe(true);
+    expect(notGraded.grades?.some((grade) => grade.element === 'RWY')).toBe(false);
+    expect(notGraded.count).toBe(graded.count - 1);
+    const unanswered = stripResult(airport, seed, { ...SETTINGS, gradeRunway: false }, undefined);
+    expect(unanswered.count).toBe(graded.count - 1);
+  });
 });
 
 describe('the score of a stored set', () => {
@@ -433,8 +483,13 @@ describe('the score of a stored set', () => {
     const airport = await loadAirportData('KSFO');
     const solved = createSolvedStore(mapStorage());
     const { seed } = setStripSeed(airport, 42, 0, typed);
-    solved.save('KSFO', seed, ATTEMPT, false);
-    const scope = { mode: typed.mode, input: typed.input, fullRoute: typed.fullRoute };
+    solved.save('KSFO', seed, ATTEMPT, false, true);
+    const scope = {
+      mode: typed.mode,
+      input: typed.input,
+      fullRoute: typed.fullRoute,
+      gradeRunway: true,
+    };
     const load = (at: number): Attempt | undefined => solved.load('KSFO', at, scope);
     expect(load(seed)).toEqual(ATTEMPT);
 

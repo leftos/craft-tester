@@ -90,7 +90,13 @@ const CLEARANCE_SEED = 1;
  * hash names; the dropdowns leave the input kind out of the hash, as every link to them does.
  */
 async function mountApp(seed: number, mode: Mode, input: InputKind): Promise<Element> {
-  return mountSession(seed, { filter: ANY_SCENARIO, mode, input, fullRoute: false });
+  return mountSession(seed, {
+    filter: ANY_SCENARIO,
+    mode,
+    input,
+    fullRoute: false,
+    gradeRunway: true,
+  });
 }
 
 /** Mounts the app on an empty page at one seed, from the settings a link carries. */
@@ -462,6 +468,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: true,
+      gradeRunway: true,
     });
     expect(chosen(root, 'Answer by')).toBe('Full route');
 
@@ -481,6 +488,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: true,
+      gradeRunway: true,
     });
     typeInto(clearanceBox(root), 'cleared to');
 
@@ -537,6 +545,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'dropdowns',
       fullRoute: false,
+      gradeRunway: true,
     });
     expect(one.querySelector('details.filters .count')?.textContent).toBe('1');
 
@@ -545,6 +554,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'dropdowns',
       fullRoute: false,
+      gradeRunway: true,
     });
     expect(both.querySelector('details.filters .count')?.textContent).toBe('2');
     expect(both.querySelector('details.filters .filters-popover select')).not.toBeNull();
@@ -557,6 +567,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'dropdowns',
       fullRoute: false,
+      gradeRunway: true,
     } as const;
     const root = await mountSession(CLEARANCE_SEED, settings);
     const expected = shareLink(globalThis.location.href, 'KSFO', CLEARANCE_SEED, settings);
@@ -583,6 +594,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'dropdowns',
       fullRoute: false,
+      gradeRunway: true,
     });
 
     root.querySelector<HTMLButtonElement>('button[aria-label="Copy link to this strip"]')?.click();
@@ -599,6 +611,7 @@ describe('the mounted page', () => {
       mode: 'amendment',
       input: 'text',
       fullRoute: true,
+      gradeRunway: true,
     });
     expect(remarksOf(stripTitled(root, 'Flight plan')).startsWith('FRC')).toBe(true);
 
@@ -615,6 +628,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: true,
+      gradeRunway: true,
     });
 
     typeInto(clearanceBox(root), abbreviated);
@@ -665,6 +679,7 @@ describe('the mounted page', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: true,
+      gradeRunway: true,
     } as const;
     const root = await mountSession(seed, settings);
     typeInto(clearanceBox(root), abbreviated);
@@ -781,12 +796,14 @@ describe('the procedure pick of a clearance with no DP', () => {
       clearance,
       airport,
       picksProcedure(clearance),
+      true,
     );
     const wrong = clearancePickGrades(
       { ...somePicks, procedure: sid },
       clearance,
       airport,
       picksProcedure(clearance),
+      true,
     );
     expect(right.map((grade) => grade.element)).toStrictEqual([
       'R.sid',
@@ -803,22 +820,51 @@ describe('the procedure pick of a clearance with no DP', () => {
   it('grades an attempt stored without a procedure pick as a wrong procedure', async () => {
     const airport = await loadAirportData('KOAK');
     const clearance = await koakClearance(NO_DP_SEED);
-    const grades = clearancePickGrades(somePicks, clearance, airport, picksProcedure(clearance));
+    const grades = clearancePickGrades(
+      somePicks,
+      clearance,
+      airport,
+      picksProcedure(clearance),
+      true,
+    );
     expect(grades[0]).toMatchObject({ element: 'R.sid', verdict: 'wrong' });
   });
 
   it('grades no procedure on a strip whose clearance assigns a SID', async () => {
     const airport = await loadAirportData('KOAK');
     const clearance = await koakClearance(SID_SEED);
-    const grades = clearancePickGrades(somePicks, clearance, airport, picksProcedure(clearance));
+    const grades = clearancePickGrades(
+      somePicks,
+      clearance,
+      airport,
+      picksProcedure(clearance),
+      true,
+    );
     expect(grades.map((grade) => grade.element)).not.toContain('R.sid');
     expect(grades).toHaveLength(5);
+  });
+
+  it('drops the runway grade from a strip that does not grade the runway', async () => {
+    const airport = await loadAirportData('KOAK');
+    for (const seed of [NO_DP_SEED, SID_SEED]) {
+      const clearance = await koakClearance(seed);
+      const picks = { ...somePicks, procedure: headingPick(270) };
+      const procedurePicked = picksProcedure(clearance);
+      const graded = clearancePickGrades(picks, clearance, airport, procedurePicked, true);
+      const notGraded = clearancePickGrades(picks, clearance, airport, procedurePicked, false);
+      expect(graded.map((grade) => grade.element)).toContain('RWY');
+      expect(notGraded.map((grade) => grade.element)).not.toContain('RWY');
+      expect(notGraded).toHaveLength(graded.length - 1);
+      expect(notGraded).toStrictEqual(graded.filter((grade) => grade.element !== 'RWY'));
+    }
   });
 
   it('shows six graded rows, the procedure among them, once the strip is submitted', async () => {
     globalThis.localStorage.clear();
     const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
-    const root = await mountHash(hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false }));
+    const root = await mountHash(
+      hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false, gradeRunway: true }),
+    );
     const labels = [
       'route phrase',
       'fix or airway',
@@ -850,7 +896,9 @@ describe('the procedure pick of a clearance with no DP', () => {
       JSON.stringify(somePicks),
     );
     const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
-    const root = await mountHash(hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false }));
+    const root = await mountHash(
+      hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false, gradeRunway: true }),
+    );
 
     const verdicts = [...root.querySelectorAll('.verdict')];
     expect(verdicts).toHaveLength(6);
@@ -1114,6 +1162,7 @@ describe('routing', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: false,
+      gradeRunway: true,
     };
     const setSeed = 100;
     const airport = await loadAirportData('KSFO');
@@ -1133,6 +1182,7 @@ describe('routing', () => {
       mode: 'clearance',
       input: 'text',
       fullRoute: false,
+      gradeRunway: true,
       filter: ANY_SCENARIO,
       answered: [0],
       skipped: [],
@@ -1148,6 +1198,7 @@ describe('routing', () => {
       seed,
       { kind: 'clearance', input: 'text', text: reading },
       false,
+      true,
     );
 
     const again = await mountHash('');
@@ -1165,6 +1216,7 @@ describe('routing', () => {
       mode: 'clearance' as const,
       input: 'dropdowns' as const,
       fullRoute: false,
+      gradeRunway: true,
       filter: ANY_SCENARIO,
       answered: [0],
       skipped: [],
@@ -1201,6 +1253,51 @@ describe('routing', () => {
     const root = await mountHash('#s=1&a=KSFO');
     expect(root.querySelector('section.panel.strip')).not.toBeNull();
     expect(globalThis.location.hash).toBe('#s=1&a=KSFO');
+  });
+
+  it('asks the runway on the tour even where this browser chose not to grade it', async () => {
+    globalThis.localStorage.setItem('craft-tester:runway-grading', 'false');
+    const root = await mountHash('#/tutorial');
+    expect(selectOf(field(root, 'runway')).disabled).toBe(false);
+    expect(anchored(root, 'runway')).toBeDefined();
+  });
+
+  it('offers no Runway select on the tour, where a strip page offers one', async () => {
+    const runwaySelects = (root: Element): number =>
+      [...root.querySelectorAll('.filters-popover .field-label')].filter(
+        (node) => node.textContent === 'Runway',
+      ).length;
+    const tour = await mountHash('#/tutorial');
+    expect(tour.querySelector('.filters-popover')).not.toBeNull();
+    expect(runwaySelects(tour)).toBe(0);
+    expect(selectOf(field(tour, 'runway')).disabled).toBe(false);
+    const strip = await mountHash('#s=1&a=KSFO');
+    expect(runwaySelects(strip)).toBe(1);
+  });
+
+  it('opens a strip link with rwy=off without the runway row, whatever this browser chose', async () => {
+    globalThis.localStorage.setItem('craft-tester:runway-grading', 'true');
+    const root = await mountHash('#s=1&a=KSFO&rwy=off');
+    expect(root.querySelector('.panel.craft')).not.toBeNull();
+    expect(root.querySelector('.panel.craft [data-tour="runway"]')).toBeNull();
+    expect(globalThis.location.hash).toBe('#s=1&a=KSFO&rwy=off');
+  });
+
+  it('stops grading the runway from Filters, remembering it and writing rwy=off', async () => {
+    globalThis.localStorage.removeItem('craft-tester:runway-grading');
+    const root = await mountHash('#s=1&a=KSFO');
+    expect(root.querySelector('.panel.craft [data-tour="runway"]')).not.toBeNull();
+    expect(root.querySelector('details.filters .count')).toBeNull();
+    const popover = root.querySelector('.filters-popover');
+    if (popover === null) throw new Error('the page has no Filters popover');
+    choose(selectOf(field(popover, 'Runway')), 'off');
+    expect(globalThis.location.hash).toBe('#s=1&a=KSFO&rwy=off');
+    expect(globalThis.localStorage.getItem('craft-tester:runway-grading')).toBe('false');
+    expect(root.querySelector('.panel.craft [data-tour="runway"]')).toBeNull();
+    expect(root.querySelector('details.filters .count')?.textContent).toBe('1');
+    choose(selectOf(field(root, 'Runway')), 'graded');
+    expect(globalThis.location.hash).toBe('#s=1&a=KSFO');
+    expect(root.querySelector('.panel.craft [data-tour="runway"]')).not.toBeNull();
   });
 
   it('opens the clearance part of the tour on SWA1740', async () => {

@@ -337,9 +337,13 @@ describe('a test set', () => {
   it('a set strip already solved does not open as revisit', async () => {
     const airport = await loadAirportData('KSFO');
     const settings = { filter: ANY_SCENARIO, mode: 'clearance' as const, input: 'text' as const };
-    const { seed } = setStripSeed(airport, 10, 0, { ...settings, fullRoute: false });
+    const { seed } = setStripSeed(airport, 10, 0, {
+      ...settings,
+      fullRoute: false,
+      gradeRunway: true,
+    });
     const store = createSolvedStore(globalThis.localStorage);
-    store.save('KSFO', seed, { kind: 'clearance', input: 'text', text: 'as filed' }, false);
+    store.save('KSFO', seed, { kind: 'clearance', input: 'text', text: 'as filed' }, false, true);
 
     const root = await mountHash('#a=KSFO&i=text&x=a.5.20.0');
 

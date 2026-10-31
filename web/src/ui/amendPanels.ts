@@ -10,6 +10,7 @@ import type { AmendFormProps } from '@/ui/amendForm.ts';
 import { renderAmendForm, renderBoxVerdicts } from '@/ui/amendForm.ts';
 import { renderAtis } from '@/ui/atis.ts';
 import type { CraftFormProps } from '@/ui/craftForm.ts';
+import { gradedOnly } from '@/ui/clearanceGrading.ts';
 import { renderCraftForm } from '@/ui/craftForm.ts';
 import { renderResults, renderRevisit } from '@/ui/results.ts';
 import { clearedPlan, modelCleared, spokenFor } from '@/ui/session.ts';
@@ -91,7 +92,8 @@ function amended(state: AppState): StripMarks {
 /**
  * Everything an amendment session's verdicts are read from: the plan as filed with the amendments
  * it earned, the plan the student cleared with the box verdicts that decided its handling, the
- * airport, the clearance they gave, and the reading their typed clearance is held to.
+ * airport, the clearance they gave, the reading their typed clearance is held to, and whether the
+ * runway is graded.
  */
 export type AmendmentAnswer = {
   drawn: AmendmentScenario;
@@ -99,6 +101,7 @@ export type AmendmentAnswer = {
   airport: AirportData;
   answer: ClearanceAnswer<AmendmentPicks>;
   routeReading: RouteReading;
+  gradeRunway: boolean;
 };
 
 /**
@@ -110,24 +113,23 @@ export type AmendmentAnswer = {
  * the plan the student cleared under that handling alone: every box they got right as they wrote
  * it, every other box as the engine corrected it. A typed clearance is graded against the engine's
  * reading of that plan, under the reading the student is held to, and the procedure it speaks takes
- * the place of the procedure pick.
+ * the place of the procedure pick. A runway that is not graded leaves the clearance verdicts.
  *
- * @param session The plans, the airport, the answer and the reading the clearance is held to.
+ * @param session The plans, the airport, the answer, the reading the clearance is held to, and
+ *   whether the runway is graded.
  * @returns The box verdicts followed by the clearance verdicts.
  */
 export function amendmentGrades(session: AmendmentAnswer): (Grade | TextGrade)[] {
-  const { drawn, cleared, airport, answer, routeReading } = session;
+  const { drawn, cleared, airport, answer, routeReading, gradeRunway } = session;
   const { clearance, boxes } = cleared;
   if (answer.input === 'text') {
     const spoken = spokenFor(cleared.plan, drawn.filed, clearance, airport);
-    return [...boxes, ...gradeText(answer.text, spoken, clearance, airport, routeReading)];
+    const typed = gradeText(answer.text, spoken, clearance, airport, routeReading);
+    return [...boxes, ...gradedOnly(typed, gradeRunway)];
   }
   const { picks } = answer;
-  return [
-    ...boxes,
-    gradeProcedure(picks.procedure, clearance, airport),
-    ...grade(picks, clearance),
-  ];
+  const picked = [gradeProcedure(picks.procedure, clearance, airport), ...grade(picks, clearance)];
+  return [...boxes, ...gradedOnly(picked, gradeRunway)];
 }
 
 /**
@@ -157,6 +159,7 @@ function revisitPanels(
           airport: state.airport,
           answer: attempt,
           routeReading: routeReadingOf(state),
+          gradeRunway: state.gradeRunway,
         }),
         spoken: spokenFor(cleared.plan, drawn.filed, cleared.clearance, state.airport),
         routeReading: routeReadingOf(state),
@@ -231,6 +234,7 @@ function renderClearingForm(
     clearance: cleared.clearance,
     picks: next.picks,
     procedure: 'picked',
+    gradeRunway: next.gradeRunway,
     onPick: handlers.onPick,
     onSubmit: handlers.onSubmit,
     boxesOpen: toBoxAnswers(next.boxes) === undefined,
@@ -301,6 +305,7 @@ function resultPanels(
           airport: state.airport,
           answer: attempt,
           routeReading: routeReadingOf(state),
+          gradeRunway: state.gradeRunway,
         }),
         spoken: spokenFor(cleared.plan, drawn.filed, cleared.clearance, state.airport),
         routeReading: routeReadingOf(state),

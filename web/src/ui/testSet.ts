@@ -258,7 +258,8 @@ function emptyAttempt(settings: SessionSettings): Attempt {
  *
  * @param airport The airport the set runs at.
  * @param seed The strip's seed.
- * @param settings The filter, mode, input kind and reading the set runs under.
+ * @param settings The filter, mode, input kind and reading the set runs under, and whether it
+ *   grades the runway.
  * @param attempt The saved attempt, or `undefined` for an unanswered strip.
  * @returns The strip's verdicts where it was answered, and how many elements it grades.
  */
@@ -271,12 +272,21 @@ export function stripResult(
   const view = buildScenario(airport, seed, settings.filter, settings.mode);
   const graded = attempt ?? emptyAttempt(settings);
   const routeReading = settings.fullRoute ? 'full' : 'abbreviated';
+  const { gradeRunway } = settings;
   let grades: Grade[] = [];
   if (view.kind === 'clearance' && graded.kind === 'clearance') {
-    grades = clearanceOutcome(graded, view.generated, view.clearance, airport, routeReading).grades;
+    const answerGrading = { routeReading, gradeRunway } as const;
+    grades = clearanceOutcome(
+      graded,
+      view.generated,
+      view.clearance,
+      airport,
+      answerGrading,
+    ).grades;
   } else if (view.kind === 'amendment' && graded.kind === 'amendment') {
     const cleared = clearedPlan(view, graded.boxes, airport);
-    grades = amendmentGrades({ drawn: view.drawn, cleared, airport, answer: graded, routeReading });
+    const answer = { drawn: view.drawn, cleared, airport, answer: graded };
+    grades = amendmentGrades({ ...answer, routeReading, gradeRunway });
   }
   return { grades: attempt === undefined ? undefined : grades, count: grades.length };
 }
@@ -369,6 +379,7 @@ export function recordOf(state: AppState, set: SetState): SetRecord {
     mode: state.mode,
     input: state.input,
     fullRoute: state.fullRoute,
+    gradeRunway: state.gradeRunway,
     filter: state.filter,
     answered: [...set.answered],
     skipped: [...set.skipped],
@@ -410,7 +421,11 @@ export function setSummary(
   now: number,
 ): SetSummary {
   const settings = { filter: state.filter, mode: state.mode, input: state.input };
-  const plain: SessionSettings = { ...settings, fullRoute: state.fullRoute };
+  const plain: SessionSettings = {
+    ...settings,
+    fullRoute: state.fullRoute,
+    gradeRunway: state.gradeRunway,
+  };
   const strips = Array.from({ length: set.n }, (_, index) => {
     const { seed, resolved } = setStripSeed(state.airport, set.seed, index, plain);
     const attempt = set.answered.includes(index) ? (set.attempts[index] ?? load(seed)) : undefined;
@@ -452,6 +467,7 @@ export function storedSetScore(
     mode: record.mode,
     input: record.input,
     fullRoute: record.fullRoute,
+    gradeRunway: record.gradeRunway,
   };
   const drawn: StripResult[] = [];
   for (let index = 0; index < record.n; index += 1) {
@@ -484,6 +500,7 @@ const SetRecordSchema = z.strictObject({
   mode: z.enum(['clearance', 'amendment']),
   input: z.enum(['dropdowns', 'text']),
   fullRoute: z.boolean(),
+  gradeRunway: z.boolean().optional(),
   filter: FilterSchema,
   answered: z.array(z.number().int().nonnegative()),
   skipped: z.array(z.number().int().nonnegative()),
@@ -555,12 +572,20 @@ function toFilter(parsed: z.infer<typeof FilterSchema>): ScenarioFilter {
   return { time, config, ...(destination === undefined ? {} : { destination }) };
 }
 
-/** Reads one stored value as a set record, or `undefined` where it does not parse. */
+/**
+ * Reads one stored value as a set record, or `undefined` where it does not parse. A set stored before
+ * the runway could go ungraded carries no `gradeRunway` and reads as graded, so its score stays.
+ */
 function parseRecord(raw: string): SetRecord | undefined {
   const parsed = SetRecordSchema.safeParse(JSON.parse(raw));
   if (!parsed.success) return undefined;
-  const { filter, endedAt, ...rest } = parsed.data;
-  return { ...rest, filter: toFilter(filter), endedAt: endedAt ?? undefined };
+  const { filter, endedAt, gradeRunway, ...rest } = parsed.data;
+  return {
+    ...rest,
+    gradeRunway: gradeRunway ?? true,
+    filter: toFilter(filter),
+    endedAt: endedAt ?? undefined,
+  };
 }
 
 /**

@@ -24,6 +24,9 @@ const TEXT_PART = 'i=text';
 /** The hash part a full route clearance writes; every other link is unchanged. */
 const FULL_ROUTE_PART = 'r=full';
 
+/** The hash part a session that does not grade the runway writes; a graded one writes none. */
+const RUNWAY_NOT_GRADED_PART = 'rwy=off';
+
 /** Which runway configurations a scenario may be drawn in: all of them, one plan, or exactly one. */
 export type ConfigFilter =
   | { kind: 'any' }
@@ -51,6 +54,11 @@ export type SessionSettings = {
   mode: Mode;
   input: InputKind;
   fullRoute: boolean;
+  /**
+   * Whether the expected runway is asked and graded. Off, the dropdowns drop the runway row and a
+   * typed answer's "expect runway" words are read but earn no grade.
+   */
+  gradeRunway: boolean;
   /** The test set the session is a strip of, which the hash carries in its `x=` part. */
   set?: SetParams;
 };
@@ -97,7 +105,8 @@ function configParam(config: ConfigFilter): string | undefined {
  * narrows nothing writes no part at all, so an unfiltered scenario shares nothing but the seed and
  * the airport. A forced destination writes its `d=` part like any other member, so the testing aid
  * is shareable even though nothing in the UI offers it. Clearance mode and the dropdowns write no
- * part at all, so a link written before either choice existed reads the same today.
+ * part at all, so a link written before either choice existed reads the same today. A session that
+ * does not grade the runway writes `rwy=off` after the answer parts; one that grades it writes none.
  *
  * @param icao The airport the scenario was drawn at.
  * @param seed The seed the link restores.
@@ -109,7 +118,7 @@ export function hashFor(icao: string, seed: number, settings: SessionSettings): 
   const { filter, mode, input, fullRoute } = settings;
   const parts = [seedToHash(seed).slice(1), `a=${icao}`, ...filterParts(filter)];
   if (mode === 'amendment') parts.push(AMENDMENT_PART);
-  parts.push(...answerParts(input, fullRoute));
+  parts.push(...answerParts(input, fullRoute), ...runwayParts(settings.gradeRunway));
   if (settings.set !== undefined) parts.push(`x=${setPart(settings.set)}`);
   return `#${parts.join('&')}`;
 }
@@ -130,18 +139,29 @@ function answerParts(input: InputKind, fullRoute: boolean): string[] {
   return fullRoute ? [TEXT_PART, FULL_ROUTE_PART] : [TEXT_PART];
 }
 
+/** The `rwy=` part a session that does not grade the runway writes; a graded one writes none. */
+function runwayParts(gradeRunway: boolean): string[] {
+  return gradeRunway ? [] : [RUNWAY_NOT_GRADED_PART];
+}
+
 /**
  * Renders the settings of a session as the `&`-separated parts a home link carries after its `?`.
  *
  * The parts are the ones `hashFor` writes for the same settings, in the same order, so the hash
  * readers in this module read them back unchanged.
  *
- * @param settings The filter, how the student answers, and whether they are held to the full route.
- * @returns The parts joined by `&`, e.g. `t=night&c=plan:SFOW&i=text`, or `''` when nothing is set.
+ * @param settings The filter, how the student answers, whether they are held to the full route, and
+ *   whether the runway is graded.
+ * @returns The parts joined by `&`, e.g. `t=night&c=plan:SFOW&i=text&rwy=off`, or `''` when nothing
+ *   is set.
  */
 export function settingsQuery(settings: Omit<SessionSettings, 'mode' | 'set'>): string {
-  const { filter, input, fullRoute } = settings;
-  return [...filterParts(filter), ...answerParts(input, fullRoute)].join('&');
+  const { filter, input, fullRoute, gradeRunway } = settings;
+  return [
+    ...filterParts(filter),
+    ...answerParts(input, fullRoute),
+    ...runwayParts(gradeRunway),
+  ].join('&');
 }
 
 /** The value of the `x=` part a test set writes: its seed in base 36, the count, the minutes, the index. */
@@ -322,6 +342,20 @@ export function inputKindFromHash(hash: string): InputKind | undefined {
  */
 export function fullRouteFromHash(hash: string): boolean {
   return valueOf(hash, 'r') === 'full';
+}
+
+/**
+ * Reads the runway grading back out of a URL hash.
+ *
+ * Only a session that does not grade the runway names itself, so a hash without an `rwy=` part, and
+ * one whose value this app does not know, both grade it: a shared link grades the same for whoever
+ * opens it, whatever their own browser remembers.
+ *
+ * @param hash The hash, with or without its leading `#`.
+ * @returns False for an `rwy=off` part, true for anything else.
+ */
+export function runwayGradingFromHash(hash: string): boolean {
+  return valueOf(hash, 'rwy') !== 'off';
 }
 
 /**

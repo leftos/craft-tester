@@ -8,7 +8,7 @@ import type { AmendmentPicks } from '@/ui/state.ts';
 
 /** The scope an attempt is remembered under: its mode, how it was answered, and the reading. */
 function at(mode: Mode, input: InputKind, fullRoute: boolean): SolvedScope {
-  return { mode, input, fullRoute };
+  return { mode, input, fullRoute, gradeRunway: true };
 }
 
 const picks: PlayerPicks = {
@@ -58,7 +58,7 @@ function mapStorage(entries = new Map<string, string>()): Pick<Storage, 'getItem
 describe('createSolvedStore', () => {
   it('loads back the clearance it saved for the same airport and seed', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, clearance, false);
+    store.save('KSFO', 42, clearance, false, true);
     expect(store.load('KSFO', 42, at('clearance', 'dropdowns', false))).toStrictEqual(clearance);
   });
 
@@ -69,28 +69,28 @@ describe('createSolvedStore', () => {
       input: 'dropdowns',
       picks: { ...picks, expect: 'five_minutes' },
     };
-    store.save('KSFO', 42, fiveMinutes, false);
+    store.save('KSFO', 42, fiveMinutes, false, true);
     expect(store.load('KSFO', 42, at('clearance', 'dropdowns', false))).toStrictEqual(fiveMinutes);
   });
 
   it('loads back the amendment it saved, boxes and all', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, amendment, false);
+    store.save('KSFO', 42, amendment, false, true);
     expect(store.load('KSFO', 42, at('amendment', 'dropdowns', false))).toStrictEqual(amendment);
   });
 
   it('remembers nothing about a seed nobody has solved', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, clearance, false);
+    store.save('KSFO', 42, clearance, false, true);
     expect(store.load('KSFO', 43, at('clearance', 'dropdowns', false))).toBeUndefined();
     expect(store.load('KOAK', 42, at('clearance', 'dropdowns', false))).toBeUndefined();
   });
 
   it('keeps the two modes apart, seed for seed', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, clearance, false);
+    store.save('KSFO', 42, clearance, false, true);
     expect(store.load('KSFO', 42, at('amendment', 'dropdowns', false))).toBeUndefined();
-    store.save('KSFO', 7, amendment, false);
+    store.save('KSFO', 7, amendment, false, true);
     expect(store.load('KSFO', 7, at('clearance', 'dropdowns', false))).toBeUndefined();
     expect(store.load('KSFO', 42, at('clearance', 'dropdowns', false))).toStrictEqual(clearance);
     expect(store.load('KSFO', 7, at('amendment', 'dropdowns', false))).toStrictEqual(amendment);
@@ -99,8 +99,8 @@ describe('createSolvedStore', () => {
   it('writes each mode under its own key', () => {
     const entries = new Map<string, string>();
     const store = createSolvedStore(mapStorage(entries));
-    store.save('KSFO', 42, clearance, false);
-    store.save('KSFO', 42, amendment, false);
+    store.save('KSFO', 42, clearance, false, true);
+    store.save('KSFO', 42, amendment, false, true);
     expect([...entries.keys()]).toStrictEqual([
       'craft-tester:solved:KSFO:42',
       'craft-tester:solved:KSFO:amend:42',
@@ -126,7 +126,7 @@ describe('createSolvedStore', () => {
       },
     });
     expect(() => {
-      store.save('KSFO', 42, clearance, false);
+      store.save('KSFO', 42, clearance, false, true);
     }).not.toThrow();
     expect(store.load('KSFO', 42, at('clearance', 'dropdowns', false))).toBeUndefined();
   });
@@ -194,7 +194,7 @@ describe('createSolvedStore', () => {
   it('remembers nothing at all without a storage', () => {
     const store = createSolvedStore(undefined);
     expect(() => {
-      store.save('KSFO', 42, clearance, false);
+      store.save('KSFO', 42, clearance, false, true);
     }).not.toThrow();
     expect(store.load('KSFO', 42, at('clearance', 'dropdowns', false))).toBeUndefined();
   });
@@ -203,24 +203,24 @@ describe('createSolvedStore', () => {
 describe('typed attempts in the solved store', () => {
   it('loads back a typed clearance exactly as it was typed', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, typedClearance, false);
+    store.save('KSFO', 42, typedClearance, false, true);
     expect(store.load('KSFO', 42, at('clearance', 'text', false))).toStrictEqual(typedClearance);
   });
 
   it('loads back a typed amendment, boxes and all', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, typedAmendment, false);
+    store.save('KSFO', 42, typedAmendment, false, true);
     expect(store.load('KSFO', 42, at('amendment', 'text', false))).toStrictEqual(typedAmendment);
   });
 
   it('keeps a picked and a typed attempt at one seed and mode apart', () => {
     const store = createSolvedStore(mapStorage());
-    store.save('KSFO', 42, clearance, false);
+    store.save('KSFO', 42, clearance, false, true);
     expect(store.load('KSFO', 42, at('clearance', 'text', false))).toBeUndefined();
-    store.save('KSFO', 42, typedClearance, false);
-    store.save('KSFO', 7, typedAmendment, false);
+    store.save('KSFO', 42, typedClearance, false, true);
+    store.save('KSFO', 7, typedAmendment, false, true);
     expect(store.load('KSFO', 7, at('amendment', 'dropdowns', false))).toBeUndefined();
-    store.save('KSFO', 7, amendment, false);
+    store.save('KSFO', 7, amendment, false, true);
     expect(store.load('KSFO', 42, at('clearance', 'dropdowns', false))).toStrictEqual(clearance);
     expect(store.load('KSFO', 42, at('clearance', 'text', false))).toStrictEqual(typedClearance);
     expect(store.load('KSFO', 7, at('amendment', 'dropdowns', false))).toStrictEqual(amendment);
@@ -230,9 +230,9 @@ describe('typed attempts in the solved store', () => {
   it('writes each input kind under its own key, the dropdowns under the key they always had', () => {
     const entries = new Map<string, string>();
     const store = createSolvedStore(mapStorage(entries));
-    store.save('KSFO', 123, clearance, false);
-    store.save('KSFO', 123, typedClearance, false);
-    store.save('KSFO', 123, typedAmendment, false);
+    store.save('KSFO', 123, clearance, false, true);
+    store.save('KSFO', 123, typedClearance, false, true);
+    store.save('KSFO', 123, typedAmendment, false, true);
     expect(Object.fromEntries(entries)).toStrictEqual({
       'craft-tester:solved:KSFO:123': JSON.stringify(picks),
       'craft-tester:solved:KSFO:text:123': JSON.stringify({ text: TYPED }),
@@ -247,12 +247,12 @@ describe('typed attempts in the solved store', () => {
       input: 'text',
       text: `${TYPED} read to its end.`,
     };
-    store.save('KSFO', 42, typedClearance, false);
+    store.save('KSFO', 42, typedClearance, false, true);
     expect(store.load('KSFO', 42, at('clearance', 'text', true))).toBeUndefined();
-    store.save('KSFO', 42, fullRouteText, true);
+    store.save('KSFO', 42, fullRouteText, true, true);
     expect(store.load('KSFO', 42, at('clearance', 'text', true))).toStrictEqual(fullRouteText);
     expect(store.load('KSFO', 42, at('clearance', 'text', false))).toStrictEqual(typedClearance);
-    store.save('KSFO', 7, typedAmendment, true);
+    store.save('KSFO', 7, typedAmendment, true, true);
     expect(store.load('KSFO', 7, at('amendment', 'text', false))).toBeUndefined();
     expect(store.load('KSFO', 7, at('amendment', 'text', true))).toStrictEqual(typedAmendment);
   });
@@ -260,11 +260,11 @@ describe('typed attempts in the solved store', () => {
   it('leaves the keys of picked and typed attempts where they were', () => {
     const entries = new Map<string, string>();
     const store = createSolvedStore(mapStorage(entries));
-    store.save('KSFO', 123, clearance, false);
-    store.save('KSFO', 123, typedClearance, false);
-    store.save('KSFO', 123, typedAmendment, false);
-    store.save('KSFO', 123, typedClearance, true);
-    store.save('KSFO', 123, typedAmendment, true);
+    store.save('KSFO', 123, clearance, false, true);
+    store.save('KSFO', 123, typedClearance, false, true);
+    store.save('KSFO', 123, typedAmendment, false, true);
+    store.save('KSFO', 123, typedClearance, true, true);
+    store.save('KSFO', 123, typedAmendment, true, true);
     expect(Object.fromEntries(entries)).toStrictEqual({
       'craft-tester:solved:KSFO:123': JSON.stringify(picks),
       'craft-tester:solved:KSFO:text:123': JSON.stringify({ text: TYPED }),
@@ -272,6 +272,20 @@ describe('typed attempts in the solved store', () => {
       'craft-tester:solved:KSFO:text:frc:123': JSON.stringify({ text: TYPED }),
       'craft-tester:solved:KSFO:amend:text:frc:123': JSON.stringify({ boxes, text: TYPED }),
     });
+  });
+
+  it('scopes an attempt made without the runway graded under :norwy', () => {
+    const entries = new Map<string, string>();
+    const store = createSolvedStore(mapStorage(entries));
+    store.save('KSFO', 123, clearance, false, false);
+    store.save('KSFO', 123, typedAmendment, true, false);
+    expect([...entries.keys()]).toStrictEqual([
+      'craft-tester:solved:KSFO:norwy:123',
+      'craft-tester:solved:KSFO:amend:text:frc:norwy:123',
+    ]);
+    const notGraded = { ...at('clearance', 'dropdowns', false), gradeRunway: false };
+    expect(store.load('KSFO', 123, notGraded)).toStrictEqual(clearance);
+    expect(store.load('KSFO', 123, at('clearance', 'dropdowns', false))).toBeUndefined();
   });
 
   it('ignores a typed value that is not the shape its mode stores', () => {
@@ -301,7 +315,7 @@ describe('clearance attempts on a strip with no DP', () => {
       input: 'dropdowns',
       picks: { ...picks, procedure: 'heading:270' },
     };
-    store.save('KOAK', 2, noDp, false);
+    store.save('KOAK', 2, noDp, false, true);
     expect(store.load('KOAK', 2, at('clearance', 'dropdowns', false))).toStrictEqual(noDp);
   });
 

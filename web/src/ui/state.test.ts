@@ -39,6 +39,7 @@ import {
   withBoxesSubmitted,
   withFilter,
   withFullRoute,
+  withRunwayGrading,
   withInputKind,
   withMode,
   withPick,
@@ -49,17 +50,17 @@ import {
 
 /** The settings of a session answered with the dropdowns. */
 function dropdowns(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'dropdowns', fullRoute: false };
+  return { filter, mode, input: 'dropdowns', fullRoute: false, gradeRunway: true };
 }
 
 /** The settings of a session answered by typing the clearance out. */
 function typed(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'text', fullRoute: false };
+  return { filter, mode, input: 'text', fullRoute: false, gradeRunway: true };
 }
 
 /** The settings of a session typed out and held to the full route. */
 function fullRoute(filter: ScenarioFilter, mode: Mode): SessionSettings {
-  return { filter, mode, input: 'text', fullRoute: true };
+  return { filter, mode, input: 'text', fullRoute: true, gradeRunway: true };
 }
 
 const full: DraftPicks = {
@@ -117,25 +118,28 @@ describe('applyPick', () => {
 
 describe('toPlayerPicks', () => {
   it('refuses an untouched form', () => {
-    expect(toPlayerPicks(EMPTY_PICKS)).toBeUndefined();
+    expect(toPlayerPicks(EMPTY_PICKS, true)).toBeUndefined();
   });
 
   it('refuses a form whose route names no element', () => {
-    expect(toPlayerPicks({ ...full, routeFix: undefined })).toBeUndefined();
+    expect(toPlayerPicks({ ...full, routeFix: undefined }, true)).toBeUndefined();
   });
 
   it('refuses a form whose altitude phrase speaks feet it has not picked', () => {
-    expect(toPlayerPicks({ ...full, altitudeFeet: undefined })).toBeUndefined();
+    expect(toPlayerPicks({ ...full, altitudeFeet: undefined }, true)).toBeUndefined();
   });
 
   it('accepts "climb via SID" without feet, and speaks none', () => {
-    const picks = toPlayerPicks({ ...full, altitudePhrase: 'climb_via', altitudeFeet: undefined });
+    const picks = toPlayerPicks(
+      { ...full, altitudePhrase: 'climb_via', altitudeFeet: undefined },
+      true,
+    );
     expect(picks?.altitudePhrase).toBe('climb_via');
     expect(picks).not.toHaveProperty('altitudeFeet');
   });
 
   it('carries every pick through to grading, and leaves the given procedure out', () => {
-    expect(toPlayerPicks(full)).toStrictEqual({
+    expect(toPlayerPicks(full, true)).toStrictEqual({
       routeTemplate: 'transition',
       routeFix: 'DEDHD',
       altitudePhrase: 'maintain',
@@ -147,21 +151,26 @@ describe('toPlayerPicks', () => {
   });
 
   it('accepts a form with no procedure picked, which clearance mode is given', () => {
-    expect(toPlayerPicks({ ...full, procedure: undefined })).toStrictEqual(toPlayerPicks(full));
+    expect(toPlayerPicks({ ...full, procedure: undefined }, true)).toStrictEqual(
+      toPlayerPicks(full, true),
+    );
   });
 });
 
 describe('toAmendmentPicks', () => {
   it('refuses a form whose procedure is still blank', () => {
-    expect(toAmendmentPicks({ ...full, procedure: undefined })).toBeUndefined();
+    expect(toAmendmentPicks({ ...full, procedure: undefined }, true)).toBeUndefined();
   });
 
   it('refuses a form still missing a CRAFT pick', () => {
-    expect(toAmendmentPicks({ ...full, runway: undefined })).toBeUndefined();
+    expect(toAmendmentPicks({ ...full, runway: undefined }, true)).toBeUndefined();
   });
 
   it('carries the procedure beside every other pick', () => {
-    expect(toAmendmentPicks(full)).toStrictEqual({ ...toPlayerPicks(full), procedure: 'TRUKN2' });
+    expect(toAmendmentPicks(full, true)).toStrictEqual({
+      ...toPlayerPicks(full, true),
+      procedure: 'TRUKN2',
+    });
   });
 });
 
@@ -298,7 +307,7 @@ describe('withFilter', () => {
   });
 
   it('carries over the earlier answer the caller looked up for the fresh seed', () => {
-    const solved = toPlayerPicks(full);
+    const solved = toPlayerPicks(full, true);
     if (solved === undefined) throw new Error('the filled form did not read back');
     const previous: Attempt = { kind: 'clearance', input: 'dropdowns', picks: solved };
     const started = newSession(airport, SEED, undefined, dropdowns(ANY_SCENARIO, 'clearance'));
@@ -341,7 +350,7 @@ describe('withMode', () => {
   });
 
   it('carries over the earlier attempt the caller looked up for that seed and mode', () => {
-    const picks = toAmendmentPicks(full);
+    const picks = toAmendmentPicks(full, true);
     if (picks === undefined) throw new Error('the filled form did not read back');
     const answers = toBoxAnswers(answeredBoxes);
     if (answers === undefined) throw new Error('the answered strip did not read back');
@@ -623,7 +632,13 @@ describe('answering by typing the clearance out', () => {
 
   /** A clearance session on a seed the engine clears, answered in the given input kind. */
   function clearance(input: SessionSettings['input']): AppState {
-    const settings = { filter: ANY_SCENARIO, mode: 'clearance', input, fullRoute: false } as const;
+    const settings = {
+      filter: ANY_SCENARIO,
+      mode: 'clearance',
+      input,
+      fullRoute: false,
+      gradeRunway: true,
+    } as const;
     const session = newSession(airport, CLEARANCE_SEED, undefined, settings);
     expect(session.view.kind).toBe('clearance');
     return session;
@@ -668,11 +683,11 @@ describe('answering by typing the clearance out', () => {
     const picked: AppState = { ...session, picks: full };
     expect(toClearanceAnswer(picked)).toStrictEqual({
       input: 'dropdowns',
-      picks: toPlayerPicks(full),
+      picks: toPlayerPicks(full, true),
     });
     expect(toAmendmentAnswer(picked)).toStrictEqual({
       input: 'dropdowns',
-      picks: toAmendmentPicks(full),
+      picks: toAmendmentPicks(full, true),
     });
     const noProcedure: AppState = { ...picked, picks: { ...full, procedure: undefined } };
     expect(toAmendmentAnswer(noProcedure)).toBeUndefined();
@@ -771,6 +786,41 @@ describe('answering by typing the clearance out', () => {
     const filtered = withFilter(ticked, night, CLEARANCE_SEED, undefined);
     expect(filtered.fullRoute).toBe(true);
     expect(filtered.input).toBe('text');
+  });
+
+  it('keeps every pick but the runway across a switch of runway grading and back', () => {
+    const picked: AppState = { ...clearance('dropdowns'), picks: full };
+    const off = withRunwayGrading(picked, false, undefined);
+    expect(off.gradeRunway).toBe(false);
+    expect(off.seed).toBe(picked.seed);
+    expect(off.view).toBe(picked.view);
+    expect(off.picks).toStrictEqual({ ...full, runway: undefined });
+    expect(off.revisit).toBeUndefined();
+    const back = withRunwayGrading(
+      { ...off, picks: { ...off.picks, runway: '28L' } },
+      true,
+      undefined,
+    );
+    expect(back.gradeRunway).toBe(true);
+    expect(back.picks).toStrictEqual({ ...full, runway: undefined });
+  });
+
+  it('keeps the text typed so far across a switch of runway grading', () => {
+    const typing = withText(clearance('text'), TYPED);
+    const off = withRunwayGrading(typing, false, undefined);
+    expect(off.text).toBe(TYPED);
+    expect(off.input).toBe('text');
+    expect(withRunwayGrading(off, true, undefined).text).toBe(TYPED);
+  });
+
+  it('shows an attempt remembered under the new runway grading back', () => {
+    const previous: Attempt = { kind: 'clearance', input: 'text', text: TYPED };
+    const off = withRunwayGrading(withText(clearance('text'), TYPED), false, previous);
+    expect(off.gradeRunway).toBe(false);
+    expect(off.revisit).toStrictEqual(previous);
+    expect(off.text).toBe('');
+    expect(off.submitted).toBe(false);
+    expect(phaseOf(off)).toBe('clearance-revisit');
   });
 
   it('reads a ticked full route as the full reading, and anything else as the abbreviated one', () => {
