@@ -1,8 +1,6 @@
 # Training stages
 
-Design for CRAFT-57: a student picks the vZOA S1 module they are working on, and New strip and new tests draw and grade only what the modules up to it have taught. Owner rulings are recorded in the CRAFT-57 description; this file holds the design they settle into. Mock of the placement (lane A approved): `docs/plans/canvases/training-stage/index.html`.
-
-Branch: `feat/training-stage`. Depends on CRAFT-28 (the runway-grading switch), landed on `main` first.
+A student picks the vZOA S1 module they are working on, and New strip and new tests draw and grade only what the modules up to it have taught. The rulings behind this design are recorded in Linear on CRAFT-57. Mock of the placement (lane A): `docs/plans/canvases/training-stage/index.html`.
 
 ## The stage list
 
@@ -66,9 +64,3 @@ The east SIDs the syllabus lists for S1-OAK-6 are covered without naming them: H
 - S1-SFO-1: KSFO opens in 28/01, 28 RT, 28 SO and 01/01, clean and amended, by day or night; 10/10, 19/10 and 19/19 are greyed "at S1-SFO-4". KOAK is fully open.
 - A student remembered Night and plan OAKE at KOAK, then picks S1-OAK-2: the Time control shows Day and the Configuration control shows Any; picking All topics shows Night and OAKE again.
 - A mentor at All topics sends a strip link drawn at S1-OAK-1 (`…&st=S1-OAK-1`): the student, at S1-OAK-6, opens the same strip; their New strip draws under S1-OAK-6.
-
-## Parts
-
-1. CRAFT-57 part 1, the stage table in generator data: the two YAML files, the loader, the build checks, `schema.ts` and `schema:export`, rebuilt `data/koak.json` and `data/ksfo.json`, generator tests.
-2. CRAFT-57 part 2, the stage in the draw, links and storage: a pure web module that answers "is this open at this stage" and clamps settings, the gates in `pickConfig`, `pickTime` and after `drawScenario`, the `st=` part, the stage store, the `SetRecord` field, and a test that every stage, airport and mode it opens draws a strip across a fixed seed range.
-3. CRAFT-57 part 3, the controls: locked options in `selectControl`, `segmentedControl` and home's cards, the Training row on home and in the Filters popover, the toolbar airport switch, and a browser check on phone and desktop.
