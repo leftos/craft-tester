@@ -2074,6 +2074,51 @@ describe("the viewer's training stage", () => {
     });
   });
 
+  /** The seed part of the hash, as the page wrote it. */
+  function hashSeed(): string | undefined {
+    return /^#s=([0-9a-z]+)&/.exec(globalThis.location.hash)?.[1];
+  }
+
+  it('draws a new strip when New strip moves off a closed airport', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO');
+    pressNewStrip(root);
+    await settled(() => {
+      expect(globalThis.location.hash).toContain('a=KOAK');
+    });
+    expect(hashSeed()).not.toBe('1');
+  });
+
+  it('draws a new strip when a Time change moves off a closed airport', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO');
+    choose(selectOf(field(root, 'time of day')), 'day');
+    await settled(() => {
+      expect(globalThis.location.hash).toContain('a=KOAK');
+    });
+    expect(hashSeed()).not.toBe('1');
+  });
+
+  it('draws a new strip when a mode change moves off a closed airport', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash(`#s=${AMENDMENT_SEED}&a=KSFO&m=amend`);
+    segment(root, 'Mode', 'Clearance').click();
+    await settled(() => {
+      expect(globalThis.location.hash).toContain('a=KOAK');
+    });
+    expect(hashSeed()).not.toBe(AMENDMENT_SEED.toString(36));
+  });
+
+  it('keeps the seed when the airport switch moves the page', async () => {
+    viewerAt('S1-SFO-1');
+    const root = await mountHash('#s=1&a=KOAK');
+    choose(airportSelect(root), 'KSFO');
+    await settled(() => {
+      expect(globalThis.location.hash).toContain('a=KSFO');
+    });
+    expect(hashSeed()).toBe('1');
+  });
+
   it('clamps nothing on a tutorial page', async () => {
     viewerAt('S1-OAK-1');
     const root = await mountHash('#/tutorial');

@@ -1256,13 +1256,14 @@ function drawRemembered(context: ActionContext): void {
  *
  * @param context The page's stores, its state and how to change it.
  * @param icao The airport to move to.
- * @param changes What the move changes on the state it starts from: a filter or a mode just picked.
+ * @param changes What the move changes on the state it starts from: a filter or a mode just picked,
+ *   or the seed of a new strip.
  * @returns Whether the page moved, which it does not once `mayLand` refuses the load.
  */
 function switchAirport(
   context: ActionContext,
   icao: string,
-  changes: Partial<Pick<AppState, 'filter' | 'mode'>>,
+  changes: Partial<Pick<AppState, 'filter' | 'mode' | 'seed'>>,
 ): Promise<boolean> {
   const { stores, current, update } = context;
   return cachedAirport(icao).then((airport) => {
@@ -1311,7 +1312,7 @@ function drawNewStrip(context: ActionContext): void {
   const state = current();
   const open = airportToLeaveFor(context.index, context.viewerStage(), state.airport);
   if (open !== undefined) {
-    void switchAirport(context, open, {});
+    void switchAirport(context, open, { seed: randomSeed() });
     return;
   }
   const seed = randomSeed();
@@ -1353,7 +1354,7 @@ function trainerActions(context: ActionContext): Actions {
       const stage = context.viewerStage();
       const open = airportToLeaveFor(context.index, stage, state.airport);
       if (open !== undefined) {
-        void switchAirport(context, open, { filter }).then((moved) => {
+        void switchAirport(context, open, { filter, seed: randomSeed() }).then((moved) => {
           if (moved) keepFiltersOpen(root);
         });
         return;
@@ -1388,7 +1389,7 @@ function trainerActions(context: ActionContext): Actions {
       const stage = context.viewerStage();
       const open = airportToLeaveFor(context.index, stage, state.airport);
       if (open !== undefined) {
-        void switchAirport(context, open, { mode: picked });
+        void switchAirport(context, open, { mode: picked, seed: randomSeed() });
         return;
       }
       const seed = randomSeed();
