@@ -52,10 +52,12 @@ export type Procedure =
  * runway is known, so there is no bearing to derive a turn direction from.
  *
  * @param heading The runway heading, or the assigned magnetic heading in degrees.
- * @returns The label, e.g. `fly runway heading (no DP)` or `heading 270 (no DP)`.
+ * @returns The label, e.g. `fly runway heading (no SID)` or `fly heading 270 (no SID)`.
  */
 export function headingLabel(heading: NonDpHeading): string {
-  return heading === 'runway heading' ? 'fly runway heading (no DP)' : `heading ${heading} (no DP)`;
+  return heading === 'runway heading'
+    ? 'fly runway heading (no SID)'
+    : `fly heading ${heading} (no SID)`;
 }
 
 /**

@@ -267,8 +267,8 @@ describe('grade', () => {
     };
     const [, , clause] = grade({ ...correct, expect: 'none' }, noExpect);
     expect(clause?.verdict).toBe('correct');
-    expect(clause?.expectedLabel).toBe('no expect altitude');
-    expect(clause?.actualLabel).toBe('no expect altitude');
+    expect(clause?.expectedLabel).toBe('no expect clause');
+    expect(clause?.actualLabel).toBe('no expect clause');
   });
 
   it('names the amended altitude in both labels where the altitude box was amended', () => {
@@ -340,13 +340,13 @@ describe('grade', () => {
     const noExpect: ResolvedClearance = { ...expected, expect: { value: null, citations: [] } };
     const [, , clause] = grade({ ...correct, expect: 'final' }, noExpect);
     expect(clause?.verdict).toBe('wrong');
-    expect(clause?.expectedLabel).toBe('no expect altitude');
+    expect(clause?.expectedLabel).toBe('no expect clause');
   });
 
   it('accepts the clause the chart publishes, at the delay the chart publishes', () => {
     const [, , clause] = grade({ ...correct, expect: 'ten_minutes' }, chartPublishes);
     expect(clause?.verdict).toBe('acceptable');
-    expect(clause?.expectedLabel).toBe('no expect altitude');
+    expect(clause?.expectedLabel).toBe('no expect clause');
     expect(clause?.actualLabel).toBe('expect filed altitude 10 minutes after departure');
     expect(clause?.citations).toEqual([redundantCitation]);
   });
@@ -450,15 +450,15 @@ describe('gradeProcedure', () => {
   it('marks the runway heading right for a clearance the SOP issues without a procedure', () => {
     const verdict = gradeProcedure(headingPick('runway heading'), onTheHeading, ksfo);
     expect(verdict.verdict).toBe('correct');
-    expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
-    expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.expectedLabel).toBe('fly runway heading (no SID)');
+    expect(verdict.actualLabel).toBe('fly runway heading (no SID)');
     expect(verdict.citations).toEqual([headingCitation]);
   });
 
   it('marks a published procedure wrong against a clearance on the runway heading', () => {
     const verdict = gradeProcedure('TRUKN2', onTheHeading, ksfo);
     expect(verdict.verdict).toBe('wrong');
-    expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.expectedLabel).toBe('fly runway heading (no SID)');
     expect(verdict.actualLabel).toBe('TRUKN TWO (RNAV)');
   });
 
@@ -466,36 +466,36 @@ describe('gradeProcedure', () => {
     const verdict = gradeProcedure(headingPick('runway heading'), expected, ksfo);
     expect(verdict.verdict).toBe('wrong');
     expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
-    expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.actualLabel).toBe('fly runway heading (no SID)');
   });
 
   it('marks a heading in degrees right against the clearance that issues that heading', () => {
     const verdict = gradeProcedure(headingPick(270), onHeading270, ksfo);
     expect(verdict.verdict).toBe('correct');
-    expect(verdict.expectedLabel).toBe('heading 270 (no DP)');
-    expect(verdict.actualLabel).toBe('heading 270 (no DP)');
+    expect(verdict.expectedLabel).toBe('fly heading 270 (no SID)');
+    expect(verdict.actualLabel).toBe('fly heading 270 (no SID)');
     expect(verdict.citations).toEqual([headingCitation]);
   });
 
   it('marks a heading in degrees wrong against a clearance on the runway heading', () => {
     const verdict = gradeProcedure(headingPick(270), onTheHeading, ksfo);
     expect(verdict.verdict).toBe('wrong');
-    expect(verdict.expectedLabel).toBe('fly runway heading (no DP)');
-    expect(verdict.actualLabel).toBe('heading 270 (no DP)');
+    expect(verdict.expectedLabel).toBe('fly runway heading (no SID)');
+    expect(verdict.actualLabel).toBe('fly heading 270 (no SID)');
   });
 
   it('marks a heading in degrees wrong against a clearance that assigns a procedure', () => {
     const verdict = gradeProcedure(headingPick(270), expected, ksfo);
     expect(verdict.verdict).toBe('wrong');
     expect(verdict.expectedLabel).toBe('TRUKN TWO (RNAV)');
-    expect(verdict.actualLabel).toBe('heading 270 (no DP)');
+    expect(verdict.actualLabel).toBe('fly heading 270 (no SID)');
   });
 
   it('marks the runway heading wrong against a clearance on a heading in degrees', () => {
     const verdict = gradeProcedure(headingPick('runway heading'), onHeading270, ksfo);
     expect(verdict.verdict).toBe('wrong');
-    expect(verdict.expectedLabel).toBe('heading 270 (no DP)');
-    expect(verdict.actualLabel).toBe('fly runway heading (no DP)');
+    expect(verdict.expectedLabel).toBe('fly heading 270 (no SID)');
+    expect(verdict.actualLabel).toBe('fly runway heading (no SID)');
   });
 
   it('marks an identifier the airport does not publish wrong, and reads it back raw', () => {
@@ -540,7 +540,7 @@ describe('expectChoiceLabel', () => {
     expect(expectChoiceLabel('ten_minutes', amendedClause, 27000)).toBe(
       'expect amended altitude 10 minutes after departure',
     );
-    expect(expectChoiceLabel('none', amendedClause, 27000)).toBe('no expect altitude');
+    expect(expectChoiceLabel('none', amendedClause, 27000)).toBe('no expect clause');
   });
 
   it('names the five-minute distractor at its own delay', () => {

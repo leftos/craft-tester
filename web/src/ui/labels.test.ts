@@ -22,7 +22,7 @@ describe('elementLabel', () => {
       'R — procedure',
       'R — route',
       'A — altitude',
-      'A — expect',
+      'A — expect clause',
       'F — frequency',
       'T — squawk',
       'expect runway',

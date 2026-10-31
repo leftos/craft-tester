@@ -62,7 +62,7 @@ const ROUTE_PHRASES: Record<RouteTemplate, string> = {
   radar_vectors_fix: 'radar vectors',
   radar_vectors_airway: 'radar vectors to join',
   radar_vectors_direct: 'radar vectors direct',
-  as_filed: '(no prefix)',
+  as_filed: 'just the fix',
 };
 
 /**
@@ -116,7 +116,7 @@ function finalLabel(feet: number | undefined): string {
  * @returns The label, e.g. `expect filed altitude 10 minutes after departure`.
  */
 export function expectLabel(clause: ExpectClause | null): string {
-  if (clause === null) return 'no expect altitude';
+  if (clause === null) return 'no expect clause';
   if (clause.kind === 'final') return finalLabel(clause.feet);
   return delayLabel(clause.minutes, clause.kind === 'amended');
 }
@@ -139,7 +139,7 @@ export function expectChoiceLabel(
   finalFeet: number | undefined,
 ): string {
   const answer = EXPECT_ANSWERS[choice];
-  if (answer === null) return 'no expect altitude';
+  if (answer === null) return 'no expect clause';
   if (answer === 'final') return finalLabel(finalFeet);
   return delayLabel(answer, clause !== null && clause.kind !== 'filed');
 }

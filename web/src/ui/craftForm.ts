@@ -95,7 +95,7 @@ function routeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup {
     fields: [
       {
         key: 'routeTemplate',
-        label: 'shape',
+        label: 'route phrase',
         options: options.routeTemplates.map((template) => ({
           value: template,
           label: routeLabel({ template }),
@@ -124,7 +124,7 @@ function altitudeGroup(options: ClearanceOptions, picks: DraftPicks): PickedGrou
     fields: [
       {
         key: 'altitudePhrase',
-        label: 'phrase',
+        label: 'altitude phrase',
         options: options.altitudePhrases.map((phrase) => ({
           value: phrase,
           label: altitudeLabel({ phrase }),
@@ -213,7 +213,7 @@ function runwayGroup(options: ClearanceOptions, picks: DraftPicks): PickedGroup 
     fields: [
       {
         key: 'runway',
-        label: 'expect runway',
+        label: 'runway',
         options: plainOptions(options.runways),
         value: picks.runway,
         disabled: false,
@@ -321,7 +321,7 @@ export function craftGroups(
     altitudeGroup(options, picks),
     expectGroup(options, picks, clearance.expect.value, scenario.filedAltitude),
     frequencyGroup(options, airport, picks),
-    { kind: 'given', heading: 'T — transponder', value: scenario.squawk },
+    { kind: 'given', heading: 'T — squawk', value: scenario.squawk },
     runwayGroup(options, picks),
   ];
 }

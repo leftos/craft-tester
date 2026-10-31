@@ -10,7 +10,7 @@ const ELEMENT_PARTS: Record<ClearanceElement, ElementParts> = {
   'R.sid': { letter: 'R', name: 'procedure' },
   'R.route': { letter: 'R', name: 'route' },
   'A.phrase': { letter: 'A', name: 'altitude' },
-  'A.expect': { letter: 'A', name: 'expect' },
+  'A.expect': { letter: 'A', name: 'expect clause' },
   F: { letter: 'F', name: 'frequency' },
   T: { letter: 'T', name: 'squawk' },
   RWY: { letter: '', name: 'expect runway' },

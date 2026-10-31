@@ -61,10 +61,10 @@ export function atisRows(
   const config = airport.runwayConfigs.find((row) => row.id === scenario.runwayConfigId);
   return [
     [
-      'configuration',
+      'runway configuration',
       config === undefined ? scenario.runwayConfigId : `${config.id} — ${config.name}`,
     ],
-    ['departing', config === undefined ? '—' : advertisedRunways(config).join(', ')],
+    ['departure runways', config === undefined ? '—' : advertisedRunways(config).join(', ')],
     ['local time', timeLabel(scenario.localTime, scenario.dayOfWeek)],
   ];
 }

@@ -45,7 +45,7 @@ describe('renderStrip', () => {
     expect(textOf(trimmed, '.strip-route')).toContain('***');
     expect(textOf(trimmed, '.strip-full-route-label')).toBe('RTE');
     expect(trimmed.querySelector('.strip-full-route-label')?.getAttribute('title')).toBe(
-      'Full route',
+      'Filed route, in full',
     );
     expect(textOf(trimmed, '.strip-full-route-text')).toBe(LONG_ROUTE);
 

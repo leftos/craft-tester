@@ -237,12 +237,12 @@ describe('renderVerdict on a picked element', () => {
   it('a picked row with nothing in common marks nothing', () => {
     const row = renderVerdict({
       ...pickedAltitude,
-      actualLabel: '(no prefix)',
+      actualLabel: 'just the fix',
       expectedLabel: 'climb via SID',
     });
     expect(row.querySelector('.answer .wrong')).toBeNull();
     expect(row.querySelector('.expected .missed')).toBeNull();
-    expect(partOf(row, 'dd.answer').textContent).toBe('(no prefix)');
+    expect(partOf(row, 'dd.answer').textContent).toBe('just the fix');
     expect(partOf(row, 'dd.expected').textContent).toBe('climb via SID');
   });
 
@@ -270,7 +270,7 @@ const expectRow = {
 const wrongExpect: Grade = {
   element: 'A.expect',
   verdict: 'wrong',
-  expectedLabel: 'no expect altitude',
+  expectedLabel: 'no expect clause',
   actualLabel: 'expect FL340 10 minutes after departure',
   citations: [expectRow, { ...expectRow, id: 'S-FILLER' }],
 };
@@ -308,8 +308,8 @@ describe('the results rows', () => {
       expect(panel.querySelector(`[id="${id}"]`)?.classList.contains('verdict')).toBe(true);
     }
     const wrong = pills[2];
-    expect(wrong?.textContent).toBe('A expect ✗');
-    expect(wrong?.getAttribute('aria-label')).toBe('A expect: Wrong');
+    expect(wrong?.textContent).toBe('A expect clause ✗');
+    expect(wrong?.getAttribute('aria-label')).toBe('A expect clause: Wrong');
   });
 
   it('collapses a correct row to one closed line', () => {

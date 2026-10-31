@@ -153,8 +153,8 @@ describe(`the scenario of seed ${SEED}`, () => {
     expect(strip.depDest).toBe(`${airport.airport.icao} ${scenario.destination}`);
     expect(strip.routeLines.join(' ')).toContain(scenario.filedRoute.split(/\s+/)[0]);
     const atis = new Map(atisRows(scenario, airport).map(([label, value]) => [label, value]));
-    expect(atis.get('departing')).toBe('28L, 28R');
-    expect(atis.get('configuration')).toContain(scenario.runwayConfigId);
+    expect(atis.get('departure runways')).toBe('28L, 28R');
+    expect(atis.get('runway configuration')).toContain(scenario.runwayConfigId);
     for (const notice of activeNotices(scenario, airport)) {
       expect(notice.text.length).toBeGreaterThan(0);
     }
@@ -405,7 +405,7 @@ describe('the CRAFT form', () => {
     );
     expect(groups[squawkAt]).toEqual({
       kind: 'given',
-      heading: 'T — transponder',
+      heading: 'T — squawk',
       value: view.generated.squawk,
     });
     expect(runwayAt).toBe(squawkAt + 1);

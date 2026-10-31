@@ -383,14 +383,14 @@ describe('the mounted page', () => {
   it('writes a pick into the dropdowns the form already built', async () => {
     const root = await mountApp(AMENDMENT_SEED, 'amendment', 'dropdowns');
     clearTheStrip(root);
-    const shape = selectOf(field(root, 'shape'));
+    const shape = selectOf(field(root, 'route phrase'));
     const element = selectOf(field(root, 'fix or airway'));
     expect(element.disabled).toBe(true);
     const template = firstChoice(shape);
 
     choose(shape, template);
 
-    expect(selectOf(field(root, 'shape'))).toBe(shape);
+    expect(selectOf(field(root, 'route phrase'))).toBe(shape);
     expect(shape.value).toBe(template);
     expect(element.disabled).toBe(false);
   });
@@ -811,8 +811,14 @@ describe('the procedure pick of a clearance with no DP', () => {
     globalThis.localStorage.clear();
     const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
     const root = await mountHash(hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false }));
-    const labels = ['shape', 'fix or airway', 'phrase', 'altitude', 'expect clause'];
-    for (const label of [...labels, 'departure frequency', 'expect runway']) {
+    const labels = [
+      'route phrase',
+      'fix or airway',
+      'altitude phrase',
+      'altitude',
+      'expect clause',
+    ];
+    for (const label of [...labels, 'departure frequency', 'runway']) {
       const select = selectOf(field(root, label));
       if (!select.disabled) choose(select, firstChoice(select));
     }

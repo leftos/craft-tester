@@ -22,7 +22,7 @@ const rightRoute: Grade = {
 const redundantExpect: Grade = {
   element: 'A.expect',
   verdict: 'acceptable',
-  expectedLabel: 'no expect altitude',
+  expectedLabel: 'no expect clause',
   actualLabel: 'expect filed altitude 10 minutes after departure',
   citations: [{ id: 'A-EXPECT-REDUNDANT', source: '', text: '' }],
 };
@@ -73,7 +73,7 @@ describe('verdictLines', () => {
     const lines = verdictLines(redundantExpect);
     expect(lines.answer).toBe('you said: expect filed altitude 10 minutes after departure');
     expect(lines.verdict).toBe('acceptable');
-    expect(lines.correction).toBe('shorter: no expect altitude');
+    expect(lines.correction).toBe('shorter: no expect clause');
   });
 
   it('offers the final reading as the shorter one for the amended clause spoken beside it', () => {
@@ -159,7 +159,7 @@ describe('verdictLines on a typed element', () => {
     const lines = verdictLines(typedAltitude);
     expect(lines.answer).toBe('you said: Climb via the SID');
     expect(lines.correction).toBe('expected: climb via sid');
-    expect(verdictLines(redundantExpect).correction).toBe('shorter: no expect altitude');
+    expect(verdictLines(redundantExpect).correction).toBe('shorter: no expect clause');
   });
 
   it('shows no second line where the element is correct', () => {

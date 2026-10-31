@@ -380,7 +380,7 @@ function routeCell(fields: StripFields): HTMLDivElement {
 function fullRouteLine(fullRoute: string): HTMLDivElement {
   const node = el('div', 'strip-full-route');
   const label = el('span', 'strip-full-route-label', 'RTE');
-  label.title = 'Full route';
+  label.title = 'Filed route, in full';
   node.append(label, el('span', 'strip-full-route-text', fullRoute));
   return node;
 }

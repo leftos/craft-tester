@@ -7,7 +7,7 @@ const PAIRS: readonly { said: string; expected: string }[] = [
   { said: 'climb via SID', expected: 'climb via SID except maintain 7,000' },
   { said: 'maintain 5,000', expected: 'maintain 3,000' },
   { said: 'Oakland Six departure', expected: 'Nimitz Six departure' },
-  { said: '(no prefix)', expected: 'climb via SID' },
+  { said: 'just the fix', expected: 'climb via SID' },
   { said: 'Departure frequency 120.9', expected: 'departure frequency 120.9' },
 ];
 
@@ -36,8 +36,8 @@ describe('diffWords', () => {
   });
 
   it('marks nothing where the two labels share no word', () => {
-    const diff = diffWords('(no prefix)', 'climb via SID');
-    expect(shown(diff.said)).toEqual(['(no prefix)']);
+    const diff = diffWords('just the fix', 'climb via SID');
+    expect(shown(diff.said)).toEqual(['just the fix']);
     expect(shown(diff.expected)).toEqual(['climb via SID']);
   });
 

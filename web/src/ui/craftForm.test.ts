@@ -84,7 +84,7 @@ describe('craftGroups', () => {
     if (row.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.fields[0]?.options).toStrictEqual([
       ...ksfo.sids.map((sid) => ({ value: sid.id, label: sid.chartName })),
-      { value: 'heading:runway', label: 'fly runway heading (no DP)' },
+      { value: 'heading:runway', label: 'fly runway heading (no SID)' },
     ]);
   });
 
@@ -93,7 +93,7 @@ describe('craftGroups', () => {
     if (row.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.fields[0]?.options.at(-1)).toStrictEqual({
       value: headingPick('runway heading'),
-      label: 'fly runway heading (no DP)',
+      label: 'fly runway heading (no SID)',
     });
   });
 
@@ -112,9 +112,9 @@ describe('craftGroups', () => {
     const row = craftGroups(scenario, airport, clearance, EMPTY_PICKS, 'picked')[1];
     if (row?.kind !== 'picked') throw new Error('the procedure row is not a picked row');
     expect(row.fields[0]?.options.slice(-3)).toStrictEqual([
-      { value: 'heading:runway', label: 'fly runway heading (no DP)' },
-      { value: 'heading:270', label: 'heading 270 (no DP)' },
-      { value: 'heading:315', label: 'heading 315 (no DP)' },
+      { value: 'heading:runway', label: 'fly runway heading (no SID)' },
+      { value: 'heading:270', label: 'fly heading 270 (no SID)' },
+      { value: 'heading:315', label: 'fly heading 315 (no SID)' },
     ]);
     expect(row.fields[0]?.options).toHaveLength(airport.sids.length + 3);
   });
@@ -136,7 +136,7 @@ describe('craftGroups', () => {
     expect(row).toStrictEqual({
       kind: 'given',
       heading: 'R — procedure',
-      value: 'fly runway heading (no DP)',
+      value: 'fly runway heading (no SID)',
     });
   });
 
