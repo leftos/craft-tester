@@ -22,7 +22,16 @@ from craft_generator.merge import (
     tec_route_grammar_error,
 )
 from craft_generator.sop.load import airport_dir, load_airport
-from craft_generator.sop.model import AircraftGroup, Airway, PhraseologyRule, RouteEntry, RouteTokenRule, SharedRouteFacts
+from craft_generator.sop.model import (
+    AircraftGroup,
+    AirportTraining,
+    Airway,
+    PhraseologyRule,
+    RouteEntry,
+    RouteTokenRule,
+    SharedRouteFacts,
+    TrainingSidLock,
+)
 
 SID_COUNT = 12
 GAPP_TRANSITION_COUNT = 7
@@ -1139,3 +1148,42 @@ def test_a_climb_via_eligible_override_wins_over_the_computed_reading(ksfo_build
     airport = replace(ksfo_build_inputs.airport, overrides=replace(ksfo_build_inputs.airport.overrides, sids=overrides))
     document = build_airport(replace(ksfo_build_inputs, airport=airport))
     assert {sid["id"]: sid["climbViaEligible"] for sid in document["sids"]}["GAPP7"] is True
+
+
+def _with_training(inputs: BuildInputs, **changes: Any) -> BuildInputs:
+    return replace(inputs, airport=replace(inputs.airport, training=replace(inputs.airport.training, **changes)))
+
+
+def test_the_ksfo_training_carries_the_course_and_its_own_locks(ksfo_document: Document) -> None:
+    training = ksfo_document["training"]
+    assert training["source"] == "vZOA S1 syllabus, https://oakartcc.org/training/syllabus"
+    assert [stage["id"] for stage in training["stages"]] == ["S1-OAK-1", "S1-OAK-2", "S1-OAK-3", "S1-OAK-5", "S1-OAK-6", "S1-SFO-1", "S1-SFO-4"]
+    assert training["stages"][0] == {"id": "S1-OAK-1", "title": "Clearances Introduction"}
+    assert training["course"] == {"runway": "S1-OAK-3", "amendment": "S1-OAK-5", "fullRoute": "S1-OAK-5", "night": "S1-OAK-6"}
+    assert training["opens"] == "S1-SFO-1"
+    assert training["configs"] == [{"plan": "SFOE", "at": "S1-SFO-4"}]
+    assert (training["sids"], training["runways"]) == ([], [])
+    assert "otherSids" not in training
+    assert "noSid" not in training
+
+
+def test_an_airport_without_training_locks_emits_empty_lists_and_no_opens(ksfo_build_inputs: BuildInputs) -> None:
+    open_everywhere = AirportTraining(opens=None, configs=(), sids=(), other_sids=None, no_sid=None, runways=())
+    inputs = replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, training=open_everywhere))
+    training = build_airport(inputs)["training"]
+    assert set(training) == {"source", "stages", "course", "configs", "sids", "runways"}
+    assert (training["configs"], training["sids"], training["runways"]) == ([], [], [])
+
+
+def test_the_training_sid_locks_emit_flattened_with_the_other_and_no_sid_stages(ksfo_build_inputs: BuildInputs) -> None:
+    locks = (TrainingSidLock(family="TRUKN", at="S1-SFO-1", row=0), TrainingSidLock(family="GAPP", at="S1-SFO-4", row=1))
+    training = build_airport(_with_training(ksfo_build_inputs, sids=locks, other_sids="S1-SFO-4", no_sid="S1-SFO-4"))["training"]
+    assert training["sids"] == [{"family": "TRUKN", "at": "S1-SFO-1"}, {"family": "GAPP", "at": "S1-SFO-4"}]
+    assert (training["otherSids"], training["noSid"]) == ("S1-SFO-4", "S1-SFO-4")
+
+
+def test_a_training_sid_family_the_airport_does_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    locks = (TrainingSidLock(family="TRUKN", at="S1-SFO-1", row=0), TrainingSidLock(family="NIMI", at="S1-SFO-4", row=1))
+    inputs = _with_training(ksfo_build_inputs, sids=locks)
+    with pytest.raises(ValueError, match=r"ksfo/training\.yaml sids\[1\]\.families: SID family 'NIMI' is no procedure of this airport"):
+        build_airport(inputs)

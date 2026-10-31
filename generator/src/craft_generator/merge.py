@@ -85,6 +85,7 @@ from craft_generator.sop.load import (
     NCT_BOUNDARY_FILE,
     RUNWAY_FAMILY_LENGTH,
     SID_PLACEHOLDER,
+    TRAINING_FILE,
     sid_family_of,
 )
 from craft_generator.sop.model import (
@@ -92,6 +93,7 @@ from craft_generator.sop.model import (
     AircraftGroup,
     AirportInfo,
     AirportInputs,
+    AirportTraining,
     Airway,
     AltitudeOutcome,
     AltitudeRule,
@@ -121,6 +123,7 @@ from craft_generator.sop.model import (
     SopSource,
     SpecialHandling,
     TecRoute,
+    TrainingCourse,
 )
 
 Document = dict[str, Any]
@@ -291,6 +294,18 @@ def _runway_config(config: RunwayConfig) -> Document:
         "arrivalRunways": list(config.arrival_runways),
         "departureRunways": [_departure_runway(runway) for runway in config.departure_runways],
     }
+
+
+def _training(course: TrainingCourse, training: AirportTraining) -> Document:
+    document: Document = {
+        "source": course.source,
+        "stages": [{"id": stage.id, "title": stage.title} for stage in course.stages],
+        "course": {"runway": course.runway, "amendment": course.amendment, "fullRoute": course.full_route, "night": course.night},
+        "configs": [{lock.key: lock.value, "at": lock.at} for lock in training.configs],
+        "sids": [{"family": lock.family, "at": lock.at} for lock in training.sids],
+        "runways": [{"runway": lock.runway, "at": lock.at} for lock in training.runways],
+    }
+    return _with_optional(document, opens=training.opens, otherSids=training.other_sids, noSid=training.no_sid)
 
 
 def _sector(sector: DepartureSector) -> Document:
@@ -1374,8 +1389,20 @@ def _check_common_arrivals(document: Document) -> None:
             )
 
 
+def _check_training_sids(document: Document, training: AirportTraining) -> None:
+    published = {sid["family"] for sid in document["sids"]}
+    where = f"{document['airport']['icao'].lower()}/{TRAINING_FILE}"
+    for lock in training.sids:
+        if lock.family not in published:
+            raise ValueError(
+                f"{where} sids[{lock.row}].families: SID family {lock.family!r} is no procedure of this airport; it publishes "
+                f"{sorted(published)}. Name the family without its version, e.g. NIMI for NIMI7, or drop it"
+            )
+
+
 def _check(document: Document, inputs: BuildInputs) -> None:
     _check_sid_families(document)
+    _check_training_sids(document, inputs.airport.training)
     _check_gate_fixes(document)
     _check_conditions(document)
     _check_sectors(document)
@@ -1508,6 +1535,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "aircraftClasses": dict(inputs.aircraft_classes),
         "aircraftGroups": {name: _aircraft_group(group) for name, group in sop.aircraft_groups.items()},
         "routeLibrary": _route_library(inputs),
+        "training": _training(inputs.airport.training_course, inputs.airport.training),
     }
     document["fixSpoken"] = _fix_spoken(document, inputs)
     document["rnavWaypoints"] = _rnav_waypoints(document, inputs)

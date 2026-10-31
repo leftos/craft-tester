@@ -40,6 +40,7 @@ WorksheetKind = Literal["phraseology", "amendment"]
 PhraseologyReading = Literal["abbreviated", "full_route"]
 OnRequestKind = Literal["cargo", "heavy", "oceanic"]
 ConnectionStrength = Literal["always", "usually"]
+ConfigLockKey = Literal["plan", "id"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
 APPROACH_CATEGORIES: tuple[ApproachCategory, ...] = ("A", "B", "C", "D")
@@ -670,6 +671,80 @@ class CommonArrival:
 
 
 @dataclass(frozen=True, slots=True)
+class TrainingStage:
+    """One vZOA S1 module that changes what the trainer draws or grades, e.g. ``S1-OAK-2`` Clean Clearances."""
+
+    id: str
+    title: str
+
+
+@dataclass(frozen=True, slots=True)
+class TrainingCourse:
+    """``shared/training_stages.yaml``: the stages in course order and the gates every airport shares.
+
+    A thing locked at a stage opens at that stage and every stage after it. ``runway`` is the stage
+    the runway element is first asked and graded at, ``amendment`` the one Amend mode opens at,
+    ``full_route`` the one the full-route answer opens at and ``night`` the one night draws open at;
+    each names a stage id.
+    """
+
+    source: str
+    stages: tuple[TrainingStage, ...]
+    runway: str
+    amendment: str
+    full_route: str
+    night: str
+
+
+@dataclass(frozen=True, slots=True)
+class TrainingConfigLock:
+    """The stage runway configurations open at, chosen by their ``plan`` or by one configuration ``id``."""
+
+    key: ConfigLockKey
+    value: str
+    at: str
+
+
+@dataclass(frozen=True, slots=True)
+class TrainingSidLock:
+    """The stage a SID family is first drawn at, one per family a ``sids`` row of ``training.yaml`` names.
+
+    ``row`` is the index of that ``sids`` row in the file, so the build can name it when the family
+    turns out to be no procedure of the airport.
+    """
+
+    family: str
+    at: str
+    row: int
+
+
+@dataclass(frozen=True, slots=True)
+class TrainingRunwayLock:
+    """The stage a departure runway is first drawn at."""
+
+    runway: str
+    at: str
+
+
+@dataclass(frozen=True, slots=True)
+class AirportTraining:
+    """``training.yaml``: what the training stages lock at one airport; anything not listed opens with the airport.
+
+    ``opens`` is the stage the airport itself opens at, ``None`` when it is open at every stage.
+    ``other_sids`` is the stage every SID family ``sids`` does not name opens at and ``no_sid`` the
+    one a departure cleared without a SID opens at; each is ``None`` when not locked. An airport
+    with no ``training.yaml`` has every field empty.
+    """
+
+    opens: str | None
+    configs: tuple[TrainingConfigLock, ...]
+    sids: tuple[TrainingSidLock, ...]
+    other_sids: str | None
+    no_sid: str | None
+    runways: tuple[TrainingRunwayLock, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class SharedRouteFacts:
     """The facts of a destination, an airline and an aircraft type, the inherited LOA rows and airways.
 
@@ -680,7 +755,8 @@ class SharedRouteFacts:
     arrivals ZOA puts a flight to the Los Angeles basin on, and ``navaid_names`` is
     ``shared/navaid_names.yaml``, the spoken names of the navaids the CIFP does not carry.
     ``special_handling`` is the ZOA CPS-004 3.1 block of ``shared/aircraft_types.yaml``, ``None``
-    when that file marks no type for special handling.
+    when that file marks no type for special handling. ``training`` is
+    ``shared/training_stages.yaml``, the stages an airport's ``training.yaml`` locks things at.
     """
 
     destinations: dict[str, Destination]
@@ -691,6 +767,7 @@ class SharedRouteFacts:
     airways: tuple[Airway, ...]
     common_arrivals: tuple[CommonArrival, ...]
     navaid_names: tuple[NavaidName, ...]
+    training: TrainingCourse
 
 
 @dataclass(frozen=True, slots=True)
@@ -774,6 +851,9 @@ class AirportInputs:
     which the document takes the names of the navaids this airport's data or fixtures file.
     ``special_handling`` is the shared ZOA CPS-004 3.1 block, inherited the same way, which the
     document emits as each marked fleet type's handling and a citable rule row.
+    ``training_course`` is the shared ``training_stages.yaml``, inherited the same way, and
+    ``training`` the airport's own ``training.yaml``, every field empty where the directory carries
+    none; the document emits both as its ``training`` section.
     """
 
     icao: str
@@ -786,3 +866,5 @@ class AirportInputs:
     common_arrivals: tuple[CommonArrival, ...]
     navaid_names: tuple[NavaidName, ...]
     special_handling: SpecialHandling | None
+    training_course: TrainingCourse
+    training: AirportTraining

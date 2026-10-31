@@ -1,0 +1,16 @@
+# The vZOA S1 clearance-delivery modules that change what the trainer draws or grades, in course order.
+# A thing locked "at" a stage opens at that stage and every stage after it. The web adds "All topics".
+source: vZOA S1 syllabus, https://oakartcc.org/training/syllabus
+stages:
+  - {id: S1-OAK-1, title: Clearances Introduction}
+  - {id: S1-OAK-2, title: Clean Clearances}
+  - {id: S1-OAK-3, title: Taxiing}
+  - {id: S1-OAK-5, title: Unclean Clearances}
+  - {id: S1-OAK-6, title: Miscellaneous Topics}
+  - {id: S1-SFO-1, title: "Flight Data & Clearance SFOW"}
+  - {id: S1-SFO-4, title: SFOE}
+course:
+  runway: S1-OAK-3
+  amendment: S1-OAK-5
+  full_route: S1-OAK-5
+  night: S1-OAK-6

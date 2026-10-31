@@ -53,6 +53,7 @@ from craft_generator.sop.model import (
     Airline,
     AirportInfo,
     AirportInputs,
+    AirportTraining,
     Airway,
     AltitudeOutcome,
     AltitudeRule,
@@ -98,6 +99,11 @@ from craft_generator.sop.model import (
     TecData,
     TecRoute,
     TecSource,
+    TrainingConfigLock,
+    TrainingCourse,
+    TrainingRunwayLock,
+    TrainingSidLock,
+    TrainingStage,
     Worksheet,
     WorksheetConfig,
     WorksheetCorrection,
@@ -121,6 +127,8 @@ NCT_BOUNDARY_FILE = "nct_boundary.yaml"
 DESTINATIONS_FILE = "destinations.yaml"
 AIRLINES_FILE = "airlines.yaml"
 AIRCRAFT_TYPES_FILE = "aircraft_types.yaml"
+TRAINING_FILE = "training.yaml"
+TRAINING_STAGES_FILE = "training_stages.yaml"
 
 RUNWAY_FAMILY_LENGTH = 2
 SID_PLACEHOLDER = "#"
@@ -1173,11 +1181,12 @@ def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
         The three tables, each keyed by code, that an airport's ``routes.yaml`` lists codes into, the
         inter-ARTCC LOA rows every airport inherits, the airways whose direction is fixed, the
         arrivals ZOA puts a flight to the Los Angeles basin on, and the spoken names of the navaids
-        the CIFP does not carry.
+        the CIFP does not carry, and the training stages an airport's ``training.yaml`` locks
+        things at.
 
     Raises:
-        ValueError: One of the seven files fails its own checks.
-        OSError: One of the seven files is missing.
+        ValueError: One of the eight files fails its own checks.
+        OSError: One of the eight files is missing.
     """
     aircraft_types = load_aircraft_types(shared / AIRCRAFT_TYPES_FILE)
     return SharedRouteFacts(
@@ -1189,6 +1198,7 @@ def load_shared_route_facts(shared: Path) -> SharedRouteFacts:
         airways=load_airways(shared / AIRWAYS_FILE),
         common_arrivals=load_common_arrivals(shared / COMMON_ARRIVALS_FILE),
         navaid_names=load_navaid_names(shared / NAVAID_NAMES_FILE),
+        training=load_training_stages(shared / TRAINING_STAGES_FILE),
     )
 
 
@@ -1878,6 +1888,225 @@ def load_worksheets(path: Path) -> WorksheetConfig:
     return config
 
 
+def _check_stage(stage: str, stages: Sequence[str], at: str) -> str:
+    if stage not in stages:
+        raise ValueError(f"{at}: {stage!r} names no stage of shared/{TRAINING_STAGES_FILE}; use one of {list(stages)}")
+    return stage
+
+
+def _training_stage(row: _Row) -> TrainingStage:
+    stage = TrainingStage(id=row.text("id"), title=row.text("title"))
+    row.finish()
+    return stage
+
+
+def _check_training_stages(stages: Sequence[TrainingStage], where: str) -> None:
+    seen: dict[str, int] = {}
+    for index, stage in enumerate(stages):
+        if stage.id in seen:
+            raise ValueError(
+                f"{where}.stages[{index}]: stage id {stage.id!r} is already used by {where}.stages[{seen[stage.id]}]; "
+                "list each stage once, in course order"
+            )
+        seen[stage.id] = index
+
+
+def _training_course(source: str, stages: tuple[TrainingStage, ...], row: _Row) -> TrainingCourse:
+    ids = [stage.id for stage in stages]
+    course = TrainingCourse(
+        source=source,
+        stages=stages,
+        runway=_check_stage(row.text("runway"), ids, f"{row.where}.runway"),
+        amendment=_check_stage(row.text("amendment"), ids, f"{row.where}.amendment"),
+        full_route=_check_stage(row.text("full_route"), ids, f"{row.where}.full_route"),
+        night=_check_stage(row.text("night"), ids, f"{row.where}.night"),
+    )
+    row.finish()
+    return course
+
+
+def load_training_stages(path: Path) -> TrainingCourse:
+    """Load the training stages and course gates every airport shares.
+
+    Args:
+        path: Path to ``generator/shared/training_stages.yaml``.
+
+    Returns:
+        The stages in course order and the stage each course gate opens at.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, lists one stage id
+            twice, or names a course gate stage that is no stage of the file.
+        OSError: The file is missing.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    source = root.text("source")
+    stages = tuple(_training_stage(child) for child in root.children("stages"))
+    _check_training_stages(stages, where)
+    course = _training_course(source, stages, root.child("course"))
+    root.finish()
+    return course
+
+
+@dataclass(frozen=True, slots=True)
+class _TrainingNames:
+    """The stage ids and the runway configuration names a ``training.yaml`` row may cite."""
+
+    stages: tuple[str, ...]
+    plans: frozenset[str]
+    config_ids: frozenset[str]
+    runways: frozenset[str]
+
+
+def _training_names(course: TrainingCourse, sop: SopData) -> _TrainingNames:
+    return _TrainingNames(
+        stages=tuple(stage.id for stage in course.stages),
+        plans=frozenset(config.plan for config in sop.runway_configs),
+        config_ids=frozenset(config.id for config in sop.runway_configs),
+        runways=frozenset(runway.runway for config in sop.runway_configs for runway in config.departure_runways),
+    )
+
+
+def _stage_at(row: _Row, key: str, names: _TrainingNames) -> str:
+    return _check_stage(row.text(key), names.stages, f"{row.where}.{key}")
+
+
+def _optional_stage_at(row: _Row, key: str, names: _TrainingNames) -> str | None:
+    stage = row.optional_text(key)
+    return None if stage is None else _check_stage(stage, names.stages, f"{row.where}.{key}")
+
+
+def _training_config(row: _Row, names: _TrainingNames) -> TrainingConfigLock:
+    plan = row.optional_text("plan")
+    config_id = row.optional_text("id")
+    at = _stage_at(row, "at", names)
+    row.finish()
+    if plan is not None and config_id is not None:
+        raise ValueError(
+            f"{row.where}: the row names both plan and id; name one, a plan such as SFOE for all its configurations or one configuration id"
+        )
+    if plan is not None:
+        if plan not in names.plans:
+            raise ValueError(f"{row.where}.plan: {plan!r} is no `runway_configs` plan of {SOP_FILE}; use one of {sorted(names.plans)}")
+        return TrainingConfigLock(key="plan", value=plan, at=at)
+    if config_id is None:
+        raise ValueError(f"{row.where}: the row names neither plan nor id; name one, a plan such as SFOE or one configuration id")
+    if config_id not in names.config_ids:
+        raise ValueError(f"{row.where}.id: {config_id!r} is no `runway_configs` id of {SOP_FILE}; use one of {sorted(names.config_ids)}")
+    return TrainingConfigLock(key="id", value=config_id, at=at)
+
+
+_CONFIG_LOCK_WORDS = {"plan": "plan", "id": "configuration id"}
+
+
+def _training_configs(rows: Sequence[_Row], names: _TrainingNames) -> tuple[TrainingConfigLock, ...]:
+    locks: list[TrainingConfigLock] = []
+    named: dict[tuple[str, str], str] = {}
+    for row in rows:
+        lock = _training_config(row, names)
+        word = _CONFIG_LOCK_WORDS[lock.key]
+        if (lock.key, lock.value) in named:
+            raise ValueError(
+                f"{row.where}.{lock.key}: {word} {lock.value!r} is already named by {named[lock.key, lock.value]}; "
+                f"name each {word} once, at the stage it opens"
+            )
+        named[lock.key, lock.value] = row.where
+        locks.append(lock)
+    return tuple(locks)
+
+
+def _training_sid_families(row: _Row) -> tuple[str, ...]:
+    families = row.texts("families")
+    if not families:
+        raise ValueError(f"{row.where}.families: the list is empty; name at least one SID family, or drop the row")
+    return families
+
+
+def _training_sids(rows: Sequence[_Row], names: _TrainingNames) -> tuple[TrainingSidLock, ...]:
+    locks: list[TrainingSidLock] = []
+    named: dict[str, str] = {}
+    for index, row in enumerate(rows):
+        at = _stage_at(row, "at", names)
+        for family in _training_sid_families(row):
+            if family in named:
+                raise ValueError(
+                    f"{row.where}.families: SID family {family!r} is already named by {named[family]}; name each family once, at the stage it opens"
+                )
+            named[family] = row.where
+            locks.append(TrainingSidLock(family=family, at=at, row=index))
+        row.finish()
+    return tuple(locks)
+
+
+def _training_runway(row: _Row, names: _TrainingNames) -> TrainingRunwayLock:
+    runway = row.text("runway")
+    lock = TrainingRunwayLock(runway=runway, at=_stage_at(row, "at", names))
+    row.finish()
+    if runway not in names.runways:
+        raise ValueError(
+            f"{row.where}.runway: {runway!r} is a departure runway of no `runway_configs` row of {SOP_FILE}; use one of {sorted(names.runways)}"
+        )
+    return lock
+
+
+def _training_runways(rows: Sequence[_Row], names: _TrainingNames) -> tuple[TrainingRunwayLock, ...]:
+    locks: list[TrainingRunwayLock] = []
+    named: dict[str, str] = {}
+    for row in rows:
+        lock = _training_runway(row, names)
+        if lock.runway in named:
+            raise ValueError(
+                f"{row.where}.runway: runway {lock.runway!r} is already named by {named[lock.runway]}; name each runway once, at the stage it opens"
+            )
+        named[lock.runway] = row.where
+        locks.append(lock)
+    return tuple(locks)
+
+
+def load_training(path: Path, course: TrainingCourse, sop: SopData) -> AirportTraining:
+    """Load one airport's ``training.yaml``: what the training stages lock at the airport.
+
+    A SID family is checked against the airport's procedures by the build, which knows them; this
+    loader checks everything else.
+
+    Args:
+        path: Path to the file.
+        course: The shared stages, from :func:`load_training_stages`, every stage value must name.
+        sop: The airport's ``sop.yaml``, whose runway configurations the plans, ids and runways must name.
+
+    Returns:
+        The locks, the SID rows flattened to one lock per family in file order.
+
+    Raises:
+        ValueError: The file is not a YAML mapping, carries an unknown key, names a stage the shared
+            file does not list, a configuration row names both or neither of ``plan`` and ``id`` or
+            names one ``sop.yaml`` does not define, a runway is no configuration's departure runway,
+            a ``sids`` row lists no family, or a plan, configuration id, SID family or runway is
+            named twice.
+        OSError: The file cannot be read.
+    """
+    where = _where(path)
+    root = _Row(where, _load_yaml_mapping(path, where))
+    names = _training_names(course, sop)
+    training = AirportTraining(
+        opens=_optional_stage_at(root, "opens", names),
+        configs=_training_configs(root.optional_children("configs"), names),
+        sids=_training_sids(root.optional_children("sids"), names),
+        other_sids=_optional_stage_at(root, "other_sids", names),
+        no_sid=_optional_stage_at(root, "no_sid", names),
+        runways=_training_runways(root.optional_children("runways"), names),
+    )
+    root.finish()
+    return training
+
+
+def _airport_training(path: Path, course: TrainingCourse, sop: SopData) -> AirportTraining:
+    if not path.is_file():
+        return AirportTraining(opens=None, configs=(), sids=(), other_sids=None, no_sid=None, runways=())
+    return load_training(path, course, sop)
+
+
 def _check_sid_families(sop: SopData, overrides: Overrides, where: str, overrides_where: str) -> None:
     known = sorted({sid_family_of(override.cifp_id, overrides_where) for override in overrides.sids.values()})
     wanted: list[tuple[str, str]] = [(rule.sid_family, f"assignment_rules[{rule.id}].sid_family") for rule in sop.assignment_rules if rule.sid_family]
@@ -1995,9 +2224,9 @@ def _joined_loa(directory: Path, shared: SharedRouteFacts, icao: str) -> LoaData
 def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
     """Load the YAML files of one airport and check them against each other.
 
-    ``sop.yaml``, ``overrides.yaml`` and ``routes.yaml`` are required; ``tec.yaml`` and ``loa.yaml``
-    are loaded when the directory holds them. The LOA rows of ``shared`` that cover this airport are
-    joined with its own ``loa.yaml`` and checked together.
+    ``sop.yaml``, ``overrides.yaml`` and ``routes.yaml`` are required; ``tec.yaml``, ``loa.yaml`` and
+    ``training.yaml`` are loaded when the directory holds them. The LOA rows of ``shared`` that cover
+    this airport are joined with its own ``loa.yaml`` and checked together.
 
     Args:
         directory: The airport directory, e.g. ``generator/airports/ksfo``.
@@ -2011,8 +2240,9 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
     Raises:
         ValueError: Any file fails its own checks, a rule names a DP family no override declares, a
             route leaves the DP at a fix that belongs to no gate, a TEC row names a destination, a
-            plan, a runway family or a DP family the other files do not define, or an LOA row names a
-            destination ``shared/destinations.yaml`` does not hold.
+            plan, a runway family or a DP family the other files do not define, an LOA row names a
+            destination ``shared/destinations.yaml`` does not hold, or ``training.yaml`` fails
+            :func:`load_training`.
         OSError: One of the three required files is missing.
     """
     sop_path = directory / SOP_FILE
@@ -2035,4 +2265,6 @@ def load_airport(directory: Path, shared: SharedRouteFacts) -> AirportInputs:
         common_arrivals=shared.common_arrivals,
         navaid_names=shared.navaid_names,
         special_handling=shared.special_handling,
+        training_course=shared.training,
+        training=_airport_training(directory / TRAINING_FILE, shared.training, sop),
     )

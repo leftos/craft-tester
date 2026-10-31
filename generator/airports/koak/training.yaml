@@ -1,0 +1,11 @@
+# What the vZOA S1 modules lock at KOAK. Anything not listed opens with the airport.
+configs:
+  - {plan: OAKE, at: S1-OAK-6}
+  - {plan: SFOE, at: S1-OAK-6}
+sids:
+  - {families: [OAK, CNDEL, COAST], at: S1-OAK-1}
+  - {families: [NIMI, NUEVO, SKYL], at: S1-OAK-2}
+other_sids: S1-OAK-6
+no_sid: S1-OAK-6
+runways:
+  - {runway: "33", at: S1-OAK-6}

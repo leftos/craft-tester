@@ -1803,6 +1803,152 @@
         "type": "object"
       },
       "type": "array"
+    },
+    "training": {
+      "additionalProperties": false,
+      "properties": {
+        "configs": {
+          "items": {
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "at": {
+                    "type": "string"
+                  },
+                  "plan": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "plan",
+                  "at"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "at": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "at"
+                ],
+                "type": "object"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "course": {
+          "additionalProperties": false,
+          "properties": {
+            "amendment": {
+              "type": "string"
+            },
+            "fullRoute": {
+              "type": "string"
+            },
+            "night": {
+              "type": "string"
+            },
+            "runway": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "runway",
+            "amendment",
+            "fullRoute",
+            "night"
+          ],
+          "type": "object"
+        },
+        "noSid": {
+          "type": "string"
+        },
+        "opens": {
+          "type": "string"
+        },
+        "otherSids": {
+          "type": "string"
+        },
+        "runways": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "string"
+              },
+              "runway": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "runway",
+              "at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "sids": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "string"
+              },
+              "family": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "family",
+              "at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "source": {
+          "type": "string"
+        },
+        "stages": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "title"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "source",
+        "stages",
+        "course",
+        "configs",
+        "sids",
+        "runways"
+      ],
+      "type": "object"
     }
   },
   "required": [
@@ -1834,7 +1980,8 @@
     "notices",
     "aircraftClasses",
     "aircraftGroups",
-    "routeLibrary"
+    "routeLibrary",
+    "training"
   ],
   "type": "object"
 }

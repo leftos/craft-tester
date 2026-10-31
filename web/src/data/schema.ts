@@ -694,6 +694,40 @@ export const NoticeSchema = z.strictObject({
 });
 
 /**
+ * The vZOA S1 training stages and what they lock at this airport.
+ *
+ * `stages` are the modules that change what the trainer draws or grades, in course order; a thing
+ * locked at a stage opens at that stage and every stage after it, and every lock names a stage
+ * `id`. `source`, `stages` and `course` are the same in every airport file: `course` holds the
+ * stages the runway element, Amend mode, the full-route answer and night draws open at. The rest is
+ * the airport's own: `opens` is the stage the airport opens at (absent: every stage), `configs`
+ * lock a configuration plan or one configuration id, `sids` lock SID families, `otherSids` is the
+ * stage every family `sids` does not name opens at, `noSid` the one a departure cleared without a
+ * SID opens at, and `runways` lock departure runways. Anything not listed opens with the airport.
+ */
+export const TrainingSchema = z.strictObject({
+  source: z.string(),
+  stages: z.array(z.strictObject({ id: z.string(), title: z.string() })),
+  course: z.strictObject({
+    runway: z.string(),
+    amendment: z.string(),
+    fullRoute: z.string(),
+    night: z.string(),
+  }),
+  opens: z.string().optional(),
+  configs: z.array(
+    z.union([
+      z.strictObject({ plan: z.string(), at: z.string() }),
+      z.strictObject({ id: z.string(), at: z.string() }),
+    ]),
+  ),
+  sids: z.array(z.strictObject({ family: z.string(), at: z.string() })),
+  otherSids: z.string().optional(),
+  noSid: z.string().optional(),
+  runways: z.array(z.strictObject({ runway: z.string(), at: z.string() })),
+});
+
+/**
  * The whole generated airport file, `data/<icao>.json`.
  *
  * `frequencies` is the labelled distractor pool the frequency dropdown draws from.
@@ -751,6 +785,7 @@ export const AirportDataSchema = z.strictObject({
   aircraftClasses: z.record(z.string(), AircraftClassSchema),
   aircraftGroups: z.record(z.string(), AircraftGroupSchema),
   routeLibrary: RouteLibrarySchema,
+  training: TrainingSchema,
 });
 
 /** A filed flight plan plus the conditions it is cleared under. */
@@ -971,6 +1006,7 @@ export type FleetEntry = z.infer<typeof FleetEntrySchema>;
 export type RouteLibraryEntry = z.infer<typeof RouteLibraryEntrySchema>;
 export type RouteLibrary = z.infer<typeof RouteLibrarySchema>;
 export type Notice = z.infer<typeof NoticeSchema>;
+export type Training = z.infer<typeof TrainingSchema>;
 export type AirportData = z.infer<typeof AirportDataSchema>;
 export type Scenario = z.infer<typeof ScenarioSchema>;
 export type ExpectedClearance = z.infer<typeof ExpectedClearanceSchema>;

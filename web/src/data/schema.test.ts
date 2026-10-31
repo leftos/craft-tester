@@ -164,6 +164,17 @@ const minimalAirportData: AirportData = {
   aircraftClasses: { B738: 'J' },
   aircraftGroups: {},
   routeLibrary: { destinations: [], telephony: {}, cargoAirlines: [], fleet: [], routes: [] },
+  training: {
+    source: 'vZOA S1 syllabus',
+    stages: [{ id: 'S1-OAK-1', title: 'Clearances Introduction' }],
+    course: { runway: 'S1-OAK-1', amendment: 'S1-OAK-1', fullRoute: 'S1-OAK-1', night: 'S1-OAK-1' },
+    configs: [
+      { plan: 'SFOE', at: 'S1-OAK-1' },
+      { id: '28/01', at: 'S1-OAK-1' },
+    ],
+    sids: [],
+    runways: [],
+  },
 };
 
 const minimalFixture: Fixture = {

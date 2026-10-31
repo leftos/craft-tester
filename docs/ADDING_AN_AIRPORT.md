@@ -255,9 +255,9 @@ or comment the row out where a cycle dropped the procedure.
   `web/src/scenario/library.test.ts` fails on a row, or an altitude, that is clean nowhere, and prints
   how often each row is clean.
 
-## 5. `tec.yaml` and `loa.yaml` (optional files)
+## 5. `tec.yaml`, `loa.yaml` and `training.yaml` (optional files)
 
-Both are optional; a directory without them builds with empty tables.
+All three are optional; a directory without them builds with empty tables, and an airport with no `training.yaml` is open at every stage.
 
 **`tec.yaml`**: transcribe the route tool by hand (it is a Blazor app with no JSON API; wait a few seconds
 for it to render before reading). One row per printed line: `destination`, `plan`, `classes`,
@@ -309,6 +309,12 @@ jets becomes two rows with `classes: [J]` and `classes: [P, T]`, and a cell whos
 "via filed route" carries `rnav_only: true`. A row's destinations are checked against
 `generator/shared/destinations.yaml`, not the airport's `routes.yaml`, so an LOA row may name a field no
 scenario files to; add the field to the shared table first.
+
+**`training.yaml`** says what the vZOA S1 training stages lock at the airport; the stages themselves, in course order, live once in `generator/shared/training_stages.yaml`, and every value here is one of their ids. Anything not listed opens with the airport.
+
+Keys, all optional: `opens` (the stage the airport itself opens at), `configs` (rows `{plan: OAKE, at: …}` or `{id: …, at: …}`, naming a `runway_configs` plan or one configuration id of `sop.yaml`), `sids` (rows `{families: [NIMI, NUEVO], at: …}`), `other_sids` (the stage for every SID family `sids` does not name), `no_sid` (the stage for a departure cleared with no SID) and `runways` (rows `{runway: "33", at: …}`, a departure runway of some configuration).
+
+The loader names the file and row of a stage, plan, configuration id or runway that does not exist, a `configs` row that names both or neither of `plan` and `id`, an empty `families` list, and anything named twice. The build checks each SID family against the airport's published procedures, so name the family without its version (`NIMI`, not `NIMI7`).
 
 ## 6. Build, fix, commit
 

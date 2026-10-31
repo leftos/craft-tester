@@ -83719,5 +83719,53 @@
       ],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     }
-  ]
+  ],
+  "training": {
+    "configs": [
+      {
+        "at": "S1-SFO-4",
+        "plan": "SFOE"
+      }
+    ],
+    "course": {
+      "amendment": "S1-OAK-5",
+      "fullRoute": "S1-OAK-5",
+      "night": "S1-OAK-6",
+      "runway": "S1-OAK-3"
+    },
+    "opens": "S1-SFO-1",
+    "runways": [],
+    "sids": [],
+    "source": "vZOA S1 syllabus, https://oakartcc.org/training/syllabus",
+    "stages": [
+      {
+        "id": "S1-OAK-1",
+        "title": "Clearances Introduction"
+      },
+      {
+        "id": "S1-OAK-2",
+        "title": "Clean Clearances"
+      },
+      {
+        "id": "S1-OAK-3",
+        "title": "Taxiing"
+      },
+      {
+        "id": "S1-OAK-5",
+        "title": "Unclean Clearances"
+      },
+      {
+        "id": "S1-OAK-6",
+        "title": "Miscellaneous Topics"
+      },
+      {
+        "id": "S1-SFO-1",
+        "title": "Flight Data & Clearance SFOW"
+      },
+      {
+        "id": "S1-SFO-4",
+        "title": "SFOE"
+      }
+    ]
+  }
 }

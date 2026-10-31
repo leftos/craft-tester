@@ -19,7 +19,7 @@ Sections of `AirportData` (see the schema for fields): `airport`, `provenance`, 
 ends with their magnetic bearing), `runwayConfigs`, `departureSectors`, `frequencies`, `gates`, `sids`,
 `assignmentRules`, `noiseWindows`, `altitudeRules`, `phraseology`, `phraseologyRules`,
 `equipmentSuffixes`, `routeConnections`, `tecRoutes`, `loaRules`, `notices`, `aircraftClasses`,
-`aircraftGroups` (named class-and-type sets the rows address), `routeLibrary`.
+`aircraftGroups` (named class-and-type sets the rows address), `routeLibrary`, `training` (the vZOA S1 stages and what each locks at the airport; nothing in the web reads it yet).
 
 ## Generator (`generator/src/craft_generator/`)
 
@@ -36,7 +36,7 @@ ends with their magnetic bearing), `runwayConfigs`, `departureSectors`, `frequen
 | `worksheets.py` | Google Docs text export → fixture files with `status: pending` |
 
 Hand-authored inputs per airport live in `generator/airports/<icao>/`: `sop.yaml`, `overrides.yaml`,
-`routes.yaml`, `tec.yaml` and an optional `loa.yaml` of LOA overrides. Inputs every airport inherits live
+`routes.yaml`, `tec.yaml`, an optional `loa.yaml` of LOA overrides and an optional `training.yaml` (what the training stages lock at this airport: `opens`, `configs`, `sids`, `other_sids`, `no_sid`, `runways`, each value a stage id; an airport without the file is open at every stage, and a stage, plan, configuration id or runway it names is checked at load, a SID family at build against the airport's procedures). Inputs every airport inherits live
 in `generator/shared/`: `equipment_suffixes.yaml` (the FAA suffix table), `phraseology_rules.yaml` (the
 national CRAFT rule rows, which an airport's `sop.yaml` overrides by id; `merge.py` joins them, shared rows
 first), `loa_rules.yaml` (the inter-ARTCC LOA sources and rows, joined the same way by `sop/load.py`
@@ -57,7 +57,7 @@ polygons; `nct_boundary.py` ray-casts every destination's coordinates against th
 field another facility owns to the ground), plus `destinations.yaml`, `airlines.yaml` and
 `aircraft_types.yaml` (what a destination, an airline and an aircraft type are; an airport's `routes.yaml`
 lists only the codes it flies and the build composes its `routeLibrary` from them; `aircraft_types.yaml` also
-pins ZOA CPS-004 and marks its special aircraft, see "Special aircraft" below). Airport-independent
+pins ZOA CPS-004 and marks its special aircraft, see "Special aircraft" below) and `training_stages.yaml` (the S1 modules in course order, with their source, and the stages the runway element, Amend mode, the full-route answer and night draws open at; emitted into every airport's `training` beside its own locks). Airport-independent
 facts live in `shared/`, never copied between airports. Adding an
 airport is adding that directory and a line in `data/airports.json`; the step-by-step runbook is
 [ADDING_AN_AIRPORT.md](./ADDING_AN_AIRPORT.md).

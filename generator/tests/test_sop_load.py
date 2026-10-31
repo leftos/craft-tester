@@ -21,6 +21,9 @@ from craft_generator.sop.load import (
     ROUTE_CONNECTIONS_FILE,
     ROUTES_FILE,
     SOP_FILE,
+    TRAINING_FILE,
+    TRAINING_STAGES_FILE,
+    airport_dir,
     load_airport,
     load_airways,
     load_common_arrivals,
@@ -31,10 +34,11 @@ from craft_generator.sop.load import (
     load_routes,
     load_shared_route_facts,
     load_sop,
+    load_training_stages,
     shared_dir,
     sid_family_of,
 )
-from craft_generator.sop.model import AirportInputs, SharedRouteFacts
+from craft_generator.sop.model import AirportInputs, AirportTraining, SharedRouteFacts
 
 Mutation = Callable[[Any], None]
 
@@ -127,6 +131,7 @@ SHARED_FILES = (
     ("airways", AIRWAYS_FILE),
     ("common_arrivals", COMMON_ARRIVALS_FILE),
     ("navaid_names", NAVAID_NAMES_FILE),
+    ("training_stages", TRAINING_STAGES_FILE),
 )
 
 
@@ -1214,3 +1219,160 @@ def test_a_malformed_restrictions_override_is_named(tmp_path: Path, ksfo_dir: Pa
 
     with pytest.raises(ValueError, match=message):
         load_overrides(airport_copy(tmp_path, ksfo_dir, overrides=mutate) / OVERRIDES_FILE)
+
+
+TRAINING_STAGE_IDS = ["S1-OAK-1", "S1-OAK-2", "S1-OAK-3", "S1-OAK-5", "S1-OAK-6", "S1-SFO-1", "S1-SFO-4"]
+
+
+def training_airport(tmp_path: Path, ksfo_dir: Path, training: object) -> Path:
+    """Copy the KSFO YAML into ``tmp_path`` and give it the ``training.yaml`` passed in."""
+    directory = airport_copy(tmp_path, ksfo_dir)
+    (directory / TRAINING_FILE).write_text(yaml.safe_dump(training, sort_keys=False), encoding="utf-8")
+    return directory
+
+
+def test_the_training_stages_load_in_course_order_with_the_four_course_gates() -> None:
+    course = load_training_stages(shared_dir() / TRAINING_STAGES_FILE)
+    assert [stage.id for stage in course.stages] == TRAINING_STAGE_IDS
+    assert course.stages[5].title == "Flight Data & Clearance SFOW"
+    assert course.source == "vZOA S1 syllabus, https://oakartcc.org/training/syllabus"
+    assert (course.runway, course.amendment, course.full_route, course.night) == ("S1-OAK-3", "S1-OAK-5", "S1-OAK-5", "S1-OAK-6")
+
+
+def test_the_koak_training_flattens_its_sid_rows_in_file_order(shared_route_facts: SharedRouteFacts) -> None:
+    training = load_airport(airport_dir("KOAK"), shared_route_facts).training
+    assert [(lock.family, lock.at) for lock in training.sids] == [
+        ("OAK", "S1-OAK-1"),
+        ("CNDEL", "S1-OAK-1"),
+        ("COAST", "S1-OAK-1"),
+        ("NIMI", "S1-OAK-2"),
+        ("NUEVO", "S1-OAK-2"),
+        ("SKYL", "S1-OAK-2"),
+    ]
+    assert [(lock.key, lock.value, lock.at) for lock in training.configs] == [("plan", "OAKE", "S1-OAK-6"), ("plan", "SFOE", "S1-OAK-6")]
+    assert [(lock.runway, lock.at) for lock in training.runways] == [("33", "S1-OAK-6")]
+    assert (training.opens, training.other_sids, training.no_sid) == (None, "S1-OAK-6", "S1-OAK-6")
+
+
+def test_an_airport_without_a_training_file_is_open_at_every_stage(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    training = load_airport(airport_copy(tmp_path, ksfo_dir), shared_route_facts).training
+    assert training == AirportTraining(opens=None, configs=(), sids=(), other_sids=None, no_sid=None, runways=())
+
+
+@pytest.mark.parametrize(
+    ("training", "message"),
+    [
+        (
+            {"configs": [{"plan": "SFOE", "at": "S1-OAK-4"}]},
+            r"ksfo/training\.yaml\.configs\[0\]\.at: 'S1-OAK-4' names no stage of shared/training_stages\.yaml",
+        ),
+        (
+            {"sids": [{"families": ["TRUKN"], "at": "S1-SFO-1"}, {"families": ["GAPP", "TRUKN"], "at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.sids\[1\]\.families: SID family 'TRUKN' is already named by ksfo/training\.yaml\.sids\[0\]",
+        ),
+        (
+            {"configs": [{"plan": "OAKE", "at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.configs\[0\]\.plan: 'OAKE' is no `runway_configs` plan of sop\.yaml",
+        ),
+        (
+            {"configs": [{"id": "28 XX", "at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.configs\[28 XX\]\.id: '28 XX' is no `runway_configs` id of sop\.yaml",
+        ),
+        (
+            {"configs": [{"plan": "SFOE", "id": "10/10", "at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.configs\[10/10\]: the row names both plan and id",
+        ),
+        (
+            {"runways": [{"runway": "33", "at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.runways\[0\]\.runway: '33' is a departure runway of no `runway_configs` row of sop\.yaml",
+        ),
+        (
+            {"configs": [{"plan": "SFOE", "at": "S1-SFO-4"}, {"plan": "SFOE", "at": "S1-OAK-6"}]},
+            r"ksfo/training\.yaml\.configs\[1\]\.plan: plan 'SFOE' is already named by ksfo/training\.yaml\.configs\[0\]; name each plan once",
+        ),
+        (
+            {"configs": [{"id": "10/10", "at": "S1-SFO-4"}, {"plan": "SFOE", "at": "S1-SFO-4"}, {"id": "10/10", "at": "S1-OAK-6"}]},
+            r"ksfo/training\.yaml\.configs\[10/10\]\.id: configuration id '10/10' is already named by ksfo/training\.yaml\.configs\[10/10\]; "
+            r"name each configuration id once",
+        ),
+        (
+            {"runways": [{"runway": "10L", "at": "S1-SFO-4"}, {"runway": "10L", "at": "S1-OAK-6"}]},
+            r"ksfo/training\.yaml\.runways\[1\]\.runway: runway '10L' is already named by ksfo/training\.yaml\.runways\[0\]; name each runway once",
+        ),
+        (
+            {"configs": [{"at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.configs\[0\]: the row names neither plan nor id",
+        ),
+        (
+            {"sids": [{"families": [], "at": "S1-SFO-4"}]},
+            r"ksfo/training\.yaml\.sids\[0\]\.families: the list is empty; name at least one SID family",
+        ),
+        ({"opens": "S1-SFO-2"}, r"ksfo/training\.yaml\.opens: 'S1-SFO-2' names no stage of shared/training_stages\.yaml"),
+        ({"other_sids": "S1-SFO-2"}, r"ksfo/training\.yaml\.other_sids: 'S1-SFO-2' names no stage of shared/training_stages\.yaml"),
+        ({"no_sid": "S1-SFO-2"}, r"ksfo/training\.yaml\.no_sid: 'S1-SFO-2' names no stage of shared/training_stages\.yaml"),
+        (
+            {"configs": [{"plan": "SFOE", "at": "S1-SFO-4", "when": "night"}]},
+            r"ksfo/training\.yaml\.configs\[0\]: unknown key\(s\) \['when'\]",
+        ),
+        ({"stages": []}, r"ksfo/training\.yaml: unknown key\(s\) \['stages'\]"),
+    ],
+    ids=[
+        "at-names-no-stage",
+        "family-twice",
+        "unknown-plan",
+        "unknown-config-id",
+        "plan-and-id",
+        "unknown-runway",
+        "plan-twice",
+        "config-id-twice",
+        "runway-twice",
+        "neither-plan-nor-id",
+        "empty-families",
+        "opens-names-no-stage",
+        "other-sids-names-no-stage",
+        "no-sid-names-no-stage",
+        "unknown-row-key",
+        "unknown-file-key",
+    ],
+)
+def test_a_bad_training_row_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts, training: object, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        load_airport(training_airport(tmp_path, ksfo_dir, training), shared_route_facts)
+
+
+def test_a_training_runway_only_arrivals_use_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    def mutate(data: Any) -> None:
+        config = next(row for row in data["runway_configs"] if row["id"] == "19/19")
+        config["departure_runways"] = [row for row in config["departure_runways"] if row["runway"] != "19L"]
+
+    directory = airport_copy(tmp_path, ksfo_dir, sop=mutate)
+    (directory / TRAINING_FILE).write_text(yaml.safe_dump({"runways": [{"runway": "19L", "at": "S1-SFO-4"}]}), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"ksfo/training\.yaml\.runways\[0\]\.runway: '19L' is a departure runway of no `runway_configs` row"):
+        load_airport(directory, shared_route_facts)
+
+
+def training_stages_copy(tmp_path: Path, mutate: Mutation) -> Path:
+    """Copy ``shared/training_stages.yaml`` into ``tmp_path``, applying the mutation before writing it."""
+    data = yaml.safe_load((shared_dir() / TRAINING_STAGES_FILE).read_text(encoding="utf-8"))
+    mutate(data)
+    path = tmp_path / TRAINING_STAGES_FILE
+    path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    return path
+
+
+def test_a_training_stage_listed_twice_is_named(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["stages"].append({"id": "S1-OAK-2", "title": "Clean Clearances again"})
+
+    with pytest.raises(
+        ValueError, match=r"training_stages\.yaml\.stages\[7\]: stage id 'S1-OAK-2' is already used by .*training_stages\.yaml\.stages\[1\]"
+    ):
+        load_training_stages(training_stages_copy(tmp_path, mutate))
+
+
+def test_a_training_course_gate_naming_no_stage_is_named(tmp_path: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["course"]["night"] = "S1-OAK-7"
+
+    with pytest.raises(ValueError, match=r"training_stages\.yaml\.course\.night: 'S1-OAK-7' names no stage of shared/training_stages\.yaml"):
+        load_training_stages(training_stages_copy(tmp_path, mutate))
