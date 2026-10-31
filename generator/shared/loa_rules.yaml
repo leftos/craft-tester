@@ -88,8 +88,8 @@ rules:
     destinations: [KSAN]
     rule: { kind: route, tokens: [HUULK, PASKE, EHF, LANDO, LAX] }
   - id: LOA-ZLA-CRQ-ROUTE
-    source: "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per the user 2026-09-16"
-    text: "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (LXJ351, GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (user, 2026-09-16)"
+    source: "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per instructor ruling"
+    text: "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (such as GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (instructor ruling)"
     destinations: [KCRQ, KNFG]
     rule: { kind: route, tokens: [BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF, LHS], classes: [J] }
   - id: LOA-ZLA-UDD-ROUTE

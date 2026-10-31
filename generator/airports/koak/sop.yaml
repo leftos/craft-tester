@@ -55,9 +55,9 @@ runway_configs:
     arrival_runways: ["28L", "28R", "30"]
     departure_runways:
       - { runway: "28L", classes: [P, T, J] }
-      - { runway: "28L", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 28L (ZOA senior staff via the user, 2026-09-16)" }
+      - { runway: "28L", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 28L (ZOA senior staff)" }
       - { runway: "28R", classes: [P, T, J] }
-      - { runway: "28R", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 28R because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart 28L/28R. A DH8D is class T but departs with the jets: the runway 30 row defaults the jets_and_dh8d group, which is answered before a class default" }
+      - { runway: "28R", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 28R because they park north of it (ZOA senior staff); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart 28L/28R. A DH8D is class T but departs with the jets: the runway 30 row defaults the jets_and_dh8d group, which is answered before a class default" }
       - { runway: "30", classes: [P, T, J] }
       - { runway: "30", classes: [J, T], default_for_groups: [jets_and_dh8d], note: "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them" }
       - { runway: "33", classes: [P, T, J], note: "SOP 2-2 b ii gives runway 33 its own heading rows (J & DH8D 270 degrees, P/T 315 degrees), so the runway departs every class; it is a short north-field runway and is issued on request or for a GA flight parked beside it" }
@@ -69,9 +69,9 @@ runway_configs:
     arrival_runways: ["10L", "10R", "12"]
     departure_runways:
       - { runway: "10L", classes: [P, T, J] }
-      - { runway: "10L", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s" }
+      - { runway: "10L", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s" }
       - { runway: "10R", classes: [P, T, J] }
-      - { runway: "10R", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)" }
+      - { runway: "10R", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff)" }
       - { runway: "12", classes: [P, T, J] }
       - { runway: "12", classes: [J, T], default_for_groups: [jets_and_dh8d], note: "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, whose east-flow reciprocals are the 10s, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them" }
   - id: SFOE
@@ -82,9 +82,9 @@ runway_configs:
     arrival_runways: ["10L", "10R", "12"]
     departure_runways:
       - { runway: "10L", classes: [P, T, J] }
-      - { runway: "10L", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s" }
+      - { runway: "10L", classes: [P, T], default_for_classes: [P, T], note: "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s" }
       - { runway: "10R", classes: [P, T, J] }
-      - { runway: "10R", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)" }
+      - { runway: "10R", classes: [T], default_for_airlines: [PCM], note: "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff)" }
       - { runway: "12", classes: [P, T, J] }
       - { runway: "12", classes: [J, T], default_for_groups: [jets_and_dh8d], note: "SOP 3-4 a asks turbojets, turbofans and turboprops over 17,000 lbs not to depart 28L/28R, whose east-flow reciprocals are the 10s, so the jets take the south field and the Dash 8-400, a turboprop over 17,000 lbs, departs with them" }
 
@@ -1065,21 +1065,21 @@ altitude_rules:
 # 270-degree row for QUAKE#, and the southbound 270-degree row for SUNNE#.
 notices:
   - id: OAK-QUAKE-OFF
-    source: ZOA notice relayed by the user, 2026-09-15
+    source: ZOA notice
     dated: 2026-09-15
     text: "OAK QUAKE SID: OFF. Issue 270 HDG RV first fix for 12/10 jet departures. CFG: OAKE"
     plan: OAKE
     effect: { kind: sid_off, sid_family: QUAKE, heading: 270 }
     default_active: true
   - id: OAK-SUNNE-OFF
-    source: ZOA notice relayed by the user, 2026-09-15
+    source: ZOA notice
     dated: 2026-09-15
     text: "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement"
     plan: SFOW
     effect: { kind: sid_off, sid_family: SUNNE, heading: 120 }
     default_active: true
   - id: OAK-COAST-OFF
-    source: ZOA operational notice relayed by the user, 2026-09-16
+    source: ZOA operational notice
     dated: 2026-09-16
     text: "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
     plan: SFOW
@@ -1100,13 +1100,13 @@ phraseology:
 # where a TEC route moved the flight off a default, and otherwise just before `RWY-FIRST`.
 phraseology_rules:
   - id: RWY-AIRLINE-DEFAULT
-    source: "ZOA senior staff via the user, 2026-09-16"
+    source: "ZOA senior staff"
     text: "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"
   - id: RWY-GROUP-DEFAULT
     source: "OAK ATCT SOP 3-4 a"
     text: "SOP 3-4 a requests turbojets, turbofans and turboprops over 17,000 lbs not to depart runways 28L/28R, so the jets depart the south field, and the Dash 8-400 is grouped with them: runway 30 in SFOW, runway 12 in OAKE and SFOE"
   - id: RWY-CLASS-DEFAULT
-    source: "OAK ATCT SOP 3-4 a; ZOA senior staff via the user, 2026-09-16"
+    source: "OAK ATCT SOP 3-4 a; ZOA senior staff"
     text: "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway"
   - id: RWY-ON-REQUEST
     source: OAK ATCT SOP 1-6 and 3-4 b
@@ -1115,7 +1115,7 @@ phraseology_rules:
     source: OAK ATCT SOP 1-6 and 2-2
     text: "OAK's SOP states no turn-direction split between the parallel runways, so the direction of the departure does not change the runway: within a family the class default applies in every direction"
   - id: RWY-TEC
-    source: "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)"
+    source: "instructor ruling (a TEC route overrides the SOP)"
     text: "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
   - id: RWY-FIRST
     source: OAK ATCT SOP 1-6

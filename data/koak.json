@@ -78820,8 +78820,8 @@
           "LHS"
         ]
       },
-      "source": "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per the user 2026-09-16",
-      "text": "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (LXJ351, GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (user, 2026-09-16)"
+      "source": "ZOA-ZLA LOA Attachment 1, San Diego Area, ALL CRQ/NFG, effective 2026-04-26; EHF/LHS per instructor ruling",
+      "text": "CRQ and NFG: ..BURGL, ..TILLT, ..REBRG, ..LANDO; non-RNAV west of REBRG via DERBB.J7.FIM. The cell binds jets routed west of J1; a jet routed east of J1 via EHF or LHS (such as GAPP7 EHF LHS V459 SLI V23 OCN) is correct as filed, so those two fixes satisfy the row (instructor ruling)"
     },
     {
       "destinations": [
@@ -79059,7 +79059,7 @@
       },
       "id": "OAK-QUAKE-OFF",
       "plan": "OAKE",
-      "source": "ZOA notice relayed by the user, 2026-09-15",
+      "source": "ZOA notice",
       "text": "OAK QUAKE SID: OFF. Issue 270 HDG RV first fix for 12/10 jet departures. CFG: OAKE"
     },
     {
@@ -79072,7 +79072,7 @@
       },
       "id": "OAK-SUNNE-OFF",
       "plan": "SFOW",
-      "source": "ZOA notice relayed by the user, 2026-09-15",
+      "source": "ZOA notice",
       "text": "OAK SUNNE SID: OFF. Issue 120 HDG RV first fix for jet 30 departures. CFG: SFOW noise abatement"
     },
     {
@@ -79084,7 +79084,7 @@
       },
       "id": "OAK-COAST-OFF",
       "plan": "SFOW",
-      "source": "ZOA operational notice relayed by the user, 2026-09-16",
+      "source": "ZOA operational notice",
       "text": "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
     }
   ],
@@ -79107,7 +79107,7 @@
     },
     {
       "id": "R-SID-STRUCTURE",
-      "source": "FAA JO 7110.65 4-3-2 c 4 (a); user rule 2026-09-17 (FFT2015)",
+      "source": "FAA JO 7110.65 4-3-2 c 4 (a); instructor ruling",
       "text": "A filed element the departure itself flies over — the SID's own name, the fix it is built on, or a fix it is restricted over — is not read back when the route files one of that same SID's published transitions further along: the route is read from that transition (R-TRANSITION) and the elements before it are dropped from the route box. Where the route files no published transition of the SID nothing is dropped and the first filed fix stands, spoken bare (R-AS-FILED)"
     },
     {
@@ -79117,28 +79117,28 @@
     },
     {
       "id": "R-RV-NAVAID",
-      "source": "ZOA practice relayed by the user, 2026-09-16",
+      "source": "ZOA practice",
       "text": "A radar-vector SID is filed as the SID, the departure airport's navaid, then the route (OAK# OAK RBL, SFO# SFO RBL) for the computerized flight plan; the navaid is not spoken. A route box that omits it is acceptable, not wrong"
     },
     {
       "id": "R-THEN-AS-FILED",
-      "source": "ZOA CRAFT Phraseology reference; user rule 2026-09-16 (N172SP amendment plan)",
+      "source": "ZOA CRAFT Phraseology reference; instructor ruling",
       "text": "THEN AS FILED — only when the last fix spoken connects to the rest of the route the pilot filed: on an amended route the controller reads every element up to the first fix that was already on the filed plan and after which the two routes are identical, then THEN AS FILED; when no such fix exists, or nothing follows it, the route is read in full to the end"
     },
     {
       "id": "R-ROUTE-BUILD",
-      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; user rules 2026-09-16 (SWA984 amendment plan) and 2026-09-17 (PXT415: WAGES LOSHN off SKYL1)",
-      "text": "Before falling back to the vector SID or a heading, route-build: keep a SID the SOP assigns by connecting one of its published transitions, or the fix the SID itself ends on, to the filed route through fixes that connect, fewest changes first; a suboptimal route that is legal per the SOPs and LOAs is not an unclean route"
+      "source": "OAK Route Building Cheat Sheet (vZOA S1-OAK-5), retrieved 2026-09-16; instructor ruling",
+      "text": "Before falling back to the vector SID or a heading, try to keep a SID the SOP assigns: connect one of its published transitions, or the fix the SID itself ends on, to the filed route through fixes that connect, fewest changes first. A route that is not the shortest but is legal under the SOPs and LOAs is not wrong"
     },
     {
       "id": "R-ROUTE-TOKEN",
-      "source": "AIM 5-1-6 b (the route of flight is described accurately and completely, by airways, jet routes, reporting points and NAVAIDs); FAA JO 7110.65 4-2-5; user rule 2026-09-17 (UAL313); read abbreviated by ZOA practice, not as the full route clearance 7110.65 4-3-3 b gives a route fixed for an incorrect fix name (user ruling 2026-09-28)",
+      "source": "AIM 5-1-6 b (the route of flight is described accurately and completely, by airways, jet routes, reporting points and NAVAIDs); FAA JO 7110.65 4-2-5; instructor ruling; read abbreviated by ZOA practice, not as the full route clearance 7110.65 4-3-3 b gives a route fixed for an incorrect fix name",
       "text": "Every element of a filed route names a fix, a navaid, an airway or a procedure. An element that names none of them — two identifiers run together, or a typo — is removed from the route box and the fixes either side of it are connected through fixes that connect (R-ROUTE-BUILD), so the clearance reads a route the pilot can fly; where nothing connects them the element is dropped and the fixes either side of it join direct"
     },
     {
       "id": "R-ARRIVAL",
-      "source": "ZOA Common ZLA Arrivals from ZOA (current as of 2025-01-13); ZOA-ZLA LOA Attachment 1 (effective 2026-04-26); user rules 2026-09-16 (SWA984: an RNAV jet filing the non-RNAV SADDE8 is put on IRNMN2 via BURGL; a missed arrival costs half a point) and 2026-09-17 (NKS510: a non-RNAV jet filing IRNMN2 is put on SKYL1 AVE SADDE8)",
-      "text": "A departure is routed onto an arrival of its destination that its equipment can fly, RNAV or conventional, entered at a transition the common-arrivals table or the letter of agreement names where the route-building connections reach one, fewest changes first; the arrival is a nice-to-have the enroute controller can change on the fly, so a route box left on the arrival as filed costs half a point, not a full one"
+      "source": "ZOA Common ZLA Arrivals from ZOA (current as of 2025-01-13); ZOA-ZLA LOA Attachment 1 (effective 2026-04-26); instructor ruling",
+      "text": "A departure is routed onto an arrival of its destination that its equipment can fly, RNAV or conventional, entered at a transition the common-arrivals table or the letter of agreement names where the route-building connections reach one, fewest changes first; the en route controller can change the arrival later, so a route box left on the arrival as filed costs half a point, not a full one"
     },
     {
       "id": "R-HEADING",
@@ -79147,23 +79147,23 @@
     },
     {
       "id": "R-RV-AIRWAY",
-      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 2-6-4 (VECTOR TO JOIN (airway)), 4-4-1 a (JOIN VICTOR (airway number)) and 2-5-1 a (Victor Twelve); user ruling 2026-09-18 (no word AIRWAY)",
+      "source": "ZOA CRAFT Phraseology reference; FAA JO 7110.65 2-6-4 (VECTOR TO JOIN (airway)), 4-4-1 a (JOIN VICTOR (airway number)) and 2-5-1 a (Victor Twelve); instructor ruling",
       "text": "(SID name and number) DEPARTURE, RADAR VECTORS TO JOIN (airway), THEN AS FILED — used when the first filed element after the SID is an airway; the airway is spoken as its designator alone (radar vectors to join Victor six), with no word AIRWAY after it"
     },
     {
       "id": "R-RV-DIRECT",
-      "source": "SOP 2-1 b (\"if a pilot cannot accept one, vectors direct\"); user ruling 2026-09-18",
+      "source": "SOP 2-1 b (\"if a pilot cannot accept one, vectors direct\"); instructor ruling",
       "text": "RADAR VECTORS DIRECT — used when the route names no fix after the departure: a TEC route that ends in RV, or a radar-vector SID with nothing after the airport navaid; the flight is vectored straight to the destination"
     },
     {
       "id": "R-AIRWAY",
-      "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; user review 2026-09-15; user steer 2026-09-17 (pacing comma)",
+      "source": "FAA JO 7110.65 2-5-1; ZOA CRAFT Phraseology reference; instructor ruling",
       "text": "Airways are spoken as the word VICTOR or TANGO, or the letter J or Q, followed by the number in group form (Victor two forty-four, Jay five thirty-three, Queue one seventy-four, Tango two ten); other route letters phonetically; a comma follows the airway before the fix it leads to, for pacing (Queue one seventy-four, Flchr), where DIRECT (fix) takes none"
     },
     {
       "id": "R-NAVAID",
-      "source": "FAA JO 7110.65 2-5-2 a 1 (the name or phonetic alphabet equivalent of a NAVAID in a routing) and 2-5-3 b (a charted fix by its name); ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); user review 2026-09-15; user ruling 2026-09-18 (a fix spelled letter by letter)",
-      "text": "A navaid in a routing is stated by its name or by its identifier in the phonetic alphabet (Sierra Alpha Uniform for Sausalito VOR); the reading speaks the name followed by its facility type, which is what the trainer reads, with VOR, VOR/DME and VORTAC all VOR (Sacramento VOR, Red Bluff VOR). A fix charted on a SID, STAR or en route chart is stated by its name, and a five-letter fix may be spelled in the phonetic alphabet; transitions keep their published name"
+      "source": "FAA JO 7110.65 2-5-2 a 1 (the name or phonetic alphabet equivalent of a NAVAID in a routing) and 2-5-3 b (a charted fix by its name); ZOA practice (S1-OAK-2 knowledge check: RADAR VECTORS LINDEN VOR); instructor ruling",
+      "text": "A navaid in a routing is stated by its name or by its identifier in the phonetic alphabet (Sierra Alpha Uniform for Sausalito VOR); the clearance speaks the name followed by its facility type, as this trainer does, with VOR, VOR/DME and VORTAC all VOR (Sacramento VOR, Red Bluff VOR). A fix charted on a SID, STAR or en route chart is stated by its name, and a five-letter fix may be spelled in the phonetic alphabet; transitions keep their published name"
     },
     {
       "id": "R-RNAV-AIRWAY",
@@ -79177,13 +79177,13 @@
     },
     {
       "id": "T-MODE-C",
-      "source": "VATSIM Code of Conduct B4(a); VATSIM transponder simulation (standby or Mode A+C only); user, 2026-09-17",
+      "source": "VATSIM Code of Conduct B4(a); VATSIM transponder simulation (standby or Mode A+C only); instructor ruling",
       "text": "Every aircraft on VATSIM simulates a Mode C transponder, so an equipment suffix without Mode C (/X, /T, /D, /B, /M, /N, /Y, /C, /V, /S, /H, /O) is not filed on the network; the type box carries the suffix the fleet files for the type"
     },
     {
       "id": "A-CLIMB-VIA",
       "source": "FAA JO 7110.65 4-3-2 e 4 (a); ZOA CRAFT Phraseology reference",
-      "text": "CLIMB VIA SID —the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
+      "text": "CLIMB VIA SID — the SID has published crossing restrictions and its published top altitude is the altitude ATC wants"
     },
     {
       "id": "A-CLIMB-VIA-EXCEPT",
@@ -79207,12 +79207,12 @@
     },
     {
       "id": "A-EXPECT-REDUNDANT",
-      "source": "ZOA senior staff via the user, 2026-09-16; FAA JO 7110.65 4-3-2 e 3 (a)",
+      "source": "ZOA senior staff; FAA JO 7110.65 4-3-2 e 3 (a)",
       "text": "EXPECT (filed altitude) (minutes) MINUTES AFTER DEPARTURE spoken where the SID chart already publishes that note is not wrong, only longer than it needs to be: it repeats what the chart tells the pilot. Graded acceptable when the delay spoken is the chart's, and a miss otherwise"
     },
     {
       "id": "A-FINAL",
-      "source": "ZOA practice via the user, 2026-09-16 (SKW2345 amendment plan)",
+      "source": "ZOA practice",
       "text": "(altitude) WILL BE YOUR FINAL — spoken in place of the expect clause when the controller amended the final altitude and the clearance climbs the flight straight to it, speaking that altitude (CLIMB VIA SID EXCEPT MAINTAIN or MAINTAIN at the amended altitude): there is nothing further to expect, so the pilot is told the altitude just assigned is the final one. A plain CLIMB VIA SID speaks no altitude of its own, so the amended expect clause is spoken there instead, even where the published top altitude is the amended one. EXPECT AMENDED (altitude) (minutes) MINUTES AFTER DEPARTURE spoken there instead is acceptable, only longer than it needs to be, at the delay the amended clause would carry"
     },
     {
@@ -79227,7 +79227,7 @@
     },
     {
       "id": "A-ONE-WAY-AIRWAY",
-      "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1, one way routes); user ruling 2026-09-16 (FDX3875 amendment plan)",
+      "source": "FAA JO 7110.65 4-5-2 Flight Direction (TBL 4-5-1, one way routes); instructor ruling",
       "text": "A one-way route carries no opposing traffic, so the direction-of-flight rule has nothing to separate on it: any cardinal altitude or flight level below FL410 is assigned on any course, and above FL410 any odd cardinal flight level (FL430, FL450); FL410 itself, an odd level, is among the table's examples. The Pacific oceanic routes the Bay departs on are one-way, so a westbound flight to Hawaii keeps the odd level it filed"
     },
     {
@@ -79237,62 +79237,62 @@
     },
     {
       "id": "R-THEN-AS-FILED-END",
-      "source": "ZOA CRAFT Phraseology reference; user ruling 2026-09-17 (free-text entry)",
-      "text": "THEN AS FILED spoken where the route is read to its end — nothing is filed after the last fix read, so the reading closes on DIRECT — is acceptable, not wrong: the pilot flies the same route either way, but R-THEN-AS-FILED reads such a route in full"
+      "source": "ZOA CRAFT Phraseology reference; instructor ruling",
+      "text": "THEN AS FILED spoken where the route is read to its end — nothing is filed after the last fix read, so the clearance ends on DIRECT — is acceptable, not wrong: the pilot flies the same route either way, but R-THEN-AS-FILED reads such a route in full"
     },
     {
       "id": "R-FULL-ROUTE",
-      "source": "ZOA CRAFT Phraseology reference; user ruling 2026-09-17 (free-text entry)",
+      "source": "ZOA CRAFT Phraseology reference; instructor ruling",
       "text": "Reading the whole of an amended or built route, where the clearance hands it over as filed from the fix the two routes run together from (R-THEN-AS-FILED), is acceptable, not wrong: the pilot is cleared along the same route, only at greater length than the clearance needs"
     },
     {
       "id": "R-FRC",
-      "source": "FAA JO 7110.65 4-3-3 b and 4-3-3 g 1; user ruling 2026-09-18 (full route clearance mode)",
+      "source": "FAA JO 7110.65 4-3-3 b and 4-3-3 g 1; instructor ruling",
       "text": "FRC as the first remark on the strip means a full route clearance is necessary: with no fix named the controller reads the entire route, element by element to its end, and THEN AS FILED is not spoken. A reading that hands any part of the route over as filed is wrong"
     },
     {
       "id": "R-FACILITY-WORD",
-      "source": "FAA JO 7110.65 2-5-2; user ruling 2026-09-17 (free-text entry)",
+      "source": "FAA JO 7110.65 2-5-2; instructor ruling",
       "text": "The facility word spoken after a fix the clearance reads bare (R-AS-FILED) is as right as the bare name: CONCORD VOR, THEN AS FILED names the same navaid as CONCORD, THEN AS FILED"
     },
     {
       "id": "R-FACILITY-WORD-OMITTED",
-      "source": "FAA JO 7110.65 2-5-2 a 1 and a 2; tester feedback and user ruling 2026-09-19",
+      "source": "FAA JO 7110.65 2-5-2 a 1 and a 2; instructor ruling",
       "text": "The facility word left off a navaid the route names (DIRECT RED BLUFF for DIRECT RED BLUFF VOR) is right: 7110.65 2-5-2 a 1 asks only for the name or the phonetic identifier in a routing, and 2-5-2 a 2 asks for the type of NAVAID only where it is the clearance limit, which here is the airport. R-NAVAID still reads the navaid with its facility word, which is what the trainer reads"
     },
     {
       "id": "R-THEN-OMITTED",
-      "source": "FAA JO 7110.65 4-3-3 d and g; instructor feedback and user ruling 2026-09-28",
+      "source": "FAA JO 7110.65 4-3-3 d and g; instructor ruling",
       "text": "AS FILED said without THEN (… DEDHD, AS FILED for … DEDHD, THEN AS FILED) is acceptable, not a miss: the pilot is handed the same route over as filed. R-THEN-AS-FILED still reads THEN AS FILED, which is what is said on frequency"
     },
     {
       "id": "S-FILLER",
-      "source": "user ruling 2026-09-17 (free-text entry)",
-      "text": "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make an element acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss"
+      "source": "instructor ruling",
+      "text": "Words the phraseology does not have (climb via THE SID, cleared to THE Seattle airport, YOUR departure frequency WILL BE) make that part acceptable rather than right: every value and every required word is there, but the transmission is longer than it needs to be. A required word left out is a miss"
     },
     {
       "id": "S-ORDER",
-      "source": "FAA JO 7110.65 4-2-1; user ruling 2026-09-17 (free-text entry)",
-      "text": "Clearance items are issued in the order 7110.65 4-2-1 lists them: clearance limit, departure procedure or vectors, route, altitude, then frequency and beacon code. An element read out of that order is a miss, and the elements marked are the fewest whose removal leaves the rest in order"
+      "source": "FAA JO 7110.65 4-2-1; instructor ruling",
+      "text": "Clearance items are issued in the order 7110.65 4-2-1 lists them: clearance limit, departure procedure or vectors, route, altitude, then frequency and beacon code. A part read out of that order is a miss, and the parts highlighted are the fewest that, removed, leave the rest in order"
     },
     {
       "id": "S-NINER",
-      "source": "FAA JO 7110.65 2-4-16 (TBL 2-4-1); user rulings 2026-09-17 (free-text entry) and 2026-09-19 (NINE acceptable)",
+      "source": "FAA JO 7110.65 2-4-16 (TBL 2-4-1); instructor ruling",
       "text": "Digits are spoken in the ICAO pronunciation, the digit 9 as NINER. TREE, FIFE, FOWER and the other ICAO forms are as right as the plain words. NINE said for the digit is acceptable, since TBL 2-4-1 lists NIN-ER beside TREE and FIFE and no plain word is held to a miss, but NINER is what is said on frequency. A procedure's name is exempt, because it is spoken as its chart name (Coast Nine)"
     },
     {
       "id": "S-GROUP-FORM",
-      "source": "FAA JO 7110.65 2-4-17 b 1 and its note, and 2-4-18 a; user ruling 2026-09-17 (free-text entry)",
+      "source": "FAA JO 7110.65 2-4-17 b 1 and its note, and 2-4-18 a; instructor ruling",
       "text": "A number the clearance speaks digit by digit (an altitude, a frequency, the beacon code, a heading, the runway, the expect minutes) is said in digit form: ONE ZERO THOUSAND. The group form may follow the digits as a restatement \"for added clarity\" (ONE ZERO THOUSAND, TEN THOUSAND, or ONE ZERO TEN THOUSAND), which is as right as the digits alone; the group form alone (TEN THOUSAND) is a miss. A number typed in figures is right"
     },
     {
       "id": "S-SPELLING",
-      "source": "user ruling 2026-09-18 (free-text entry)",
-      "text": "Typing stands in for speaking, so a word typed a letter or two away from the word the reading has (DEPARTURE with a letter dropped, SQUAWK with two letters swapped, SACRAMENTO with a wrong vowel) is that word: one edit for a word of five to eight letters, two for a longer one, none for a shorter one. A typed word that is itself a word of the phraseology, or of a fix, procedure or airport name, is read as typed, and a number is never guessed at"
+      "source": "instructor ruling",
+      "text": "Typing stands in for speaking, so a word typed a letter or two away from the expected word (DEPARTURE with a letter dropped, SQUAWK with two letters swapped, SACRAMENTO with a wrong vowel) is that word: one edit for a word of five to eight letters, two for a longer one, none for a shorter one. A typed word that is itself a word of the phraseology, or of a fix, procedure or airport name, is read as typed, and a number is never guessed at"
     },
     {
       "id": "RWY-AIRLINE-DEFAULT",
-      "source": "ZOA senior staff via the user, 2026-09-16",
+      "source": "ZOA senior staff",
       "text": "PAC VALLEY's props depart runway 28L, and its east-flow reciprocal 10R, because the airline parks south of that runway; an airline default is issued ahead of the class and group defaults"
     },
     {
@@ -79302,7 +79302,7 @@
     },
     {
       "id": "RWY-CLASS-DEFAULT",
-      "source": "OAK ATCT SOP 3-4 a; ZOA senior staff via the user, 2026-09-16",
+      "source": "OAK ATCT SOP 3-4 a; ZOA senior staff",
       "text": "The configuration departs this aircraft class from this runway by default: props and turboprops take the north field, runway 28R in SFOW and its east-flow reciprocal 10L in OAKE and SFOE, because they park north of that runway"
     },
     {
@@ -79317,7 +79317,7 @@
     },
     {
       "id": "RWY-TEC",
-      "source": "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)",
+      "source": "instructor ruling (a TEC route overrides the SOP)",
       "text": "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
     },
     {
@@ -79328,7 +79328,7 @@
     {
       "id": "ZOA-CPS004-SPECIAL-AIRCRAFT",
       "source": "ZOA CPS-004 v1.2 3.1",
-      "text": "The following aircraft require special handling and coordination unless procedures are defined in local Standard Operating Procedures. The “performance consideration” for each aircraft is not required, but must be considered, given current traffic levels. Aircraft / Performance Consideration / Reason: SF50, T - Turboprop, slow climb/cruise performance; C510, T - Turboprop, slow climb/cruise performance; E50P, T - Turboprop, slow climb/cruise performance; E55P, T - Turboprop, slow climb/cruise performance; DH8D, J - Jet, capable of jet-like performance. ZOA training (user ruling 2026-09-26): the trainer proposes the jet handling and also accepts the turboprop handling for these types; an airport SOP that names the type in its aircraft groups defines it locally."
+      "text": "The following aircraft require special handling and coordination unless procedures are defined in local Standard Operating Procedures. The “performance consideration” for each aircraft is not required, but must be considered, given current traffic levels. Aircraft / Performance Consideration / Reason: SF50, T - Turboprop, slow climb/cruise performance; C510, T - Turboprop, slow climb/cruise performance; E50P, T - Turboprop, slow climb/cruise performance; E55P, T - Turboprop, slow climb/cruise performance; DH8D, J - Jet, capable of jet-like performance. ZOA training (instructor ruling): the trainer proposes the jet handling and also accepts the turboprop handling for these types; an airport SOP that names the type in its aircraft groups defines it locally."
     }
   ],
   "provenance": {
@@ -83566,7 +83566,7 @@
           ],
           "defaultForClasses": [],
           "defaultForGroups": [],
-          "note": "PAC VALLEY's Caravans park south of 28L (ZOA senior staff via the user, 2026-09-16)",
+          "note": "PAC VALLEY's Caravans park south of 28L (ZOA senior staff)",
           "onRequestFor": [],
           "runway": "28L"
         },
@@ -83593,7 +83593,7 @@
             "T"
           ],
           "defaultForGroups": [],
-          "note": "props and turboprops depart 28R because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart 28L/28R. A DH8D is class T but departs with the jets: the runway 30 row defaults the jets_and_dh8d group, which is answered before a class default",
+          "note": "props and turboprops depart 28R because they park north of it (ZOA senior staff); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart 28L/28R. A DH8D is class T but departs with the jets: the runway 30 row defaults the jets_and_dh8d group, which is answered before a class default",
           "onRequestFor": [],
           "runway": "28R"
         },
@@ -83673,7 +83673,7 @@
             "T"
           ],
           "defaultForGroups": [],
-          "note": "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s",
+          "note": "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s",
           "onRequestFor": [],
           "runway": "10L"
         },
@@ -83698,7 +83698,7 @@
           ],
           "defaultForClasses": [],
           "defaultForGroups": [],
-          "note": "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)",
+          "note": "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff)",
           "onRequestFor": [],
           "runway": "10R"
         },
@@ -83765,7 +83765,7 @@
             "T"
           ],
           "defaultForGroups": [],
-          "note": "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff via the user, 2026-09-16); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s",
+          "note": "props and turboprops depart 10L, the same pavement as the 28R they take in west flow, because they park north of it (ZOA senior staff); SOP 3-4 a asks turbojets and turboprops over 17,000 lbs not to depart the 28s, whose east-flow reciprocals are the 10s",
           "onRequestFor": [],
           "runway": "10L"
         },
@@ -83790,7 +83790,7 @@
           ],
           "defaultForClasses": [],
           "defaultForGroups": [],
-          "note": "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff via the user, 2026-09-16)",
+          "note": "PAC VALLEY's Caravans park south of 10R, the same pavement as the 28L they take in west flow (ZOA senior staff)",
           "onRequestFor": [],
           "runway": "10R"
         },
@@ -84012,7 +84012,7 @@
       "hasCrossingRestrictions": true,
       "id": "HUSSH3",
       "kind": "rnav_pilot_nav",
-      "note": "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush confirmed by the user: HUSSH is read as the word 'hush'.",
+      "note": "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush confirmed by the instructor: HUSSH is read as the word 'hush'.",
       "restrictions": [
         {
           "altitudeDescription": "at_or_above",
@@ -84092,7 +84092,7 @@
       "hasCrossingRestrictions": true,
       "id": "KATFH4",
       "kind": "rnav_pilot_nav",
-      "note": "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish confirmed by the user: KATFH is read as the word 'catfish'.",
+      "note": "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish confirmed by the instructor: KATFH is read as the word 'catfish'.",
       "restrictions": [
         {
           "altitudeDescription": "at_or_below",
@@ -84499,7 +84499,7 @@
       "hasCrossingRestrictions": false,
       "id": "SUNNE1",
       "kind": "conventional_pilot_nav",
-      "note": "Conventional SID off 28L/28R/30 with no transitions and a published top altitude of 5,000, which is the altitude Appendix B d i pairs with it. NCT authorises it when traffic levels allow, and the current ZOA notice has it off. Spoken name Sunne One confirmed by the user.",
+      "note": "Conventional SID off 28L/28R/30 with no transitions and a published top altitude of 5,000, which is the altitude Appendix B d i pairs with it. NCT authorises it when traffic levels allow, and the current ZOA notice has it off. Spoken name Sunne One confirmed by the instructor.",
       "restrictions": [],
       "rnavRequired": false,
       "routePhrasing": "transition",

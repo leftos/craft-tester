@@ -7,7 +7,7 @@
 # Shared by every airport: an airway belongs to the route structure, not to one field, so an airport
 # inherits every row rather than restating them. A row is a fact about the airway itself and nothing
 # cites it, so only the identifier and the direction reach the airport document.
-source: { title: "Pacific oceanic route structure, per the user's Common Fixes notes and the enroute charts", dated: 2026-09-16 }
+source: { title: "Pacific oceanic route structure, per the instructor's Common Fixes notes and the enroute charts", dated: 2026-09-16 }
 airways:
   - { id: R463, one_way: true, note: "The oceanic route the Common Fixes sheet leaves ALCOA on, flown westbound only" }
   - { id: R464, one_way: true, note: "The oceanic route the Common Fixes sheet leaves BEBOP on, flown westbound only" }

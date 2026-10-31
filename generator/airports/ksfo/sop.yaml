@@ -66,9 +66,9 @@ runway_configs:
     departure_runways:
       - { runway: 01L, classes: [P, T, J] }
       - { runway: 01R, classes: [P, T, J] }
-      - { runway: 28L, classes: [J], on_request_for: [cargo, heavy, oceanic], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)" }
-      - { runway: 28R, classes: [J], on_request_for: [cargo, heavy, oceanic], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (user review 2026-09-15)" }
-      - { runway: 28R, classes: [P, T], default_for_classes: [P, T], note: "GA up to light jets depart 28R at intersection Echo, a short taxi from the north ramp with enough runway remaining (user review 2026-09-15, N483KA); jets stay on the 01s until a GA flag exists on the fleet" }
+      - { runway: 28L, classes: [J], on_request_for: [cargo, heavy, oceanic], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (instructor ruling)" }
+      - { runway: 28R, classes: [J], on_request_for: [cargo, heavy, oceanic], note: "oceanic, Far East and cargo flights for performance (SOP 2-1 e); a cargo or heavy flight filing a 28-only SID is treated as requesting the 28s (instructor ruling)" }
+      - { runway: 28R, classes: [P, T], default_for_classes: [P, T], note: "GA up to light jets depart 28R at intersection Echo, a short taxi from the north ramp with enough runway remaining (instructor ruling); jets stay on the 01s until a GA flag exists on the fleet" }
   - id: "28 RT"
     source: "SFO ATCT SOP 1-7"
     name: Landing and departing runways 28, right turn (TRUKN DP in use)
@@ -219,7 +219,7 @@ assignment_rules:
     when: { noise_window: night, rnav: false }
 
   - id: SFOW-N-TRUKN-01
-    source: "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R); user review 2026-09-15: SOP table wins over the CBT"
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound); S1-SFO-0 CBT (TRUKN#: RWY 28R/L, RWY 1R); instructor ruling: SOP table wins over the CBT"
     text: "Northbound, runways 01/28, P/T/J -> TRUKN# (Richmond); off the 01s TRUKN departs 1R (right turn)"
     plan: SFOW
     direction: north
@@ -229,7 +229,7 @@ assignment_rules:
     sector: richmond
     when: { rnav: true }
   - id: SFOW-N-TRUKN-28
-    source: "SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT; user review 2026-09-15: SOP table wins over the CBT"
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound) and 1-7 (28 RT); S1-SFO-0 CBT; instructor ruling: SOP table wins over the CBT"
     text: "Northbound, runways 28, P/T/J -> TRUKN# when the TRUKN DP is in use (28 RT)"
     plan: SFOW
     direction: north
@@ -239,7 +239,7 @@ assignment_rules:
     sector: richmond
     when: { rnav: true, configs: ["28 RT"] }
   - id: SFOW-N-SNTNA-28
-    source: "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO); user review 2026-09-15: SOP table wins over the CBT"
+    source: "SFO ATCT SOP 2-2 a (SFOW Northbound, footnote); S1-SFO-0 CBT (SNTNA#: issue if requested or in 28SO); instructor ruling: SOP table wins over the CBT"
     text: "Northbound, runways 28, P/T/J -> SNTNA#; SNTNA# shall be used instead of TRUKN# off runways 28 while in 28/01 configuration, when the TRUKN DP is not in use (28 SO), or on pilot request"
     plan: SFOW
     direction: north
@@ -402,7 +402,7 @@ assignment_rules:
 # except maintain". Ordered; first match wins.
 altitude_rules:
   - id: SFOW-28-3000
-    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000); user review 2026-09-15: the table applies only when no top altitude is published"
+    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# maintain 3000; MOLEN#/WESLA# and the SEGUL# predecessor climb via SID except maintain 3000); instructor ruling: the table applies only when no top altitude is published"
     text: "SFOW: GAPP#, MOLEN#, SEGUL#, SFO#, WESLA#, runway 28, P/T/J -> 3,000 or CVS x 3,000, when no top altitude is published"
     plan: SFOW
     runway_families: ["28"]
@@ -412,7 +412,7 @@ altitude_rules:
     when_top_altitude_published: climb_via
     expect_after_minutes: 10
   - id: SFOW-PT-5000
-    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000); user review 2026-09-15: the table applies only when no top altitude is published"
+    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: props/turboprops 5000); instructor ruling: the table applies only when no top altitude is published"
     text: "SFOW: all others, runways 01/28, P/T -> 5,000 or CVS x 5,000, when no top altitude is published"
     plan: SFOW
     runway_families: ["01", "28"]
@@ -421,7 +421,7 @@ altitude_rules:
     when_top_altitude_published: climb_via
     expect_after_minutes: 10
   - id: SFOW-J-10000
-    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000); user review 2026-09-15: the table applies only when no top altitude is published"
+    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c ii; S1-SFO-0 CBT (GAPP#/SFO# RWY 1: jets 10000); instructor ruling: the table applies only when no top altitude is published"
     text: "SFOW: all others, runways 01/28, J -> 10,000 or CVS x 10,000, when no top altitude is published"
     plan: SFOW
     runway_families: ["01", "28"]
@@ -430,7 +430,7 @@ altitude_rules:
     when_top_altitude_published: climb_via
     expect_after_minutes: 10
   - id: SFOE-PT-5000
-    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000); user review 2026-09-15: the table applies only when no top altitude is published"
+    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: PT 5000); instructor ruling: the table applies only when no top altitude is published"
     text: "SFOE: all, runways 10/19, P/T -> 5,000 or CVS x 5,000, when no top altitude is published"
     plan: SFOE
     runway_families: ["10", "19"]
@@ -439,7 +439,7 @@ altitude_rules:
     when_top_altitude_published: climb_via
     expect_after_minutes: 10
   - id: SFOE-J-15000
-    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000); user review 2026-09-15: the table applies only when no top altitude is published"
+    source: "SFO ATCT SOP 2-2 c (1); SFO ATCT SOP 2-2 c iii; S1-SFO-0 CBT (GAPP#/MOLEN# RWY 10s/19s: jets 15000); instructor ruling: the table applies only when no top altitude is published"
     text: "SFOE: all, runways 10/19, J -> 15,000 or CVS x 15,000, when no top altitude is published"
     plan: SFOE
     runway_families: ["10", "19"]
@@ -453,7 +453,7 @@ altitude_rules:
 # the YYUNG transition). Scenarios may present a notice as active or inactive so both states get drilled.
 notices:
   - id: SFO-SEGUL-OFF
-    source: ZOA operational notice relayed by the user, 2026-09-15
+    source: ZOA operational notice
     dated: 2026-09-15
     text: "SFO/OAK SEGUL/COAST SID: OFF. Issue SSTIK#/WESLA#/CNDEL# YYUNG. CFG: SFOW"
     plan: SFOW
@@ -474,19 +474,19 @@ phraseology:
 # `parking_runway_families` needs.
 phraseology_rules:
   - id: RWY-CLASS-DEFAULT
-    source: "SFO ATCT SOP 1-7; user review 2026-09-15 (N483KA)"
+    source: "SFO ATCT SOP 1-7; instructor ruling"
     text: "The configuration departs this aircraft class from this runway by default, before the direction-of-turn split: in 28/01, props and turboprops depart 28R at intersection Echo, a short taxi from the north ramp"
   - id: RWY-ON-REQUEST
-    source: "SFO ATCT SOP 2-1 e; user review 2026-09-15 (FDX1563, UPS2896)"
+    source: "SFO ATCT SOP 2-1 e; instructor ruling"
     text: "Oceanic, Far East and cargo flights usually need 28L/R for performance; when 01 is the advertised departure runway they may be issued 28L/R and the matching SID. A strip remark requesting the 28s, or a cargo or heavy flight filing a 28-only SID, is honored"
   - id: RWY-DIRECTION
     source: "S1-SFO-0 CBT, Runway Assignment: 28/01 1L or 1R?"
     text: "The departure runway follows the first turn: right turn (northbound SIDs) 1R, left turn (southbound SIDs) 1L, which allows simultaneous parallel departures; the same table splits the SFOE families. On the 28s the parallel follows the parking spot instead (RWY-PARKING)"
   - id: RWY-PARKING
-    source: "S1-SFO-0 CBT, Runway Assignment; instructor feedback and user ruling 2026-09-28"
+    source: "S1-SFO-0 CBT, Runway Assignment; instructor ruling"
     text: "On the 28s the parallel follows where the aircraft is parked: 28L from south of 28L, 28R from north of 28R. The strip does not say where the flight is parked, so either parallel is right; 28L is the one the trainer reads"
   - id: RWY-TEC
-    source: "user ruling 2026-09-18 (a TEC route overrides the SOP; the draw moves the flight to a runway its TEC departure is in use from)"
+    source: "instructor ruling (a TEC route overrides the SOP)"
     text: "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
   - id: RWY-FIRST
     source: "SFO ATCT SOP 1-7"

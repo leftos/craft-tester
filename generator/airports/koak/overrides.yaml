@@ -16,11 +16,11 @@ sids:
   HUSSH THREE (RNAV):
     cifp_id: HUSSH3
     spoken: Hush Three
-    note: "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush confirmed by the user: HUSSH is read as the word 'hush'."
+    note: "RNAV pilot-nav SID off runway 30 only, with a published top altitude of 19,000; Appendix B d i requires it for J/DH8D between 0100L and 0500L. Spoken name Hush confirmed by the instructor: HUSSH is read as the word 'hush'."
   KATFH FOUR (RNAV):
     cifp_id: KATFH4
     spoken: Katfish Four
-    note: "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish confirmed by the user: KATFH is read as the word 'catfish'."
+    note: "RNAV pilot-nav SID off 10L/10R/12, the SFOE southbound DP. Spoken name Katfish confirmed by the instructor: KATFH is read as the word 'catfish'."
   NIMITZ SEVEN:
     cifp_id: NIMI7
     spoken: Nimitz Seven
@@ -76,7 +76,7 @@ sids:
   SUNNE ONE:
     cifp_id: SUNNE1
     spoken: Sunne One
-    note: "Conventional SID off 28L/28R/30 with no transitions and a published top altitude of 5,000, which is the altitude Appendix B d i pairs with it. NCT authorises it when traffic levels allow, and the current ZOA notice has it off. Spoken name Sunne One confirmed by the user."
+    note: "Conventional SID off 28L/28R/30 with no transitions and a published top altitude of 5,000, which is the altitude Appendix B d i pairs with it. NCT authorises it when traffic levels allow, and the current ZOA notice has it off. Spoken name Sunne One confirmed by the instructor."
 
 # Corrections to the spoken names the build reads out of the CIFP navaid records. None are needed
 # yet: every fix the OAK routes, gates and transitions name is spelled correctly in the CIFP.
