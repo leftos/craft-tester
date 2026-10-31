@@ -19,7 +19,7 @@ pnpm -C web test -t "climb via"               # tests whose name matches
 pnpm -C web schema:export                     # regenerate data/schema/*.json from web/src/data/schema.ts
 pnpm -C web propose <fixture-id> | --pending  # engine's clearance for a fixture, with citations
 pnpm -C web exec playwright install chromium  # once per machine, for the browser check
-pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:3=(no prefix)" "click:Filters"]
+pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:3=just the fix" "click:Filters"]
 pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK,i=text phone|desktop ["fill:0=CLEARED TO KLVK" "press:Enter"]
 
 # generator (uv, Python 3.13)
@@ -90,12 +90,9 @@ table); the HTML version is at https://www.faa.gov/air_traffic/publications/atpu
   docblock on line 1 — `web/src/ui/app.test.ts` and the `*.dom.test.ts` files today. There is no
   global test environment, so `strip.ts`'s `typeof document === 'undefined'` fallbacks stay exercised by the
   other files.
-- **Fixtures.** `fixtures/<icao>/synthetic/` is hand-written; `fixtures/<icao>/worksheets/` is written by
-  `import-worksheets`. `web/src/rules/fixtures.test.ts` runs every fixture and prints what the engine makes
-  of each `pending` one. It is also the **only** guard on amendment reason wording — the unit tests assert
-  citations and boxes, not prose — so run `pnpm -C web test rules/fixtures` after any change to a reason
-  string, before the full suite. A settled fixture's reason is text the user confirmed; if one moves, that
-  is a ruling to take to them, not an expectation to update.
+- **Fixtures.** `fixtures/<icao>/synthetic/` is hand-written; `fixtures/<icao>/worksheets/` is written by `import-worksheets`. `web/src/rules/fixtures.test.ts` runs every fixture and prints what the engine makes of each `pending` one.
+
+  It is the main guard on amendment reason wording, and a few unit tests (`web/src/rules/amend/*.test.ts`, `web/src/scenario/amend.test.ts`) assert reason prose too, so run `pnpm -C web test rules/fixtures rules/amend scenario/amend` after any change to a reason string, before the full suite. A settled fixture's reason is text the user confirmed; if one moves, that is a ruling to take to them, not an expectation to update.
 - **Data depends on fixtures.** `craft-gen build` reads navaid names for every route filed in
   `fixtures/<icao>/**`, so re-run the build after an import.
 - **Graded elements** are `R.route`, `A.phrase`, `A.expect`, `F`, and `RWY`, plus the three strip boxes and the procedure pick (`R.sid`) in amendment mode. In clearance mode the clearance limit and the squawk are resolved and spoken but not graded, and so is a SID: a clean clearance is read exactly as filed, so clearance mode draws only plans whose route already carries the assigned SID (or no procedure token at all, for a flight the SOP sends off on a heading). Where the SOP sends the flight off on a heading with no DP, the dropdowns have the student pick the procedure and grade it as `R.sid` (`picksProcedure`, `ui/state.ts`).
