@@ -71,17 +71,26 @@ export async function loadAirportData(icao: string): Promise<AirportData> {
   return parseAirport((await loader()).default);
 }
 
-/** Renders a thrown value as the line the unresolved panel shows. */
+/** Renders a thrown value as the reason a draw that threw could not be cleared. */
 function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/** Reads the elements an engine result answered none of as the lines the unresolved panel shows. */
+/**
+ * The view of a strip that earned no clearance: its reasons, which the page logs once when the view
+ * is built and never prints.
+ *
+ * @param reasons What kept the strip from being cleared.
+ * @returns The unresolved view.
+ */
+function unresolvedOf(reasons: string[]): ScenarioView {
+  console.error('No clearance for the drawn strip:', reasons.join('; '));
+  return { kind: 'unresolved', reasons };
+}
+
+/** Reads the elements an engine result answered none of as the reasons the view carries. */
 function unresolvedView(unresolved: readonly Unresolved[]): ScenarioView {
-  return {
-    kind: 'unresolved',
-    reasons: unresolved.map((item) => `${item.element}: ${item.reason}`),
-  };
+  return unresolvedOf(unresolved.map((item) => `${item.element}: ${item.reason}`));
 }
 
 /**
@@ -219,7 +228,7 @@ function buildClearanceView(
   try {
     generated = generateScenario(createRng(seed), airport, filter);
   } catch (error) {
-    return { kind: 'unresolved', reasons: [reasonOf(error)] };
+    return unresolvedOf([reasonOf(error)]);
   }
   return clearanceViewOf(generated, airport);
 }
@@ -259,7 +268,7 @@ function buildAmendmentView(
   try {
     drawn = generateAmendmentScenario(createRng(seed), airport, filter);
   } catch (error) {
-    return { kind: 'unresolved', reasons: [reasonOf(error)] };
+    return unresolvedOf([reasonOf(error)]);
   }
   return amendmentViewOf(drawn, airport);
 }

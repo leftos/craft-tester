@@ -378,14 +378,14 @@ export function recordOf(state: AppState, set: SetState): SetRecord {
 }
 
 /**
- * One row of the summary: the strip's number, its score line (or "Unanswered", or "Could not be
- * drawn" for a strip no seed resolved), whether it was answered, and its link.
+ * One row of the summary: the strip's number, its score line (or "Unanswered", or "Strip
+ * unavailable" for a strip no seed resolved), whether it was answered, and its link.
  */
 export type SummaryRow = { number: number; line: string; answered: boolean; hash: string };
 
 /** What a summary row says of its strip. */
 function summaryLine(resolved: boolean, result: StripResult): string {
-  if (!resolved) return 'Could not be drawn';
+  if (!resolved) return 'Strip unavailable';
   return result.grades === undefined ? 'Unanswered' : sessionScoreLine(result.grades);
 }
 
@@ -439,7 +439,7 @@ export function setSummary(
  * @param airport The airport the set ran at.
  * @param listing The set and its stored record.
  * @param load Reads the attempt saved at one seed under the set's settings.
- * @returns The line, e.g. `3 of 10 fully correct · 72%`.
+ * @returns The line, e.g. `3 of 10 strips fully correct · 72%`.
  */
 export function storedSetScore(
   airport: AirportData,
@@ -461,7 +461,7 @@ export function storedSetScore(
     drawn.push(stripResult(airport, seed, plain, attempt));
   }
   const { fullyCorrect, percent } = setTotals(drawn);
-  return `${fullyCorrect} of ${drawn.length} fully correct · ${percent}%`;
+  return `${fullyCorrect} of ${drawn.length} strips fully correct · ${percent}%`;
 }
 
 /** The filter a set record stores, as the store writes it. */

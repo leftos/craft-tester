@@ -11,25 +11,25 @@ export const CLEARANCE_TOUR: readonly TourStep[] = [
   {
     anchor: 'strip',
     title: 'The flight strip',
-    body: 'This is the plan clearance delivery reads from: Southwest 1740, a Boeing 737 with RNAV, to Los Angeles, filed on the Candle departure at FL350.',
+    body: 'This is the flight plan you clear: Southwest 1740, a Boeing 737 with RNAV, filed to Los Angeles on the Candle departure at FL350.',
     advance: 'next',
   },
   {
     anchor: 'atis',
     title: 'The ATIS',
-    body: "The ATIS gives Oakland's runway configuration. In SFOW the jets depart runway 30.",
+    body: "The ATIS shows Oakland's runway configuration, SFOW. In SFOW, jets depart runway 30.",
     advance: 'next',
   },
   {
     anchor: 'procedure',
     title: 'Clearance limit and departure',
-    body: 'The departure is filled in for you: the Candle, the SID the SOP assigns this route from runway 30. The clearance limit above it, Los Angeles, is too.',
+    body: 'The departure is already filled in: the Candle, which the SOP assigns this route from runway 30. So is the clearance limit, Los Angeles.',
     advance: 'next',
   },
   {
     anchor: 'routeTemplate',
     title: 'Route',
-    body: "The first fix after the SID, SUSEY, is one of the Candle's transitions, so the route is read as a transition, then as filed. Pick the transition.",
+    body: "SUSEY, the first fix after the SID, is one of the Candle's transitions, so the route is the transition, then as filed. Pick transition.",
     advance: { pick: 'routeTemplate', value: 'transition' },
   },
   {
@@ -41,25 +41,25 @@ export const CLEARANCE_TOUR: readonly TourStep[] = [
   {
     anchor: 'altitudePhrase',
     title: 'Altitude',
-    body: 'The Candle departure publishes crossing restrictions and a top altitude, so the flight is told to climb via SID.',
+    body: 'The Candle departure publishes crossing restrictions and a top altitude, so tell the flight to climb via SID. Pick it.',
     advance: { pick: 'altitudePhrase', value: 'climb_via' },
   },
   {
     anchor: 'expect',
     title: 'Expect clause',
-    body: 'The Candle chart publishes its own expect-altitude note, so no expect clause is needed.',
+    body: 'The Candle chart publishes its own expect-altitude note, so the clearance needs no expect clause. Pick no expect clause.',
     advance: { pick: 'expect', value: 'none' },
   },
   {
     anchor: 'frequency',
     title: 'Departure frequency',
-    body: 'Southbound jets off the Candle talk to NorCal on the Sutro frequency, 135.1.',
+    body: 'Southbound jets off the Candle talk to NorCal on the Sutro frequency. Pick 135.1.',
     advance: { pick: 'frequency', value: '135.1' },
   },
   {
     anchor: 'runway',
     title: 'Expect runway',
-    body: 'Tell the pilot the runway to expect: 30, from the ATIS.',
+    body: 'Pick the runway to expect, from the ATIS: 30.',
     advance: { pick: 'runway', value: '30' },
   },
   {
@@ -88,19 +88,19 @@ export const AMEND_TOUR: readonly TourStep[] = [
   {
     anchor: 'box-type',
     title: 'Type and equipment',
-    body: 'An RNAV suffix on a jet filing a Q route: nothing to fix. Mark it correct as filed.',
+    body: 'The RNAV suffix fits a jet filing a Q route, so there is nothing to fix. Choose "correct as filed".',
     advance: { box: 'type', answer: { kind: 'as_filed' } },
   },
   {
     anchor: 'box-altitude',
     title: 'Altitude',
-    body: "Las Vegas is east of Oakland, and FL350 is odd, as an eastbound flight's level must be. Correct as filed.",
+    body: 'Las Vegas is east of Oakland, and eastbound flights fly odd flight levels. FL350 is odd, so choose "correct as filed".',
     advance: { box: 'altitude', answer: { kind: 'as_filed' } },
   },
   {
     anchor: 'box-route',
     title: 'Route',
-    body: 'Q174 to FLCHR is one of the Las Vegas routings in the letter of agreement. Correct as filed.',
+    body: 'Q174 to FLCHR is one of the Las Vegas routings in the letter of agreement, so choose "correct as filed".',
     advance: { box: 'route', answer: { kind: 'as_filed' } },
   },
   {
@@ -112,7 +112,7 @@ export const AMEND_TOUR: readonly TourStep[] = [
   {
     anchor: 'procedure',
     title: 'Now clear it',
-    body: 'With the plan checked, you now clear it. In Amend mode you also pick the departure, since an amendment can change it; here nothing changed, so the clearance reads the plan as filed.',
+    body: 'The flight plan is checked, so now clear it. In Amend mode you also pick the departure, because an amendment can change it. Nothing changed here, so clear it as filed.',
     advance: 'next',
     continueLabel: 'Next: test yourself',
   },
@@ -123,7 +123,7 @@ export const HOME_TOUR: readonly TourStep[] = [
   {
     anchor: 'home-test',
     title: 'Test yourself',
-    body: 'When you are ready, a test draws several strips, timed if you choose, and shows your score at the end. Start one from here.',
+    body: 'When you are ready, a test gives you several strips, timed if you like, and shows your score at the end. Start one here.',
     advance: 'next',
   },
 ];

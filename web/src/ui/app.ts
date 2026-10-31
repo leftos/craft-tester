@@ -294,7 +294,7 @@ function testControl(actions: Actions): HTMLElement {
 function renderToolbar(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
   if (state.set !== undefined) return renderTestBar(state.set, actions, Date.now());
   const bar = el('header', 'toolbar');
-  bar.setAttribute('aria-label', 'Session');
+  bar.setAttribute('aria-label', 'Trainer controls');
   const secondRow = el('div', 'toolbar-row2');
   secondRow.append(
     answerControl(state, actions),
@@ -318,13 +318,12 @@ function renderToolbar(state: AppState, index: AirportsIndex, actions: Actions):
 
 /**
  * The panel a seed that the engine cannot clear shows instead of the form, with New strip, or Skip
- * on a strip of a test set.
+ * on a strip of a test set. The reasons stay in the view, which is where they are logged, so a
+ * student reads only that the strip could not be loaded.
  */
-function renderUnresolved(reasons: readonly string[], next: HTMLButtonElement): HTMLElement {
+function renderUnresolved(next: HTMLButtonElement): HTMLElement {
   const panel = el('section', 'panel unresolved');
-  const list = el('ul');
-  for (const reason of reasons) list.append(el('li', '', reason));
-  panel.append(el('h2', '', 'No clearance for this scenario'), list, next);
+  panel.append(el('h2', '', "Couldn't load a strip"), el('p', '', 'Try another strip.'), next);
   return panel;
 }
 
@@ -375,7 +374,7 @@ function renderPanels(
     return {
       rail: [],
       pinned: [],
-      work: [renderUnresolved(state.view.reasons, unresolvedNext(state, actions))],
+      work: [renderUnresolved(unresolvedNext(state, actions))],
       sync: undefined,
     };
   }
@@ -1444,7 +1443,7 @@ async function openContinueTest(
  * @param listing The set and its stored record.
  * @param airports The loaded airports, by ICAO code.
  * @param solved The store the set's answers were saved in.
- * @returns The line, e.g. `3 of 10 fully correct · 72%`.
+ * @returns The line, e.g. `3 of 10 strips fully correct · 72%`.
  */
 function scoreOf(
   listing: SetListing,
@@ -1486,7 +1485,7 @@ async function copyLink(text: string): Promise<void> {
   }
 }
 
-/** Puts a home page on screen, keeping the focus and an open More options as they were. */
+/** Puts a home page on screen, keeping the focus and an open Filters as they were. */
 function redrawHome(root: Element, page: HTMLElement): void {
   const focused = focusKeyOf(root);
   const moreOpen = root.querySelector<HTMLDetailsElement>('details.home-more')?.open === true;
@@ -1652,11 +1651,6 @@ async function openRoute(target: Active, hash: string): Promise<void> {
   }
 }
 
-/** Renders a thrown value as the line the page shows when it cannot start. */
-function reasonOf(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
-
 /**
  * Opens the route the page loaded on. Its failure is the trainer's failure to start, which the
  * caller writes into the page, unless a newer route has taken the page over since: then it is
@@ -1688,7 +1682,8 @@ function onHashChange(): void {
     if (!isCurrent({ target, generation })) return;
     target.dispose();
     target.dispose = NOTHING_TO_DISPOSE;
-    target.root.textContent = `The trainer could not start: ${reasonOf(error)}`;
+    target.root.textContent =
+      "The trainer couldn't load. Reload the page; if it keeps happening, please report it.";
   });
 }
 

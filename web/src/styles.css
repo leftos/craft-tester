@@ -1240,11 +1240,6 @@ a.button.secondary:hover,
   display: none;
 }
 
-.unresolved ul {
-  margin: 0 0 0.8rem;
-  padding-left: 1.1rem;
-}
-
 /* The phone toolbar: two rows, the strip's controls and New strip above, how to answer below. */
 @media (max-width: 899.98px) {
   :root {

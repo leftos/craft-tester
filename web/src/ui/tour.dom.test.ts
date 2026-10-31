@@ -182,7 +182,7 @@ describe('the coach-mark tour', () => {
 
   it('skips on Skip, and on Escape', () => {
     const skipped = started(NEXTS);
-    press('Skip');
+    press('Skip tour');
     expect(skipped.calls.ends).toStrictEqual(['skip']);
     expect(tourNodes()).toBe(0);
 
@@ -272,7 +272,7 @@ describe('the coach-mark tour', () => {
     expect(document.querySelectorAll('.tour-shield')).toHaveLength(1);
     expect(document.querySelector('.tour-spot')).toBeNull();
     expect(card().classList.contains('centred')).toBe(true);
-    expect(cardButtons()).toContain('Skip');
+    expect(cardButtons()).toContain('Skip tour');
 
     if (strip !== null) document.querySelector('main')?.prepend(strip);
     tour.refresh();
@@ -311,7 +311,7 @@ describe('the coach-mark tour', () => {
     before?.focus();
     started(NEXTS);
     expect(document.activeElement).not.toBe(before);
-    press('Skip');
+    press('Skip tour');
     expect(document.activeElement).toBe(before);
   });
 

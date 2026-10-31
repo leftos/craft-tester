@@ -75,14 +75,14 @@ export function renderTestStart(onStart: (n: number, minutes: number) => void): 
     },
   );
   const limits = segmentedControl(
-    { label: 'Time', options: MINUTE_OPTIONS, value: String(minutes) },
+    { label: 'Time limit', options: MINUTE_OPTIONS, value: String(minutes) },
     (raw) => {
       minutes = Number(raw);
     },
   );
   popover.append(
     labelled('Strips', sizes),
-    labelled('Time', limits),
+    labelled('Time limit', limits),
     button('Start', 'primary', () => {
       details.open = false;
       onStart(n, minutes);
@@ -197,7 +197,7 @@ export function renderSetSummary(summary: SetSummary, onNewStrip: () => void): H
     el(
       'p',
       'score',
-      `${fullyCorrect} of ${summary.n} strips fully correct · ${percent}% of elements`,
+      `${fullyCorrect} of ${summary.n} strips fully correct · ${percent}% of clearance parts correct`,
     ),
     el('p', 'muted', `Time used ${summary.timeUsed}`),
     list,

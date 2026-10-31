@@ -7,6 +7,7 @@ if (root === null) {
 }
 
 startApp(root).catch((error: unknown) => {
-  const reason = error instanceof Error ? error.message : String(error);
-  root.textContent = `The trainer could not start: ${reason}`;
+  console.error('The trainer could not start.', error);
+  root.textContent =
+    "The trainer couldn't load. Reload the page; if it keeps happening, please report it.";
 });

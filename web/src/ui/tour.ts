@@ -314,8 +314,8 @@ function forwardNodes(tour: Tour, step: TourStep): HTMLElement[] {
 }
 
 /**
- * Writes the card's buttons: Back where it applies, Skip, and Next, Finish with the button on to the
- * next part, or the wait line.
+ * Writes the card's buttons: Back where it applies, Skip tour, and Next, Finish with the button
+ * on to the next part, or the wait line.
  */
 function fillActions(tour: Tour, step: TourStep): void {
   const back = canGoBack(tour)
@@ -323,7 +323,7 @@ function fillActions(tour: Tour, step: TourStep): void {
     : [];
   tour.acts.replaceChildren(
     ...back,
-    button('Skip', 'tour-skip', () => end(tour, 'skip')),
+    button('Skip tour', 'tour-skip', () => end(tour, 'skip')),
     el('span', 'tour-spacer'),
     ...forwardNodes(tour, step),
   );

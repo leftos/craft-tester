@@ -363,10 +363,7 @@ describe('the summary totals', () => {
     const state = newSession(airport, 1, undefined, { ...SETTINGS, filter });
     const set = endedSet(aSet(2, 20), START + MINUTE);
     const summary = setSummary(state, set, () => undefined, START + MINUTE);
-    expect(summary.rows.map((row) => row.line)).toEqual([
-      'Could not be drawn',
-      'Could not be drawn',
-    ]);
+    expect(summary.rows.map((row) => row.line)).toEqual(['Strip unavailable', 'Strip unavailable']);
     expect(summary.n).toBe(0);
     expect(summary.totals).toEqual({ fullyCorrect: 0, percent: 0 });
   });
@@ -428,7 +425,7 @@ describe('the score of a stored set', () => {
     const drawn = [0, 1, 2].filter((index) => setStripSeed(airport, 42, index, typed).resolved);
     const listing = { setSeed: 42, record: stored([]) };
     expect(storedSetScore(airport, listing, () => undefined)).toBe(
-      `0 of ${drawn.length} fully correct · 0%`,
+      `0 of ${drawn.length} strips fully correct · 0%`,
     );
   });
 
@@ -447,6 +444,6 @@ describe('the score of a stored set', () => {
     const set = endedSet(aSet(3, 20, { answered: [0] }), START + MINUTE);
     const { totals, n } = setSummary(state, set, load, START + MINUTE);
     expect(totals.percent).toBeGreaterThan(0);
-    expect(score).toBe(`${totals.fullyCorrect} of ${n} fully correct · ${totals.percent}%`);
+    expect(score).toBe(`${totals.fullyCorrect} of ${n} strips fully correct · ${totals.percent}%`);
   });
 });

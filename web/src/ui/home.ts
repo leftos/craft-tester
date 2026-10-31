@@ -66,7 +66,7 @@ const LEAD =
 
 /** The two halves of the trainer, as home's cards offer them. */
 const MODE_CARDS: readonly (CardOption & { value: HomeChoices['mode'] })[] = [
-  { value: 'clearance', title: 'Clearance', detail: 'Read a plan that is already right' },
+  { value: 'clearance', title: 'Clearance', detail: 'Clear a flight plan that is already right' },
   { value: 'amendment', title: 'Amend', detail: 'Fix the strip, then clear it' },
 ];
 
@@ -134,17 +134,17 @@ function formatRow(props: HomeProps): HTMLElement {
     },
   );
   const time = segmentedControl(
-    { label: 'Time', options: MINUTE_OPTIONS, value: String(choices.minutes) },
+    { label: 'Time limit', options: MINUTE_OPTIONS, value: String(choices.minutes) },
     (raw) => {
       onChoices({ ...choices, minutes: Number(raw) });
     },
   );
-  sub.append(el('span', '', 'Strips'), strips, el('span', '', 'Time'), time);
+  sub.append(el('span', '', 'Strips'), strips, el('span', '', 'Time limit'), time);
   cell.append(sub);
   return cell;
 }
 
-/** Answer by, with More options beside it holding the time and configuration filters. */
+/** Answer by, with Filters beside it holding the time of day and runway configuration filters. */
 function answerRow(props: HomeProps): HTMLElement {
   const cell = el('div', 'home-answer');
   const answer = segmentedControl(
@@ -156,7 +156,7 @@ function answerRow(props: HomeProps): HTMLElement {
   const more = el('details', 'home-more');
   const filters = el('div', 'home-filters');
   filters.append(...filterControls(props.filter, props.airport, props.onFilter));
-  more.append(el('summary', '', 'More options'), filters);
+  more.append(el('summary', '', 'Filters'), filters);
   cell.append(answer, more);
   return cell;
 }
@@ -245,7 +245,7 @@ function tourOffer(props: HomeProps): HTMLElement {
     el(
       'span',
       '',
-      'The tour walks one clearance and one amendment on the real trainer, a step at a time.',
+      'A guided tour: you give one clearance and amend one flight plan, step by step.',
     ),
     take,
     button('Not now', 'secondary', () => {
@@ -326,7 +326,7 @@ function unfinishedStatus(listing: SetListing, now: number): string {
 /** The day a finished set ended, or started where it never ended, and its score where there is one. */
 function finishedStatus(listing: SetListing, score: string | undefined): string {
   const { endedAt, startedAt } = listing.record;
-  const date = new Date(endedAt ?? startedAt).toLocaleDateString('en-GB', {
+  const date = new Date(endedAt ?? startedAt).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'short',
   });

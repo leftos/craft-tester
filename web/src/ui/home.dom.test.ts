@@ -86,7 +86,7 @@ describe('renderHome', () => {
   it('offers no strips or time for practice, and links Start to practice', () => {
     const page = renderHome(props({ choices: { ...CHOICES, format: 'practice' } }));
     expect(page.querySelector('[aria-label="Strips"]')).toBeNull();
-    expect(page.querySelector('[aria-label="Time"]')).toBeNull();
+    expect(page.querySelector('[aria-label="Time limit"]')).toBeNull();
     expect(startLink(page).getAttribute('href')).toBe('#/KOAK/amend/practice');
     expect(startLink(page).textContent).toBe('Start practice');
   });
@@ -94,7 +94,7 @@ describe('renderHome', () => {
   it('offers strips and time for a test', () => {
     const page = renderHome(props());
     expect(page.querySelector('[role="radiogroup"][aria-label="Strips"]')).not.toBeNull();
-    expect(page.querySelector('[role="radiogroup"][aria-label="Time"]')).not.toBeNull();
+    expect(page.querySelector('[role="radiogroup"][aria-label="Time limit"]')).not.toBeNull();
   });
 
   it('links "Take the tour" in its bar to the tutorial', () => {
@@ -230,14 +230,14 @@ describe('homeTestRows', () => {
   it('reads an ended set as its day and score and Results', () => {
     const ended = listing({ ended: true, endedAt: START + 10 * MINUTE });
     const [row] = homeTestRows([ended], START + 60 * MINUTE, () => '91%');
-    expect(row?.status).toBe('8 Oct · 91%');
+    expect(row?.status).toBe('Oct 8 · 91%');
     expect(row?.action).toBe('Results');
   });
 
   it('reads a timed set past its deadline as Results, though it was never ended', () => {
     const [row] = homeTestRows([listing()], START + 21 * MINUTE, () => undefined);
     expect(row?.action).toBe('Results');
-    expect(row?.status).toBe('8 Oct');
+    expect(row?.status).toBe('Oct 8');
   });
 
   it('lists ten rows at most', () => {

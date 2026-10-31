@@ -100,7 +100,7 @@ describe('a test set', () => {
   it('Start opens strip 1 of N with the test bar in place of the toolbar', async () => {
     const root = await startedSet('5', '20 min');
 
-    expect(root.querySelector('header.toolbar[aria-label="Session"]')).toBeNull();
+    expect(root.querySelector('header.toolbar[aria-label="Trainer controls"]')).toBeNull();
     expect(testBar(root).getAttribute('aria-label')).toBe('Test in progress');
     expect(whereOf(root)).toBe('Strip 1 of 5');
     expect(clockOf(root)).toBe('20:00');
@@ -187,7 +187,7 @@ describe('a test set', () => {
 
     expect(root.querySelector('.set-summary h2')?.textContent).toBe('Test results');
     expect(root.querySelector('.set-summary .score')?.textContent).toMatch(
-      /^0 of 10 strips fully correct · 0% of elements$/,
+      /^0 of 10 strips fully correct · 0% of clearance parts correct$/,
     );
     expect(root.querySelector('.set-summary')?.textContent).toContain('Time used 10:00');
     expect(testBar(root).querySelector('.clock')?.textContent).toBe('10:00');
@@ -218,7 +218,7 @@ describe('a test set', () => {
 
     const summary = root.querySelector('.set-summary');
     expect(summary?.querySelector('.score')?.textContent).toMatch(
-      /^[01] of 5 strips fully correct · \d+% of elements$/,
+      /^[01] of 5 strips fully correct · \d+% of clearance parts correct$/,
     );
     expect(summary?.textContent).toContain('Time used 01:30');
     const rows = [...(summary?.querySelectorAll('.set-rows li') ?? [])];

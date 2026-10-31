@@ -305,7 +305,7 @@ describe('the first route', () => {
     await vi.waitFor(() => {
       expect(root.textContent).toContain('SWA1740');
     });
-    expect(root.textContent).not.toContain('could not start');
+    expect(root.textContent).not.toContain("couldn't load");
   });
 
   it('opens the link followed while the first strip is still loading, and keeps its hash', async () => {
@@ -337,6 +337,14 @@ describe('the mounted page', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('says a strip could not be loaded, without the engine reason behind it', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const root = await mountHash('#s=1&a=KOAK&d=KXXX');
+    expect(root.textContent).toContain("Couldn't load a strip");
+    expect(root.textContent).not.toContain('KXXX');
+    expect(root.textContent).not.toContain('route library');
   });
 
   it('keeps the text box the student is typing in', async () => {
@@ -1133,7 +1141,7 @@ describe('routing', () => {
     });
 
     const home = await mountHash('');
-    expect(home.textContent).toContain('0 of 1 fully correct · 13%');
+    expect(home.textContent).toContain('0 of 1 strips fully correct · 13%');
 
     browserSolvedStore().save(
       'KSFO',
@@ -1143,7 +1151,7 @@ describe('routing', () => {
     );
 
     const again = await mountHash('');
-    expect(again.textContent).toContain('1 of 1 fully correct · 100%');
+    expect(again.textContent).toContain('1 of 1 strips fully correct · 100%');
   });
 
   it('offers Continue for an unfinished set older than the ten newest', async () => {
@@ -1238,7 +1246,7 @@ describe('routing', () => {
 
   it('takes the page out of reach once a part ends, until the next page opens', async () => {
     const root = await mountHash('#/tutorial');
-    buttonNamed(tourCard(), 'Skip').click();
+    buttonNamed(tourCard(), 'Skip tour').click();
     expect(root.hasAttribute('inert')).toBe(true);
     followLink('#/');
     await vi.waitFor(() => {
@@ -1303,7 +1311,7 @@ describe('routing', () => {
     await mountHash('#/tutorial');
     buttonNamed(tourCard(), 'Next').click();
     expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).not.toBeNull();
-    buttonNamed(tourCard(), 'Skip').click();
+    buttonNamed(tourCard(), 'Skip tour').click();
     expect(document.querySelector('.tour-card')).toBeNull();
     expect(globalThis.location.hash).toBe('#/');
     expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
@@ -1350,7 +1358,7 @@ describe('routing', () => {
   it('offers no tour card on home once a part of the tour was finished', async () => {
     globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
     const root = await mountHash('#/tutorial');
-    buttonNamed(tourCard(), 'Skip').click();
+    buttonNamed(tourCard(), 'Skip tour').click();
     await vi.waitFor(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
     });

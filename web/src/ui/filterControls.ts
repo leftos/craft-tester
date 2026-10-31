@@ -53,7 +53,7 @@ export function filterControls(
   return [
     selectControl(
       {
-        label: 'time',
+        label: 'time of day',
         options: TIME_OPTIONS,
         value: filter.time,
         disabled: false,
@@ -66,7 +66,7 @@ export function filterControls(
     ),
     selectControl(
       {
-        label: 'configuration',
+        label: 'runway configuration',
         options: configOptions(airport),
         value: configValue(filter.config),
         disabled: false,
