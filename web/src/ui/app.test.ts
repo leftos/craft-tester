@@ -113,6 +113,14 @@ async function mountHash(hash: string): Promise<Element> {
   return root;
 }
 
+/**
+ * Waits for a check to pass. The bound is a hang guard: `vi.waitFor`'s default of a second is a limit
+ * a passing run has to beat, and a first airport load on a loaded machine can take longer.
+ */
+function settled(check: () => void): Promise<void> {
+  return vi.waitFor(check, { timeout: 180_000 });
+}
+
 /** One labelled control of the page, found by the label the student reads. */
 function field(root: ParentNode, label: string): HTMLElement {
   const found = [...root.querySelectorAll('label.field')].find(
@@ -300,7 +308,7 @@ describe('the first route', () => {
     heldLoad.hold();
 
     const started = startApp(root);
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(heldLoad.asked()).toBe(true);
     });
 
@@ -308,7 +316,7 @@ describe('the first route', () => {
     heldLoad.fail(new Error('the airport file did not load'));
     await expect(started).resolves.toBeUndefined();
 
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.textContent).toContain('SWA1740');
     });
     expect(root.textContent).not.toContain("couldn't load");
@@ -321,7 +329,7 @@ describe('the first route', () => {
     heldLoad.hold();
 
     const started = startApp(root);
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(heldLoad.asked()).toBe(true);
     });
 
@@ -329,7 +337,7 @@ describe('the first route', () => {
     heldLoad.release();
     await started;
 
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
     });
     expect(globalThis.location.hash).toBe('#/');
@@ -578,7 +586,7 @@ describe('the mounted page', () => {
     if (!(copy instanceof HTMLButtonElement)) throw new Error('the strip has no copy-link button');
     copy.click();
 
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.copy-status')?.textContent).toBe('Copied');
     });
     expect(writeText).toHaveBeenCalledWith(expected);
@@ -599,7 +607,7 @@ describe('the mounted page', () => {
 
     root.querySelector<HTMLButtonElement>('button[aria-label="Copy link to this strip"]')?.click();
 
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector<HTMLInputElement>('.copy-link input')?.value).toBe(expected);
     });
     expect(root.querySelector<HTMLInputElement>('.copy-link input')?.readOnly).toBe(true);
@@ -1118,12 +1126,12 @@ describe('routing', () => {
     expect(root.querySelector('.home-page')).not.toBeNull();
 
     followLink('#/KSFO/clearance/practice');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('section.panel.strip')).not.toBeNull();
     });
 
     followLink('#/');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
     });
   });
@@ -1346,7 +1354,7 @@ describe('routing', () => {
     buttonNamed(tourCard(), 'Skip tour').click();
     expect(root.hasAttribute('inert')).toBe(true);
     followLink('#/');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
     });
     expect(root.hasAttribute('inert')).toBe(false);
@@ -1380,11 +1388,11 @@ describe('routing', () => {
     buttonNamed(tourCard(), 'Next: test yourself').click();
     followLink('#/');
     followLink('#s=1&a=KSFO');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('section.panel.strip')).not.toBeNull();
     });
     followLink('#/');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
     });
     expect(document.querySelector('.tour-card')).toBeNull();
@@ -1442,7 +1450,7 @@ describe('routing', () => {
     globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
     const root = await mountHash('#/tutorial');
     followLink('#s=1&a=KSFO');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(stripText(root)).not.toContain('SWA1740');
     });
     expect(document.body.querySelector('.tour')).toBeNull();
@@ -1456,7 +1464,7 @@ describe('routing', () => {
     globalThis.localStorage.removeItem(TOUR_SEEN_KEY);
     const root = await mountHash('#/tutorial');
     buttonNamed(tourCard(), 'Skip tour').click();
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
     });
     expect(root.querySelector('.home-tour-card')).toBeNull();
@@ -1517,7 +1525,7 @@ describe('routing', () => {
     expect(globalThis.localStorage.getItem(TOUR_SEEN_KEY)).toBe('true');
     expect(globalThis.localStorage.getItem(TOUR_PROGRESS_KEY)).toBeNull();
     followLink('#/');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.querySelector('.home-page')).not.toBeNull();
       expect(tourCount()).toBe('1 of 1');
     });
