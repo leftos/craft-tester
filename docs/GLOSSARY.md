@@ -18,4 +18,5 @@ Terms the docs, plans and commit messages use in a project-specific sense.
 - **Special aircraft**: the five types ZOA CPS-004 §3.1 lists (SF50, C510, E50P, E55P, DH8D). Each has a proposed and an accepted handling.
 - **Synced store**: a browser store (solved strips, test sets, preferences) that writes to `localStorage` first and, while the student is signed in, also to the server, merging the two on sign-in.
 - **Test set**: a run of N strips drawn from one set seed, taken against an optional clock with grades hidden until the set ends, then shown in one summary.
+- **Training stage**: the vZOA S1 module a student is working on (S1-OAK-1 to S1-SFO-4, or All topics). New strip and new tests draw and grade only what the modules up to it have taught; a setting a later module unlocks is shown greyed, "at" that module.
 - **Variant**: a graded strip re-opened with one attribute changed (the aircraft class, the equipment suffix, RVSM), in amendment mode, so the student sees what that change would need amending.
