@@ -767,7 +767,9 @@ function setActions(context: ActionContext): SetActions {
         return;
       }
       void cachedAirport(open).then((airport) => {
-        update(startedSet(sessionAt(airport, current(), context), context, n, minutes));
+        if (mayLand(context, airport)) {
+          update(startedSet(sessionAt(airport, current(), context), context, n, minutes));
+        }
       });
     },
     onSkip: withSet((state, set) => {
@@ -1077,6 +1079,8 @@ type ActionContext = {
   stores: Stores;
   /** The stage every draw and lock of the page reads: the viewer's, undefined on a tutorial page. */
   viewerStage: () => string | undefined;
+  /** Whether a tutorial part runs the page, which remembers no filter change. */
+  tutorial: boolean;
   /** Whether the page has been torn down, which a load still under way has to ask. */
   disposed: () => boolean;
   current: () => AppState;
@@ -1187,12 +1191,14 @@ function rememberedSettings(
 
 /**
  * Whether a load that has just resolved may still put the page at its airport: not once the page is
- * torn down, nor where a newer stage has closed the airport meanwhile.
+ * torn down, nor over a test set still running, nor where a newer stage has closed the airport.
  */
 function mayLand(context: ActionContext, airport: AirportData): boolean {
   const { training } = airport;
   const at = airportLock(training, airport.airport.icao);
-  return !context.disposed() && isOpenAt(training, at, context.viewerStage());
+  const { set } = context.current();
+  const running = set !== undefined && !set.ended;
+  return !context.disposed() && !running && isOpenAt(training, at, context.viewerStage());
 }
 
 /** Keeps the Filters popover open over a page drawn again from inside it. */
@@ -1282,8 +1288,10 @@ function startedSet(state: AppState, context: ActionContext, n: number, minutes:
 /**
  * Remembers a filter change. Under a stage only the member the student changed moves, because what
  * is on screen may be clamped; at All topics on an unstaged page the whole filter is the choice.
+ * A tutorial part remembers nothing.
  */
 function saveFilter(context: ActionContext, state: AppState, filter: ScenarioFilter): void {
+  if (context.tutorial) return;
   const { stores } = context;
   const { icao } = state.airport.airport;
   const staged = context.viewerStage() !== undefined || state.filter.stage !== undefined;
@@ -1409,8 +1417,8 @@ function trainerActions(context: ActionContext): Actions {
 
 /**
  * The trainer's actions as a tutorial part runs them: each pick, box answer and submit that happened
- * is told to the part's tour, a submit is graded without being saved, the way of answering is not
- * remembered, no Runway or Training control is offered, and no stage locks anything.
+ * is told to the part's tour, a submit is graded without being saved, neither the way of answering
+ * nor a filter is remembered, no Runway or Training control is offered, and no stage locks anything.
  */
 function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink): Actions {
   const { stores, current, update } = context;
@@ -1453,8 +1461,8 @@ function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink):
  *
  * A tutorial part writes no hash, so the address bar keeps its `#/tutorial` link, saves no attempt,
  * offers no copy link and no way on from its results, and leaves the remembered way of answering
- * alone; its tour starts after the first render, hears every pick, box answer and submit, and comes
- * off the page with it.
+ * and filter alone; its tour starts after the first render, hears every pick, box answer and submit,
+ * and comes off the page with it.
  */
 function mount(
   root: Element,
@@ -1465,6 +1473,7 @@ function mount(
 ): Mounted {
   const run = options.tutorial;
   const tour = run === undefined ? undefined : tourLink(root, run, stores);
+  const tutorial = tour !== undefined;
   let state = initial;
   let actions: Actions;
   let built: Built | undefined;
@@ -1481,21 +1490,20 @@ function mount(
   const update = (next: AppState): void => {
     if (disposed) return;
     state = next;
-    if (tour === undefined) writeHash(state.airport.airport.icao, state.seed, state);
-    const tutorial = tour !== undefined;
+    if (!tutorial) writeHash(state.airport.airport.icao, state.seed, state);
     built = show(root, built, state, () =>
       renderApp(state, index, actions, stores.solved, tutorial),
     );
     follower.follow(state);
     tour?.refresh();
   };
-  const viewerStage = (): string | undefined =>
-    tour === undefined ? stores.stage.load() : undefined;
+  const viewerStage = (): string | undefined => (tutorial ? undefined : stores.stage.load());
   const context: ActionContext = {
     root,
     index,
     stores,
     viewerStage,
+    tutorial,
     disposed: () => disposed,
     current: () => state,
     update,

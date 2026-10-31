@@ -1956,6 +1956,94 @@ describe("the viewer's training stage", () => {
     expect(root.querySelector<HTMLDetailsElement>('details.filters')?.open).toBe(false);
   });
 
+  /** Presses Start in the toolbar's Test popover, for five strips in twenty minutes. */
+  function pressStartTest(root: ParentNode): void {
+    const details = root.querySelector('details.test-start');
+    if (!(details instanceof HTMLDetailsElement)) throw new Error('the toolbar has no Test button');
+    details.open = true;
+    buttonNamed(details, '5').click();
+    buttonNamed(details, '20 min').click();
+    buttonNamed(details, 'Start').click();
+  }
+
+  it('keeps a test started before a filter change lands', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO');
+    pressStartTest(root);
+    choose(selectOf(field(root, 'time of day')), 'day');
+    await settled(() => {
+      expect(globalThis.location.hash).toContain('a=KOAK');
+    });
+    await new Promise((turn) => {
+      setTimeout(turn);
+    });
+    expect(root.querySelector('.testbar')).not.toBeNull();
+  });
+
+  it('keeps a test started before a Training change lands', async () => {
+    const root = await koakWithKsfoRemembered();
+    choose(selectOf(field(root, 'Training')), 'S1-SFO-1');
+    pressStartTest(root);
+    await new Promise((turn) => {
+      setTimeout(turn);
+    });
+    expect(root.querySelector('.testbar')).not.toBeNull();
+    expect(globalThis.location.hash).toContain('a=KOAK');
+  });
+
+  it("moves New strip off a closed airport from a finished set's summary", async () => {
+    await mountHash('#s=1&a=KOAK');
+    viewerAt('S1-OAK-2');
+    vi.stubGlobal('confirm', () => true);
+    try {
+      const root = await mountHash('#a=KSFO&x=b.5.20.0');
+      buttonNamed(root, 'End test').click();
+      expect(root.querySelector('.set-summary')).not.toBeNull();
+      buttonNamed(root, 'New strip').click();
+      await new Promise((turn) => {
+        setTimeout(turn);
+      });
+      expect(root.querySelector('.set-summary')).toBeNull();
+      expect(globalThis.location.hash).toContain('a=KOAK');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('starts one test when Start is pressed twice during a load', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO');
+    pressStartTest(root);
+    pressStartTest(root);
+    await settled(() => {
+      expect(globalThis.location.hash).toContain('a=KOAK');
+    });
+    await new Promise((turn) => {
+      setTimeout(turn);
+    });
+    const keys = Array.from({ length: globalThis.localStorage.length }, (_, at) =>
+      globalThis.localStorage.key(at),
+    );
+    expect(keys.filter((key) => key?.startsWith('craft-tester:set:'))).toHaveLength(1);
+  });
+
+  it('remembers no filter change on a tutorial page at a stage', async () => {
+    viewerAt('S1-OAK-1');
+    rememberNightAmend();
+    const root = await mountHash('#/tutorial');
+    choose(selectOf(field(root, 'time of day')), 'day');
+    const stored = globalThis.localStorage.getItem('craft-tester:filter:KOAK') ?? 'null';
+    expect(JSON.parse(stored)).toStrictEqual({ time: 'night', config: { kind: 'any' } });
+  });
+
+  it('remembers no filter change on a tutorial page at All topics', async () => {
+    rememberNightAmend();
+    const root = await mountHash('#/tutorial');
+    choose(selectOf(field(root, 'time of day')), 'day');
+    const stored = globalThis.localStorage.getItem('craft-tester:filter:KOAK') ?? 'null';
+    expect(JSON.parse(stored)).toStrictEqual({ time: 'night', config: { kind: 'any' } });
+  });
+
   it('keeps the focus on Training across the draw it starts', async () => {
     viewerAt('S1-OAK-2');
     const root = await mountHash('#s=1&a=KOAK');
