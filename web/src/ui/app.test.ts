@@ -1625,7 +1625,7 @@ describe("the viewer's training stage", () => {
     viewerAt('S1-OAK-2');
     const root = await mountHash('#s=1&a=KSFO');
     pressNewStrip(root);
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(/&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
     });
   });
@@ -1711,7 +1711,7 @@ describe("the viewer's training stage", () => {
     viewerAt('S1-OAK-2');
     const root = await mountHash('#s=1&a=KSFO&t=night&m=amend');
     pressStart(root);
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(
         /&a=KOAK&t=day&st=S1-OAK-2&rwy=off&x=[0-9a-z]+\.\d+\.\d+\.0$/,
       );
@@ -1743,7 +1743,7 @@ describe("the viewer's training stage", () => {
     viewerAt('S1-OAK-2');
     const root = await mountHash('#s=1&a=KSFO&t=night&m=amend');
     switchTo(root, 'KOAK');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(/^#s=1&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
     });
   });
@@ -1751,7 +1751,7 @@ describe("the viewer's training stage", () => {
   it("drops the stage of a link from an All-topics viewer's airport switch", async () => {
     const root = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-1');
     switchTo(root, 'KSFO');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toBe('#s=1&a=KSFO&t=day');
     });
   });
@@ -1878,7 +1878,7 @@ describe("the viewer's training stage", () => {
   it('moves off an airport the stage picked in Training has not opened', async () => {
     const root = await mountHash('#s=1&a=KSFO');
     choose(selectOf(field(root, 'Training')), 'S1-OAK-2');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
     });
   });
@@ -1917,7 +1917,7 @@ describe("the viewer's training stage", () => {
     const root = await mountHash('#/KSFO/clearance/practice');
     expect(globalThis.location.hash).toContain('&a=KOAK');
     choose(selectOf(field(root, 'Training')), '');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KSFO$/);
     });
   });
@@ -1947,7 +1947,7 @@ describe("the viewer's training stage", () => {
     const root = await koakWithKsfoRemembered();
     followLink('#/tutorial');
     choose(selectOf(field(root, 'Training')), '');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(root.textContent).toContain('SWA1740');
     });
     await new Promise((turn) => {
@@ -1971,7 +1971,7 @@ describe("the viewer's training stage", () => {
     viewerAt('S1-OAK-2');
     const root = await mountHash('#s=1&a=KSFO');
     choose(selectOf(field(root, 'time of day')), 'day');
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
     });
     expect(root.querySelector<HTMLDetailsElement>('details.filters')?.open).toBe(true);
@@ -1981,7 +1981,7 @@ describe("the viewer's training stage", () => {
     viewerAt('S1-OAK-2');
     const root = await mountHash(`#s=${AMENDMENT_SEED}&a=KSFO&m=amend`);
     segment(root, 'Mode', 'Clearance').click();
-    await vi.waitFor(() => {
+    await settled(() => {
       expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
     });
   });
