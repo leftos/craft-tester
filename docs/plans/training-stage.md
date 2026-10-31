@@ -32,11 +32,12 @@ Course gates, the same at every airport (`generator/shared/training_stages.yaml`
 | fullRoute | S1-OAK-5 | the Full route answer locked |
 | night | S1-OAK-6 | draws are by day; Either and Night locked in the Time control |
 
+The same file lists when an airport itself opens (`airports`: KSFO at S1-SFO-1; an airport not listed is open at every stage), so every airport's data can say which others are locked: a strip page loads only its own airport's file, and the toolbar's airport switch has to label the rest.
+
 Airport gates (`generator/airports/{icao}/training.yaml`), each optional; anything an airport does not list opens with the airport:
 
 | Field | KOAK | KSFO |
 |---|---|---|
-| `opens` (the airport itself) | not listed: open at every stage | S1-SFO-1 |
 | `configs` (by `plan` or `id`) | plan OAKE at S1-OAK-6, plan SFOE at S1-OAK-6 | plan SFOE at S1-SFO-4 |
 | `sids` (by family) | OAK, CNDEL, COAST at S1-OAK-1; NIMI, NUEVO, SKYL at S1-OAK-2 | not listed |
 | `otherSids` (every family `sids` does not name) | S1-OAK-6 | not listed |
@@ -50,6 +51,8 @@ The east SIDs the syllabus lists for S1-OAK-6 are covered without naming them: H
 ## How a stage applies
 
 - **Settings are clamped, never overwritten.** The remembered settings (time, configuration, mode, answer method, runway grading, airport) stay as stored. Each control shows the nearest allowed value when the stored one is locked (Time: Day; Configuration: Any; Mode: Clearance; Answer: the abbreviated reading in the remembered input kind; Runway: Not graded; Airport: the first open airport of the index), with the locked options visible, greyed, and labelled "at {stage id}". Picking a later stage, or All topics, brings the stored value back.
+- **The stage rides in the filter.** `ScenarioFilter` gains an optional `stage` (absent means All topics), so it reaches every draw path, the hash and a test set's record the way the forced destination does, and it is never saved with the remembered filter.
+- **Who clamps.** New strip, a new test, and a practice or test link with no `st=` part clamp the page's settings to the viewer's stage. A strip link, or a practice or test link with an `st=` part, opens as written. Saving a filter change saves only the member the student changed, so a clamped member keeps its remembered value. While a stage narrows the page, opening a strip does not update home's remembered airport and mode.
 - **The draw.** Configuration and time are filtered before the draw (`pickConfig`, `pickTime`); a configuration filter of Any means any open configuration. The SID is picked by the SOP assignment engine, so the SID, no-SID and runway gates are a check after the draw: a drawn clearance whose SID family, no-SID departure or runway is still locked is redrawn, as an amendment draw with no fault to inject is. Amend mode's wrong SIDs in a filed plan are not gated: only the cleared answer is.
 - **Links open as written.** A strip link and a test set carry the stage they were drawn under as `st={stage id}` (absent for All topics), so the same seed draws the same strip for anyone who opens it. The viewer's stage governs New strip and new tests only: on a page opened from a link, New strip draws under the viewer's stage with the page's settings clamped to it. A `SetRecord` stores the stage; one without it reads as All topics.
 - **Where the stage is picked.** A "Training" row first on home, above Airport; on a strip page, at the top of the Filters popover. It is remembered per browser (`craft-tester:training-stage`), not per airport.
