@@ -98,17 +98,15 @@ function isBoxGrade(grade: Grade): boolean {
  * too.
  *
  * @param grades The verdict for every element, or for every box of the strip.
- * @param noun What the verdicts are of: `elements` for a clearance alone, `flight plan checks /
- *   amendments` for the boxes of the strip, `CRAFT clearance elements` for the clearance read after
- *   them.
- * @returns The score, e.g. `4 of 5 elements correct, 1 inefficient` or `5 of 5 elements correct,
- *   1 acceptable` or
- *   `2½ of 3 flight plan checks / amendments correct, 1 half credit (arrival routing)` or
- *   `3 of 3 flight plan checks / amendments correct, 1 acceptable (airport navaid)`.
+ * @param noun What the verdicts are of: `elements` for a clearance alone, `strip boxes` for the
+ *   boxes of the strip, `clearance elements` for the clearance read after them.
+ * @returns The score, e.g. `4 of 5 elements correct, 1 longer than needed` or `5 of 5 elements
+ *   correct, 1 acceptable` or `2½ of 3 strip boxes correct, 1 half credit (arrival routing)` or
+ *   `3 of 3 strip boxes correct, 1 acceptable (only the airport navaid differs)`.
  */
 export function scoreLine(
   grades: readonly Grade[],
-  noun: 'elements' | 'flight plan checks / amendments' | 'CRAFT clearance elements',
+  noun: 'elements' | 'strip boxes' | 'clearance elements',
 ): string {
   const acceptable = countOf(grades, 'acceptable');
   const navaid = grades.filter(isNavaidAcceptable).length;
@@ -117,8 +115,8 @@ export function scoreLine(
   const half = countOf(grades, 'half');
   const tails = [
     ...(half === 0 ? [] : [`${half} half credit (arrival routing)`]),
-    ...(navaid === 0 ? [] : [`${navaid} acceptable (airport navaid)`]),
-    ...(inefficient === 0 ? [] : [`${inefficient} inefficient`]),
+    ...(navaid === 0 ? [] : [`${navaid} acceptable (only the airport navaid differs)`]),
+    ...(inefficient === 0 ? [] : [`${inefficient} longer than needed`]),
     ...(other === 0 ? [] : [`${other} acceptable`]),
   ];
   return [`${countLabel(creditOf(grades))} of ${grades.length} ${noun} correct`, ...tails].join(
@@ -133,14 +131,14 @@ export function scoreLine(
  * apart, each with its own tails, so a box is never counted as a clearance element.
  *
  * @param grades The verdicts of the session, the strip boxes (if any) ahead of the clearance.
- * @returns The score, e.g. `2 of 3 elements correct`, or `2 of 3 flight plan checks / amendments
- *   correct, 0 of 8 CRAFT clearance elements correct` where the session graded the strip.
+ * @returns The score, e.g. `2 of 3 elements correct`, or `2 of 3 strip boxes correct, 0 of 8
+ *   clearance elements correct` where the session graded the strip.
  */
 export function sessionScoreLine(grades: readonly Grade[]): string {
   const boxGrades = grades.filter(isBoxGrade);
   if (boxGrades.length === 0) return scoreLine(grades, 'elements');
   const clearanceGrades = grades.filter((grade) => !isBoxGrade(grade));
-  return `${scoreLine(boxGrades, 'flight plan checks / amendments')}, ${scoreLine(clearanceGrades, 'CRAFT clearance elements')}`;
+  return `${scoreLine(boxGrades, 'strip boxes')}, ${scoreLine(clearanceGrades, 'clearance elements')}`;
 }
 
 /**
@@ -157,13 +155,13 @@ function kindOf(grade: Grade): VerdictKind {
   return isInefficient(grade) ? 'longer' : 'acceptable';
 }
 
-/** The tag a results row carries, in words and, where it lost credit, a symbol. */
-const KIND_TAGS: Readonly<Record<VerdictKind, string>> = {
+/** What a verdict reads as in words, the symbol apart. */
+const KIND_WORDS: Readonly<Record<VerdictKind, string>> = {
   correct: 'Correct',
-  wrong: '✗ Wrong',
-  half: '½ Half credit',
-  longer: '~ Longer than needed',
-  navaid: 'Acceptable (airport navaid)',
+  wrong: 'Wrong',
+  half: 'Half credit',
+  longer: 'Longer than needed',
+  navaid: 'Acceptable (only the airport navaid differs)',
   acceptable: 'Acceptable',
 };
 
@@ -175,6 +173,16 @@ const KIND_MARKS: Readonly<Record<VerdictKind, string>> = {
   longer: '~',
   navaid: '≈',
   acceptable: '≈',
+};
+
+/** The tag a results row carries, in words and, where it lost credit, a symbol. */
+const KIND_TAGS: Readonly<Record<VerdictKind, string>> = {
+  correct: KIND_WORDS.correct,
+  wrong: `${KIND_MARKS.wrong} ${KIND_WORDS.wrong}`,
+  half: `${KIND_MARKS.half} ${KIND_WORDS.half}`,
+  longer: `${KIND_MARKS.longer} ${KIND_WORDS.longer}`,
+  navaid: KIND_WORDS.navaid,
+  acceptable: KIND_WORDS.acceptable,
 };
 
 /** The kinds the summary sentence counts, in the order it names them. */
@@ -191,7 +199,7 @@ const TAIL_WORDS: Readonly<Record<Exclude<VerdictKind, 'correct'>, string>> = {
   wrong: 'wrong',
   half: 'half credit',
   longer: 'longer than needed',
-  navaid: 'acceptable (airport navaid)',
+  navaid: 'acceptable (only the airport navaid differs)',
   acceptable: 'acceptable',
 };
 
@@ -292,7 +300,7 @@ export function verdictLines(verdict: AnyGrade): {
 
 /** What a marked run of a typed answer says about the words under it, as its tooltip. */
 const RUN_TITLES: Readonly<Record<'wrong' | 'misplaced', string>> = {
-  wrong: 'not what the reading has',
+  wrong: 'not in the expected clearance',
   misplaced: 'out of CRAFT order',
 };
 
@@ -306,7 +314,7 @@ function titled(node: HTMLElement, title: string): HTMLElement {
 function saidNode(run: SaidRun): HTMLElement | string {
   if (run.kind === 'filler') return el('span', 'filler', run.text);
   if (run.kind === 'spelling') {
-    return titled(el('span', 'spelling', run.text), `read as "${run.readAs}"`);
+    return titled(el('span', 'spelling', run.text), `counted as "${run.readAs}"`);
   }
   if (run.kind === 'wrong' || run.kind === 'misplaced') {
     return titled(el('span', run.kind, run.text), RUN_TITLES[run.kind]);
@@ -374,7 +382,7 @@ function fillExpected(node: HTMLElement, verdict: AnyGrade, diff: PickedDiff | u
 
 /** The label a picked or box verdict's second line reads under, from the prefix it opened with. */
 const PREFIX_TERMS: Readonly<Record<CorrectionPrefix, string>> = {
-  correction: 'Reads as',
+  correction: 'Expected',
   preferred: 'Preferred',
   shorter: 'Shorter',
   'full credit': 'Full credit',
@@ -382,12 +390,12 @@ const PREFIX_TERMS: Readonly<Record<CorrectionPrefix, string>> = {
 
 /** The label a typed element's expected words read under, by the kind of verdict it earned. */
 const TYPED_TERMS: Readonly<Record<VerdictKind, string>> = {
-  correct: 'Reads as',
-  wrong: 'Reads as',
+  correct: 'Expected',
+  wrong: 'Expected',
   half: 'Full credit',
   longer: 'Shorter',
   navaid: 'Preferred',
-  acceptable: 'Reads as',
+  acceptable: 'Expected',
 };
 
 /** The label of the second line of a verdict that lost credit, or none where it has none. */
@@ -613,7 +621,7 @@ function elementPill(grade: Grade, grades: readonly Grade[]): HTMLElement {
   const link = el('a', `pill ${grade.verdict}`);
   const id = rowId(grade);
   link.href = `#${id}`;
-  link.setAttribute('aria-label', `${parts.letter} ${parts.name}: ${KIND_TAGS[kind]}`.trim());
+  link.setAttribute('aria-label', `${parts.letter} ${parts.name}: ${KIND_WORDS[kind]}`.trim());
   if (letter !== '') link.append(el('b', '', letter));
   if (name !== '') link.append(` ${name}`);
   link.append(` ${KIND_MARKS[kind]}`);
@@ -632,7 +640,7 @@ function summaryPanel(grades: readonly Grade[]): HTMLElement {
   const scores = el('div', 'scores');
   scores.append(...groups.map(scoreFigure));
   const pills = el('ul', 'pills');
-  pills.setAttribute('aria-label', 'Elements');
+  pills.setAttribute('aria-label', 'Results by element');
   pills.append(...grades.map((grade) => elementPill(grade, grades)));
   summary.append(scores, el('p', 'score-sub', tailSentence(groups)), pills);
   return summary;

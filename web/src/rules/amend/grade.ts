@@ -48,7 +48,7 @@ const STRIP_ORDER: readonly Box[] = ['type', 'altitude', 'route'];
 const AS_FILED_LABEL = 'correct as filed';
 
 /** What the box of an alternative pair is labelled with once the other box carries the fix. */
-const ALTERNATIVE_LABEL = 'correct as filed (the other box already fixes this)';
+const ALTERNATIVE_LABEL = 'correct as filed (the other box fixes this)';
 
 /** An altitude as it may be written: plain feet, or a flight level. */
 const ALTITUDE_TEXT = /^(?:FL)?(\d+)$/;

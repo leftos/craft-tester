@@ -42,7 +42,7 @@ const typedMissedWord: TextGrade = {
     { text: 'Oakland Six ', missed: false },
     { text: 'departure', missed: true },
   ],
-  remarks: ['missed: "departure"'],
+  remarks: ['left out: "departure"'],
 };
 
 /** A typed squawk with another value said for it: the value marked, and the miss said in words. */
@@ -156,7 +156,7 @@ describe('renderVerdict on a typed element', () => {
 
   it('shows the expected words on an acceptable row', () => {
     const expected = partOf(renderVerdict(typedAltitude), 'dd.expected');
-    expect(termOf(expected)).toBe('Reads as');
+    expect(termOf(expected)).toBe('Expected');
     expect(expected.textContent).toBe('climb via sid');
   });
 
@@ -179,7 +179,7 @@ describe('renderVerdict on a typed element', () => {
     const wrong = row.querySelectorAll('.answer .wrong');
     expect(wrong).toHaveLength(1);
     expect(wrong[0]?.textContent).toBe('6201');
-    expect(wrong[0]?.getAttribute('title')).toBe('not what the reading has');
+    expect(wrong[0]?.getAttribute('title')).toBe('not in the expected clearance');
     expect(partOf(row, 'p.remarks').textContent).toBe(
       'wrong value: said "6201", expected "three three four two"',
     );
@@ -189,7 +189,7 @@ describe('renderVerdict on a typed element', () => {
     const row = renderVerdict(typedSpelling);
     const spelling = partOf(row, '.answer .spelling');
     expect(spelling.textContent).toBe('depature');
-    expect(spelling.getAttribute('title')).toBe('read as "departure"');
+    expect(spelling.getAttribute('title')).toBe('counted as "departure"');
     expect(row.querySelector('p.remarks')).toBeNull();
   });
 
@@ -229,7 +229,7 @@ describe('renderVerdict on a picked element', () => {
     const row = renderVerdict(pickedAltitude);
     expect(partOf(row, '.answer .wrong').textContent).toBe('5,000');
     const expected = partOf(row, 'dd.expected');
-    expect(termOf(expected)).toBe('Reads as');
+    expect(termOf(expected)).toBe('Expected');
     expect(expected.textContent).toBe('maintain 3,000');
     expect(partOf(expected, 'strong.missed').textContent).toBe('3,000');
   });
@@ -309,7 +309,7 @@ describe('the results rows', () => {
     }
     const wrong = pills[2];
     expect(wrong?.textContent).toBe('A expect ✗');
-    expect(wrong?.getAttribute('aria-label')).toBe('A expect: ✗ Wrong');
+    expect(wrong?.getAttribute('aria-label')).toBe('A expect: Wrong');
   });
 
   it('collapses a correct row to one closed line', () => {

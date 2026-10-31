@@ -235,7 +235,7 @@ describe('gradeBoxes', () => {
       ksfo,
     );
     expect(grades[0]?.expectedLabel).toBe('B752/L');
-    expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+    expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box fixes this)');
     expect(grades[2]?.citations).toEqual([citation]);
   });
 
@@ -253,8 +253,8 @@ describe('gradeBoxes', () => {
       ksfo,
     );
     expect(grades.map((grade) => grade.verdict)).toEqual(['correct', 'correct', 'correct']);
-    expect(grades[1]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
-    expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+    expect(grades[1]?.expectedLabel).toBe('correct as filed (the other box fixes this)');
+    expect(grades[2]?.expectedLabel).toBe('correct as filed (the other box fixes this)');
   });
 
   it('expects the type box as filed once both other boxes carry the fix', () => {
@@ -265,7 +265,7 @@ describe('gradeBoxes', () => {
       ksfo,
     );
     expect(grades.map((grade) => grade.verdict)).toEqual(['correct', 'correct', 'correct']);
-    expect(grades[0]?.expectedLabel).toBe('correct as filed (the other box already fixes this)');
+    expect(grades[0]?.expectedLabel).toBe('correct as filed (the other box fixes this)');
   });
 
   it('grades the type and route boxes against their proposals when only the altitude was fixed', () => {

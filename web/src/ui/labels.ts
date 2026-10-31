@@ -14,7 +14,7 @@ const ELEMENT_PARTS: Record<ClearanceElement, ElementParts> = {
   F: { letter: 'F', name: 'frequency' },
   T: { letter: 'T', name: 'squawk' },
   RWY: { letter: '', name: 'expect runway' },
-  'BOX.type': { letter: '', name: 'strip — type' },
+  'BOX.type': { letter: '', name: 'strip — aircraft type' },
   'BOX.altitude': { letter: '', name: 'strip — altitude' },
   'BOX.route': { letter: '', name: 'strip — route' },
 };

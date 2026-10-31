@@ -26,7 +26,7 @@ describe('elementLabel', () => {
       'F — frequency',
       'T — squawk',
       'expect runway',
-      'strip — type',
+      'strip — aircraft type',
       'strip — altitude',
       'strip — route',
     ]);

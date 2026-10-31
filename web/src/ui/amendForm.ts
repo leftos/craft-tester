@@ -61,9 +61,16 @@ function filedValue(scenario: Scenario, box: Box): string {
   return scenario.filedRoute;
 }
 
+/** What each box of the strip is headed with on the form. */
+const BOX_LABELS: Readonly<Record<Box, string>> = {
+  type: 'aircraft type',
+  altitude: 'altitude',
+  route: 'route',
+};
+
 /** One box of the strip as the form reads it: the filed value, and what the student answered. */
 function boxRow(scenario: Scenario, boxes: DraftBoxes, box: Box): BoxRow {
-  return { box, label: box, filed: filedValue(scenario, box), answer: boxes[box] };
+  return { box, label: BOX_LABELS[box], filed: filedValue(scenario, box), answer: boxes[box] };
 }
 
 /**
@@ -237,7 +244,7 @@ export function renderBoxVerdicts(grades: readonly BoxElementGrade[]): HTMLEleme
   panel.append(
     el('h2', '', 'Amendments'),
     ...grades.map((verdict) => renderVerdict(verdict)),
-    el('p', 'score', scoreLine(grades, 'flight plan checks / amendments')),
+    el('p', 'score', scoreLine(grades, 'strip boxes')),
   );
   return panel;
 }

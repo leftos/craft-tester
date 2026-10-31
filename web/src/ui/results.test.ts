@@ -185,13 +185,13 @@ describe('scoreLine', () => {
 
   it('counts an acceptable element as correct and a longer reading as inefficient', () => {
     const grades: Grade[] = [rightRoute, { ...rightRoute, element: 'A.phrase' }, redundantExpect];
-    expect(scoreLine(grades, 'elements')).toBe('3 of 3 elements correct, 1 inefficient');
+    expect(scoreLine(grades, 'elements')).toBe('3 of 3 elements correct, 1 longer than needed');
   });
 
   it('counts an acceptable element that is no longer than the reading apart from the inefficient', () => {
     const grades: Grade[] = [rightRoute, nineFrequency, redundantExpect];
     expect(scoreLine(grades, 'elements')).toBe(
-      '3 of 3 elements correct, 1 inefficient, 1 acceptable',
+      '3 of 3 elements correct, 1 longer than needed, 1 acceptable',
     );
   });
 
@@ -201,9 +201,7 @@ describe('scoreLine', () => {
       { ...wrongRoute, element: 'BOX.altitude' },
       { ...rightRoute, element: 'BOX.route' },
     ];
-    expect(scoreLine(grades, 'flight plan checks / amendments')).toBe(
-      '2 of 3 flight plan checks / amendments correct',
-    );
+    expect(scoreLine(grades, 'strip boxes')).toBe('2 of 3 strip boxes correct');
   });
 
   it('counts a half verdict as half a box', () => {
@@ -212,8 +210,8 @@ describe('scoreLine', () => {
       { ...rightRoute, element: 'BOX.altitude' },
       halfRoute,
     ];
-    expect(scoreLine(grades, 'flight plan checks / amendments')).toBe(
-      '2½ of 3 flight plan checks / amendments correct, 1 half credit (arrival routing)',
+    expect(scoreLine(grades, 'strip boxes')).toBe(
+      '2½ of 3 strip boxes correct, 1 half credit (arrival routing)',
     );
   });
 
@@ -223,8 +221,8 @@ describe('scoreLine', () => {
       { ...rightRoute, element: 'BOX.altitude' },
       navaidRoute,
     ];
-    expect(scoreLine(grades, 'flight plan checks / amendments')).toBe(
-      '3 of 3 flight plan checks / amendments correct, 1 acceptable (airport navaid)',
+    expect(scoreLine(grades, 'strip boxes')).toBe(
+      '3 of 3 strip boxes correct, 1 acceptable (only the airport navaid differs)',
     );
   });
 });
@@ -257,7 +255,7 @@ describe('sessionScoreLine', () => {
     ];
     const clearance: Grade[] = typedElements.map((element) => ({ ...wrongRoute, element }));
     expect(sessionScoreLine([...boxes, ...clearance])).toBe(
-      '2 of 3 flight plan checks / amendments correct, 0 of 8 CRAFT clearance elements correct',
+      '2 of 3 strip boxes correct, 0 of 8 clearance elements correct',
     );
   });
 
@@ -271,8 +269,8 @@ describe('sessionScoreLine', () => {
       element === 'A.expect' ? redundantExpect : { ...rightRoute, element },
     );
     expect(sessionScoreLine([...boxes, ...clearance])).toBe(
-      '2½ of 3 flight plan checks / amendments correct, 1 half credit (arrival routing), ' +
-        '6 of 6 CRAFT clearance elements correct, 1 inefficient',
+      '2½ of 3 strip boxes correct, 1 half credit (arrival routing), ' +
+        '6 of 6 clearance elements correct, 1 longer than needed',
     );
   });
 

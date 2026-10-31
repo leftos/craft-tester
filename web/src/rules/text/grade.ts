@@ -185,15 +185,15 @@ const NO_EXPECT_CLAUSE = 'no expect clause';
 /** The kinds of miss a results row names in words, one short line under what was said. */
 const REMARKS = {
   notHeard: 'not heard',
-  strayExpect: 'an expect clause this clearance does not have',
+  strayExpect: "an expect clause this clearance doesn't call for",
   outOfOrder: 'out of CRAFT order',
   niner: 'say niner, not nine',
-  groupForm: 'group form alone — say the digits',
-  fullRoute: 'the route read in full — the shorter reading is enough',
+  groupForm: 'say the digits one at a time, not as one number',
+  fullRoute: 'the route read in full — the shorter clearance is enough',
   thenOmitted: '"then" left out — the clearance says "then as filed"',
-  thenAsFiled: '"then as filed" said where the reading ends on "direct"',
+  thenAsFiled: '"then as filed" said where the clearance ends on "direct"',
   frc: '"then as filed" said on a full route clearance — read the route to its end',
-  redundantExpect: 'an expect clause the clearance can do without',
+  redundantExpect: "an expect clause that wasn't needed",
 } as const;
 
 /** The remark a route read longer than it had to be leaves on the reading spoken on frequency. */
@@ -1429,7 +1429,7 @@ function wrongValueRemark(
 function missedRemark(parts: ElementParts, missed: readonly string[], grading: Grading): string[] {
   const omitted = omittedRouteWords(parts, grading) ?? [];
   if (omitted.length > 0) return omitted.some(isThenToken) ? [REMARKS.thenOmitted] : [];
-  return missed.length === 0 ? [] : [`missed: ${missed.map(quoted).join(', ')}`];
+  return missed.length === 0 ? [] : [`left out: ${missed.map(quoted).join(', ')}`];
 }
 
 /** The remarks that say which words were never said, and which words the reading does not have. */
@@ -1438,9 +1438,10 @@ function valueRemarks(parts: ElementParts, grade: Unremarked, grading: Grading):
   const said = parts.marks.substituted.map((span) => grading.text.slice(span.start, span.end));
   const wrongValue = wrongValueRemark(parts, missed, grading);
   if (wrongValue !== undefined) return [wrongValue];
+  const allWrong = grade.said.every((run) => run.text.trim() === '' || run.kind === 'wrong');
   return [
     ...missedRemark(parts, missed, grading),
-    ...(said.length === 0 ? [] : [`not in the reading: ${said.map(quoted).join(', ')}`]),
+    ...(said.length === 0 || allWrong ? [] : [`said instead: ${said.map(quoted).join(', ')}`]),
   ];
 }
 

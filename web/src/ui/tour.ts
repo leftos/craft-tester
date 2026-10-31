@@ -280,7 +280,7 @@ function wrongNode(wrong: WrongPick): HTMLElement {
   said.append(el('span', 'tour-term', 'You picked '));
   for (const run of runs.said) said.append(run.differs ? el('span', 'wrong', run.text) : run.text);
   const expected = el('p', 'tour-expected');
-  expected.append(el('span', 'tour-term', 'Reads as '));
+  expected.append(el('span', 'tour-term', 'Expected '));
   for (const run of runs.expected) {
     expected.append(run.differs ? el('strong', 'missed', run.text) : run.text);
   }

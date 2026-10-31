@@ -414,7 +414,7 @@ describe('gradeText', () => {
     expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'wrong' }));
     const route = gradeOf(grades, 'R.route');
     expect(idsOf(route)).not.toContain('R-FACILITY-WORD-OMITTED');
-    expect(route.remarks).toEqual(['missed: "direct Red Bluff VOR"']);
+    expect(route.remarks).toEqual(['left out: "direct Red Bluff VOR"']);
   });
 
   it("keeps a route wrong that says a word in the facility word's place", () => {
@@ -424,7 +424,19 @@ describe('gradeText', () => {
     expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'wrong' }));
     const route = gradeOf(grades, 'R.route');
     expect(idsOf(route)).not.toContain('R-FACILITY-WORD-OMITTED');
-    expect(route.remarks).toEqual(['missed: "VOR"', 'not in the reading: "foo"']);
+    expect(route.remarks).toEqual(['left out: "VOR"', 'said instead: "foo"']);
+  });
+
+  it('says nothing about what was said instead where the whole element was said wrong', () => {
+    const speakInput = input({ originalRoute: 'TRUKN2 DEDHD LIN HAWKZ7' });
+    const text = edited(readingOf(speakInput), 'Trukn Two departure', 'Oakland Seven');
+    const grades = graded(text, speakInput);
+    const procedure = gradeOf(grades, 'R.sid');
+    expect(procedure.verdict).toBe('wrong');
+    expect(procedure.said.filter((run) => run.text.trim() !== '').map((run) => run.kind)).toEqual([
+      'wrong',
+    ]);
+    expect(procedure.remarks.filter((remark) => remark.startsWith('said instead'))).toEqual([]);
   });
 
   it('forgives the facility word on a full route clearance', () => {
@@ -447,7 +459,7 @@ describe('gradeText', () => {
     const route = gradeOf(graded(bareNavaids(spoken.fullRoute), speakInput), 'R.route');
     expect(route.verdict).toBe('acceptable');
     expect(idsOf(route)).toContain('R-FULL-ROUTE');
-    expect(route.remarks).toEqual(['the route read in full — the shorter reading is enough']);
+    expect(route.remarks).toEqual(['the route read in full — the shorter clearance is enough']);
   });
 
   it('grades a route that leaves out the "then" of "then as filed" acceptable', () => {
@@ -478,7 +490,7 @@ describe('gradeText', () => {
     expect(verdictsOf(grades)).toEqual(verdictsWith({ 'R.route': 'wrong' }));
     const route = gradeOf(grades, 'R.route');
     expect(idsOf(route)).not.toContain('R-THEN-OMITTED');
-    expect(route.remarks).toEqual(['missed: "then", "filed"']);
+    expect(route.remarks).toEqual(['left out: "then", "filed"']);
   });
 
   it('keeps a handover wrong on a full route clearance, without citing R-THEN-OMITTED', () => {
@@ -528,7 +540,7 @@ describe('gradeText', () => {
     expect(verdictsOf(group)).toEqual(verdictsWith({ 'A.phrase': 'wrong' }));
     const altitude = gradeOf(group, 'A.phrase');
     expect(idsOf(altitude)).toEqual(['OWN-ALTITUDE', 'S-GROUP-FORM']);
-    expect(altitude.remarks).toEqual(['group form alone — say the digits']);
+    expect(altitude.remarks).toEqual(['say the digits one at a time, not as one number']);
   });
 
   it('grades the group form restated after the digits correct, citing S-GROUP-FORM with no remark', () => {
@@ -967,7 +979,7 @@ describe('gradeText on a field typed as its code', () => {
   it('names the word left out and nothing else', () => {
     const grades = codedGraded('cleared to ksea');
     expect(misgraded(grades, { C: 'wrong' })).toEqual([]);
-    expect(gradeOf(grades, 'C').remarks).toEqual(['missed: "airport"']);
+    expect(gradeOf(grades, 'C').remarks).toEqual(['left out: "airport"']);
     expect(spellingCiters(grades)).toEqual(['R.sid']);
   });
 
@@ -1179,7 +1191,10 @@ describe('the marks and the remarks of a typed grade', () => {
     const frequency = gradeOf(grades, 'F');
     expect(frequency.verdict).toBe('wrong');
     expect(idsOf(frequency)).toContain('S-GROUP-FORM');
-    expect(frequency.remarks).toEqual(['say niner, not nine', 'group form alone — say the digits']);
+    expect(frequency.remarks).toEqual([
+      'say niner, not nine',
+      'say the digits one at a time, not as one number',
+    ]);
   });
 
   it('marks a number said in group form alone and says to say the digits', () => {
@@ -1188,7 +1203,7 @@ describe('the marks and the remarks of a typed grade', () => {
     );
     const altitude = gradeOf(grades, 'A.phrase');
     expect(markedRuns(altitude)).toEqual(['wrong:one ninety']);
-    expect(altitude.remarks).toEqual(['group form alone — say the digits']);
+    expect(altitude.remarks).toEqual(['say the digits one at a time, not as one number']);
   });
 
   it('marks an element said before its place as misplaced', () => {
@@ -1228,7 +1243,7 @@ describe('the marks and the remarks of a typed grade', () => {
     const grades = fdxGraded((reading) =>
       edited(reading, 'radar vectors Dedhd, then as filed', 'radar vectors Dedhd'),
     );
-    expect(gradeOf(grades, 'R.route').remarks).toEqual(['missed: "then as filed"']);
+    expect(gradeOf(grades, 'R.route').remarks).toEqual(['left out: "then as filed"']);
   });
 
   it('says an element left out was not heard', () => {
@@ -1238,10 +1253,7 @@ describe('the marks and the remarks of a typed grade', () => {
 
   it('names both the word never said and the word the reading does not have', () => {
     const grades = fdxGraded((reading) => edited(reading, 'squawk', 'sqwk'));
-    expect(gradeOf(grades, 'T').remarks).toEqual([
-      'missed: "squawk"',
-      'not in the reading: "sqwk"',
-    ]);
+    expect(gradeOf(grades, 'T').remarks).toEqual(['left out: "squawk"', 'said instead: "sqwk"']);
   });
 
   it('says the route was read in full where the shorter reading would have done', () => {
@@ -1250,7 +1262,7 @@ describe('the marks and the remarks of a typed grade', () => {
     const grades = gradeText(spoken.fullRoute, spoken, clearance, airport, 'abbreviated');
     const route = gradeOf(grades, 'R.route');
     expect(route.verdict).toBe('acceptable');
-    expect(route.remarks).toEqual(['the route read in full — the shorter reading is enough']);
+    expect(route.remarks).toEqual(['the route read in full — the shorter clearance is enough']);
   });
 
   it('a reading typed as read has no marks', () => {
@@ -1360,7 +1372,7 @@ describe('a full route clearance', () => {
     );
     expect(route.verdict).toBe('acceptable');
     expect(idsOf(route)).toContain('R-FULL-ROUTE');
-    expect(route.remarks).toEqual(['the route read in full — the shorter reading is enough']);
+    expect(route.remarks).toEqual(['the route read in full — the shorter clearance is enough']);
   });
 
   it('cites R-FRC when the handover is typed with a word missing', () => {

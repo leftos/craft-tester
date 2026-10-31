@@ -305,7 +305,7 @@ describe('a test set', () => {
     expect(root.querySelector('.panel.amend')).not.toBeNull();
     buttonNamed(testBar(root), 'End test').click();
     const line = root.querySelector('.set-summary .set-rows li .set-line')?.textContent;
-    expect(line).toMatch(/of 3 flight plan checks \/ amendments correct, .*CRAFT clearance/);
+    expect(line).toMatch(/of 3 strip boxes correct, .*clearance elements/);
   });
 
   it('amendment in a set keeps Submit disabled while a box is open', async () => {
