@@ -19,7 +19,7 @@ pnpm -C web test -t "climb via"               # tests whose name matches
 pnpm -C web schema:export                     # regenerate data/schema/*.json from web/src/data/schema.ts
 pnpm -C web propose <fixture-id> | --pending  # engine's clearance for a fixture, with citations
 pnpm -C web exec playwright install chromium  # once per machine, for the browser check
-pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:3=just the fix" "click:Filters"]
+pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK phone|desktop ["select:4=just the fix" "click:Filters"]
 pnpm -C web check:browser <name> s=1,a=KOAK,d=KLVK,i=text phone|desktop ["fill:0=CLEARED TO KLVK" "press:Enter"]
 
 # generator (uv, Python 3.13)
@@ -48,8 +48,8 @@ scheduled AIRAC workflow (`airac.yml`, `tools/airac-refresh.sh`) rebuilds every 
 **Browser checks run under Playwright, not the Claude in Chrome extension**, so the
 viewport is forced: `phone` is 390px wide, `desktop` 1280px. Build, run `pnpm -C web preview` in another shell,
 then `check:browser`, which opens the hash (written with commas between its parts, since a literal `&` does not
-survive pnpm on Windows), runs the actions (`fill:<n>` counts text inputs and textareas together, in page order;
-`press:Enter` presses a key on whatever has focus; `click:Full route` presses that option of the toolbar's answer switch, as `click:` presses any button or `<summary>` by its text (`click:Filters` opens the filter popover); Submit stays disabled until every row is picked;
+survive pnpm on Windows), runs the actions (`fill:<n>` counts text inputs and textareas together, in page order; `select:<n>` counts every select on the page the same way, and the Training select is `select:0` on home and `select:1` on a strip page, right after the airport switch (`"click:Filters" "select:1=S1-OAK-2 Clean Clearances"` picks a stage), so a strip page's other selects count from 2;
+`press:Enter` presses a key on whatever has focus; `click:Full route` presses that option of the toolbar's answer switch (an option the viewer's stage locks reads `🔒 Amend` and is pressed as `click:🔒 Amend`), as `click:` presses any button or `<summary>` by its text (`click:Filters` opens the filter popover); Submit stays disabled until every row is picked;
 `scroll:600` scrolls the page down to that offset), and writes the
 page text, selects, buttons, console errors, whether the page scrolls sideways, a full-page screenshot and a `-view`
 screenshot of the viewport alone to `.tmp/browser-check/`. Only the `-view` shot shows what stays pinned after a

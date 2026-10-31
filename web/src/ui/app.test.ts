@@ -1782,6 +1782,331 @@ describe("the viewer's training stage", () => {
     await mountHash('#/KOAK/clearance/practice');
     expect(storedHome()).toEqual({ ...home, icao: 'KOAK' });
   });
+
+  /** The toolbar's airport picker. */
+  function airportSelect(root: ParentNode): HTMLSelectElement {
+    const select = root.querySelector('select.airport');
+    if (!(select instanceof HTMLSelectElement)) throw new Error('the page has no airport picker');
+    return select;
+  }
+
+  /** The option of a dropdown that reads back a value. */
+  function optionOf(select: HTMLSelectElement, value: string): HTMLOptionElement {
+    const found = [...select.options].find((option) => option.value === value);
+    if (found === undefined) throw new Error(`the dropdown offers no ${value}`);
+    return found;
+  }
+
+  /** The number on the Filters button, or `undefined` where it shows none. */
+  function filterBadge(root: ParentNode): string | undefined {
+    return root.querySelector('details.filters summary .count')?.textContent ?? undefined;
+  }
+
+  /** Remembers the settings a later stage or All topics brings back: Night and Amend at KOAK. */
+  function rememberNightAmend(): void {
+    const filter = { time: 'night', config: { kind: 'any' } };
+    const home = { icao: 'KOAK', mode: 'amendment', format: 'practice', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:filter:KOAK', JSON.stringify(filter));
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+  }
+
+  it('locks what the stage rules out in the toolbar', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK');
+    expect(segment(root, 'Mode', '🔒 Amend').disabled).toBe(true);
+    expect(segment(root, 'Answer by', '🔒 Full route').disabled).toBe(true);
+    const ksfo = optionOf(airportSelect(root), 'KSFO');
+    expect(ksfo.textContent).toBe('KSFO (at S1-SFO-1)');
+    expect(ksfo.disabled).toBe(true);
+    expect(optionOf(airportSelect(root), 'KOAK').disabled).toBe(false);
+  });
+
+  it("reads the viewer's stage for the locks, not the stage of the link on screen", async () => {
+    const root = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-1');
+    expect(segment(root, 'Mode', 'Amend').disabled).toBe(false);
+    expect(optionOf(airportSelect(root), 'KSFO').textContent).toBe('KSFO');
+  });
+
+  it('opens Filters on Training, then the filters, then Runway', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-2&rwy=off');
+    const labels = [...root.querySelectorAll('.filters-popover .field-label')];
+    expect(labels.map((node) => node.textContent)).toStrictEqual([
+      'Training',
+      'time of day',
+      'runway configuration',
+      'Runway',
+    ]);
+    expect(selectOf(field(root, 'Training')).value).toBe('S1-OAK-2');
+    const runway = selectOf(field(root, 'Runway'));
+    expect(runway.value).toBe('off');
+    expect(optionOf(runway, 'graded').disabled).toBe(true);
+  });
+
+  it('counts no value the stage forces on the Filters button', async () => {
+    viewerAt('S1-OAK-2');
+    const forced = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-2&rwy=off');
+    expect(filterBadge(forced)).toBeUndefined();
+    const narrowed = await mountHash('#s=1&a=KOAK&t=day&c=plan:SFOW&st=S1-OAK-2&rwy=off');
+    expect(filterBadge(narrowed)).toBe('1');
+    globalThis.localStorage.removeItem(STAGE_KEY);
+    const chosen = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-2&rwy=off');
+    expect(filterBadge(chosen)).toBe('2');
+  });
+
+  it('brings the remembered settings back when Training goes to All topics', async () => {
+    rememberNightAmend();
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK');
+    choose(selectOf(field(root, 'Training')), '');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=night&m=amend$/);
+    expect(globalThis.localStorage.getItem(STAGE_KEY)).toBeNull();
+    expect(chosen(root, 'Mode')).toBe('Amend');
+    expect(selectOf(field(root, 'time of day')).value).toBe('night');
+    expect(root.querySelector<HTMLDetailsElement>('details.filters')?.open).toBe(true);
+  });
+
+  it('draws under the stage picked in Training, and remembers it', async () => {
+    rememberNightAmend();
+    const root = await mountHash('#s=1&a=KOAK&t=night&m=amend');
+    choose(selectOf(field(root, 'Training')), 'S1-OAK-2');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    expect(globalThis.localStorage.getItem(STAGE_KEY)).toBe('"S1-OAK-2"');
+    expect(globalThis.localStorage.getItem('craft-tester:filter:KOAK')).toContain('night');
+  });
+
+  it('moves off an airport the stage picked in Training has not opened', async () => {
+    const root = await mountHash('#s=1&a=KSFO');
+    choose(selectOf(field(root, 'Training')), 'S1-OAK-2');
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    });
+  });
+
+  it('shows the grading of a link that grades the runway, and keeps its choice off the store', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK');
+    const runway = selectOf(field(root, 'Runway'));
+    expect(runway.value).toBe('graded');
+    expect(optionOf(runway, 'graded').disabled).toBe(true);
+    choose(runway, 'off');
+    expect(globalThis.location.hash).toContain('rwy=off');
+    expect(globalThis.localStorage.getItem('craft-tester:runway-grading')).toBeNull();
+  });
+
+  it('remembers a runway choice where the stage has opened the runway', async () => {
+    viewerAt('S1-OAK-3');
+    const root = await mountHash('#s=1&a=KOAK');
+    choose(selectOf(field(root, 'Runway')), 'off');
+    expect(globalThis.localStorage.getItem('craft-tester:runway-grading')).toBe('false');
+  });
+
+  it('marks the airport picker only while it holds a locked airport', async () => {
+    const open = await mountHash('#s=1&a=KOAK');
+    expect(airportSelect(open).className).toBe('airport');
+    viewerAt('S1-OAK-2');
+    const locked = await mountHash('#s=1&a=KOAK');
+    expect(airportSelect(locked).classList.contains('has-locked')).toBe(true);
+  });
+
+  it('brings the remembered airport back when Training opens it', async () => {
+    rememberNightAmend();
+    const home = { icao: 'KSFO', mode: 'clearance', format: 'practice', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#/KSFO/clearance/practice');
+    expect(globalThis.location.hash).toContain('&a=KOAK');
+    choose(selectOf(field(root, 'Training')), '');
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KSFO$/);
+    });
+  });
+
+  /** Remembers KSFO for home, loads it, and opens KOAK at S1-OAK-2 with its Training row. */
+  async function koakWithKsfoRemembered(): Promise<Element> {
+    await mountHash('#s=1&a=KSFO');
+    const home = { icao: 'KSFO', mode: 'clearance', format: 'practice', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+    viewerAt('S1-OAK-2');
+    return mountHash('#s=1&a=KOAK');
+  }
+
+  it('does not land on an airport a newer stage has closed', async () => {
+    const root = await koakWithKsfoRemembered();
+    const training = selectOf(field(root, 'Training'));
+    choose(training, 'S1-SFO-1');
+    choose(training, 'S1-OAK-6');
+    await new Promise((turn) => {
+      setTimeout(turn);
+    });
+    expect(globalThis.location.hash).toMatch(/&a=KOAK&st=S1-OAK-6$/);
+    expect(airportSelect(root).value).toBe('KOAK');
+  });
+
+  it('does not touch the page that took over before a load landed', async () => {
+    const root = await koakWithKsfoRemembered();
+    followLink('#/tutorial');
+    choose(selectOf(field(root, 'Training')), '');
+    await vi.waitFor(() => {
+      expect(root.textContent).toContain('SWA1740');
+    });
+    await new Promise((turn) => {
+      setTimeout(turn);
+    });
+    expect(root.querySelector<HTMLDetailsElement>('details.filters')?.open).toBe(false);
+  });
+
+  it('keeps the focus on Training across the draw it starts', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK');
+    const before = selectOf(field(root, 'Training'));
+    before.focus();
+    choose(before, 'S1-OAK-3');
+    const after = selectOf(field(root, 'Training'));
+    expect(after).not.toBe(before);
+    expect(document.activeElement).toBe(after);
+  });
+
+  it('moves a Time change off an airport the stage has not opened', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO');
+    choose(selectOf(field(root, 'time of day')), 'day');
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    });
+    expect(root.querySelector<HTMLDetailsElement>('details.filters')?.open).toBe(true);
+  });
+
+  it('moves a mode change off an airport the stage has not opened', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash(`#s=${AMENDMENT_SEED}&a=KSFO&m=amend`);
+    segment(root, 'Mode', 'Clearance').click();
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    });
+  });
+
+  it('clamps nothing on a tutorial page', async () => {
+    viewerAt('S1-OAK-1');
+    const root = await mountHash('#/tutorial');
+    choose(selectOf(field(root, 'time of day')), 'night');
+    expect(selectOf(field(root, 'time of day')).value).toBe('night');
+  });
+
+  it('shows a tutorial page no Training control and nothing locked', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#/tutorial');
+    const labels = [...root.querySelectorAll('.filters-popover .field-label')];
+    expect(labels.map((node) => node.textContent)).toStrictEqual([
+      'time of day',
+      'runway configuration',
+    ]);
+    expect(root.querySelector('button.locked')).toBeNull();
+    expect(root.querySelector('option[disabled]')).toBeNull();
+  });
+
+  describe('on home', () => {
+    const HOME = { icao: 'KSFO', mode: 'amendment', format: 'practice', n: 5, minutes: 0 };
+
+    /** Whether one card or switch button of home is the chosen one. */
+    function isChosen(root: ParentNode, key: string): boolean {
+      const node = root.querySelector(`[data-focus-key="${key}"]`);
+      return node?.getAttribute('aria-checked') === 'true';
+    }
+
+    /** The link Start opens. */
+    function startHref(root: ParentNode): string {
+      return root.querySelector('a.button.primary.big')?.getAttribute('href') ?? '';
+    }
+
+    /** Remembers KSFO, Amend and a full route, then opens home at S1-OAK-2. */
+    async function homeNarrowed(): Promise<Element> {
+      globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(HOME));
+      globalThis.localStorage.setItem('craft-tester:input', '"text"');
+      globalThis.localStorage.setItem('craft-tester:full-route', 'true');
+      viewerAt('S1-OAK-2');
+      return mountHash('#/');
+    }
+
+    it('shows the nearest open choices, and keeps the remembered ones', async () => {
+      const root = await homeNarrowed();
+      expect(isChosen(root, 'Airport:KOAK')).toBe(true);
+      expect(isChosen(root, 'Mode:clearance')).toBe(true);
+      expect(isChosen(root, 'Answer by:type')).toBe(true);
+      expect(root.querySelector('[data-focus-key="Airport:KSFO"] .card-lock')?.textContent).toBe(
+        'at S1-SFO-1',
+      );
+      expect(root.querySelector('[data-focus-key="Mode:amendment"] .card-lock')?.textContent).toBe(
+        'at S1-OAK-5',
+      );
+      expect(storedHome()).toEqual(HOME);
+      expect(globalThis.localStorage.getItem('craft-tester:full-route')).toBe('true');
+    });
+
+    it('carries the stage and the clamped settings in the Start link', async () => {
+      const root = await homeNarrowed();
+      const href = startHref(root);
+      expect(href).toMatch(/^#\/KOAK\/clearance\/practice\?/);
+      expect(href).toContain('t=day');
+      expect(href).toContain('st=S1-OAK-2');
+      expect(href).toContain('rwy=off');
+      expect(href).toContain('i=text');
+      expect(href).not.toContain('r=full');
+    });
+
+    it('brings the remembered choices back at All topics, without leaving home', async () => {
+      const root = await homeNarrowed();
+      choose(selectOf(field(root, 'Training')), '');
+      expect(isChosen(root, 'Airport:KSFO')).toBe(true);
+      expect(isChosen(root, 'Mode:amendment')).toBe(true);
+      expect(isChosen(root, 'Answer by:full')).toBe(true);
+      expect(globalThis.location.hash).toBe('#/');
+      expect(globalThis.localStorage.getItem(STAGE_KEY)).toBeNull();
+      expect(startHref(root)).toBe('#/KSFO/amend/practice?i=text&r=full');
+    });
+
+    it('keeps the focus on Training across the redraw it starts', async () => {
+      const root = await homeNarrowed();
+      const before = selectOf(field(root, 'Training'));
+      before.focus();
+      choose(before, 'S1-OAK-3');
+      const after = selectOf(field(root, 'Training'));
+      expect(after).not.toBe(before);
+      expect(document.activeElement).toBe(after);
+    });
+
+    it('saves only the choice a click changes', async () => {
+      const root = await homeNarrowed();
+      const test = root.querySelector('[data-focus-key="Format:test"]');
+      if (!(test instanceof HTMLElement)) throw new Error('home offers no Test card');
+      test.click();
+      expect(storedHome()).toEqual({ ...HOME, format: 'test' });
+      expect(isChosen(root, 'Airport:KOAK')).toBe(true);
+    });
+
+    it('saves only the filter member a change moves, at the airport shown', async () => {
+      const remembered = { time: 'night', config: { kind: 'plan', plan: 'OAKE' } };
+      globalThis.localStorage.setItem('craft-tester:filter:KOAK', JSON.stringify(remembered));
+      const root = await homeNarrowed();
+      expect(selectOf(field(root, 'time of day')).value).toBe('day');
+      expect(selectOf(field(root, 'runway configuration')).value).toBe('any');
+      choose(selectOf(field(root, 'runway configuration')), 'plan:SFOW');
+      const stored = globalThis.localStorage.getItem('craft-tester:filter:KOAK') ?? '';
+      expect(JSON.parse(stored)).toEqual({
+        time: 'night',
+        config: { kind: 'plan', plan: 'SFOW' },
+      });
+      expect(selectOf(field(root, 'time of day')).value).toBe('day');
+      expect(selectOf(field(root, 'runway configuration')).value).toBe('plan:SFOW');
+    });
+
+    it('leaves the links as they were with no stage', async () => {
+      globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(HOME));
+      const root = await mountHash('#/');
+      expect(startHref(root)).toBe('#/KSFO/amend/practice');
+      expect(root.querySelector('.locked')).toBeNull();
+    });
+  });
 });
 
 describe('toolbarHiddenAfter', () => {

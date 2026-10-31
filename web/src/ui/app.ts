@@ -19,10 +19,9 @@ import {
   setFromHash,
 } from '@/scenario/filter.ts';
 import { randomSeed, seedFromHash } from '@/scenario/rng.ts';
-import type { StagedSettings } from '@/scenario/stage.ts';
 import { airportLock, clampSettings, firstOpenAirport, isOpenAt } from '@/scenario/stage.ts';
 import type { AnswerChoice } from '@/ui/answerChoice.ts';
-import { ANSWER_OPTIONS } from '@/ui/answerChoice.ts';
+import { ANSWER_OPTIONS, answerOptions } from '@/ui/answerChoice.ts';
 import type { Panels } from '@/ui/amendPanels.ts';
 import { procedureOf, renderAmendmentPanels } from '@/ui/amendPanels.ts';
 import { boxInputName } from '@/ui/amendForm.ts';
@@ -31,7 +30,13 @@ import type { CraftFormProps } from '@/ui/craftForm.ts';
 import { clearanceProcedureRow, renderCraftForm } from '@/ui/craftForm.ts';
 import { button, el, PHONE_QUERY, segmentedControl } from '@/ui/dom.ts';
 import type { SegmentOption } from '@/ui/dom.ts';
-import { filterControls, runwayGradingControl } from '@/ui/filterControls.ts';
+import {
+  closedUntil,
+  filterControls,
+  runwayGradingControl,
+  stageControl,
+  stagedOption,
+} from '@/ui/filterControls.ts';
 import type { HomeProps } from '@/ui/home.ts';
 import { continueTestRow, homeTestRows, renderHome } from '@/ui/home.ts';
 import type {
@@ -137,6 +142,13 @@ type Actions = {
    * Undefined on a tutorial page, which offers no Runway control: the tour always grades the runway.
    */
   onRunwayGrading: ((graded: boolean) => void) | undefined;
+  /** The stage whose locks the controls show: the viewer's, never the one of the link on screen. */
+  trainingStage: () => string | undefined;
+  /**
+   * Moves the viewer to a training stage and draws a new strip from what they remember under it.
+   * Undefined on a tutorial page, which offers no Training control.
+   */
+  onStage: ((stage: string | undefined) => void) | undefined;
   onMode: (mode: Mode) => void;
   onNewScenario: () => void;
   onPick: (key: PickKey, raw: string) => void;
@@ -209,7 +221,14 @@ function cachedAirport(icao: string): Promise<AirportData> {
 
 /** The segmented control that picks the half of the trainer the session runs in. */
 function modeControl(state: AppState, actions: Actions): HTMLElement {
-  return segmentedControl({ label: 'Mode', options: MODE_OPTIONS, value: state.mode }, (raw) => {
+  const { training } = state.airport;
+  const at = training.course.amendment;
+  const options = MODE_OPTIONS.map((option) =>
+    option.value === 'amendment'
+      ? stagedOption(option, training, at, actions.trainingStage())
+      : option,
+  );
+  return segmentedControl({ label: 'Mode', options, value: state.mode }, (raw) => {
     const mode = MODE_OPTIONS.find((option) => option.value === raw)?.value ?? 'clearance';
     actions.onMode(mode);
   });
@@ -217,7 +236,8 @@ function modeControl(state: AppState, actions: Actions): HTMLElement {
 
 /** The segmented control that picks how the clearance is answered: Pick, Type, or Full route. */
 function answerControl(state: AppState, actions: Actions): HTMLElement {
-  const spec = { label: 'Answer by', options: ANSWER_OPTIONS, value: answerChoiceOf(state) };
+  const options = answerOptions(state.airport.training, actions.trainingStage());
+  const spec = { label: 'Answer by', options, value: answerChoiceOf(state) };
   return segmentedControl(spec, (raw) => {
     const answer = ANSWER_OPTIONS.find((option) => option.value === raw)?.value ?? 'pick';
     actions.onAnswer(answer);
@@ -228,9 +248,16 @@ function answerControl(state: AppState, actions: Actions): HTMLElement {
 function airportControl(state: AppState, index: AirportsIndex, actions: Actions): HTMLElement {
   const select = el('select', 'airport');
   select.setAttribute('aria-label', 'Airport');
-  for (const entry of index) {
-    const option = el('option', '', entry.icao);
-    option.value = entry.icao;
+  const { training } = state.airport;
+  const stage = actions.trainingStage();
+  for (const { icao } of index) {
+    const locked = closedUntil(training, airportLock(training, icao), stage);
+    const option = el('option', '', locked === undefined ? icao : `${icao} (at ${locked})`);
+    option.value = icao;
+    if (locked !== undefined) {
+      option.disabled = true;
+      select.classList.add('has-locked');
+    }
     select.append(option);
   }
   select.value = state.airport.airport.icao;
@@ -242,13 +269,19 @@ function airportControl(state: AppState, index: AirportsIndex, actions: Actions)
 
 /**
  * How many of the Filters choices differ from their defaults, which the Filters button counts: the
- * filters that narrow the draw, and the runway when it is not graded.
+ * filters that narrow the draw, and the runway when it is not graded. A value the viewer's stage
+ * forces is no choice of theirs, so day while night is closed and Not graded while the runway is
+ * closed do not count, and neither does the stage itself.
  */
-function activeFilterCount(state: AppState): number {
-  const time = state.filter.time === 'either' ? 0 : 1;
-  const config = state.filter.config.kind === 'any' ? 0 : 1;
-  const runway = state.gradeRunway ? 0 : 1;
-  return time + config + runway;
+function activeFilterCount(state: AppState, stage: string | undefined): number {
+  const { training } = state.airport;
+  const { course } = training;
+  const { time, config } = state.filter;
+  const forcedDay = time === 'day' && !isOpenAt(training, course.night, stage);
+  const timeCount = time === 'either' || forcedDay ? 0 : 1;
+  const configCount = config.kind === 'any' ? 0 : 1;
+  const runwayCount = state.gradeRunway || !isOpenAt(training, course.runway, stage) ? 0 : 1;
+  return timeCount + configCount + runwayCount;
 }
 
 /**
@@ -284,17 +317,24 @@ function closeOnOutsidePress(details: HTMLDetailsElement): void {
 
 /**
  * The Filters button, with a count of the filters set, and the popover it opens, which holds the
- * time and configuration dropdowns and, where the page offers it, the runway grading after them.
+ * Training dropdown where the page offers it, the time and configuration dropdowns, and where the
+ * page offers it the runway grading after them.
  */
 function filtersControl(state: AppState, actions: Actions): HTMLElement {
   const details = el('details', 'filters');
   const summary = el('summary', '', 'Filters');
-  const count = activeFilterCount(state);
+  const stage = actions.trainingStage();
+  const { training } = state.airport;
+  const count = activeFilterCount(state, stage);
   if (count > 0) summary.append(el('span', 'count', String(count)));
   const popover = el('div', 'filters-popover');
-  popover.append(...filterControls(state.filter, state.airport, actions.onFilter));
+  if (actions.onStage !== undefined) {
+    popover.append(stageControl(training, stage, actions.onStage), el('hr', 'filters-rule'));
+  }
+  popover.append(...filterControls(state.filter, state.airport, actions.onFilter, stage));
   if (actions.onRunwayGrading !== undefined) {
-    popover.append(runwayGradingControl(state.gradeRunway, actions.onRunwayGrading));
+    const locked = closedUntil(training, training.course.runway, stage);
+    popover.append(runwayGradingControl(state.gradeRunway, actions.onRunwayGrading, locked));
   }
   details.append(summary, popover);
   closeOnOutsidePress(details);
@@ -721,13 +761,13 @@ function setActions(context: ActionContext): SetActions {
   return {
     onStartTest: (n, minutes) => {
       const state = current();
-      const open = airportToLeaveFor(context.index, stores, state.airport);
+      const open = airportToLeaveFor(context.index, context.viewerStage(), state.airport);
       if (open === undefined) {
-        update(startedSet(state, stores, n, minutes));
+        update(startedSet(state, context, n, minutes));
         return;
       }
       void cachedAirport(open).then((airport) => {
-        update(startedSet(sessionAt(airport, current(), stores), stores, n, minutes));
+        update(startedSet(sessionAt(airport, current(), context), context, n, minutes));
       });
     },
     onSkip: withSet((state, set) => {
@@ -1035,6 +1075,10 @@ type ActionContext = {
   root: Element;
   index: AirportsIndex;
   stores: Stores;
+  /** The stage every draw and lock of the page reads: the viewer's, undefined on a tutorial page. */
+  viewerStage: () => string | undefined;
+  /** Whether the page has been torn down, which a load still under way has to ask. */
+  disposed: () => boolean;
   current: () => AppState;
   update: (next: AppState) => void;
 };
@@ -1063,31 +1107,21 @@ function gradedAs(state: AppState, gradeRunway: boolean, solved: SolvedStore): A
   return withRunwayGrading(state, gradeRunway, previous);
 }
 
-/** Settings narrowed to the training stage this browser remembers, for a draw under it. */
-function clampedToViewer<Settings extends StagedSettings>(
-  settings: Settings,
-  airport: AirportData,
-  stores: Stores,
-): Settings {
-  return clampSettings(settings, airport, stores.stage.load());
-}
-
 /**
  * The airport a new draw has to move to, because the viewer's stage has not opened the page's.
  *
  * @param index The airports the trainer lists.
- * @param stores What this browser remembers, the viewer's stage among it.
+ * @param stage The viewer's stage.
  * @param page The data of the airport the draw would run at.
  * @returns The first open airport, or `undefined` when the draw stays, as it does at an open airport
  *   and where the stage opens none.
  */
 function airportToLeaveFor(
   index: AirportsIndex,
-  stores: Stores,
+  stage: string | undefined,
   page: AirportData,
 ): string | undefined {
   const { training, airport } = page;
-  const stage = stores.stage.load();
   if (isOpenAt(training, airportLock(training, airport.icao), stage)) return undefined;
   return firstOpenAirport(index, training, stage);
 }
@@ -1098,33 +1132,147 @@ function airportToLeaveFor(
  *
  * @param airport The airport to move to.
  * @param state The state on screen.
- * @param stores What this browser remembers.
+ * @param context The page's stores and stage.
  * @returns The session.
  */
-function sessionAt(airport: AirportData, state: AppState, stores: Stores): AppState {
+function sessionAt(airport: AirportData, state: AppState, context: ActionContext): AppState {
   const filter: ScenarioFilter = { time: state.filter.time, config: { kind: 'any' } };
-  const carried = { ...sessionSettings(state), filter };
-  const settings = clampedToViewer(carried, airport, stores);
-  const { mode, input, fullRoute, gradeRunway } = settings;
-  const scope = { mode, input, fullRoute, gradeRunway };
-  const previous = stores.solved.load(airport.airport.icao, state.seed, scope);
-  return newSession(airport, state.seed, previous, settings);
+  return clampedSession(airport, state.seed, { ...sessionSettings(state), filter }, context);
 }
 
-/** Moves the page to another airport, on a strip drawn under the viewer's stage. */
-function switchAirport(context: ActionContext, icao: string): void {
+/**
+ * A session under the viewer's stage, with the attempt held for it.
+ *
+ * @param airport The airport the session runs at.
+ * @param seed The seed of its strip.
+ * @param carried The settings to narrow to the stage.
+ * @param context The page's stores and stage.
+ * @returns The session.
+ */
+function clampedSession(
+  airport: AirportData,
+  seed: number,
+  carried: Omit<SessionSettings, 'set'>,
+  context: ActionContext,
+): AppState {
+  const settings = clampSettings(carried, airport, context.viewerStage());
+  const { mode, input, fullRoute, gradeRunway } = settings;
+  const scope = { mode, input, fullRoute, gradeRunway };
+  const previous = context.stores.solved.load(airport.airport.icao, seed, scope);
+  return newSession(airport, seed, previous, settings);
+}
+
+/**
+ * What this browser remembers for a session at an airport, whatever the page on screen narrowed.
+ *
+ * @param state The state on screen, which stands in for a mode or an answer never remembered.
+ * @param icao The airport, whose remembered filter applies.
+ * @param stores What this browser remembers.
+ * @returns The settings, before any stage narrows them.
+ */
+function rememberedSettings(
+  state: AppState,
+  icao: string,
+  stores: Stores,
+): Omit<SessionSettings, 'set'> {
+  const input = stores.input.load() ?? state.input;
+  return {
+    filter: stores.filter.load(icao) ?? ANY_SCENARIO,
+    mode: stores.home.load()?.mode ?? state.mode,
+    input,
+    fullRoute: input === 'text' && (stores.fullRoute.load() ?? state.fullRoute),
+    gradeRunway: stores.runwayGrading.load() ?? true,
+  };
+}
+
+/**
+ * Whether a load that has just resolved may still put the page at its airport: not once the page is
+ * torn down, nor where a newer stage has closed the airport meanwhile.
+ */
+function mayLand(context: ActionContext, airport: AirportData): boolean {
+  const { training } = airport;
+  const at = airportLock(training, airport.airport.icao);
+  return !context.disposed() && isOpenAt(training, at, context.viewerStage());
+}
+
+/** Keeps the Filters popover open over a page drawn again from inside it. */
+function keepFiltersOpen(root: Element): void {
+  const popover = root.querySelector('details.filters');
+  if (popover instanceof HTMLDetailsElement) popover.open = true;
+}
+
+/**
+ * The airport a stage just picked moves the page to: the one home remembers where the stage has
+ * opened it and the page is elsewhere, else the first open one where the page's is closed.
+ */
+function airportOnStageChange(context: ActionContext, page: AirportData): string | undefined {
+  const { index, stores } = context;
+  const stage = context.viewerStage();
+  const { training, airport } = page;
+  const stored = stores.home.load()?.icao;
+  const comesBack =
+    stored !== undefined &&
+    stored !== airport.icao &&
+    lists(index, stored) &&
+    isOpenAt(training, airportLock(training, stored), stage);
+  return comesBack ? stored : airportToLeaveFor(index, stage, page);
+}
+
+/**
+ * Draws a new strip from the remembered settings, not the narrowed ones on the page, under the stage
+ * just picked, so a later stage or All topics brings them back, the remembered airport included;
+ * where that stage has not opened the page's airport, the strip moves to the first one it has. The
+ * popover stays open and the focus comes back only after that, since a closed one takes no focus.
+ */
+function drawRemembered(context: ActionContext): void {
+  const { root, stores, current, update } = context;
+  const page = current().airport;
+  const open = airportOnStageChange(context, page);
+  const drawAt = (airport: AirportData): void => {
+    const { icao } = airport.airport;
+    const focused = focusKeyOf(root);
+    const carried = rememberedSettings(current(), icao, stores);
+    const session = clampedSession(airport, randomSeed(), carried, context);
+    if (open !== undefined) rememberPractice(stores, icao, session.mode, airport.training);
+    update(session);
+    keepFiltersOpen(root);
+    restoreFocus(root, focused);
+  };
+  if (open === undefined) drawAt(page);
+  else
+    void cachedAirport(open).then((airport) => {
+      if (mayLand(context, airport)) drawAt(airport);
+    });
+}
+
+/**
+ * Moves the page to another airport, on a strip drawn under the viewer's stage.
+ *
+ * @param context The page's stores, its state and how to change it.
+ * @param icao The airport to move to.
+ * @param changes What the move changes on the state it starts from: a filter or a mode just picked.
+ * @returns Whether the page moved, which it does not once `mayLand` refuses the load.
+ */
+function switchAirport(
+  context: ActionContext,
+  icao: string,
+  changes: Partial<Pick<AppState, 'filter' | 'mode'>>,
+): Promise<boolean> {
   const { stores, current, update } = context;
-  void cachedAirport(icao).then((airport) => {
-    const session = sessionAt(airport, current(), stores);
+  return cachedAirport(icao).then((airport) => {
+    if (!mayLand(context, airport)) return false;
+    const session = sessionAt(airport, { ...current(), ...changes }, context);
     rememberPractice(stores, icao, session.mode, airport.training);
     update(session);
+    return true;
   });
 }
 
 /** A new test set from the session given, under the viewer's stage, remembered for home. */
-function startedSet(state: AppState, stores: Stores, n: number, minutes: number): AppState {
+function startedSet(state: AppState, context: ActionContext, n: number, minutes: number): AppState {
+  const { stores } = context;
   const { airport, training } = state.airport;
-  const clamped = clampedToViewer(state, state.airport, stores);
+  const clamped = clampSettings(state, state.airport, context.viewerStage());
   const params = { seed: newSetSeed(randomSeed), n, minutes, index: 0 };
   const focus = homeFocusOf(stores, airport.icao, clamped.mode, training);
   stores.home.save({ ...focus, format: 'test', n, minutes });
@@ -1135,9 +1283,10 @@ function startedSet(state: AppState, stores: Stores, n: number, minutes: number)
  * Remembers a filter change. Under a stage only the member the student changed moves, because what
  * is on screen may be clamped; at All topics on an unstaged page the whole filter is the choice.
  */
-function saveFilter(stores: Stores, state: AppState, filter: ScenarioFilter): void {
+function saveFilter(context: ActionContext, state: AppState, filter: ScenarioFilter): void {
+  const { stores } = context;
   const { icao } = state.airport.airport;
-  const staged = stores.stage.load() !== undefined || state.filter.stage !== undefined;
+  const staged = context.viewerStage() !== undefined || state.filter.stage !== undefined;
   const stored = stores.filter.load(icao);
   stores.filter.save(icao, staged ? rememberedFilter(stored, state.filter, filter) : filter);
 }
@@ -1152,13 +1301,13 @@ function sessionSettings(state: AppState): Omit<SessionSettings, 'set'> {
 function drawNewStrip(context: ActionContext): void {
   const { stores, current, update } = context;
   const state = current();
-  const open = airportToLeaveFor(context.index, stores, state.airport);
+  const open = airportToLeaveFor(context.index, context.viewerStage(), state.airport);
   if (open !== undefined) {
-    switchAirport(context, open);
+    void switchAirport(context, open, {});
     return;
   }
   const seed = randomSeed();
-  const clamped = clampedToViewer(state, state.airport, stores);
+  const clamped = clampSettings(state, state.airport, context.viewerStage());
   const { mode, input, fullRoute, gradeRunway } = clamped;
   const scope = { mode, input, fullRoute, gradeRunway };
   const previous = stores.solved.load(state.airport.airport.icao, seed, scope);
@@ -1175,7 +1324,7 @@ function trainerActions(context: ActionContext): Actions {
   const solved = stores.solved;
   return {
     onAirport: (icao) => {
-      switchAirport(context, icao);
+      void switchAirport(context, icao, {});
     },
     onBox: (box, answer) => {
       update(withBox(current(), box, answer));
@@ -1192,14 +1341,21 @@ function trainerActions(context: ActionContext): Actions {
       const state = current();
       const { icao } = state.airport.airport;
       const filter: ScenarioFilter = { time, config };
-      saveFilter(stores, state, filter);
+      saveFilter(context, state, filter);
+      const stage = context.viewerStage();
+      const open = airportToLeaveFor(context.index, stage, state.airport);
+      if (open !== undefined) {
+        void switchAirport(context, open, { filter }).then((moved) => {
+          if (moved) keepFiltersOpen(root);
+        });
+        return;
+      }
       const seed = randomSeed();
-      const clamped = clampedToViewer({ ...state, filter }, state.airport, stores);
+      const clamped = clampSettings({ ...state, filter }, state.airport, stage);
       const { mode, input, fullRoute, gradeRunway } = clamped;
       const previous = solved.load(icao, seed, { mode, input, fullRoute, gradeRunway });
       update(withFilter(clamped, clamped.filter, seed, previous));
-      const popover = root.querySelector('details.filters');
-      if (popover instanceof HTMLDetailsElement) popover.open = true;
+      keepFiltersOpen(root);
     },
     onAnswer: (answer) => {
       stores.input.save(inputKindOf(answer));
@@ -1207,15 +1363,28 @@ function trainerActions(context: ActionContext): Actions {
       update(answeredAs(current(), answer, solved));
     },
     onRunwayGrading: (graded) => {
-      stores.runwayGrading.save(graded);
+      const { training } = current().airport;
+      if (isOpenAt(training, training.course.runway, context.viewerStage())) {
+        stores.runwayGrading.save(graded);
+      }
       update(gradedAs(current(), graded, solved));
-      const popover = root.querySelector('details.filters');
-      if (popover instanceof HTMLDetailsElement) popover.open = true;
+      keepFiltersOpen(root);
+    },
+    trainingStage: context.viewerStage,
+    onStage: (stage) => {
+      stores.stage.save(stage);
+      drawRemembered(context);
     },
     onMode: (picked) => {
       const state = current();
+      const stage = context.viewerStage();
+      const open = airportToLeaveFor(context.index, stage, state.airport);
+      if (open !== undefined) {
+        void switchAirport(context, open, { mode: picked });
+        return;
+      }
       const seed = randomSeed();
-      const clamped = clampedToViewer({ ...state, mode: picked }, state.airport, stores);
+      const clamped = clampSettings({ ...state, mode: picked }, state.airport, stage);
       const { mode, input, fullRoute, gradeRunway } = clamped;
       const scope = { mode, input, fullRoute, gradeRunway };
       const previous = solved.load(state.airport.airport.icao, seed, scope);
@@ -1241,7 +1410,7 @@ function trainerActions(context: ActionContext): Actions {
 /**
  * The trainer's actions as a tutorial part runs them: each pick, box answer and submit that happened
  * is told to the part's tour, a submit is graded without being saved, the way of answering is not
- * remembered, and no Runway control is offered.
+ * remembered, no Runway or Training control is offered, and no stage locks anything.
  */
 function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink): Actions {
   const { stores, current, update } = context;
@@ -1251,6 +1420,7 @@ function withTutorial(trainer: Actions, context: ActionContext, tour: TourLink):
       update(answeredAs(current(), answer, stores.solved));
     },
     onRunwayGrading: undefined,
+    onStage: undefined,
     onBox: (box, answer) => {
       trainer.onBox(box, answer);
       tour.boxed(box, answer);
@@ -1319,7 +1489,17 @@ function mount(
     follower.follow(state);
     tour?.refresh();
   };
-  const context: ActionContext = { root, index, stores, current: () => state, update };
+  const viewerStage = (): string | undefined =>
+    tour === undefined ? stores.stage.load() : undefined;
+  const context: ActionContext = {
+    root,
+    index,
+    stores,
+    viewerStage,
+    disposed: () => disposed,
+    current: () => state,
+    update,
+  };
   const trainer = trainerActions(context);
   actions = tour === undefined ? trainer : withTutorial(trainer, context, tour);
 
@@ -1501,9 +1681,10 @@ type FreshRoute = Extract<Route, { kind: 'practice' | 'newTest' }>;
  */
 async function routeSession(opening: Opening, route: FreshRoute): Promise<AppState> {
   const { index, stores } = opening.target;
+  const stage = stores.stage.load();
   const named = await cachedAirport(route.icao);
   const namesStage = filterFromHash(route.query).stage !== undefined;
-  const open = namesStage ? undefined : airportToLeaveFor(index, stores, named);
+  const open = namesStage ? undefined : airportToLeaveFor(index, stage, named);
   const airport = open === undefined ? named : await cachedAirport(open);
   const from = settingsFrom(route.query, airport.airport.icao, stores);
   const moved = open !== undefined && hasFilterParams(route.query);
@@ -1511,7 +1692,7 @@ async function routeSession(opening: Opening, route: FreshRoute): Promise<AppSta
     ? { time: from.filter.time, config: { kind: 'any' } }
     : from.filter;
   const carried = { ...from, filter, mode: route.mode };
-  const settings = namesStage ? carried : clampedToViewer(carried, airport, stores);
+  const settings = namesStage ? carried : clampSettings(carried, airport, stage);
   return newSession(airport, randomSeed(), undefined, settings);
 }
 
@@ -1715,41 +1896,114 @@ function homeListing(airports: readonly AirportData[], stores: Stores): HomeList
   };
 }
 
+/** The settings home remembers, or shows once a stage has narrowed them. */
+type HomeSettings = {
+  choices: HomeChoices;
+  answer: AnswerChoice;
+  filter: ScenarioFilter;
+  gradeRunway: boolean;
+};
+
+/** What home shows at a stage: the narrowed settings, the airport, and its remembered filter. */
+type HomeShown = HomeSettings & { airport: AirportData; storedFilter: ScenarioFilter };
+
+/** The airports home draws from: their data in index order, the index, and the training section. */
+type HomeAirports = {
+  loaded: readonly AirportData[];
+  index: AirportsIndex;
+  training: Training;
+};
+
+/**
+ * Home's remembered settings narrowed to a stage, which leaves the remembered ones as they are.
+ *
+ * @param remembered What this browser remembers.
+ * @param airports The airports home draws from.
+ * @param stage The viewer's stage.
+ * @param stores What this browser remembers, for the filter of an airport the stage moved home to.
+ * @returns What home shows.
+ * @throws Error When home has no data for the airport it would show.
+ */
+function homeShown(
+  remembered: HomeSettings,
+  airports: HomeAirports,
+  stage: string | undefined,
+  stores: Stores,
+): HomeShown {
+  const { training, index, loaded } = airports;
+  const { choices, answer, gradeRunway } = remembered;
+  const open = isOpenAt(training, airportLock(training, choices.icao), stage);
+  const icao = open ? choices.icao : (firstOpenAirport(index, training, stage) ?? choices.icao);
+  const airport = loaded.find((data) => data.airport.icao === icao);
+  if (airport === undefined) throw new Error(`home has no data loaded for ${icao}`);
+  const filter =
+    icao === choices.icao ? remembered.filter : (stores.filter.load(icao) ?? ANY_SCENARIO);
+  const fullRoute = answer === 'full';
+  const { mode } = choices;
+  const clamped = clampSettings({ filter, mode, fullRoute, gradeRunway }, airport, stage);
+  return {
+    airport,
+    storedFilter: filter,
+    choices: { ...choices, icao, mode: clamped.mode },
+    answer: fullRoute && !clamped.fullRoute ? 'type' : answer,
+    filter: clamped.filter,
+    gradeRunway: clamped.gradeRunway,
+  };
+}
+
 /**
  * Puts home on screen and draws it again after every choice, each remembered as it is made: the
  * airport, mode and format for home itself, the answer and the filter as the trainer remembers them.
+ * Under a training stage home shows its settings narrowed to the stage, and a choice saves only what
+ * it changed, so a locked value keeps its remembered one for a later stage or All topics.
  *
  * @param root The element the page is rendered into.
  * @param airports Every airport of the index, loaded, in index order.
+ * @param index The airports index.
  * @param stores What this browser remembers.
  * @param initial The choices home opens on.
  * @returns Home's teardown, which takes home's tour off the page where one runs.
+ * @throws Error When no airport is loaded.
  */
 function mountHome(
   root: Element,
   airports: readonly AirportData[],
+  index: AirportsIndex,
   stores: Stores,
   initial: HomeChoices,
 ): Mounted {
+  const training = airports[0]?.training;
+  if (training === undefined) throw new Error('home has no airports loaded');
+  const sources: HomeAirports = { loaded: airports, index, training };
   let tour: TourDriver | undefined;
   let choices = initial;
   let answer = rememberedAnswer(stores);
   let filter = stores.filter.load(choices.icao) ?? ANY_SCENARIO;
   let gradeRunway = stores.runwayGrading.load() ?? true;
   const draw = (): void => {
-    const airport = airports.find((data) => data.airport.icao === choices.icao);
-    if (airport === undefined) throw new Error(`home has no data loaded for ${choices.icao}`);
+    const stage = stores.stage.load();
+    const remembered = { choices, answer, filter, gradeRunway };
+    const { storedFilter, ...shown } = homeShown(remembered, sources, stage, stores);
     const page = renderHome({
       ...homeListing(airports, stores),
-      airport,
-      choices,
-      answer,
-      filter,
-      gradeRunway,
+      ...shown,
+      stage,
+      training,
+      onStage: (next) => {
+        stores.stage.save(next);
+        draw();
+      },
       onChoices: (next) => {
-        stores.home.save(next);
-        if (next.icao !== choices.icao) filter = stores.filter.load(next.icao) ?? ANY_SCENARIO;
-        choices = next;
+        const merged = {
+          ...next,
+          icao: next.icao === shown.choices.icao ? choices.icao : next.icao,
+          mode: next.mode === shown.choices.mode ? choices.mode : next.mode,
+        };
+        stores.home.save(merged);
+        if (merged.icao !== choices.icao) {
+          filter = stores.filter.load(merged.icao) ?? ANY_SCENARIO;
+        }
+        choices = merged;
         draw();
       },
       onAnswer: (next) => {
@@ -1759,8 +2013,10 @@ function mountHome(
         draw();
       },
       onFilter: (next) => {
-        stores.filter.save(choices.icao, next);
-        filter = next;
+        const { icao } = shown.airport.airport;
+        const saved = rememberedFilter(storedFilter, shown.filter, next);
+        stores.filter.save(icao, saved);
+        if (icao === choices.icao) filter = saved;
         draw();
       },
       onRunwayGrading: (next) => {
@@ -1814,7 +2070,7 @@ async function openHome(opening: Opening): Promise<void> {
     return;
   }
   const choices = homeChoicesOf(stores.home, index);
-  takeOver(opening, () => mountHome(root, airports, stores, choices));
+  takeOver(opening, () => mountHome(root, airports, index, stores, choices));
 }
 
 /**

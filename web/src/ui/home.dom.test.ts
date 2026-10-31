@@ -38,6 +38,8 @@ function props(overrides: Partial<HomeProps> = {}): HomeProps {
     answer: 'pick',
     filter: ANY_SCENARIO,
     gradeRunway: true,
+    stage: undefined,
+    training: koak.training,
     tests: [],
     resume: undefined,
     offerTour: false,
@@ -46,6 +48,7 @@ function props(overrides: Partial<HomeProps> = {}): HomeProps {
     onAnswer: vi.fn(),
     onFilter: vi.fn(),
     onRunwayGrading: vi.fn(),
+    onStage: vi.fn(),
     onDismissTour: vi.fn(),
     copy: vi.fn(),
     ...overrides,
@@ -63,6 +66,84 @@ function find<T extends Element>(root: ParentNode, selector: string): T {
 function startLink(page: HTMLElement): HTMLAnchorElement {
   return find<HTMLAnchorElement>(page, 'a.button.primary.big');
 }
+
+/** Home as a viewer at S1-OAK-2 sees it, with the settings already clamped to the stage. */
+function homeAtStage(): HTMLElement {
+  return renderHome(
+    props({
+      stage: 'S1-OAK-2',
+      choices: { ...CHOICES, mode: 'clearance' },
+      filter: { ...ANY_SCENARIO, time: 'day', stage: 'S1-OAK-2' },
+      gradeRunway: false,
+    }),
+  );
+}
+
+/** One card or switch button of home, by the group it sits in and the value it reads back. */
+function choice(page: HTMLElement, key: string): HTMLButtonElement {
+  return find<HTMLButtonElement>(page, `[data-focus-key="${key}"]`);
+}
+
+describe('home at a training stage', () => {
+  it('opens the grid on the Training row, with the stage chosen', () => {
+    const page = homeAtStage();
+    expect(page.querySelector('.home-grid .home-label')?.textContent).toBe('Training');
+    const select = find<HTMLSelectElement>(page, '.home-grid select');
+    expect(select.value).toBe('S1-OAK-2');
+    expect(select.options[0]?.textContent).toBe('All topics');
+  });
+
+  it('reports the stage picked in Training', () => {
+    const onStage = vi.fn();
+    const page = renderHome(props({ onStage }));
+    const select = find<HTMLSelectElement>(page, '.home-grid select');
+    select.value = 'S1-OAK-5';
+    select.dispatchEvent(new Event('change'));
+    expect(onStage).toHaveBeenCalledWith('S1-OAK-5');
+  });
+
+  it('locks the cards the stage rules out, with the stage that opens each', () => {
+    const page = homeAtStage();
+    const ksfo = choice(page, 'Airport:KSFO');
+    expect(ksfo.disabled).toBe(true);
+    expect(ksfo.classList.contains('locked')).toBe(true);
+    expect(ksfo.querySelector('.card-lock')?.textContent).toBe('at S1-SFO-1');
+    const amend = choice(page, 'Mode:amendment');
+    expect(amend.disabled).toBe(true);
+    expect(amend.querySelector('.card-lock')?.textContent).toBe('at S1-OAK-5');
+    expect(choice(page, 'Airport:KOAK').disabled).toBe(false);
+    expect(choice(page, 'Mode:clearance').querySelector('.card-lock')).toBeNull();
+  });
+
+  it('does nothing on a click on a locked card', () => {
+    const onChoices = vi.fn();
+    const page = renderHome(props({ stage: 'S1-OAK-2', onChoices }));
+    choice(page, 'Airport:KSFO').click();
+    expect(onChoices).not.toHaveBeenCalled();
+  });
+
+  it('locks Full route, and the choices under Filters', () => {
+    const page = homeAtStage();
+    expect(choice(page, 'Answer by:full').textContent).toBe('🔒 Full route');
+    expect(choice(page, 'Answer by:full').disabled).toBe(true);
+    const disabled = [...page.querySelectorAll('details.home-more option[disabled]')];
+    expect(disabled.map((option) => option.textContent)).toContain('Night (at S1-OAK-6)');
+    expect(disabled.map((option) => option.textContent)).toContain('Graded (at S1-OAK-3)');
+  });
+
+  it('carries the stage and the clamped settings in the Start link', () => {
+    expect(startLink(homeAtStage()).getAttribute('href')).toBe(
+      '#/KOAK/clearance/test/10x20?t=day&st=S1-OAK-2&rwy=off',
+    );
+  });
+
+  it('shows no lock and writes no stage at All topics', () => {
+    const page = renderHome(props());
+    expect(page.querySelector('.locked')).toBeNull();
+    expect(page.querySelector('option[disabled]')).toBeNull();
+    expect(startLink(page).getAttribute('href')).toBe('#/KOAK/amend/test/10x20');
+  });
+});
 
 describe('renderHome', () => {
   it('links Start to the test the choices describe, shows the link and copies it', () => {

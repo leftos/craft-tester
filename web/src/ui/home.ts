@@ -1,10 +1,17 @@
-import type { AirportData } from '@/data/schema.ts';
+import type { AirportData, Training } from '@/data/schema.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { settingsQuery } from '@/scenario/filter.ts';
+import { airportLock } from '@/scenario/stage.ts';
 import type { AnswerChoice } from '@/ui/answerChoice.ts';
-import { ANSWER_OPTIONS } from '@/ui/answerChoice.ts';
+import { ANSWER_OPTIONS, answerOptions } from '@/ui/answerChoice.ts';
 import { button, el, segmentedControl } from '@/ui/dom.ts';
-import { filterControls, runwayGradingControl } from '@/ui/filterControls.ts';
+import {
+  closedUntil,
+  filterControls,
+  runwayGradingControl,
+  stageControl,
+  stagedOption,
+} from '@/ui/filterControls.ts';
 import type { HomeChoices } from '@/ui/preferences.ts';
 import type { PageRoute } from '@/ui/router.ts';
 import { hrefOf } from '@/ui/router.ts';
@@ -24,7 +31,10 @@ export type HomeTestRow = {
   href: string;
 };
 
-/** Everything home renders from, and what its controls call back into. */
+/**
+ * Everything home renders from, and what its controls call back into. The airport, the choices, the
+ * answer, the filter and the runway grading are shown as the stage allows them.
+ */
 export type HomeProps = {
   airports: readonly AirportCard[];
   /** The data of the airport chosen, which the configuration dropdown offers from. */
@@ -34,6 +44,10 @@ export type HomeProps = {
   filter: ScenarioFilter;
   /** Whether the runway is graded, which the start link carries. */
   gradeRunway: boolean;
+  /** The viewer's training stage, `undefined` for All topics. */
+  stage: string | undefined;
+  /** The training section the stage is read against. */
+  training: Training;
   /** The sets this browser remembers, newest first. */
   tests: readonly HomeTestRow[];
   /** The newest unfinished set, or `undefined` when there is none. */
@@ -47,16 +61,25 @@ export type HomeProps = {
   onFilter: (filter: ScenarioFilter) => void;
   /** The viewer turned runway grading on or off, which home remembers. */
   onRunwayGrading: (graded: boolean) => void;
+  /** The viewer picked a training stage, `undefined` for All topics. */
+  onStage: (stage: string | undefined) => void;
   /** The viewer turned the tour down, which home remembers so it is not offered again. */
   onDismissTour: () => void;
   copy: (text: string) => void;
 };
 
 /**
- * One card of a card group: the value it reads back, its heading, the line under it, and the tour
- * anchor it carries where a tour step points at it.
+ * One card of a card group: the value it reads back, its heading, the line under it, the tour anchor
+ * it carries where a tour step points at it, and the training stage that opens it where the viewer's
+ * has not.
  */
-type CardOption = { value: string; title: string; detail: string; anchor?: TourAnchor };
+type CardOption = {
+  value: string;
+  title: string;
+  detail: string;
+  anchor?: TourAnchor;
+  locked?: string;
+};
 
 /** The most rows "Your tests" lists. */
 const MAX_TEST_ROWS = 10;
@@ -85,10 +108,28 @@ const FORMAT_CARDS: readonly (CardOption & { value: HomeChoices['format'] })[] =
   },
 ];
 
+/** One card of a group; a locked one is disabled and names the stage that opens it. */
+function cardOf(label: string, option: CardOption, chosen: boolean): HTMLButtonElement {
+  const card = el('button', 'card');
+  card.type = 'button';
+  card.setAttribute('role', 'radio');
+  card.setAttribute('aria-checked', String(chosen));
+  card.setAttribute('data-focus-key', `${label}:${option.value}`);
+  if (option.anchor !== undefined) card.dataset['tour'] = option.anchor;
+  card.append(el('strong', '', option.title), el('span', 'card-detail', option.detail));
+  if (option.locked !== undefined) {
+    card.classList.add('locked');
+    card.disabled = true;
+    card.append(el('span', 'card-lock', `at ${option.locked}`));
+  }
+  return card;
+}
+
 /**
  * A group of cards of which exactly one is chosen, read by a screen reader as a radio group under
  * the label. Each card carries the same `data-focus-key` a segmented control's button does, so a
- * page drawn again can put the focus back on it; picking the card already chosen calls nothing.
+ * page drawn again can put the focus back on it; picking the card already chosen, or a locked one,
+ * calls nothing.
  */
 function cardChoice(
   label: string,
@@ -100,15 +141,9 @@ function cardChoice(
   group.setAttribute('role', 'radiogroup');
   group.setAttribute('aria-label', label);
   for (const option of options) {
-    const card = el('button', 'card');
-    card.type = 'button';
-    card.setAttribute('role', 'radio');
-    card.setAttribute('aria-checked', String(option.value === value));
-    card.setAttribute('data-focus-key', `${label}:${option.value}`);
-    if (option.anchor !== undefined) card.dataset['tour'] = option.anchor;
-    card.append(el('strong', '', option.title), el('span', 'card-detail', option.detail));
+    const card = cardOf(label, option, option.value === value);
     card.addEventListener('click', () => {
-      if (option.value !== value) onPick(option.value);
+      if (option.value !== value && !card.disabled) onPick(option.value);
     });
     group.append(card);
   }
@@ -153,34 +188,48 @@ function formatRow(props: HomeProps): HTMLElement {
  * whether the runway is graded.
  */
 function answerRow(props: HomeProps): HTMLElement {
+  const { filter, airport, stage, training } = props;
   const cell = el('div', 'home-answer');
   const answer = segmentedControl(
-    { label: 'Answer by', options: ANSWER_OPTIONS, value: props.answer },
+    { label: 'Answer by', options: answerOptions(training, stage), value: props.answer },
     (raw) => {
       props.onAnswer(ANSWER_OPTIONS.find((option) => option.value === raw)?.value ?? 'pick');
     },
   );
   const more = el('details', 'home-more');
   const filters = el('div', 'home-filters');
+  const runwayLock = closedUntil(training, training.course.runway, stage);
   filters.append(
-    ...filterControls(props.filter, props.airport, props.onFilter),
-    runwayGradingControl(props.gradeRunway, props.onRunwayGrading),
+    ...filterControls(filter, airport, props.onFilter, stage),
+    runwayGradingControl(props.gradeRunway, props.onRunwayGrading, runwayLock),
   );
   more.append(el('summary', '', 'Filters'), filters);
   cell.append(answer, more);
   return cell;
 }
 
-/** The grid of choices: Airport, Mode, Format, then Answer by. */
+/** The Training dropdown, which the grid's own row names on screen. */
+function trainingRow(props: HomeProps): HTMLElement {
+  const control = stageControl(props.training, props.stage, props.onStage);
+  control.classList.add('home-training');
+  return control;
+}
+
+/** The grid of choices: Training, Airport, Mode, Format, then Answer by. */
 function choiceGrid(props: HomeProps): HTMLElement {
-  const { choices, onChoices } = props;
-  const airports = props.airports.map((airport) => ({
-    value: airport.icao,
-    title: airport.icao,
-    detail: airport.spoken,
-  }));
+  const { choices, onChoices, stage, training } = props;
+  const airports = props.airports.map(({ icao, spoken }) => {
+    const card: CardOption = { value: icao, title: icao, detail: spoken };
+    return stagedOption(card, training, airportLock(training, icao), stage);
+  });
+  const modes = MODE_CARDS.map((card) =>
+    card.value === 'amendment'
+      ? stagedOption(card, training, training.course.amendment, stage)
+      : card,
+  );
   const grid = el('div', 'home-grid');
   grid.append(
+    ...gridRow('Training', trainingRow(props)),
     ...gridRow(
       'Airport',
       cardChoice('Airport', airports, choices.icao, (icao) => {
@@ -189,7 +238,7 @@ function choiceGrid(props: HomeProps): HTMLElement {
     ),
     ...gridRow(
       'Mode',
-      cardChoice('Mode', MODE_CARDS, choices.mode, (raw) => {
+      cardChoice('Mode', modes, choices.mode, (raw) => {
         onChoices({ ...choices, mode: raw === 'amendment' ? 'amendment' : 'clearance' });
       }),
     ),
@@ -201,9 +250,9 @@ function choiceGrid(props: HomeProps): HTMLElement {
 
 /** The link Start opens, from the choices and the settings; home never forces a destination. */
 function startHref(props: HomeProps): string {
-  const { time, config } = props.filter;
+  const { time, config, stage } = props.filter;
   const query = settingsQuery({
-    filter: { time, config },
+    filter: { time, config, ...(stage === undefined ? {} : { stage }) },
     input: props.answer === 'pick' ? 'dropdowns' : 'text',
     fullRoute: props.answer === 'full',
     gradeRunway: props.gradeRunway,

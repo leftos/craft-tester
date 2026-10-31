@@ -27,6 +27,32 @@ describe('selectControl', () => {
     const field = selectControl(specWith(undefined), () => {});
     expect(selectOf(field).value).toBe('');
   });
+
+  it('shows a locked option disabled, with the stage that opens it', () => {
+    const spec: SelectSpec = {
+      ...specWith('a'),
+      options: [
+        { value: 'a', label: 'Day' },
+        { value: 'b', label: 'Night', locked: 'S1-OAK-6' },
+      ],
+    };
+    const options = [...selectOf(selectControl(spec, () => {})).options];
+    expect(options.map((option) => [option.textContent, option.disabled])).toStrictEqual([
+      ['(pick one)', false],
+      ['Day', false],
+      ['Night (at S1-OAK-6)', true],
+    ]);
+  });
+
+  it('disables the placeholder where the spec locks it', () => {
+    const spec: SelectSpec = { ...specWith('a'), placeholderLocked: true };
+    expect(selectOf(selectControl(spec, () => {})).options[0]?.disabled).toBe(true);
+  });
+
+  it('writes no lock into the markup of a dropdown with nothing locked', () => {
+    const field = selectControl(specWith('a'), () => {});
+    expect(field.querySelectorAll('option[disabled]')).toHaveLength(0);
+  });
 });
 
 /** A segmented control of three choices, `a`, `b` and `c`, mounted on the page, and what it reported. */
@@ -41,6 +67,23 @@ function mountedSegments(value: string): { group: HTMLElement; changes: string[]
     })),
     value,
   };
+  const group = segmentedControl(spec, (next) => changes.push(next));
+  document.body.replaceChildren(group);
+  return { group, changes };
+}
+
+/** A segmented control of Pick, Type and Full route, with the choices named locked. */
+function lockedSegments(
+  value: string,
+  locked: readonly string[],
+): { group: HTMLElement; changes: string[] } {
+  const changes: string[] = [];
+  const options = [
+    { value: 'pick', label: 'Pick', title: 'Pick it' },
+    { value: 'type', label: 'Type', title: 'Type it' },
+    { value: 'full', label: 'Full route', title: 'Read it all' },
+  ].map((option) => (locked.includes(option.value) ? { ...option, locked: 'S1-OAK-5' } : option));
+  const spec: SegmentSpec = { label: 'Answer by', options, value };
   const group = segmentedControl(spec, (next) => changes.push(next));
   document.body.replaceChildren(group);
   return { group, changes };
@@ -106,5 +149,53 @@ describe('segmentedControl', () => {
     radiosOf(group)[2]?.click();
     expect(changes).toStrictEqual(['c']);
     expect(checkedOf(group)).toStrictEqual(['false', 'false', 'true']);
+  });
+
+  it('shows a locked choice disabled, with the stage that opens it', () => {
+    const { group } = lockedSegments('pick', ['full']);
+    const full = radiosOf(group)[2];
+    expect(full?.disabled).toBe(true);
+    expect(full?.classList.contains('locked')).toBe(true);
+    expect(full?.textContent).toBe('🔒 Full route');
+    expect(full?.querySelector('span.lock-glyph')?.textContent).toBe('🔒 ');
+    expect(full?.title).toBe('at S1-OAK-5');
+    expect(full?.getAttribute('aria-label')).toBe('Full route, at S1-OAK-5');
+  });
+
+  it('does nothing on a click on a locked choice', () => {
+    const { group, changes } = lockedSegments('pick', ['full']);
+    radiosOf(group)[2]?.click();
+    expect(changes).toStrictEqual([]);
+    expect(checkedOf(group)).toStrictEqual(['true', 'false', 'false']);
+  });
+
+  it('steps the arrow keys over a locked choice', () => {
+    const { group, changes } = lockedSegments('type', ['full']);
+    press(group, 'ArrowRight');
+    expect(changes).toStrictEqual(['pick']);
+    press(group, 'ArrowLeft');
+    expect(changes).toStrictEqual(['pick', 'type']);
+  });
+
+  it('does nothing on an arrow key where no other choice is open', () => {
+    const { group, changes } = lockedSegments('pick', ['type', 'full']);
+    press(group, 'ArrowRight');
+    press(group, 'ArrowLeft');
+    expect(changes).toStrictEqual([]);
+  });
+
+  it('keeps the group in the tab order when the choice shown is locked', () => {
+    const { group } = lockedSegments('full', ['full']);
+    expect(radiosOf(group).map((radio) => radio.tabIndex)).toStrictEqual([0, -1, -1]);
+  });
+
+  it('writes no lock into the markup of a control with nothing locked', () => {
+    const { group } = mountedSegments('a');
+    const first = radiosOf(group)[0];
+    expect(first?.disabled).toBe(false);
+    expect(first?.className).toBe('');
+    expect(first?.textContent).toBe('A');
+    expect(first?.hasAttribute('aria-label')).toBe(false);
+    expect(first?.hasAttribute('title')).toBe(false);
   });
 });

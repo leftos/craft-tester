@@ -1,5 +1,8 @@
-/** One choice of a dropdown: the value the form reads back, and the text the player sees. */
-export type SelectOption = { value: string; label: string };
+/**
+ * One choice of a dropdown: the value the form reads back, the text the player sees, and the training
+ * stage that opens it where the viewer's has not.
+ */
+export type SelectOption = { value: string; label: string; locked?: string };
 
 /** The media query under which the app lays out for a phone. */
 export const PHONE_QUERY = '(max-width: 899.98px)';
@@ -11,6 +14,8 @@ export type SelectSpec = {
   value: string | undefined;
   disabled: boolean;
   placeholder: string;
+  /** Disables the blank choice, where a dropdown reads it as a value the viewer's stage locks. */
+  placeholderLocked?: boolean;
 };
 
 /**
@@ -51,9 +56,10 @@ export function rowList(
 }
 
 /** The blank first option, which reads back as no pick at all. */
-function placeholderOption(text: string): HTMLOptionElement {
+function placeholderOption(text: string, locked: boolean): HTMLOptionElement {
   const option = el('option', '', text);
   option.value = '';
+  if (locked) option.disabled = true;
   return option;
 }
 
@@ -71,10 +77,13 @@ export function selectControl(
   const field = el('label', 'field');
   const select = el('select');
   select.disabled = spec.disabled;
-  select.append(placeholderOption(spec.placeholder));
+  select.append(placeholderOption(spec.placeholder, spec.placeholderLocked === true));
   for (const option of spec.options) {
-    const node = el('option', '', option.label);
+    const { locked } = option;
+    const text = locked === undefined ? option.label : `${option.label} (at ${locked})`;
+    const node = el('option', '', text);
     node.value = option.value;
+    if (locked !== undefined) node.disabled = true;
     select.append(node);
   }
   select.value = spec.value ?? '';
@@ -120,8 +129,11 @@ export function syncSelect(
   node.disabled = disabled;
 }
 
-/** One choice of a segmented control: the value it reads back, the word on it, and its tooltip. */
-export type SegmentOption = { value: string; label: string; title: string };
+/**
+ * One choice of a segmented control: the value it reads back, the word on it, its tooltip, and the
+ * training stage that opens it where the viewer's has not.
+ */
+export type SegmentOption = { value: string; label: string; title: string; locked?: string };
 
 /** Everything one segmented control needs to render: its name, its choices, and the one chosen. */
 export type SegmentSpec = { label: string; options: readonly SegmentOption[]; value: string };
@@ -133,14 +145,48 @@ function arrowStep(key: string): number {
   return 0;
 }
 
+/** One button of a segmented control, and the value it reads back. */
+type Radio = { node: HTMLButtonElement; value: string };
+
+/** The button of one choice; a locked one is disabled and names the stage that opens it. */
+function radioOf(group: string, option: SegmentOption): Radio {
+  const { locked, label, value } = option;
+  const node = el('button');
+  node.type = 'button';
+  node.setAttribute('role', 'radio');
+  node.setAttribute('data-focus-key', `${group}:${value}`);
+  if (locked === undefined) {
+    node.textContent = label;
+    if (option.title.length > 0) node.title = option.title;
+    return { node, value };
+  }
+  node.className = 'locked';
+  node.append(el('span', 'lock-glyph', '🔒 '), label);
+  node.disabled = true;
+  node.title = `at ${locked}`;
+  node.setAttribute('aria-label', `${label}, at ${locked}`);
+  return { node, value };
+}
+
+/** The first button an arrow key can land on from one index, stepping over disabled ones. */
+function openFrom(radios: readonly Radio[], from: number, step: number): Radio | undefined {
+  const count = radios.length;
+  for (let hop = 1; hop <= count; hop += 1) {
+    const radio = radios[(((from + step * hop) % count) + count) % count];
+    if (radio !== undefined && !radio.node.disabled) return radio;
+  }
+  return undefined;
+}
+
 /**
  * Builds a segmented control: a row of buttons of which exactly one is pressed, read by a screen
  * reader as a radio group under the label.
  *
- * Only the pressed button is in the tab order; the arrow keys move the choice to the next or the
- * previous button, wrapping at the ends, and focus it. Each button carries a `data-focus-key` of
- * the label and its value, so a page drawn again after the change can put the focus back on it.
- * Pressing the button already chosen changes nothing and calls nothing.
+ * Only the pressed button is in the tab order, or the first open one where the pressed one is locked;
+ * the arrow keys move the choice to the next or the previous open button, wrapping at the ends, and
+ * focus it. Each button carries a `data-focus-key` of the label and its value, so a page drawn again
+ * after the change can put the focus back on it. Pressing the button already chosen, or a locked
+ * one, changes nothing and calls nothing.
  *
  * @param spec The group's accessible name, its choices in order, and the value chosen.
  * @param onChange Called with the value of the button newly chosen.
@@ -153,23 +199,17 @@ export function segmentedControl(
   const group = el('div', 'segmented');
   group.setAttribute('role', 'radiogroup');
   group.setAttribute('aria-label', spec.label);
-  const radios = spec.options.map((option) => {
-    const node = el('button', '', option.label);
-    node.type = 'button';
-    node.setAttribute('role', 'radio');
-    node.setAttribute('data-focus-key', `${spec.label}:${option.value}`);
-    if (option.title.length > 0) node.title = option.title;
-    return { node, value: option.value };
-  });
+  const radios = spec.options.map((option) => radioOf(spec.label, option));
   const check = (value: string): void => {
+    const open = radios.filter((radio) => !radio.node.disabled);
+    const tabStop = open.find((radio) => radio.value === value) ?? open[0];
     for (const radio of radios) {
-      const chosen = radio.value === value;
-      radio.node.setAttribute('aria-checked', String(chosen));
-      radio.node.tabIndex = chosen ? 0 : -1;
+      radio.node.setAttribute('aria-checked', String(radio.value === value));
+      radio.node.tabIndex = radio === tabStop ? 0 : -1;
     }
   };
-  const choose = (radio: { node: HTMLButtonElement; value: string }): void => {
-    if (radio.node.getAttribute('aria-checked') === 'true') return;
+  const choose = (radio: Radio): void => {
+    if (radio.node.disabled || radio.node.getAttribute('aria-checked') === 'true') return;
     check(radio.value);
     radio.node.focus();
     onChange(radio.value);
@@ -185,7 +225,7 @@ export function segmentedControl(
     if (step === 0 || radios.length === 0) return;
     event.preventDefault();
     const current = radios.findIndex((radio) => radio.node.getAttribute('aria-checked') === 'true');
-    const next = radios[(current + step + radios.length) % radios.length];
+    const next = openFrom(radios, current, step);
     if (next !== undefined) choose(next);
   });
   group.append(...radios.map((radio) => radio.node));

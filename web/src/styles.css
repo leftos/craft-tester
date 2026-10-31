@@ -65,6 +65,8 @@
   --half: #6a4ea6;
   --focus: #1d5ea8;
   --shadow: #16202b33;
+  --lock: #8a96a3;
+  --lock-soft: #f1f3f5;
   --tour-dim: rgba(10, 16, 24, 0.58);
   --tour-ring: #ffd166;
   --font-ui: 'Atkinson Hyperlegible Next', system-ui, sans-serif;
@@ -106,6 +108,8 @@
     --half: #b9a3f0;
     --focus: #7fb0ea;
     --shadow: #00000080;
+    --lock: #566371;
+    --lock-soft: #18212a;
     --tour-dim: rgba(0, 0, 0, 0.66);
     --tour-ring: #ffdb85;
   }
@@ -135,6 +139,8 @@
   --half: #b9a3f0;
   --focus: #7fb0ea;
   --shadow: #00000080;
+  --lock: #566371;
+  --lock-soft: #18212a;
   --tour-dim: rgba(0, 0, 0, 0.66);
   --tour-ring: #ffdb85;
 }
@@ -218,6 +224,11 @@ h3 {
   border-radius: 6px;
 }
 
+/* A fixed width: a locked airport's option text would otherwise size the closed dropdown. */
+.toolbar select.airport.has-locked {
+  width: 6rem;
+}
+
 .segmented {
   display: inline-flex;
 }
@@ -243,11 +254,32 @@ h3 {
   border-radius: 0 6px 6px 0;
 }
 
+.segmented button.locked {
+  border-color: var(--lock);
+  background: var(--lock-soft);
+  color: var(--ink-2);
+  cursor: not-allowed;
+}
+
+/* The narrowest phones have no room for the glyph in a switch, the toolbar's or home's Answer row: the grey carries the lock. */
+@media (max-width: 389px) {
+  .lock-glyph {
+    display: none;
+  }
+}
+
 .segmented button[aria-checked='true'] {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
   font-weight: 700;
+}
+
+.filters-rule {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--rule);
 }
 
 .filters {
@@ -1267,6 +1299,13 @@ a.button.secondary:hover,
     min-width: 0;
   }
 
+  .toolbar select.airport.has-locked {
+    flex: 1 1 4.5rem;
+    width: 4.5rem;
+    min-width: 0;
+    padding-inline: 5px;
+  }
+
   .toolbar-row2 {
     order: 2;
     display: flex;
@@ -1677,6 +1716,19 @@ a.button.big {
   font-weight: 700;
 }
 
+.home-training > .field-label {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.home-training > select {
+  width: 100%;
+}
+
 .cards {
   display: flex;
   flex-wrap: wrap;
@@ -1710,6 +1762,27 @@ a.button.big {
 
 .cards .card:hover {
   border-color: var(--accent);
+}
+
+.cards .card.locked,
+.cards .card.locked:hover {
+  border-color: var(--lock);
+  background: var(--lock-soft);
+  cursor: not-allowed;
+}
+
+.cards .card.locked strong {
+  color: var(--ink-2);
+}
+
+.card-lock {
+  display: block;
+  color: var(--ink-2);
+  font-size: 0.8125rem;
+}
+
+.card-lock::before {
+  content: '🔒 ';
 }
 
 .home-sub,
