@@ -5,7 +5,7 @@
       {
         "box": "altitude",
         "proposedFeet": 5000,
-        "reason": "the TEC route to Oroville is flown at 5,000; a facility-directed altitude is not read against the direction-of-flight rule"
+        "reason": "the TEC route to Oroville is flown at 5,000; a facility-directed altitude is exempt from the odd/even rule"
       },
       {
         "box": "route",

@@ -172,7 +172,7 @@ describe('resolveAmendments', () => {
     expect(type.reason).toContain('suffix /Q is not in');
     expect(type.citations.map((citation) => citation.id)).toEqual(['EQUIP/L']);
     if (route?.box !== 'route') throw new Error('the second amendment is not the route box');
-    expect(route.reason).toContain('BVLQ124 names no fix, navaid, airway or procedure');
+    expect(route.reason).toContain('BVLQ124 is not a fix, navaid, airway or procedure');
     expect(result.corrected.filedRoute).toBe('TRUKN2 MOGEE Q124 BVL WAATS5');
     expect(result.corrected.filedAltitude).toBe(flight.filedAltitude);
   });
@@ -409,9 +409,9 @@ describe('resolveAmendments RNAV route elements', () => {
     if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
     expect(type.proposed).toBe('B738/L');
     expect(type.reason).toBe(
-      'the route needs RNAV a /W flight does not carry (Q174 is an RNAV route, NTELL and FLCHR ' +
-        'are RNAV waypoints) and the data holds no conventional route, so the type box carries ' +
-        'the suffix the fleet files for the type',
+      'the route needs RNAV, which a /W flight does not have (Q174 is an RNAV route, NTELL and ' +
+        'FLCHR are RNAV waypoints), and no conventional route can replace it, so the type box ' +
+        'takes the suffix this aircraft normally files',
     );
     expect(type.citations.map((citation) => citation.id)).toEqual([
       'EQUIP/L',
@@ -435,9 +435,7 @@ describe('resolveAmendments RNAV route elements', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.unresolved.map((gap) => gap.element)).toEqual(['BOX.route']);
-    expect(result.unresolved[0]?.reason).toContain(
-      'the data holds no conventional route to propose',
-    );
+    expect(result.unresolved[0]?.reason).toContain('no conventional route can replace them');
   });
 
   it('raises a GNSS suffix for the T route only a GPS-equipped flight may file', () => {
@@ -446,7 +444,7 @@ describe('resolveAmendments RNAV route elements', () => {
     if (type?.box !== 'type') throw new Error('the first amendment is not the type box');
     expect(type.proposed).toBe('B738/L');
     expect(type.reason).toContain(
-      'the route needs GPS a /Z flight does not carry (T257 is an RNAV route)',
+      'the route needs GPS, which a /Z flight does not have (T257 is an RNAV route)',
     );
     expect(type.citations.map((citation) => citation.id)).toEqual(['EQUIP/L', 'R-RNAV-AIRWAY']);
   });

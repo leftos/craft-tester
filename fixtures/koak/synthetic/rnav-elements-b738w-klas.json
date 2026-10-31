@@ -5,7 +5,7 @@
       {
         "box": "type",
         "proposed": "B738/L",
-        "reason": "the route needs RNAV a /W flight does not carry (Q174 is an RNAV route, NTELL and FLCHR are RNAV waypoints) and the data holds no conventional route, so the type box carries the suffix the fleet files for the type"
+        "reason": "the route needs RNAV, which a /W flight does not have (Q174 is an RNAV route, NTELL and FLCHR are RNAV waypoints), and no conventional route can replace it, so the type box takes the suffix this aircraft normally files"
       }
     ]
   },

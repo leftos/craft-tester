@@ -6,7 +6,7 @@
         "arrivalSwap": "CNDEL5 KTINA CISKO LHS LYNXX8",
         "box": "route",
         "proposed": "CNDEL5 KTINA CISKO RDHOT ROKKR3",
-        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and CISKO is not one of its transitions, but KTINA is and KTINA always connects to CISKO (route building), so the SID is issued in place of the heading; LYNXX8 is a conventional arrival and the flight is RNAV-capable; CISKO usually connects to RDHOT (route building), and RDHOT is an entry fix of ROKKR3 (CA-BUR-ROKKR), so the route is built onto ROKKR3 via RDHOT"
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and CISKO is not one of its transitions, but KTINA is and KTINA always connects to CISKO, so the flight gets the SID instead of a heading; LYNXX8 is a conventional arrival and the flight is RNAV-capable; CISKO usually connects to RDHOT, and RDHOT is an entry fix of ROKKR3 (CA-BUR-ROKKR), so the route goes onto ROKKR3 via RDHOT"
       }
     ]
   },

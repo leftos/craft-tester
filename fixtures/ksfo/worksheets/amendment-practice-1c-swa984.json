@@ -6,7 +6,7 @@
         "arrivalSwap": "GAPP7 SFO EBAYE AVE SADDE8",
         "box": "route",
         "proposed": "GAPP7 SFO EBAYE BURGL IRNMN2",
-        "reason": "SSTIK5 is not the procedure the SOP assigns an RNAV jet from 28L in 28 SO; it is GAPP7; SADDE8 is a conventional arrival and the flight is RNAV-capable; EBAYE usually connects to BURGL (route building), and BURGL is an entry fix of IRNMN2 (CA-LAX-IRNMN), so the route is built onto IRNMN2 via BURGL"
+        "reason": "SSTIK5 is not the procedure the SOP assigns an RNAV jet from 28L in 28 SO; it is GAPP7; SADDE8 is a conventional arrival and the flight is RNAV-capable; EBAYE usually connects to BURGL, and BURGL is an entry fix of IRNMN2 (CA-LAX-IRNMN), so the route goes onto IRNMN2 via BURGL"
       }
     ]
   },

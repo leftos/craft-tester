@@ -5,7 +5,7 @@
       {
         "box": "type",
         "proposed": "B752/L",
-        "reason": "the route needs RNAV a /A flight does not carry (Q124 is an RNAV route, KAMPR is an RNAV waypoint) and the data holds no conventional route, so the type box carries the suffix the fleet files for the type"
+        "reason": "the route needs RNAV, which a /A flight does not have (Q124 is an RNAV route, KAMPR is an RNAV waypoint), and no conventional route can replace it, so the type box takes the suffix this aircraft normally files"
       },
       {
         "box": "altitude",

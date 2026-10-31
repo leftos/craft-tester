@@ -5,7 +5,7 @@
       {
         "box": "route",
         "proposed": "CNDEL5 SUSEY EBAYE BURGL",
-        "reason": "the route files no departure procedure; the SOP assigns CNDEL5 from 30 in SFOW, and CNDEL and PORTE lie on the CNDEL5 structure; the route is read from its published transition SUSEY"
+        "reason": "the route files no departure procedure; the SOP assigns CNDEL5 from 30 in SFOW, and CNDEL and PORTE are already flown by CNDEL5; the route starts from its published SUSEY transition"
       }
     ]
   },

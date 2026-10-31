@@ -167,7 +167,7 @@ describe('checkRoute departure structure', () => {
     const result = amendment(fft2015({ filedRoute: 'WESLA5 PORTE SUSEY EBAYE BURGL' }));
     expect(result.proposed).toBe('WESLA5 SUSEY EBAYE BURGL');
     expect(result.reason).toBe(
-      'PORTE lies on the WESLA5 structure; the route is read from its published transition SUSEY',
+      'PORTE is already flown by WESLA5; the route starts from its published SUSEY transition',
     );
     expect(result.warning).toBeUndefined();
   });
@@ -184,9 +184,9 @@ describe('checkRoute departure structure', () => {
     expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
     expect(result.reason).toBe(
       `${cndel.id} is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and AVE is not one of ` +
-        'its transitions, but YYUNG is and YYUNG usually connects to GVO (route building), so the ' +
-        `SID is kept, and PORTE lies on the ${skyl.id} structure; the route is read from its published ` +
-        'transition AVE',
+        'its transitions, but YYUNG is and YYUNG usually connects to GVO, so the flight keeps the ' +
+        `SID, and PORTE is already flown by ${skyl.id}; the route starts from its published AVE ` +
+        'transition',
     );
   });
 
@@ -225,7 +225,7 @@ describe('checkRoute malformed route element', () => {
     const result = amendment(ual313());
     expect(result.proposed).toBe('TRUKN2 MOGEE Q124 BVL WAATS5');
     expect(result.reason).toBe(
-      'BVLQ124 names no fix, navaid, airway or procedure; the route is connected MOGEE Q124 BVL',
+      'BVLQ124 is not a fix, navaid, airway or procedure; the route becomes MOGEE Q124 BVL',
     );
     expect(result.citations.map((citation) => citation.id)).toContain('R-ROUTE-TOKEN');
     expect(result.warning).toBeUndefined();
@@ -254,7 +254,7 @@ describe('checkRoute malformed route element', () => {
     );
     expect(result.proposed).toBe('TRUKN2 DEDHD LMT HAWKZ7');
     expect(result.reason).toBe(
-      'RBLLMT names no fix, navaid, airway or procedure; the route is connected DEDHD LMT',
+      'RBLLMT is not a fix, navaid, airway or procedure; the route becomes DEDHD LMT',
     );
   });
 });
@@ -279,8 +279,8 @@ describe('checkRoute route building', () => {
     expect(amendment(flight).arrivalSwap).toBe('SSTIK5 SUSEY EBAYE AVE SADDE8');
     expect(amendment(flight).reason).toContain(
       'SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one ' +
-        'of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so ' +
-        'the SID is kept',
+        'of its transitions, but SUSEY is and SUSEY always connects to EBAYE, so the flight keeps ' +
+        'the SID',
     );
     expect(citations(flight).slice(0, 3)).toEqual([
       'SFOW-S-SSTIK-01',
@@ -336,7 +336,7 @@ describe('checkRoute route building', () => {
     });
     const result = amendmentAt(flight, koak);
     expect(result.proposed).toBe(`${cndel.id} KAYEX LOSHN EHF LHS V459 SLI V23 OCN`);
-    expect(result.reason).toContain('so the SID is issued in place of the heading');
+    expect(result.reason).toContain('so the flight gets the SID instead of a heading');
     expect(result.citations.map((citation) => citation.id)).toEqual([
       'OAK-SFOW-S-CNDEL',
       'CONN-KAYEX-LOSHN',
@@ -365,8 +365,8 @@ describe('checkRoute route building', () => {
     expect(result.proposed).toBe(`${skyl.id} WAGES LOSHN PMD V137 PSP`);
     expect(result.reason).toBe(
       `${skyl.id} is the procedure the SOP assigns a non-RNAV jet from 30 in SFOW, and SUNNE is not one ` +
-        'of its transitions, but WAGES is its own end fix and WAGES usually connects to LOSHN ' +
-        '(route building), so the SID is issued in place of the heading',
+        'of its transitions, but WAGES is its own end fix and WAGES usually connects to LOSHN, ' +
+        'so the flight gets the SID instead of a heading',
     );
     expect(result.citations.map((citation) => citation.id)).toEqual([
       'OAK-SFOW-S-SKYL',
@@ -726,13 +726,12 @@ describe('checkRoute on the runway heading', () => {
     const flight = c172({ destination: 'KTRK' });
     expect(amendment(flight).proposed).toBe('OAK V6 SAC');
     expect(amendment(flight).reason).toBe(
-      'SFOW-NOISE-P-RWY sends a non-RNAV piston off 01L on the runway heading with no departure ' +
-        'procedure',
+      'the SOP sends a non-RNAV piston off 01L on the runway heading with no departure procedure',
     );
     expect(citations(flight)).toEqual(['SFOW-NOISE-P-RWY', 'R-HEADING']);
   });
 
-  it('names the row and the heading in degrees where the row assigns one', () => {
+  it('names the heading in degrees where the row assigns one', () => {
     const numbered: AssignmentRule = {
       id: 'SFOW-28-270',
       source: 'test row',
@@ -758,7 +757,7 @@ describe('checkRoute on the runway heading', () => {
     const result = amendmentAt(flight, airport);
     expect(result.proposed).toBe('OAK V6 SAC');
     expect(result.reason).toBe(
-      'SFOW-28-270 sends a non-RNAV piston off 28L on heading 270 with no departure procedure',
+      'the SOP sends a non-RNAV piston off 28L on heading 270 with no departure procedure',
     );
   });
 

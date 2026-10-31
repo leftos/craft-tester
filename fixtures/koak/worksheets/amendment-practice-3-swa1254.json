@@ -11,7 +11,7 @@
         "arrivalSwap": "OAK6 OAK SAC ANAHO",
         "box": "route",
         "proposed": "OAK6 OAK SAC ANAHO PRNCS SADYL4",
-        "reason": "NIMI5 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6; LOA-ZLC-BOI-ROUTE routes BOI via NEERO or PRNCS and the route names none of them; ANAHO usually connects to PRNCS (route building), and PRNCS is an entry fix of SADYL4 (LOA-ZLC-BOI-ROUTE), so the route is built onto SADYL4 via PRNCS"
+        "reason": "NIMI5 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK6; LOA-ZLC-BOI-ROUTE routes BOI via NEERO or PRNCS and the route names none of them; ANAHO usually connects to PRNCS, and PRNCS is an entry fix of SADYL4 (LOA-ZLC-BOI-ROUTE), so the route goes onto SADYL4 via PRNCS"
       }
     ]
   },

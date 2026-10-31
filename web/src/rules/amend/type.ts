@@ -94,7 +94,7 @@ export function checkSuffix(
   return {
     box: 'type',
     proposed: typeBox(scenario, proposed.suffix),
-    reason: `${suffixFault(filed, row)}; the fleet files a ${fleet.type} as ${typeBox(scenario, proposed.suffix)}`,
+    reason: `${suffixFault(filed, row)}; ${fleet.type} is normally filed as ${typeBox(scenario, proposed.suffix)}`,
     citations: [...modeC, citeSuffix(proposed.row)],
   };
 }
@@ -240,9 +240,9 @@ function suffixWords(scenario: Scenario): string {
  */
 function elementReason(elements: readonly RnavElement[], scenario: Scenario): string {
   return (
-    `the route needs ${needsWords(elements)} ${suffixWords(scenario)} does not carry ` +
-    `(${elementClauses(elements).join(', ')}) and the data holds no conventional route, so the ` +
-    `type box carries the suffix the fleet files for the type`
+    `the route needs ${needsWords(elements)}, which ${suffixWords(scenario)} does not have ` +
+    `(${elementClauses(elements).join(', ')}), and no conventional route can replace it, so the ` +
+    `type box takes the suffix this aircraft normally files`
   );
 }
 

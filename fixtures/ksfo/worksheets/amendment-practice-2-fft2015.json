@@ -5,7 +5,7 @@
       {
         "box": "route",
         "proposed": "WESLA5 SUSEY EBAYE BURGL",
-        "reason": "PORTE8 is not the procedure the SOP assigns an RNAV jet from 28L in 28 RT; it is WESLA5, and PORTE lies on the WESLA5 structure; the route is read from its published transition SUSEY"
+        "reason": "PORTE8 is not the procedure the SOP assigns an RNAV jet from 28L in 28 RT; it is WESLA5, and PORTE is already flown by WESLA5; the route starts from its published SUSEY transition"
       }
     ]
   },

@@ -381,7 +381,7 @@ describe('fault injection', () => {
     expect(ksfo.sids.find((row) => row.id === headOf(entry))?.rnavRequired ?? false).toBe(false);
     expect(raisedBoxes(entry), label(entry)).toEqual(['type']);
     expect(amendmentFor(entry, 'type')?.reason, label(entry)).toContain(
-      'the data holds no conventional route',
+      'no conventional route can replace it',
     );
   });
 });

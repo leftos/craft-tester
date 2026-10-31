@@ -6,7 +6,7 @@
         "arrivalSwap": "MCKEY LEGOZ LEGOZ1",
         "box": "route",
         "proposed": "CNDEL5 YYUNG TILLT LEGOZ4",
-        "reason": "OAK-B-SFOW-2830-J-RWY-S sends an RNAV jet off 30 on the runway heading with no departure procedure; LOA-ZLA-CRQ-ROUTE routes CRQ via BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF or LHS and the route names none of them; CNDEL5 is the procedure OAK-SFOW-S-CNDEL assigns an RNAV jet from 30 in SFOW, and YYUNG usually connects to TILLT (route building), and TILLT is an entry fix of LEGOZ4 (LOA-ZLA-CRQ-ROUTE), so the SID is issued onto LEGOZ4 via TILLT"
+        "reason": "the SOP sends an RNAV jet off 30 on the runway heading with no departure procedure; LOA-ZLA-CRQ-ROUTE routes CRQ via BURGL, TILLT, REBRG, LANDO, DERBB, FIM, EHF or LHS and the route names none of them; CNDEL5 is the procedure OAK-SFOW-S-CNDEL assigns an RNAV jet from 30 in SFOW, and YYUNG usually connects to TILLT, and TILLT is an entry fix of LEGOZ4 (LOA-ZLA-CRQ-ROUTE), so the flight is given the SID onto LEGOZ4 via TILLT"
       }
     ]
   },

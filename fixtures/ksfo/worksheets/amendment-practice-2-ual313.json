@@ -5,12 +5,12 @@
       {
         "box": "type",
         "proposed": "B752/L",
-        "reason": "suffix /Q is not in FAA JO 7110.65 TBL 2-3-10; the fleet files a B752 as B752/L"
+        "reason": "suffix /Q is not in FAA JO 7110.65 TBL 2-3-10; B752 is normally filed as B752/L"
       },
       {
         "box": "route",
         "proposed": "TRUKN2 MOGEE Q124 BVL WAATS5",
-        "reason": "BVLQ124 names no fix, navaid, airway or procedure; the route is connected MOGEE Q124 BVL"
+        "reason": "BVLQ124 is not a fix, navaid, airway or procedure; the route becomes MOGEE Q124 BVL"
       }
     ]
   },

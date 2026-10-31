@@ -5,7 +5,7 @@
       {
         "box": "route",
         "proposed": "CNDEL5 KAYEX LOSHN EHF LHS V459 SLI V23 OCN",
-        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and EHF is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN, LOSHN usually connects to EHF (route building), so the SID is issued in place of the heading"
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and EHF is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN, LOSHN usually connects to EHF, so the flight gets the SID instead of a heading"
       }
     ]
   },

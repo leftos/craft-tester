@@ -5,7 +5,7 @@
       {
         "box": "type",
         "proposed": "B737/L",
-        "reason": "no equipment suffix filed; the fleet files a B737 as B737/L"
+        "reason": "no equipment suffix filed; B737 is normally filed as B737/L"
       },
       {
         "box": "altitude",

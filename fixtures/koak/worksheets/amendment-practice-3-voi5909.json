@@ -5,7 +5,7 @@
       {
         "box": "route",
         "proposed": "CNDEL5 KAYEX LOSHN BOILE J50 PDZ J93 PPE… (continued)",
-        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and SUNNE is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN (route building), so the SID is issued in place of the heading"
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and SUNNE is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN, so the flight gets the SID instead of a heading"
       }
     ]
   },

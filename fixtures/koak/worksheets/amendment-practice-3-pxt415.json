@@ -5,7 +5,7 @@
       {
         "box": "type",
         "proposed": "C25B/L",
-        "reason": "the route needs RNAV a /A flight does not carry (KAYEX and LOSHN are RNAV waypoints) and the data holds no conventional route, so the type box carries the suffix the fleet files for the type"
+        "reason": "the route needs RNAV, which a /A flight does not have (KAYEX and LOSHN are RNAV waypoints), and no conventional route can replace it, so the type box takes the suffix this aircraft normally files"
       },
       {
         "box": "altitude",
@@ -15,7 +15,7 @@
       {
         "box": "route",
         "proposed": "CNDEL5 KAYEX LOSHN PMD V137 PSP",
-        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and SUNNE is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN (route building), so the SID is issued in place of the heading"
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and SUNNE is not one of its transitions, but KAYEX is and KAYEX always connects to LOSHN, so the flight gets the SID instead of a heading"
       }
     ]
   },

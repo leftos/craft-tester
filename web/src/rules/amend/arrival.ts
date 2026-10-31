@@ -467,8 +467,8 @@ function closingWords(plan: ArrivalPlan): string {
   const { transition, arrival } = plan.target;
   if (plan.direct === true) return `so the flight continues to ${transition} for ${arrival.id}`;
   if (plan.candidate !== undefined)
-    return `so the SID is issued onto ${arrival.id} via ${transition}`;
-  return `so the route is built onto ${arrival.id} via ${transition}`;
+    return `so the flight is given the SID onto ${arrival.id} via ${transition}`;
+  return `so the route goes onto ${arrival.id} via ${transition}`;
 }
 
 /** The half of the sentence that says how the route reaches the arrival. */
@@ -484,7 +484,7 @@ function planWords(plan: ArrivalPlan, context: ArrivalContext): string {
     .map((row) => `${row.from} ${row.connects} connects to ${row.to}`)
     .join(', ');
   const entry = entryWords(plan.target);
-  const path = links === '' ? entry : `${links} (route building), and ${entry}`;
+  const path = links === '' ? entry : `${links}, and ${entry}`;
   return `${lead}${path}, ${closingWords(plan)}`;
 }
 

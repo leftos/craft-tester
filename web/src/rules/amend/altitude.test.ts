@@ -154,7 +154,7 @@ describe('checkAltitude TRACON destinations', () => {
     });
     expect(amendment(flight).proposedFeet).toBe(5000);
     expect(amendment(flight).reason).toBe(
-      'the TEC route to Rio Vista is flown at 5,000; a facility-directed altitude is not read against the direction-of-flight rule',
+      'the TEC route to Rio Vista is flown at 5,000; a facility-directed altitude is exempt from the odd/even rule',
     );
     expect(citations(flight)).toEqual(['TEC-O88-SFOW-TP-01']);
   });
@@ -163,7 +163,7 @@ describe('checkAltitude TRACON destinations', () => {
     const flight = scenario({ destination: 'KSMF', filedAltitude: 8000 });
     expect(amendment(flight).proposedFeet).toBe(10000);
     expect(amendment(flight).reason).toBe(
-      'the TEC route to Sacramento is flown at 10,000; a facility-directed altitude is not read against the direction-of-flight rule',
+      'the TEC route to Sacramento is flown at 10,000; a facility-directed altitude is exempt from the odd/even rule',
     );
     expect(citations(flight)).toEqual(['TEC-KSMF-SFOW-J']);
   });

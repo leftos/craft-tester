@@ -6,7 +6,7 @@
         "arrivalSwap": "SSTIK5 SUSEY EBAYE AVE SADDE8",
         "box": "route",
         "proposed": "SSTIK5 SUSEY EBAYE BURGL IRNMN2",
-        "reason": "SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one of its transitions, but SUSEY is and SUSEY always connects to EBAYE (route building), so the SID is kept; SADDE8 is a conventional arrival and the flight is RNAV-capable; EBAYE usually connects to BURGL (route building), and BURGL is an entry fix of IRNMN2 (CA-LAX-IRNMN), so the route is built onto IRNMN2 via BURGL"
+        "reason": "SSTIK5 is the procedure the SOP assigns an RNAV jet from 01L in 28/01, and EBAYE is not one of its transitions, but SUSEY is and SUSEY always connects to EBAYE, so the flight keeps the SID; SADDE8 is a conventional arrival and the flight is RNAV-capable; EBAYE usually connects to BURGL, and BURGL is an entry fix of IRNMN2 (CA-LAX-IRNMN), so the route goes onto IRNMN2 via BURGL"
       }
     ]
   },

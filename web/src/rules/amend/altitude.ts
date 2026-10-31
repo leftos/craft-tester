@@ -285,7 +285,7 @@ export function checkAltitude(
     return {
       box: 'altitude',
       proposedFeet: tecFinal,
-      reason: `the TEC route to ${destination.short} is flown at ${formatAltitude(tecFinal)}; a facility-directed altitude is not read against the direction-of-flight rule`,
+      reason: `the TEC route to ${destination.short} is flown at ${formatAltitude(tecFinal)}; a facility-directed altitude is exempt from the odd/even rule`,
       citations: [citeTec(tecRow)],
     };
   }

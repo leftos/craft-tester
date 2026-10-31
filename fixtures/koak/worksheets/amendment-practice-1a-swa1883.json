@@ -5,7 +5,7 @@
       {
         "box": "route",
         "proposed": "CNDEL5 YYUNG LAX COMIX2",
-        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and MCKEY is not one of its transitions, but YYUNG is and YYUNG usually connects to LAX (route building), so the SID is issued in place of the heading"
+        "reason": "CNDEL5 is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and MCKEY is not one of its transitions, but YYUNG is and YYUNG usually connects to LAX, so the flight gets the SID instead of a heading"
       }
     ]
   },

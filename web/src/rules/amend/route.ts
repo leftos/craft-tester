@@ -443,23 +443,6 @@ export function flightWords(ctx: Classification): string {
   return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.sopClass]}`;
 }
 
-/** The phraseology row that says a clearance without a procedure is spoken as a heading. */
-const HEADING_PHRASEOLOGY_ROW = 'R-HEADING';
-
-/**
- * The assignment row that sent the flight off without a procedure, named for the reason.
- *
- * The clearance cites the row that answered the assignment table first and the phraseology row
- * that says how it is spoken after it, so the first citation that is not the phraseology row is the
- * row to name; a clearance citing nothing else falls back to the SOP as a whole.
- */
-function headingRowId(clearance: ResolvedClearance): string {
-  const row = clearance.procedure.citations.find(
-    (citation) => citation.id !== HEADING_PHRASEOLOGY_ROW,
-  );
-  return row?.id ?? 'the SOP';
-}
-
 /**
  * How a reason names the heading the flight is sent off on.
  *
@@ -480,7 +463,7 @@ function headingReason(
   clearance: ResolvedClearance,
 ): string {
   return (
-    `${headingRowId(clearance)} sends ${flightWords(ctx)} off ${scenario.departureRunway} on ` +
+    `the SOP sends ${flightWords(ctx)} off ${scenario.departureRunway} on ` +
     `${headingWords(clearance.procedure.value)} with no departure procedure`
   );
 }
@@ -508,11 +491,11 @@ function procedureReason(
  * build takes that row's SID instead, and the closing says so rather than claim a SID was kept.
  */
 function builtClosing(built: BuiltRoute, scope: BuildScope | undefined): string {
-  if (scope?.kind === 'any') return 'so the SID is issued in place of the heading';
+  if (scope?.kind === 'any') return 'so the flight gets the SID instead of a heading';
   if (scope?.kind === 'filed' && scope.family !== undefined && scope.family !== built.sid.family) {
     return `so it replaces the filed ${scope.family} departure`;
   }
-  return 'so the SID is kept';
+  return 'so the flight keeps the SID';
 }
 
 /** How a built reason names where the route left the SID: a transition, or the SID's own end fix. */
@@ -544,7 +527,7 @@ function builtCore(
   return (
     `${built.sid.id} is the procedure the SOP assigns ${flightWords(ctx)} from ${scenario.departureRunway} ` +
     `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${startWords(built)} ` +
-    `and ${links} (route building), ${builtClosing(built, expected.scope)}`
+    `and ${links}, ${builtClosing(built, expected.scope)}`
   );
 }
 
@@ -642,8 +625,8 @@ function structureClause(expected: ExpectedRoute, proposed: string): string | un
   const sid = sids.includes(proposed) ? proposed : sids[0];
   if (dropped.length === 0 || sid === undefined) return undefined;
   return (
-    `${listWords(dropped)} ${dropped.length === 1 ? 'lies' : 'lie'} on the ${sid} structure; ` +
-    `the route is read from its published transition ${expected.exitElement ?? ''}`
+    `${listWords(dropped)} ${dropped.length === 1 ? 'is' : 'are'} already flown by ${sid}; ` +
+    `the route starts from its published ${expected.exitElement ?? ''} transition`
   );
 }
 
@@ -685,11 +668,11 @@ function malformedClause(expected: ExpectedRoute): string | undefined {
   const repair = expected.repair;
   if (repair === undefined) return undefined;
   const { dropped, runs } = repair;
-  const names = `${listWords(dropped)} name${dropped.length === 1 ? 's' : ''} no fix, navaid, airway or procedure`;
+  const names = `${listWords(dropped)} ${dropped.length === 1 ? 'is' : 'are'} not a fix, navaid, airway or procedure`;
   if (runs.length === 0) {
     return `${names}; ${dropped.length === 1 ? 'it is' : 'they are'} taken out of the route`;
   }
-  return `${names}; the route is connected ${runs.join(', ')}`;
+  return `${names}; the route becomes ${runs.join(', ')}`;
 }
 
 /**
@@ -1006,9 +989,9 @@ function rnavGapReason(lacking: readonly RnavElement[], scenario: Scenario): str
     const tokens = lacking.filter((element) => element.needs === need).map((el) => el.token);
     if (tokens.length === 0) return [];
     const verb = tokens.length === 1 ? 'needs' : 'need';
-    return [`${listWords(tokens)} ${verb} ${needWords(need)} ${flight} does not carry`];
+    return [`${listWords(tokens)} ${verb} ${needWords(need)}, which ${flight} does not have`];
   });
-  return `${clauses.join(', and ')}, and the data holds no conventional route to propose`;
+  return `${clauses.join(', and ')}, and no conventional route can replace them`;
 }
 
 /**
