@@ -1237,6 +1237,7 @@ def test_the_training_stages_load_in_course_order_with_the_four_course_gates() -
     assert course.stages[5].title == "Flight Data & Clearance SFOW"
     assert course.source == "vZOA S1 syllabus, https://oakartcc.org/training/syllabus"
     assert (course.runway, course.amendment, course.full_route, course.night) == ("S1-OAK-3", "S1-OAK-5", "S1-OAK-5", "S1-OAK-6")
+    assert [(lock.airport, lock.at) for lock in course.airports] == [("KSFO", "S1-SFO-1")]
 
 
 def test_the_koak_training_flattens_its_sid_rows_in_file_order(shared_route_facts: SharedRouteFacts) -> None:
@@ -1251,12 +1252,12 @@ def test_the_koak_training_flattens_its_sid_rows_in_file_order(shared_route_fact
     ]
     assert [(lock.key, lock.value, lock.at) for lock in training.configs] == [("plan", "OAKE", "S1-OAK-6"), ("plan", "SFOE", "S1-OAK-6")]
     assert [(lock.runway, lock.at) for lock in training.runways] == [("33", "S1-OAK-6")]
-    assert (training.opens, training.other_sids, training.no_sid) == (None, "S1-OAK-6", "S1-OAK-6")
+    assert (training.other_sids, training.no_sid) == ("S1-OAK-6", "S1-OAK-6")
 
 
 def test_an_airport_without_a_training_file_is_open_at_every_stage(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
     training = load_airport(airport_copy(tmp_path, ksfo_dir), shared_route_facts).training
-    assert training == AirportTraining(opens=None, configs=(), sids=(), other_sids=None, no_sid=None, runways=())
+    assert training == AirportTraining(configs=(), sids=(), other_sids=None, no_sid=None, runways=())
 
 
 @pytest.mark.parametrize(
@@ -1307,7 +1308,7 @@ def test_an_airport_without_a_training_file_is_open_at_every_stage(tmp_path: Pat
             {"sids": [{"families": [], "at": "S1-SFO-4"}]},
             r"ksfo/training\.yaml\.sids\[0\]\.families: the list is empty; name at least one SID family",
         ),
-        ({"opens": "S1-SFO-2"}, r"ksfo/training\.yaml\.opens: 'S1-SFO-2' names no stage of shared/training_stages\.yaml"),
+        ({"opens": "S1-SFO-1"}, r"ksfo/training\.yaml: unknown key\(s\) \['opens'\]"),
         ({"other_sids": "S1-SFO-2"}, r"ksfo/training\.yaml\.other_sids: 'S1-SFO-2' names no stage of shared/training_stages\.yaml"),
         ({"no_sid": "S1-SFO-2"}, r"ksfo/training\.yaml\.no_sid: 'S1-SFO-2' names no stage of shared/training_stages\.yaml"),
         (
@@ -1328,7 +1329,7 @@ def test_an_airport_without_a_training_file_is_open_at_every_stage(tmp_path: Pat
         "runway-twice",
         "neither-plan-nor-id",
         "empty-families",
-        "opens-names-no-stage",
+        "opens-is-a-shared-gate",
         "other-sids-names-no-stage",
         "no-sid-names-no-stage",
         "unknown-row-key",
@@ -1375,4 +1376,38 @@ def test_a_training_course_gate_naming_no_stage_is_named(tmp_path: Path) -> None
         data["course"]["night"] = "S1-OAK-7"
 
     with pytest.raises(ValueError, match=r"training_stages\.yaml\.course\.night: 'S1-OAK-7' names no stage of shared/training_stages\.yaml"):
+        load_training_stages(training_stages_copy(tmp_path, mutate))
+
+
+@pytest.mark.parametrize(
+    ("airports", "message"),
+    [
+        (
+            [{"airport": "KSFO", "at": "S1-SFO-2"}],
+            r"training_stages\.yaml\.airports\[0\]\.at: 'S1-SFO-2' names no stage of shared/training_stages\.yaml",
+        ),
+        (
+            [{"airport": "KXXX", "at": "S1-SFO-1"}],
+            r"training_stages\.yaml\.airports\[0\]\.airport: 'KXXX' has no directory under generator/airports",
+        ),
+        (
+            [{"airport": "KSFO", "at": "S1-SFO-1"}, {"airport": "KSFO", "at": "S1-SFO-4"}],
+            r"training_stages\.yaml\.airports\[1\]\.airport: 'KSFO' is already named by .*training_stages\.yaml\.airports\[0\]",
+        ),
+        (
+            [{"airport": "ksfo", "at": "S1-SFO-1"}],
+            r"training_stages\.yaml\.airports\[0\]\.airport: 'ksfo' is not a four-letter upper-case ICAO code",
+        ),
+        (
+            [{"airport": "KSFO", "at": "S1-SFO-1", "when": "night"}],
+            r"training_stages\.yaml\.airports\[0\]: unknown key\(s\) \['when'\]",
+        ),
+    ],
+    ids=["at-names-no-stage", "no-directory", "airport-twice", "lower-case", "unknown-key"],
+)
+def test_a_bad_training_airport_row_is_named(tmp_path: Path, airports: object, message: str) -> None:
+    def mutate(data: Any) -> None:
+        data["airports"] = airports
+
+    with pytest.raises(ValueError, match=message):
         load_training_stages(training_stages_copy(tmp_path, mutate))

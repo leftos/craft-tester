@@ -1553,6 +1553,237 @@ describe('routing', () => {
   });
 });
 
+describe("the viewer's training stage", () => {
+  const STAGE_KEY = 'craft-tester:training-stage';
+
+  /** Remembers a stage for this browser, as the Training row will. */
+  function viewerAt(stage: string): void {
+    globalThis.localStorage.setItem(STAGE_KEY, JSON.stringify(stage));
+  }
+
+  /** Presses the toolbar's New strip. */
+  function pressNewStrip(root: ParentNode): void {
+    const found = [...root.querySelectorAll('button')].find(
+      (node) => node.textContent === 'New strip',
+    );
+    if (found === undefined) throw new Error('the page has no New strip');
+    found.click();
+  }
+
+  /** The text of the strip on screen. */
+  function stripText(root: ParentNode): string {
+    return root.querySelector('section.panel.strip')?.textContent ?? '';
+  }
+
+  beforeEach(() => {
+    globalThis.localStorage.clear();
+    globalThis.localStorage.setItem(TOUR_SEEN_KEY, 'true');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("draws New strip under the viewer's stage", async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK');
+    pressNewStrip(root);
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+  });
+
+  it("opens a strip link as written, whatever the viewer's stage", async () => {
+    const link = '#s=1&a=KOAK&t=day&st=S1-OAK-1';
+    const asDrawn = stripText(await mountHash(link));
+    expect(asDrawn).not.toBe('');
+    viewerAt('S1-OAK-6');
+    const root = await mountHash(link);
+    expect(stripText(root)).toBe(asDrawn);
+    expect(globalThis.location.hash).toBe(link);
+    pressNewStrip(root);
+    expect(globalThis.location.hash).toContain('&st=S1-OAK-6');
+  });
+
+  it("drops the stage of a link from an All-topics viewer's New strip", async () => {
+    const root = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-1');
+    pressNewStrip(root);
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day$/);
+  });
+
+  it('clamps a practice link with no stage of its own', async () => {
+    viewerAt('S1-OAK-2');
+    await mountHash('#/KOAK/amend/practice');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+  });
+
+  it('opens a practice link with a stage of its own as written', async () => {
+    viewerAt('S1-OAK-2');
+    await mountHash('#/KOAK/clearance/practice?st=S1-OAK-5');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&st=S1-OAK-5$/);
+  });
+
+  it("lands New strip on the first open airport when the page's is still locked", async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO');
+    pressNewStrip(root);
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(/&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    });
+  });
+
+  it('stays at an open airport the index does not list first', async () => {
+    viewerAt('S1-SFO-4');
+    const root = await mountHash('#s=1&a=KOAK');
+    pressNewStrip(root);
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&st=S1-SFO-4$/);
+  });
+
+  it('keeps the remembered Night through a filter change at a clamped time', async () => {
+    const night = { time: 'night', config: { kind: 'any' } };
+    globalThis.localStorage.setItem('craft-tester:filter:KOAK', JSON.stringify(night));
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#/KOAK/clearance/practice');
+    choose(selectOf(field(root, 'runway configuration')), 'plan:SFOW');
+    expect(globalThis.location.hash).toContain('&t=day&c=plan:SFOW&st=S1-OAK-2');
+    const stored = globalThis.localStorage.getItem('craft-tester:filter:KOAK') ?? 'null';
+    expect(JSON.parse(stored)).toEqual({ time: 'night', config: { kind: 'plan', plan: 'SFOW' } });
+  });
+
+  it("keeps home's airport and mode while a stage narrows the page", async () => {
+    const home = { icao: 'KSFO', mode: 'amendment', format: 'test', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+    viewerAt('S1-OAK-2');
+    await mountHash('#/KOAK/clearance/practice');
+    const stored = globalThis.localStorage.getItem('craft-tester:home') ?? 'null';
+    expect(JSON.parse(stored)).toEqual({ ...home, format: 'practice' });
+  });
+
+  /** What this browser remembers for home. */
+  function storedHome(): unknown {
+    return JSON.parse(globalThis.localStorage.getItem('craft-tester:home') ?? 'null');
+  }
+
+  /** Presses Start in the toolbar's Test popover. */
+  function pressStart(root: ParentNode): void {
+    const found = [...root.querySelectorAll('button')].find((node) => node.textContent === 'Start');
+    if (found === undefined) throw new Error('the page has no Start');
+    found.click();
+  }
+
+  /** Picks an airport on the toolbar's switch. */
+  function switchTo(root: ParentNode, icao: string): void {
+    const select = root.querySelector('select.airport');
+    if (!(select instanceof HTMLSelectElement)) throw new Error('the page has no airport switch');
+    choose(select, icao);
+  }
+
+  it('moves a practice link with no stage off a locked airport', async () => {
+    viewerAt('S1-OAK-2');
+    await mountHash('#/KSFO/clearance/practice');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    expect(storedHome()).toMatchObject({ icao: 'KOAK', format: 'practice' });
+  });
+
+  it("drops the locked airport's configuration from the link it moves", async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#/KSFO/clearance/practice?c=id:28%2F01');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    expect(root.querySelector('section.panel.strip')).not.toBeNull();
+  });
+
+  it('moves a new test link with no stage off a locked airport', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#/KSFO/clearance/test/5x0');
+    const { hash } = globalThis.location;
+    expect(hash).toMatch(/&a=KOAK&t=day&st=S1-OAK-2&rwy=off&x=[0-9a-z]+\.5\.0\.0$/);
+    expect(setWhere(root)).toBe('Strip 1 of 5');
+    const record = globalThis.localStorage.getItem(`craft-tester:set:${setSeedOf(hash)}`);
+    expect(JSON.parse(record ?? 'null')).toMatchObject({ icao: 'KOAK', n: 5, minutes: 0 });
+    expect(storedHome()).toMatchObject({ icao: 'KOAK', format: 'test', n: 5, minutes: 0 });
+  });
+
+  it('opens a link with a stage of its own at its own airport', async () => {
+    viewerAt('S1-OAK-2');
+    await mountHash('#/KSFO/clearance/practice?st=S1-OAK-2');
+    expect(globalThis.location.hash).toMatch(/^#s=[0-9a-z]+&a=KSFO&st=S1-OAK-2$/);
+  });
+
+  it("starts a test at the first open airport when the page's is still locked", async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO&t=night&m=amend');
+    pressStart(root);
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(
+        /&a=KOAK&t=day&st=S1-OAK-2&rwy=off&x=[0-9a-z]+\.\d+\.\d+\.0$/,
+      );
+    });
+    expect(root.querySelector('.testbar')).not.toBeNull();
+    expect(storedHome()).toMatchObject({ icao: 'KOAK', mode: 'clearance', format: 'test' });
+  });
+
+  it('clamps a test started at an open airport', async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KOAK&t=night&m=amend');
+    pressStart(root);
+    expect(globalThis.location.hash).toMatch(
+      /&a=KOAK&t=day&st=S1-OAK-2&rwy=off&x=[0-9a-z]+\.\d+\.\d+\.0$/,
+    );
+    expect(root.querySelector('.testbar')).not.toBeNull();
+  });
+
+  it('saves a whole filter change at All topics, as it always has', async () => {
+    const day = { time: 'day', config: { kind: 'any' } };
+    globalThis.localStorage.setItem('craft-tester:filter:KOAK', JSON.stringify(day));
+    const root = await mountHash('#s=1&a=KOAK&t=night');
+    choose(selectOf(field(root, 'runway configuration')), 'plan:SFOW');
+    const stored = globalThis.localStorage.getItem('craft-tester:filter:KOAK') ?? 'null';
+    expect(JSON.parse(stored)).toEqual({ time: 'night', config: { kind: 'plan', plan: 'SFOW' } });
+  });
+
+  it("draws under the viewer's stage after the toolbar's airport switch", async () => {
+    viewerAt('S1-OAK-2');
+    const root = await mountHash('#s=1&a=KSFO&t=night&m=amend');
+    switchTo(root, 'KOAK');
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toMatch(/^#s=1&a=KOAK&t=day&st=S1-OAK-2&rwy=off$/);
+    });
+  });
+
+  it("drops the stage of a link from an All-topics viewer's airport switch", async () => {
+    const root = await mountHash('#s=1&a=KOAK&t=day&st=S1-OAK-1');
+    switchTo(root, 'KSFO');
+    await vi.waitFor(() => {
+      expect(globalThis.location.hash).toBe('#s=1&a=KSFO&t=day');
+    });
+  });
+
+  it('keeps home clear of a locked airport or mode a link opens as written', async () => {
+    const home = { icao: 'KOAK', mode: 'clearance', format: 'practice', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+    viewerAt('S1-OAK-2');
+    await mountHash('#/KSFO/clearance/practice?st=S1-OAK-1');
+    expect(storedHome()).toMatchObject({ icao: 'KOAK' });
+    await mountHash('#/KOAK/amend/practice?st=S1-OAK-6');
+    expect(storedHome()).toMatchObject({ mode: 'clearance' });
+  });
+
+  it('updates home with a mode the stage has opened', async () => {
+    const home = { icao: 'KOAK', mode: 'clearance', format: 'practice', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+    viewerAt('S1-SFO-4');
+    const root = await mountHash('#s=1&a=KOAK');
+    segment(root, 'Mode', 'Amend').click();
+    expect(storedHome()).toEqual({ ...home, mode: 'amendment' });
+  });
+
+  it('updates home with the airport when the stored one is open', async () => {
+    const home = { icao: 'KSFO', mode: 'clearance', format: 'practice', n: 5, minutes: 0 };
+    globalThis.localStorage.setItem('craft-tester:home', JSON.stringify(home));
+    viewerAt('S1-SFO-1');
+    await mountHash('#/KOAK/clearance/practice');
+    expect(storedHome()).toEqual({ ...home, icao: 'KOAK' });
+  });
+});
+
 describe('toolbarHiddenAfter', () => {
   it('hides the toolbar on a scroll down past the threshold', () => {
     expect(toolbarHiddenAfter(100, 400, 8)).toBe(true);

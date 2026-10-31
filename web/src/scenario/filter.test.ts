@@ -468,6 +468,45 @@ describe('hasFilterParams', () => {
   });
 });
 
+describe('the training stage in the hash', () => {
+  const staged: ScenarioFilter = { ...ANY_SCENARIO, stage: 'S1-OAK-2' };
+
+  it('writes no part for All topics', () => {
+    const hash = hashFor('KOAK', 1, dropdowns(ANY_SCENARIO, 'clearance'));
+    expect(hash).not.toContain('st=');
+  });
+
+  it('writes the stage after the forced destination', () => {
+    const filter: ScenarioFilter = { ...staged, time: 'day', destination: 'KLVK' };
+    expect(hashFor('KOAK', 1, dropdowns(filter, 'clearance'))).toBe(
+      '#s=1&a=KOAK&t=day&d=KLVK&st=S1-OAK-2',
+    );
+  });
+
+  it('carries the stage in a home link', () => {
+    const { filter, input, fullRoute, gradeRunway } = dropdowns(staged, 'clearance');
+    expect(settingsQuery({ filter, input, fullRoute, gradeRunway })).toBe('st=S1-OAK-2');
+  });
+
+  it('reads the stage back', () => {
+    const hash = hashFor('KOAK', 1, dropdowns(staged, 'clearance'));
+    expect(filterFromHash(hash)).toEqual(staged);
+  });
+
+  it('reads an empty part as no stage', () => {
+    expect(filterFromHash('#s=1&st=')).toEqual(ANY_SCENARIO);
+  });
+
+  it('counts as a filter part, so the link is opened as written', () => {
+    expect(hasFilterParams('#s=1&st=S1-OAK-2')).toBe(true);
+  });
+
+  it('is not read as the seed or the time', () => {
+    expect(seedFromHash('#st=S1-OAK-2&s=1')).toBe(1);
+    expect(filterFromHash('#s=1&st=S1-OAK-2').time).toBe('either');
+  });
+});
+
 describe('matchesConfig', () => {
   const west = config('28/01', 'SFOW');
   const east = config('19/10', 'SFOE');

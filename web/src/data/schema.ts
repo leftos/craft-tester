@@ -698,12 +698,13 @@ export const NoticeSchema = z.strictObject({
  *
  * `stages` are the modules that change what the trainer draws or grades, in course order; a thing
  * locked at a stage opens at that stage and every stage after it, and every lock names a stage
- * `id`. `source`, `stages` and `course` are the same in every airport file: `course` holds the
- * stages the runway element, Amend mode, the full-route answer and night draws open at. The rest is
- * the airport's own: `opens` is the stage the airport opens at (absent: every stage), `configs`
- * lock a configuration plan or one configuration id, `sids` lock SID families, `otherSids` is the
- * stage every family `sids` does not name opens at, `noSid` the one a departure cleared without a
- * SID opens at, and `runways` lock departure runways. Anything not listed opens with the airport.
+ * `id`. `source`, `stages`, `course` and `airports` are the same in every airport file: `course`
+ * holds the stages the runway element, Amend mode, the full-route answer and night draws open at,
+ * and `airports` the stage each airport that does not open at every stage opens at. The rest is the
+ * airport's own: `configs` lock a configuration plan or one configuration id, `sids` lock SID
+ * families, `otherSids` is the stage every family `sids` does not name opens at, `noSid` the one a
+ * departure cleared without a SID opens at, and `runways` lock departure runways. Anything not
+ * listed opens with the airport.
  */
 export const TrainingSchema = z.strictObject({
   source: z.string(),
@@ -714,7 +715,7 @@ export const TrainingSchema = z.strictObject({
     fullRoute: z.string(),
     night: z.string(),
   }),
-  opens: z.string().optional(),
+  airports: z.array(z.strictObject({ airport: z.string(), at: z.string() })),
   configs: z.array(
     z.union([
       z.strictObject({ plan: z.string(), at: z.string() }),

@@ -809,3 +809,113 @@ describe('the runway a TEC-routed draw departs', () => {
     },
   );
 });
+
+describe('a draw under a training stage', () => {
+  /** The filter a clamp hands a stage that has not opened night. */
+  function byDay(stage: string): ScenarioFilter {
+    return { time: 'day', config: { kind: 'any' }, stage };
+  }
+
+  /** The seeds a stage is measured over. */
+  const STAGE_SEEDS = SEEDS.slice(0, 200);
+
+  /** What the SOP clears a drawn KOAK scenario on, and off which runway. */
+  function clearedAtKoak(seed: number, stage: string): { family: string; runway: string } {
+    const scenario = generateScenario(createRng(seed), koak, byDay(stage));
+    const result = resolveClearance(scenario, koak, 'proposed');
+    if (!result.ok) throw new Error(`${label(scenario)} is not cleared`);
+    const procedure = result.clearance.procedure.value;
+    const family = procedure.kind === 'sid' ? procedure.family : 'no SID';
+    return { family, runway: scenario.departureRunway };
+  }
+
+  it('draws what it always drew at a seed with no stage', () => {
+    const { callsign, aircraftType, destination, departureRunway, localTime, squawk } =
+      generateScenario(createRng(1), koak, ANY_SCENARIO);
+    const drawn = { callsign, aircraftType, destination, departureRunway, localTime, squawk };
+    expect(drawn).toMatchInlineSnapshot(`
+      {
+        "aircraftType": "E135",
+        "callsign": "JSX2811",
+        "departureRunway": "30",
+        "destination": "KLAX",
+        "localTime": "1805",
+        "squawk": "3510",
+      }
+    `);
+  });
+
+  it('draws the same with no stage as under a stage that opens everything', () => {
+    const open = { ...ANY_SCENARIO, stage: 'S1-SFO-4' };
+    for (const seed of STAGE_SEEDS) {
+      const plain = generateScenario(createRng(seed), koak, ANY_SCENARIO);
+      expect(generateScenario(createRng(seed), koak, open)).toEqual(plain);
+    }
+  });
+
+  it('draws the same scenario twice from the same seed and stage', () => {
+    for (const seed of STAGE_SEEDS) {
+      const first = generateScenario(createRng(seed), koak, byDay('S1-OAK-2'));
+      expect(generateScenario(createRng(seed), koak, byDay('S1-OAK-2'))).toEqual(first);
+    }
+  });
+
+  it('draws only the first three SID families at S1-OAK-1', () => {
+    const families = new Set(STAGE_SEEDS.map((seed) => clearedAtKoak(seed, 'S1-OAK-1').family));
+    expect(['CNDEL', 'COAST', 'OAK']).toEqual(expect.arrayContaining([...families]));
+    expect(families).toContain('CNDEL');
+  });
+
+  it('draws no heading and nothing off runway 33 before S1-OAK-6', () => {
+    for (const stage of ['S1-OAK-1', 'S1-OAK-2', 'S1-OAK-3', 'S1-OAK-5']) {
+      for (const seed of STAGE_SEEDS) {
+        const { family, runway } = clearedAtKoak(seed, stage);
+        expect(family, `seed ${String(seed)} at ${stage}`).not.toBe('no SID');
+        expect(runway, `seed ${String(seed)} at ${stage}`).not.toBe('33');
+      }
+    }
+  });
+
+  it('draws NIMI once S1-OAK-2 opens it', () => {
+    const families = new Set(STAGE_SEEDS.map((seed) => clearedAtKoak(seed, 'S1-OAK-2').family));
+    expect(families).toContain('NIMI');
+  });
+
+  it('never draws a configuration the stage has locked', () => {
+    for (const seed of STAGE_SEEDS) {
+      const scenario = generateScenario(createRng(seed), koak, byDay('S1-OAK-5'));
+      expect(scenario.runwayConfigId).toBe('SFOW');
+    }
+  });
+
+  it('gates the plan an amendment draw starts from', () => {
+    for (const seed of STAGE_SEEDS.slice(0, 50)) {
+      const drawn = generateAmendmentScenario(createRng(seed), koak, byDay('S1-OAK-5'));
+      expect(drawn.filed.runwayConfigId, `seed ${String(seed)}`).toBe('SFOW');
+    }
+  });
+
+  it('draws by day under a stage that has not opened night, whatever the filter says', () => {
+    for (const seed of STAGE_SEEDS) {
+      const filter = { ...ANY_SCENARIO, stage: 'S1-OAK-5' };
+      const { localTime } = generateScenario(createRng(seed), koak, filter);
+      expect(Number(localTime), `seed ${String(seed)}`).toBeGreaterThanOrEqual(800);
+      expect(Number(localTime), `seed ${String(seed)}`).toBeLessThan(2200);
+    }
+  });
+
+  it('draws nights once the stage has opened them', () => {
+    const times = STAGE_SEEDS.map((seed) => {
+      const filter = { ...ANY_SCENARIO, stage: 'S1-OAK-6' };
+      return Number(generateScenario(createRng(seed), koak, filter).localTime);
+    });
+    expect(times.some((time) => time < 800 || time >= 2200)).toBe(true);
+  });
+
+  it('reports a configuration filter the stage leaves nothing of', () => {
+    const filter: ScenarioFilter = { ...byDay('S1-OAK-2'), config: { kind: 'plan', plan: 'OAKE' } };
+    expect(() => generateScenario(createRng(1), koak, filter)).toThrow(
+      /no runway configuration matches the filter plan OAKE open at S1-OAK-2/,
+    );
+  });
+});

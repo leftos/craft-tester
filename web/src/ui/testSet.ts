@@ -489,6 +489,7 @@ const FilterSchema = z.strictObject({
     z.strictObject({ kind: z.literal('id'), id: z.string() }),
   ]),
   destination: z.string().optional(),
+  stage: z.string().optional(),
 });
 
 /** The shape a stored set has to have to be resumed. */
@@ -566,10 +567,15 @@ function listSets(storage: SetStorage): SetListing[] {
   return listings.sort((a, b) => b.record.startedAt - a.record.startedAt);
 }
 
-/** Rebuilds a filter from a parsed value, leaving out a destination it stored none of. */
+/** Rebuilds a filter from a parsed value, leaving out a destination or a stage it stored none of. */
 function toFilter(parsed: z.infer<typeof FilterSchema>): ScenarioFilter {
-  const { time, config, destination } = parsed;
-  return { time, config, ...(destination === undefined ? {} : { destination }) };
+  const { time, config, destination, stage } = parsed;
+  return {
+    time,
+    config,
+    ...(destination === undefined ? {} : { destination }),
+    ...(stage === undefined ? {} : { stage }),
+  };
 }
 
 /**

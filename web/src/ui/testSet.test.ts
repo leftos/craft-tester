@@ -189,6 +189,19 @@ describe('the set store', () => {
     expect(store.load(42)).toEqual(notGraded);
   });
 
+  it('round-trips the training stage a set was drawn under', () => {
+    const staged = { ...record, filter: { ...record.filter, stage: 'S1-OAK-2' } };
+    const store = createSetStore(mapStorage());
+    store.save(42, staged);
+    expect(store.load(42)).toEqual(staged);
+  });
+
+  it('reads a record stored before stages as one with no stage', () => {
+    const store = createSetStore(mapStorage());
+    store.save(42, record);
+    expect(store.load(42)?.filter).not.toHaveProperty('stage');
+  });
+
   it('reads corrupted JSON and a record of another shape as nothing', () => {
     const store = createSetStore(
       mapStorage(

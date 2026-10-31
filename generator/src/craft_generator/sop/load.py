@@ -99,6 +99,7 @@ from craft_generator.sop.model import (
     TecData,
     TecRoute,
     TecSource,
+    TrainingAirportLock,
     TrainingConfigLock,
     TrainingCourse,
     TrainingRunwayLock,
@@ -1911,7 +1912,27 @@ def _check_training_stages(stages: Sequence[TrainingStage], where: str) -> None:
         seen[stage.id] = index
 
 
-def _training_course(source: str, stages: tuple[TrainingStage, ...], row: _Row) -> TrainingCourse:
+def _training_airports(rows: Sequence[_Row], stage_ids: Sequence[str]) -> tuple[TrainingAirportLock, ...]:
+    known = sorted(path.name for path in airports_dir().iterdir() if path.is_dir())
+    locks: list[TrainingAirportLock] = []
+    named: dict[str, str] = {}
+    for row in rows:
+        airport = row.text("airport")
+        at = _check_stage(row.text("at"), stage_ids, f"{row.where}.at")
+        row.finish()
+        if _AIRPORT_ICAO_PATTERN.fullmatch(airport) is None:
+            raise ValueError(f"{row.where}.airport: {airport!r} is not a four-letter upper-case ICAO code, e.g. KSFO")
+        key = airport.lower()
+        if key not in known:
+            raise ValueError(f"{row.where}.airport: {airport!r} has no directory under generator/airports; use one of {known}")
+        if key in named:
+            raise ValueError(f"{row.where}.airport: {airport!r} is already named by {named[key]}; name each airport once, at the stage it opens")
+        named[key] = row.where
+        locks.append(TrainingAirportLock(airport=airport, at=at))
+    return tuple(locks)
+
+
+def _training_course(source: str, stages: tuple[TrainingStage, ...], airports: Sequence[_Row], row: _Row) -> TrainingCourse:
     ids = [stage.id for stage in stages]
     course = TrainingCourse(
         source=source,
@@ -1920,6 +1941,7 @@ def _training_course(source: str, stages: tuple[TrainingStage, ...], row: _Row) 
         amendment=_check_stage(row.text("amendment"), ids, f"{row.where}.amendment"),
         full_route=_check_stage(row.text("full_route"), ids, f"{row.where}.full_route"),
         night=_check_stage(row.text("night"), ids, f"{row.where}.night"),
+        airports=_training_airports(airports, ids),
     )
     row.finish()
     return course
@@ -1932,11 +1954,13 @@ def load_training_stages(path: Path) -> TrainingCourse:
         path: Path to ``generator/shared/training_stages.yaml``.
 
     Returns:
-        The stages in course order and the stage each course gate opens at.
+        The stages in course order, the stage each course gate opens at, and the stage each airport
+        that does not open at every stage opens at.
 
     Raises:
         ValueError: The file is not a YAML mapping, carries an unknown key, lists one stage id
-            twice, or names a course gate stage that is no stage of the file.
+            twice, names a course gate or airport stage that is no stage of the file, or lists an
+            airport twice, not in upper case, or with no directory under ``generator/airports``.
         OSError: The file is missing.
     """
     where = _where(path)
@@ -1944,7 +1968,7 @@ def load_training_stages(path: Path) -> TrainingCourse:
     source = root.text("source")
     stages = tuple(_training_stage(child) for child in root.children("stages"))
     _check_training_stages(stages, where)
-    course = _training_course(source, stages, root.child("course"))
+    course = _training_course(source, stages, root.children("airports"), root.child("course"))
     root.finish()
     return course
 
@@ -2090,7 +2114,6 @@ def load_training(path: Path, course: TrainingCourse, sop: SopData) -> AirportTr
     root = _Row(where, _load_yaml_mapping(path, where))
     names = _training_names(course, sop)
     training = AirportTraining(
-        opens=_optional_stage_at(root, "opens", names),
         configs=_training_configs(root.optional_children("configs"), names),
         sids=_training_sids(root.optional_children("sids"), names),
         other_sids=_optional_stage_at(root, "other_sids", names),
@@ -2103,7 +2126,7 @@ def load_training(path: Path, course: TrainingCourse, sop: SopData) -> AirportTr
 
 def _airport_training(path: Path, course: TrainingCourse, sop: SopData) -> AirportTraining:
     if not path.is_file():
-        return AirportTraining(opens=None, configs=(), sids=(), other_sids=None, no_sid=None, runways=())
+        return AirportTraining(configs=(), sids=(), other_sids=None, no_sid=None, runways=())
     return load_training(path, course, sop)
 
 

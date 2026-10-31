@@ -1,4 +1,3 @@
 # What the vZOA S1 modules lock at KSFO. Anything not listed opens with the airport.
-opens: S1-SFO-1
 configs:
   - {plan: SFOE, at: S1-SFO-4}

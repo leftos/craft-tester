@@ -14,3 +14,6 @@ course:
   amendment: S1-OAK-5
   full_route: S1-OAK-5
   night: S1-OAK-6
+# When an airport itself opens. An airport not listed is open at every stage.
+airports:
+  - {airport: KSFO, at: S1-SFO-1}

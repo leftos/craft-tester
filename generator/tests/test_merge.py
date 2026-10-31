@@ -1160,18 +1160,19 @@ def test_the_ksfo_training_carries_the_course_and_its_own_locks(ksfo_document: D
     assert [stage["id"] for stage in training["stages"]] == ["S1-OAK-1", "S1-OAK-2", "S1-OAK-3", "S1-OAK-5", "S1-OAK-6", "S1-SFO-1", "S1-SFO-4"]
     assert training["stages"][0] == {"id": "S1-OAK-1", "title": "Clearances Introduction"}
     assert training["course"] == {"runway": "S1-OAK-3", "amendment": "S1-OAK-5", "fullRoute": "S1-OAK-5", "night": "S1-OAK-6"}
-    assert training["opens"] == "S1-SFO-1"
+    assert training["airports"] == [{"airport": "KSFO", "at": "S1-SFO-1"}]
+    assert "opens" not in training
     assert training["configs"] == [{"plan": "SFOE", "at": "S1-SFO-4"}]
     assert (training["sids"], training["runways"]) == ([], [])
     assert "otherSids" not in training
     assert "noSid" not in training
 
 
-def test_an_airport_without_training_locks_emits_empty_lists_and_no_opens(ksfo_build_inputs: BuildInputs) -> None:
-    open_everywhere = AirportTraining(opens=None, configs=(), sids=(), other_sids=None, no_sid=None, runways=())
+def test_an_airport_without_training_locks_emits_empty_lists(ksfo_build_inputs: BuildInputs) -> None:
+    open_everywhere = AirportTraining(configs=(), sids=(), other_sids=None, no_sid=None, runways=())
     inputs = replace(ksfo_build_inputs, airport=replace(ksfo_build_inputs.airport, training=open_everywhere))
     training = build_airport(inputs)["training"]
-    assert set(training) == {"source", "stages", "course", "configs", "sids", "runways"}
+    assert set(training) == {"source", "stages", "course", "airports", "configs", "sids", "runways"}
     assert (training["configs"], training["sids"], training["runways"]) == ([], [], [])
 
 

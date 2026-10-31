@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { InputKind, Mode, ScenarioFilter } from '@/scenario/filter.ts';
-import { MAX_SET_MINUTES, MAX_SET_STRIPS } from '@/scenario/filter.ts';
+import { ANY_SCENARIO, MAX_SET_MINUTES, MAX_SET_STRIPS } from '@/scenario/filter.ts';
 import type { TutorialPart } from '@/ui/router.ts';
 import { TUTORIAL_PART_NAMES } from '@/ui/router.ts';
 
@@ -86,6 +86,30 @@ export function browserFilterStore(): FilterStore {
   } catch {
     return createFilterStore(undefined);
   }
+}
+
+/**
+ * What a filter change leaves remembered: only the members the student changed move.
+ *
+ * The filter on screen may be narrowed by a training stage or a link, and neither is the student's
+ * choice to remember, so a member they left alone keeps its remembered value.
+ *
+ * @param stored The filter remembered for the airport; none reads as the filter that narrows nothing.
+ * @param before The filter on screen before the change.
+ * @param after The filter the student asked for.
+ * @returns The time and configuration to remember.
+ */
+export function rememberedFilter(
+  stored: ScenarioFilter | undefined,
+  before: ScenarioFilter,
+  after: ScenarioFilter,
+): ScenarioFilter {
+  const kept = stored ?? ANY_SCENARIO;
+  const sameConfig = JSON.stringify(before.config) === JSON.stringify(after.config);
+  return {
+    time: before.time === after.time ? kept.time : after.time,
+    config: sameConfig ? kept.config : after.config,
+  };
 }
 
 /** The shape a remembered input kind has to have to be loaded back. */
@@ -273,6 +297,69 @@ export function browserRunwayGradingStore(): RunwayGradingStore {
     return createRunwayGradingStore(globalThis.localStorage);
   } catch {
     return createRunwayGradingStore(undefined);
+  }
+}
+
+/** The shape a remembered training stage has to have to be loaded back. */
+const StageSchema = z.string();
+
+/** The storage key the training stage is remembered under: one per browser, whatever the airport. */
+const STAGE_KEY = 'craft-tester:training-stage';
+
+/** Remembers the training stage a viewer is working at, in this browser only; none is All topics. */
+export type StageStore = { load(): string | undefined; save(stage: string | undefined): void };
+
+/**
+ * Builds a training-stage store over one storage.
+ *
+ * Remembering the stage is a convenience, as the input kind is, so every failure the storage can
+ * raise — a refused read, a full quota, a value another version wrote — reads as "nothing
+ * remembered", and the viewer works at All topics. All topics is stored as no key at all.
+ *
+ * @param storage The storage to read and write, or `undefined` where the browser offers none.
+ * @returns A store that loads `undefined` and saves nothing when the storage is missing or fails.
+ */
+export function createStageStore(storage: ClearableStorage | undefined): StageStore {
+  if (storage === undefined) {
+    return {
+      load: () => undefined,
+      save: () => {
+        // Without a storage there is nowhere to remember the stage.
+      },
+    };
+  }
+  return {
+    load: () => {
+      try {
+        const raw = storage.getItem(STAGE_KEY);
+        if (raw === null) return undefined;
+        const parsed = StageSchema.safeParse(JSON.parse(raw));
+        return parsed.success ? parsed.data : undefined;
+      } catch {
+        return undefined;
+      }
+    },
+    save: (stage) => {
+      try {
+        if (stage === undefined) storage.removeItem(STAGE_KEY);
+        else storage.setItem(STAGE_KEY, JSON.stringify(stage));
+      } catch {
+        // A storage that refuses the write costs the viewer the remembered stage, nothing more.
+      }
+    },
+  };
+}
+
+/**
+ * Builds the training-stage store the page runs on.
+ *
+ * @returns A store over `localStorage`, or one that remembers nothing where reaching it throws.
+ */
+export function browserStageStore(): StageStore {
+  try {
+    return createStageStore(globalThis.localStorage);
+  } catch {
+    return createStageStore(undefined);
   }
 }
 

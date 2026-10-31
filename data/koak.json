@@ -85653,6 +85653,12 @@
     }
   ],
   "training": {
+    "airports": [
+      {
+        "airport": "KSFO",
+        "at": "S1-SFO-1"
+      }
+    ],
     "configs": [
       {
         "at": "S1-OAK-6",

@@ -301,11 +301,12 @@ def _training(course: TrainingCourse, training: AirportTraining) -> Document:
         "source": course.source,
         "stages": [{"id": stage.id, "title": stage.title} for stage in course.stages],
         "course": {"runway": course.runway, "amendment": course.amendment, "fullRoute": course.full_route, "night": course.night},
+        "airports": [{"airport": lock.airport, "at": lock.at} for lock in course.airports],
         "configs": [{lock.key: lock.value, "at": lock.at} for lock in training.configs],
         "sids": [{"family": lock.family, "at": lock.at} for lock in training.sids],
         "runways": [{"runway": lock.runway, "at": lock.at} for lock in training.runways],
     }
-    return _with_optional(document, opens=training.opens, otherSids=training.other_sids, noSid=training.no_sid)
+    return _with_optional(document, otherSids=training.other_sids, noSid=training.no_sid)
 
 
 def _sector(sector: DepartureSector) -> Document:

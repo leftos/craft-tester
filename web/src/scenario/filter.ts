@@ -27,6 +27,9 @@ const FULL_ROUTE_PART = 'r=full';
 /** The hash part a session that does not grade the runway writes; a graded one writes none. */
 const RUNWAY_NOT_GRADED_PART = 'rwy=off';
 
+/** How each hash part that narrows the draw begins. */
+const FILTER_PARTS = ['t=', 'c=', 'd=', 'st='];
+
 /** Which runway configurations a scenario may be drawn in: all of them, one plan, or exactly one. */
 export type ConfigFilter =
   | { kind: 'any' }
@@ -40,8 +43,17 @@ export type ConfigFilter =
  * route library rows filed to that airport, so a destination can be drilled without drawing until
  * the generator happens to land on it. It is deliberately kept out of the dropdowns and out of the
  * remembered filter, and rides in the hash alone so a share link still reproduces the draw.
+ *
+ * `stage` is the training stage the scenario was drawn under, absent for All topics. It locks the
+ * draw as the stage's gates say and rides in the hash too, so the same seed draws the same strip for
+ * anyone who opens the link; it is never saved with the remembered filter.
  */
-export type ScenarioFilter = { time: TimeFilter; config: ConfigFilter; destination?: string };
+export type ScenarioFilter = {
+  time: TimeFilter;
+  config: ConfigFilter;
+  destination?: string;
+  stage?: string;
+};
 
 /**
  * What a session is drawn under and answered with, which the URL hash carries beside the seed.
@@ -123,13 +135,14 @@ export function hashFor(icao: string, seed: number, settings: SessionSettings): 
   return `#${parts.join('&')}`;
 }
 
-/** The `t=`, `c=` and `d=` parts a filter writes; a member that narrows nothing writes none. */
+/** The `t=`, `c=`, `d=` and `st=` parts a filter writes; a member that narrows nothing writes none. */
 function filterParts(filter: ScenarioFilter): string[] {
   const parts: string[] = [];
   if (filter.time !== 'either') parts.push(`t=${filter.time}`);
   const config = configParam(filter.config);
   if (config !== undefined) parts.push(`c=${config}`);
   if (filter.destination !== undefined) parts.push(`d=${filter.destination}`);
+  if (filter.stage !== undefined) parts.push(`st=${encodeURIComponent(filter.stage)}`);
   return parts;
 }
 
@@ -267,22 +280,31 @@ function destinationOf(raw: string | undefined): string | undefined {
   return value !== undefined && DESTINATION_PATTERN.test(value) ? value : undefined;
 }
 
+/** Reads the `st=` part, which is absent when empty; the airport data decides whether it is a stage. */
+function stageOf(raw: string | undefined): string | undefined {
+  const value = raw === undefined ? undefined : decode(raw);
+  return value === '' ? undefined : value;
+}
+
 /**
  * Reads the filter back out of a URL hash.
  *
  * A value this app does not know narrows nothing rather than failing the load, so an old or
  * hand-edited link still opens on a scenario. The `d=` part is the undocumented testing aid that
- * forces the destination; a hash without one leaves the member absent.
+ * forces the destination, and the `st=` part the training stage the draw ran under; a hash without
+ * one leaves the member absent.
  *
  * @param hash The hash, with or without its leading `#`.
  * @returns The filter the hash asks for; every unreadable member falls back to `ANY_SCENARIO`'s.
  */
 export function filterFromHash(hash: string): ScenarioFilter {
   const destination = destinationOf(valueOf(hash, 'd'));
+  const stage = stageOf(valueOf(hash, 'st'));
   return {
     time: timeOf(valueOf(hash, 't')),
     config: configOf(valueOf(hash, 'c')),
     ...(destination === undefined ? {} : { destination }),
+    ...(stage === undefined ? {} : { stage }),
   };
 }
 
@@ -364,12 +386,10 @@ export function runwayGradingFromHash(hash: string): boolean {
  * The `a=` part names the airport rather than narrowing the draw, so it is not a filter part.
  *
  * @param hash The hash, with or without its leading `#`.
- * @returns True when the hash carries a `t=`, a `c=` or a `d=` part, whatever it says.
+ * @returns True when the hash carries a `t=`, a `c=`, a `d=` or an `st=` part, whatever it says.
  */
 export function hasFilterParams(hash: string): boolean {
-  return partsOf(hash).some(
-    (part) => part.startsWith('t=') || part.startsWith('c=') || part.startsWith('d='),
-  );
+  return partsOf(hash).some((part) => FILTER_PARTS.some((prefix) => part.startsWith(prefix)));
 }
 
 /**

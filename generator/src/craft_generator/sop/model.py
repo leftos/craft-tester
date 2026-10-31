@@ -679,13 +679,22 @@ class TrainingStage:
 
 
 @dataclass(frozen=True, slots=True)
+class TrainingAirportLock:
+    """The stage an airport itself opens at; an airport no lock names is open at every stage."""
+
+    airport: str
+    at: str
+
+
+@dataclass(frozen=True, slots=True)
 class TrainingCourse:
     """``shared/training_stages.yaml``: the stages in course order and the gates every airport shares.
 
     A thing locked at a stage opens at that stage and every stage after it. ``runway`` is the stage
     the runway element is first asked and graded at, ``amendment`` the one Amend mode opens at,
     ``full_route`` the one the full-route answer opens at and ``night`` the one night draws open at;
-    each names a stage id.
+    each names a stage id. ``airports`` holds when the airports that do not open at every stage open,
+    so every airport's data can say which others are locked.
     """
 
     source: str
@@ -694,6 +703,7 @@ class TrainingCourse:
     amendment: str
     full_route: str
     night: str
+    airports: tuple[TrainingAirportLock, ...]
 
 
 @dataclass(frozen=True, slots=True)
@@ -730,13 +740,11 @@ class TrainingRunwayLock:
 class AirportTraining:
     """``training.yaml``: what the training stages lock at one airport; anything not listed opens with the airport.
 
-    ``opens`` is the stage the airport itself opens at, ``None`` when it is open at every stage.
     ``other_sids`` is the stage every SID family ``sids`` does not name opens at and ``no_sid`` the
     one a departure cleared without a SID opens at; each is ``None`` when not locked. An airport
     with no ``training.yaml`` has every field empty.
     """
 
-    opens: str | None
     configs: tuple[TrainingConfigLock, ...]
     sids: tuple[TrainingSidLock, ...]
     other_sids: str | None

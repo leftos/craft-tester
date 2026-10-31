@@ -83721,6 +83721,12 @@
     }
   ],
   "training": {
+    "airports": [
+      {
+        "airport": "KSFO",
+        "at": "S1-SFO-1"
+      }
+    ],
     "configs": [
       {
         "at": "S1-SFO-4",
@@ -83733,7 +83739,6 @@
       "night": "S1-OAK-6",
       "runway": "S1-OAK-3"
     },
-    "opens": "S1-SFO-1",
     "runways": [],
     "sids": [],
     "source": "vZOA S1 syllabus, https://oakartcc.org/training/syllabus",

@@ -1807,6 +1807,25 @@
     "training": {
       "additionalProperties": false,
       "properties": {
+        "airports": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "airport": {
+                "type": "string"
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "airport",
+              "at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
         "configs": {
           "items": {
             "anyOf": [
@@ -1871,9 +1890,6 @@
           "type": "object"
         },
         "noSid": {
-          "type": "string"
-        },
-        "opens": {
           "type": "string"
         },
         "otherSids": {
@@ -1944,6 +1960,7 @@
         "source",
         "stages",
         "course",
+        "airports",
         "configs",
         "sids",
         "runways"

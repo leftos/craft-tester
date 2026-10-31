@@ -22,6 +22,7 @@ import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 import type { ConfigFilter, ScenarioFilter, TimeFilter } from '@/scenario/filter.ts';
 import { matchesConfig } from '@/scenario/filter.ts';
 import type { Rng, Weighted } from '@/scenario/rng.ts';
+import { configLock, isOpenAt, stageBlock } from '@/scenario/stage.ts';
 
 /** A half-open span of local minutes past midnight. */
 type MinuteRange = { from: number; to: number };
@@ -105,20 +106,33 @@ function describeConfigFilter(filter: ConfigFilter): string {
 }
 
 /**
- * Draws a runway configuration the filter admits, by the training mix.
+ * Draws a runway configuration the filter admits and the training stage has opened, by the training
+ * mix. With no stage every configuration is open, so the candidates and the draw are the filter's
+ * alone.
  *
  * @param rng The seeded generator; the weighted draw advances it.
- * @param airport The airport data, for its configurations.
+ * @param airport The airport data, for its configurations and their training locks.
  * @param filter Which configurations the draw may pick from.
+ * @param stage The training stage the draw runs under, `undefined` for All topics.
  * @returns The drawn configuration.
- * @throws Error When the airport has no configuration the filter admits, naming the ones it has.
+ * @throws Error When the airport has no configuration left to draw, naming the ones it has.
  */
-function pickConfig(rng: Rng, airport: AirportData, filter: ConfigFilter): RunwayConfig {
-  const candidates = airport.runwayConfigs.filter((config) => matchesConfig(filter, config));
+function pickConfig(
+  rng: Rng,
+  airport: AirportData,
+  filter: ConfigFilter,
+  stage: string | undefined,
+): RunwayConfig {
+  const { training } = airport;
+  const candidates = airport.runwayConfigs.filter(
+    (config) =>
+      matchesConfig(filter, config) && isOpenAt(training, configLock(training, config), stage),
+  );
   if (candidates.length === 0) {
     const known = airport.runwayConfigs.map((config) => `${config.id} (${config.plan})`).join(', ');
+    const atStage = stage === undefined ? '' : ` open at ${stage}`;
     throw new Error(
-      `no runway configuration matches the filter ${describeConfigFilter(filter)}; ` +
+      `no runway configuration matches the filter ${describeConfigFilter(filter)}${atStage}; ` +
         `${airport.airport.icao} has ${known}`,
     );
   }
@@ -596,19 +610,23 @@ function clearedOnRunway(
  *
  * A filter that names a destination narrows the route draw to the route library rows filed to it.
  *
+ * A filter that names a training stage draws only its open configurations, by day until the stage
+ * opens night whatever the filter's time says, and throws back a clearance whose SID, no-SID departure or runway the stage has not opened: the SOP engine picks
+ * those, so they can only be judged after it has.
+ *
  * @param rng The seeded generator; every draw advances it.
  * @param airport The airport data the scenario is drawn from.
- * @param filter The time of day, the runway configurations and the destination the draw is narrowed
- *   to.
- * @returns The scenario, or the reason the engine could not clear it or would amend it, which is
- *   the caller's cue to draw again.
+ * @param filter The time of day, the runway configurations, the destination and the training stage
+ *   the draw is narrowed to.
+ * @returns The scenario, or the reason the engine could not clear it, would amend it or the stage
+ *   has it locked, which is the caller's cue to draw again.
  */
 export function drawScenario(
   rng: Rng,
   airport: AirportData,
   filter: ScenarioFilter,
 ): Scenario | Unresolved {
-  const config = pickConfig(rng, airport, filter.config);
+  const config = pickConfig(rng, airport, filter.config, filter.stage);
   const route = pickRoute(rng, airport, filter.destination);
   const fleet = pickFleet(rng, airport, route);
   const equipmentSuffix = rng.pick(fleet.suffixes);
@@ -622,7 +640,9 @@ export function drawScenario(
     mayRequest: true,
   };
   const picked = pickRunway(rng, draw);
-  const time = pickTime(rng, filter.time);
+  const { training } = airport;
+  const nightOpen = isOpenAt(training, training.course.night, filter.stage);
+  const time = pickTime(rng, nightOpen ? filter.time : 'day');
   const drawn: Scenario = {
     callsign,
     aircraftType: fleet.type,
@@ -638,6 +658,9 @@ export function drawScenario(
   };
   const result = clearedOnRunway(rng, drawn, draw, picked);
   if (isUnresolved(result)) return result;
+  const { departureRunway } = result.filed;
+  const block = stageBlock(result.procedure, departureRunway, training, filter.stage);
+  if (block !== undefined) return unresolved('R.sid', block);
   const composed: Scenario = {
     ...result.filed,
     filedRoute: composedRoute(result.procedure, route.tail, airport),
@@ -660,8 +683,8 @@ export function drawScenario(
  *
  * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the scenario is drawn from.
- * @param filter The time of day, the runway configurations and the destination the draw is narrowed
- *   to.
+ * @param filter The time of day, the runway configurations, the destination and the training stage
+ *   the draw is narrowed to.
  * @returns The scenario, whose filed route names the procedure the SOP assigns it.
  * @throws Error When `MAX_ATTEMPTS` draws in a row were all unclearable, naming the last reason, or
  *   when no route library row files the destination the filter names.

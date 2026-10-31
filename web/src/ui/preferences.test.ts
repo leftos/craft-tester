@@ -8,8 +8,10 @@ import {
   createHomeStore,
   createInputKindStore,
   createRunwayGradingStore,
+  createStageStore,
   createTourProgressStore,
   createTourSeenStore,
+  rememberedFilter,
 } from '@/ui/preferences.ts';
 
 const filter: ScenarioFilter = { time: 'night', config: { kind: 'id', id: '28/01' } };
@@ -44,6 +46,91 @@ function refusingStorage(): Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> 
   };
 }
 
+describe('createStageStore', () => {
+  const KEY = 'craft-tester:training-stage';
+
+  it('loads back the stage it saved, under one key per browser', () => {
+    const entries = new Map<string, string>();
+    const store = createStageStore(mapStorage(entries));
+    store.save('S1-OAK-2');
+    expect(store.load()).toBe('S1-OAK-2');
+    expect([...entries.keys()]).toEqual([KEY]);
+  });
+
+  it('remembers nothing for All topics, and forgets a stage on it', () => {
+    const entries = new Map<string, string>();
+    const store = createStageStore(mapStorage(entries));
+    expect(store.load()).toBeUndefined();
+    store.save('S1-OAK-2');
+    store.save(undefined);
+    expect(store.load()).toBeUndefined();
+    expect(entries.has(KEY)).toBe(false);
+  });
+
+  it('reads a value another version wrote as nothing remembered', () => {
+    for (const value of ['not json', '3', '{"stage":"S1-OAK-2"}']) {
+      const store = createStageStore(mapStorage(new Map([[KEY, value]])));
+      expect(store.load()).toBeUndefined();
+    }
+  });
+
+  it('survives a storage that refuses every operation', () => {
+    const store = createStageStore(refusingStorage());
+    expect(store.load()).toBeUndefined();
+    expect(() => {
+      store.save('S1-OAK-2');
+      store.save(undefined);
+    }).not.toThrow();
+  });
+
+  it('remembers nothing where the browser offers no storage', () => {
+    const store = createStageStore(undefined);
+    store.save('S1-OAK-2');
+    store.save(undefined);
+    expect(store.load()).toBeUndefined();
+  });
+});
+
+describe('rememberedFilter', () => {
+  const stored: ScenarioFilter = { time: 'night', config: { kind: 'plan', plan: 'OAKE' } };
+  const clamped: ScenarioFilter = { time: 'day', config: { kind: 'any' } };
+
+  it('keeps the remembered value of a member the student left alone', () => {
+    const after: ScenarioFilter = { ...clamped, config: { kind: 'plan', plan: 'SFOW' } };
+    expect(rememberedFilter(stored, clamped, after)).toEqual({
+      time: 'night',
+      config: { kind: 'plan', plan: 'SFOW' },
+    });
+  });
+
+  it('takes the member the student changed', () => {
+    const after: ScenarioFilter = { ...clamped, time: 'either' };
+    expect(rememberedFilter(stored, clamped, after)).toEqual({
+      time: 'either',
+      config: stored.config,
+    });
+  });
+
+  it('compares a configuration by what it names, not by identity', () => {
+    const before: ScenarioFilter = { time: 'day', config: { kind: 'plan', plan: 'SFOW' } };
+    const after: ScenarioFilter = { time: 'either', config: { kind: 'plan', plan: 'SFOW' } };
+    expect(rememberedFilter(stored, before, after).config).toEqual(stored.config);
+  });
+
+  it('never writes a clamped member where nothing is remembered', () => {
+    const after: ScenarioFilter = { ...clamped, config: { kind: 'plan', plan: 'SFOW' } };
+    expect(rememberedFilter(undefined, clamped, after)).toEqual({
+      time: 'either',
+      config: { kind: 'plan', plan: 'SFOW' },
+    });
+  });
+
+  it('never carries the stage or the forced destination', () => {
+    const after: ScenarioFilter = { ...clamped, stage: 'S1-OAK-2', destination: 'KLVK' };
+    expect(rememberedFilter(stored, clamped, after)).toEqual(stored);
+  });
+});
+
 describe('createFilterStore', () => {
   it('loads back the filter it saved for the same airport', () => {
     const store = createFilterStore(mapStorage());
@@ -69,6 +156,13 @@ describe('createFilterStore', () => {
     store.save('KSFO', { ...filter, destination: 'KLVK' });
     expect(JSON.parse(entries.get('craft-tester:filter:KSFO') ?? 'null')).toStrictEqual(filter);
     expect(store.load('KSFO')).toStrictEqual(filter);
+  });
+
+  it('leaves a training stage out of what it stores', () => {
+    const entries = new Map<string, string>();
+    const store = createFilterStore(mapStorage(entries));
+    store.save('KSFO', { ...filter, stage: 'S1-OAK-2' });
+    expect(JSON.parse(entries.get('craft-tester:filter:KSFO') ?? 'null')).toStrictEqual(filter);
   });
 
   it('remembers nothing about an airport nobody has filtered', () => {

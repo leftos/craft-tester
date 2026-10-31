@@ -453,7 +453,8 @@ function pickFaults(
  *
  * @param rng The seeded generator; the clean draw, the fault count and every fault advance it.
  * @param airport The airport data the plan is drawn from.
- * @param filter The time of day and the runway configurations the draw is narrowed to.
+ * @param filter The time of day, the runway configurations and the training stage the draw is
+ *   narrowed to.
  * @returns The scenario, or the reason the draw was thrown away, which is the caller's cue to draw
  *   again.
  */
@@ -490,7 +491,8 @@ export function drawAmendmentScenario(
  *
  * @param rng The seeded generator; the same seed and filter always yield the same scenario.
  * @param airport The airport data the plan is drawn from.
- * @param filter The time of day and the runway configurations the draw is narrowed to.
+ * @param filter The time of day, the runway configurations and the training stage the draw is
+ *   narrowed to.
  * @returns The filed plan, the amendments it needs, and which faults were injected into it.
  * @throws Error When `MAX_ATTEMPTS` draws in a row were all thrown away, naming the last reason.
  */
