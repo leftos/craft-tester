@@ -77510,6 +77510,10 @@
       "id": "LOA-ZSE-SEA-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "BTG",
+          "KNGDM"
+        ],
         "tokens": [
           "RBL",
           "LMT",
@@ -77529,6 +77533,9 @@
       "id": "LOA-ZSE-PDX-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "OED"
+        ],
         "tokens": [
           "MACHU",
           "MOXEE",
@@ -77548,6 +77555,9 @@
           "J"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "DERBB"
+        ],
         "tokens": [
           "BURGL",
           "REBRG",
@@ -77574,6 +77584,14 @@
           "T"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "PAIDD",
+          "EHF",
+          "LHS",
+          "AVE",
+          "FLW",
+          "RZS"
+        ],
         "tokens": [
           "PAIDD",
           "EHF",
@@ -77596,6 +77614,11 @@
           "J"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "AVE",
+          "FLW",
+          "DERBB"
+        ],
         "tokens": [
           "BURGL",
           "HONZK",
@@ -77621,6 +77644,13 @@
           "T"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "PAIDD",
+          "EHF",
+          "LHS",
+          "FLW",
+          "RZS"
+        ],
         "tokens": [
           "PAIDD",
           "EHF",
@@ -77643,6 +77673,14 @@
           "J"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "AVE",
+          "FLW",
+          "MCKEY",
+          "DAISY",
+          "BENET",
+          "DERBB"
+        ],
         "tokens": [
           "TILLT",
           "RDHOT",
@@ -77672,6 +77710,11 @@
           "T"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "EHF",
+          "FLW",
+          "GVO"
+        ],
         "tokens": [
           "EHF",
           "FLW",
@@ -77692,6 +77735,11 @@
           "J"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "AVE",
+          "FLW",
+          "DERBB"
+        ],
         "tokens": [
           "BURGL",
           "HONZK",
@@ -77718,6 +77766,13 @@
           "T"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "NINTY",
+          "EHF",
+          "LHS",
+          "RZS",
+          "FLW"
+        ],
         "tokens": [
           "NINTY",
           "EHF",
@@ -77736,6 +77791,13 @@
       "id": "LOA-ZLA-SAN-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "HUULK",
+          "PASKE",
+          "EHF",
+          "LANDO",
+          "LAX"
+        ],
         "tokens": [
           "HUULK",
           "PASKE",
@@ -77758,6 +77820,10 @@
           "J"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "DERBB",
+          "FIM"
+        ],
         "tokens": [
           "BURGL",
           "TILLT",
@@ -77781,6 +77847,9 @@
       "id": "LOA-ZLA-UDD-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "PMD"
+        ],
         "tokens": [
           "CLASN",
           "OYVEY",
@@ -77805,6 +77874,11 @@
       "id": "LOA-ZLA-ONT-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "CLASN",
+          "OYVEY",
+          "PMD"
+        ],
         "tokens": [
           "CLASN",
           "OYVEY",
@@ -77824,6 +77898,10 @@
           "J"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "J92",
+          "BTY"
+        ],
         "tokens": [
           "BASIC",
           "Q174",
@@ -77846,6 +77924,9 @@
           "T"
         ],
         "kind": "route",
+        "nonRnavTokens": [
+          "J92"
+        ],
         "tokens": [
           "FUULL",
           "J92"
@@ -77861,6 +77942,9 @@
       "id": "LOA-ZLA-HND-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "J92"
+        ],
         "tokens": [
           "FUULL",
           "J92"
@@ -77876,6 +77960,9 @@
       "id": "LOA-ZLA-SBA-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "GVO"
+        ],
         "tokens": [
           "GVO"
         ]
@@ -77890,6 +77977,11 @@
       "id": "LOA-ZLA-SBP-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "MQO",
+          "CREPE",
+          "CADAB"
+        ],
         "tokens": [
           "MQO",
           "CREPE",
@@ -77906,6 +77998,12 @@
       "id": "LOA-ZLC-SLC-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "BVL",
+          "MLF",
+          "FLECC",
+          "REO"
+        ],
         "tokens": [
           "BVL",
           "MLF",
@@ -77923,6 +78021,10 @@
       "id": "LOA-ZLC-BOI-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "NEERO",
+          "PRNCS"
+        ],
         "rnavOnly": true,
         "tokens": [
           "NEERO",
@@ -77939,6 +78041,11 @@
       "id": "LOA-ZLC-BIL-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "YLSTN",
+          "BAM",
+          "REO"
+        ],
         "tokens": [
           "YLSTN",
           "BAM",
@@ -77955,6 +78062,9 @@
       "id": "LOA-ZLC-TWF-ROUTE",
       "rule": {
         "kind": "route",
+        "nonRnavTokens": [
+          "BAM"
+        ],
         "tokens": [
           "BAM"
         ]

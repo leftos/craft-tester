@@ -434,7 +434,7 @@ def test_the_loa_rules_keep_their_discriminated_kinds(ksfo_document: Document) -
     assert parity["artcc"] == "ZSE"
     assert "destinations" not in parity
     portland = rules["LOA-ZSE-PDX-ROUTE"]
-    assert portland["rule"] == {"kind": "route", "tokens": ["MACHU", "MOXEE", "OED"]}
+    assert portland["rule"] == {"kind": "route", "tokens": ["MACHU", "MOXEE", "OED"], "nonRnavTokens": ["OED"]}
     assert portland["destinations"] == ["KPDX"]
     assert "artcc" not in portland
 
@@ -446,14 +446,28 @@ def _with_loa_rule(inputs: BuildInputs, rule_id: str, rule: RouteTokenRule) -> B
 
 
 def test_a_route_rule_emits_its_classes_and_rnav_flag_only_where_the_row_states_them(ksfo_build_inputs: BuildInputs, ksfo_document: Document) -> None:
-    narrowed = RouteTokenRule(tokens=("MOXEE",), classes=("P", "T"), rnav_only=True)
+    narrowed = RouteTokenRule(tokens=("MOXEE",), classes=("P", "T"), rnav_only=True, non_rnav_tokens=None)
     document = build_airport(_with_loa_rule(ksfo_build_inputs, "LOA-ZSE-PDX-ROUTE", narrowed))
     portland = next(rule for rule in document["loaRules"] if rule["id"] == "LOA-ZSE-PDX-ROUTE")
-    assert portland["rule"] == {"kind": "route", "tokens": ["MOXEE"], "classes": ["P", "T"], "rnavOnly": True}
+    assert portland["rule"] == {"kind": "route", "tokens": ["MOXEE"], "nonRnavTokens": ["MOXEE"], "classes": ["P", "T"], "rnavOnly": True}
     validate(document, schema_path())
     plain = next(rule for rule in ksfo_document["loaRules"] if rule["id"] == "LOA-ZSE-PDX-ROUTE")["rule"]
     assert "classes" not in plain
     assert "rnavOnly" not in plain
+
+
+@pytest.mark.parametrize(
+    ("non_rnav_tokens", "emitted"),
+    [(None, ["MACHU", "MOXEE", "OED"]), (("OED",), ["OED"])],
+)
+def test_a_route_rule_emits_the_tokens_a_non_rnav_flight_may_use_or_all_of_them_where_the_row_draws_no_line(
+    ksfo_build_inputs: BuildInputs, non_rnav_tokens: tuple[str, ...] | None, emitted: list[str]
+) -> None:
+    rule = RouteTokenRule(tokens=("MACHU", "MOXEE", "OED"), classes=None, rnav_only=False, non_rnav_tokens=non_rnav_tokens)
+    document = build_airport(_with_loa_rule(ksfo_build_inputs, "LOA-ZSE-PDX-ROUTE", rule))
+    portland = next(rule for rule in document["loaRules"] if rule["id"] == "LOA-ZSE-PDX-ROUTE")
+    assert portland["rule"]["nonRnavTokens"] == emitted
+    validate(document, schema_path())
 
 
 def test_a_tec_row_on_a_dp_its_runways_do_not_publish_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:

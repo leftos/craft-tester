@@ -170,6 +170,39 @@ def test_a_route_rule_carries_the_classes_and_the_rnav_flag_it_is_written_for(
     assert (seattle.rule.classes, seattle.rule.rnav_only) == (None, False)
 
 
+def seattle_row(non_rnav_tokens: list[str]) -> dict[str, Any]:
+    """Return a SEA route row naming ``non_rnav_tokens`` as the options a non-RNAV flight may use."""
+    return {
+        "id": "LOA-ZSE-SEA-ROUTE",
+        "source": "a test row",
+        "text": "SEA arrivals from the Bay: ..RBL..LMT; non-RNAV ..KNGDM or ..BTG",
+        "destinations": ["KSEA"],
+        "rule": {"kind": "route", "tokens": ["RBL", "LMT", "BTG", "KNGDM"], "non_rnav_tokens": non_rnav_tokens},
+    }
+
+
+def test_a_route_rule_carries_the_tokens_a_non_rnav_flight_may_use(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [seattle_row(["BTG", "KNGDM"])])
+    seattle = rule_by_id(load_airport(directory, shared_route_facts), "LOA-ZSE-SEA-ROUTE")
+    assert isinstance(seattle.rule, RouteTokenRule)
+    assert seattle.rule.non_rnav_tokens == ("BTG", "KNGDM")
+
+
+def test_a_route_rule_without_non_rnav_tokens_draws_no_line(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    override = seattle_row([])
+    del override["rule"]["non_rnav_tokens"]
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [override])
+    seattle = rule_by_id(load_airport(directory, shared_route_facts), "LOA-ZSE-SEA-ROUTE")
+    assert isinstance(seattle.rule, RouteTokenRule)
+    assert seattle.rule.non_rnav_tokens is None
+
+
+def test_a_non_rnav_token_outside_the_row_tokens_is_named(tmp_path: Path, ksfo_dir: Path, shared_route_facts: SharedRouteFacts) -> None:
+    directory = write_loa(airport_copy(tmp_path, ksfo_dir), [seattle_row(["BTG", "OLM"])])
+    with pytest.raises(ValueError, match=r"rules\[LOA-ZSE-SEA-ROUTE\].rule.non_rnav_tokens\[1\]: 'OLM' is not one of the row's tokens"):
+        load_airport(directory, shared_route_facts)
+
+
 @pytest.mark.parametrize(
     ("classes", "message"),
     [

@@ -538,6 +538,8 @@ export const TecRouteSchema = z
  * A `route` row with `classes` applies only to flights of those classes, because an attachment cell
  * routes props differently from jets; one with `rnavOnly` applies only to an RNAV-capable flight,
  * because the cell's conventional column reads "via filed route" and so demands no fix.
+ * `nonRnavTokens` lists the tokens of the row a non-RNAV flight may use, each one also in `tokens`;
+ * a row that draws no line between them carries a copy of `tokens`.
  */
 export const LoaRuleKindSchema = z.discriminatedUnion('kind', [
   z.strictObject({
@@ -550,6 +552,7 @@ export const LoaRuleKindSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('route'),
     tokens: z.array(z.string()),
+    nonRnavTokens: z.array(z.string()),
     classes: z.array(AircraftClassSchema).optional(),
     rnavOnly: z.boolean().optional(),
   }),

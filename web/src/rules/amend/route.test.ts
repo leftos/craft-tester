@@ -24,7 +24,10 @@ const oak = sidOf(koak, 'OAK');
 const skyl = sidOf(koak, 'SKYL');
 
 /** The optional keys an LOA routing row narrows itself with: the classes and the RNAV column. */
-type LoaRouteNarrowing = Omit<Extract<LoaRuleKind, { kind: 'route' }>, 'kind' | 'tokens'>;
+type LoaRouteNarrowing = Omit<
+  Extract<LoaRuleKind, { kind: 'route' }>,
+  'kind' | 'tokens' | 'nonRnavTokens'
+>;
 
 const BASE_SCENARIO: Scenario = {
   callsign: 'UAL1',
@@ -847,12 +850,13 @@ describe('checkRoute vector-SID navaid', () => {
 describe('checkRoute letters of agreement', () => {
   /** An LOA routing row for one destination whose fixes no route in these tests names. */
   function loaRow(destination: string, narrowing: LoaRouteNarrowing): LoaRule {
+    const tokens = ['ZZZZZ'];
     return {
       id: 'LOA-TEST-ROUTE',
       source: 'a test row',
       text: 'the test routing',
       destinations: [destination],
-      rule: { kind: 'route', tokens: ['ZZZZZ'], ...narrowing },
+      rule: { kind: 'route', tokens, nonRnavTokens: [...tokens], ...narrowing },
     };
   }
 
