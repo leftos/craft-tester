@@ -1,6 +1,7 @@
 # temp and scratch
 .tmp/
 *.log
+.playwright-mcp/
 
 # python (generator/)
 .venv/
