@@ -12,7 +12,13 @@ import { checkRoute, withVectorNavaid } from '@/rules/amend/route.ts';
 import type { Classification, Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
-import { isObligatory, tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
+import {
+  isObligatory,
+  recommendedToolRoute,
+  tecHead,
+  tecTokens,
+  usableTecRoute,
+} from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 import { sidOf } from '@/data/sidOf.ts';
 
@@ -378,5 +384,39 @@ describe('usableTecRoute for a type ZOA CPS-004 3.1 handles as another class', (
   it('routes a B738, which the table does not list, on the jet row under either handling', () => {
     expect(koakKsmfRow('B738', 'proposed')?.id).toBe('TEC-KSMF-SFOW-J');
     expect(koakKsmfRow('B738', 'accepted')?.id).toBe('TEC-KSMF-SFOW-J');
+  });
+});
+
+describe('recommendedToolRoute', () => {
+  /** The recommended tool row a KOAK flight to KAPC is routed on. */
+  function koakToolRow(overrides: Partial<Scenario>): string | undefined {
+    const flight: Scenario = {
+      ...SCENARIO,
+      callsign: 'N1',
+      equipmentSuffix: '/L',
+      destination: 'KAPC',
+      filedRoute: 'OAK SAU',
+      filedAltitude: 4000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+      ...overrides,
+    };
+    const ctx = classify(flight, koak, 'proposed');
+    if (isUnresolved(ctx)) throw new Error(ctx.reason);
+    return recommendedToolRoute(ctx, flight, koak)?.id;
+  }
+
+  it('routes a DH8D, which ZOA CPS-004 3.1 proposes the jet rows to, on the jet row', () => {
+    expect(koakToolRow({ aircraftType: 'DH8D' })).toBe('TOOL-KAPC-SFOW-J');
+  });
+
+  it('routes a BE20 on the turboprop row', () => {
+    expect(koakToolRow({ aircraftType: 'BE20', equipmentSuffix: '/A' })).toBe('TOOL-KAPC-SFOW-TP');
+  });
+
+  it('names no row where the keyed row states an altitude, which makes it obligatory', () => {
+    expect(
+      koakToolRow({ aircraftType: 'B738', runwayConfigId: 'OAKE', departureRunway: '12' }),
+    ).toBeUndefined();
   });
 });

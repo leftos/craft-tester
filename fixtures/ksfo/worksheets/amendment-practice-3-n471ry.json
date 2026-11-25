@@ -1,5 +1,19 @@
 {
   "airport": "KSFO",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 5000,
+        "reason": "the ZOA route tool's route to Napa is flown at 5,000; a facility-directed altitude is exempt from the odd/even rule"
+      },
+      {
+        "box": "route",
+        "proposed": "GAPP7 SFO SAU",
+        "reason": "KAPC is outside NorCal TRACON, but the ZOA route tool assigns a piston in SFOW GAPP7 SFO SAU"
+      }
+    ]
+  },
   "id": "ws-ksfo-amendment-practice-3-n471ry",
   "mode": "amendment",
   "scenario": {
@@ -15,9 +29,15 @@
     "runwayConfigId": "28/01",
     "squawk": "4607"
   },
+  "sidVersions": {
+    "GAPP": {
+      "id": "GAPP7",
+      "spoken": "Gap Seven"
+    }
+  },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class P to it (default_for_classes), pending validation"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration 28/01 defaults class P to it (default_for_classes), pending validation; settled on the route tool's obligatory row by the user 2026-11-24"
   },
-  "status": "pending"
+  "status": "settled"
 }

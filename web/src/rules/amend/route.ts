@@ -29,7 +29,7 @@ import {
   connectionCitations,
 } from '@/rules/routeBuild.ts';
 import { unservedSids } from '@/rules/sidSelection.ts';
-import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { recommendedToolRoute, tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import type { Procedure, ResolvedClearance, RuleCitation, Unresolved } from '@/rules/types.ts';
 import { isUnresolved, unresolved } from '@/rules/unresolved.ts';
 
@@ -399,6 +399,31 @@ function expectedRoute(
       filedExpectation(filed, scenario, assigned, airport)
     );
   }
+  return tecExpectation(tec, scenario, ctx, assigned, airport);
+}
+
+/**
+ * The route box a TEC or route tool row gives a flight issued a procedure.
+ *
+ * Where the row begins on the departure the flight is issued, or on none, the box is the route as
+ * written; where the flight is issued a SID in place of the family or the initial heading the row
+ * begins on, the box is that SID joined onto the route after its departure.
+ *
+ * @param tec The row the box is read from.
+ * @param scenario The filed flight plan.
+ * @param ctx The classified flight.
+ * @param assigned The identifier of the procedure the flight is issued.
+ * @param airport The airport data.
+ * @returns The box as it should read, or `Unresolved` where the row names a family the airport no
+ *   longer publishes.
+ */
+function tecExpectation(
+  tec: TecRoute,
+  scenario: Scenario,
+  ctx: Classification,
+  assigned: string,
+  airport: AirportData,
+): ExpectedRoute | Unresolved {
   const tokens = tecTokens(tec, airport);
   if (isUnresolved(tokens)) return tokens;
   const head = tecHead(tec);
@@ -969,14 +994,140 @@ export function checkRoute(
   clearance: ResolvedClearance,
   airport: AirportData,
 ): ResolvedAmendment | undefined | Unresolved {
+  return checkRouteWithAlternative(scenario, ctx, clearance, airport).outcome;
+}
+
+/** The route box check's outcome, and the box graded correct beside the expected one where there is one. */
+export type RouteCheckResult = {
+  outcome: ResolvedAmendment | undefined | Unresolved;
+  alsoCorrect?: string;
+};
+
+/** A route box amendment, the one kind of amendment the route box check raises. */
+type RouteAmendment = Extract<ResolvedAmendment, { box: 'route' }>;
+
+/**
+ * Checks the route box as `checkRoute` does, and names the box graded correct beside the expected one.
+ *
+ * Where the route tool recommends a route for the flight, a row that states no altitude, the box is
+ * expected to read it only where the box has to be amended anyway: the proposal becomes the tool
+ * route, and the box the check would otherwise have proposed is correct too. A box that needs no
+ * amendment stays correct as filed, and the tool route is correct there too. A warning amendment,
+ * one that swaps the arrival and one paired with another box are left as they are. The RNAV check
+ * then runs on the final proposal, and a box it leaves unresolved names no other box.
+ *
+ * @param scenario The filed flight plan.
+ * @param ctx The classified flight, which keys the TEC and route tool rows.
+ * @param clearance The clearance the engine resolved for the plan.
+ * @param airport The airport data.
+ * @returns The amendment for the route box, `undefined` or `Unresolved` as `checkRoute` returns
+ *   it, with the box also graded correct where the route tool's recommendation names one.
+ */
+export function checkRouteWithAlternative(
+  scenario: Scenario,
+  ctx: Classification,
+  clearance: ResolvedClearance,
+  airport: AirportData,
+): RouteCheckResult {
+  const check: RouteCheck = { scenario, ctx, clearance, airport };
+  const recommended = withRecommendation(routeOutcome(scenario, ctx, clearance, airport), check);
+  const outcome = rnavChecked(recommended.outcome, check);
+  return outcome === recommended.outcome ? recommended : { outcome };
+}
+
+/**
+ * The route box outcome with the flight's own equipment held against it.
+ *
+ * @param outcome The outcome the SOP, the TEC table, the route tool and the arrival sheet ask for.
+ * @param check The filed plan, its classification, the clearance it was given, and the data.
+ * @returns The outcome itself where the flight can fly what the box would read, else the box
+ *   unresolved, marked `rnav_elements`.
+ */
+function rnavChecked(
+  outcome: ResolvedAmendment | undefined | Unresolved,
+  check: RouteCheck,
+): ResolvedAmendment | undefined | Unresolved {
+  const { scenario, ctx, airport } = check;
   const lacking = lackingRnavElements(scenario, ctx, airport);
-  const outcome = routeOutcome(scenario, ctx, clearance, airport);
   if (lacking.length === 0) return outcome;
   if (outcome !== undefined && !isUnresolved(outcome) && outcome.box === 'route') {
     const proposal = { ...scenario, filedRoute: outcome.proposed };
     if (lackingRnavElements(proposal, ctx, airport).length === 0) return outcome;
   }
   return { ...unresolved('BOX.route', rnavGapReason(lacking, scenario)), kind: 'rnav_elements' };
+}
+
+/**
+ * The route box the route tool's recommended row gives the flight.
+ *
+ * A flight issued a SID on no built route reads a row that begins on a departure family as written,
+ * on that family's own SID, and any other row as a TEC row is read behind the SID it is issued; any
+ * other flight is on a heading, and reads the row as the box does behind a heading.
+ *
+ * @param row The route tool's recommended row.
+ * @param check The filed plan, its classification, the clearance it was given, and the data.
+ * @returns The box as tokens, or `Unresolved` where the row names a family the airport no longer
+ *   publishes.
+ */
+function toolBox(row: TecRoute, check: RouteCheck): string[] | Unresolved {
+  const { scenario, ctx, clearance, airport } = check;
+  const procedure = clearance.procedure.value;
+  if (procedure.kind === 'sid' && clearance.route.value.builtRoute === undefined) {
+    if (tecHead(row).kind === 'family') {
+      const tokens = tecTokens(row, airport);
+      return isUnresolved(tokens) ? tokens : withVectorNavaid(tokens, airport);
+    }
+    const expected = tecExpectation(row, scenario, ctx, procedure.id, airport);
+    return isUnresolved(expected) ? expected : expected.tokens;
+  }
+  const tail = tecTail(row, procedure, airport);
+  return isUnresolved(tail) ? tail : withVectorNavaid(tail, airport);
+}
+
+/** Whether a route box outcome is an amendment the route tool's recommendation may replace. */
+function replaceable(outcome: ResolvedAmendment | Unresolved): outcome is RouteAmendment {
+  if (isUnresolved(outcome) || outcome.box !== 'route') return false;
+  return (
+    outcome.warning !== true &&
+    outcome.arrivalSwap === undefined &&
+    outcome.alternativeTo === undefined
+  );
+}
+
+/**
+ * The route box outcome once the route tool's recommended route is read for the flight.
+ *
+ * @param outcome The outcome the SOP, the TEC table and the arrival sheet ask for.
+ * @param check The filed plan, its classification, the clearance it was given, and the data.
+ * @returns The outcome, amended to the tool route where the box has to be amended anyway, with the
+ *   box graded correct beside the expected one; the outcome alone where no recommendation applies.
+ */
+function withRecommendation(
+  outcome: ResolvedAmendment | undefined | Unresolved,
+  check: RouteCheck,
+): RouteCheckResult {
+  const { scenario, ctx, airport } = check;
+  const row = recommendedToolRoute(ctx, scenario, airport);
+  if (row === undefined) return { outcome };
+  const tokens = toolBox(row, check);
+  if (isUnresolved(tokens)) return { outcome };
+  const box = tokens.join(' ');
+  if (outcome === undefined) {
+    const filed = withVectorNavaid(splitFiled(scenario.filedRoute).tokens, airport).join(' ');
+    const tool = withVectorNavaid(tokens, airport).join(' ');
+    return filed === tool ? { outcome } : { outcome, alsoCorrect: box };
+  }
+  if (!replaceable(outcome) || outcome.proposed === box) return { outcome };
+  const clause = `, and the ZOA route tool's route for a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} is ${box}; ${outcome.proposed} is correct too`;
+  return {
+    outcome: {
+      ...outcome,
+      proposed: box,
+      reason: `${outcome.reason}${clause}`,
+      citations: [...outcome.citations, citeTec(row)],
+    },
+    alsoCorrect: outcome.proposed,
+  };
 }
 
 /** A list of things written the way a reason reads them out: `A`, `A and B`, `A, B and C`. */

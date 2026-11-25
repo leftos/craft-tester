@@ -4,10 +4,11 @@
     "amendments": [
       {
         "box": "route",
-        "proposed": "NIMI6 OAK SGD",
-        "reason": "the route files no departure procedure; the SOP assigns NIMI6 from 28R in SFOW"
+        "proposed": "NIMI6 OAK SAU",
+        "reason": "the route files no departure procedure; the SOP assigns NIMI6 from 28R in SFOW, and the ZOA route tool's route for a piston in SFOW is NIMI6 OAK SAU; NIMI6 OAK SGD is correct too"
       }
-    ]
+    ],
+    "routeAlsoCorrect": "NIMI6 OAK SGD"
   },
   "id": "ws-koak-amendment-practice-3-n471ry",
   "mode": "amendment",

@@ -108,6 +108,13 @@ export function isObligatory(row: TecRoute): boolean {
   return row.initialAltitudeFeet !== undefined || row.finalAltitudeFeet !== undefined;
 }
 
+/** Whether a row is written for this flight's destination, plan, runway family and class. */
+function keyedTo(row: TecRoute, ctx: Classification, destination: Destination): boolean {
+  if (row.destination !== destination.icao || row.plan !== ctx.plan) return false;
+  if (row.runwayFamilies.length > 0 && !row.runwayFamilies.includes(ctx.runwayFamily)) return false;
+  return row.classes.includes(ctx.tecClass);
+}
+
 /**
  * Whether an obligatory row is written for this flight's destination, plan, runway family and class.
  *
@@ -117,11 +124,7 @@ export function isObligatory(row: TecRoute): boolean {
  * @returns True when the row is keyed for the flight.
  */
 export function keyedFor(row: TecRoute, ctx: Classification, destination: Destination): boolean {
-  if (!isObligatory(row) || row.destination !== destination.icao || row.plan !== ctx.plan) {
-    return false;
-  }
-  if (row.runwayFamilies.length > 0 && !row.runwayFamilies.includes(ctx.runwayFamily)) return false;
-  return row.classes.includes(ctx.tecClass);
+  return isObligatory(row) && keyedTo(row, ctx, destination);
 }
 
 /**
@@ -242,6 +245,39 @@ export function usableTecRoute(
   if (destination === undefined) return undefined;
   return airport.tecRoutes.find(
     (row) => keyedFor(row, ctx, destination) && usable(row, ctx, scenario, airport),
+  );
+}
+
+/**
+ * The route tool's recommended route for this flight: the first tool row, in table order, that states
+ * no altitude, is keyed for the flight and is usable by it.
+ *
+ * Such a row is advice rather than an obligation. The route box is expected to read it only where
+ * the box has to be amended anyway, and the box the flight would otherwise be amended to stays
+ * correct beside it.
+ *
+ * @param ctx The classified flight, which carries the plan, runway family, class, equipment and the
+ *   active notices.
+ * @param scenario The filed flight plan, which names the destination and the departure runway.
+ * @param airport The airport data, whose `tecRoutes` hold the transcribed rows.
+ * @returns The row, or `undefined` where the route library does not hold the destination or no
+ *   recommended row is keyed for the flight and usable by it.
+ */
+export function recommendedToolRoute(
+  ctx: Classification,
+  scenario: Scenario,
+  airport: AirportData,
+): TecRoute | undefined {
+  const destination = airport.routeLibrary.destinations.find(
+    (row) => row.icao === scenario.destination,
+  );
+  if (destination === undefined) return undefined;
+  return airport.tecRoutes.find(
+    (row) =>
+      row.kind === 'tool' &&
+      !isObligatory(row) &&
+      keyedTo(row, ctx, destination) &&
+      usable(row, ctx, scenario, airport),
   );
 }
 

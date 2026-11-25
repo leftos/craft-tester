@@ -1,0 +1,33 @@
+{
+  "airport": "KOAK",
+  "expected": {
+    "amendments": [],
+    "routeAlsoCorrect": "OAK7 OAK SAU"
+  },
+  "id": "syn-koak-tool-kapc-sfow-asfiled",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "DH8D",
+    "callsign": "QXE416",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KAPC",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 4000,
+    "filedRoute": "NIMI7 OAK V195 CROIT V108 SGD",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4722"
+  },
+  "sidVersions": {
+    "OAK": {
+      "id": "OAK7",
+      "spoken": "Oakland Seven"
+    }
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "CRAFT-71 rule example; pending the owner's confirmation of the reason wording"
+  },
+  "status": "pending"
+}

@@ -1,0 +1,32 @@
+{
+  "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "altitude",
+        "proposedFeet": 5000,
+        "reason": "the ZOA route tool's route to Napa is flown at 5,000; a facility-directed altitude is exempt from the odd/even rule"
+      }
+    ]
+  },
+  "id": "syn-koak-tool-kapc-oake-j",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "B738",
+    "callsign": "SWA2470",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "10R",
+    "destination": "KAPC",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 4000,
+    "filedRoute": "SAU",
+    "localTime": "1400",
+    "runwayConfigId": "OAKE",
+    "squawk": "4724"
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "CRAFT-71 rule example; pending the owner's confirmation of the reason wording"
+  },
+  "status": "pending"
+}

@@ -182,9 +182,36 @@ function gradePair(
  * What the route box is graded against beyond its own amendment.
  *
  * `expected` is the box as the corrected plan reads it and `filed` the box as the pilot filed it,
- * which is what a student who left the box alone wrote.
+ * which is what a student who left the box alone wrote. `alsoCorrect` is the box graded correct
+ * beside the expected one, where the route tool recommends a route.
  */
-type RouteRule = { airport: AirportData; expected: string; filed: string };
+type RouteRule = {
+  airport: AirportData;
+  expected: string;
+  filed: string;
+  alsoCorrect: string | undefined;
+};
+
+/**
+ * The route rule for a plan and the amendments the engine resolved for it.
+ *
+ * @param result The amendments the engine resolved for the plan.
+ * @param scenario The plan as filed.
+ * @param airport The airport data.
+ * @returns The rule the route box is graded against.
+ */
+function routeRule(
+  result: Extract<AmendmentResult, { ok: true }>,
+  scenario: Scenario,
+  airport: AirportData,
+): RouteRule {
+  return {
+    airport,
+    expected: result.corrected.filedRoute,
+    filed: scenario.filedRoute,
+    alsoCorrect: result.routeAlsoCorrect,
+  };
+}
 
 /**
  * What the three boxes are graded against: which of them the student fixed, what the engine raised
@@ -297,10 +324,43 @@ function arrivalHalf(
   return sameRouteButNavaid(written, swap, rule.airport);
 }
 
-/** The tier a missed route box lands in: acceptable first, then half credit, then the miss. */
-function routeTier(base: Verdict, acceptable: boolean, half: boolean): Verdict {
-  if (acceptable) return 'acceptable';
-  return half ? 'half' : base;
+/**
+ * Whether a route answer writes the box graded correct beside the expected one: the box the engine
+ * would otherwise have proposed where the route tool's recommended route replaced it, or that route
+ * where the box stands as filed.
+ *
+ * @param box The box being graded, of which only the route box carries a route.
+ * @param answer What the student put in it.
+ * @param rule The route rule, which carries the box graded correct beside the expected one.
+ * @returns True when the answer names that box, the navaid a vector SID is filed with aside.
+ */
+function writesAlsoCorrect(box: Box, answer: BoxAnswer, rule: RouteRule): boolean {
+  if (box !== 'route' || answer.kind === 'as_filed' || rule.alsoCorrect === undefined) return false;
+  return sameRouteButNavaid(answer.value, rule.alsoCorrect, rule.airport);
+}
+
+/**
+ * The tier a box lands in: a missed route box is correct where it writes the box graded correct
+ * beside the expected one, then acceptable, then half credit, then the miss.
+ *
+ * @param box The box being graded.
+ * @param answer What the student put in it.
+ * @param amendment The amendment the engine raised for it, where it raised one.
+ * @param rule The route rule.
+ * @param base The verdict before the route tiers.
+ * @returns The verdict.
+ */
+function routeTier(
+  box: Box,
+  answer: BoxAnswer,
+  amendment: ResolvedAmendment | undefined,
+  rule: RouteRule,
+  base: Verdict,
+): Verdict {
+  if (base !== 'wrong') return base;
+  if (writesAlsoCorrect(box, answer, rule)) return 'correct';
+  if (navaidAcceptable(box, answer, amendment, rule)) return 'acceptable';
+  return arrivalHalf(box, answer, amendment, rule) ? 'half' : base;
 }
 
 /** The verdict for one box before the navaid rule: as filed, the proposal, or one half of a pair. */
@@ -321,10 +381,11 @@ function baseVerdict(
 /**
  * The verdict for one box: the base verdict, with the two tiers a missed route box can still earn.
  *
- * A box the vector navaid alone spoils is acceptable, and a box that misses only the arrival the
- * proposal swaps earns half credit; the acceptable reading wins where an answer could be read as
- * either. Both keep the proposal as the expected label, and only the acceptable one cites a row of
- * its own.
+ * A route box that writes the box graded correct beside the expected one is correct, before either
+ * tier is read. A box the vector navaid alone spoils is acceptable, and a box that misses only the
+ * arrival the proposal swaps earns half credit; the acceptable reading wins where an answer could be
+ * read as either. All three keep the proposal as the expected label, and only the acceptable one
+ * cites a row of its own.
  */
 function gradeBox(
   box: Box,
@@ -333,16 +394,14 @@ function gradeBox(
   ctx: GradeContext,
 ): BoxGrade {
   const base = baseVerdict(box, answer, amendment, ctx);
-  const missed = base.verdict === 'wrong';
-  const acceptable = missed && navaidAcceptable(box, answer, amendment, ctx.route);
-  const half = missed && arrivalHalf(box, answer, amendment, ctx.route);
+  const verdict = routeTier(box, answer, amendment, ctx.route, base.verdict);
   const citations = withOneWayRow(box, amendment?.citations ?? [], ctx);
   return {
     box,
-    verdict: routeTier(base.verdict, acceptable, half),
+    verdict,
     expectedLabel: base.expectedLabel,
     actualLabel: answerLabel(answer),
-    citations: acceptable ? withNavaidRow(citations, ctx.route.airport) : citations,
+    citations: verdict === 'acceptable' ? withNavaidRow(citations, ctx.route.airport) : citations,
     reason: amendment?.reason,
   };
 }
@@ -356,8 +415,11 @@ function gradeBox(
  * reads it rather than character by character. The type box and the boxes paired with it are two
  * ways to fix one fault, and either side alone is right. A route box that names the same route as the
  * corrected plan, the navaid a radar-vector SID is filed with aside, is acceptable either way, and
- * one that reads the proposal but for the arrival it swaps earns half credit. The altitude box of a
- * flight filed on a one-way airway cites the one-way airway row, whatever its verdict.
+ * one that reads the proposal but for the arrival it swaps earns half credit. Ahead of both tiers, a
+ * route box that names the box the result grades correct beside the expected one (`routeAlsoCorrect`:
+ * the box the engine would otherwise have proposed where the route tool's recommended route replaced
+ * it, or that route where the box stands as filed) is correct. The altitude box of a flight filed on
+ * a one-way airway cites the one-way airway row, whatever its verdict.
  *
  * @param answers What the student answered for every box.
  * @param result The amendments the engine resolved for the same plan.
@@ -375,15 +437,10 @@ export function gradeBoxes(
 ): BoxGrade[] {
   const amendments = byBox(result.amendments);
   const fixed = fixedBoxes(answers, amendments);
-  const route: RouteRule = {
-    airport,
-    expected: result.corrected.filedRoute,
-    filed: scenario.filedRoute,
-  };
   const ctx: GradeContext = {
     fixed,
     amendments,
-    route,
+    route: routeRule(result, scenario, airport),
     oneWayRoute: onOneWayAirway(scenario, airport),
   };
   return STRIP_ORDER.map((box) => gradeBox(box, answers[box], amendments[box], ctx));
@@ -406,13 +463,15 @@ function withCorrectedBox(plan: Scenario, box: Box, corrected: Scenario): Scenar
 /**
  * The plan with one correct box read as the student wrote it.
  *
- * A box left as filed keeps the filed value. A box amended and graded correct wrote the value the
- * engine proposes for it, so it is read as that amendment.
+ * A box left as filed keeps the filed value. A route box that writes the box graded correct beside
+ * the expected one is read as the student wrote it. Any other box amended and graded correct wrote
+ * the value the engine proposes for it, so it is read as that amendment.
  *
  * @param plan The plan the boxes before this one have been written into.
  * @param box The box, which was graded correct.
  * @param answer What the student put in it.
  * @param amendment The amendment the engine raised for the box, where it raised one.
+ * @param rule The route rule, which carries the box graded correct beside the expected one.
  * @returns The plan with the box written in.
  * @throws Error When the box was amended though the engine raised no amendment for it, which a
  *   correct verdict never allows.
@@ -422,8 +481,12 @@ function withStudentBox(
   box: Box,
   answer: BoxAnswer,
   amendment: ResolvedAmendment | undefined,
+  rule: RouteRule,
 ): Scenario {
   if (answer.kind === 'as_filed') return plan;
+  if (writesAlsoCorrect(box, answer, rule)) {
+    return { ...plan, filedRoute: normaliseRoute(answer.value) };
+  }
   if (amendment === undefined) {
     throw new Error(
       `the ${box} box was graded correct for "${answer.value}", but the engine raised no ` +
@@ -455,9 +518,10 @@ export function studentPlan(
 ): Scenario {
   const grades = gradeBoxes(answers, result, scenario, airport);
   const amendments = byBox(result.amendments);
+  const rule = routeRule(result, scenario, airport);
   return grades.reduce((plan, { box, verdict }) => {
     if (verdict !== 'correct') return withCorrectedBox(plan, box, result.corrected);
-    return withStudentBox(plan, box, answers[box], amendments[box]);
+    return withStudentBox(plan, box, answers[box], amendments[box], rule);
   }, scenario);
 }
 

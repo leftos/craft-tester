@@ -915,6 +915,12 @@ export const AmendmentSchema = z.discriminatedUnion('box', [
 /** What an amendment-mode fixture expects: every box that needs changing, in any order. */
 export const ExpectedAmendmentsSchema = z.strictObject({
   amendments: z.array(AmendmentSchema),
+  /**
+   * A route box graded correct beside the expected one: the box the engine would otherwise have
+   * proposed where the route tool's recommended route replaced it, or that route where the box stands
+   * as filed.
+   */
+  routeAlsoCorrect: z.string().optional(),
 });
 
 /** A fixture expects either a full clearance or a list of amendments, never both. */

@@ -1,6 +1,6 @@
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { checkAltitude } from '@/rules/amend/altitude.ts';
-import { checkRoute } from '@/rules/amend/route.ts';
+import { checkRouteWithAlternative } from '@/rules/amend/route.ts';
 import type { TypeAmendment } from '@/rules/amend/type.ts';
 import { checkRnavClash, checkRnavElements, checkSuffix } from '@/rules/amend/type.ts';
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
@@ -191,13 +191,42 @@ function rnavElementResult(
   if (type === undefined) return undefined;
   const rnav = judge(applyAmendment(judged.scenario, type), airport, handling);
   if (Array.isArray(rnav)) return { ok: false, unresolved: rnav };
+  const route = checkRouteWithAlternative(rnav.scenario, rnav.ctx, rnav.clearance, airport);
   const { raised, gaps } = collect([
     listed(checkAltitude(rnav.scenario, rnav.ctx, airport)),
-    listed(checkRoute(rnav.scenario, rnav.ctx, rnav.clearance, airport)),
+    listed(route.outcome),
   ]);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
   const amendments = [...(suffix === undefined ? [] : [suffix]), type, ...raised];
-  return { ok: true, amendments, corrected: amendments.reduce(applyAmendment, scenario) };
+  return okResult(amendments, amendments.reduce(applyAmendment, scenario), route.alsoCorrect);
+}
+
+/** The route box graded correct beside the expected one, unless the route box is half of a pair. */
+function unpaired(
+  amendments: readonly ResolvedAmendment[],
+  alsoCorrect: string | undefined,
+): string | undefined {
+  const paired = amendments.some(
+    (item) => item.box === 'route' && item.alternativeTo !== undefined,
+  );
+  return paired ? undefined : alsoCorrect;
+}
+
+/**
+ * An ok result, carrying the route box graded correct beside the expected one where there is one.
+ *
+ * @param amendments The amendments the plan needs.
+ * @param corrected The plan with the amendments applied.
+ * @param routeAlsoCorrect The route box graded correct beside the expected one, where there is one.
+ * @returns The result, with no `routeAlsoCorrect` key where there is no such box.
+ */
+function okResult(
+  amendments: ResolvedAmendment[],
+  corrected: Scenario,
+  routeAlsoCorrect: string | undefined,
+): AmendmentResult {
+  if (routeAlsoCorrect === undefined) return { ok: true, amendments, corrected };
+  return { ok: true, amendments, corrected, routeAlsoCorrect };
 }
 
 /**
@@ -244,12 +273,12 @@ export function resolveAmendments(
   const judged =
     suffix === undefined ? filed : judge(applyAmendment(scenario, suffix), airport, handling);
   if (Array.isArray(judged)) return { ok: false, unresolved: judged };
-  const route = checkRoute(judged.scenario, judged.ctx, judged.clearance, airport);
-  if (isRnavGap(route)) {
+  const route = checkRouteWithAlternative(judged.scenario, judged.ctx, judged.clearance, airport);
+  if (isRnavGap(route.outcome)) {
     const answered = rnavElementResult(scenario, suffix, judged, airport, handling);
     if (answered !== undefined) return answered;
   }
-  const candidate = isRnavGap(route)
+  const candidate = isRnavGap(route.outcome)
     ? undefined
     : checkRnavClash(judged.scenario, judged.ctx, airport);
   const clash =
@@ -259,16 +288,13 @@ export function resolveAmendments(
   const outcomes: CheckOutcome[] = [
     [suffix, clash].filter((amendment) => amendment !== undefined),
     listed(checkAltitude(judged.scenario, judged.ctx, airport)),
-    listed(route),
+    listed(route.outcome),
   ];
   const { raised, gaps } = collect(outcomes);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
   const amendments = pairAlternatives(raised, clash);
-  return {
-    ok: true,
-    amendments,
-    corrected: amendments.filter(applies).reduce(applyAmendment, scenario),
-  };
+  const corrected = amendments.filter(applies).reduce(applyAmendment, scenario);
+  return okResult(amendments, corrected, unpaired(amendments, route.alsoCorrect));
 }
 
 /**

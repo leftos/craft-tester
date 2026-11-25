@@ -15,6 +15,7 @@ import {
 import type { AmendmentResult, ResolvedAmendment } from '@/rules/amend/types.ts';
 import { formatAltitude, verdictOf } from '@/rules/grade.ts';
 import type { RuleCitation } from '@/rules/types.ts';
+import { sidOf } from '@/data/sidOf.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
 const koak = koakJson as unknown as AirportData;
@@ -634,5 +635,76 @@ describe('the normalisers', () => {
     expect(parseAltitude('320000')).toBeUndefined();
     expect(parseAltitude('one zero thousand')).toBeUndefined();
     expect(parseAltitude('32000 ft')).toBeUndefined();
+  });
+});
+
+describe('gradeBoxes route tool recommendation', () => {
+  const nimi = sidOf(koak, 'NIMI').id;
+  const oak = sidOf(koak, 'OAK').id;
+  const quake = sidOf(koak, 'QUAKE').id;
+
+  /** QXE416, a DH8D bound for KAPC off 30 in SFOW, whose recommended tool route is OAK# OAK SAU. */
+  const QXE416: Scenario = {
+    callsign: 'QXE416',
+    aircraftType: 'DH8D',
+    equipmentSuffix: '/L',
+    destination: 'KAPC',
+    filedRoute: `${quake} OAK V195 CROIT V108 SGD`,
+    filedAltitude: 4000,
+    runwayConfigId: 'SFOW',
+    departureRunway: '30',
+    localTime: '1400',
+    dayOfWeek: 'tuesday',
+    squawk: '4722',
+  };
+
+  /** The same flight filed the tail it would otherwise be proposed, which needs no amendment. */
+  const AS_FILED_PLAN: Scenario = { ...QXE416, filedRoute: `${nimi} OAK V195 CROIT V108 SGD` };
+
+  function resolved(plan: Scenario): Extract<AmendmentResult, { ok: true }> {
+    const amended = resolveAmendments(plan, koak, 'proposed');
+    if (!amended.ok) throw new Error(amended.unresolved.map((item) => item.reason).join('; '));
+    return amended;
+  }
+
+  function routeVerdict(plan: Scenario, route: BoxAnswer): string | undefined {
+    return gradeBoxes(answers({ route }), resolved(plan), plan, koak)[2]?.verdict;
+  }
+
+  it('grades the proposal the tool route replaced correct', () => {
+    expect(routeVerdict(QXE416, wrote(`${nimi} OAK V195 CROIT V108 SGD`))).toBe('correct');
+  });
+
+  it('grades the tool route correct', () => {
+    expect(routeVerdict(QXE416, wrote(`${oak} OAK SAU`))).toBe('correct');
+  });
+
+  it('marks a box that is neither wrong', () => {
+    expect(routeVerdict(QXE416, wrote(`${nimi} OAK SAU`))).toBe('wrong');
+  });
+
+  it('grades a box that needs no amendment correct left as filed', () => {
+    expect(routeVerdict(AS_FILED_PLAN, AS_FILED)).toBe('correct');
+  });
+
+  it('grades the tool route correct where the box needs no amendment', () => {
+    expect(routeVerdict(AS_FILED_PLAN, wrote(`${oak} OAK SAU`))).toBe('correct');
+  });
+
+  it('carries the alternative the student wrote into their plan', () => {
+    const written = `${nimi} OAK V195 CROIT V108 SGD`;
+    const plan = studentPlan(answers({ route: wrote(written) }), resolved(QXE416), QXE416, koak);
+    expect(plan.filedRoute).toBe(written);
+  });
+
+  it('carries the tool route the student wrote over a box that needs no amendment', () => {
+    const written = `${oak.toLowerCase()} oak sau`;
+    const plan = studentPlan(
+      answers({ route: wrote(written) }),
+      resolved(AS_FILED_PLAN),
+      AS_FILED_PLAN,
+      koak,
+    );
+    expect(plan.filedRoute).toBe(`${oak} OAK SAU`);
   });
 });

@@ -1,0 +1,47 @@
+{
+  "airport": "KOAK",
+  "expected": {
+    "amendments": [
+      {
+        "box": "route",
+        "proposed": "OAK7 OAK SAU",
+        "reason": "QUAKE3 is not the procedure the SOP assigns an RNAV turboprop from 30 in SFOW; it is NIMI7, and the ZOA route tool's route for a jet in SFOW is OAK7 OAK SAU; NIMI7 OAK V195 CROIT V108 SGD is correct too"
+      }
+    ],
+    "routeAlsoCorrect": "NIMI7 OAK V195 CROIT V108 SGD"
+  },
+  "id": "syn-koak-tool-kapc-sfow-quake3",
+  "mode": "amendment",
+  "scenario": {
+    "aircraftType": "DH8D",
+    "callsign": "QXE416",
+    "dayOfWeek": "tuesday",
+    "departureRunway": "30",
+    "destination": "KAPC",
+    "equipmentSuffix": "/L",
+    "filedAltitude": 4000,
+    "filedRoute": "QUAKE3 OAK V195 CROIT V108 SGD",
+    "localTime": "1400",
+    "runwayConfigId": "SFOW",
+    "squawk": "4722"
+  },
+  "sidVersions": {
+    "NIMI": {
+      "id": "NIMI7",
+      "spoken": "Nimitz Seven"
+    },
+    "OAK": {
+      "id": "OAK7",
+      "spoken": "Oakland Seven"
+    },
+    "QUAKE": {
+      "id": "QUAKE3",
+      "spoken": "Quake Three"
+    }
+  },
+  "source": {
+    "kind": "synthetic",
+    "note": "CRAFT-71 rule example; pending the owner's confirmation of the reason wording"
+  },
+  "status": "pending"
+}
