@@ -1,9 +1,10 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InputKind, Mode, SessionSettings } from '@/scenario/filter.ts';
 import { ANY_SCENARIO, hashFor } from '@/scenario/filter.ts';
 import { procedureOf } from '@/ui/amendPanels.ts';
 import { clearancePickGrades, startApp, toolbarHiddenAfter } from '@/ui/app.ts';
+import type { AirportData } from '@/data/schema.ts';
 import type { BoxAnswers } from '@/rules/amend/grade.ts';
 import { headingPick } from '@/rules/grade.ts';
 import type { PlayerPicks, ResolvedClearance } from '@/rules/types.ts';
@@ -75,12 +76,29 @@ vi.mock('@/ui/session.ts', async (importOriginal) => {
 /** A KSFO seed the amendment engine draws a plan to correct from. */
 const AMENDMENT_SEED = 7;
 
+/** The seeds searched for a KSFO amendment draw with a route alternative to the type box. */
+const ALTERNATIVE_SEEDS = 2000;
+
 /**
- * A KSFO seed whose plan the engine fixes in the type box, with a route amendment as the other side
- * of the pair: a B788 filed /U on SAHEY4, which the engine corrects to /L and a student may instead
- * put on GAPP7.
+ * The first KSFO seed whose plan the engine fixes in the type box, with a route amendment as the
+ * other side of the pair: a suffix the engine corrects, or a procedure a student may instead put the
+ * flight on.
  */
-const ALTERNATIVE_SEED = 593;
+function alternativeSeed(airport: AirportData): number {
+  for (let seed = 1; seed <= ALTERNATIVE_SEEDS; seed += 1) {
+    const view = buildScenario(airport, seed, ANY_SCENARIO, 'amendment');
+    if (view.kind !== 'amendment') continue;
+    const raised = view.drawn.result.amendments;
+    if (
+      raised.some((amendment) => amendment.box === 'route' && amendment.alternativeTo === 'type')
+    ) {
+      return seed;
+    }
+  }
+  throw new Error(
+    `no KSFO amendment seed up to ${ALTERNATIVE_SEEDS} raises a route alternative to the type`,
+  );
+}
 
 /** A KSFO seed clearance mode draws a clean clearance from. */
 const CLEARANCE_SEED = 1;
@@ -738,6 +756,7 @@ describe('the mounted page', () => {
 
   it('clears the plan the student corrected when an alternative box was fixed', async () => {
     const airport = await loadAirportData('KSFO');
+    const ALTERNATIVE_SEED = alternativeSeed(airport);
     const view = buildScenario(airport, ALTERNATIVE_SEED, ANY_SCENARIO, 'amendment');
     if (view.kind !== 'amendment') throw new Error(`seed ${ALTERNATIVE_SEED} drew no amendment`);
     const { filed, result } = view.drawn;
@@ -771,8 +790,8 @@ describe('the mounted page', () => {
   });
 });
 
-/** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
-const NO_DP_SEED = 2;
+/** The seeds searched for a KOAK clearance-mode strip cleared off on a heading. */
+const NO_DP_SEEDS = 200;
 
 /** A KOAK clearance-mode strip whose clearance assigns a SID. */
 const SID_SEED = 1;
@@ -785,6 +804,15 @@ async function koakClearance(seed: number): Promise<ResolvedClearance> {
   return view.clearance;
 }
 
+/** The first KOAK clearance-mode seed the SOP clears off on heading 270 with no DP. */
+async function noDpSeed(): Promise<number> {
+  for (let seed = 1; seed <= NO_DP_SEEDS; seed += 1) {
+    const procedure = (await koakClearance(seed)).procedure.value;
+    if (procedure.kind === 'heading' && procedure.heading === 270) return seed;
+  }
+  throw new Error(`no KOAK clearance seed up to ${NO_DP_SEEDS} is cleared off on heading 270`);
+}
+
 /** CRAFT picks whose verdicts the procedure tests do not read. */
 const somePicks: PlayerPicks = {
   routeTemplate: 'radar_vectors_direct',
@@ -795,6 +823,13 @@ const somePicks: PlayerPicks = {
 };
 
 describe('the procedure pick of a clearance with no DP', () => {
+  /** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
+  let NO_DP_SEED = 0;
+
+  beforeAll(async () => {
+    NO_DP_SEED = await noDpSeed();
+  });
+
   it('grades the heading the clearance names correct and a SID wrong, ahead of the route', async () => {
     const airport = await loadAirportData('KOAK');
     const clearance = await koakClearance(NO_DP_SEED);

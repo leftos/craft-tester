@@ -77,13 +77,13 @@ routes:
   - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
   - { exit_fix: OAK, destination: KMOD, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
   - { exit_fix: OAK, destination: KSCK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
-  - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
   # V108's CROIT-OAKEY segment was revoked with the Concord VOR (FAA docket 25-AWP-149, effective
   # 2026-10-29), so Napa routes off V195 to CROIT and the V108 stretch that still reaches SGD (user, 2026-10-29).
-  - { exit_fix: OAK, destination: KAPC, tail: OAK V195 CROIT V108 SGD, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK V195 CROIT V108 SGD, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: OAK, destination: KAPC, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000, 5000] }
-  - { exit_fix: OAK, destination: KSTS, tail: OAK SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KSTS, tail: OAK SAU, classes: [P, T, J], altitudes: [4000] }
   - { exit_fix: SAU, destination: KSTS, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
   - { exit_fix: OAK, destination: KSTS, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000, 5000] }
   - { exit_fix: OAK, destination: KCCR, tail: OAK V6 COLLI, classes: [P, T, J], altitudes: [5000] }

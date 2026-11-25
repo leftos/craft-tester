@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { isSidToken, rnavElements } from '@/rules/route.ts';
+import { isObligatory } from '@/rules/tecRoutes.ts';
 import type { AmendmentScenario, FaultKind } from '@/scenario/amend.ts';
 import {
   FAULT_BOXES,
@@ -18,6 +20,7 @@ import { ANY_SCENARIO } from '@/scenario/filter.ts';
 import { createRng } from '@/scenario/rng.ts';
 
 const ksfo = ksfoJson as unknown as AirportData;
+const koak = koakJson as unknown as AirportData;
 
 /** The seeds the mix assertions are measured over; every one of them must draw a scenario. */
 const SEEDS = Array.from({ length: 1000 }, (_value, index) => index + 1);
@@ -258,14 +261,10 @@ describe('fault injection', () => {
     expect(proposalFor(entry, 'route'), label(entry)).toBeDefined();
   });
 
-  it('files the route of another destination to a TEC destination', () => {
+  it('files the route of another destination to a destination an obligatory row carries', () => {
     const entry = firstWith('wrong_tec_route');
-    const destination = ksfo.routeLibrary.destinations.find(
-      (row) => row.icao === entry.filed.destination,
-    );
-    expect(destination?.nct, label(entry)).toBe(true);
     const tec = ksfo.tecRoutes.filter(
-      (row) => row.kind === 'tec' && row.destination === entry.filed.destination,
+      (row) => isObligatory(row) && row.destination === entry.filed.destination,
     );
     expect(tec.length, label(entry)).toBeGreaterThan(0);
     const tail = tokensOf(entry).slice(1).join(' ');
@@ -273,6 +272,21 @@ describe('fault injection', () => {
     expect(filedTail.length, label(entry)).toBeGreaterThan(0);
     expect(
       filedTail.some((row) => row.destination !== entry.filed.destination),
+      label(entry),
+    ).toBe(true);
+  });
+
+  it('files the route of another destination to a destination only route tool rows carry', () => {
+    const filter: ScenarioFilter = { ...ANY_SCENARIO, destination: 'KCCR' };
+    const entry = SEEDS.slice(0, 200)
+      .map((seed) => generateAmendmentScenario(createRng(seed), koak, filter))
+      .find((row) => row.faults.includes('wrong_tec_route'));
+    if (entry === undefined)
+      throw new Error('no KOAK draw to KCCR carries the wrong_tec_route fault');
+    const tail = tokensOf(entry).slice(1).join(' ');
+    const filedTail = koak.routeLibrary.routes.filter((row) => row.tail === tail);
+    expect(
+      filedTail.some((row) => row.destination !== 'KCCR'),
       label(entry),
     ).toBe(true);
   });

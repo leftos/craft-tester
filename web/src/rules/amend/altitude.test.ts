@@ -213,6 +213,25 @@ describe('checkAltitude TRACON destinations', () => {
   });
 });
 
+describe('checkAltitude route tool destinations', () => {
+  it('amends a turboprop to Napa to the final altitude of the route tool row that states one', () => {
+    const flight = scenario({
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      destination: 'KAPC',
+      filedRoute: 'OAK V195 CROIT V108 SGD',
+      filedAltitude: 4000,
+      runwayConfigId: 'SFOE',
+      departureRunway: '10R',
+    });
+    expect(amendment(flight, koak).proposedFeet).toBe(5000);
+    expect(amendment(flight, koak).reason).toBe(
+      "the ZOA route tool's route to Napa is flown at 5,000; a facility-directed altitude is exempt from the odd/even rule",
+    );
+    expect(citations(flight, koak)).toEqual(['TOOL-KAPC-SFOE-TP']);
+  });
+});
+
 describe('checkAltitude on a one-way airway', () => {
   /** FDX3875 of Amendment Practice 2: an MD11 to Honolulu on the oceanic R464, westbound at FL310. */
   const FDX3875: Scenario = {

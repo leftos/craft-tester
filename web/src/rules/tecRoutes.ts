@@ -96,7 +96,20 @@ export function tecTokens(row: TecRoute, airport: AirportData): string[] | Unres
 }
 
 /**
- * Whether a row is written for this flight's destination, plan, runway family and class.
+ * Whether the route must be issued: every TEC row, and a tool row that states an altitude; an ADR row
+ * and a tool row without one are advice.
+ *
+ * @param row The TEC route row.
+ * @returns True when the row is obligatory.
+ */
+export function isObligatory(row: TecRoute): boolean {
+  if (row.kind === 'tec') return true;
+  if (row.kind !== 'tool') return false;
+  return row.initialAltitudeFeet !== undefined || row.finalAltitudeFeet !== undefined;
+}
+
+/**
+ * Whether an obligatory row is written for this flight's destination, plan, runway family and class.
  *
  * @param row The TEC route row.
  * @param ctx The classified flight.
@@ -104,7 +117,7 @@ export function tecTokens(row: TecRoute, airport: AirportData): string[] | Unres
  * @returns True when the row is keyed for the flight.
  */
 export function keyedFor(row: TecRoute, ctx: Classification, destination: Destination): boolean {
-  if (row.kind !== 'tec' || row.destination !== destination.icao || row.plan !== ctx.plan) {
+  if (!isObligatory(row) || row.destination !== destination.icao || row.plan !== ctx.plan) {
     return false;
   }
   if (row.runwayFamilies.length > 0 && !row.runwayFamilies.includes(ctx.runwayFamily)) return false;
@@ -200,21 +213,23 @@ function usable(
 }
 
 /**
- * The TEC row that routes this flight: the first row, in table order, keyed for it and usable by it.
+ * The row that routes this flight: the first obligatory row, in table order, keyed for it and usable
+ * by it. A TEC row is keyed only to a destination inside the TRACON; a tool row that states an
+ * altitude is the route tool's obligatory route to a field outside it.
  *
- * A row is keyed by destination, plan, runway family and class, and only a destination inside the
- * TRACON has one. SOP 2-1 b issues the route only where the pilot can accept it — "if a pilot cannot
- * accept one, vectors direct" — so a row whose departure the flight cannot fly, off this runway with
- * this equipment, whose family the SOP does not put in use from this runway family in this
- * configuration, or whose family a notice has taken out of use, is passed over for the next keyed
- * row. The row is chosen from the data alone, without asking the assignment table what it would issue.
+ * A row is keyed by destination, plan, runway family and class, and a TEC row exists only for a
+ * destination inside the TRACON, a tool row only for one outside it. SOP 2-1 b issues the route only
+ * where the pilot can accept it — "if a pilot cannot accept one, vectors direct" — so a row whose
+ * departure the flight cannot fly, off this runway with this equipment, whose family the SOP does
+ * not put in use from this runway family in this configuration, or whose family a notice has taken
+ * out of use, is passed over for the next keyed row. The row is chosen from the data alone, without asking the assignment table what it would issue.
  *
  * @param ctx The classified flight, which carries the plan, runway family, class, equipment and the
  *   active notices.
  * @param scenario The filed flight plan, which names the destination and the departure runway.
  * @param airport The airport data, whose `tecRoutes` hold the transcribed rows.
- * @returns The row, or `undefined` for a destination outside the TRACON, one the route library does
- *   not hold, or one whose keyed rows the flight can use none of.
+ * @returns The row, or `undefined` for a destination with no obligatory row keyed for the flight, one
+ *   the route library does not hold, or one whose keyed rows the flight can use none of.
  */
 export function usableTecRoute(
   ctx: Classification,
@@ -224,7 +239,7 @@ export function usableTecRoute(
   const destination = airport.routeLibrary.destinations.find(
     (row) => row.icao === scenario.destination,
   );
-  if (destination?.nct !== true) return undefined;
+  if (destination === undefined) return undefined;
   return airport.tecRoutes.find(
     (row) => keyedFor(row, ctx, destination) && usable(row, ctx, scenario, airport),
   );

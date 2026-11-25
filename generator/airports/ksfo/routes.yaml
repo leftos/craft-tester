@@ -75,8 +75,8 @@ routes:
   - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000] }
   - { exit_fix: CIITY, destination: KOVE, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
   - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [5000] }
-  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
-  - { exit_fix: SAU, destination: KSTS, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [5000] }
+  - { exit_fix: SAU, destination: KSTS, tail: SAU, classes: [P, T, J], altitudes: [5000] }
   - { exit_fix: TRUKN, destination: KCCR, tail: TRUKN, classes: [J, T], altitudes: [5000] }
   - { exit_fix: CIITY, destination: KCCR, tail: CIITY ALTAM, classes: [J, T], altitudes: [5000] }
   - { exit_fix: OAK, destination: KCCR, tail: OAK V6 COLLI, classes: [T, P], altitudes: [5000] }

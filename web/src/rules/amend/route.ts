@@ -428,9 +428,26 @@ function tecCitations(tec: TecRoute | undefined, cited: readonly RuleCitation[])
   return [citeTec(tec)];
 }
 
-/** The reason a TEC destination's route box reads the published route rather than what was filed. */
-function tecReason(ctx: Classification, expected: ExpectedRoute, destination: string): string {
-  return `${destination} is inside NorCal TRACON; the TEC route for a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} is ${expected.tokens.join(' ')}`;
+/**
+ * The reason an obligatory row's route box reads the published route rather than what was filed.
+ *
+ * @param ctx The classified flight, which carries its class and plan.
+ * @param expected The box as it should read.
+ * @param destination The destination's identifier.
+ * @param row The obligatory row the box was read from: a TEC row, or a route tool row.
+ * @returns The reason, which names the TEC route or the route tool's route.
+ */
+function tecReason(
+  ctx: Classification,
+  expected: ExpectedRoute,
+  destination: string,
+  row: TecRoute,
+): string {
+  const route = expected.tokens.join(' ');
+  if (row.kind === 'tool') {
+    return `${destination} is outside NorCal TRACON, but the ZOA route tool assigns a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} ${route}`;
+  }
+  return `${destination} is inside NorCal TRACON; the TEC route for a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} is ${route}`;
 }
 
 /**
@@ -690,7 +707,8 @@ function routeReason(
   ctx: Classification,
   assigned: string,
 ): string {
-  if (expected.tec !== undefined) return tecReason(ctx, expected, scenario.destination);
+  if (expected.tec !== undefined)
+    return tecReason(ctx, expected, scenario.destination, expected.tec);
   const clauses = [structureClause(expected, assigned), malformedClause(expected)].filter(
     (clause) => clause !== undefined,
   );
@@ -881,7 +899,7 @@ function headingOutcome(
   const reason =
     tec === undefined
       ? headingReason(scenario, ctx, clearance)
-      : tecReason(ctx, expected, scenario.destination);
+      : tecReason(ctx, expected, scenario.destination, tec);
   const malformed = malformedClause(expected);
   return {
     box: 'route',

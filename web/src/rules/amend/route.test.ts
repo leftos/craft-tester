@@ -483,6 +483,26 @@ describe('checkRoute TRACON destinations', () => {
   });
 });
 
+describe('checkRoute route tool destinations', () => {
+  it('replaces the route of a flight outside the TRACON with the route tool row that states an altitude', () => {
+    const flight = scenario({
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      destination: 'KAPC',
+      filedRoute: 'OAK V195 CROIT V108 SGD',
+      filedAltitude: 4000,
+      runwayConfigId: 'SFOE',
+      departureRunway: '10R',
+    });
+    const result = amendmentAt(flight, koak);
+    expect(result.proposed).toBe('OAK ALTAM V334 OAKEY V108 SGD');
+    expect(result.reason).toBe(
+      'KAPC is outside NorCal TRACON, but the ZOA route tool assigns a turboprop in SFOE OAK ALTAM V334 OAKEY V108 SGD',
+    );
+    expect(result.citations.map((citation) => citation.id)).toContain('TOOL-KAPC-SFOE-TP');
+  });
+});
+
 describe('checkRoute a TEC route over the SOP assignment', () => {
   function clearanceAt(flight: Scenario, airport: AirportData) {
     const result = resolveClearance(flight, airport, 'proposed');

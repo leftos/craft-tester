@@ -271,8 +271,8 @@ describe('the form with the runway not graded', () => {
   });
 });
 
-/** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
-const NO_DP_SEED = 2;
+/** The seeds searched for a KOAK clearance-mode strip cleared off on a heading. */
+const NO_DP_SEEDS = 200;
 
 /** A KOAK clearance-mode strip whose clearance assigns a SID. */
 const SID_SEED = 1;
@@ -283,6 +283,18 @@ function koakClearance(seed: number): { scenario: Scenario; clearance: ResolvedC
   if (view.kind !== 'clearance') throw new Error(`KOAK seed ${String(seed)} draws no clearance`);
   return { scenario: view.generated, clearance: view.clearance };
 }
+
+/** The first KOAK clearance-mode seed the SOP clears off on heading 270 with no DP. */
+function noDpSeed(): number {
+  for (let seed = 1; seed <= NO_DP_SEEDS; seed += 1) {
+    const procedure = koakClearance(seed).clearance.procedure.value;
+    if (procedure.kind === 'heading' && procedure.heading === 270) return seed;
+  }
+  throw new Error(`no KOAK clearance seed up to ${NO_DP_SEEDS} is cleared off on heading 270`);
+}
+
+/** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
+const NO_DP_SEED = noDpSeed();
 
 describe('the procedure row of a clearance-mode strip', () => {
   it('has the student pick the heading of a clearance with no DP', () => {

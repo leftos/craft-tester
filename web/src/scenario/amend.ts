@@ -6,6 +6,7 @@ import type { AmendmentResult } from '@/rules/amend/types.ts';
 import { hasSpecialHandling } from '@/rules/handling.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isSidToken, rnavElements } from '@/rules/route.ts';
+import { isObligatory } from '@/rules/tecRoutes.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import type { Rng, Weighted } from '@/scenario/rng.ts';
@@ -199,7 +200,8 @@ function noSid(scenario: Scenario): FaultPatch | undefined {
 }
 
 /**
- * Another destination's route, for a flight the TEC routes carry on a published one of its own.
+ * Another destination's route, for a flight an obligatory row (a TEC route, or a tool row that states
+ * an altitude) carries on a published one of its own.
  *
  * A tail the flight's own destination files is not another destination's route however it is
  * labelled: two TRACON destinations down the same corridor are filed over the same fixes, and
@@ -207,9 +209,9 @@ function noSid(scenario: Scenario): FaultPatch | undefined {
  */
 function wrongTecRoute(scenario: Scenario, airport: AirportData, rng: Rng): FaultPatch | undefined {
   const destination = destinationOf(scenario, airport);
-  if (destination?.nct !== true) return undefined;
+  if (destination === undefined) return undefined;
   const routed = airport.tecRoutes.some(
-    (row) => row.kind === 'tec' && row.destination === destination.icao,
+    (row) => isObligatory(row) && row.destination === destination.icao,
   );
   const ownTails = new Set(
     airport.routeLibrary.routes

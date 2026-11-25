@@ -12,7 +12,7 @@ import { checkRoute, withVectorNavaid } from '@/rules/amend/route.ts';
 import type { Classification, Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
-import { tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { isObligatory, tecHead, tecTokens, usableTecRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 import { sidOf } from '@/data/sidOf.ts';
 
@@ -128,13 +128,58 @@ function klvkRow(overrides: Partial<Scenario>, data: AirportData = ksfo): string
   return usableTecRoute(ctx, flight, data)?.id;
 }
 
+/** The obligatory row a KOAK flight to KAPC is routed on. */
+function koakRow(overrides: Partial<Scenario>): string | undefined {
+  const flight: Scenario = {
+    ...SCENARIO,
+    callsign: 'N1',
+    equipmentSuffix: '/L',
+    destination: 'KAPC',
+    filedRoute: 'OAK SAU',
+    filedAltitude: 5000,
+    ...overrides,
+  };
+  const ctx = classify(flight, koak, 'proposed');
+  if (isUnresolved(ctx)) throw new Error(ctx.reason);
+  return usableTecRoute(ctx, flight, koak)?.id;
+}
+
+describe('isObligatory', () => {
+  it.each([
+    ['a TEC row with no altitude', true, { kind: 'tec' }],
+    ['a tool row with a final altitude only', true, { kind: 'tool', finalAltitudeFeet: 5000 }],
+    [
+      'a tool row with an initial and a final altitude',
+      true,
+      { kind: 'tool', initialAltitudeFeet: 3000, finalAltitudeFeet: 5000 },
+    ],
+    ['a tool row with no altitude', false, { kind: 'tool' }],
+    ['an ADR row', false, { kind: 'adr' }],
+  ] as const)('reads %s as obligatory: %s', (_, expected, overrides) => {
+    const { initialAltitudeFeet: _initial, finalAltitudeFeet: _final, ...bare } = headingRow;
+    expect(isObligatory({ ...bare, ...overrides })).toBe(expected);
+  });
+});
+
 describe('usableTecRoute', () => {
   it('takes the first row written for the flight where its route begins on a heading', () => {
     expect(usableTecRoute(CTX, SCENARIO, airport)?.id).toBe('TEC-KSMF-OAKE-J');
   });
 
-  it('has no row for a destination outside the TRACON', () => {
-    expect(usableTecRoute(CTX, { ...SCENARIO, destination: 'KSLC' }, airport)).toBeUndefined();
+  it('has no row for a destination no row is written for', () => {
+    expect(usableTecRoute(CTX, { ...SCENARIO, destination: 'KSEA' }, airport)).toBeUndefined();
+  });
+
+  it('takes the route tool row that states an altitude for a destination outside the TRACON', () => {
+    expect(koakRow({ aircraftType: 'B738', runwayConfigId: 'OAKE', departureRunway: '10R' })).toBe(
+      'TOOL-KAPC-OAKE-J',
+    );
+  });
+
+  it('passes over a route tool row that states no altitude, which is only recommended', () => {
+    expect(koakRow({ aircraftType: 'BE20', runwayConfigId: 'SFOW', departureRunway: '30' })).toBe(
+      undefined,
+    );
   });
 
   it('takes the first keyed row whose SID the flight can fly off its runway', () => {

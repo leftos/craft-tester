@@ -232,6 +232,9 @@ function dedupe(citations: RuleCitation[]): RuleCitation[] {
   return unique;
 }
 
+/** Why a facility-directed final altitude stands whatever the course. */
+const EXEMPT = 'a facility-directed altitude is exempt from the odd/even rule';
+
 /**
  * Checks the altitude box of the strip against every rule the data holds for the flight.
  *
@@ -282,10 +285,11 @@ export function checkAltitude(
   const tecFinal = tecRow?.finalAltitudeFeet;
   if (tecRow !== undefined && tecFinal !== undefined) {
     if (scenario.filedAltitude === tecFinal) return undefined;
+    const routeName = tecRow.kind === 'tool' ? "the ZOA route tool's route" : 'the TEC route';
     return {
       box: 'altitude',
       proposedFeet: tecFinal,
-      reason: `the TEC route to ${destination.short} is flown at ${formatAltitude(tecFinal)}; a facility-directed altitude is exempt from the odd/even rule`,
+      reason: `${routeName} to ${destination.short} is flown at ${formatAltitude(tecFinal)}; ${EXEMPT}`,
       citations: [citeTec(tecRow)],
     };
   }
