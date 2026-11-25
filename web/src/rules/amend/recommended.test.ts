@@ -243,7 +243,7 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
       ...QXE416,
       aircraftType: 'B738',
       destination: 'KLAX',
-      filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+      filedRoute: `${sidOf(ksfo, 'SSTIK').id} EBAYE AVE SADDE8`,
       runwayConfigId: '28 RT',
       departureRunway: '28L',
     };
