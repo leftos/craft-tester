@@ -142,7 +142,9 @@ function plansToCheck(
   const route = result.amendments.find((amendment) => amendment.box === 'route');
   if (route !== undefined) plans.push(['corrected plan', result.corrected]);
   if (route?.alternativeTo !== undefined) {
-    const side = result.amendments.filter((amendment) => amendment.alternativeTo !== 'route');
+    const side = result.amendments.filter(
+      (amendment) => amendment.box !== 'type' || amendment.alternativeTo === undefined,
+    );
     plans.push(['paired route side', side.reduce(applyAmendment, item.flight)]);
   }
   const also = result.routeAlsoCorrect;

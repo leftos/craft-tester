@@ -158,6 +158,30 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     expect(check.alsoCorrect).toBe('OAK SAU');
   });
 
+  it('keeps the airport navaid of a tool row on a transition SID for a flight cleared on a heading', () => {
+    const flight: Scenario = {
+      ...QXE416,
+      aircraftType: 'B738',
+      departureRunway: '28L',
+      localTime: '2300',
+      filedRoute: `${oak} OAK SAU`,
+    };
+    const ctx = classify(flight, koak, 'proposed');
+    if (isUnresolved(ctx)) throw new Error(ctx.reason);
+    const id = recommendedToolRoute(ctx, flight, koak)?.id;
+    expect(id).toBeDefined();
+    const tecRoutes = koak.tecRoutes.map((row) =>
+      row.id === id ? { ...row, route: 'CNDEL# OAK SAU' } : row,
+    );
+    const airport: AirportData = { ...koak, tecRoutes };
+    expect(sidOf(airport, 'CNDEL').routePhrasing).not.toBe('radar_vectors_fix');
+    const cleared = resolveClearance(flight, airport, 'proposed');
+    if (!cleared.ok) throw new Error(cleared.unresolved.map((item) => item.reason).join('; '));
+    expect(cleared.clearance.procedure.value.kind).toBe('heading');
+    const check = checkRouteWithAlternative(flight, ctx, cleared.clearance, airport);
+    expect(routeAmendment(check).proposed).toBe('OAK SAU');
+  });
+
   it('keeps the vector navaid of a tool row where an airway leaves from it', () => {
     const tail = koak.routeLibrary.routes.find((row) => row.destination === 'KCCR')?.tail;
     expect(tail).toBe('OAK V6 COLLI');
@@ -169,6 +193,9 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
       localTime: '2300',
       filedRoute: tail ?? '',
     };
+    const cleared = resolveClearance(flight, koak, 'proposed');
+    if (!cleared.ok) throw new Error(cleared.unresolved.map((item) => item.reason).join('; '));
+    expect(cleared.clearance.procedure.value.kind).toBe('heading');
     const result = resolveAmendments(flight, koak, 'proposed');
     if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
     expect(result.corrected.filedRoute).toBe('OAK V6 COLLI');

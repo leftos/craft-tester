@@ -124,6 +124,7 @@ the hooks rejects the file.
 12. **`aircraft_groups`** (optional): a named set of aircraft a row addresses at once, by class and by
     type, for a table written against "J & DH8D": `jets_and_dh8d: { classes: [J], types: [DH8D] }`. A
     row lists `groups: [jets_and_dh8d]` beside or instead of `classes`; a row must address somebody.
+    **`class_words`** (optional): a map from class letter to the words a reason uses for that class, where the SOP's rows name it differently: KOAK's `J` rows are written for "J & DH8D", so `class_words: { J: jet or DH8D }`. Without it a reason uses the class's own name; it reaches the web as `classWords`.
     **`assignment_rules`**: the DP-by-direction table as ordered rows. Noise rows first, then the SOP
     table top to bottom, then CBT refinements. Fields: `plan`, `direction`, `runway_families`, `classes`
     (and `groups`; `approach_categories: [A, B]` where the SOP says "Cat A/B"; the fleet's categories come
@@ -380,7 +381,7 @@ and every airport inherits it.
 
 - **Aircraft groups.** An SOP row often addresses a named set of classes and types ("jets and the DH8D")
   rather than a class. `aircraftGroups` names the set once and the rows address it by name, so a
-  type-specific rule needs no new rule kind. A type a group names also counts as defined by the local SOP for ZOA CPS-004 §3.1: its SOP rows keep the type's own class, and only TEC rows apply the CPS-004 performance class (see "Special aircraft" in ARCHITECTURE.md). Group a CPS-004 type (SF50, C510, E50P, E55P, DH8D) only when the new SOP really addresses it.
+  type-specific rule needs no new rule kind. A type a group names also counts as defined by the local SOP for ZOA CPS-004 §3.1: it reads as the class CPS-004 proposes for it in the SOP tables and the TEC and tool rows alike, under both handlings (see "Special aircraft" in ARCHITECTURE.md). Group a CPS-004 type (SF50, C510, E50P, E55P, DH8D) only when the new SOP really addresses it.
 - **Numbered heading departures.** `nonDpHeading` takes a literal heading as well as `runway heading`; the
   turn direction is derived from the shorter turn off the departure runway's magnetic bearing, which is why
   the CIFP runway bearings are emitted.

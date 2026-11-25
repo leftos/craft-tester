@@ -4,11 +4,12 @@ Terms the docs, plans and commit messages use in a project-specific sense.
 
 - **Accepted handling**: the second resolution of a special aircraft (`handling: 'accepted'`), made with its turboprop class. An answer that is right under it is graded right, citing `ZOA-CPS004-SPECIAL-AIRCRAFT`.
 - **Box**: one of the three fields of a strip a student checks in Amend mode: aircraft type, altitude and route (`BOX.type`, `BOX.altitude`, `BOX.route`). The page calls them strip boxes.
+- **Class words**: the words a reason uses for a class, from the airport's `class_words` in `sop.yaml` (`classWords` on the airport data); KOAK's `J` reads "jet or DH8D", as its SOP writes "J & DH8D".
 - **Coach mark**: one step of the first-run tour. The page dims except one control of the real trainer, and a card says what the control is and what to do. The step moves on when the student does it.
 - **Draw**: choosing a strip at random from a seed and the filters (`generateScenario`, `generateAmendmentScenario`). A draw the engine cannot clear is drawn again, up to 50 times.
 - **Element**: one graded part of a CRAFT clearance (`C`, `R.sid`, `R.route`, `A.phrase`, `A.expect`, `F`, `T`, `RWY`). The code's word; the page says "part" or names the part.
 - **Instructor ruling**: the source a rule row cites when a ZOA instructor decided the rule rather than a document stating it.
-- **Local SOP (for a special aircraft)**: an airport whose `aircraftGroups` names the type, so its SOP defines that type itself and its SOP rows keep the type's own class under either handling (`localSop` on the fleet entry).
+- **Local SOP (for a special aircraft)**: an airport whose `aircraftGroups` names the type, so its SOP defines that type itself and it reads as the class CPS-004 proposes for it in the SOP, TEC and tool rows under either handling (`localSop` on the fleet entry).
 - **Obligatory (tool row)**: a tool row that states an altitude, and so is read exactly like a TEC row (`isObligatory`); every `tec` row is obligatory too.
 - **Performance class**: the class ZOA CPS-004 §3.1 handles a type with when that differs from its engine class, e.g. a C510 is a jet handled like a turboprop. Written as `performance_class` in `generator/shared/aircraft_types.yaml`.
 - **Proposed handling**: the resolution the trainer shows as the answer (`handling: 'proposed'`). For a special aircraft it keys TEC rows with the jet class.

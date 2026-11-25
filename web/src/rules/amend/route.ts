@@ -349,10 +349,18 @@ function tecTail(tec: TecRoute, procedure: Procedure, airport: AirportData): str
   return flown ? tokens : tokens.slice(1);
 }
 
+/** Whether a row begins on a radar-vector departure family, which the box writes the airport's navaid after. */
+function beginsOnVectorSid(row: TecRoute, airport: AirportData): boolean {
+  const head = tecHead(row);
+  if (head.kind !== 'family') return false;
+  const sid = airport.sids.find((entry) => entry.family === head.family);
+  return sid?.routePhrasing === 'radar_vectors_fix';
+}
+
 /**
  * The row's route as the box reads it behind a heading, as `tecTail` reads it, and for a route tool
- * row that begins on a departure family without the airport's own navaid after that family, unless an
- * airway leaves from it.
+ * row that begins on a radar-vector departure family without the airport's own navaid after that
+ * family, unless an airway leaves from it.
  *
  * That navaid is there only because the family is a radar-vector SID, so a flight the SOP sends off
  * on a heading is vectored straight to the fix after it (`OAK# OAK SAU` is `SAU`); where the next
@@ -372,7 +380,7 @@ function headingTail(
 ): string[] | Unresolved {
   const tail = tecTail(row, procedure, airport);
   if (isUnresolved(tail) || row.kind !== 'tool' || procedure.kind !== 'heading') return tail;
-  if (tecHead(row).kind !== 'family') return tail;
+  if (!beginsOnVectorSid(row, airport)) return tail;
   const [head, next] = tail;
   if (head !== airport.airport.faa || next === undefined || isAirwayToken(next)) return tail;
   return tail.slice(1);
@@ -491,7 +499,7 @@ function tecCitations(tec: TecRoute | undefined, cited: readonly RuleCitation[])
  * @param airport The airport data, whose `classWords` name a class the way its SOP does.
  * @returns The words for the class.
  */
-export function classWords(cls: AircraftClass, airport: AirportData): string {
+function classWords(cls: AircraftClass, airport: AirportData): string {
   return airport.classWords?.[cls] ?? CLASS_WORDS[cls];
 }
 
@@ -1110,8 +1118,8 @@ function rnavChecked(
  * The route box the route tool's recommended row gives the flight.
  *
  * A flight the SOP sends off on a heading reads the row as the box does behind a heading: without the
- * departure family the row begins on, and then without the airport's own navaid after it unless an
- * airway leaves from that navaid. A flight issued a SID reads a row that begins on a departure family as
+ * departure family the row begins on, and, where that family is a radar-vector SID, without the airport's
+ * own navaid after it unless an airway leaves from that navaid. A flight issued a SID reads a row that begins on a departure family as
  * written, on that family's own SID; issued one on no built route, it reads any other row as a TEC row
  * is read behind the SID it is issued, and issued one on a built route, as the row's tail behind it.
  *
@@ -1199,8 +1207,9 @@ function replaced(
  * @param outcome The outcome the SOP, the TEC table and the arrival sheet ask for.
  * @param check The filed plan, its classification, the clearance it was given, and the data.
  * @returns The outcome, amended to the tool route where the box has to be amended anyway and the
- *   flight can fly the tool route, with the box graded correct beside the expected one; the outcome alone where no recommendation applies,
- *   which is also the case wherever an obligatory row routes the flight.
+ *   flight can fly the tool route, with the box graded correct beside the expected one; the outcome
+ *   alone where no recommendation applies, which is also the case wherever an obligatory row routes
+ *   the flight.
  */
 function withRecommendation(
   outcome: ResolvedAmendment | undefined | Unresolved,
