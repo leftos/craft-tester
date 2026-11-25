@@ -5,7 +5,7 @@
       {
         "box": "route",
         "proposed": "OAK7 OAK SAU",
-        "reason": "QUAKE3 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK7, and the ZOA route tool's route for a jet in SFOW is OAK7 OAK SAU; OAK7 OAK V195 CROIT V108 SGD is correct too"
+        "reason": "QUAKE3 is not the procedure the SOP assigns an RNAV jet or DH8D from 30 in SFOW; it is OAK7, and the ZOA route tool's route for a jet or DH8D in SFOW is OAK7 OAK SAU; OAK7 OAK V195 CROIT V108 SGD is correct too"
       }
     ],
     "routeAlsoCorrect": "OAK7 OAK V195 CROIT V108 SGD"
@@ -41,7 +41,7 @@
   },
   "source": {
     "kind": "synthetic",
-    "note": "CRAFT-71 rule example; pending the owner's confirmation of the reason wording"
+    "note": "CRAFT-71 rule example; pending the owner's confirmation of the reason wording; settled by the user 2026-11-24 with the KOAK 'jet or DH8D' wording"
   },
-  "status": "pending"
+  "status": "settled"
 }

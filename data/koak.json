@@ -77679,6 +77679,9 @@
       "text": "All, runways 10/12, J & DH8D -> runway heading, 3,000; Sutro for oceanic/southbound departures"
     }
   ],
+  "classWords": {
+    "J": "jet or DH8D"
+  },
   "commonArrivals": [
     {
       "classes": [

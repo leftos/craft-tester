@@ -478,7 +478,7 @@ function planWords(plan: ArrivalPlan, context: ArrivalContext): string {
   const lead =
     candidate === undefined
       ? ''
-      : `${candidate.sid.id} is the procedure ${candidate.row.id} assigns ${flightWords(ctx)} from ` +
+      : `${candidate.sid.id} is the procedure ${candidate.row.id} assigns ${flightWords(ctx, context.airport)} from ` +
         `${scenario.departureRunway} in ${ctx.config.id}, and `;
   const links = plan.connections
     .map((row) => `${row.from} ${row.connects} connects to ${row.to}`)

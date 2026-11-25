@@ -427,6 +427,14 @@ def _aircraft_groups(root: _Row) -> dict[str, AircraftGroup]:
     return {name: _aircraft_group(_Row(f"{at}[{name}]", value)) for name, value in table.items()}
 
 
+def _class_word_table(root: _Row) -> dict[AircraftClass, str]:
+    table = root.optional_table("class_words")
+    if table is None:
+        return {}
+    at = f"{root.where}.class_words"
+    return {_as_choice(key, AIRCRAFT_CLASSES, f"{at} key"): _as_text(value, f"{at}.{key}") for key, value in table.items()}
+
+
 def _airline_codes(row: _Row, key: str) -> tuple[str, ...]:
     codes = row.optional_texts(key) or ()
     for index, code in enumerate(codes):
@@ -681,6 +689,7 @@ def _sop_data(root: _Row) -> SopData:
         secondary_sources=tuple(_secondary_source(child) for child in root.children("secondary_sources")),
         airport=_airport_info(root.child("airport")),
         aircraft_groups=_aircraft_groups(root),
+        class_words=_class_word_table(root),
         runways=root.texts("runways"),
         runway_configs=tuple(_runway_config(child) for child in root.children("runway_configs")),
         departure_sectors=tuple(_departure_sector(child) for child in root.children("departure_sectors")),

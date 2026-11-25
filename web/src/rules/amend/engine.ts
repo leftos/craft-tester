@@ -202,24 +202,27 @@ function rnavElementResult(
 }
 
 /**
- * The amendments with a route box paired with the type box put back on the proposal the route tool's
- * recommendation replaced.
+ * The amendments with a route box paired with the type box no longer naming another correct box.
  *
- * The recommendation is read only where the route box is amended on its own: the reason of a paired
- * box could not name another correct box, since a paired box is graded as one side of the pair.
+ * A paired box is graded as one side of the pair, so it keeps the route tool's route as its proposal
+ * but its reason drops the closing that names the box the recommendation replaced, which the result
+ * does not grade correct either.
  *
  * @param amendments The amendments, with both sides of the RNAV pair marked.
- * @param unrecommended The route amendment the recommendation replaced, where it replaced one.
- * @returns The amendments, a paired route box reading that amendment, still marked as paired.
+ * @param alsoCorrect The box the route box check graded correct beside the expected one, if any.
+ * @returns The amendments, a paired route box's reason without that closing.
  */
-function withPairedRoute(
+function withoutPairedAlso(
   amendments: ResolvedAmendment[],
-  unrecommended: ResolvedAmendment | undefined,
+  alsoCorrect: string | undefined,
 ): ResolvedAmendment[] {
-  if (unrecommended === undefined) return amendments;
+  if (alsoCorrect === undefined) return amendments;
+  const closing = `; ${alsoCorrect} is correct too`;
   return amendments.map((amendment) =>
-    amendment.box === 'route' && amendment.alternativeTo !== undefined
-      ? { ...unrecommended, alternativeTo: amendment.alternativeTo }
+    amendment.box === 'route' &&
+    amendment.alternativeTo !== undefined &&
+    amendment.reason.endsWith(closing)
+      ? { ...amendment, reason: amendment.reason.slice(0, -closing.length) }
       : amendment,
   );
 }
@@ -315,7 +318,7 @@ export function resolveAmendments(
   ];
   const { raised, gaps } = collect(outcomes);
   if (gaps.length > 0) return { ok: false, unresolved: gaps };
-  const amendments = withPairedRoute(pairAlternatives(raised, clash), route.unrecommended);
+  const amendments = withoutPairedAlso(pairAlternatives(raised, clash), route.alsoCorrect);
   const corrected = amendments.filter(applies).reduce(applyAmendment, scenario);
   return okResult(amendments, corrected, unpaired(amendments, route.alsoCorrect));
 }

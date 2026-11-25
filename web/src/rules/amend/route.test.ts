@@ -183,7 +183,7 @@ describe('checkRoute departure structure', () => {
     expect(result.proposed).toBe(`${cndel.id} YYUNG GVO`);
     expect(result.citations.map((citation) => citation.id)).toContain('R-SID-STRUCTURE');
     expect(result.reason).toBe(
-      `${cndel.id} is the procedure the SOP assigns an RNAV jet from 30 in SFOW, and AVE is not one of ` +
+      `${cndel.id} is the procedure the SOP assigns an RNAV jet or DH8D from 30 in SFOW, and AVE is not one of ` +
         'its transitions, but YYUNG is and YYUNG usually connects to GVO, so the flight keeps the ' +
         `SID, and PORTE is already flown by ${skyl.id}; the route starts from its published AVE ` +
         'transition',
@@ -364,7 +364,7 @@ describe('checkRoute route building', () => {
     const result = amendmentAt(pxt415(), withoutRnavWaypoints(koak));
     expect(result.proposed).toBe(`${skyl.id} WAGES LOSHN PMD V137 PSP`);
     expect(result.reason).toBe(
-      `${skyl.id} is the procedure the SOP assigns a non-RNAV jet from 30 in SFOW, and SUNNE is not one ` +
+      `${skyl.id} is the procedure the SOP assigns a non-RNAV jet or DH8D from 30 in SFOW, and SUNNE is not one ` +
         'of its transitions, but WAGES is its own end fix and WAGES usually connects to LOSHN, ' +
         'so the flight gets the SID instead of a heading',
     );

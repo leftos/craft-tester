@@ -429,6 +429,20 @@
       },
       "type": "array"
     },
+    "classWords": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "enum": [
+          "P",
+          "T",
+          "J"
+        ],
+        "type": "string"
+      },
+      "type": "object"
+    },
     "commonArrivals": {
       "items": {
         "additionalProperties": false,

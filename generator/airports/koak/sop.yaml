@@ -172,6 +172,10 @@ aircraft_groups:
   jets_and_dh8d: { classes: [J], types: [DH8D] }
   dh8d: { classes: [], types: [DH8D] }
 
+# How a reason names a class the SOP's rows read. The J rows are written for "J & DH8D", so a reason
+# names the class they read "jet or DH8D", for a B738 as well as a DH8D.
+class_words: { J: jet or DH8D }
+
 # SOP 2-2 a (standard DP/route/heading by destination direction, runway and aircraft), 2-2 b
 # (non-DP headings) and Appendix B d (noise abatement). Ordered: the engine takes the first row whose
 # conditions match and whose SID is compatible with the departure runway, the aircraft's RNAV

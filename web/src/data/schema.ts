@@ -745,6 +745,8 @@ export const TrainingSchema = z.strictObject({
  * identifier to how it is spoken, e.g. `OSI` to `Woodside`. `runways` is every runway end the CIFP
  * publishes for the airport with its magnetic bearing, and `aircraftGroups` the named aircraft sets
  * the assignment and altitude rows address, empty at an airport whose rows only name classes.
+ * `classWords` names a class the way the airport's SOP rows do, where that differs from the class's
+ * own name (KOAK's `J` rows read "jet or DH8D"); every reason that names the class reads it.
  */
 export const AirportDataSchema = z.strictObject({
   airport: AirportIdentitySchema,
@@ -786,6 +788,7 @@ export const AirportDataSchema = z.strictObject({
   notices: z.array(NoticeSchema),
   aircraftClasses: z.record(z.string(), AircraftClassSchema),
   aircraftGroups: z.record(z.string(), AircraftGroupSchema),
+  classWords: z.partialRecord(AircraftClassSchema, z.string()).optional(),
   routeLibrary: RouteLibrarySchema,
   training: TrainingSchema,
 });

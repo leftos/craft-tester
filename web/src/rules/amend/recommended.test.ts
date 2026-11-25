@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import koakJson from '@data/koak.json';
+import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario, TecRoute } from '@/data/schema.ts';
 import { sidOf } from '@/data/sidOf.ts';
 import type { RouteCheckResult } from '@/rules/amend/route.ts';
@@ -13,6 +14,7 @@ import { recommendedToolRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const koak = koakJson as unknown as AirportData;
+const ksfo = ksfoJson as unknown as AirportData;
 const nimi = sidOf(koak, 'NIMI').id;
 const oak = sidOf(koak, 'OAK').id;
 const quake = sidOf(koak, 'QUAKE').id;
@@ -74,7 +76,7 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     expect(amendment.proposed).toBe(`${oak} OAK SAU`);
     expect(
       amendment.reason.endsWith(
-        `, and the ZOA route tool's route for a jet in SFOW is ${oak} OAK SAU; ${previous} is correct too`,
+        `, and the ZOA route tool's route for a jet or DH8D in SFOW is ${oak} OAK SAU; ${previous} is correct too`,
       ),
     ).toBe(true);
     expect(amendment.citations.map((citation) => citation.id)).toContain('TOOL-KAPC-SFOW-J');
@@ -92,9 +94,16 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     const amendment = routeAmendment(check);
     expect(amendment.proposed).toBe(`${oak} OAK SAU`);
     expect(amendment.reason).toBe(
-      `${nimi} is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is ${oak}`,
+      `${nimi} is not the procedure the SOP assigns an RNAV jet or DH8D from 30 in SFOW; it is ${oak}`,
     );
     expect(check.alsoCorrect).toBeUndefined();
+  });
+
+  it('names a KOAK B738 the way the SOP names the class its J rows read', () => {
+    const check = checked({ ...QXE416, aircraftType: 'B738', filedRoute: `${nimi} OAK SAU` });
+    expect(routeAmendment(check).reason).toBe(
+      `${nimi} is not the procedure the SOP assigns an RNAV jet or DH8D from 30 in SFOW; it is ${oak}`,
+    );
   });
 
   it('amends a piston filed with no procedure to the tool route, the filed tail correct too', () => {
@@ -128,38 +137,93 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     expect(again.amendments.filter((item) => item.box === 'route')).toEqual([]);
   });
 
-  it('keeps the family a tool row begins on for a flight the SOP clears on a heading', () => {
-    const tecRoutes = koak.tecRoutes.map((row) =>
-      row.id === 'TOOL-KAPC-SFOE-TP'
-        ? {
-            id: row.id,
-            kind: row.kind,
-            destination: row.destination,
-            plan: row.plan,
-            runwayFamilies: row.runwayFamilies,
-            classes: row.classes,
-            source: row.source,
-            route: 'OAK# OAK ALTAM V334 OAKEY V108 SGD',
-          }
-        : row,
+  it('drops the family and the vector navaid of a tool row for a flight the SOP clears on a heading', () => {
+    const flight: Scenario = {
+      ...QXE416,
+      aircraftType: 'B738',
+      departureRunway: '28L',
+      localTime: '2300',
+      filedRoute: `${oak} OAK SAU`,
+    };
+    const cleared = resolveClearance(flight, koak, 'proposed');
+    if (!cleared.ok) throw new Error(cleared.unresolved.map((item) => item.reason).join('; '));
+    expect(cleared.clearance.procedure.value.kind).toBe('heading');
+    const check = checked(flight);
+    const amendment = routeAmendment(check);
+    expect(amendment.proposed).toBe('SAU');
+    expect(amendment.reason).toBe(
+      'the SOP sends an RNAV jet or DH8D off 28L on heading 270 with no departure procedure, ' +
+        "and the ZOA route tool's route for a jet or DH8D in SFOW is SAU; OAK SAU is correct too",
     );
-    const airport: AirportData = { ...koak, tecRoutes };
+    expect(check.alsoCorrect).toBe('OAK SAU');
+  });
+
+  it('keeps the vector navaid of a tool row where an airway leaves from it', () => {
+    const tail = koak.routeLibrary.routes.find((row) => row.destination === 'KCCR')?.tail;
+    expect(tail).toBe('OAK V6 COLLI');
+    const flight: Scenario = {
+      ...QXE416,
+      aircraftType: 'B738',
+      destination: 'KCCR',
+      departureRunway: '28L',
+      localTime: '2300',
+      filedRoute: tail ?? '',
+    };
+    const result = resolveAmendments(flight, koak, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.corrected.filedRoute).toBe('OAK V6 COLLI');
+  });
+
+  it('keeps the navaid of a tool row that begins on no departure family at night', () => {
     const flight: Scenario = {
       ...QXE416,
       aircraftType: 'BE20',
       equipmentSuffix: '/A',
       runwayConfigId: 'SFOE',
       departureRunway: '10R',
+      localTime: '2300',
+      filedRoute: 'OAK V195 CROIT V108 SGD',
     };
-    const ctx = classify(flight, airport, 'proposed');
-    if (isUnresolved(ctx)) throw new Error(ctx.reason);
-    expect(recommendedToolRoute(ctx, flight, airport)?.id).toBe('TOOL-KAPC-SFOE-TP');
-    const cleared = resolveClearance(flight, airport, 'proposed');
+    const cleared = resolveClearance(flight, koak, 'proposed');
     if (!cleared.ok) throw new Error(cleared.unresolved.map((item) => item.reason).join('; '));
     expect(cleared.clearance.procedure.value.kind).toBe('heading');
+    const result = resolveAmendments(flight, koak, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.corrected.filedRoute).toBe('OAK ALTAM V334 OAKEY V108 SGD');
+  });
+
+  it('recommends no tool route the flight cannot fly', () => {
+    const flight: Scenario = { ...N471RY, equipmentSuffix: '/A' };
+    const ctx = classify(flight, koak, 'proposed');
+    if (isUnresolved(ctx)) throw new Error(ctx.reason);
+    const id = recommendedToolRoute(ctx, flight, koak)?.id;
+    const tecRoutes = koak.tecRoutes.map((row) =>
+      row.id === id ? { ...row, route: 'NIMI# OAK SYRAH SAU' } : row,
+    );
+    const airport: AirportData = { ...koak, tecRoutes };
+    expect(airport.rnavWaypoints).toContain('SYRAH');
+    const cleared = resolveClearance(flight, airport, 'proposed');
+    if (!cleared.ok) throw new Error(cleared.unresolved.map((item) => item.reason).join('; '));
     const check = checkRouteWithAlternative(flight, ctx, cleared.clearance, airport);
-    expect(routeAmendment(check).proposed).toBe(`${oak} OAK ALTAM V334 OAKEY V108 SGD`);
-    expect(check.alsoCorrect).toBe('OAK V195 CROIT V108 SGD');
+    const amendment = routeAmendment(check);
+    expect(amendment.proposed).toBe(`${nimi} OAK SGD`);
+    expect(amendment.reason).not.toContain('route tool');
+    expect(check.alsoCorrect).toBeUndefined();
+  });
+
+  it('names a KSFO B738 by its class alone', () => {
+    const flight: Scenario = {
+      ...QXE416,
+      aircraftType: 'B738',
+      destination: 'KLAX',
+      filedRoute: 'SSTIK5 EBAYE AVE SADDE8',
+      runwayConfigId: '28 RT',
+      departureRunway: '28L',
+    };
+    const result = resolveAmendments(flight, ksfo, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    const route = result.amendments.find((item) => item.box === 'route');
+    expect(route?.reason).toContain('the SOP assigns an RNAV jet from 28L in 28 RT');
   });
 
   it('keys a KOAK DH8D to the jet rows under the accepted handling too', () => {
@@ -219,6 +283,10 @@ describe('resolveAmendments on a recommended route tool row', () => {
       ['type', 'route', 'B738/L'],
       ['route', 'type', `${oak} OAK SAU`],
     ]);
+    expect(result.amendments.find((item) => item.box === 'route')?.reason).toBe(
+      `${hussh} is not the procedure the SOP assigns a non-RNAV jet or DH8D from 30 in SFOW; it is ${oak}, ` +
+        `and the ZOA route tool's route for a jet or DH8D in SFOW is ${oak} OAK SAU`,
+    );
     expect(also).toBeUndefined();
   });
 

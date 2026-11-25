@@ -322,12 +322,18 @@ class PhraseologyRule:
 
 @dataclass(frozen=True, slots=True)
 class SopData:
-    """Everything transcribed from one airport's SOP."""
+    """Everything transcribed from one airport's SOP.
+
+    ``class_words`` names a performance class the way the SOP's rows do where that differs from the
+    class's own name, e.g. KOAK's ``J`` rows, written for "J & DH8D", read "jet or DH8D"; empty at
+    an airport whose rows name the classes alone.
+    """
 
     source: SopSource
     secondary_sources: tuple[SecondarySource, ...]
     airport: AirportInfo
     aircraft_groups: dict[str, AircraftGroup]
+    class_words: dict[AircraftClass, str]
     runways: tuple[str, ...]
     runway_configs: tuple[RunwayConfig, ...]
     departure_sectors: tuple[DepartureSector, ...]

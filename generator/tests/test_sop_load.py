@@ -1076,6 +1076,23 @@ def test_aircraft_groups_round_trip_onto_the_rows_that_name_them(tmp_path: Path,
     assert sop.altitude_rules[0].groups == ("jets_and_dh8d",)
 
 
+def test_class_words_load_by_class_letter(tmp_path: Path, ksfo_dir: Path, ksfo_inputs: AirportInputs) -> None:
+    def mutate(data: Any) -> None:
+        data["class_words"] = {"J": "jet or DH8D"}
+
+    sop = load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+    assert sop.class_words == {"J": "jet or DH8D"}
+    assert ksfo_inputs.sop.class_words == {}
+
+
+def test_class_words_for_an_unknown_class_are_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
+    def mutate(data: Any) -> None:
+        data["class_words"] = {"H": "heavy"}
+
+    with pytest.raises(ValueError, match=r"class_words key: 'H' is not one of \['P', 'T', 'J'\]"):
+        load_sop(airport_copy(tmp_path, ksfo_dir, sop=mutate) / SOP_FILE)
+
+
 def test_a_group_addressing_nobody_is_rejected(tmp_path: Path, ksfo_dir: Path) -> None:
     def mutate(data: Any) -> None:
         data["aircraft_groups"] = {"nobody": {"classes": [], "types": []}}

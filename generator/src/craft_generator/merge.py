@@ -1549,6 +1549,7 @@ def build_airport(inputs: BuildInputs) -> Document:
         "loaRules": _loa_rules(inputs),
         "aircraftClasses": dict(inputs.aircraft_classes),
         "aircraftGroups": {name: _aircraft_group(group) for name, group in sop.aircraft_groups.items()},
+        **({"classWords": dict(sop.class_words)} if sop.class_words else {}),
         "routeLibrary": _route_library(inputs),
         "training": _training(inputs.airport.training_course, inputs.airport.training),
     }

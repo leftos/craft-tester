@@ -199,8 +199,9 @@ function noSid(scenario: Scenario): FaultPatch | undefined {
 /**
  * Another destination's route, for a flight an obligatory row (a TEC route, or a tool row that states
  * an altitude) keyed for it and usable by it carries on a published one of its own. The flight is
- * read under the proposed handling, the one the drill is graded under, so a destination whose rows
- * for this flight only recommend a route takes no such fault.
+ * read under the proposed handling, the one the drill is drawn by, so a destination whose rows for
+ * this flight only recommend a route takes no such fault; the drill is then graded under both
+ * handlings, the accepted one included.
  *
  * A tail the flight's own destination files is not another destination's route however it is
  * labelled: two TRACON destinations down the same corridor are filed over the same fixes, and

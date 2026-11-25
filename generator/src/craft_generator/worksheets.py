@@ -944,7 +944,7 @@ def departure_runway(
     designator the vNAS specs do not cover, which has neither class nor wake category.
 
     The plan's TEC or obligatory tool route then has the last word (user ruling 2026-09-18, "TEC moves them too"), as
-    it has in the web draw. A plan a ``tec`` row is usable for off the runway chosen keeps it.
+    it has in the web draw. A plan a ``tec`` row, or a ``tool`` row that states an altitude, is usable for off the runway chosen keeps it.
     Otherwise it moves to the first other runway of the configuration listed for its class, and not
     on request for it, that a row is usable off: the chosen runway's family first, then the rest in
     the configuration's order. A plan no runway gives a usable row keeps the one chosen, and a moved
@@ -960,7 +960,7 @@ def departure_runway(
             :func:`designator_wtcs`.
         cargo_airlines: The ICAO codes of the all-cargo airlines, out of ``routes.yaml``.
         sid_runways: The runways each procedure is published for, keyed by CIFP id.
-        tec_routes: The TEC and ADR rows out of ``tec.yaml``, in table order.
+        tec_routes: The TEC, ADR and route tool rows out of ``tec.yaml``, in table order.
         sids: The procedures the airport publishes, with their families, runways and RNAV
             requirement.
         equipment_suffixes: The equipment suffix table, which says whether the plan's suffix is RNAV.

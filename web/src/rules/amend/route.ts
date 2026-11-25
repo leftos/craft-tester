@@ -15,6 +15,7 @@ import type { Classification } from '@/rules/classify.ts';
 import type { RnavElement, RnavNeed } from '@/rules/route.ts';
 import {
   flightDirection,
+  isAirwayToken,
   isMalformedToken,
   isSidToken,
   lackingRnavElements,
@@ -349,6 +350,35 @@ function tecTail(tec: TecRoute, procedure: Procedure, airport: AirportData): str
 }
 
 /**
+ * The row's route as the box reads it behind a heading, as `tecTail` reads it, and for a route tool
+ * row that begins on a departure family without the airport's own navaid after that family, unless an
+ * airway leaves from it.
+ *
+ * That navaid is there only because the family is a radar-vector SID, so a flight the SOP sends off
+ * on a heading is vectored straight to the fix after it (`OAK# OAK SAU` is `SAU`); where the next
+ * token is an airway the flight joins it at the navaid, which stays (`OAK# OAK V6 COLLI` is
+ * `OAK V6 COLLI`). A row that begins on no family keeps its navaid (`OAK ALTAM V334 OAKEY`).
+ *
+ * @param row The TEC or route tool row that routes the flight.
+ * @param procedure The heading the clearance issues.
+ * @param airport The airport data.
+ * @returns The route as tokens, or `Unresolved` where the row names a family the airport no longer
+ *   publishes.
+ */
+function headingTail(
+  row: TecRoute,
+  procedure: Procedure,
+  airport: AirportData,
+): string[] | Unresolved {
+  const tail = tecTail(row, procedure, airport);
+  if (isUnresolved(tail) || row.kind !== 'tool' || procedure.kind !== 'heading') return tail;
+  if (tecHead(row).kind !== 'family') return tail;
+  const [head, next] = tail;
+  if (head !== airport.airport.faa || next === undefined || isAirwayToken(next)) return tail;
+  return tail.slice(1);
+}
+
+/**
  * The box of a flight a noise-abatement row issues another SID than its TEC route begins on.
  *
  * The box is built as though the flight had filed that SID and the TEC route after its departure,
@@ -454,35 +484,50 @@ function tecCitations(tec: TecRoute | undefined, cited: readonly RuleCitation[])
 }
 
 /**
+ * What a reason calls a performance class at an airport: the words its SOP gives the class, where it
+ * gives any (KOAK's J rows read "jet or DH8D"), else the class's own name.
+ *
+ * @param cls The class the rows read the flight as.
+ * @param airport The airport data, whose `classWords` name a class the way its SOP does.
+ * @returns The words for the class.
+ */
+export function classWords(cls: AircraftClass, airport: AirportData): string {
+  return airport.classWords?.[cls] ?? CLASS_WORDS[cls];
+}
+
+/**
  * The reason an obligatory row's route box reads the published route rather than what was filed.
  *
  * @param ctx The classified flight, which carries its class and plan.
  * @param expected The box as it should read.
- * @param destination The destination's identifier.
- * @param row The obligatory row the box was read from: a TEC row, or a route tool row.
+ * @param row The obligatory row the box was read from: a TEC row, or a route tool row, keyed to the
+ *   flight's destination.
+ * @param airport The airport data, for the words its SOP gives the class.
  * @returns The reason, which names the TEC route or the route tool's route.
  */
 function tecReason(
   ctx: Classification,
   expected: ExpectedRoute,
-  destination: string,
   row: TecRoute,
+  airport: AirportData,
 ): string {
   const route = expected.tokens.join(' ');
+  const words = classWords(ctx.tecClass, airport);
   if (row.kind === 'tool') {
-    return `${destination} is outside NorCal TRACON, but the ZOA route tool assigns a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} ${route}`;
+    return `${row.destination} is outside NorCal TRACON, but the ZOA route tool assigns a ${words} in ${ctx.plan} ${route}`;
   }
-  return `${destination} is inside NorCal TRACON; the TEC route for a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} is ${route}`;
+  return `${row.destination} is inside NorCal TRACON; the TEC route for a ${words} in ${ctx.plan} is ${route}`;
 }
 
 /**
  * How a reason names the flight the assignment table answered, e.g. "an RNAV jet".
  *
  * @param ctx The classified flight.
+ * @param airport The airport data, for the words its SOP gives the class.
  * @returns The words for its equipment and the class the SOP rows read it as.
  */
-export function flightWords(ctx: Classification): string {
-  return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${CLASS_WORDS[ctx.sopClass]}`;
+export function flightWords(ctx: Classification, airport: AirportData): string {
+  return `${ctx.rnavCapable ? 'an RNAV' : 'a non-RNAV'} ${classWords(ctx.sopClass, airport)}`;
 }
 
 /**
@@ -499,13 +544,10 @@ function headingWords(procedure: Procedure): string {
 }
 
 /** The reason the box names no procedure at all: the row that clears this flight assigns none. */
-function headingReason(
-  scenario: Scenario,
-  ctx: Classification,
-  clearance: ResolvedClearance,
-): string {
+function headingReason(check: RouteCheck): string {
+  const { scenario, ctx, clearance, airport } = check;
   return (
-    `the SOP sends ${flightWords(ctx)} off ${scenario.departureRunway} on ` +
+    `the SOP sends ${flightWords(ctx, airport)} off ${scenario.departureRunway} on ` +
     `${headingWords(clearance.procedure.value)} with no departure procedure`
   );
 }
@@ -516,12 +558,14 @@ function procedureReason(
   assigned: string,
   scenario: Scenario,
   ctx: Classification,
+  airport: AirportData,
 ): string {
   const family = familyOf(filed);
   if (family !== undefined && family === familyOf(assigned)) {
     return `${filed} is not the current version of the ${family} departure, which is ${assigned}`;
   }
-  return `${filed} is not the procedure the SOP assigns ${flightWords(ctx)} from ${scenario.departureRunway} in ${ctx.config.id}; it is ${assigned}`;
+  const words = flightWords(ctx, airport);
+  return `${filed} is not the procedure the SOP assigns ${words} from ${scenario.departureRunway} in ${ctx.config.id}; it is ${assigned}`;
 }
 
 /**
@@ -559,6 +603,7 @@ function builtCore(
   expected: ExpectedRoute,
   scenario: Scenario,
   ctx: Classification,
+  airport: AirportData,
 ): string {
   if (built.connections.length === 0) {
     return `${built.row.text}: ${built.sid.id} with the ${built.start.fix} transition, then the filed route`;
@@ -567,7 +612,7 @@ function builtCore(
     .map((row) => `${row.from} ${row.connects} connects to ${row.to}`)
     .join(', ');
   return (
-    `${built.sid.id} is the procedure the SOP assigns ${flightWords(ctx)} from ${scenario.departureRunway} ` +
+    `${built.sid.id} is the procedure the SOP assigns ${flightWords(ctx, airport)} from ${scenario.departureRunway} ` +
     `in ${ctx.config.id}, and ${expected.exitElement ?? ''} is not one of its transitions, but ${startWords(built)} ` +
     `and ${links}, ${builtClosing(built, expected.scope)}`
   );
@@ -591,8 +636,9 @@ function builtReason(
   expected: ExpectedRoute,
   scenario: Scenario,
   ctx: Classification,
+  airport: AirportData,
 ): string {
-  const core = builtCore(built, expected, scenario, ctx);
+  const core = builtCore(built, expected, scenario, ctx, airport);
   const structure = structureClause(expected, built.sid.id);
   return structure === undefined ? core : `${core}, and ${structure}`;
 }
@@ -609,7 +655,7 @@ function builtAmendment(
   airport: AirportData,
 ): ResolvedAmendment {
   const malformed = malformedClause(expected);
-  const reason = builtReason(built, expected, scenario, ctx);
+  const reason = builtReason(built, expected, scenario, ctx, airport);
   const citations = [
     ...builtCitations(built, airport),
     ...structureCitations(expected, airport),
@@ -728,12 +774,11 @@ function malformedClause(expected: ExpectedRoute): string | undefined {
 function routeReason(
   filed: FiledRoute,
   expected: ExpectedRoute,
-  scenario: Scenario,
-  ctx: Classification,
   assigned: string,
+  check: RouteCheck,
 ): string {
-  if (expected.tec !== undefined)
-    return tecReason(ctx, expected, scenario.destination, expected.tec);
+  const { scenario, ctx, airport } = check;
+  if (expected.tec !== undefined) return tecReason(ctx, expected, expected.tec, airport);
   const clauses = [structureClause(expected, assigned), malformedClause(expected)].filter(
     (clause) => clause !== undefined,
   );
@@ -741,7 +786,7 @@ function routeReason(
   const procedure =
     filed.procedure === undefined
       ? `the route files no departure procedure; the SOP assigns ${assigned} from ${scenario.departureRunway} in ${ctx.config.id}`
-      : procedureReason(filed.procedure, assigned, scenario, ctx);
+      : procedureReason(filed.procedure, assigned, scenario, ctx, airport);
   return [procedure, ...clauses].join(', and ');
 }
 
@@ -884,7 +929,7 @@ function checkHeadingRoute(
   const resolved =
     tec === undefined
       ? (build?.tokens ?? repair?.tokens ?? filed.tail)
-      : tecTail(tec, check.clearance.procedure.value, airport);
+      : headingTail(tec, check.clearance.procedure.value, airport);
   if (isUnresolved(resolved)) return resolved;
   const expected: ExpectedRoute = {
     ...build,
@@ -921,10 +966,7 @@ function headingOutcome(
   }
   const built = expected.built;
   if (built !== undefined) return builtAmendment(expected, built, scenario, ctx, airport);
-  const reason =
-    tec === undefined
-      ? headingReason(scenario, ctx, clearance)
-      : tecReason(ctx, expected, scenario.destination, tec);
+  const reason = tec === undefined ? headingReason(check) : tecReason(ctx, expected, tec, airport);
   const malformed = malformedClause(expected);
   return {
     box: 'route',
@@ -1004,11 +1046,6 @@ export function checkRoute(
 export type RouteCheckResult = {
   outcome: ResolvedAmendment | undefined | Unresolved;
   alsoCorrect?: string;
-  /**
-   * The route amendment the check raised before the route tool's recommendation replaced it, where it
-   * replaced one: a route box paired with the type box reads it rather than the tool route.
-   */
-  unrecommended?: ResolvedAmendment;
 };
 
 /** A route box amendment, the one kind of amendment the route box check raises. */
@@ -1023,9 +1060,10 @@ type RouteAmendment = Extract<ResolvedAmendment, { box: 'route' }>;
  * amendment stays correct as filed, and the tool route is correct there too. A warning amendment and
  * one that swaps the arrival are left as they are, and so is every outcome where an obligatory row
  * routes the flight. The other box is named only where the flight can fly it, an RNAV element its
- * suffix cannot navigate ruling it out. The RNAV check then runs on the final proposal, and a box it
- * leaves unresolved names no other box. Where the amendment engine pairs the route box with the type
- * box, it puts the box back on the proposal the recommendation replaced, which the result carries.
+ * suffix cannot navigate ruling it out, and the tool route replaces the proposal only where the
+ * flight can fly it. The RNAV check then runs on the final proposal, and a box it leaves unresolved
+ * names no other box. Where the amendment engine pairs the route box with the type box, the box keeps
+ * the tool route and names no other box.
  *
  * @param scenario The filed flight plan.
  * @param ctx The classified flight, which keys the TEC and route tool rows.
@@ -1071,10 +1109,11 @@ function rnavChecked(
 /**
  * The route box the route tool's recommended row gives the flight.
  *
- * A row that begins on a departure family is read as written, on that family's own SID, whatever the
- * flight is issued. A flight issued a SID on no built route reads any other row as a TEC row is read
- * behind the SID it is issued; any other flight is on a heading, and reads the row as the box does
- * behind a heading.
+ * A flight the SOP sends off on a heading reads the row as the box does behind a heading: without the
+ * departure family the row begins on, and then without the airport's own navaid after it unless an
+ * airway leaves from that navaid. A flight issued a SID reads a row that begins on a departure family as
+ * written, on that family's own SID; issued one on no built route, it reads any other row as a TEC row
+ * is read behind the SID it is issued, and issued one on a built route, as the row's tail behind it.
  *
  * @param row The route tool's recommended row.
  * @param check The filed plan, its classification, the clearance it was given, and the data.
@@ -1084,11 +1123,12 @@ function rnavChecked(
 function toolBox(row: TecRoute, check: RouteCheck): string[] | Unresolved {
   const { scenario, ctx, clearance, airport } = check;
   const procedure = clearance.procedure.value;
+  if (procedure.kind === 'heading') return headingTail(row, procedure, airport);
   if (tecHead(row).kind === 'family') {
     const tokens = tecTokens(row, airport);
     return isUnresolved(tokens) ? tokens : withVectorNavaid(tokens, airport);
   }
-  if (procedure.kind === 'sid' && clearance.route.value.builtRoute === undefined) {
+  if (clearance.route.value.builtRoute === undefined) {
     const expected = tecExpectation(row, scenario, ctx, procedure.id, airport);
     return isUnresolved(expected) ? expected : expected.tokens;
   }
@@ -1129,9 +1169,8 @@ function standingBox(box: string, check: RouteCheck): RouteCheckResult {
  * @param row The route tool's recommended row.
  * @param box The tool route, as the box reads it.
  * @param check The filed plan, its classification, the clearance it was given, and the data.
- * @returns The amendment on the tool route, the box graded correct beside it, and the amendment it
- *   replaced, which the engine reads for a paired route box; neither of the last two where the
- *   replaced proposal files an element the flight cannot fly.
+ * @returns The amendment on the tool route, and the box graded correct beside it, which is absent
+ *   where the replaced proposal files an element the flight cannot fly.
  */
 function replaced(
   outcome: RouteAmendment,
@@ -1139,8 +1178,8 @@ function replaced(
   box: string,
   check: RouteCheck,
 ): RouteCheckResult {
-  const { ctx } = check;
-  const tool = `, and the ZOA route tool's route for a ${CLASS_WORDS[ctx.tecClass]} in ${ctx.plan} is ${box}`;
+  const { ctx, airport } = check;
+  const tool = `, and the ZOA route tool's route for a ${classWords(ctx.tecClass, airport)} in ${ctx.plan} is ${box}`;
   const also = flyable(outcome.proposed, check) ? outcome.proposed : undefined;
   const amended: RouteAmendment = {
     ...outcome,
@@ -1151,8 +1190,7 @@ function replaced(
         : `${outcome.reason}${tool}; ${also} is correct too`,
     citations: [...outcome.citations, citeTec(row)],
   };
-  if (also === undefined) return { outcome: amended };
-  return { outcome: amended, alsoCorrect: also, unrecommended: outcome };
+  return also === undefined ? { outcome: amended } : { outcome: amended, alsoCorrect: also };
 }
 
 /**
@@ -1160,8 +1198,8 @@ function replaced(
  *
  * @param outcome The outcome the SOP, the TEC table and the arrival sheet ask for.
  * @param check The filed plan, its classification, the clearance it was given, and the data.
- * @returns The outcome, amended to the tool route where the box has to be amended anyway, with the
- *   box graded correct beside the expected one; the outcome alone where no recommendation applies,
+ * @returns The outcome, amended to the tool route where the box has to be amended anyway and the
+ *   flight can fly the tool route, with the box graded correct beside the expected one; the outcome alone where no recommendation applies,
  *   which is also the case wherever an obligatory row routes the flight.
  */
 function withRecommendation(
@@ -1176,7 +1214,7 @@ function withRecommendation(
   if (isUnresolved(tokens)) return { outcome };
   const box = tokens.join(' ');
   if (outcome === undefined) return standingBox(box, check);
-  if (!replaceable(outcome) || outcome.proposed === box) return { outcome };
+  if (!replaceable(outcome) || outcome.proposed === box || !flyable(box, check)) return { outcome };
   return replaced(outcome, row, box, check);
 }
 
@@ -1274,7 +1312,7 @@ function procedureOutcome(
   return {
     box: 'route',
     proposed: expected.tokens.join(' '),
-    reason: routeReason(filed, expected, scenario, ctx, assigned),
+    reason: routeReason(filed, expected, assigned, check),
     citations: [
       ...clearance.procedure.citations,
       ...structureCitations(expected, airport),
