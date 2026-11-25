@@ -1,17 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import koakJson from '@data/koak.json';
-import type { AirportData, Scenario } from '@/data/schema.ts';
+import type { AirportData, Scenario, TecRoute } from '@/data/schema.ts';
 import { sidOf } from '@/data/sidOf.ts';
 import type { RouteCheckResult } from '@/rules/amend/route.ts';
+import { resolveAmendments } from '@/rules/amend/engine.ts';
 import { checkRouteWithAlternative } from '@/rules/amend/route.ts';
+import type { AmendmentResult } from '@/rules/amend/types.ts';
+import type { Handling } from '@/rules/classify.ts';
 import { classify } from '@/rules/classify.ts';
 import { resolveClearance } from '@/rules/engine.ts';
+import { recommendedToolRoute } from '@/rules/tecRoutes.ts';
 import { isUnresolved } from '@/rules/unresolved.ts';
 
 const koak = koakJson as unknown as AirportData;
 const nimi = sidOf(koak, 'NIMI').id;
 const oak = sidOf(koak, 'OAK').id;
 const quake = sidOf(koak, 'QUAKE').id;
+const hussh = sidOf(koak, 'HUSSH').id;
 
 /** QXE416, a DH8D that ZOA CPS-004 3.1 proposes the jet rows to, bound for KAPC off 30 in SFOW. */
 const QXE416: Scenario = {
@@ -44,10 +49,10 @@ const N471RY: Scenario = {
 };
 
 /** The route box check, with the box graded correct beside the expected one. */
-function checked(flight: Scenario): RouteCheckResult {
-  const ctx = classify(flight, koak, 'proposed');
+function checked(flight: Scenario, handling: Handling = 'proposed'): RouteCheckResult {
+  const ctx = classify(flight, koak, handling);
   if (isUnresolved(ctx)) throw new Error(ctx.reason);
-  const result = resolveClearance(flight, koak, 'proposed');
+  const result = resolveClearance(flight, koak, handling);
   if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
   return checkRouteWithAlternative(flight, ctx, result.clearance, koak);
 }
@@ -105,6 +110,66 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     expect(check.alsoCorrect).toBe(previous);
   });
 
+  it('reads a tool row that begins on a family as written for a flight cleared on a heading', () => {
+    const flight: Scenario = {
+      ...QXE416,
+      runwayConfigId: 'SFOE',
+      departureRunway: '10R',
+      filedRoute: `${nimi} OAK V195 CROIT V108 SGD`,
+    };
+    const amendment = routeAmendment(checked(flight));
+    expect(amendment.proposed).toBe(`${oak} OAK ALTAM V334 OAKEY V108 SGD`);
+    const again = resolveAmendments(
+      { ...flight, filedRoute: amendment.proposed },
+      koak,
+      'proposed',
+    );
+    if (!again.ok) throw new Error(again.unresolved.map((item) => item.reason).join('; '));
+    expect(again.amendments.filter((item) => item.box === 'route')).toEqual([]);
+  });
+
+  it('keeps the family a tool row begins on for a flight the SOP clears on a heading', () => {
+    const tecRoutes = koak.tecRoutes.map((row) =>
+      row.id === 'TOOL-KAPC-SFOE-TP'
+        ? {
+            id: row.id,
+            kind: row.kind,
+            destination: row.destination,
+            plan: row.plan,
+            runwayFamilies: row.runwayFamilies,
+            classes: row.classes,
+            source: row.source,
+            route: 'OAK# OAK ALTAM V334 OAKEY V108 SGD',
+          }
+        : row,
+    );
+    const airport: AirportData = { ...koak, tecRoutes };
+    const flight: Scenario = {
+      ...QXE416,
+      aircraftType: 'BE20',
+      equipmentSuffix: '/A',
+      runwayConfigId: 'SFOE',
+      departureRunway: '10R',
+    };
+    const ctx = classify(flight, airport, 'proposed');
+    if (isUnresolved(ctx)) throw new Error(ctx.reason);
+    expect(recommendedToolRoute(ctx, flight, airport)?.id).toBe('TOOL-KAPC-SFOE-TP');
+    const cleared = resolveClearance(flight, airport, 'proposed');
+    if (!cleared.ok) throw new Error(cleared.unresolved.map((item) => item.reason).join('; '));
+    expect(cleared.clearance.procedure.value.kind).toBe('heading');
+    const check = checkRouteWithAlternative(flight, ctx, cleared.clearance, airport);
+    expect(routeAmendment(check).proposed).toBe(`${oak} OAK ALTAM V334 OAKEY V108 SGD`);
+    expect(check.alsoCorrect).toBe('OAK V195 CROIT V108 SGD');
+  });
+
+  it('keys a KOAK DH8D to the jet rows under the accepted handling too', () => {
+    const check = checked({ ...QXE416, filedRoute: `${nimi} OAK SAU` }, 'accepted');
+    const amendment = routeAmendment(check);
+    expect(amendment.proposed).toBe(`${oak} OAK SAU`);
+    expect(amendment.reason).not.toContain('route tool');
+    expect(check.alsoCorrect).toBeUndefined();
+  });
+
   it('leaves a warning amendment for the vector navaid untouched', () => {
     const flight: Scenario = {
       ...QXE416,
@@ -119,5 +184,79 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     expect(amendment.proposed).toBe(`${oak} OAK SGD`);
     expect(amendment.reason).not.toContain('route tool');
     expect(check.alsoCorrect).toBeUndefined();
+  });
+});
+
+/** The boxes the reasons of a result say are correct too, which grading must accept. */
+function promisedBoxes(result: AmendmentResult): string[] {
+  if (!result.ok) return [];
+  return result.amendments.flatMap((amendment) => {
+    const promised = /; ([^;]+) is correct too$/.exec(amendment.reason)?.[1];
+    return promised === undefined ? [] : [promised];
+  });
+}
+
+describe('resolveAmendments on a recommended route tool row', () => {
+  it('keeps the route box of the RNAV pair on the proposal grading accepts', () => {
+    const flight: Scenario = {
+      ...QXE416,
+      aircraftType: 'B738',
+      equipmentSuffix: '/A',
+      filedRoute: `${hussh} SYRAH`,
+      localTime: '2300',
+    };
+    const result = resolveAmendments(flight, koak, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    const also = result.routeAlsoCorrect;
+    expect(promisedBoxes(result).filter((box) => box !== also)).toEqual([]);
+    expect(
+      result.amendments.map((item) => [
+        item.box,
+        item.alternativeTo,
+        item.box === 'altitude' ? item.proposedFeet : item.proposed,
+      ]),
+    ).toEqual([
+      ['type', 'route', 'B738/L'],
+      ['route', 'type', `${oak} OAK SAU`],
+    ]);
+    expect(also).toBeUndefined();
+  });
+
+  it('answers a route an /A cannot fly with the tool route, leaving the type box as filed', () => {
+    const flight: Scenario = {
+      ...N471RY,
+      equipmentSuffix: '/A',
+      filedRoute: `${quake} OAK SYRAH SGD`,
+    };
+    const result = resolveAmendments(flight, koak, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    expect(result.amendments.map((item) => item.box)).toEqual(['route']);
+    const route = result.amendments[0];
+    expect(route?.box === 'route' ? route.proposed : undefined).toBe(`${nimi} OAK SAU`);
+    expect(result.routeAlsoCorrect).toBeUndefined();
+    expect(promisedBoxes(result)).toEqual([]);
+  });
+
+  it('lets an obligatory row keyed for the flight win over a recommended one', () => {
+    const obligatory: TecRoute = {
+      id: 'TOOL-KAPC-SFOW-J-5000',
+      kind: 'tool',
+      destination: 'KAPC',
+      plan: 'SFOW',
+      runwayFamilies: [],
+      classes: ['J'],
+      route: 'OAK# OAK V195 CROIT V108 SGD',
+      finalAltitudeFeet: 5000,
+      source: 'hand-built row for the test',
+    };
+    const airport: AirportData = { ...koak, tecRoutes: [...koak.tecRoutes, obligatory] };
+    const result = resolveAmendments(QXE416, airport, 'proposed');
+    if (!result.ok) throw new Error(result.unresolved.map((item) => item.reason).join('; '));
+    const route = result.amendments.find((item) => item.box === 'route');
+    expect(route?.box === 'route' ? route.proposed : undefined).toBe(
+      `${oak} OAK V195 CROIT V108 SGD`,
+    );
+    expect(route?.reason).not.toContain('correct too');
+    expect(result.routeAlsoCorrect).toBeUndefined();
   });
 });

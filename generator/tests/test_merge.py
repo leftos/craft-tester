@@ -604,6 +604,12 @@ def test_a_tool_row_to_a_field_inside_nct_fails_the_build(ksfo_build_inputs: Bui
         build_airport(inputs)
 
 
+def test_a_tool_row_to_a_field_the_route_library_does_not_hold_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_tec_destination(ksfo_build_inputs, "TOOL-KAPC-SFOW", "KZZZ")
+    with pytest.raises(ValueError, match=r"tec.yaml routes\[TOOL-KAPC-SFOW\]: destination KZZZ is not in routes.yaml destinations"):
+        build_airport(inputs)
+
+
 def test_a_tool_row_is_kept_for_a_field_outside_nct(ksfo_document: Document) -> None:
     rows = {row["id"]: row for row in ksfo_document["tecRoutes"]}
     assert rows["TOOL-KAPC-SFOW"]["kind"] == "tool"

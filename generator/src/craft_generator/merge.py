@@ -1277,10 +1277,13 @@ def _tec_destination_error(row: Document, inside_nct: bool) -> str | None:
 def _check_tec_destinations_inside_nct(document: Document) -> None:
     """Check that every TEC route is issued to a destination inside NCT, and every tool row to one outside it.
 
+    A TEC or tool row whose destination the route library does not hold fails first, since whether it lies inside NCT cannot be read.
     An ADR row is not checked: it is a departure route to a field outside the terminal area by definition, and the same file carries every kind.
     """
     inside = {row["icao"]: row["nct"] for row in document["routeLibrary"]["destinations"]}
     for row in document["tecRoutes"]:
+        if row["kind"] in ("tec", "tool") and str(row["destination"]) not in inside:
+            raise ValueError(f"tec.yaml routes[{row['id']}]: destination {row['destination']} is not in routes.yaml destinations")
         error = _tec_destination_error(row, inside.get(str(row["destination"])) is True)
         if error is not None:
             raise ValueError(error)

@@ -375,10 +375,16 @@ describe('usableTecRoute for a type ZOA CPS-004 3.1 handles as another class', (
     expect(row?.route).toBe('OAK# OAK FEVTA FEVTA1');
   });
 
-  it.each(['DH8D', 'C510'])('accepts a %s on the turboprop row', (aircraftType) => {
-    const row = koakKsmfRow(aircraftType, 'accepted');
+  it('accepts a C510 on the turboprop row', () => {
+    const row = koakKsmfRow('C510', 'accepted');
     expect(row?.id).toBe('TEC-KSMF-SFOW-T');
     expect(row?.route).toBe('NIMI# OAK V6 SAC');
+  });
+
+  it('keeps a DH8D, which the KOAK SOP names among its jets, on the jet row when accepted', () => {
+    const row = koakKsmfRow('DH8D', 'accepted');
+    expect(row?.id).toBe('TEC-KSMF-SFOW-J');
+    expect(row?.route).toBe('OAK# OAK FEVTA FEVTA1');
   });
 
   it('routes a B738, which the table does not list, on the jet row under either handling', () => {

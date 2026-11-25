@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import koakJson from '@data/koak.json';
 import ksfoJson from '@data/ksfo.json';
 import type { AirportData, Scenario } from '@/data/schema.ts';
@@ -293,12 +293,16 @@ function noDpSeed(): number {
   throw new Error(`no KOAK clearance seed up to ${NO_DP_SEEDS} is cleared off on heading 270`);
 }
 
-/** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
-const NO_DP_SEED = noDpSeed();
-
 describe('the procedure row of a clearance-mode strip', () => {
+  /** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
+  let noDpSeedValue = 0;
+
+  beforeAll(() => {
+    noDpSeedValue = noDpSeed();
+  });
+
   it('has the student pick the heading of a clearance with no DP', () => {
-    const drawn = koakClearance(NO_DP_SEED);
+    const drawn = koakClearance(noDpSeedValue);
     expect(drawn.clearance.procedure.value).toMatchObject({ kind: 'heading', heading: 270 });
     const procedure = clearanceProcedureRow(drawn.clearance);
     expect(procedure).toBe('picked');
@@ -326,7 +330,7 @@ describe('the procedure row of a clearance-mode strip', () => {
   });
 
   it('holds the no-DP form back until the procedure is picked', () => {
-    const procedure = clearanceProcedureRow(koakClearance(NO_DP_SEED).clearance);
+    const procedure = clearanceProcedureRow(koakClearance(noDpSeedValue).clearance);
     expect(submitDisabled({ ...full, procedure: undefined }, procedure, true)).toBe(true);
     expect(submitDisabled({ ...full, procedure: headingPick(270) }, procedure, true)).toBe(false);
   });

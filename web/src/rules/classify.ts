@@ -22,7 +22,11 @@ export type Handling = 'proposed' | 'accepted';
 export type Classification = {
   /** The type's real class, from `aircraftClasses`. */
   aircraftClass: AircraftClass;
-  /** The class the ZOA-wide TEC rows are keyed by: the handling class for a type CPS-004 3.1 lists. */
+  /**
+   * The class the ZOA-wide TEC and route tool rows are keyed by: the handling class for a type CPS-004
+   * 3.1 lists. A type the airport's SOP names in its aircraft groups (`localSop`) reads as the class
+   * CPS-004 3.1 proposes for it, under either handling, as it does in the SOP tables.
+   */
   tecClass: AircraftClass;
   /**
    * The class the airport's SOP and LOA rows are keyed by. A type the airport's SOP names in its aircraft
@@ -169,9 +173,9 @@ function activeNoticeIds(scenario: Scenario, airport: AirportData): string[] {
  *
  * A type CPS-004 3.1 does not list reads as its real class everywhere. A listed type is proposed its
  * `proposeClass` on the TEC rows; under the accepted handling the TEC rows read its `acceptClass`. A type
- * the airport's SOP names in its aircraft groups (`localSop`) is read in the SOP tables as the class
- * CPS-004 3.1 proposes for it, under either handling. Any other listed type keeps its real class on the
- * SOP rows when proposed, and reads its `acceptClass` there when accepted.
+ * the airport's SOP names in its aircraft groups (`localSop`) is read on both the TEC rows and the SOP
+ * tables as the class CPS-004 3.1 proposes for it, under either handling. Any other listed type keeps
+ * its real class on the SOP rows when proposed, and reads its `acceptClass` there when accepted.
  *
  * @param aircraftClass The type's real class.
  * @param fleet The fleet row for the type, `undefined` where the fleet does not list it.
@@ -194,9 +198,10 @@ function handledClasses(
       handlingRule: special.ruleId,
     };
   }
+  const accepted = special.localSop ? special.proposeClass : special.acceptClass;
   return {
-    tecClass: special.acceptClass,
-    sopClass: special.localSop ? special.proposeClass : special.acceptClass,
+    tecClass: accepted,
+    sopClass: accepted,
     handlingRule: special.ruleId,
   };
 }

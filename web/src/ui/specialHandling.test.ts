@@ -98,11 +98,18 @@ function gradeClearance(plan: Scenario, picks: PlayerPicks) {
 }
 
 describe('clearance mode for a type ZOA CPS-004 3.1 hands special handling', () => {
-  const plan = ksmfPlan({});
+  const plan = ksmfPlan({ callsign: 'EJA510', aircraftType: 'C510' });
   const jet = proposedClearance(plan);
   const turboprop = acceptedClearance(plan, koak);
 
-  it('resolves the DH8D on the jet TEC row, and on the turboprop row under the accepted handling', () => {
+  it('gives a KOAK DH8D, which the SOP names among its jets, the same clearance under both handlings', () => {
+    const dash8 = ksmfPlan({});
+    const accepted = resolveClearance(dash8, koak, 'accepted');
+    if (!accepted.ok) throw new Error(accepted.unresolved.map((item) => item.reason).join('; '));
+    expect(accepted.clearance).toStrictEqual(proposedClearance(dash8));
+  });
+
+  it('resolves the C510 on the jet TEC row, and on the turboprop row under the accepted handling', () => {
     expect(jet.altitude.value.feet).toBe(10000);
     expect(turboprop?.altitude.value.feet).toBe(3000);
   });
@@ -115,7 +122,7 @@ describe('clearance mode for a type ZOA CPS-004 3.1 hands special handling', () 
   });
 
   it('grades the turboprop reading right, citing the special handling', () => {
-    if (turboprop === null) throw new Error('the DH8D has no accepted clearance');
+    if (turboprop === null) throw new Error('the C510 has no accepted clearance');
     const best = gradeClearance(plan, picksFor(turboprop));
     expect(best.handling).toBe('accepted');
     expect(best.resolved).toStrictEqual(turboprop);
@@ -124,7 +131,7 @@ describe('clearance mode for a type ZOA CPS-004 3.1 hands special handling', () 
   });
 
   it('reads the filed route under both handlings, so the readings part on the altitude alone', () => {
-    if (turboprop === null) throw new Error('the DH8D has no accepted clearance');
+    if (turboprop === null) throw new Error('the C510 has no accepted clearance');
     const { altitudePhrase: _jetPhrase, altitudeFeet: _jetFeet, ...jetRest } = picksFor(jet);
     const { altitudePhrase: _phrase, altitudeFeet: _feet, ...turbopropRest } = picksFor(turboprop);
     expect(turbopropRest).toStrictEqual(jetRest);
@@ -133,7 +140,7 @@ describe('clearance mode for a type ZOA CPS-004 3.1 hands special handling', () 
   });
 
   it('grades the jet altitude phrase with the turboprop altitude wrong under both handlings', () => {
-    if (turboprop === null) throw new Error('the DH8D has no accepted clearance');
+    if (turboprop === null) throw new Error('the C510 has no accepted clearance');
     const mixed: PlayerPicks = { ...picksFor(jet), altitudeFeet: 3000 };
     const best = gradeClearance(plan, mixed);
     expect(best.handling).toBe('proposed');

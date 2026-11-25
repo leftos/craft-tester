@@ -78224,7 +78224,7 @@
     {
       "id": "RWY-TEC",
       "source": "instructor ruling (a TEC route overrides the SOP)",
-      "text": "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
+      "text": "A flight whose TEC or obligatory tool route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
     },
     {
       "id": "RWY-FIRST",

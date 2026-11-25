@@ -6,7 +6,9 @@ import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { ResolvedAmendment } from '@/rules/amend/types.ts';
 import { isSidToken, rnavElements } from '@/rules/route.ts';
-import { isObligatory } from '@/rules/tecRoutes.ts';
+import { classify } from '@/rules/classify.ts';
+import { isObligatory, usableTecRoute } from '@/rules/tecRoutes.ts';
+import { isUnresolved } from '@/rules/unresolved.ts';
 import type { AmendmentScenario, FaultKind } from '@/scenario/amend.ts';
 import {
   FAULT_BOXES,
@@ -45,6 +47,16 @@ const headingDrawn = HEADING_SEEDS.map((seed) =>
 
 /** Every fault kind, read back from the box table the module exports. */
 const FAULT_KINDS = Object.keys(FAULT_BOXES) as FaultKind[];
+
+/** The seeds a KOAK draw to a route tool destination is searched over. */
+const TOOL_DRAW_SEEDS = Array.from({ length: 1500 }, (_value, index) => index + 1);
+
+/** Whether an obligatory row, a TEC row or a tool row that states an altitude, routes the plan. */
+function routedByObligatoryRow(flight: Scenario): boolean {
+  const ctx = classify(flight, koak, 'proposed');
+  if (isUnresolved(ctx)) throw new Error(ctx.reason);
+  return usableTecRoute(ctx, flight, koak) !== undefined;
+}
 
 /** One line naming a draw, for a failing assertion to point at. */
 function label(entry: AmendmentScenario): string {
@@ -289,6 +301,29 @@ describe('fault injection', () => {
       filedTail.some((row) => row.destination !== 'KCCR'),
       label(entry),
     ).toBe(true);
+  });
+
+  it.each(['KSTS', 'KAPC'])(
+    "plants another destination's route only on a %s flight an obligatory row routes",
+    (destination) => {
+      const filter: ScenarioFilter = { ...ANY_SCENARIO, destination };
+      const planted = TOOL_DRAW_SEEDS.map((seed) =>
+        drawAmendmentScenario(createRng(seed), koak, filter),
+      ).filter(
+        (row): row is AmendmentScenario =>
+          !('rejected' in row) && row.faults.includes('wrong_tec_route'),
+      );
+      expect(planted.length).toBeGreaterThan(0);
+      const strays = planted.filter((row) => !routedByObligatoryRow(row.result.corrected));
+      expect(strays.map(label)).toEqual([]);
+    },
+  );
+
+  it("plants no other destination's route on the seed 11 KSTS draw the route tool only advises", () => {
+    const filter: ScenarioFilter = { ...ANY_SCENARIO, destination: 'KSTS' };
+    const drawn = drawAmendmentScenario(createRng(11), koak, filter);
+    const faults = 'rejected' in drawn ? [] : drawn.faults;
+    expect(faults).not.toContain('wrong_tec_route');
   });
 
   it('files a route with the transition after the procedure dropped', () => {

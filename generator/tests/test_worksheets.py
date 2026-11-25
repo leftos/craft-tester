@@ -553,7 +553,7 @@ def test_tec_route_moves_a_tbm9_to_ksmf_off_its_class_default_28r_to_01r(by_titl
     assert choice.tec_move == TecMove(from_runway="28R", route_id="TEC-KSMF-SFOW-J", head="TRUKN#")
     fixture = fixture_for(by_title["Phraseology Practice 2"], row, 0, icao="KSFO", runway=choice, type_aliases={})
     assert fixture["source"]["note"].endswith(
-        "so this is 01R, moved there from 28R because its TEC route TEC-KSMF-SFOW-J departs TRUKN# from it and not from 28R "
+        "so this is 01R, moved there from 28R because its TEC or obligatory tool route TEC-KSMF-SFOW-J departs TRUKN# from it and not from 28R "
         "(RWY-TEC, user ruling 2026-09-18), pending validation"
     )
 

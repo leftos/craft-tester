@@ -487,7 +487,7 @@ phraseology_rules:
     text: "On the 28s the parallel follows where the aircraft is parked: 28L from south of 28L, 28R from north of 28R. The strip does not say where the flight is parked, so either parallel is right; 28L is the one the trainer reads"
   - id: RWY-TEC
     source: "instructor ruling (a TEC route overrides the SOP)"
-    text: "A flight whose TEC route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
+    text: "A flight whose TEC or obligatory tool route's departure is not in use from the runway it would otherwise take departs a runway of this configuration it is in use from"
   - id: RWY-FIRST
     source: "SFO ATCT SOP 1-7"
     text: "The configuration departs a single runway of this family for this aircraft class, so that runway is issued"

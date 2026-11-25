@@ -824,15 +824,15 @@ const somePicks: PlayerPicks = {
 
 describe('the procedure pick of a clearance with no DP', () => {
   /** A KOAK clearance-mode strip the SOP clears off on heading 270 with no DP. */
-  let NO_DP_SEED = 0;
+  let noDpSeedValue = 0;
 
   beforeAll(async () => {
-    NO_DP_SEED = await noDpSeed();
+    noDpSeedValue = await noDpSeed();
   });
 
   it('grades the heading the clearance names correct and a SID wrong, ahead of the route', async () => {
     const airport = await loadAirportData('KOAK');
-    const clearance = await koakClearance(NO_DP_SEED);
+    const clearance = await koakClearance(noDpSeedValue);
     const sid = airport.sids[0]?.id ?? '';
     const right = clearancePickGrades(
       { ...somePicks, procedure: headingPick(270) },
@@ -862,7 +862,7 @@ describe('the procedure pick of a clearance with no DP', () => {
 
   it('grades an attempt stored without a procedure pick as a wrong procedure', async () => {
     const airport = await loadAirportData('KOAK');
-    const clearance = await koakClearance(NO_DP_SEED);
+    const clearance = await koakClearance(noDpSeedValue);
     const grades = clearancePickGrades(
       somePicks,
       clearance,
@@ -889,7 +889,7 @@ describe('the procedure pick of a clearance with no DP', () => {
 
   it('drops the runway grade from a strip that does not grade the runway', async () => {
     const airport = await loadAirportData('KOAK');
-    for (const seed of [NO_DP_SEED, SID_SEED]) {
+    for (const seed of [noDpSeedValue, SID_SEED]) {
       const clearance = await koakClearance(seed);
       const picks = { ...somePicks, procedure: headingPick(270) };
       const procedurePicked = picksProcedure(clearance);
@@ -906,7 +906,7 @@ describe('the procedure pick of a clearance with no DP', () => {
     globalThis.localStorage.clear();
     const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
     const root = await mountHash(
-      hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false, gradeRunway: true }),
+      hashFor('KOAK', noDpSeedValue, { ...settings, fullRoute: false, gradeRunway: true }),
     );
     const labels = [
       'route phrase',
@@ -935,12 +935,12 @@ describe('the procedure pick of a clearance with no DP', () => {
   it('shows an attempt stored without the procedure back with the procedure graded wrong', async () => {
     globalThis.localStorage.clear();
     globalThis.localStorage.setItem(
-      `craft-tester:solved:KOAK:${String(NO_DP_SEED)}`,
+      `craft-tester:solved:KOAK:${String(noDpSeedValue)}`,
       JSON.stringify(somePicks),
     );
     const settings = { filter: ANY_SCENARIO, mode: 'clearance', input: 'dropdowns' } as const;
     const root = await mountHash(
-      hashFor('KOAK', NO_DP_SEED, { ...settings, fullRoute: false, gradeRunway: true }),
+      hashFor('KOAK', noDpSeedValue, { ...settings, fullRoute: false, gradeRunway: true }),
     );
 
     const verdicts = [...root.querySelectorAll('.verdict')];

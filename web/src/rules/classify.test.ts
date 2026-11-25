@@ -125,7 +125,7 @@ describe('classify under ZOA CPS-004 3.1 special handling', () => {
 
   it.each([
     ['KOAK', 'DH8D', 'proposed', 'T', 'J', 'J', RULE],
-    ['KOAK', 'DH8D', 'accepted', 'T', 'T', 'J', RULE],
+    ['KOAK', 'DH8D', 'accepted', 'T', 'J', 'J', RULE],
     ['KSFO', 'C510', 'proposed', 'J', 'J', 'J', RULE],
     ['KSFO', 'C510', 'accepted', 'J', 'T', 'T', RULE],
     ['KOAK', 'C510', 'accepted', 'J', 'T', 'T', RULE],

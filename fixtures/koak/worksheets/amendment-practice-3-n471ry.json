@@ -33,7 +33,7 @@
   },
   "source": {
     "kind": "worksheet",
-    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-17: no SID filed; NIMI6 OAK SGD"
+    "note": "Amendment Practice 3; the sheet states no departure runway, so this is 28R, the runway configuration SFOW defaults class P to it (default_for_classes), pending validation; validated by the user 2026-09-17: no SID filed; NIMI6 OAK SGD; moved to the route tool's recommended route by the user 2026-11-24"
   },
   "status": "settled"
 }

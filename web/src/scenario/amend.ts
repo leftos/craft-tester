@@ -1,12 +1,14 @@
-import type { AirportData, Destination, Scenario, Sid } from '@/data/schema.ts';
+import type { AirportData, Scenario, Sid } from '@/data/schema.ts';
 import { RVSM_CEILING_FEET, RVSM_FLOOR_FEET, parityFloorFeet } from '@/rules/amend/altitude.ts';
 import { resolveAmendments } from '@/rules/amend/engine.ts';
 import type { Box } from '@/rules/amend/grade.ts';
 import type { AmendmentResult } from '@/rules/amend/types.ts';
+import { classify } from '@/rules/classify.ts';
 import { hasSpecialHandling } from '@/rules/handling.ts';
 import type { Unresolved } from '@/rules/types.ts';
 import { isSidToken, rnavElements } from '@/rules/route.ts';
-import { isObligatory } from '@/rules/tecRoutes.ts';
+import { usableTecRoute } from '@/rules/tecRoutes.ts';
+import { isUnresolved } from '@/rules/unresolved.ts';
 import type { ScenarioFilter } from '@/scenario/filter.ts';
 import { generateScenario } from '@/scenario/generate.ts';
 import type { Rng, Weighted } from '@/scenario/rng.ts';
@@ -169,11 +171,6 @@ function suffixRow(scenario: Scenario, airport: AirportData) {
   return airport.equipmentSuffixes.find((row) => row.suffix === scenario.equipmentSuffix);
 }
 
-/** The route library's row for the filed destination, where it holds one. */
-function destinationOf(scenario: Scenario, airport: AirportData): Destination | undefined {
-  return airport.routeLibrary.destinations.find((row) => row.icao === scenario.destination);
-}
-
 /** The filed procedure one version behind the one in force, e.g. `TRUKN2` filed as `TRUKN1`. */
 function staleSid(scenario: Scenario): FaultPatch | undefined {
   const head = headOf(scenario);
@@ -201,18 +198,17 @@ function noSid(scenario: Scenario): FaultPatch | undefined {
 
 /**
  * Another destination's route, for a flight an obligatory row (a TEC route, or a tool row that states
- * an altitude) carries on a published one of its own.
+ * an altitude) keyed for it and usable by it carries on a published one of its own. The flight is
+ * read under the proposed handling, the one the drill is graded under, so a destination whose rows
+ * for this flight only recommend a route takes no such fault.
  *
  * A tail the flight's own destination files is not another destination's route however it is
  * labelled: two TRACON destinations down the same corridor are filed over the same fixes, and
  * writing Watsonville's `EUGEN` into a Monterey plan would leave the plan correct as filed.
  */
 function wrongTecRoute(scenario: Scenario, airport: AirportData, rng: Rng): FaultPatch | undefined {
-  const destination = destinationOf(scenario, airport);
-  if (destination === undefined) return undefined;
-  const routed = airport.tecRoutes.some(
-    (row) => isObligatory(row) && row.destination === destination.icao,
-  );
+  const ctx = classify(scenario, airport, 'proposed');
+  if (isUnresolved(ctx) || usableTecRoute(ctx, scenario, airport) === undefined) return undefined;
   const ownTails = new Set(
     airport.routeLibrary.routes
       .filter((row) => row.destination === scenario.destination)
@@ -221,7 +217,7 @@ function wrongTecRoute(scenario: Scenario, airport: AirportData, rng: Rng): Faul
   const others = airport.routeLibrary.routes.filter(
     (row) => row.destination !== scenario.destination && !ownTails.has(row.tail),
   );
-  if (!routed || others.length === 0) return undefined;
+  if (others.length === 0) return undefined;
   const head = headOf(scenario);
   const tail = rng.pick(others).tail;
   return { field: 'filedRoute', route: head === undefined ? tail : `${head} ${tail}` };

@@ -943,7 +943,7 @@ def departure_runway(
     about, fall back to the first departure runway the configuration publishes; so does a plan whose
     designator the vNAS specs do not cover, which has neither class nor wake category.
 
-    The plan's TEC route then has the last word (user ruling 2026-09-18, "TEC moves them too"), as
+    The plan's TEC or obligatory tool route then has the last word (user ruling 2026-09-18, "TEC moves them too"), as
     it has in the web draw. A plan a ``tec`` row is usable for off the runway chosen keeps it.
     Otherwise it moves to the first other runway of the configuration listed for its class, and not
     on request for it, that a row is usable off: the chosen runway's family first, then the rest in
@@ -1002,7 +1002,7 @@ def _chose_the_runway(choice: RunwayChoice) -> str:
     if choice.tec_move is not None:
         move = choice.tec_move
         return (
-            f", moved there from {move.from_runway} because its TEC route {move.route_id} departs {move.head} from it "
+            f", moved there from {move.from_runway} because its TEC or obligatory tool route {move.route_id} departs {move.head} from it "
             f"and not from {move.from_runway} (RWY-TEC, user ruling 2026-09-18)"
         )
     if choice.on_request is not None:

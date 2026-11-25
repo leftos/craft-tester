@@ -174,7 +174,7 @@ ZOA CPS-004 §3.1 lists five types whose performance differs from their engine c
   - `merge.py` writes `handling { proposeClass, acceptClass, ruleId, localSop }` on the fleet entry and appends the row to `phraseologyRules`.
   - `localSop` is true when the airport's `aircraftGroups` names the type (KOAK's `jets_and_dh8d`), meaning its SOP defines that type itself.
 - **Handling.** `classify(scenario, airport, handling)` takes `'proposed'` or `'accepted'` and sets two classes:
-  - `tecClass` keys TEC rows. They are ZOA-wide, so §3.1 always applies to them.
+  - `tecClass` keys TEC and tool rows. They are ZOA-wide, so §3.1 applies to them, except where `localSop` is true: the airport's SOP then defines the type, so `tecClass` is `proposeClass` under both handlings (a KOAK DH8D keys the jet rows either way).
   - `sopClass` keys assignment, altitude, runway-explanation, LOA and common-arrival rows. Where `localSop` is true it is `proposeClass` under both handlings, so a KOAK DH8D reads as J in every SOP table; otherwise it changes only under `'accepted'`.
   - `aircraftClass` stays the engine class. The scenario draw uses it, except the TEC runway move, which uses the proposed `tecClass`.
 - **Grading.** A special type is resolved under both handlings, and the answer is graded against each as a whole, so a jet route with a turboprop altitude is not right. The result with more right elements wins and ties go to the proposal (`rules/handling.ts`). Every grade that differs between the two resolutions cites `ZOA-CPS004-SPECIAL-AIRCRAFT` when the accepted handling wins.
