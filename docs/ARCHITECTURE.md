@@ -155,6 +155,15 @@ still win.
   family come first. This move outranks every default, and `RWY-TEC` explains it.
 - **Altitude.** The flight is flown at the TEC final altitude exactly, parity aside. A row's initial
   altitude decides the A element when the row's head is the procedure issued.
+- **Tool rows** (`kind: tool`, ids `TOOL-<dest>-<plan>[-<classes>]`). The route tool also prints rows for a field outside NorCal TRACON (KAPC, KSTS, KCCR), which an NCT-only `tec` row cannot hold. The build requires a `tec` row's destination inside NCT and a `tool` row's outside it (`_check_tec_destinations_inside_nct`, `merge.py`).
+  - **Obligatory** (`isObligatory`, `rules/tecRoutes.ts`; `TecRoute.obligatory`, `sop/model.py`): every `tec` row, and a tool row that states an altitude. It is read exactly like a TEC row: the route and final altitude are required, the initial altitude is issued, the drill can plant a wrong-route fault, and the draw runway moves for it (`keyedFor`, `tecRunway`, the worksheet importer).
+    The route reason reads "<ICAO> is outside NorCal TRACON, but the ZOA route tool assigns a <class> in <plan> <route>"; the altitude reason says a facility-directed altitude is exempt from the odd/even rule.
+  - **Recommended** (`recommendedToolRoute`, beside `isObligatory`): a tool row with no altitude. Where the route box is amended anyway, the box proposes the tool route and the box the engine would otherwise have proposed is also graded correct; where the box stands as filed, writing the tool route is also correct.
+    The reason gains ", and the ZOA route tool's route for a <class> in <plan> is <tool box>; <previous proposal> is correct too".
+  - The other correct box lives in one place: `routeAlsoCorrect` on the amendment engine's ok result and on a fixture's expected amendments.
+  - Worked example (KOAK to KAPC). SFOW DH8D/L, runway 30, filed `QUAKE3 OAK V195 CROIT V108 SGD`: the proposal is `OAK7 OAK SAU` (the DH8D takes the jet row under CPS-004), with `NIMI7 OAK V195 CROIT V108 SGD` also correct.
+    Filed `NIMI7 OAK V195 CROIT V108 SGD`, it stands, with `OAK7 OAK SAU` also correct. SFOW SR22/G filed `SGD`: `NIMI6 OAK SAU`, with `NIMI6 OAK SGD` also correct. SFOE BE20/A filed `OAK V195 CROIT V108 SGD` at 4000 meets an obligatory row: `OAK ALTAM V334 OAKEY V108 SGD` at 5000. OAKE B738/L filed `SAU` at 4000 meets an obligatory row that agrees with the route: altitude 5000 only.
+  - Not tool rows: a `tec` row inside NCT is always obligatory, and an `adr` row stays advisory and unread.
 
 ### Special aircraft (CPS-004 §3.1)
 
@@ -386,6 +395,20 @@ Tests: `web/src/data/schema.test.ts`; `data/load.test.ts`; `data/checkedIn.test.
 | `web/src/rules/amend/<box>.ts` | the box's `check*` | the engine must detect the fault, or every draw carrying it is thrown away |
 
 Tests: `web/src/scenario/amend.test.ts` ("draws every fault kind across the seeds", a case under "fault injection", "amends exactly the boxes the injected faults meant"). Seed-searching helpers in `web/src/ui/app.test.ts` (`twoWayAmendment`) may land on other seeds.
+
+### Give a field outside NCT its route tool rows
+
+| file | symbol | why |
+|---|---|---|
+| `generator/airports/<icao>/tec.yaml` | `kind: tool` rows, ids `TOOL-<dest>-<plan>[-<classes>]` | the tool's rows as printed; an altitude makes the row obligatory, none makes it recommended |
+| `generator/airports/<icao>/routes.yaml` | `destinations` | the field must be a destination of the airport |
+| `generator/shared/destinations.yaml` | the destination's row | coordinates and name, shared by every airport |
+| `generator/src/craft_generator/merge.py` | `_check_tec_destinations_inside_nct` | no edit: a tool row's destination must be outside NCT |
+| `web/src/rules/tecRoutes.ts` | `isObligatory`, `recommendedToolRoute` | which tool rows the engine requires and which it only recommends |
+| `web/src/rules/amend/route.ts` | the route check's tool-row branch | proposes the tool route, words the reasons, and fills `routeAlsoCorrect` |
+| `web/src/rules/amend/grade.ts` | `gradeBoxes` | grades the `routeAlsoCorrect` box correct beside the expected one |
+
+Tests: `generator/tests/test_merge.py`; `web/src/rules/amend/recommended.test.ts`. Run `craft-gen build` for every airport, then `pnpm -C web test rules/fixtures`.
 
 ### Add a UI control or panel
 

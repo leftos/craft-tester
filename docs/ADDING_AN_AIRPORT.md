@@ -266,7 +266,7 @@ with the SID written as `FAMILY#` so an AIRAC bump does not stale it, the traili
 `initial_altitude_feet` / `final_altitude_feet` (the tool prints hundreds of feet as `initial/final`: `030/090`
 is 3,000 initial and 9,000 final; a single number, whether a blank final such as `100/` or a bare `060`, is the
 final altitude only and the row states no initial; a row printed with no altitude carries
-neither key), and `kind: adr` for assigned departure routes, which are advisory. The engine flies a TEC-routed
+neither key), `kind: adr` for assigned departure routes, which are advisory, and `kind: tool` for the tool's rows to a field outside NCT (the build requires a `tec` row's destination inside NCT and a `tool` row's outside it; a tool row that states an altitude is obligatory and read like a TEC row, one with none is recommended, ARCHITECTURE.md "TEC routes"). The engine flies a TEC-routed
 flight at the final altitude exactly, amending a filed altitude up or down to it with parity set aside; a row
 that states an initial altitude decides what the clearance climbs the flight to in place of the SOP altitude
 row, and a row without one leaves the SOP row in
@@ -410,7 +410,7 @@ and every airport inherits it.
 - `climbViaEligible` is computed, not transcribed: crossing restrictions **or** a published top altitude,
   and never for radar-vector or vector-hybrid SIDs. A SID with a published top and no restrictions
   (SNTNA2) is still climb-via.
-- Only TEC routes are obligatory, and only within contiguous NCT. AAR/ADR routes are advisory.
+- Only TEC routes and tool rows that state an altitude are obligatory. AAR/ADR routes are advisory, and a tool row with no altitude is a recommendation.
 - Operational notices arrive as chat messages, not documents. Record them as `notices` rows with the date
   and who relayed them.
 - Some SOP rows are unreachable as written (KSFO: the late-night southbound NIITE row names a transition
