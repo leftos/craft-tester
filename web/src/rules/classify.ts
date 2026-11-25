@@ -25,8 +25,10 @@ export type Classification = {
   /** The class the ZOA-wide TEC rows are keyed by: the handling class for a type CPS-004 3.1 lists. */
   tecClass: AircraftClass;
   /**
-   * The class the airport's SOP and LOA rows are keyed by: the real class, unless the flight is read
-   * under the accepted handling and the local SOP is silent on the type.
+   * The class the airport's SOP and LOA rows are keyed by. A type the airport's SOP names in its aircraft
+   * groups (`localSop`) is read in the SOP tables as the class CPS-004 3.1 proposes for it, under either
+   * handling. Any other type reads as its real class, unless it is read under the accepted handling, where
+   * it reads as its accepted class.
    */
   sopClass: AircraftClass;
   /** The `phraseologyRules` row of the type's special handling, `null` for a type it does not list. */
@@ -166,9 +168,10 @@ function activeNoticeIds(scenario: Scenario, airport: AirportData): string[] {
  * The classes the TEC rows and the SOP rows read a flight as, under a handling.
  *
  * A type CPS-004 3.1 does not list reads as its real class everywhere. A listed type is proposed its
- * `proposeClass` on the TEC rows, while the SOP rows keep its real class; under the accepted handling
- * the TEC rows read its `acceptClass`, and so do the SOP rows unless the local SOP defines the type
- * itself (`localSop`), in which case the SOP's own handling stands.
+ * `proposeClass` on the TEC rows; under the accepted handling the TEC rows read its `acceptClass`. A type
+ * the airport's SOP names in its aircraft groups (`localSop`) is read in the SOP tables as the class
+ * CPS-004 3.1 proposes for it, under either handling. Any other listed type keeps its real class on the
+ * SOP rows when proposed, and reads its `acceptClass` there when accepted.
  *
  * @param aircraftClass The type's real class.
  * @param fleet The fleet row for the type, `undefined` where the fleet does not list it.
@@ -187,13 +190,13 @@ function handledClasses(
   if (handling === 'proposed') {
     return {
       tecClass: special.proposeClass,
-      sopClass: aircraftClass,
+      sopClass: special.localSop ? special.proposeClass : aircraftClass,
       handlingRule: special.ruleId,
     };
   }
   return {
     tecClass: special.acceptClass,
-    sopClass: special.localSop ? aircraftClass : special.acceptClass,
+    sopClass: special.localSop ? special.proposeClass : special.acceptClass,
     handlingRule: special.ruleId,
   };
 }

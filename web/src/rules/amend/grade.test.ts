@@ -659,7 +659,7 @@ describe('gradeBoxes route tool recommendation', () => {
   };
 
   /** The same flight filed the tail it would otherwise be proposed, which needs no amendment. */
-  const AS_FILED_PLAN: Scenario = { ...QXE416, filedRoute: `${nimi} OAK V195 CROIT V108 SGD` };
+  const AS_FILED_PLAN: Scenario = { ...QXE416, filedRoute: `${oak} OAK V195 CROIT V108 SGD` };
 
   function resolved(plan: Scenario): Extract<AmendmentResult, { ok: true }> {
     const amended = resolveAmendments(plan, koak, 'proposed');
@@ -672,7 +672,7 @@ describe('gradeBoxes route tool recommendation', () => {
   }
 
   it('grades the proposal the tool route replaced correct', () => {
-    expect(routeVerdict(QXE416, wrote(`${nimi} OAK V195 CROIT V108 SGD`))).toBe('correct');
+    expect(routeVerdict(QXE416, wrote(`${oak} OAK V195 CROIT V108 SGD`))).toBe('correct');
   });
 
   it('grades the tool route correct', () => {
@@ -692,7 +692,7 @@ describe('gradeBoxes route tool recommendation', () => {
   });
 
   it('carries the alternative the student wrote into their plan', () => {
-    const written = `${nimi} OAK V195 CROIT V108 SGD`;
+    const written = `${oak} OAK V195 CROIT V108 SGD`;
     const plan = studentPlan(answers({ route: wrote(written) }), resolved(QXE416), QXE416, koak);
     expect(plan.filedRoute).toBe(written);
   });

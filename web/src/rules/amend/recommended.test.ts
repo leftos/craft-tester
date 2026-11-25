@@ -65,7 +65,7 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
   it('amends a box that needs amending to the tool route, the proposal it replaces correct too', () => {
     const check = checked(QXE416);
     const amendment = routeAmendment(check);
-    const previous = `${nimi} OAK V195 CROIT V108 SGD`;
+    const previous = `${oak} OAK V195 CROIT V108 SGD`;
     expect(amendment.proposed).toBe(`${oak} OAK SAU`);
     expect(
       amendment.reason.endsWith(
@@ -77,7 +77,7 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
   });
 
   it('leaves a box that needs no amendment as filed, the tool route correct too', () => {
-    const check = checked({ ...QXE416, filedRoute: `${nimi} OAK V195 CROIT V108 SGD` });
+    const check = checked({ ...QXE416, filedRoute: `${oak} OAK V195 CROIT V108 SGD` });
     expect(check.outcome).toBeUndefined();
     expect(check.alsoCorrect).toBe(`${oak} OAK SAU`);
   });
@@ -87,7 +87,7 @@ describe('checkRouteWithAlternative on a recommended route tool row', () => {
     const amendment = routeAmendment(check);
     expect(amendment.proposed).toBe(`${oak} OAK SAU`);
     expect(amendment.reason).toBe(
-      `${nimi} is not the procedure the SOP assigns an RNAV turboprop from 30 in SFOW; it is ${oak}`,
+      `${nimi} is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is ${oak}`,
     );
     expect(check.alsoCorrect).toBeUndefined();
   });

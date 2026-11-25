@@ -124,8 +124,8 @@ describe('classify under ZOA CPS-004 3.1 special handling', () => {
   const RULE = 'ZOA-CPS004-SPECIAL-AIRCRAFT';
 
   it.each([
-    ['KOAK', 'DH8D', 'proposed', 'T', 'J', 'T', RULE],
-    ['KOAK', 'DH8D', 'accepted', 'T', 'T', 'T', RULE],
+    ['KOAK', 'DH8D', 'proposed', 'T', 'J', 'J', RULE],
+    ['KOAK', 'DH8D', 'accepted', 'T', 'T', 'J', RULE],
     ['KSFO', 'C510', 'proposed', 'J', 'J', 'J', RULE],
     ['KSFO', 'C510', 'accepted', 'J', 'T', 'T', RULE],
     ['KOAK', 'C510', 'accepted', 'J', 'T', 'T', RULE],

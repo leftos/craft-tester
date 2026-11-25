@@ -144,7 +144,7 @@ gates:
   # SFO and HWD: the user ruled that vectors-direct departures to San Francisco and Hayward get
   # Richmond (2026-09-18). The destinations' identifiers stand in as gate fixes for those routes; no
   # other KOAK route exits on the SFO VOR.
-  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY, CCR, RDD, LKV, SFO, HWD]
+  north: [DEDHD, GOBBS, GRTFL, MOGEE, ORRCA, SYRAH, TIPRE, ENI, LIN, RBL, SAC, OAK, SAU, SGD, ALTAM, MOD, FEVTA, SUNOL, COLLI, OAKEY, CCR, RDD, LKV, SFO, HWD, CROIT]
   # CNDEL# and KATFH# transitions (and their common fix PORTE), COAST# and SKYL# transitions,
   # NUEVO# transitions and the fixes the SOP's NUEVO# row names; SUNNE (the SUNNE# end fix) and the
   # valley and coastal fixes worksheet plans leave on (CISKO, EBAYE, LOSHN, LHS, BOILE, EHF, GILRO).

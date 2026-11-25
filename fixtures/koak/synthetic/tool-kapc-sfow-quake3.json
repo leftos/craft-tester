@@ -5,10 +5,10 @@
       {
         "box": "route",
         "proposed": "OAK7 OAK SAU",
-        "reason": "QUAKE3 is not the procedure the SOP assigns an RNAV turboprop from 30 in SFOW; it is NIMI7, and the ZOA route tool's route for a jet in SFOW is OAK7 OAK SAU; NIMI7 OAK V195 CROIT V108 SGD is correct too"
+        "reason": "QUAKE3 is not the procedure the SOP assigns an RNAV jet from 30 in SFOW; it is OAK7, and the ZOA route tool's route for a jet in SFOW is OAK7 OAK SAU; OAK7 OAK V195 CROIT V108 SGD is correct too"
       }
     ],
-    "routeAlsoCorrect": "NIMI7 OAK V195 CROIT V108 SGD"
+    "routeAlsoCorrect": "OAK7 OAK V195 CROIT V108 SGD"
   },
   "id": "syn-koak-tool-kapc-sfow-quake3",
   "mode": "amendment",

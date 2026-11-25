@@ -612,6 +612,22 @@ describe('the SOP rows under ZOA CPS-004 3.1 special handling', () => {
     expect(clearanceUnder(dash8, koak, 'accepted')).toStrictEqual(proposed);
   });
 
+  it('reads a KOAK DH8D as a jet on the SID rows, so 30 in SFOW does not assign it NIMI', () => {
+    const dash8 = scenario({
+      callsign: 'QXE416',
+      aircraftType: 'DH8D',
+      equipmentSuffix: '/L',
+      destination: 'KAPC',
+      filedRoute: 'QUAKE3 OAK V195 CROIT V108 SGD',
+      filedAltitude: 4000,
+      runwayConfigId: 'SFOW',
+      departureRunway: '30',
+    });
+    const family = assigned(clearanceUnder(dash8, koak, 'proposed')).family;
+    expect(family).not.toBe('NIMI');
+    expect(family).toBe('OAK');
+  });
+
   it('assigns a KSFO C510 the jet-only SSTIK when proposed, and GAPP when accepted', () => {
     const citation = scenario({
       ...SOUTHBOUND_LAX,
