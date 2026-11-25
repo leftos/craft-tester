@@ -82420,6 +82420,69 @@
         "nct": false,
         "short": "Vancouver",
         "spoken": "Vancouver International"
+      },
+      {
+        "also": [
+          "Sonoma County",
+          "Charles Schulz"
+        ],
+        "arrivals": [
+          {
+            "family": "REBAS",
+            "id": "REBAS1",
+            "rnav": true,
+            "transitions": [
+              "MISON",
+              "RGOOD",
+              "RUSME",
+              "SNORA",
+              "YOSEM"
+            ]
+          },
+          {
+            "family": "VNYRD",
+            "id": "VNYRD1",
+            "rnav": true,
+            "transitions": [
+              "MISON",
+              "RGOOD",
+              "RUSME",
+              "SNORA",
+              "YOSEM"
+            ]
+          }
+        ],
+        "artcc": "ZOA",
+        "icao": "KSTS",
+        "lat": 38.509694,
+        "lon": -122.812889,
+        "nct": false,
+        "short": "Santa Rosa",
+        "spoken": "Charles M Schulz Sonoma County"
+      },
+      {
+        "also": [
+          "Buchanan"
+        ],
+        "arrivals": [
+          {
+            "family": "BMBER",
+            "id": "BMBER1",
+            "rnav": true,
+            "transitions": [
+              "NURAY",
+              "PEMKE",
+              "RPARK"
+            ]
+          }
+        ],
+        "artcc": "ZOA",
+        "icao": "KCCR",
+        "lat": 37.989656,
+        "lon": -122.056903,
+        "nct": false,
+        "short": "Concord",
+        "spoken": "Buchanan Field"
       }
     ],
     "fleet": [
@@ -83280,7 +83343,8 @@
       },
       {
         "altitudes": [
-          4000
+          4000,
+          5000
         ],
         "classes": [
           "P",
@@ -83293,7 +83357,8 @@
       },
       {
         "altitudes": [
-          4000
+          4000,
+          5000
         ],
         "classes": [
           "P",
@@ -83306,7 +83371,8 @@
       },
       {
         "altitudes": [
-          4000
+          4000,
+          5000
         ],
         "classes": [
           "P",
@@ -83316,6 +83382,88 @@
         "destination": "KAPC",
         "exitFix": "OAK",
         "tail": "OAK V195 CROIT V108 SGD"
+      },
+      {
+        "altitudes": [
+          4000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KAPC",
+        "exitFix": "OAK",
+        "tail": "OAK ALTAM V334 OAKEY V108 SGD"
+      },
+      {
+        "altitudes": [
+          4000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KSTS",
+        "exitFix": "OAK",
+        "tail": "OAK SAU"
+      },
+      {
+        "altitudes": [
+          4000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KSTS",
+        "exitFix": "SAU",
+        "tail": "SAU"
+      },
+      {
+        "altitudes": [
+          4000,
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KSTS",
+        "exitFix": "OAK",
+        "tail": "OAK ALTAM V334 OAKEY V108 SGD"
+      },
+      {
+        "altitudes": [
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KCCR",
+        "exitFix": "OAK",
+        "tail": "OAK V6 COLLI"
+      },
+      {
+        "altitudes": [
+          5000
+        ],
+        "classes": [
+          "P",
+          "T",
+          "J"
+        ],
+        "destination": "KCCR",
+        "exitFix": "OAK",
+        "tail": "OAK V244 ALTAM V334 OAKEY"
       },
       {
         "altitudes": [
@@ -85648,6 +85796,222 @@
       "kind": "tec",
       "plan": "SFOE",
       "route": "H090 RV",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KAPC",
+      "id": "TOOL-KAPC-SFOW-J",
+      "kind": "tool",
+      "plan": "SFOW",
+      "route": "OAK# OAK SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KAPC",
+      "id": "TOOL-KAPC-SFOE-J",
+      "kind": "tool",
+      "plan": "SFOE",
+      "route": "OAK# OAK ALTAM V334 OAKEY V108 SGD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KAPC",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KAPC-OAKE-J",
+      "kind": "tool",
+      "plan": "OAKE",
+      "route": "SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KAPC",
+      "id": "TOOL-KAPC-SFOW-TP",
+      "kind": "tool",
+      "plan": "SFOW",
+      "route": "NIMI# OAK SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KAPC",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KAPC-SFOE-TP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tool",
+      "plan": "SFOE",
+      "route": "OAK ALTAM V334 OAKEY V108 SGD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KAPC",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KAPC-OAKE-TP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tool",
+      "plan": "OAKE",
+      "route": "SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KSTS",
+      "id": "TOOL-KSTS-SFOW-J",
+      "kind": "tool",
+      "plan": "SFOW",
+      "route": "OAK# OAK SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KSTS",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KSTS-SFOE-J",
+      "initialAltitudeFeet": 3000,
+      "kind": "tool",
+      "plan": "SFOE",
+      "route": "OAK# OAK ALTAM V334 OAKEY V108 SGD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KSTS",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KSTS-OAKE-J",
+      "kind": "tool",
+      "plan": "OAKE",
+      "route": "SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSTS",
+      "id": "TOOL-KSTS-SFOW-TP",
+      "kind": "tool",
+      "plan": "SFOW",
+      "route": "NIMI# OAK SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSTS",
+      "id": "TOOL-KSTS-SFOE-TP",
+      "kind": "tool",
+      "plan": "SFOE",
+      "route": "OAK ALTAM V334 OAKEY V108 SGD",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KSTS",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KSTS-OAKE-TP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tool",
+      "plan": "OAKE",
+      "route": "SAU",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KCCR",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KCCR-SFOW-J",
+      "kind": "tool",
+      "plan": "SFOW",
+      "route": "OAK# OAK V6 COLLI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "J"
+      ],
+      "destination": "KCCR",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KCCR-SFOE-J",
+      "initialAltitudeFeet": 3000,
+      "kind": "tool",
+      "plan": "SFOE",
+      "route": "OAK# OAK V244 ALTAM V334 OAKEY",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KCCR",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KCCR-SFOW-TP",
+      "kind": "tool",
+      "plan": "SFOW",
+      "route": "NIMI# OAK V6 COLLI",
+      "runwayFamilies": [],
+      "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
+    },
+    {
+      "classes": [
+        "T",
+        "P"
+      ],
+      "destination": "KCCR",
+      "finalAltitudeFeet": 5000,
+      "id": "TOOL-KCCR-SFOE-TP",
+      "initialAltitudeFeet": 3000,
+      "kind": "tool",
+      "plan": "SFOE",
+      "route": "OAK V244 ALTAM V334 OAKEY",
       "runwayFamilies": [],
       "source": "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
     }

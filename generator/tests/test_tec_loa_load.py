@@ -17,13 +17,14 @@ from craft_generator.sop.model import (
     SharedRouteFacts,
     TecData,
     TecRoute,
+    TecRouteKind,
 )
 
 Mutation = Callable[[Any], None]
 
 FILES = (("sop", SOP_FILE), ("overrides", OVERRIDES_FILE), ("routes", ROUTES_FILE), ("tec", TEC_FILE))
 
-TEC_ROUTE_COUNT = 47
+TEC_ROUTE_COUNT = 56
 LOA_RULE_COUNT = 24
 SHARED_LOA_RULE_IDS = [
     "LOA-ZSE-PARITY",
@@ -131,8 +132,32 @@ def test_a_tec_row_carries_its_runway_family_and_altitudes(ksfo_inputs: AirportI
 def test_the_assigned_departure_routes_are_the_only_adr_rows(ksfo_inputs: AirportInputs) -> None:
     routes = tec_of(ksfo_inputs).routes
     assert [route.id for route in routes if route.kind == "adr"] == ADR_ROUTE_IDS
-    assert {route.kind for route in routes if route.id not in ADR_ROUTE_IDS} == {"tec"}
+    assert {route.kind for route in routes if route.id not in ADR_ROUTE_IDS} == {"tec", "tool"}
     assert route_by_id(ksfo_inputs, "ADR-KSAN-SFOE").runway_families == ("10",)
+
+
+def _route_row(kind: TecRouteKind, final_altitude_feet: int | None) -> TecRoute:
+    return TecRoute(
+        id=f"TEST-{kind}",
+        kind=kind,
+        destination="KAPC",
+        plan="SFOW",
+        runway_families=(),
+        classes=("J",),
+        route="GAPP# SAU",
+        initial_altitude_feet=None,
+        final_altitude_feet=final_altitude_feet,
+    )
+
+
+@pytest.mark.parametrize(
+    ("kind", "final_altitude_feet", "obligatory"),
+    [("tec", None, True), ("tool", KSMF_PROP_ALTITUDE_FEET, True), ("tool", None, False), ("adr", None, False)],
+)
+def test_a_row_is_obligatory_when_it_is_tec_or_a_tool_row_stating_an_altitude(
+    kind: TecRouteKind, final_altitude_feet: int | None, obligatory: bool
+) -> None:
+    assert _route_row(kind, final_altitude_feet).obligatory is obligatory
 
 
 def test_the_parity_rule_carries_its_rotated_course_window(ksfo_inputs: AirportInputs) -> None:

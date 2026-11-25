@@ -12,8 +12,8 @@
 # itself (user, 2026-09-18).
 # Whether a field is inside NCT is computed at build time from the terminal polygons of `nct_boundary.yaml`,
 # never flagged by hand. A field the polygon holds laterally but another facility owns down to the ground
-# states `outside_nct` with the reason, and the build treats it as outside. The flag gates the TEC route
-# lookup, so a TEC row to a field without it is never issued.
+# states `outside_nct` with the reason, and the build treats it as outside. The flag decides the row kind: a
+# field with it takes `tec` rows, and a field without it takes the tool's `tool` rows instead.
 destinations:
   CYVR: { spoken: Vancouver International, short: Vancouver, artcc: ZSE, lat: 49.195, lon: -123.184 }
   ESSA: { spoken: Stockholm Arlanda, also: [Arlanda, Stockholm], artcc: ZAK, lat: 59.652, lon: 17.919 }

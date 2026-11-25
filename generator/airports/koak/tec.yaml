@@ -15,8 +15,11 @@
 # A TEC route is issued to a destination inside NCT, which the build computes from the terminal
 # polygons of `generator/shared/nct_boundary.yaml`. Napa (KAPC) and Santa Rosa (KSTS) lie outside
 # those polygons; Concord (KCCR) lies inside them laterally, but Travis Approach owns a shelf below
-# that boundary down to the ground over the field, so it is no NCT destination either. The rows the
-# tool prints for those three fields are not transcribed here.
+# that boundary down to the ground over the field, so it is no NCT destination either. The tool's rows
+# for those three fields are `kind: tool` rows, at the end of the file, transcribed as the tool prints
+# them (user, 2026-11-24). A tool row that states an altitude is obligatory and is read as a TEC row;
+# one that states none is recommended: the route box proposes it only where the box is amended anyway,
+# and the box the engine would otherwise propose stays correct beside it.
 source:
   title: ZOA Reference Tool, TEC/AAR/ADR Routes
   url: https://reference.oakartcc.org/routes
@@ -120,3 +123,24 @@ routes:
   - { id: TEC-KHWD-SFOW-J, destination: KHWD, plan: SFOW, classes: [J], runway_families: [], route: "OAK# RV", initial_altitude_feet: 5000, final_altitude_feet: 5000 }
   - { id: TEC-KHWD-SFOW-TP, destination: KHWD, plan: SFOW, classes: [T, P], runway_families: [], route: "NIMI# RV", initial_altitude_feet: 3000, final_altitude_feet: 4000 }
   - { id: TEC-KHWD-SFOE-JTP, destination: KHWD, plan: SFOE, classes: [J, T, P], runway_families: [], route: "H090 RV", initial_altitude_feet: 3000, final_altitude_feet: 4000 }
+  # Fields outside NCT: the tool's rows, transcribed 2026-11-24. The SFOE rows file V108 from OAKEY to
+  # SGD as the tool prints them, although the 2611 CIFP ends a V108 stretch at CROIT (user, 2026-11-24).
+  # KAPC Napa
+  - { id: TOOL-KAPC-SFOW-J, kind: tool, destination: KAPC, plan: SFOW, classes: [J], runway_families: [], route: "OAK# OAK SAU" }
+  - { id: TOOL-KAPC-SFOE-J, kind: tool, destination: KAPC, plan: SFOE, classes: [J], runway_families: [], route: "OAK# OAK ALTAM V334 OAKEY V108 SGD" }
+  - { id: TOOL-KAPC-OAKE-J, kind: tool, destination: KAPC, plan: OAKE, classes: [J], runway_families: [], route: "SAU", final_altitude_feet: 5000 }
+  - { id: TOOL-KAPC-SFOW-TP, kind: tool, destination: KAPC, plan: SFOW, classes: [T, P], runway_families: [], route: "NIMI# OAK SAU" }
+  - { id: TOOL-KAPC-SFOE-TP, kind: tool, destination: KAPC, plan: SFOE, classes: [T, P], runway_families: [], route: "OAK ALTAM V334 OAKEY V108 SGD", initial_altitude_feet: 3000, final_altitude_feet: 5000 }
+  - { id: TOOL-KAPC-OAKE-TP, kind: tool, destination: KAPC, plan: OAKE, classes: [T, P], runway_families: [], route: "SAU", initial_altitude_feet: 3000, final_altitude_feet: 5000 }
+  # KSTS Santa Rosa
+  - { id: TOOL-KSTS-SFOW-J, kind: tool, destination: KSTS, plan: SFOW, classes: [J], runway_families: [], route: "OAK# OAK SAU" }
+  - { id: TOOL-KSTS-SFOE-J, kind: tool, destination: KSTS, plan: SFOE, classes: [J], runway_families: [], route: "OAK# OAK ALTAM V334 OAKEY V108 SGD", initial_altitude_feet: 3000, final_altitude_feet: 5000 }
+  - { id: TOOL-KSTS-OAKE-J, kind: tool, destination: KSTS, plan: OAKE, classes: [J], runway_families: [], route: "SAU", final_altitude_feet: 5000 }
+  - { id: TOOL-KSTS-SFOW-TP, kind: tool, destination: KSTS, plan: SFOW, classes: [T, P], runway_families: [], route: "NIMI# OAK SAU" }
+  - { id: TOOL-KSTS-SFOE-TP, kind: tool, destination: KSTS, plan: SFOE, classes: [T, P], runway_families: [], route: "OAK ALTAM V334 OAKEY V108 SGD" }
+  - { id: TOOL-KSTS-OAKE-TP, kind: tool, destination: KSTS, plan: OAKE, classes: [T, P], runway_families: [], route: "SAU", initial_altitude_feet: 3000, final_altitude_feet: 5000 }
+  # KCCR Concord; the tool prints no OAKE rows for it
+  - { id: TOOL-KCCR-SFOW-J, kind: tool, destination: KCCR, plan: SFOW, classes: [J], runway_families: [], route: "OAK# OAK V6 COLLI", final_altitude_feet: 5000 }
+  - { id: TOOL-KCCR-SFOE-J, kind: tool, destination: KCCR, plan: SFOE, classes: [J], runway_families: [], route: "OAK# OAK V244 ALTAM V334 OAKEY", initial_altitude_feet: 3000, final_altitude_feet: 5000 }
+  - { id: TOOL-KCCR-SFOW-TP, kind: tool, destination: KCCR, plan: SFOW, classes: [T, P], runway_families: [], route: "NIMI# OAK V6 COLLI", final_altitude_feet: 5000 }
+  - { id: TOOL-KCCR-SFOE-TP, kind: tool, destination: KCCR, plan: SFOE, classes: [T, P], runway_families: [], route: "OAK V244 ALTAM V334 OAKEY", initial_altitude_feet: 3000, final_altitude_feet: 5000 }

@@ -25,7 +25,7 @@ from craft_generator.cifp.sid import ConstraintKind, Restriction
 
 AircraftClass = Literal["P", "T", "J"]
 ApproachCategory = Literal["A", "B", "C", "D"]
-TecRouteKind = Literal["tec", "adr"]
+TecRouteKind = Literal["tec", "adr", "tool"]
 LoaRuleKindName = Literal["parity_rotated", "even", "odd", "route"]
 Direction = Literal["north", "south", "oceanic", "any"]
 GateDirection = Literal["north", "south", "oceanic"]
@@ -44,7 +44,7 @@ ConfigLockKey = Literal["plan", "id"]
 
 AIRCRAFT_CLASSES: tuple[AircraftClass, ...] = ("P", "T", "J")
 APPROACH_CATEGORIES: tuple[ApproachCategory, ...] = ("A", "B", "C", "D")
-TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr")
+TEC_ROUTE_KINDS: tuple[TecRouteKind, ...] = ("tec", "adr", "tool")
 LOA_RULE_KIND_NAMES: tuple[LoaRuleKindName, ...] = ("parity_rotated", "even", "odd", "route")
 DIRECTIONS: tuple[Direction, ...] = ("north", "south", "oceanic", "any")
 GATE_DIRECTIONS: tuple[GateDirection, ...] = ("north", "south", "oceanic")
@@ -538,6 +538,16 @@ class TecRoute:
     route: str
     initial_altitude_feet: int | None
     final_altitude_feet: int | None
+
+    @property
+    def obligatory(self) -> bool:
+        """Whether the route must be issued: every TEC row, and a tool row that states an altitude.
+
+        An ADR row and a tool row without one are advice.
+        """
+        if self.kind == "tec":
+            return True
+        return self.kind == "tool" and (self.initial_altitude_feet is not None or self.final_altitude_feet is not None)
 
 
 @dataclass(frozen=True, slots=True)

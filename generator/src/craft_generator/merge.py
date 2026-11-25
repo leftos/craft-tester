@@ -1259,20 +1259,31 @@ def _check_tec_heads(document: Document) -> None:
         )
 
 
-def _check_tec_destinations_inside_nct(document: Document) -> None:
-    """Check that every TEC route is issued to a destination the NCT terminal polygon holds.
-
-    Only the ``tec`` rows are checked: an ADR row is a departure route to a field outside the
-    terminal area by definition, and the same file carries both kinds.
-    """
-    inside = {row["icao"]: row["nct"] for row in document["routeLibrary"]["destinations"]}
-    for row in document["tecRoutes"]:
-        if row["kind"] != "tec" or inside.get(str(row["destination"])) is True:
-            continue
-        raise ValueError(
+def _tec_destination_error(row: Document, inside_nct: bool) -> str | None:
+    """Return why a row's kind does not fit whether its destination lies inside NCT, or None where it does."""
+    if row["kind"] == "tec" and not inside_nct:
+        return (
             f"tec.yaml routes[{row['id']}]: destination {row['destination']} lies outside the NCT terminal polygon "
             f"(generator/shared/{NCT_BOUNDARY_FILE}); a TEC route is issued only to a field inside NCT"
         )
+    if row["kind"] == "tool" and inside_nct:
+        return (
+            f"tec.yaml routes[{row['id']}]: destination {row['destination']} lies inside NCT; "
+            "a tool row is transcribed only for a field outside NCT, and a field inside it takes a tec row"
+        )
+    return None
+
+
+def _check_tec_destinations_inside_nct(document: Document) -> None:
+    """Check that every TEC route is issued to a destination inside NCT, and every tool row to one outside it.
+
+    An ADR row is not checked: it is a departure route to a field outside the terminal area by definition, and the same file carries every kind.
+    """
+    inside = {row["icao"]: row["nct"] for row in document["routeLibrary"]["destinations"]}
+    for row in document["tecRoutes"]:
+        error = _tec_destination_error(row, inside.get(str(row["destination"])) is True)
+        if error is not None:
+            raise ValueError(error)
 
 
 def _check_outside_nct(document: Document, inputs: BuildInputs) -> None:

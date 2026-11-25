@@ -9,8 +9,8 @@ hand-entered `lat`/`lon`, checked in so the merge tests never touch the network.
 | effective | 2026-10-29 |
 | source | `https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261029.zip`, member `FAACIFP18` |
 | captured | 2026-10-29 |
-| filter | `line[0] == "S" and line[4] == "P" and line[12] == "A"`, keeping KSFO and the 38 destinations |
-| rows | 39, every row 132 characters |
+| filter | `line[0] == "S" and line[4] == "P" and line[12] == "A"`, keeping KSFO and the 40 destinations |
+| rows | 41, every row 132 characters |
 
 The four foreign destinations (`RKSI`, `ESSA`, `MMMX`, `CYVR`) are not in the FAA file at all; their
 coordinates are hand-entered in `airports/ksfo/routes.yaml`.

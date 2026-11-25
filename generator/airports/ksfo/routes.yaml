@@ -4,7 +4,7 @@
 # generator/shared/destinations.yaml, generator/shared/airlines.yaml and generator/shared/aircraft_types.yaml.
 
 # The destinations KSFO scenarios file to; the order is the order the draw sees them in.
-destinations: [KSEA, KPDX, KBFI, KBLI, KBOI, KSLC, KJAC, KDEN, KLAS, KLAX, KSAN, KBUR, KONT, KCRQ, KSMO, KVNY, KSNA, KLGB, KUDD, KSBA, KMCI, KGPZ, KRNO, KTRK, KSMF, KFAT, KACV, KMRY, KLVK, KAPC, KWVI, KMYV, KOVE, O88, KSAC, KOAK, KSJC, PHNL, RKSI, ESSA, MMMX, CYVR]
+destinations: [KSEA, KPDX, KBFI, KBLI, KBOI, KSLC, KJAC, KDEN, KLAS, KLAX, KSAN, KBUR, KONT, KCRQ, KSMO, KVNY, KSNA, KLGB, KUDD, KSBA, KMCI, KGPZ, KRNO, KTRK, KSMF, KFAT, KACV, KMRY, KLVK, KAPC, KWVI, KMYV, KOVE, O88, KSAC, KOAK, KSJC, PHNL, RKSI, ESSA, MMMX, CYVR, KSTS, KCCR]
 
 # The airlines that fly out of KSFO: their telephony is read on frequency, and the all-cargo ones among
 # them make a flight a cargo flight for the runway rules.
@@ -75,7 +75,12 @@ routes:
   - { exit_fix: OAK, destination: KOVE, tail: OAK V6 SAC, classes: [P, T], altitudes: [5000] }
   - { exit_fix: CIITY, destination: KOVE, tail: CIITY ALTAM, classes: [T, J], altitudes: [3000, 5000] }
   - { exit_fix: OAK, destination: KOVE, tail: OAK V244 ALTAM MOD, classes: [P, T], altitudes: [5000] }
-  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T], altitudes: [4000] }
+  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: SAU, destination: KSTS, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: TRUKN, destination: KCCR, tail: TRUKN, classes: [J, T], altitudes: [5000] }
+  - { exit_fix: CIITY, destination: KCCR, tail: CIITY ALTAM, classes: [J, T], altitudes: [5000] }
+  - { exit_fix: OAK, destination: KCCR, tail: OAK V6 COLLI, classes: [T, P], altitudes: [5000] }
+  - { exit_fix: OAK, destination: KCCR, tail: OAK V244 ALTAM V334 OAKEY, classes: [T, P], altitudes: [5000] }
   # The tail stops at Middleton Island: SMA and the oceanic fixes beyond it are outside the FAA CIFP, so nothing can name them on frequency.
   - { exit_fix: RBL, destination: RKSI, tail: RBL J1 OED J501 TOU J523 YZT J502 ANN J195 BKA J605 MDO, classes: [J], altitudes: [28000, 30000] }
   - { exit_fix: SAC, destination: KBOI, tail: SAC ANAHO PRNCS SADYL#, classes: [J], altitudes: [39000, 41000] }

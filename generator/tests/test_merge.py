@@ -53,11 +53,12 @@ BASE_FIXES = {
     "WESLA5": "PORTE",
 }
 NO_BASE_FIX = ["GAPP7", "SFO5"]
-TEC_ROUTE_COUNT = 47
+TEC_ROUTE_COUNT = 56
 LOA_RULE_COUNT = 24
 TEC_SOURCE = "ZOA Reference Tool, TEC/AAR/ADR Routes, https://reference.oakartcc.org/routes"
 ADR_ROUTE_IDS = ["ADR-KSAN-SFOW", "ADR-KSAN-SFOE"]
 KSMF_PROP_ALTITUDE_FEET = 6000
+TOOL_KAPC_FINAL_ALTITUDE_FEET = 5000
 OUTSIDE_NCT_REASON = "Another facility owns a shelf below NCT's lateral boundary down to the ground"
 PARITY_ODD_COURSE_FROM = 20
 PARITY_ODD_COURSE_TO = 199
@@ -595,6 +596,19 @@ def test_an_adr_row_is_issued_to_a_field_outside_nct(ksfo_document: Document) ->
     rows = {row["id"]: row for row in ksfo_document["tecRoutes"]}
     assert rows["ADR-KSAN-SFOW"]["kind"] == "adr"
     assert _destinations(ksfo_document)["KSAN"]["nct"] is False
+
+
+def test_a_tool_row_to_a_field_inside_nct_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:
+    inputs = _with_tec_destination(ksfo_build_inputs, "TOOL-KAPC-SFOW", "KSMF")
+    with pytest.raises(ValueError, match=r"tec.yaml routes\[TOOL-KAPC-SFOW\]: destination KSMF lies inside NCT"):
+        build_airport(inputs)
+
+
+def test_a_tool_row_is_kept_for_a_field_outside_nct(ksfo_document: Document) -> None:
+    rows = {row["id"]: row for row in ksfo_document["tecRoutes"]}
+    assert rows["TOOL-KAPC-SFOW"]["kind"] == "tool"
+    assert rows["TOOL-KAPC-SFOW"]["finalAltitudeFeet"] == TOOL_KAPC_FINAL_ALTITUDE_FEET
+    assert _destinations(ksfo_document)["KAPC"]["nct"] is False
 
 
 def test_a_rule_keyed_on_a_tec_route_without_a_dp_that_assigns_one_fails_the_build(ksfo_build_inputs: BuildInputs) -> None:

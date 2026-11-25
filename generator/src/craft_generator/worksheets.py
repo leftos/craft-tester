@@ -122,7 +122,6 @@ _FLIGHT_LEVEL_PATTERN = re.compile(r"^FL(?P<hundreds>\d{2,3})$")
 _SLUG_PATTERN = re.compile(r"[^a-z0-9]+")
 _FAMILY_PLACEHOLDER = re.compile(r"^(?P<family>[A-Z]+)#$")
 
-TEC_ROUTE_KIND = "tec"
 SID_OFF_EFFECT = "sid_off"
 
 _FEET_PER_FLIGHT_LEVEL = 100
@@ -807,7 +806,7 @@ def _route_head(route: TecRoute) -> str:
 
 def _keyed_for(route: TecRoute, flight: _TecFlight, runway_family: str) -> bool:
     """Return whether a row is written for this plan's destination, plan, runway family and class."""
-    if route.kind != TEC_ROUTE_KIND or route.destination != flight.destination or route.plan != flight.config.plan:
+    if not route.obligatory or route.destination != flight.destination or route.plan != flight.config.plan:
         return False
     if route.runway_families and runway_family not in route.runway_families:
         return False
@@ -881,9 +880,9 @@ def _usable(route: TecRoute, flight: _TecFlight, runway: str) -> bool:
 def _usable_tec_route(flight: _TecFlight, runway: str) -> TecRoute | None:
     """Return the first row, in table order, keyed for the plan off this runway and usable by it.
 
-    There is no test that the destination lies inside NCT: the build rejects a ``tec`` row to a
-    destination outside the NCT terminal polygon (``_check_tec_destinations_inside_nct`` in
-    ``merge.py``), so a row keyed for the plan already names an NCT destination.
+    There is no test of the destination itself: the build rejects a ``tec`` row to a field outside NCT and a
+    ``tool`` row to a field inside it (``_check_tec_destinations_inside_nct`` in ``merge.py``), and only an
+    obligatory row is keyed.
     """
     runway_family = runway[:RUNWAY_FAMILY_LENGTH]
     return next((route for route in flight.tec_routes if _keyed_for(route, flight, runway_family) and _usable(route, flight, runway)), None)

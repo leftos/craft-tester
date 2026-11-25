@@ -1659,7 +1659,7 @@ def load_tec(path: Path) -> TecData:
         The transcribed TEC and ADR rows.
 
     Raises:
-        ValueError: The file carries an unknown key, a route kind other than ``tec`` or ``adr``, an
+        ValueError: The file carries an unknown key, a route kind other than ``tec``, ``adr`` or ``tool``, an
             aircraft class outside P/T/J, or a row stating an initial altitude without a final one
             or above it.
         OSError: The file is missing.

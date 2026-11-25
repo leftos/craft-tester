@@ -6,8 +6,8 @@
 
 # The destinations KOAK scenarios file to; the order is the order the draw sees them in. The eight NCT
 # satellites between KSJC and PHNL carry TEC rows in `tec.yaml` but no filed route of their own: a
-# TEC row names a destination this list must carry.
-destinations: [KSEA, KPDX, KBFI, KBLI, KBOI, KSLC, KJAC, KDEN, KLAS, KPHX, KLAX, KSAN, KBUR, KONT, KCRQ, KSMO, KVNY, KSNA, KLGB, KUDD, KSBA, KMCI, KGPZ, KRNO, KTRK, KSMF, KFAT, KACV, KMRY, KLVK, KAPC, KWVI, KMYV, KOVE, O88, KSAC, KSFO, KHWD, KSJC, KMCC, KMHR, KMOD, KNUQ, KPAO, KRHV, KSCK, KSQL, PHNL, RKSI, ESSA, MMMX, CYVR]
+# TEC row names a destination this list must carry. KSTS and KCCR, outside NCT, take `tool` rows in `tec.yaml`.
+destinations: [KSEA, KPDX, KBFI, KBLI, KBOI, KSLC, KJAC, KDEN, KLAS, KPHX, KLAX, KSAN, KBUR, KONT, KCRQ, KSMO, KVNY, KSNA, KLGB, KUDD, KSBA, KMCI, KGPZ, KRNO, KTRK, KSMF, KFAT, KACV, KMRY, KLVK, KAPC, KWVI, KMYV, KOVE, O88, KSAC, KSFO, KHWD, KSJC, KMCC, KMHR, KMOD, KNUQ, KPAO, KRHV, KSCK, KSQL, PHNL, RKSI, ESSA, MMMX, CYVR, KSTS, KCCR]
 
 # The airlines that fly out of KOAK: their telephony is read on frequency, and the all-cargo ones
 # among them make a flight a cargo flight for the runway rules. PAC VALLEY (PCM) flies the Caravan
@@ -77,11 +77,17 @@ routes:
   - { exit_fix: OAK, destination: KLVK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
   - { exit_fix: OAK, destination: KMOD, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
   - { exit_fix: OAK, destination: KSCK, tail: OAK V244 ALTAM MOD, classes: [J], altitudes: [7000] }
-  - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000] }
-  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: SAU, destination: KAPC, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
   # V108's CROIT-OAKEY segment was revoked with the Concord VOR (FAA docket 25-AWP-149, effective
   # 2026-10-29), so Napa routes off V195 to CROIT and the V108 stretch that still reaches SGD (user, 2026-10-29).
-  - { exit_fix: OAK, destination: KAPC, tail: OAK V195 CROIT V108 SGD, classes: [P, T, J], altitudes: [4000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK V195 CROIT V108 SGD, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KAPC, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KSTS, tail: OAK SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: SAU, destination: KSTS, tail: SAU, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KSTS, tail: OAK ALTAM V334 OAKEY V108 SGD, classes: [P, T, J], altitudes: [4000, 5000] }
+  - { exit_fix: OAK, destination: KCCR, tail: OAK V6 COLLI, classes: [P, T, J], altitudes: [5000] }
+  - { exit_fix: OAK, destination: KCCR, tail: OAK V244 ALTAM V334 OAKEY, classes: [P, T, J], altitudes: [5000] }
   - { exit_fix: EUGEN, destination: KMRY, tail: EUGEN, classes: [P, T, J], altitudes: [7000, 11000] }
   - { exit_fix: OAK, destination: KMRY, tail: OAK EUGEN, classes: [J], altitudes: [11000] }
   - { exit_fix: OAK, destination: KMRY, tail: OAK V301 KARNN V111 SNS, classes: [P, T], altitudes: [7000] }

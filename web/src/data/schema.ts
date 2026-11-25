@@ -489,7 +489,7 @@ export const CommonArrivalSchema = z.strictObject({
 });
 
 /**
- * A transcribed TEC route for an NCT destination, keyed by plan, runway family, and class.
+ * A transcribed route tool row: a TEC route for an NCT destination, an ADR, or a tool row for a field outside NCT, keyed by plan, runway family, and class.
  *
  * `initialAltitudeFeet` is the altitude the TEC route is issued with and `finalAltitudeFeet` the
  * cruise altitude it assigns; a row that carries neither publishes no altitude at all. A row that
@@ -499,7 +499,7 @@ export const TecRouteSchema = z
   .strictObject({
     id: z.string(),
     source: z.string(),
-    kind: z.enum(['tec', 'adr']),
+    kind: z.enum(['tec', 'adr', 'tool']),
     destination: z.string(),
     plan: z.string(),
     runwayFamilies: z.array(z.string()),

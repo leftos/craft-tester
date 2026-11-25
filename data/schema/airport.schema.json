@@ -1770,7 +1770,8 @@
           "kind": {
             "enum": [
               "tec",
-              "adr"
+              "adr",
+              "tool"
             ],
             "type": "string"
           },
