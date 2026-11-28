@@ -78239,9 +78239,9 @@
   ],
   "provenance": {
     "airac": {
-      "cifpSha256": "877bd911e105b9b1e85fa970c55488f6ad987760814f45c42b84017cd5d6c1c9",
-      "cycle": "2611",
-      "effective": "2026-10-29"
+      "cifpSha256": "ef86afced999a8a335129abeafcc40508d0479b9d543bb4a80715e939a680269",
+      "cycle": "2612",
+      "effective": "2026-11-26"
     },
     "chartsApi": "https://charts-api.oakartcc.org/v1/charts?apt=SFO",
     "secondarySources": [
@@ -82358,7 +82358,7 @@
     {
       "baseFix": "CIITY",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375CIITY.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375CIITY.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82443,7 +82443,7 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375GAP.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375GAP.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82528,7 +82528,7 @@
     {
       "baseFix": "GNNRR",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375GNNRR.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375GNNRR.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82591,7 +82591,7 @@
     {
       "baseFix": "MOLEN",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375MOLEN.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375MOLEN.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82644,7 +82644,7 @@
     {
       "baseFix": "NIITE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375NIITE.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375NIITE.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82726,7 +82726,7 @@
     {
       "baseFix": "SAHEY",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SAHEY.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375SAHEY.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82804,7 +82804,7 @@
     },
     {
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SANFRANCISCO.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375SANFRANCISCO.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82841,7 +82841,7 @@
     {
       "baseFix": "SEGUL",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SEGUL.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375SEGUL.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82891,7 +82891,7 @@
     {
       "baseFix": "SNTNA",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SNTNA.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375SNTNA.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -82959,7 +82959,7 @@
     {
       "baseFix": "PORTE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375SSTIK.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375SSTIK.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -83027,7 +83027,7 @@
     {
       "baseFix": "TRUKN",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375TRUKN.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375TRUKN.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
@@ -83103,7 +83103,7 @@
     {
       "baseFix": "PORTE",
       "chart": {
-        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2611/00375WESLA.PDF"
+        "pdfUrl": "https://aeronav.faa.gov/d-tpp/2612/00375WESLA.PDF"
       },
       "chartExpectFiledAltitudeMinutes": 10,
       "chartFrequencies": [
